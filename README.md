@@ -3,19 +3,6 @@ ekyna/Commerce
 
 Commerce component
 
-# Running tests
-
-    composer install
-
-## Behat
-
-    $ bin/behat -c tests/behat.yml
-    
-## PHPUnit
-
-    $ bin/phpunit -c tests/phpunit.xml
-
-
 # TODO
 
 - rename boolean getters from **get**XXX() ot **is**XXX().
