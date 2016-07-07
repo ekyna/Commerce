@@ -6,7 +6,6 @@ use Doctrine\Common\Persistence\ObjectManager;
 
 use Ekyna\Component\Commerce\Address\Entity\Country;
 use Ekyna\Component\Commerce\Pricing\Entity\Currency;
-use Symfony\Component\Intl\Data\Provider\CurrencyDataProvider;
 use Symfony\Component\Intl\Intl;
 
 /**
@@ -38,12 +37,13 @@ class Installer
         $this->manager = $manager;
 
         if (in_array('Symfony\Component\Console\Output\OutputInterface', class_implements($logger))) {
-            $this->log = function($name) use ($logger) {
+            $this->log = function($name, $result) use ($logger) {
                 /** @var \Symfony\Component\Console\Output\OutputInterface $logger */
                 $logger->writeln(sprintf(
-                    '- <comment>%s</comment> %s created.',
+                    '- <comment>%s</comment> %s %s.',
                     $name,
-                    str_pad('.', 44 - mb_strlen($name), '.', STR_PAD_LEFT)
+                    str_pad('.', 44 - mb_strlen($name), '.', STR_PAD_LEFT),
+                    $result
                 ));
             };
         } else {
@@ -78,7 +78,7 @@ class Installer
             throw new \Exception("Expected non empty array of enabled country codes.");
         }
 
-        $countryNames = Intl::getRegionBundle()->getCountryNames(); // TODO locale
+        $countryNames = Intl::getRegionBundle()->getCountryNames();
         asort($countryNames);
 
         $this->generate(Country::class, $countryNames, $codes);
@@ -97,7 +97,7 @@ class Installer
             throw new \Exception("Expected non empty array of currency codes.");
         }
 
-        $currencyNames = Intl::getCurrencyBundle()->getCurrencyNames(); // TODO locale + sort by name
+        $currencyNames = Intl::getCurrencyBundle()->getCurrencyNames();
         asort($currencyNames);
 
         $this->generate(Currency::class, $currencyNames, $codes);
@@ -112,21 +112,27 @@ class Installer
      */
     private function generate($class, array $names, array $enabledCodes)
     {
+        $repository = $this->manager->getRepository($class);
+
         $enabledCodes = array_map(function($code) {
             return strtoupper($code);
         }, $enabledCodes);
 
         foreach ($names as $code => $name) {
-            /** @var Country|Currency $entity */
-            $entity = new $class();
-            $entity
-                ->setName($name)
-                ->setCode($code)
-                ->setEnabled(in_array($code, $enabledCodes));
+            $result = 'already exists';
+            if (null === $repository->findOneBy(['code' => $code])) {
+                /** @var Country|Currency $entity */
+                $entity = new $class();
+                $entity
+                    ->setName($name)
+                    ->setCode($code)
+                    ->setEnabled(in_array($code, $enabledCodes));
 
-            $this->manager->persist($entity);
+                $this->manager->persist($entity);
 
-            call_user_func($this->log, $name);
+                $result = 'done';
+            }
+            call_user_func($this->log, $name, $result);
         }
 
         $this->manager->flush();
