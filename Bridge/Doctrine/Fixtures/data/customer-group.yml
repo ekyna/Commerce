@@ -1,0 +1,6 @@
+customer-group-1:
+    name: Final customers
+    default: true
+
+customer-group-2:
+    name: Reseller

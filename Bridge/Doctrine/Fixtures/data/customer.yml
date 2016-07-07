@@ -1,0 +1,37 @@
+customer-1:
+    firstName: John
+    lastName: Doe
+    email: john.doe@example.org
+    customerGroups:
+        - '#customer-group-1'
+    addresses:
+        -
+            firstName: John
+            lastName: Doe
+            street: 12 rue de Nantes
+            postalCode: 35000
+            city: Rennes
+            phone: 0212345678
+            mobile: 0612345678
+            country: '#country-fr'
+            invoiceDefault: true
+            deliveryDefault: true
+
+customer-2:
+    firstName: Jane
+    lastName: Doe
+    email: jane.doe@example.org
+    customerGroups:
+        - '#customer-group-2'
+    addresses:
+        -
+            firstName: Jane
+            lastName: Doe
+            street: 34 rue de Rennes
+            postalCode: 44000
+            city: Nantes
+            phone: 0212345678
+            mobile: 0612345678
+            country: '#country-fr'
+            invoiceDefault: true
+            deliveryDefault: true

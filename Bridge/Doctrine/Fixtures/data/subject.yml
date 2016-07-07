@@ -1,0 +1,33 @@
+subject-1:
+    designation: Test subject 1
+    reference: TEST-SUBJ-1
+    taxGroup: '#tax-group-1'
+    offers:
+        -
+            netPrice: 124.99166     # 149 ttc (tva 20%)
+            priceLists:
+                - '#price-list-1'
+                - '#price-list-2'
+        -
+            netPrice: 115.83333     # 139 ttc (tva 20%)
+            startAt: '-1 day'
+            endAt: '+1 day'
+            priceLists:
+                - '#price-list-2'
+                - '#price-list-3'
+        -
+            netPrice: 120           # 144 ttc (tva 20%)
+            minQuantity: 5
+            priceLists:
+                - '#price-list-1'
+
+subject-2:
+    designation: Test subject 2
+    reference: TEST-SUBJ-2
+    taxGroup: '#tax-group-2'
+    offers:
+        -
+            netPrice: 44.54545      # 49 ttc (tva 10%)
+            priceLists:
+                - '#price-list-1'
+                - '#price-list-2'

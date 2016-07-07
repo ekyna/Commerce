@@ -1,0 +1,30 @@
+tax-rule-1:
+    name: Regular tax rule
+    customerGroups:
+        - '#customer-group-1'
+    taxGroups:
+        - '#tax-group-1'
+    taxes:
+        - '#tax-fr-20'
+        - '#tax-us-8'
+
+tax-rule-2:
+    name: Reduced tax rule
+    customerGroups:
+        - '#customer-group-1'
+    taxGroups:
+        - '#tax-group-2'
+    taxes:
+        - '#tax-fr-10'
+        - '#tax-us-8'
+
+tax-rule-3:
+    name: Resellers tax rule
+    customerGroups:
+        - '#customer-group-2'
+    taxGroups:
+        - '#tax-group-1'
+        - '#tax-group-2'
+    #taxes: <empty>
+    priority: 10
+

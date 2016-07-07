@@ -1,0 +1,15 @@
+tax-fr-20:
+    name: TVA 20%
+    rate: 20
+    country: '#country-fr'
+
+tax-fr-10:
+    name: TVA 10%
+    rate: 10
+    country: '#country-fr'
+
+tax-us-8:
+    name: US-CA 8.25%
+    rate: 8.25
+    country: '#country-us'
+

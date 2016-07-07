@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractMethod">
+
+        <indexes>
+            <index columns="name" name="idx_name"/>
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="name" name="unique_method_name"/>
+        </unique-constraints>
+
+        <field name="name" column="name" type="string" length="64"/>
+        <field name="enabled" column="enabled" type="boolean"/>
+        <field name="available" column="available" type="boolean"/>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

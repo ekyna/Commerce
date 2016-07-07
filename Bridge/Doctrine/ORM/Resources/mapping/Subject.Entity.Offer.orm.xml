@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity name="Ekyna\Component\Commerce\Subject\Entity\Offer"
+            table="commerce_offer">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5"/>
+        <field name="minQuantity" column="min_quantity" type="smallint" nullable="true"/>
+        <field name="startAt" column="start_at" type="datetime" nullable="true"/>
+        <field name="endAt" column="end_at" type="datetime" nullable="true"/>
+
+        <!--<many-to-one target-entity="Ekyna\Component\Commerce\Subject\Entity\Subject" field="subject" inversed-by="offers">
+            <join-column name="subject_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+        </many-to-one>
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\PriceList" field="priceLists">
+            <join-table name="commerce_offer_price_list">
+                <join-columns>
+                    <join-column name="offer_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="price_list_id" referenced-column-name="id" on-delete="RESTRICT"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>-->
+
+    </entity>
+
+</doctrine-mapping>

@@ -1,0 +1,413 @@
+order-1:
+    reference: ORDER-00001
+    currency: '#currency-eur'
+    customer: '#customer-1'
+    firstName: John
+    lastName: Doe
+    email: john.doe@example.org
+    sameAddress: true
+    invoiceAddress:
+        firstName: John
+        lastName: Doe
+        street: 12 rue de Vern
+        postalCode: 35000
+        city: Rennes
+        phone: 0212345678
+        mobile: 0612345678
+        country: '#country-fr'
+    items:
+        -   # id: 1
+            designation: Test item 1.1
+            reference: TEST-ITEM-1-1
+            netPrice: 124.16667         # 149.00 gross
+            taxName: TVA 20%
+            taxRate: 20
+            weight: 100
+            quantity: 1
+            position: 0
+            # Base:     124.17
+            # TVA 20%:   24.83
+            # Total:    149.00
+
+        -   # id: 2
+            designation: Test item 1.2
+            reference: TEST-ITEM-1-2
+            netPrice: 115.83333         # 139.00 gross
+            taxName: TVA 20%
+            taxRate: 20
+            weight: 100
+            quantity: 2
+            position: 1
+            # Base:     231.66  |  231.67
+            # TVA 20%:   46.33  |   46.33
+            # Total:    277,99  |  278.00
+
+    #           | net mode | gross mode
+    # ----------------------------------
+    #  Base     |  355.83  |   355.84
+    # ----------------------------------
+    #  TVA 20%  |   71.16  |    71.16
+    # ----------------------------------
+    #  Total    |  426.99  |   427.00
+
+
+
+
+order-2:
+    reference: ORDER-00002
+    currency: '#currency-eur'
+    customer: '#customer-1'
+    firstName: John
+    lastName: Doe
+    email: john.doe@example.org
+    sameAddress: true
+    invoiceAddress:
+        firstName: John
+        lastName: Doe
+        street: 12 rue de Vern
+        postalCode: 35000
+        city: Rennes
+        phone: 0212345678
+        mobile: 0612345678
+        country: '#country-fr'
+    items:
+        -   # id: 3
+            designation: Test item 2.1
+            reference: TEST-ITEM-2-1
+            netPrice: 124.99167         # 149.99 gross
+            taxName: TVA 20%
+            taxRate: 20
+            weight: 100
+            quantity: 3
+            position: 0
+            # Base:    374.97 | 374.98
+            # TVA 20%:  74.99 | 74.99
+            # Total:   449.96 | 449.97
+
+        -   # id: 4
+            designation: Test item 2.2
+            reference: TEST-ITEM-2-2
+            netPrice: 32.71818          # 35.99 gross
+            taxName: TVA 10%
+            taxRate: 10
+            weight: 100
+            quantity: 7
+            position: 1
+            # Base:     229.04  |  229.03
+            # TVA 10%:   22.90  |   22.90
+            # Total:    251.94  |  251.93
+
+    adjustments:
+        -   # id: 1
+            designation: Test adjustment 2.1
+            amount: 50
+            mode: flat
+            position: 0
+            # Total: -50
+
+    # ---------------------
+    #  Base     |  554.01
+    # ---------------------
+    #  TVA 20%  |   74.99
+    # ---------------------
+    #  TVA 10%  |   22.90
+    # ---------------------
+    #  Total    |  651.90
+
+
+order-3:
+    reference: ORDER-00003
+    currency: '#currency-eur'
+    customer: '#customer-1'
+    firstName: John
+    lastName: Doe
+    email: john.doe@example.org
+    sameAddress: true
+    invoiceAddress:
+        firstName: John
+        lastName: Doe
+        street: 12 rue de Vern
+        postalCode: 35000
+        city: Rennes
+        phone: 0212345678
+        mobile: 0612345678
+        country: '#country-fr'
+    items:
+        -   # id: 5
+            designation: Test item 3.1
+            reference: TEST-ITEM-3-1
+            netPrice: 60.79167         # 72.95 gross
+            taxName: TVA 20%
+            taxRate: 20
+            weight: 100
+            quantity: 5
+            position: 0
+            # Base:     303.95  |  303.96
+            # TVA 20%:   60.79  |   60.79
+            # Total:    364.74  |  364.75
+
+        -   # id: 6
+            designation: Test item 3.2
+            reference: TEST-ITEM-3-2
+            netPrice: 120.26364        # 132.29 gross
+            taxName: TVA 10%
+            taxRate: 10
+            weight: 100
+            quantity: 23
+            position: 1
+            # Base:     2765.98  |  2766.06
+            # TVA 10%:   276.60  |   276.61
+            # Total:    3042.58  |  3042.67
+
+    adjustments:
+        -   # id: 2
+            designation: Test adjustment 3.1
+            amount: 5
+            mode: percent
+            position: 0
+            # Total:     -153.50     ((303.95 + 2765.98) * 0.05)
+
+    # ----------------------
+    #  Base     |  2916.43
+    # ----------------------
+    #  TVA 20%  |    60.79
+    # ----------------------
+    #  TVA 10%  |   276.60
+    # ----------------------
+    #  Total    |  3253.82
+
+
+order-4:
+    reference: ORDER-00004
+    currency: '#currency-eur'
+    customer: '#customer-1'
+    firstName: John
+    lastName: Doe
+    email: john.doe@example.org
+    sameAddress: true
+    invoiceAddress:
+        firstName: John
+        lastName: Doe
+        street: 12 rue de Vern
+        postalCode: 35000
+        city: Rennes
+        phone: 0212345678
+        mobile: 0612345678
+        country: '#country-fr'
+    items:
+        -   # id: 7
+            designation: Test bundle 4.1
+            reference: TEST-BUND-4-1
+            quantity: 7
+            position: 0
+            children:
+                -   # id: 8
+                    designation: Test bundle 4.1.1
+                    reference: TEST-BUND-4-1-1
+                    netPrice: 144.10000     # 172.92 gross
+                    taxName: TVA 20%
+                    taxRate: 20
+                    weight: 50
+                    quantity: 1
+                    position: 0
+                    # Base:     144.10
+                    # TVA 20%:   28.82
+                    # Total:    172.92
+
+                -   # id: 9
+                    designation: Test bundle 4.1.2
+                    reference: TEST-BUND-4-1-2
+                    netPrice: 52.96364      # 58.26 gross
+                    taxName: TVA 10%
+                    taxRate: 10
+                    weight: 25
+                    quantity: 5
+                    position: 1
+                    # Base:     264.80  |  264.82
+                    # TVA 10%:   26.48  |   26.48
+                    # Total:    291.28  |  291.30
+
+        # Base:     1998.05  |
+        # TVA 20%:   201.74
+        # TVA 10%:   185.36
+        # Total:    2385.15
+
+    #           |  net mode  |  gross mode
+    # --------------------------------------
+    #  Base     |  2862.30   |  2862.44
+    # --------------------------------------
+    #  TVA 20%  |   201.74   |   201.74
+    # --------------------------------------
+    #  TVA 10%  |   185.36   |   185.36
+    # --------------------------------------
+    #  Total    |  3249.40   |  3249.54
+
+
+order-5:
+    reference: ORDER-00005
+    currency: '#currency-eur'
+    customer: '#customer-1'
+    firstName: John
+    lastName: Doe
+    email: john.doe@example.org
+    sameAddress: true
+    invoiceAddress:
+        firstName: John
+        lastName: Doe
+        street: 12 rue de Vern
+        postalCode: 35000
+        city: Rennes
+        phone: 0212345678
+        mobile: 0612345678
+        country: '#country-fr'
+    items:
+        -   # id: 10
+            designation: Test bundle 5.1
+            reference: TEST-BUND-2-1
+            quantity: 5
+            position: 0
+            children:
+                -   # id: 11
+                    designation: Test bundle 5.1.1
+                    reference: TEST-BUND-5-1-1
+                    netPrice: 184.12500     # 220.95
+                    taxName: TVA 20%
+                    taxRate: 20
+                    weight: 50
+                    quantity: 1
+                    position: 0
+                    # Base:     184.12  |  184.12
+                    # TVA 20%:   36.82  |   36.83
+                    # Total:    220.94  |  220.95
+                -
+                    # id: 12
+                    designation: Test bundle 5.1.2
+                    reference: TEST-BUND-5-1-2
+                    netPrice: 32.52727      # 35.78
+                    taxName: TVA 10%
+                    taxRate: 10
+                    weight: 25
+                    quantity: 3
+                    position: 1
+                    # Base:      97.59  |   97.58
+                    # TVA 10%:    9.76  |    9.76
+                    # Total:    107.35  |  107.34
+
+            adjustments:
+                -   # id: 3
+                    designation: Test bundle adjustment 5.1.1
+                    amount: 5
+                    mode: percent
+                    position: 0
+
+        # Base:     1338.12  |  1338.05    ((184.12 + 97.59 - 14.07) * 5)
+        # TVA 20%:   174.90  |   184.15
+        # TVA 10%:    46.36  |    48.80
+        # Total:    1559.38  |  1571.00
+
+    adjustments:
+        -   # id: 4
+            designation: Test adjustment 5.1
+            amount: 20
+            mode: flat
+            position: 0
+            # Total: -20
+
+    # -----------------------------------------------
+    #  Base     |   1318.20
+    # -----------------------------------------------
+    #  TVA 20%  |   184.10
+    # -----------------------------------------------
+    #  TVA 10%  |    48.85
+    # -----------------------------------------------
+    #  Total    |  1551.15
+
+order-6:
+    reference: ORDER-00006
+    currency: '#currency-eur'
+    customer: '#customer-1'
+    firstName: John
+    lastName: Doe
+    email: john.doe@example.org
+    sameAddress: true
+    invoiceAddress:
+        firstName: John
+        lastName: Doe
+        street: 12 rue de Vern
+        postalCode: 35000
+        city: Rennes
+        phone: 0212345678
+        mobile: 0612345678
+        country: '#country-fr'
+    items:
+        -   # id: 13
+            designation: Test bundle 6.1
+            reference: TEST-BUND-2-1
+            quantity: 57
+            position: 0
+            children:
+                -   # id: 14
+                    designation: Test bundle 6.1.1
+                    reference: TEST-BUND-6-1-1
+                    netPrice: 416.58333     # 499.90
+                    taxName: TVA 20%
+                    taxRate: 20
+                    weight: 50
+                    quantity: 2
+                    position: 0
+                    adjustments:
+                        -   # id: 5
+                            designation: Test adjustment 6.1.1.1
+                            amount: 20
+                            mode: flat
+                            position: 0
+                            # Total: -20
+
+                    # Base:     813.16      (146.58 * 2 - 20)
+                    # TVA 20%:  166.63
+                    # Total:    979.79
+
+                -   # id: 15
+                    designation: Test bundle 6.1.2
+                    reference: TEST-BUND-6-1-2
+                    netPrice: 50.90000      # 55.99
+                    taxName: TVA 10%
+                    taxRate: 10
+                    weight: 25
+                    quantity: 2
+                    position: 1
+                    adjustments:
+                        -   # id: 6
+                            designation: Test bundle adjustment 6.1.2.1
+                            amount: 5
+                            mode: percent
+                            position: 0
+                            # Total: -5.09
+
+                    # Base:      96.71      (50.90 * 2 - 5.09)
+                    # TVA 10%:   10.18
+                    # Total:    106.89
+
+                -   # id: 16
+                    designation: Test bundle 6.1.3
+                    reference: TEST-BUND-6-1-3
+                    netPrice: 127.49000
+                    weight: 25
+                    quantity: 3
+                    position: 1
+                    # Base:     382.47      (127.49 * 3)
+                    # Total:    382.47
+
+        # Base:      73663.38
+        # TVA 20%:    9497.91
+        # TVA 10%:     580.26
+        # Total:     83741,55
+
+    # -------------------------------------------------
+    #  Base     |  73663.38
+    # -------------------------------------------------
+    #  TVA 20%  |   9497.91
+    # -------------------------------------------------
+    #  TVA 10%  |    580.26
+    # -------------------------------------------------
+    #  Total    |  83741,55

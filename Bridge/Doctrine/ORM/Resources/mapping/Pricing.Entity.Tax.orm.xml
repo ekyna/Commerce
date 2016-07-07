@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity name="Ekyna\Component\Commerce\Pricing\Entity\Tax"
+            table="commerce_tax">
+
+        <indexes>
+            <index columns="name" name="idx_name"/>
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="name" name="unique_tax_name"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="name" column="name" type="string" length="64"/>
+        <field name="rate" column="rate" type="decimal" precision="5" scale="3"/>
+        <field name="postalCodeMatch" column="postal_code_match" type="string" length="128"/>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Address\Entity\Country" field="country">
+            <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+        </many-to-one>
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\TaxRule" mapped-by="taxes" field="taxRules">
+            <cascade>
+                <cascade-merge/>
+                <cascade-refresh/>
+                <cascade-detach/>
+            </cascade>
+        </many-to-many>
+
+    </entity>
+
+</doctrine-mapping>

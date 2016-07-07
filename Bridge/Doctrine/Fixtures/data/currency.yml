@@ -1,0 +1,7 @@
+currency-eur:
+    name: Euro
+    code: EUR
+
+currency-usd:
+    name: US Dollar
+    code: USD

@@ -1,0 +1,8 @@
+country-fr:
+    name: France
+    code: FR
+
+country-us:
+    name: United states
+    code: US
+

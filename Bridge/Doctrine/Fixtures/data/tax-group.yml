@@ -1,0 +1,6 @@
+tax-group-1:
+    name: Regular tax group
+    default: true
+
+tax-group-2:
+    name: Reduced tax group

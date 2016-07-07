@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <!-- Address -->
+
+    <class name="Ekyna\Component\Commerce\Address\Entity\AbstractAddress">
+        <property name="firstName">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="lastName">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="street">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">128</option>
+            </constraint>
+        </property>
+        <property name="postalCode">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="city">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="country">
+            <constraint name="NotNull"/>
+        </property>
+        <!--<property name="state">
+            <constraint name="NotNull"/>
+        </property>-->
+        <property name="phone">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="mobile">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Address\Entity\Country">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="code">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">4</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Address\Entity\State">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="country">
+            <constraint name="NotNull" />
+        </property>
+    </class>
+
+    <!-- Customer -->
+
+    <class name="Ekyna\Component\Commerce\Customer\Entity\Customer">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">email</option>
+        </constraint>
+        <property name="firstName">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="lastName">
+            <constraint name="NotBlank" />
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="phone">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="mobile">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="customerGroups">
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+        <property name="parent">
+            <constraint name="Valid" />
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Customer\Entity\CustomerAddress">
+        <property name="customer">
+            <constraint name="NotNull" />
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Customer\Entity\CustomerGroup">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank" />
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+    </class>
+
+    <!-- Order -->
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\Order">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+            <option name="fields">key</option>
+        </constraint>
+        <property name="number">
+            <constraint name="Length">
+                <option name="min">8</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="customer">
+            <constraint name="Valid" />
+        </property>
+        <property name="firstName">
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="lastName">
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+        </property>
+
+        <property name="invoiceAddress">
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Valid" />
+        </property>
+        <property name="deliveryAddress">
+            <constraint name="Valid" />
+        </property>
+
+        <property name="currency">
+            <constraint name="NotNull" />
+        </property>
+        <property name="items">
+            <constraint name="Count">
+                <option name="min">1</option>
+                <option name="groups">
+                    <value>Cart</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Valid" />
+        </property>
+        <property name="payments">
+            <constraint name="Valid" />
+        </property>
+        <property name="shipments">
+            <constraint name="Valid" />
+        </property>
+
+        <property name="state">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Order\Model\OrderStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="paymentState">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="shipmentState">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Model\ShipmentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\AbstractAdjustment">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderAdjustment">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItem">
+        <!-- TODO flat adjustment can\'t be applied to an item with children -->
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
+    </class>
+
+    <!-- Pricing -->
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\Currency">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="code">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">4</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\PriceList">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\Tax">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="rate">
+            <constraint name="NotBlank"/>
+            <constraint name="Range">
+                <option name="min">0</option>
+                <option name="max">100</option>
+            </constraint>
+        </property>
+        <property name="country">
+            <constraint name="NotNull"/>
+        </property>
+        <!--<property name="state">
+            <constraint name="NotNull"/>
+        </property>-->
+        <!--TODO<property name="taxRules">
+            <constraint name="Valid"/>
+        </property>-->
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\TaxGroup">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <!--TODO<property name="taxRules">
+            <constraint name="Valid"/>
+        </property>-->
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\TaxRule">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="priority">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="position">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <!--TODO<property name="customerGroups">
+            <constraint name="Valid"/>
+        </property>-->
+        <!--TODO<property name="taxGroups">
+            <constraint name="Valid"/>
+        </property>-->
+        <!--TODO<property name="taxes">
+            <constraint name="Valid"/>
+        </property>-->
+    </class>
+
+</constraint-mapping>
