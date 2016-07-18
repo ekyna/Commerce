@@ -49,16 +49,6 @@
         <!--<property name="state">
             <constraint name="NotNull"/>
         </property>-->
-        <property name="phone">
-            <constraint name="Length">
-                <option name="max">16</option>
-            </constraint>
-        </property>
-        <property name="mobile">
-            <constraint name="Length">
-                <option name="max">16</option>
-            </constraint>
-        </property>
     </class>
 
     <class name="Ekyna\Component\Commerce\Address\Entity\Country">
@@ -115,16 +105,6 @@
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">64</option>
-            </constraint>
-        </property>
-        <property name="phone">
-            <constraint name="Length">
-                <option name="max">16</option>
-            </constraint>
-        </property>
-        <property name="mobile">
-            <constraint name="Length">
-                <option name="max">16</option>
             </constraint>
         </property>
         <property name="customerGroups">
