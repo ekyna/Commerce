@@ -96,6 +96,7 @@ class TaxRule implements TaxRuleInterface
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -131,6 +132,7 @@ class TaxRule implements TaxRuleInterface
         if (!$this->hasCustomerGroup($customerGroup)) {
             $this->customerGroups->add($customerGroup);
         }
+
         return $this;
     }
 
@@ -142,6 +144,7 @@ class TaxRule implements TaxRuleInterface
         if ($this->hasCustomerGroup($customerGroup)) {
             $this->customerGroups->removeElement($customerGroup);
         }
+
         return $this;
     }
 
@@ -150,7 +153,14 @@ class TaxRule implements TaxRuleInterface
      */
     public function setCustomerGroups(ArrayCollection $customerGroups)
     {
-        $this->customerGroups = $customerGroups;
+        foreach ($this->customerGroups as $group) {
+            $this->removeCustomerGroup($group);
+        }
+
+        foreach ($customerGroups as $group) {
+            $this->addCustomerGroup($group);
+        }
+
         return $this;
     }
 
@@ -187,6 +197,7 @@ class TaxRule implements TaxRuleInterface
             $taxGroup->addTaxRule($this);
             $this->taxGroups->add($taxGroup);
         }
+
         return $this;
     }
 
@@ -199,6 +210,7 @@ class TaxRule implements TaxRuleInterface
             $taxGroup->removeTaxRule($this);
             $this->taxGroups->removeElement($taxGroup);
         }
+
         return $this;
     }
 
@@ -207,7 +219,14 @@ class TaxRule implements TaxRuleInterface
      */
     public function setTaxGroups(ArrayCollection $taxGroups)
     {
-        $this->taxGroups = $taxGroups;
+        foreach ($this->taxGroups as $group) {
+            $this->removeTaxGroup($group);
+        }
+
+        foreach ($taxGroups as $group) {
+            $this->addTaxGroup($group);
+        }
+
         return $this;
     }
 
@@ -244,6 +263,7 @@ class TaxRule implements TaxRuleInterface
             $tax->addTaxRule($this);
             $this->taxes->add($tax);
         }
+
         return $this;
     }
 
@@ -256,6 +276,7 @@ class TaxRule implements TaxRuleInterface
             $tax->removeTaxRule($this);
             $this->taxes->removeElement($tax);
         }
+
         return $this;
     }
 
@@ -264,7 +285,14 @@ class TaxRule implements TaxRuleInterface
      */
     public function setTaxes(ArrayCollection $taxes)
     {
-        $this->taxes = $taxes;
+        foreach ($this->taxes as $tax) {
+            $this->removeTax($tax);
+        }
+
+        foreach ($taxes as $tax) {
+            $this->addTax($tax);
+        }
+
         return $this;
     }
 
@@ -282,6 +310,7 @@ class TaxRule implements TaxRuleInterface
     public function setPriority($priority)
     {
         $this->priority = $priority;
+
         return $this;
     }
 
@@ -299,6 +328,7 @@ class TaxRule implements TaxRuleInterface
     public function setPosition($position)
     {
         $this->position = $position;
+
         return $this;
     }
 }

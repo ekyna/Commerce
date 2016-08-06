@@ -13,7 +13,7 @@ class CountryData extends AbstractFixture
     {
         return [
             'filename' => 'country.yml',
-            'class'    => 'Ekyna\Component\Commerce\Address\Entity\Country',
+            'class'    => 'Ekyna\Component\Commerce\Common\Entity\Country',
         ];
     }
 

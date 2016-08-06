@@ -2,9 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Address\Entity\AbstractAddress;
+use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
 use Ekyna\Component\Commerce\Order\Model\OrderAddressInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
 /**
  * Class OrderAddress

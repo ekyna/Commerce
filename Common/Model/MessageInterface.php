@@ -7,15 +7,8 @@ namespace Ekyna\Component\Commerce\Common\Model;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface MessageInterface
+interface MessageInterface extends EntityInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the state.
      *

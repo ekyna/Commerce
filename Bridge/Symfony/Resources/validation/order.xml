@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\Order">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+            <option name="fields">key</option>
+        </constraint>
+        <property name="number">
+            <constraint name="Length">
+                <option name="min">8</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="customer">
+            <constraint name="Valid" />
+        </property>
+        <property name="firstName">
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="lastName">
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+        </property>
+
+        <property name="invoiceAddress">
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Valid" />
+        </property>
+        <property name="deliveryAddress">
+            <constraint name="Valid" />
+        </property>
+
+        <property name="currency">
+            <constraint name="NotNull" />
+        </property>
+        <property name="items">
+            <constraint name="Count">
+                <option name="min">1</option>
+                <option name="groups">
+                    <value>Cart</value>
+                    <value>Order</value>
+                </option>
+            </constraint>
+            <constraint name="Valid" />
+        </property>
+        <property name="payments">
+            <constraint name="Valid" />
+        </property>
+        <property name="shipments">
+            <constraint name="Valid" />
+        </property>
+
+        <property name="state">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Order\Model\OrderStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="paymentState">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="shipmentState">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Model\ShipmentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\AbstractAdjustment">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderAdjustment">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItem">
+        <!-- TODO flat adjustment can\'t be applied to an item with children -->
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
+    </class>
+
+</constraint-mapping>

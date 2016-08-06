@@ -3,23 +3,17 @@
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Address\Model\CountryInterface;
-use Ekyna\Component\Commerce\Address\Model\StateInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+use Ekyna\Component\Commerce\Common\Model\StateInterface;
 
 /**
  * Interface TaxInterface
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TaxInterface
+interface TaxInterface extends EntityInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the name.
      *
@@ -121,7 +115,7 @@ interface TaxInterface
      * Adds the tax rule.
      *
      * @param TaxRuleInterface $taxRule
-     * @return $this|TaxRuleInterface
+     * @return $this|TaxInterface
      */
     public function addTaxRule(TaxRuleInterface $taxRule);
 
@@ -129,15 +123,15 @@ interface TaxInterface
      * Removes the tax rule.
      *
      * @param TaxRuleInterface $taxRule
-     * @return $this|TaxRuleInterface
+     * @return $this|TaxInterface
      */
     public function removeTaxRule(TaxRuleInterface $taxRule);
 
     /**
      * Sets the tax rules.
      *
-     * @param ArrayCollection|TaxInterface[] $taxRules
-     * @return $this|TaxRuleInterface
+     * @param ArrayCollection|TaxRuleInterface[] $taxRules
+     * @return $this|TaxInterface
      */
     public function setTaxRules(ArrayCollection $taxRules);
 }

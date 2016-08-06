@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 
@@ -11,7 +12,7 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderItemInterface
+interface OrderItemInterface extends EntityInterface
 {
     /**
      * Returns the order.

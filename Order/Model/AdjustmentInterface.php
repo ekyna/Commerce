@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Order\Model;
 
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+
 /**
  * Interface AdjustmentInterface
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AdjustmentInterface
+interface AdjustmentInterface extends EntityInterface
 {
     const MODE_FLAT    = 'flat';
     const MODE_PERCENT = 'percent';

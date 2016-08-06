@@ -2,23 +2,17 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Pricing\Model\CurrencyInterface;
 
 /**
  * Interface PaymentInterface
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface PaymentInterface
+interface PaymentInterface extends EntityInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the number.
      *

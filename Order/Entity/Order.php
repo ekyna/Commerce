@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderAddressInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderAdjustmentInterface;
@@ -11,7 +12,6 @@ use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Pricing\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 
@@ -406,7 +406,7 @@ class Order implements OrderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setState($state)
     {
@@ -416,7 +416,7 @@ class Order implements OrderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getState()
     {
@@ -424,7 +424,7 @@ class Order implements OrderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setPaymentState($paymentState)
     {
@@ -434,7 +434,7 @@ class Order implements OrderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPaymentState()
     {
@@ -442,7 +442,7 @@ class Order implements OrderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setShipmentState($shipmentState)
     {
@@ -452,7 +452,7 @@ class Order implements OrderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getShipmentState()
     {

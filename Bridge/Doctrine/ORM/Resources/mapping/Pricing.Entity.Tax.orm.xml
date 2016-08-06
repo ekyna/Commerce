@@ -24,7 +24,7 @@
         <field name="rate" column="rate" type="decimal" precision="5" scale="3"/>
         <field name="postalCodeMatch" column="postal_code_match" type="string" length="128"/>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Address\Entity\Country" field="country">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="country">
             <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 

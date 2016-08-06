@@ -2,6 +2,13 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection;
 
+use Ekyna\Component\Commerce\Customer;
+use Ekyna\Component\Commerce\Order;
+use Ekyna\Component\Commerce\Payment;
+use Ekyna\Component\Commerce\Pricing;
+use Ekyna\Component\Commerce\Product;
+use Ekyna\Component\Commerce\Shipment;
+
 /**
  * Class DoctrineBundleMapping
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection
@@ -33,27 +40,31 @@ class DoctrineBundleMapping
     static function getDefaultImplementations()
     {
         return [
-            'Ekyna\Component\Commerce\Customer\Model\CustomerInterface' =>
-                'Ekyna\Component\Commerce\Customer\Entity\Customer',
-            'Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface' =>
-                'Ekyna\Component\Commerce\Customer\Entity\CustomerAddress',
+            Customer\Model\CustomerInterface::class        => Customer\Entity\Customer::class,
+            Customer\Model\CustomerAddressInterface::class => Customer\Entity\CustomerAddress::class,
 
-            'Ekyna\Component\Commerce\Order\Model\OrderInterface' =>
-                'Ekyna\Component\Commerce\Order\Entity\Order',
-            'Ekyna\Component\Commerce\Order\Model\OrderAddressInterface' =>
-                'Ekyna\Component\Commerce\Order\Entity\OrderAddress',
+            Order\Model\OrderInterface::class              => Order\Entity\Order::class,
+            Order\Model\OrderAddressInterface::class       => Order\Entity\OrderAddress::class,
 
-            'Ekyna\Component\Commerce\Payment\Model\PaymentInterface' =>
-                'Ekyna\Component\Commerce\Payment\Entity\Payment',
-            'Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface' =>
-                'Ekyna\Component\Commerce\Payment\Entity\PaymentMethod',
+            Payment\Model\PaymentInterface::class          => Payment\Entity\Payment::class,
+            Payment\Model\PaymentMethodInterface::class    => Payment\Entity\PaymentMethod::class,
 
-            'Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface' =>
-                'Ekyna\Component\Commerce\Shipment\Entity\Shipment',
-            'Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface' =>
-                'Ekyna\Component\Commerce\Shipment\Entity\ShipmentItem',
-            'Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface' =>
-                'Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod',
+            Pricing\Model\TaxGroupInterface::class         => Pricing\Entity\TaxGroup::class,
+
+            Product\Model\AttributeGroupInterface::class   => Product\Entity\AttributeGroup::class,
+            Product\Model\AttributeInterface::class        => Product\Entity\Attribute::class,
+            Product\Model\AttributeSetInterface::class     => Product\Entity\AttributeSet::class,
+            Product\Model\AttributeSlotInterface::class    => Product\Entity\AttributeSlot::class,
+            Product\Model\BundleChoiceInterface::class     => Product\Entity\BundleChoice::class,
+            Product\Model\BundleChoiceRuleInterface::class => Product\Entity\BundleChoiceRule::class,
+            Product\Model\BundleSlotInterface::class       => Product\Entity\BundleSlot::class,
+            Product\Model\OptionGroupInterface::class      => Product\Entity\OptionGroup::class,
+            Product\Model\OptionInterface::class           => Product\Entity\Option::class,
+            Product\Model\ProductInterface::class          => Product\Entity\Product::class,
+
+            Shipment\Model\ShipmentInterface::class        => Shipment\Entity\Shipment::class,
+            Shipment\Model\ShipmentItemInterface::class    => Shipment\Entity\ShipmentItem::class,
+            Shipment\Model\ShipmentMethodInterface::class  => Shipment\Entity\ShipmentMethod::class,
         ];
     }
 }

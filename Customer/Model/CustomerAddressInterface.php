@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\Model;
 
-use Ekyna\Component\Commerce\Address\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 
 /**
  * Interface CustomerAddressInterface
@@ -11,13 +11,6 @@ use Ekyna\Component\Commerce\Address\Model\AddressInterface;
  */
 interface CustomerAddressInterface extends AddressInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the customer.
      *

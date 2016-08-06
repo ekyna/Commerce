@@ -75,6 +75,16 @@ class Customer implements CustomerInterface
      */
     protected $priceLists;
 
+    /**
+     * @var \DateTime
+     */
+    protected $createdAt;
+
+    /**
+     * @var \DateTime
+     */
+    protected $updatedAt;
+
 
     /**
      * Constructor.
@@ -94,11 +104,14 @@ class Customer implements CustomerInterface
      */
     public function __toString()
     {
-        if (0 < strlen($this->company)) {
-            return sprintf('%s %s %s', '[' . $this->company . '] ', $this->firstName, $this->lastName);
+        $sign = '';
+        if ($this->hasParent()) {
+            $sign = '&loz; ';
+        } elseif ($this->hasChildren()) {
+            $sign = '&diams; ';
         }
 
-        return sprintf('%s %s', $this->firstName, $this->lastName);
+        return sprintf('%s%s %s', $sign, $this->firstName, $this->lastName);
     }
 
     /**
@@ -218,6 +231,14 @@ class Customer implements CustomerInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function hasParent()
+    {
+        return null !== $this->parent;
+    }
+
+    /**
      *  @inheritdoc
      */
     public function getParent()
@@ -230,7 +251,17 @@ class Customer implements CustomerInterface
      */
     public function setParent(CustomerInterface $parent = null)
     {
-        $this->parent = $parent;
+        if ($parent !== $this->parent) {
+            if (null !== $this->parent) {
+                /** @noinspection PhpInternalEntityUsedInspection */
+                $this->parent->removeChild($this);
+            }
+            if (null !== $parent) {
+                /** @noinspection PhpInternalEntityUsedInspection */
+                $parent->addChild($this);
+            }
+            $this->parent = $parent;
+        }
 
         return $this;
     }
@@ -273,6 +304,14 @@ class Customer implements CustomerInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasChildren()
+    {
+        return 0 < $this->children->count();
     }
 
     /**
@@ -446,6 +485,42 @@ class Customer implements CustomerInterface
             $this->addPriceList($priceList);
         }
         $this->priceLists = $priceLists;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCreatedAt(\DateTime $createdAt)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setUpdatedAt(\DateTime $updatedAt = null)
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

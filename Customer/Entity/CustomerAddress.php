@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
-use Ekyna\Component\Commerce\Address\Entity\AbstractAddress;
+use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 

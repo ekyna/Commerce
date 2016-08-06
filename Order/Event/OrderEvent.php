@@ -4,14 +4,13 @@ namespace Ekyna\Component\Commerce\Order\Event;
 
 use Ekyna\Component\Commerce\Order\Model\OrderEventInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Class OrderEvent
  * @package Ekyna\Component\Commerce\Order\Event
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderEvent extends Event implements OrderEventInterface
+class OrderEvent implements OrderEventInterface
 {
     /**
      * @var OrderInterface

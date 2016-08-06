@@ -10,13 +10,6 @@ namespace Ekyna\Component\Commerce\Order\Model;
 interface OrderItemAdjustmentInterface extends AdjustmentInterface
 {
     /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
-    /**
      * Returns the order item.
      *
      * @return OrderItemInterface

@@ -4,8 +4,10 @@ namespace Ekyna\Component\Commerce\Install;
 
 use Doctrine\Common\Persistence\ObjectManager;
 
-use Ekyna\Component\Commerce\Address\Entity\Country;
-use Ekyna\Component\Commerce\Pricing\Entity\Currency;
+use Ekyna\Component\Commerce\Common\Entity\Country;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Entity\Currency;
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Symfony\Component\Intl\Intl;
 
 /**
@@ -81,6 +83,7 @@ class Installer
         $countryNames = Intl::getRegionBundle()->getCountryNames();
         asort($countryNames);
 
+        // TODO class parameter
         $this->generate(Country::class, $countryNames, $codes);
     }
 
@@ -100,6 +103,7 @@ class Installer
         $currencyNames = Intl::getCurrencyBundle()->getCurrencyNames();
         asort($currencyNames);
 
+        // TODO class parameter
         $this->generate(Currency::class, $currencyNames, $codes);
     }
 
@@ -121,7 +125,7 @@ class Installer
         foreach ($names as $code => $name) {
             $result = 'already exists';
             if (null === $repository->findOneBy(['code' => $code])) {
-                /** @var Country|Currency $entity */
+                /** @var CountryInterface|CurrencyInterface $entity */
                 $entity = new $class();
                 $entity
                     ->setName($name)

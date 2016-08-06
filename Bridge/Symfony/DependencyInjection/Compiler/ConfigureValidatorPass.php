@@ -24,8 +24,23 @@ class ConfigureValidatorPass implements CompilerPassInterface
 
         $validatorBuilder = $container->getDefinition('validator.builder');
 
-        $validatorBuilder->addMethodCall('addXmlMapping', [
-            realpath(__DIR__ . '/../../Resources/validation.xml'),
-        ]);
+        // TODO
+        $paths = [];
+        $names = [
+            //'cart',
+            'common',
+            'customer',
+            'order',
+            //'payment',
+            'pricing',
+            'product',
+            //'quote',
+            //'shipment',
+        ];
+        foreach ($names as $name) {
+            $paths[] = realpath(__DIR__ . sprintf('/../../Resources/validation/%s.xml', $name));
+        }
+
+        $validatorBuilder->addMethodCall('addXmlMappings', [$paths]);
     }
 }

@@ -39,7 +39,7 @@ class TaxResolverTest extends OrmTestCase
         $subject = $this->find('subject', 1); // Regular tax group
         /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerInterface $customer */
         $customer = $this->find('customer', 1); // Final customers
-        /** @var \Ekyna\Component\Commerce\Address\Model\CountryInterface $country */
+        /** @var \Ekyna\Component\Commerce\Common\Model\CountryInterface $country */
         $country = $this->find('country', 1); // FR
         $address = $this->createAddress($country);
 
@@ -125,7 +125,7 @@ class TaxResolverTest extends OrmTestCase
         $resolver = $this->createTaxResolver(TaxResolver::BY_ORIGIN);
 
         foreach ($cases as $name => $case) {
-            /** @var \Ekyna\Component\Commerce\Address\Model\CountryInterface $country */
+            /** @var \Ekyna\Component\Commerce\Common\Model\CountryInterface $country */
             $country = $this->find('country', $case['origin_country_id']);
             $originAddress = $this->createAddress($country);
             $resolver->setOriginAddress($originAddress);
@@ -136,7 +136,7 @@ class TaxResolverTest extends OrmTestCase
 
             $address = null;
             if (array_key_exists('address_country_id', $case)) {
-                /** @var \Ekyna\Component\Commerce\Address\Model\CountryInterface $country */
+                /** @var \Ekyna\Component\Commerce\Common\Model\CountryInterface $country */
                 $country = $this->find('country', $case['address_country_id']);
                 $address = $this->createAddress($country);
             }
@@ -207,7 +207,7 @@ class TaxResolverTest extends OrmTestCase
             $taxGroup = $this->find('taxGroup', $case['tax_group_id']);
             $customerGroups = [$this->find('customerGroup', $case['customer_group_id'])];
 
-            /** @var \Ekyna\Component\Commerce\Address\Model\CountryInterface $country */
+            /** @var \Ekyna\Component\Commerce\Common\Model\CountryInterface $country */
             $country = $this->find('country', $case['address_country_id']);
             $address = $this->createAddress($country);
 
@@ -235,9 +235,9 @@ class TaxResolverTest extends OrmTestCase
     /**
      * Create an address mock.
      *
-     * @param \Ekyna\Component\Commerce\Address\Model\CountryInterface $country
+     * @param \Ekyna\Component\Commerce\Common\Model\CountryInterface $country
      *
-     * @return \Ekyna\Component\Commerce\Address\Model\AddressInterface
+     * @return \Ekyna\Component\Commerce\Common\Model\AddressInterface
      */
     private function createAddress($country)
     {

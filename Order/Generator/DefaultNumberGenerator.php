@@ -20,7 +20,7 @@ class DefaultNumberNumberGenerator implements NumberGeneratorInterface
             return $this;
         }
 
-        // TODO
+        // TODO read last number from a file
 
         return $this;
     }

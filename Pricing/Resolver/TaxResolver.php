@@ -2,8 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Pricing\Resolver;
 
-use Ekyna\Component\Commerce\Address\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
@@ -32,7 +33,7 @@ class TaxResolver implements TaxResolverInterface
 
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public static function getAvailableModes()
     {
@@ -54,19 +55,19 @@ class TaxResolver implements TaxResolverInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function setMode($mode)
     {
         if (!in_array($mode, static::getAvailableModes(), true)) {
-            throw new \InvalidArgumentException("Unexpected mode '{$mode}'.");
+            throw new InvalidArgumentException("Unexpected mode '{$mode}'.");
         }
 
         $this->mode = $mode;
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function setOriginAddress(AddressInterface $address)
     {
@@ -74,7 +75,7 @@ class TaxResolver implements TaxResolverInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getApplicableTaxesBySubjectAndCustomer(
         SubjectInterface $subject,
@@ -89,7 +90,7 @@ class TaxResolver implements TaxResolverInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getApplicableTaxesByTaxGroupAndCustomerGroups(
         TaxGroupInterface $taxGroup,
@@ -102,7 +103,7 @@ class TaxResolver implements TaxResolverInterface
             }
             $targetAddress = $this->originAddress;
         } else if (null === $address) {
-            throw new \InvalidArgumentException('Expected \Ekyna\Component\Commerce\Address\Model\AddressInterface');
+            throw new InvalidArgumentException('Expected ' . AddressInterface::class);
         } else {
             $targetAddress = $address;
         }

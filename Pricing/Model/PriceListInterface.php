@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 
@@ -11,15 +12,8 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface PriceListInterface
+interface PriceListInterface extends EntityInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the name.
      *

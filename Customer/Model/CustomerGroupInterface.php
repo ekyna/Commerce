@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Customer\Model;
 
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+
 /**
  * Interface GroupInterface
  * @package Ekyna\Component\Commerce\Customer\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CustomerGroupInterface
+interface CustomerGroupInterface extends EntityInterface
 {
     /**
      * Returns the name.

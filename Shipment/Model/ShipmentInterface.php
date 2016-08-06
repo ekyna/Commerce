@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
 /**
@@ -10,15 +11,8 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentInterface
+interface ShipmentInterface extends EntityInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the order.
      *

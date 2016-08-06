@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Tools\ResolveTargetEntityListener;
 use Doctrine\ORM\Tools\SchemaTool;
 use Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection\DoctrineBundleMapping;
-use Ekyna\Component\Commerce\Bridge\Doctrine\Listener\LoadMetadataSubscriber;
+use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener\LoadMetadataSubscriber;
 
 /**
  * Class OrmTestCase
@@ -27,9 +27,9 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
      * @var array
      */
     protected static $_aliases = [
-        'country'             => 'Ekyna\Component\Commerce\Address\Entity\Country',
+        'country'             => 'Ekyna\Component\Commerce\Common\Entity\Country',
+        'currency'            => 'Ekyna\Component\Commerce\Common\Entity\Currency',
 
-        'currency'            => 'Ekyna\Component\Commerce\Pricing\Entity\Currency',
         'priceList'           => 'Ekyna\Component\Commerce\Pricing\Entity\PriceList',
         'tax'                 => 'Ekyna\Component\Commerce\Pricing\Entity\Tax',
         'taxGroup'            => 'Ekyna\Component\Commerce\Pricing\Entity\TaxGroup',

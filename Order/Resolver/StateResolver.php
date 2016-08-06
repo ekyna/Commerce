@@ -12,7 +12,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 class StateResolver implements StateResolverInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function resolve(OrderInterface $order)
     {

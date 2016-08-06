@@ -1,0 +1,20 @@
+<?php
+
+namespace Ekyna\Component\Commerce\Customer\Event;
+
+/**
+ * Class CustomerEvents
+ * @package Ekyna\Component\Commerce\Customer\Event
+ * @author  Etienne Dauvergne <contact@ekyna.com>
+ */
+final class CustomerEvents
+{
+    const PRE_CREATE     = 'ekyna_commerce.customer.pre_create';
+    const POST_CREATE    = 'ekyna_commerce.customer.post_create';
+
+    const PRE_UPDATE     = 'ekyna_commerce.customer.pre_update';
+    const POST_UPDATE    = 'ekyna_commerce.customer.post_update';
+
+    const PRE_DELETE     = 'ekyna_commerce.customer.pre_delete';
+    const POST_DELETE    = 'ekyna_commerce.customer.post_delete';
+}

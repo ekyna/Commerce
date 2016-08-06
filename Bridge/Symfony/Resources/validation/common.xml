@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">
+        <property name="firstName">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="lastName">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="street">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">128</option>
+            </constraint>
+        </property>
+        <property name="postalCode">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="city">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="country">
+            <constraint name="NotNull"/>
+        </property>
+        <!--<property name="state">
+            <constraint name="NotNull"/>
+        </property>-->
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\Country">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="code">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">4</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\Currency">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="code">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">4</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\State">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="country">
+            <constraint name="NotNull" />
+        </property>
+    </class>
+
+</constraint-mapping>

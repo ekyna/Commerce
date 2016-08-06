@@ -3,6 +3,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 
 /**
@@ -10,15 +11,8 @@ use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentItemInterface
+interface ShipmentItemInterface extends EntityInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the shipment.
      *

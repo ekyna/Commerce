@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Ekyna\Component\Commerce\Address\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
@@ -22,7 +22,7 @@ class TaxRuleRepository extends EntityRepository implements TaxRuleRepositoryInt
 
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function findByTaxGroupAndCustomerGroups(
         TaxGroupInterface $taxGroup,

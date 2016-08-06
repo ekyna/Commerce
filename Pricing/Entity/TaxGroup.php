@@ -152,7 +152,11 @@ class TaxGroup implements TaxGroupInterface
      */
     public function setTaxRules(ArrayCollection $taxRules)
     {
-        $this->taxRules = $taxRules;
+        /** @var \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface $taxRule */
+        foreach ($taxRules as $taxRule) {
+            $taxRule->addTaxGroup($this);
+        }
+
         return $this;
     }
 }

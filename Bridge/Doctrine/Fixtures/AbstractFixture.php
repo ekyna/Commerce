@@ -90,7 +90,7 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
                 $builtValue = $this->buildAssociationValue($metadata, $propertyPath, $value);
 
             } else {
-                throw new \Exception("Unexpected property path '{$propertyPath}'.");
+                throw new \Exception("Unexpected property path '$propertyPath'.");
             }
 
             $this->accessor->setValue($entity, $propertyPath, $builtValue);
@@ -143,7 +143,7 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
                 return (string)$value;
         }
 
-        throw new \Exception("Unsupported field type '{$type}' for path '{$propertyPath}'.");
+        throw new \Exception("Unsupported field type '$type' for path '$propertyPath'.");
     }
 
     /**
@@ -169,7 +169,7 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
             } elseif (is_array($value)) {
                 return $this->buildEntity($childMetadata, $value);
             }
-            throw new \Exception("Unexpected value for single association '{$propertyPath}'.");
+            throw new \Exception("Unexpected value for single association '$propertyPath'.");
 
         // Collection association
         } elseif ($metadata->isCollectionValuedAssociation($propertyPath)) {
@@ -183,11 +183,11 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
                 } elseif (is_array($value)) {
                     array_push($builtValue, $this->buildEntity($childMetadata, $childData));
                 } else {
-                    throw new \Exception("Unexpected value for association '{$propertyPath}'.");
+                    throw new \Exception("Unexpected value for association '$propertyPath'.");
                 }
             }
             return $builtValue;
         }
-        throw new \Exception("Unexpected association path '{$propertyPath}'.");
+        throw new \Exception("Unexpected association path '$propertyPath'.");
     }
 }

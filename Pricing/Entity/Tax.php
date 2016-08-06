@@ -3,8 +3,8 @@
 namespace Ekyna\Component\Commerce\Pricing\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Address\Model\CountryInterface;
-use Ekyna\Component\Commerce\Address\Model\StateInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Model\StateInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 
@@ -58,6 +58,7 @@ class Tax implements TaxInterface
     {
         $this->rate = 0;
         $this->postalCodeMatch = '*';
+        $this->taxRules = new ArrayCollection();
     }
 
     /**
@@ -92,6 +93,7 @@ class Tax implements TaxInterface
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -109,6 +111,7 @@ class Tax implements TaxInterface
     public function setRate($rate)
     {
         $this->rate = $rate;
+
         return $this;
     }
 
@@ -126,6 +129,7 @@ class Tax implements TaxInterface
     public function setCountry(CountryInterface $country)
     {
         $this->country = $country;
+
         return $this;
     }
 
@@ -143,6 +147,7 @@ class Tax implements TaxInterface
     public function setState(StateInterface $state = null)
     {
         $this->state = $state;
+
         return $this;
     }
 
@@ -160,6 +165,7 @@ class Tax implements TaxInterface
     public function setPostalCodeMatch($postalCodeMatch)
     {
         $this->postalCodeMatch = $postalCodeMatch;
+
         return $this;
     }
 
@@ -196,6 +202,7 @@ class Tax implements TaxInterface
         if (!$this->hasTaxRule($taxRule)) {
             $this->taxRules->add($taxRule);
         }
+
         return $this;
     }
 
@@ -207,6 +214,7 @@ class Tax implements TaxInterface
         if ($this->hasTaxRule($taxRule)) {
             $this->taxRules->removeElement($taxRule);
         }
+
         return $this;
     }
 
@@ -215,7 +223,11 @@ class Tax implements TaxInterface
      */
     public function setTaxRules(ArrayCollection $taxRules)
     {
-        $this->taxRules = $taxRules;
+        /** @var \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface $taxRule */
+        foreach ($taxRules as $taxRule) {
+            $taxRule->addTax($this);
+        }
+
         return $this;
     }
 }

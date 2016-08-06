@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
 
 /**
@@ -10,7 +11,7 @@ use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
  * @package Ekyna\Component\Commerce\Customer\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CustomerInterface
+interface CustomerInterface extends EntityInterface
 {
     /**
      * Returns the company.
@@ -104,6 +105,13 @@ interface CustomerInterface
     public function setMobile($mobile);
 
     /**
+     * Returns whether the customer has a parent or not.
+     *
+     * @return bool
+     */
+    public function hasParent();
+
+    /**
      * Returns the parent.
      *
      * @return CustomerInterface
@@ -141,6 +149,7 @@ interface CustomerInterface
      * @param CustomerInterface $child
      *
      * @return $this|CustomerInterface
+     * @internal
      */
     public function addChild(CustomerInterface $child);
 
@@ -150,8 +159,16 @@ interface CustomerInterface
      * @param CustomerInterface $child
      *
      * @return $this|CustomerInterface
+     * @internal
      */
     public function removeChild(CustomerInterface $child);
+
+    /**
+     * Returns whether the customer has children or not.
+     *
+     * @return bool
+     */
+    public function hasChildren();
 
     /**
      * Sets the children.
@@ -159,6 +176,7 @@ interface CustomerInterface
      * @param ArrayCollection $children
      *
      * @return $this|CustomerInterface
+     * @internal
      */
     public function setChildren(ArrayCollection $children);
 
@@ -278,4 +296,36 @@ interface CustomerInterface
      * @return $this|CustomerInterface
      */
     public function setPriceLists(ArrayCollection $priceLists);
+
+    /**
+     * Returns the "created at" datetime.
+     *
+     * @return \DateTime
+     */
+    public function getCreatedAt();
+
+    /**
+     * Sets the "created at" datetime.
+     *
+     * @param \DateTime $createdAt
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setCreatedAt(\DateTime $createdAt);
+
+    /**
+     * Returns the "updated at" datetime.
+     *
+     * @return \DateTime
+     */
+    public function getUpdatedAt();
+
+    /**
+     * Sets the "updated at" datetime.
+     *
+     * @param \DateTime $updatedAt
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setUpdatedAt(\DateTime $updatedAt = null);
 }

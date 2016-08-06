@@ -7,15 +7,8 @@ namespace Ekyna\Component\Commerce\Order\Model;
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderAdjustmentInterface
+interface OrderAdjustmentInterface extends AdjustmentInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the order.
      *

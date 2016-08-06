@@ -13,7 +13,7 @@ class CurrencyData extends AbstractFixture
     {
         return [
             'filename' => 'currency.yml',
-            'class'    => 'Ekyna\Component\Commerce\Pricing\Entity\Currency',
+            'class'    => 'Ekyna\Component\Commerce\Common\Entity\Currency',
         ];
     }
 

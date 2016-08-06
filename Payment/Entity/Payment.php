@@ -2,10 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
-use Ekyna\Component\Commerce\Pricing\Model\CurrencyInterface;
 
 /**
  * Class Payment

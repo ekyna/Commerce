@@ -3,9 +3,10 @@
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
-use Ekyna\Component\Commerce\Pricing\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
@@ -13,15 +14,8 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderInterface
+interface OrderInterface extends EntityInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the key.
      *
