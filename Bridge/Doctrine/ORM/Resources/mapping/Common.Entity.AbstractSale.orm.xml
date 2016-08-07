@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">
+
+        <field name="company" column="company" type="string" length="64" nullable="true"/>
+        <field name="firstName" column="first_name" type="string" length="64"/>
+        <field name="lastName" column="last_name" type="string" length="64"/>
+        <field name="email" column="email" type="string" length="255"/>
+        <field name="sameAddress" column="same_address" type="boolean" />
+
+        <field name="weightTotal" column="weight_total" type="integer"/>
+        <field name="netTotal" column="net_total" type="decimal" precision="12" scale="5"/>
+        <field name="adjustmentTotal" column="adjustment_total" type="decimal" precision="10" scale="5"/>
+        <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
+
+        <field name="createdAt" column="created_at" type="datetime" />
+        <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="customer">
+            <join-column name="customer_id" referenced-column-name="id" on-delete="SET NULL" nullable="true" />
+        </many-to-one>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
+            <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
+        </many-to-one>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

@@ -1,10 +1,10 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Order\Model;
+namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
  * Class AdjustmentModes
- * @package Ekyna\Component\Commerce\Order\Model
+ * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 final class AdjustmentModes

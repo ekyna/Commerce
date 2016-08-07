@@ -2,8 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Product\EventListener;
 
-use Ekyna\Component\Commerce\Common\Adapter\PersistenceAwareInterface;
-use Ekyna\Component\Commerce\Common\Adapter\PersistenceAwareTrait;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Product\Builder\VariantBuilderInterface;
@@ -18,8 +16,6 @@ use Ekyna\Component\Commerce\Product\Model\ProductTypes;
  */
 class ProductListener
 {
-    use PersistenceAwareTrait;
-
     /**
      * @var VariantBuilderInterface
      */

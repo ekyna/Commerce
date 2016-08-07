@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment;
 use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 
@@ -13,23 +14,10 @@ use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 class OrderItemAdjustment extends AbstractAdjustment implements OrderItemAdjustmentInterface
 {
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var OrderItemInterface
      */
     protected $item;
 
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritdoc

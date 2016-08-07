@@ -2,10 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Tests\Order\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderAdjustment;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
-use Ekyna\Component\Commerce\Order\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
 /**
@@ -70,7 +70,7 @@ class OrderTest extends \PHPUnit_Framework_TestCase
         $adjustment
             ->setDesignation('Test adjustment 2')
             ->setAmount(5)
-            ->setMode(AdjustmentInterface::MODE_PERCENT);
+            ->setMode(AdjustmentModes::MODE_PERCENT);
         return $adjustment;
     }
 

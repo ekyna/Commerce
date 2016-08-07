@@ -1,30 +1,42 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Order\Entity;
+namespace Ekyna\Component\Commerce\Common\Entity;
 
-use Ekyna\Component\Commerce\Order\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 
 /**
  * Class AbstractAdjustment
- * @package Ekyna\Component\Commerce\Order\Entity
+ * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 abstract class AbstractAdjustment implements AdjustmentInterface
 {
+    /**
+     * @var int
+     */
+    protected $id;
+
     /**
      * @var string
      */
     protected $designation;
 
     /**
-     * @var float
+     * @var string
      */
-    protected $amount;
+    protected $type;
 
     /**
      * @var string
      */
     protected $mode;
+
+    /**
+     * @var float
+     */
+    protected $amount;
 
     /**
      * @var int
@@ -37,8 +49,17 @@ abstract class AbstractAdjustment implements AdjustmentInterface
      */
     public function __construct()
     {
-        $this->mode = AdjustmentInterface::MODE_FLAT;
+        $this->type = AdjustmentTypes::TYPE_DISCOUNT;
+        $this->mode = AdjustmentModes::MODE_FLAT;
         $this->position = 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -61,17 +82,18 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getAmount()
+    public function getType()
     {
-        return $this->amount;
+        return $this->type;
     }
 
     /**
      * @inheritdoc
      */
-    public function setAmount($amount)
+    public function setType($type)
     {
-        $this->amount = $amount;
+        $this->type = $type;
+
         return $this;
     }
 
@@ -89,6 +111,23 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     public function setMode($mode)
     {
         $this->mode = $mode;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAmount()
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAmount($amount)
+    {
+        $this->amount = $amount;
         return $this;
     }
 

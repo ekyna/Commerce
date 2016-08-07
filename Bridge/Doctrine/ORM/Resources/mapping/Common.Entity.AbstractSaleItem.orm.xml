@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem">
+
+        <!--<embedded name="subjectIdentity" class="Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity" column-prefix="subject_" />-->
+
+        <field name="designation" column="designation" type="string" length="255" nullable="false"/>
+        <field name="reference" column="reference" type="string" length="16" nullable="false"/>
+
+        <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
+        <!--<field name="taxName" column="tax_name" type="string" length="16" nullable="true"/>
+        <field name="taxRate" column="tax_rate" type="decimal" precision="5" scale="3" nullable="true"/>-->
+        <field name="weight" column="weight" type="integer" nullable="true"/>
+        <field name="quantity" column="quantity" type="integer" nullable="false"/>
+        <field name="position" column="position" type="integer" nullable="false"/>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

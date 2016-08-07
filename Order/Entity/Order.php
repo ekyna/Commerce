@@ -3,8 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Order\Model\OrderAddressInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -20,13 +19,8 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Order implements OrderInterface
+class Order extends AbstractSale implements OrderInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
     /**
      * @var string
      */
@@ -36,51 +30,6 @@ class Order implements OrderInterface
      * @var string
      */
     protected $number;
-
-    /**
-     * @var CustomerInterface
-     */
-    protected $customer;
-
-    /**
-     * @var string
-     */
-    protected $company;
-
-    /**
-     * @var string
-     */
-    protected $firstName;
-
-    /**
-     * @var string
-     */
-    protected $lastName;
-
-    /**
-     * @var string
-     */
-    protected $email;
-
-    /**
-     * @var OrderAddressInterface
-     */
-    protected $invoiceAddress;
-
-    /**
-     * @var OrderAddressInterface
-     */
-    protected $deliveryAddress;
-
-    /**
-     * @var bool
-     */
-    protected $sameAddress;
-
-    /**
-     * @var CurrencyInterface
-     */
-    protected $currency;
 
     /**
      * @var string
@@ -100,42 +49,7 @@ class Order implements OrderInterface
     /**
      * @var float
      */
-    protected $weightTotal;
-
-    /**
-     * @var float
-     */
-    protected $netTotal;
-
-    /**
-     * @var float
-     */
-    protected $taxTotal;
-
-    /**
-     * @var float
-     */
-    protected $adjustmentTotal;
-
-    /**
-     * @var float
-     */
-    protected $grandTotal;
-
-    /**
-     * @var float
-     */
     protected $paidTotal;
-
-    /**
-     * @var ArrayCollection|OrderItemInterface[]
-     */
-    protected $items;
-
-    /**
-     * @var ArrayCollection|OrderAdjustmentInterface[]
-     */
-    protected $adjustments;
 
     /**
      * @var ArrayCollection|PaymentInterface[]
@@ -150,16 +64,6 @@ class Order implements OrderInterface
     /**
      * @var \DateTime
      */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     */
-    protected $updatedAt;
-
-    /**
-     * @var \DateTime
-     */
     protected $completedAt;
 
 
@@ -168,21 +72,13 @@ class Order implements OrderInterface
      */
     public function __construct()
     {
-        $this->sameAddress = false;
+        parent::__construct();
 
         $this->state = OrderStates::STATE_NEW;
         $this->paymentState = PaymentStates::STATE_NEW;
         $this->shipmentState = ShipmentStates::STATE_PENDING;
 
-        $this->weightTotal = 0;
-        $this->netTotal = 0;
-        $this->taxTotal = 0;
-        $this->adjustmentTotal = 0;
-        $this->grandTotal = 0;
         $this->paidTotal = 0;
-
-        $this->items = new ArrayCollection();
-        $this->adjustments = new ArrayCollection();
 
         $this->payments = new ArrayCollection();
         $this->shipments = new ArrayCollection();
@@ -196,14 +92,6 @@ class Order implements OrderInterface
     public function __toString()
     {
         return $this->getNumber();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
-    {
-        return $this->id;
     }
 
     /**
@@ -245,104 +133,6 @@ class Order implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function getCustomer()
-    {
-        return $this->customer;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCustomer(CustomerInterface $customer)
-    {
-        $this->customer = $customer;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCompany()
-    {
-        return $this->company;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCompany($company)
-    {
-        $this->company = $company;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFirstName()
-    {
-        return $this->firstName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setFirstName($firstName)
-    {
-        $this->firstName = $firstName;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getLastName()
-    {
-        return $this->lastName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setLastName($lastName)
-    {
-        $this->lastName = $lastName;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setEmail($email)
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getInvoiceAddress()
-    {
-        return $this->invoiceAddress;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function setInvoiceAddress(OrderAddressInterface $invoiceAddress)
     {
         $this->invoiceAddress = $invoiceAddress;
@@ -353,54 +143,10 @@ class Order implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function getDeliveryAddress()
-    {
-        return $this->deliveryAddress;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function setDeliveryAddress(OrderAddressInterface $deliveryAddress = null)
     {
         // TODO remove from database if null ?
         $this->deliveryAddress = $deliveryAddress;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSameAddress()
-    {
-        return $this->sameAddress;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setSameAddress($sameAddress)
-    {
-        $this->sameAddress = (bool)$sameAddress;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCurrency()
-    {
-        return $this->currency;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCurrency(CurrencyInterface $currency)
-    {
-        $this->currency = $currency;
 
         return $this;
     }
@@ -462,96 +208,6 @@ class Order implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function getWeightTotal()
-    {
-        return $this->weightTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setWeightTotal($weightTotal)
-    {
-        $this->weightTotal = $weightTotal;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNetTotal()
-    {
-        return $this->netTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNetTotal($netTotal)
-    {
-        $this->netTotal = $netTotal;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxTotal()
-    {
-        return $this->taxTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxTotal($taxTotal)
-    {
-        $this->taxTotal = $taxTotal;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdjustmentTotal()
-    {
-        return $this->adjustmentTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setAdjustmentTotal($adjustmentTotal)
-    {
-        $this->adjustmentTotal = $adjustmentTotal;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getGrandTotal()
-    {
-        return $this->grandTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setGrandTotal($grandTotal)
-    {
-        $this->grandTotal = $grandTotal;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getPaidTotal()
     {
         return $this->paidTotal;
@@ -565,22 +221,6 @@ class Order implements OrderInterface
         $this->paidTotal = $paidTotal;
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasItems()
-    {
-        return 0 < $this->items->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getItems()
-    {
-        return $this->items;
     }
 
     /**
@@ -620,7 +260,7 @@ class Order implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function setItems(ArrayCollection $items)
+    /*public function setItems(ArrayCollection $items)
     {
         foreach ($this->items as $item) {
             $item->setOrder(null);
@@ -633,23 +273,7 @@ class Order implements OrderInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasAdjustments()
-    {
-        return 0 < $this->adjustments->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdjustments()
-    {
-        return $this->adjustments;
-    }
+    }*/
 
     /**
      * @inheritdoc
@@ -688,7 +312,7 @@ class Order implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function setAdjustments(ArrayCollection $adjustments)
+    /*public function setAdjustments(ArrayCollection $adjustments)
     {
         foreach ($this->adjustments as $adjustment) {
             $adjustment->setOrder(null);
@@ -701,7 +325,7 @@ class Order implements OrderInterface
         }
 
         return $this;
-    }
+    }*/
 
     /**
      * @inheritdoc
@@ -756,7 +380,7 @@ class Order implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function setPayments(ArrayCollection $payments)
+    /*public function setPayments(ArrayCollection $payments)
     {
         foreach ($this->payments as $payment) {
             $payment->setOrder(null);
@@ -769,7 +393,7 @@ class Order implements OrderInterface
         }
 
         return $this;
-    }
+    }*/
 
     /**
      * @inheritdoc
@@ -824,7 +448,7 @@ class Order implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function setShipments(ArrayCollection $shipments)
+    /*public function setShipments(ArrayCollection $shipments)
     {
         foreach ($this->shipments as $shipment) {
             $shipment->setOrder(null);
@@ -837,43 +461,7 @@ class Order implements OrderInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCreatedAt(\DateTime $createdAt)
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getUpdatedAt()
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setUpdatedAt(\DateTime $updatedAt = null)
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
+    }*/
 
     /**
      * @inheritdoc

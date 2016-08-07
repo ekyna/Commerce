@@ -8,29 +8,9 @@
     <entity name="Ekyna\Component\Commerce\Order\Entity\OrderItem"
             table="commerce_order_item">
 
-        <!--<indexes>
-            <index columns="name" name="idx_name" />
-        </indexes>
-
-        <unique-constraints>
-            <unique-constraint columns="name" name="unique_name" />
-        </unique-constraints>-->
-
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
-
-        <field name="designation" column="designation" type="string" length="255" nullable="false"/>
-        <field name="reference" column="reference" type="string" length="16" nullable="false"/>
-
-        <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
-        <field name="taxName" column="tax_name" type="string" length="16" nullable="true"/>
-        <field name="taxRate" column="tax_rate" type="decimal" precision="5" scale="3" nullable="true"/>
-        <field name="weight" column="weight" type="integer" nullable="true"/>
-        <field name="quantity" column="quantity" type="integer" nullable="false"/>
-        <field name="position" column="position" type="integer" nullable="false"/>
-
-        <embedded name="subjectIdentity" class="Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity" column-prefix="subject_" />
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem" field="children" mapped-by="parent" orphan-removal="true">
             <cascade>

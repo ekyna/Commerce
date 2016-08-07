@@ -1,19 +1,14 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Order\Model;
-
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
  * Interface AdjustmentInterface
- * @package Ekyna\Component\Commerce\Order\Model
+ * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 interface AdjustmentInterface extends EntityInterface
 {
-    const MODE_FLAT    = 'flat';
-    const MODE_PERCENT = 'percent';
-
     /**
      * Returns the designation.
      *
@@ -30,19 +25,19 @@ interface AdjustmentInterface extends EntityInterface
     public function setDesignation($designation);
 
     /**
-     * Returns the amount.
+     * Returns the type.
      *
-     * @return float
+     * @return string
      */
-    public function getAmount();
+    public function getType();
 
     /**
-     * Sets the amount.
+     * Sets the type.
      *
-     * @param float $amount
+     * @param string $type
      * @return $this|AdjustmentInterface
      */
-    public function setAmount($amount);
+    public function setType($type);
 
     /**
      * Returns the mode.
@@ -58,6 +53,21 @@ interface AdjustmentInterface extends EntityInterface
      * @return $this|AdjustmentInterface
      */
     public function setMode($mode);
+
+    /**
+     * Returns the amount.
+     *
+     * @return float
+     */
+    public function getAmount();
+
+    /**
+     * Sets the amount.
+     *
+     * @param float $amount
+     * @return $this|AdjustmentInterface
+     */
+    public function setAmount($amount);
 
     /**
      * Returns the position.

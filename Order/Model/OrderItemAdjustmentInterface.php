@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Order\Model;
 
+use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+
 /**
  * Interface OrderItemAdjustmentInterface
  * @package Ekyna\Component\Commerce\Order\Model
