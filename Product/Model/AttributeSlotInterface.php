@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Product\Model;
 
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface AttributeSlotInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AttributeSlotInterface extends EntityInterface
+interface AttributeSlotInterface extends ResourceInterface
 {
     /**
      * Returns the set.

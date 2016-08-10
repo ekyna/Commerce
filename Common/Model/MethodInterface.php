@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Resource\Model\ResourceInterface;
+
 /**
  * Interface MethodInterface
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface MethodInterface extends EntityInterface
+interface MethodInterface extends ResourceInterface
 {
     /**
      * Returns the name.

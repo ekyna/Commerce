@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Resource\Model\ResourceInterface;
+
 /**
  * Interface AddressInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AddressInterface extends EntityInterface
+interface AddressInterface extends ResourceInterface
 {
     /**
      * Returns the company.

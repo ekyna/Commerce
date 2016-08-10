@@ -9,6 +9,12 @@ namespace Ekyna\Component\Commerce\Order\Event;
  */
 final class OrderEvents
 {
+    // Persistence
+    const INSERT         = 'ekyna_commerce.order.insert';
+    const UPDATE         = 'ekyna_commerce.order.update';
+    const DELETE         = 'ekyna_commerce.order.delete';
+
+    // Domain
     const STATE_CHANGE   = 'ekyna_commerce.order.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.order.content_change';
 

@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Resource\Model\ResourceInterface;
+
 /**
  * Interface MessageInterface
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface MessageInterface extends EntityInterface
+interface MessageInterface extends ResourceInterface
 {
     /**
      * Returns the state.

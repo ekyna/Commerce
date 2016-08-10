@@ -9,6 +9,10 @@ namespace Ekyna\Component\Commerce\Product\Event;
  */
 final class ProductEvents
 {
+    const INSERT         = 'ekyna_commerce.product.insert';
+    const UPDATE         = 'ekyna_commerce.product.update';
+    const DELETE         = 'ekyna_commerce.product.delete';
+
     const PRE_CREATE     = 'ekyna_commerce.product.pre_create';
     const POST_CREATE    = 'ekyna_commerce.product.post_create';
 

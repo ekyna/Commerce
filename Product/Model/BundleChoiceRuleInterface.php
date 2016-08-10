@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Product\Model;
 
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface BundleChoiceRuleInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface BundleChoiceRuleInterface extends EntityInterface
+interface BundleChoiceRuleInterface extends ResourceInterface
 {
     /**
      * Returns the choice.

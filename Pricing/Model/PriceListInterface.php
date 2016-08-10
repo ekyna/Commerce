@@ -3,16 +3,16 @@
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface PriceListInterface
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface PriceListInterface extends EntityInterface
+interface PriceListInterface extends ResourceInterface
 {
     /**
      * Returns the name.

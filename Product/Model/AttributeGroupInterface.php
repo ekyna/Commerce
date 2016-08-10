@@ -3,14 +3,14 @@
 namespace Ekyna\Component\Commerce\Product\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface AttributeGroupInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AttributeGroupInterface extends EntityInterface
+interface AttributeGroupInterface extends ResourceInterface
 {
     /**
      * Returns the name.

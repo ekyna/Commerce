@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Product\Model;
 
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface AttributeInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AttributeInterface extends EntityInterface
+interface AttributeInterface extends ResourceInterface
 {
     /**
      * Returns the group.

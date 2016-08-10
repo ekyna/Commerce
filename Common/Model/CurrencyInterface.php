@@ -2,15 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface CurrencyInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
- * @todo move in common
  */
-interface CurrencyInterface extends EntityInterface
+interface CurrencyInterface extends ResourceInterface
 {
     /**
      * Returns the name.

@@ -3,15 +3,15 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface ShipmentItemInterface
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentItemInterface extends EntityInterface
+interface ShipmentItemInterface extends ResourceInterface
 {
     /**
      * Returns the shipment.

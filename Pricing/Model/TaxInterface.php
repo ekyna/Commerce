@@ -4,15 +4,15 @@ namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Common\Model\StateInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface TaxInterface
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TaxInterface extends EntityInterface
+interface TaxInterface extends ResourceInterface
 {
     /**
      * Returns the name.

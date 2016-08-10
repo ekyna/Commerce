@@ -3,15 +3,15 @@
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface CustomerInterface
  * @package Ekyna\Component\Commerce\Customer\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CustomerInterface extends EntityInterface
+interface CustomerInterface extends ResourceInterface
 {
     /**
      * Returns the company.

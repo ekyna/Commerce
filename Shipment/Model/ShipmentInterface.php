@@ -3,15 +3,15 @@
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface ShipmentInterface
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentInterface extends EntityInterface
+interface ShipmentInterface extends ResourceInterface
 {
     /**
      * Returns the order.

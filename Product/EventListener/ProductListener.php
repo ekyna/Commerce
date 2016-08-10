@@ -3,11 +3,9 @@
 namespace Ekyna\Component\Commerce\Product\EventListener;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Product\Builder\VariantBuilderInterface;
-use Ekyna\Component\Commerce\Product\Model\ProductEventInterface;
+use Ekyna\Component\Commerce\Product\EventListener\Handler;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
-use Ekyna\Component\Commerce\Product\Model\ProductTypes;
+use Ekyna\Component\Resource\Event\PersistenceEvent;
 
 /**
  * Class ProductListener
@@ -17,150 +15,92 @@ use Ekyna\Component\Commerce\Product\Model\ProductTypes;
 class ProductListener
 {
     /**
-     * @var VariantBuilderInterface
+     * @var Handler\HandlerFactory
      */
-    protected $variantBuilder;
+    private $factory;
 
 
     /**
-     * Constructor.
+     * Insert event handler.
      *
-     * @param VariantBuilderInterface $variantBuilder
+     * @param PersistenceEvent $event
      */
-    public function __construct(VariantBuilderInterface $variantBuilder)
+    public function onInsert(PersistenceEvent $event)
     {
-        $this->variantBuilder = $variantBuilder;
-    }
+        $product = $this->getProductFromEvent($event);
 
-    /**
-     * Pre create event handler.
-     *
-     * @param ProductEventInterface $event
-     */
-    public function onPreCreate(ProductEventInterface $event)
-    {
-        $product = $event->getProduct();
+        $handler = $this->getHandler($product);
 
-        $this->handleProduct($product);
+        $handler->handleInsert($event);
 
+
+        // TODO Timestampable behavior/listener
         $product
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
+        $event->persistAndRecompute($product);
     }
 
     /**
-     * Pre update event handler.
+     * Update event handler.
      *
-     * @param ProductEventInterface $event
+     * @param PersistenceEvent $event
      */
-    public function onPreUpdate(ProductEventInterface $event)
+    public function onUpdate(PersistenceEvent $event)
     {
-        $product = $event->getProduct();
+        $product = $this->getProductFromEvent($event);
 
-        $this->handleProduct($product);
+        $handler = $this->getHandler($product);
 
+        $handler->handleUpdate($event);
+
+
+        // TODO Timestampable behavior/listener
         $product->setUpdatedAt(new \DateTime());
+        $event->persistAndRecompute($product);
     }
 
     /**
-     * Pre delete event handler.
+     * Delete event handler.
      *
-     * @param ProductEventInterface $event
+     * @param PersistenceEvent $event
      */
-    public function onPreDelete(ProductEventInterface $event)
+    public function onDelete(PersistenceEvent $event)
     {
-
+        //$product = $this->getProductFromEvent($event);
     }
 
     /**
-     * Handles the product.
+     * Returns the product handler regarding to product type.
      *
      * @param ProductInterface $product
+     *
+     * @return Handler\HandlerInterface
      */
-    protected function handleProduct(ProductInterface $product)
+    protected function getHandler(ProductInterface $product)
     {
-        if (null === $type = $product->getType()) {
-            throw new RuntimeException("Product type must be set first.");
+        if (null === $this->factory) {
+            $this->factory = new Handler\HandlerFactory();
         }
 
-        switch ($product->getType()) {
-            case ProductTypes::TYPE_SIMPLE:
-                $this->handleSimple($product);
-                break;
-            case ProductTypes::TYPE_VARIABLE:
-                $this->handleVariable($product);
-                break;
-            case ProductTypes::TYPE_VARIANT:
-                $this->handleVariant($product);
-                break;
-            case ProductTypes::TYPE_BUNDLE:
-                $this->handleBundle($product);
-                break;
-            case ProductTypes::TYPE_CONFIGURABLE:
-                $this->handleConfigurable($product);
-                break;
-            default:
-                throw new InvalidArgumentException("Unexpected product type.");
-        }
+        return $this->factory->getHandler($product);
     }
 
     /**
-     * Handles the simple product.
+     * Returns the product from the event.
      *
-     * @param ProductInterface $simple
-     */
-    protected function handleSimple(ProductInterface $simple)
-    {
-
-    }
-
-    /**
-     * Handles the variable product.
+     * @param PersistenceEvent $event
      *
-     * @param ProductInterface $variable
+     * @return ProductInterface
      */
-    protected function handleVariable(ProductInterface $variable)
+    private function getProductFromEvent(PersistenceEvent $event)
     {
-        $this->variantBuilder->updateVariableMinPrice($variable);
-    }
+        $resource = $event->getResource();
 
-    /**
-     * Handles the variant product.
-     *
-     * @param ProductInterface $variant
-     */
-    protected function handleVariant(ProductInterface $variant)
-    {
-        if (0 === strlen($variant->getDesignation())) {
-            $this->variantBuilder->buildDesignation($variant);
+        if (!$resource instanceof ProductInterface) {
+            throw new InvalidArgumentException('Expected ProductInterface');
         }
 
-        if (null === $parent = $variant->getParent()) {
-            throw new RuntimeException("Variant's parent must be set first.");
-        }
-
-        $this->variantBuilder
-            ->inheritVariableTaxGroup($variant)
-            ->updateVariableMinPrice($parent);
-    }
-
-    /**
-     * Handles the bundle product.
-     *
-     * @param ProductInterface $bundle
-     */
-    protected function handleBundle(ProductInterface $bundle)
-    {
-
-    }
-
-    /**
-     * Handles the configurable product.
-     *
-     * @param ProductInterface $configurable
-     */
-    protected function handleConfigurable(ProductInterface $configurable)
-    {
-
+        return $resource;
     }
 }

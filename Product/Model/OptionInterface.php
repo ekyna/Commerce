@@ -2,15 +2,15 @@
 
 namespace Ekyna\Component\Commerce\Product\Model;
 
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface OptionInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OptionInterface extends EntityInterface
+interface OptionInterface extends ResourceInterface
 {
     /**
      * Returns the group.

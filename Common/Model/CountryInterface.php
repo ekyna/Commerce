@@ -3,13 +3,14 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface CountryInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CountryInterface extends EntityInterface
+interface CountryInterface extends ResourceInterface
 {
     /**
      * Returns the name.

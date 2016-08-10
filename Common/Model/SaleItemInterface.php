@@ -3,13 +3,14 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface SaleItemInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleItemInterface extends EntityInterface
+interface SaleItemInterface extends ResourceInterface
 {
     /**
      * Returns the parent item.

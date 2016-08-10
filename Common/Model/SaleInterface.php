@@ -4,13 +4,14 @@ namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface SaleInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleInterface extends EntityInterface
+interface SaleInterface extends ResourceInterface
 {
     /**
      * Returns the customer.

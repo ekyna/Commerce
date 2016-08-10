@@ -3,14 +3,14 @@
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\EntityInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface TaxGroupInterface
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TaxGroupInterface extends EntityInterface
+interface TaxGroupInterface extends ResourceInterface
 {
     /**
      * Returns the name.

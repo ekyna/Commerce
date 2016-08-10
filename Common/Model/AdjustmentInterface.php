@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Resource\Model\ResourceInterface;
+
 /**
  * Interface AdjustmentInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AdjustmentInterface extends EntityInterface
+interface AdjustmentInterface extends ResourceInterface
 {
     /**
      * Returns the designation.
