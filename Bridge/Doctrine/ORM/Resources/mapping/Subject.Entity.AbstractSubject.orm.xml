@@ -10,7 +10,7 @@
             table="commerce_subject">
 
         <indexes>
-            <index columns="reference" name="idx_reference"/>
+            <index columns="reference" name="idx_subject_reference"/>
         </indexes>
 
         <unique-constraints>

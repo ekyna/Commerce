@@ -9,5 +9,18 @@ namespace Ekyna\Component\Commerce\Order\View;
  */
 class Order
 {
+    /**
+     * @var float
+     */
+    public $baseTotal;
 
+    /**
+     * @var TaxAmount[]
+     */
+    public $taxAmounts;
+
+    /**
+     * @var float
+     */
+    public $granTotal;
 }

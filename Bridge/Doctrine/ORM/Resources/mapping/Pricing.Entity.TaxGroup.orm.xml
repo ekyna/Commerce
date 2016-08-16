@@ -9,7 +9,7 @@
             table="commerce_tax_group">
 
         <indexes>
-            <index columns="name" name="idx_name"/>
+            <index columns="name" name="idx_tax_group_name"/>
         </indexes>
 
         <unique-constraints>

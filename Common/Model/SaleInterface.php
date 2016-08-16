@@ -11,7 +11,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleInterface extends ResourceInterface
+interface SaleInterface extends ResourceInterface, AdjustableInterface
 {
     /**
      * Returns the customer.
@@ -152,20 +152,6 @@ interface SaleInterface extends ResourceInterface
      * @return Collection|SaleItemInterface[]
      */
     public function getItems();
-
-    /**
-     * Returns whether the transaction has adjustments or not.
-     *
-     * @return bool
-     */
-    public function hasAdjustments();
-
-    /**
-     * Returns the adjustments.
-     *
-     * @return Collection|AdjustmentInterface[]
-     */
-    public function getAdjustments();
 
     /**
      * Returns the weight total.

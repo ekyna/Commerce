@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 
 /**
@@ -11,7 +10,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSaleItem implements SaleItemInterface
+abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemInterface
 {
     /**
      * @var int
@@ -27,11 +26,6 @@ abstract class AbstractSaleItem implements SaleItemInterface
      * @var ArrayCollection|SaleItemInterface[]
      */
     protected $children;
-
-    /**
-     * @var ArrayCollection|AdjustmentInterface[]
-     */
-    protected $adjustments;
 
     /**
      * @var string
@@ -69,8 +63,9 @@ abstract class AbstractSaleItem implements SaleItemInterface
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->children = new ArrayCollection();
-        $this->adjustments = new ArrayCollection();
 
         $this->quantity = 1;
         $this->position = 0;
@@ -106,14 +101,6 @@ abstract class AbstractSaleItem implements SaleItemInterface
     public function getChildren()
     {
         return $this->children;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdjustments()
-    {
-        return $this->adjustments;
     }
 
     /**

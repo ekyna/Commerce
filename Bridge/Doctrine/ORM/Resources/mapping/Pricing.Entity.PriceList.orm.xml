@@ -9,7 +9,7 @@
             table="commerce_price_list">
 
         <indexes>
-            <index columns="name" name="idx_name"/>
+            <index columns="name" name="idx_price_list_name"/>
         </indexes>
 
         <unique-constraints>

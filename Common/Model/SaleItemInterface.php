@@ -10,7 +10,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleItemInterface extends ResourceInterface
+interface SaleItemInterface extends ResourceInterface, AdjustableInterface
 {
     /**
      * Returns the parent item.
@@ -34,13 +34,6 @@ interface SaleItemInterface extends ResourceInterface
     public function getChildren();
 
     /**
-     * Returns the item adjustments.
-     *
-     * @return Collection|AdjustmentInterface[]
-     */
-    public function getAdjustments();
-
-    /**
      * Returns the designation.
      *
      * @return string
@@ -52,7 +45,7 @@ interface SaleItemInterface extends ResourceInterface
      *
      * @param string $designation
      *
-*@return $this|SaleItemInterface
+     * @return $this|SaleItemInterface
      */
     public function setDesignation($designation);
 
@@ -68,7 +61,7 @@ interface SaleItemInterface extends ResourceInterface
      *
      * @param string $reference
      *
-*@return $this|SaleItemInterface
+     * @return $this|SaleItemInterface
      */
     public function setReference($reference);
 
@@ -84,7 +77,7 @@ interface SaleItemInterface extends ResourceInterface
      *
      * @param float $netPrice
      *
-*@return $this|SaleItemInterface
+     * @return $this|SaleItemInterface
      */
     public function setNetPrice($netPrice);
 
@@ -100,7 +93,7 @@ interface SaleItemInterface extends ResourceInterface
      *
      * @param float $weight
      *
-*@return $this|SaleItemInterface
+     * @return $this|SaleItemInterface
      */
     public function setWeight($weight);
 
@@ -116,7 +109,7 @@ interface SaleItemInterface extends ResourceInterface
      *
      * @param float $quantity
      *
-*@return $this|SaleItemInterface
+     * @return $this|SaleItemInterface
      */
     public function setQuantity($quantity);
 
@@ -132,7 +125,7 @@ interface SaleItemInterface extends ResourceInterface
      *
      * @param int $position
      *
-*@return $this|SaleItemInterface
+     * @return $this|SaleItemInterface
      */
     public function setPosition($position);
 }

@@ -9,6 +9,14 @@
             name="Ekyna\Component\Commerce\Shipment\Entity\Shipment"
             table="commerce_shipment">
 
+        <indexes>
+            <index columns="number" name="idx_shipment_number" />
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="number" name="unique_shipment_number" />
+        </unique-constraints>
+
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>

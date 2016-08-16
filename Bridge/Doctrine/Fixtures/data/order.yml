@@ -20,11 +20,16 @@ order-1:
             designation: Test item 1.1
             reference: TEST-ITEM-1-1
             netPrice: 124.16667         # 149.00 gross
-            taxName: TVA 20%
-            taxRate: 20
             weight: 100
             quantity: 1
             position: 0
+            adjustments:
+                - #id: 1
+                    designation: TVA 20%
+                    type: taxation
+                    mode: percent
+                    amount: 20
+                    position: 0
             # Base:     124.17
             # TVA 20%:   24.83
             # Total:    149.00
@@ -33,11 +38,16 @@ order-1:
             designation: Test item 1.2
             reference: TEST-ITEM-1-2
             netPrice: 115.83333         # 139.00 gross
-            taxName: TVA 20%
-            taxRate: 20
             weight: 100
             quantity: 2
             position: 1
+            adjustments:
+                - #id: 2
+                    designation: TVA 20%
+                    type: taxation
+                    mode: percent
+                    amount: 20
+                    position: 0
             # Base:     231.66  |  231.67
             # TVA 20%:   46.33  |   46.33
             # Total:    277,99  |  278.00
@@ -75,11 +85,16 @@ order-2:
             designation: Test item 2.1
             reference: TEST-ITEM-2-1
             netPrice: 124.99167         # 149.99 gross
-            taxName: TVA 20%
-            taxRate: 20
             weight: 100
             quantity: 3
             position: 0
+            adjustments:
+                - #id: 3
+                    designation: TVA 20%
+                    type: taxation
+                    mode: percent
+                    amount: 20
+                    position: 0
             # Base:    374.97 | 374.98
             # TVA 20%:  74.99 | 74.99
             # Total:   449.96 | 449.97
@@ -88,11 +103,16 @@ order-2:
             designation: Test item 2.2
             reference: TEST-ITEM-2-2
             netPrice: 32.71818          # 35.99 gross
-            taxName: TVA 10%
-            taxRate: 10
             weight: 100
             quantity: 7
             position: 1
+            adjustments:
+                - #id: 4
+                    designation: TVA 10%
+                    type: taxation
+                    mode: percent
+                    amount: 10
+                    position: 0
             # Base:     229.04  |  229.03
             # TVA 10%:   22.90  |   22.90
             # Total:    251.94  |  251.93
@@ -100,8 +120,9 @@ order-2:
     adjustments:
         -   # id: 1
             designation: Test adjustment 2.1
-            amount: 50
+            type: discount
             mode: flat
+            amount: 50
             position: 0
             # Total: -50
 
@@ -137,11 +158,16 @@ order-3:
             designation: Test item 3.1
             reference: TEST-ITEM-3-1
             netPrice: 60.79167         # 72.95 gross
-            taxName: TVA 20%
-            taxRate: 20
             weight: 100
             quantity: 5
             position: 0
+            adjustments:
+                - #id: 5
+                    designation: TVA 20%
+                    type: taxation
+                    mode: percent
+                    amount: 20
+                    position: 0
             # Base:     303.95  |  303.96
             # TVA 20%:   60.79  |   60.79
             # Total:    364.74  |  364.75
@@ -150,11 +176,16 @@ order-3:
             designation: Test item 3.2
             reference: TEST-ITEM-3-2
             netPrice: 120.26364        # 132.29 gross
-            taxName: TVA 10%
-            taxRate: 10
             weight: 100
             quantity: 23
             position: 1
+            adjustments:
+                - #id: 6
+                    designation: TVA 10%
+                    type: taxation
+                    mode: percent
+                    amount: 10
+                    position: 0
             # Base:     2765.98  |  2766.06
             # TVA 10%:   276.60  |   276.61
             # Total:    3042.58  |  3042.67
@@ -162,8 +193,9 @@ order-3:
     adjustments:
         -   # id: 2
             designation: Test adjustment 3.1
-            amount: 5
+            type: discount
             mode: percent
+            amount: 5
             position: 0
             # Total:     -153.50     ((303.95 + 2765.98) * 0.05)
 
@@ -205,11 +237,16 @@ order-4:
                     designation: Test bundle 4.1.1
                     reference: TEST-BUND-4-1-1
                     netPrice: 144.10000     # 172.92 gross
-                    taxName: TVA 20%
-                    taxRate: 20
                     weight: 50
                     quantity: 1
                     position: 0
+                    adjustments:
+                        - #id: 7
+                            designation: TVA 20%
+                            type: taxation
+                            mode: percent
+                            amount: 20
+                            position: 0
                     # Base:     144.10
                     # TVA 20%:   28.82
                     # Total:    172.92
@@ -218,11 +255,16 @@ order-4:
                     designation: Test bundle 4.1.2
                     reference: TEST-BUND-4-1-2
                     netPrice: 52.96364      # 58.26 gross
-                    taxName: TVA 10%
-                    taxRate: 10
                     weight: 25
                     quantity: 5
                     position: 1
+                    adjustments:
+                        - #id: 8
+                            designation: TVA 10%
+                            type: taxation
+                            mode: percent
+                            amount: 10
+                            position: 0
                     # Base:     264.80  |  264.82
                     # TVA 10%:   26.48  |   26.48
                     # Total:    291.28  |  291.30
@@ -271,11 +313,16 @@ order-5:
                     designation: Test bundle 5.1.1
                     reference: TEST-BUND-5-1-1
                     netPrice: 184.12500     # 220.95
-                    taxName: TVA 20%
-                    taxRate: 20
                     weight: 50
                     quantity: 1
                     position: 0
+                    adjustments:
+                        - #id: 9
+                            designation: TVA 20%
+                            type: taxation
+                            mode: percent
+                            amount: 20
+                            position: 0
                     # Base:     184.12  |  184.12
                     # TVA 20%:   36.82  |   36.83
                     # Total:    220.94  |  220.95
@@ -283,21 +330,26 @@ order-5:
                     # id: 12
                     designation: Test bundle 5.1.2
                     reference: TEST-BUND-5-1-2
-                    netPrice: 32.52727      # 35.78
-                    taxName: TVA 10%
-                    taxRate: 10
                     weight: 25
                     quantity: 3
                     position: 1
+                    adjustments:
+                        - #id: 10
+                            designation: TVA 10%
+                            type: taxation
+                            mode: percent
+                            amount: 10
+                            position: 0
                     # Base:      97.59  |   97.58
                     # TVA 10%:    9.76  |    9.76
                     # Total:    107.35  |  107.34
 
             adjustments:
-                -   # id: 3
+                -   # id: 11
                     designation: Test bundle adjustment 5.1.1
-                    amount: 5
+                    type: discount
                     mode: percent
+                    amount: 5
                     position: 0
 
         # Base:     1338.12  |  1338.05    ((184.12 + 97.59 - 14.07) * 5)
@@ -308,8 +360,9 @@ order-5:
     adjustments:
         -   # id: 4
             designation: Test adjustment 5.1
-            amount: 20
+            type: discount
             mode: flat
+            amount: 20
             position: 0
             # Total: -20
 
@@ -350,17 +403,22 @@ order-6:
                     designation: Test bundle 6.1.1
                     reference: TEST-BUND-6-1-1
                     netPrice: 416.58333     # 499.90
-                    taxName: TVA 20%
-                    taxRate: 20
                     weight: 50
                     quantity: 2
                     position: 0
                     adjustments:
-                        -   # id: 5
-                            designation: Test adjustment 6.1.1.1
+                        -   #id: 12
+                            designation: TVA 20%
+                            type: taxation
+                            mode: percent
                             amount: 20
-                            mode: flat
                             position: 0
+                        -   # id: 13
+                            designation: Test bundle discount 6.1.1.1
+                            type: discount
+                            mode: percent
+                            amount: 10
+                            position: 1
                             # Total: -20
 
                     # Base:     813.16      (146.58 * 2 - 20)
@@ -377,11 +435,18 @@ order-6:
                     quantity: 2
                     position: 1
                     adjustments:
-                        -   # id: 6
-                            designation: Test bundle adjustment 6.1.2.1
-                            amount: 5
+                        -   #id: 14
+                            designation: TVA 10%
+                            type: taxation
                             mode: percent
+                            amount: 10
                             position: 0
+                        -   # id: 15
+                            designation: Test bundle discount 6.1.2.1
+                            type: discount
+                            mode: percent
+                            amount: 5
+                            position: 1
                             # Total: -5.09
 
                     # Base:      96.71      (50.90 * 2 - 5.09)

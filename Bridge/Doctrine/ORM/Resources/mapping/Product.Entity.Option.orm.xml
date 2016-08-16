@@ -10,12 +10,13 @@
             table="commerce_option">
 
         <indexes>
-            <index columns="reference" name="idx_reference" />
-            <index columns="position" name="idx_position" />
+            <index columns="reference" name="idx_option_reference" />
+            <index columns="position" name="idx_option_position" />
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="reference" name="unique_reference" />
+            <unique-constraint columns="reference" name="unique_option_reference" />
+            <unique-constraint columns="group_id,position" name="unique_option_position"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

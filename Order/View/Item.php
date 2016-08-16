@@ -10,6 +10,11 @@ namespace Ekyna\Component\Commerce\Order\View;
 class Item
 {
     /**
+     * @var Item[]
+     */
+    public $children = [];
+
+    /**
      * @var string
      */
     public $designation;
@@ -22,12 +27,7 @@ class Item
     /**
      * @var float
      */
-    public $netUnitPrice;
-
-    /**
-     * @var float
-     */
-    public $taxRate;
+    public $unitPrice;
 
     /**
      * @var float
@@ -37,10 +37,15 @@ class Item
     /**
      * @var float
      */
-    public $netBase;
+    public $basePrice;
+
+    /**
+     * @var TaxAmount[]
+     */
+    public $taxAmounts;
 
     /**
      * @var float
      */
-    public $grossTotalPrice;
+    public $totalPrice;
 }

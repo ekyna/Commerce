@@ -10,8 +10,12 @@
             table="commerce_attribute_slot">
 
         <indexes>
-            <index columns="position" name="idx_position" />
+            <index columns="position" name="idx_attribute_slot_position" />
         </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="set_id,position" name="unique_attribute_slot_position"/>
+        </unique-constraints>
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>

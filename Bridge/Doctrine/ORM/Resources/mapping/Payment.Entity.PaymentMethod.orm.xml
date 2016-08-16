@@ -9,6 +9,14 @@
             name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethod"
             table="commerce_payment_method">
 
+        <indexes>
+            <index columns="name" name="idx_payment_method_name"/>
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="name" name="unique_payment_method_name"/>
+        </unique-constraints>
+
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>

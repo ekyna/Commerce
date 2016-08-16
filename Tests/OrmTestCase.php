@@ -108,6 +108,9 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
         $lm = new LoadMetadataSubscriber([], $interfaces);
         $evm->addEventSubscriber($lm);
 
+        // TODO Load [Resource] entity listener
+        // TODO it requires ResourceConfigurationRegistry (need to move it from admin bundle)
+
         static::$em = EntityManager::create($connection, $config, $evm);
     }
 

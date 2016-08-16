@@ -14,7 +14,7 @@
         </entity-listeners>-->
 
         <indexes>
-            <index columns="email" name="idx_email"/>
+            <index columns="email" name="idx_customer_email"/>
         </indexes>
 
         <unique-constraints>

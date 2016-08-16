@@ -10,8 +10,12 @@
             table="commerce_bundle_choice">
 
         <indexes>
-            <index columns="position" name="idx_position" />
+            <index columns="position" name="idx_bundle_choice_position" />
         </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="product_id,position" name="unique_bundle_choice_position"/>
+        </unique-constraints>
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>

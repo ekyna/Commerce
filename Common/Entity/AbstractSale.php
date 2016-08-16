@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -15,7 +14,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AbstractSale implements SaleInterface
+class AbstractSale extends AbstractAdjustable implements SaleInterface
 {
     /**
      * @var int
@@ -93,11 +92,6 @@ class AbstractSale implements SaleInterface
     protected $items;
 
     /**
-     * @var ArrayCollection|AdjustmentInterface[]
-     */
-    protected $adjustments;
-
-    /**
      * @var \DateTime
      */
     protected $createdAt;
@@ -113,6 +107,8 @@ class AbstractSale implements SaleInterface
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->sameAddress = false;
 
         $this->weightTotal = 0;
@@ -121,7 +117,6 @@ class AbstractSale implements SaleInterface
         $this->grandTotal = 0;
 
         $this->items = new ArrayCollection();
-        $this->adjustments = new ArrayCollection();
     }
 
     /**
@@ -360,22 +355,6 @@ class AbstractSale implements SaleInterface
     public function getItems()
     {
         return $this->items;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasAdjustments()
-    {
-        return 0 < $this->adjustments->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdjustments()
-    {
-        return $this->adjustments;
     }
 
     /**

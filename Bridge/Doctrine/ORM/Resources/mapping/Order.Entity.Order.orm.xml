@@ -15,8 +15,8 @@
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_number" />
-            <unique-constraint columns="secret" name="unique_secret" />
+            <unique-constraint columns="number" name="unique_order_number" />
+            <unique-constraint columns="secret" name="unique_order_secret" />
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

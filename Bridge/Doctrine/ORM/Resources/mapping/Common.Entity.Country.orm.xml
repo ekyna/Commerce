@@ -9,7 +9,7 @@
             table="commerce_country">
 
         <indexes>
-            <index columns="code" name="idx_code"/>
+            <index columns="code" name="idx_country_code"/>
         </indexes>
 
         <unique-constraints>

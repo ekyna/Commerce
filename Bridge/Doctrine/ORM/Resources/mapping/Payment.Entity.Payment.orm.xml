@@ -9,6 +9,14 @@
             name="Ekyna\Component\Commerce\Payment\Entity\Payment"
             table="commerce_payment">
 
+        <indexes>
+            <index columns="number" name="idx_payment_number" />
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="number" name="unique_payment_number" />
+        </unique-constraints>
+
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
