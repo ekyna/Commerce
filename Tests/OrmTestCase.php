@@ -15,6 +15,17 @@ use Doctrine\ORM\Tools\ResolveTargetEntityListener;
 use Doctrine\ORM\Tools\SchemaTool;
 use Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection\DoctrineBundleMapping;
 use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener\LoadMetadataSubscriber;
+use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\CustomerEventSubscriber;
+use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\OrderEventSubscriber;
+use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\ProductEventSubscriber;
+use Ekyna\Component\Commerce\Common\Calculator\Calculator;
+use Ekyna\Component\Commerce\Order\Generator\DefaultNumberGenerator;
+use Ekyna\Component\Commerce\Order\Resolver\StateResolver;
+use Ekyna\Component\Resource\Configuration\ConfigurationFactory;
+use Ekyna\Component\Resource\Configuration\ConfigurationRegistry;
+use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcher;
+use Ekyna\Component\Resource\Doctrine\ORM\Listener\EntityListener;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Class OrmTestCase
@@ -27,20 +38,20 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
      * @var array
      */
     protected static $_aliases = [
-        'country'             => 'Ekyna\Component\Commerce\Common\Entity\Country',
-        'currency'            => 'Ekyna\Component\Commerce\Common\Entity\Currency',
+        'country'  => 'Ekyna\Component\Commerce\Common\Entity\Country',
+        'currency' => 'Ekyna\Component\Commerce\Common\Entity\Currency',
 
-        'priceList'           => 'Ekyna\Component\Commerce\Pricing\Entity\PriceList',
-        'tax'                 => 'Ekyna\Component\Commerce\Pricing\Entity\Tax',
-        'taxGroup'            => 'Ekyna\Component\Commerce\Pricing\Entity\TaxGroup',
-        'taxRule'             => 'Ekyna\Component\Commerce\Pricing\Entity\TaxRule',
+        //'priceList' => 'Ekyna\Component\Commerce\Pricing\Entity\PriceList',
+        'tax'       => 'Ekyna\Component\Commerce\Pricing\Entity\Tax',
+        'taxGroup'  => 'Ekyna\Component\Commerce\Pricing\Entity\TaxGroup',
+        'taxRule'   => 'Ekyna\Component\Commerce\Pricing\Entity\TaxRule',
 
-        'customer'            => 'Ekyna\Component\Commerce\Customer\Entity\Customer',
-        'customerAddress'     => 'Ekyna\Component\Commerce\Customer\Entity\CustomerAddress',
-        'customerGroup'       => 'Ekyna\Component\Commerce\Customer\Entity\CustomerGroup',
+        'customer'        => 'Ekyna\Component\Commerce\Customer\Entity\Customer',
+        'customerAddress' => 'Ekyna\Component\Commerce\Customer\Entity\CustomerAddress',
+        'customerGroup'   => 'Ekyna\Component\Commerce\Customer\Entity\CustomerGroup',
 
-        'subject'             => 'Ekyna\Component\Commerce\Subject\Entity\Subject',
-        'offer'               => 'Ekyna\Component\Commerce\Subject\Entity\Offer',
+        //'subject' => 'Ekyna\Component\Commerce\Subject\Entity\Subject',
+        //'offer'   => 'Ekyna\Component\Commerce\Subject\Entity\Offer',
 
         'order'               => 'Ekyna\Component\Commerce\Order\Entity\Order',
         'orderAddress'        => 'Ekyna\Component\Commerce\Order\Entity\OrderAddress',
@@ -54,6 +65,10 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
      */
     protected static $em;
 
+    protected static $registry;
+
+    protected static $dispatcher;
+
     public static function setUpBeforeClass()
     {
         if (false == class_exists('Doctrine\ORM\Version', true)) {
@@ -62,6 +77,10 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
         if (false == extension_loaded('pdo_sqlite')) {
             throw new \PHPUnit_Framework_SkippedTestError('The pdo_sqlite extension is not loaded. It is required to run doctrine tests.');
         }
+
+        static::setUpResourceRegistry();
+        static::setUpResourceEventDispatcher();
+
         static::setUpEntityManager();
         static::setUpDatabase();
         static::loadFixtures();
@@ -71,6 +90,41 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
     {
 
     }*/
+
+    protected static function setUpResourceRegistry()
+    {
+        $resources = Yaml::parse(file_get_contents(__DIR__ . '/../Bridge/Symfony/Resources/resources.yml'));
+
+        $factory = new ConfigurationFactory();
+
+        $configurations = [];
+        foreach ($resources as $namespace => $resource) {
+            foreach ($resource as $id => $classes) {
+                $configurations[] = $factory->createConfiguration([
+                    'namespace' => $namespace,
+                    'id'        => $id,
+                    'classes'   => $classes,
+                ]);
+            }
+        }
+
+        self::$registry = new ConfigurationRegistry($configurations);
+    }
+
+    protected static function setUpResourceEventDispatcher()
+    {
+        $dispatcher = new ResourceEventDispatcher();
+
+        $dispatcher->addSubscriber(new CustomerEventSubscriber());
+        $dispatcher->addSubscriber(new ProductEventSubscriber());
+        $dispatcher->addSubscriber(new OrderEventSubscriber(
+            new DefaultNumberGenerator(),
+            new Calculator(),
+            new StateResolver()
+        ));
+
+        self::$dispatcher = $dispatcher;
+    }
 
     protected static function setUpEntityManager()
     {
@@ -108,8 +162,9 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
         $lm = new LoadMetadataSubscriber([], $interfaces);
         $evm->addEventSubscriber($lm);
 
-        // TODO Load [Resource] entity listener
-        // TODO it requires ResourceConfigurationRegistry (need to move it from admin bundle)
+        // Load Entity listener
+        $el = new EntityListener(self::$registry, self::$dispatcher);
+        $evm->addEventSubscriber($el);
 
         static::$em = EntityManager::create($connection, $config, $evm);
     }

@@ -1,0 +1,27 @@
+ekyna_commerce:
+    attribute:
+        resource: Ekyna\Component\Commerce\Product\Entity\Attribute
+    attribute_group:
+        resource: Ekyna\Component\Commerce\Product\Entity\AttributeGroup
+    attribute_set:
+        resource: Ekyna\Component\Commerce\Product\Entity\AttributeSet
+    country:
+        resource: Ekyna\Component\Commerce\Common\Entity\Country
+    currency:
+        resource: Ekyna\Component\Commerce\Common\Entity\Currency
+    customer_address:
+        resource: Ekyna\Component\Commerce\Customer\Entity\CustomerAddress
+    customer:
+        resource: Ekyna\Component\Commerce\Customer\Entity\Customer
+    customer_group:
+        resource: Ekyna\Component\Commerce\Customer\Entity\CustomerGroup
+    order:
+        resource: Ekyna\Component\Commerce\Order\Entity\Order
+    product:
+        resource: Ekyna\Component\Commerce\Product\Entity\Product
+    tax:
+        resource: Ekyna\Component\Commerce\Pricing\Entity\Tax
+    tax_group:
+        resource: Ekyna\Component\Commerce\Pricing\Entity\TaxGroup
+    tax_rule:
+        resource: Ekyna\Component\Commerce\Pricing\Entity\TaxRule

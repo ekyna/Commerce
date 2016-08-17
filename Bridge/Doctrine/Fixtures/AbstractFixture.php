@@ -90,7 +90,7 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
                 $builtValue = $this->buildAssociationValue($metadata, $propertyPath, $value);
 
             } else {
-                throw new \Exception("Unexpected property path '$propertyPath'.");
+                throw new \Exception("Unexpected property path '$propertyPath' for class '$class'.");
             }
 
             $this->accessor->setValue($entity, $propertyPath, $builtValue);

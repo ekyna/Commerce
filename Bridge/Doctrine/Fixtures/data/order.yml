@@ -1,5 +1,6 @@
 order-1:
-    reference: ORDER-00001
+    number: ORDER-00001
+    key: ORDER-00001
     currency: '#currency-eur'
     customer: '#customer-1'
     firstName: John
@@ -12,8 +13,6 @@ order-1:
         street: 12 rue de Vern
         postalCode: 35000
         city: Rennes
-        phone: 0212345678
-        mobile: 0612345678
         country: '#country-fr'
     items:
         -   # id: 1
@@ -64,7 +63,8 @@ order-1:
 
 
 order-2:
-    reference: ORDER-00002
+    number: ORDER-00002
+    key: ORDER-00002
     currency: '#currency-eur'
     customer: '#customer-1'
     firstName: John
@@ -77,8 +77,6 @@ order-2:
         street: 12 rue de Vern
         postalCode: 35000
         city: Rennes
-        phone: 0212345678
-        mobile: 0612345678
         country: '#country-fr'
     items:
         -   # id: 3
@@ -137,7 +135,8 @@ order-2:
 
 
 order-3:
-    reference: ORDER-00003
+    number: ORDER-00003
+    key: ORDER-00003
     currency: '#currency-eur'
     customer: '#customer-1'
     firstName: John
@@ -150,8 +149,6 @@ order-3:
         street: 12 rue de Vern
         postalCode: 35000
         city: Rennes
-        phone: 0212345678
-        mobile: 0612345678
         country: '#country-fr'
     items:
         -   # id: 5
@@ -210,7 +207,8 @@ order-3:
 
 
 order-4:
-    reference: ORDER-00004
+    number: ORDER-00004
+    key: ORDER-00004
     currency: '#currency-eur'
     customer: '#customer-1'
     firstName: John
@@ -223,8 +221,6 @@ order-4:
         street: 12 rue de Vern
         postalCode: 35000
         city: Rennes
-        phone: 0212345678
-        mobile: 0612345678
         country: '#country-fr'
     items:
         -   # id: 7
@@ -286,7 +282,8 @@ order-4:
 
 
 order-5:
-    reference: ORDER-00005
+    number: ORDER-00005
+    key: ORDER-00005
     currency: '#currency-eur'
     customer: '#customer-1'
     firstName: John
@@ -299,8 +296,6 @@ order-5:
         street: 12 rue de Vern
         postalCode: 35000
         city: Rennes
-        phone: 0212345678
-        mobile: 0612345678
         country: '#country-fr'
     items:
         -   # id: 10
@@ -376,7 +371,8 @@ order-5:
     #  Total    |  1551.15
 
 order-6:
-    reference: ORDER-00006
+    number: ORDER-00006
+    key: ORDER-00006
     currency: '#currency-eur'
     customer: '#customer-1'
     firstName: John
@@ -389,8 +385,6 @@ order-6:
         street: 12 rue de Vern
         postalCode: 35000
         city: Rennes
-        phone: 0212345678
-        mobile: 0612345678
         country: '#country-fr'
     items:
         -   # id: 13
@@ -429,8 +423,6 @@ order-6:
                     designation: Test bundle 6.1.2
                     reference: TEST-BUND-6-1-2
                     netPrice: 50.90000      # 55.99
-                    taxName: TVA 10%
-                    taxRate: 10
                     weight: 25
                     quantity: 2
                     position: 1

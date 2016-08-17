@@ -9,7 +9,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
  * @package Ekyna\Component\Commerce\Order\Generator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class DefaultNumberNumberGenerator implements NumberGeneratorInterface
+class DefaultNumberGenerator implements NumberGeneratorInterface
 {
     /**
      * {@inheritdoc}

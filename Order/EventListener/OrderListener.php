@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Order\Calculator\CalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
 use Ekyna\Component\Commerce\Order\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderEventInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
