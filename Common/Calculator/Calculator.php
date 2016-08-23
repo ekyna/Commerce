@@ -17,6 +17,22 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 class Calculator implements CalculatorInterface
 {
     /**
+     * @var string
+     */
+    private $mode = self::MODE_NET;
+
+
+    /**
+     * @inheritdoc
+     */
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function calculateSaleItemAmounts(SaleItemInterface $item)
@@ -41,17 +57,50 @@ class Calculator implements CalculatorInterface
                 $quantity *= $parent->getQuantity();
             }
 
-            // Item base total
-            $amounts->addBase($item->getNetPrice() * $quantity);
+            switch ($this->mode) {
+                case self::MODE_NET :
+                    $base = $this->round($item->getNetPrice()) * $quantity;
 
-            // Taxation adjustments
-            if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
-                $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
-                foreach ($adjustments as $adjustment) {
-                    $this->calculateTaxationAdjustment($adjustment, $amounts);
-                }
+                    $amounts->addBase($base);
+
+                    // Taxes
+                    if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
+                        $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
+                        foreach ($adjustments as $adjustment) {
+                            $amounts->addTaxAmount(
+                                $adjustment->getDesignation(),
+                                $adjustment->getAmount(),
+                                $this->round($base * $adjustment->getAmount() / 100)
+                            );
+                        }
+                    }
+                    break;
+
+                case self::MODE_GROSS :
+                    $base = $item->getNetPrice() * $quantity;
+                    $roundedBase = $this->round($base);
+
+                    $amounts->addBase($roundedBase);
+
+                    // Taxes
+                    if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
+                        $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
+                        foreach ($adjustments as $adjustment) {
+                            $gross = $this->round($base * (1 + $adjustment->getAmount() / 100));
+                            $amount = $gross - $roundedBase;
+
+                            $amounts->addTaxAmount(
+                                $adjustment->getDesignation(),
+                                $adjustment->getAmount(),
+                                $amount
+                            );
+                        }
+                    }
+                    break;
+
+                default:
+                    throw new InvalidArgumentException('Unexpected mode.');
             }
-
         }
 
         // Discount adjustments
@@ -112,39 +161,22 @@ class Calculator implements CalculatorInterface
         if (AdjustmentModes::MODE_PERCENT === $mode) {
             $adjustmentRate = $adjustment->getAmount() / 100;
 
-            $amounts->addBase(-$parentAmounts->getBase() * $adjustmentRate);
+            $amounts->addBase(-$this->round($parentAmounts->getBase() * $adjustmentRate));
 
             foreach ($parentAmounts->getTaxes() as $taxAmount) {
                 $amounts->addTaxAmount(
                     $taxAmount->getName(),
                     $taxAmount->getRate(),
-                    $taxAmount->getAmount() * $adjustmentRate
+                    -$this->round($taxAmount->getAmount() * $adjustmentRate)
                 );
             }
         } elseif (AdjustmentModes::MODE_FLAT === $mode) {
-            $amounts->addBase(- $adjustment->getAmount());
+            $amounts->addBase(- $this->round($adjustment->getAmount()));
         } else {
             throw new InvalidArgumentException("Unexpected adjustment mode '$mode'.");
         }
 
         return $amounts;
-    }
-
-    /**
-     * Calculates the taxation adjustment amount.
-     *
-     * @param AdjustmentInterface $adjustment
-     * @param Amounts             $targetAmounts
-     */
-    protected function calculateTaxationAdjustment(AdjustmentInterface $adjustment, Amounts $targetAmounts)
-    {
-        $this->assertAdjustmentType($adjustment, AdjustmentTypes::TYPE_TAXATION);
-
-        $targetAmounts->addTaxAmount(
-            $adjustment->getDesignation(),
-            $adjustment->getAmount(),
-            $targetAmounts->getBase() * $adjustment->getAmount() / 100
-        );
     }
 
     /**
@@ -171,5 +203,18 @@ class Calculator implements CalculatorInterface
         if ($expectedMode !== $mode = $adjustment->getMode()) {
             throw new InvalidArgumentException("Unexpected adjustment mode '$mode'.");
         }
+    }
+
+    /**
+     * Rounds the results.
+     *
+     * @param float $result
+     *
+     * @return float
+     */
+    private function round($result)
+    {
+        // TODO precision based on currency
+        return round($result, 2);
     }
 }

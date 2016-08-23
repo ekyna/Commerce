@@ -19,6 +19,11 @@ class Amounts
      */
     private $taxes;
 
+    /**
+     * @var float
+     */
+    private $total;
+
 
     /**
      * Constructor.
@@ -39,6 +44,16 @@ class Amounts
     {
         $this->base = 0;
         $this->taxes = [];
+
+        $this->clearTotal();
+    }
+
+    /**
+     * Clear the amounts.
+     */
+    private function clearTotal()
+    {
+        $this->total = null;
     }
 
     /**
@@ -68,7 +83,9 @@ class Amounts
      */
     public function addBase($base)
     {
-        $this->base += round($base, 2);
+        $this->clearTotal();
+
+        $this->base += $base;
 
         return $this;
     }
@@ -94,6 +111,8 @@ class Amounts
      */
     public function addTaxAmount($name, $rate, $amount)
     {
+        $this->clearTotal();
+
         $taxAmount = null;
         foreach ($this->taxes as $tax) {
             if (0 === bccomp($tax->getRate(), $rate, 5)) {
@@ -125,12 +144,14 @@ class Amounts
      */
     public function getTotal()
     {
-        $total = $this->base;
+        if (null === $this->total) {
+            $this->total = $this->base;
 
-        foreach ($this->taxes as $tax) {
-            $total += $tax->getAmount();
+            foreach ($this->taxes as $tax) {
+                $this->total += $tax->getAmount();
+            }
         }
 
-        return $total;
+        return $this->total;
     }
 }

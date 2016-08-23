@@ -77,6 +77,6 @@ class TaxAmount
      */
     public function addAmount($amount)
     {
-        $this->amount += round($amount, 2);
+        $this->amount += $amount;
     }
 }

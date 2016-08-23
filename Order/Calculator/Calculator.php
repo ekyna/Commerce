@@ -67,8 +67,6 @@ class Calculator implements CalculatorInterface
 
         // TODO Percent adjustment applied to children if any
 
-
-
         return $amounts;
     }
 
