@@ -35,4 +35,12 @@ class OrderItemAdjustment extends AbstractAdjustment implements OrderItemAdjustm
         $this->item = $item;
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAdjustable()
+    {
+        return $this->item;
+    }
 }

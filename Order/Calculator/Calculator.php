@@ -23,6 +23,15 @@ class Calculator implements CalculatorInterface
 
 
     /**
+     * Constructor.
+     *
+     */
+    public function __construct()
+    {
+        throw new \Exception("Don't use this calculator.");
+    }
+
+    /**
      * @inheritdoc
      */
     public function setMode($mode)

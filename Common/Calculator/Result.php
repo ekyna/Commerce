@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
 /**
- * Class Amounts
+ * Class Result
  * @package Ekyna\Component\Commerce\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Amounts
+class Result
 {
     /**
      * @var float
@@ -15,7 +15,7 @@ class Amounts
     private $base;
 
     /**
-     * @var TaxAmount[]
+     * @var Tax[]
      */
     private $taxes;
 
@@ -30,7 +30,7 @@ class Amounts
      *
      * @param float $base
      */
-    public function __construct($base = 0)
+    public function __construct($base = .0)
     {
         $this->clear();
 
@@ -59,16 +59,16 @@ class Amounts
     /**
      * Merges the amounts.
      *
-     * @param Amounts $amounts
+     * @param Result $result
      *
-     * @return Amounts
+     * @return Result
      */
-    public function merge(Amounts $amounts)
+    public function merge(Result $result)
     {
-        $this->addBase($amounts->getBase());
+        $this->addBase($result->getBase());
 
-        foreach ($amounts->getTaxes() as $taxAmount) {
-            $this->addTaxAmount($taxAmount->getName(), $taxAmount->getRate(), $taxAmount->getAmount());
+        foreach ($result->getTaxes() as $taxAmount) {
+            $this->addTax($taxAmount->getName(), $taxAmount->getRate(), $taxAmount->getAmount());
         }
 
         return $this;
@@ -79,7 +79,7 @@ class Amounts
      *
      * @param float $base
      *
-     * @return Amounts
+     * @return Result
      */
     public function addBase($base)
     {
@@ -91,7 +91,7 @@ class Amounts
     }
 
     /**
-     * Returns the base.
+     * Returns the base (with discounts).
      *
      * @return float
      */
@@ -107,22 +107,22 @@ class Amounts
      * @param float $rate
      * @param float $amount
      *
-     * @return Amounts
+     * @return Result
      */
-    public function addTaxAmount($name, $rate, $amount)
+    public function addTax($name, $rate, $amount)
     {
         $this->clearTotal();
 
         $taxAmount = null;
         foreach ($this->taxes as $tax) {
-            if (0 === bccomp($tax->getRate(), $rate, 5)) {
+            if (0 === bccomp($tax->getRate(), $rate, 3)) {
                 $tax->addAmount($amount);
 
                 return $this;
             }
         }
 
-        $this->taxes[] = new TaxAmount($name, $rate, $amount);
+        $this->taxes[] = new Tax($name, $rate, $amount);
 
         return $this;
     }
@@ -130,7 +130,7 @@ class Amounts
     /**
      * Returns the taxes.
      *
-     * @return TaxAmount[]
+     * @return Tax[]
      */
     public function getTaxes()
     {

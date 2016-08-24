@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Tests\Common\Calculator;
 
-use Ekyna\Component\Commerce\Common\Calculator\Amounts;
+use Ekyna\Component\Commerce\Common\Calculator\Result;
 use Ekyna\Component\Commerce\Common\Calculator\Calculator;
 use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
 use Ekyna\Component\Commerce\Tests\OrmTestCase;
@@ -38,7 +38,7 @@ class CalculatorTest extends OrmTestCase
         static::$calculator = null;
     }
 
-    public function testCalculateSaleItemAmounts()
+    public function testCalculateSaleItem()
     {
         $cases = [
             'Case 1'  => [
@@ -179,14 +179,14 @@ class CalculatorTest extends OrmTestCase
                 /** @var \Ekyna\Component\Commerce\Order\Model\OrderItemInterface $item */
                 $item = $this->find('orderItem', $data['order_item_id']);
 
-                $amounts = static::$calculator->calculateSaleItemAmounts($item);
+                $amounts = static::$calculator->calculateSaleItem($item);
 
                 $this->assertAmounts($amounts, $data, $name, $mode, $offset);
             }
         }
     }
 
-    public function testCalculateSaleAmounts()
+    public function testCalculateSale()
     {
         $cases = [
             'Case 1' => [
@@ -251,7 +251,7 @@ class CalculatorTest extends OrmTestCase
                 /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
                 $order = $this->find('order', $data['order_id']);
 
-                $amounts = static::$calculator->calculateSaleAmounts($order);
+                $amounts = static::$calculator->calculateSale($order);
 
                 $this->assertAmounts($amounts, $data, $name, $mode, $offset);
             }
@@ -261,13 +261,13 @@ class CalculatorTest extends OrmTestCase
     /**
      * Asserts that the amounts are correct.
      *
-     * @param Amounts $amounts
-     * @param array   $data
-     * @param string  $name
-     * @param int     $mode
-     * @param int     $offset
+     * @param Result $amounts
+     * @param array  $data
+     * @param string $name
+     * @param int    $mode
+     * @param int    $offset
      */
-    private function assertAmounts(Amounts $amounts, array $data, $name, $mode, $offset)
+    private function assertAmounts(Result $amounts, array $data, $name, $mode, $offset)
     {
         // Asserts that the BASE is correctly calculated.
         $this->assertEquals(
@@ -316,7 +316,7 @@ class CalculatorTest extends OrmTestCase
         }
     }
 
-    public function testCalculateDiscountAdjustmentAmounts()
+    public function testCalculateDiscountAdjustment()
     {
         $this->markTestIncomplete(
             'This test has not been implemented yet.'

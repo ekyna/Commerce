@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
@@ -147,4 +148,11 @@ abstract class AbstractAdjustment implements AdjustmentInterface
         $this->position = $position;
         return $this;
     }
+
+    /**
+     * Returns the adjustable.
+     *
+     * @return AdjustableInterface
+     */
+    abstract public function getAdjustable();
 }

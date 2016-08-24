@@ -36,26 +36,26 @@ interface CalculatorInterface
      *
      * @param Model\SaleItemInterface $item
      *
-     * @return Amounts
+     * @return Result
      */
-    public function calculateSaleItemAmounts(Model\SaleItemInterface $item);
+    public function calculateSaleItem(Model\SaleItemInterface $item);
 
     /**
      * Calculates the sale's amounts.
      *
      * @param Model\SaleInterface $sale
      *
-     * @return Amounts
+     * @return Result
      */
-    public function calculateSaleAmounts(Model\SaleInterface $sale);
+    public function calculateSale(Model\SaleInterface $sale);
 
     /**
      * Calculates the adjustment amounts.
      *
      * @param Model\AdjustmentInterface $adjustment
-     * @param Amounts             $parentAmounts
+     * @param Result                    $parentResult
      *
-     * @return Amounts
+     * @return Result
      */
-    public function calculateDiscountAdjustmentAmounts(Model\AdjustmentInterface $adjustment, Amounts $parentAmounts);
+    public function calculateDiscountAdjustment(Model\AdjustmentInterface $adjustment, Result $parentResult);
 }

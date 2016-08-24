@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
 /**
- * Class TaxAmount
+ * Class Tax
  * @package Ekyna\Component\Commerce\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class TaxAmount
+class Tax
 {
     /**
      * @var string
@@ -32,7 +32,7 @@ class TaxAmount
      * @param float  $rate
      * @param float  $amount
      */
-    public function __construct($name, $rate, $amount = 0)
+    public function __construct($name, $rate, $amount = .0)
     {
         $this->name = $name;
         $this->rate = $rate;

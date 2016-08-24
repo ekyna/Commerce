@@ -17,10 +17,23 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 class Calculator implements CalculatorInterface
 {
     /**
+     * @var ResultCache
+     */
+    private $cache;
+
+    /**
      * @var string
      */
     private $mode = self::MODE_NET;
 
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->cache = new ResultCache();
+    }
 
     /**
      * @inheritdoc
@@ -35,17 +48,17 @@ class Calculator implements CalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSaleItemAmounts(SaleItemInterface $item)
+    public function calculateSaleItem(SaleItemInterface $item)
     {
         // TODO don't calculate twice
 
-        $amounts = new Amounts();
+        $result = new Result();
 
         if ($item->hasChildren()) { // Calculate as a "parent" item
 
-            // Merge children amounts
+            // Merge children results
             foreach ($item->getChildren() as $child) {
-                $amounts->merge($this->calculateSaleItemAmounts($child));
+                $result->merge($this->calculateSaleItem($child));
             }
 
         } else { // Calculate as a "child" item
@@ -61,13 +74,15 @@ class Calculator implements CalculatorInterface
                 case self::MODE_NET :
                     $base = $this->round($item->getNetPrice()) * $quantity;
 
-                    $amounts->addBase($base);
+                    $result->addBase($base);
 
                     // Taxes
                     if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
                         $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
                         foreach ($adjustments as $adjustment) {
-                            $amounts->addTaxAmount(
+                            $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
+
+                            $result->addTax(
                                 $adjustment->getDesignation(),
                                 $adjustment->getAmount(),
                                 $this->round($base * $adjustment->getAmount() / 100)
@@ -80,16 +95,18 @@ class Calculator implements CalculatorInterface
                     $base = $item->getNetPrice() * $quantity;
                     $roundedBase = $this->round($base);
 
-                    $amounts->addBase($roundedBase);
+                    $result->addBase($roundedBase);
 
                     // Taxes
                     if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
                         $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
                         foreach ($adjustments as $adjustment) {
+                            $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
+
                             $gross = $this->round($base * (1 + $adjustment->getAmount() / 100));
                             $amount = $gross - $roundedBase;
 
-                            $amounts->addTaxAmount(
+                            $result->addTax(
                                 $adjustment->getDesignation(),
                                 $adjustment->getAmount(),
                                 $amount
@@ -105,78 +122,78 @@ class Calculator implements CalculatorInterface
 
         // Discount adjustments
         if ($item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
-            $parentAmounts = clone $amounts;
+            $parentResult = clone $result;
             $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
             foreach ($adjustments as $adjustment) {
                 // Only 'percent' mode adjustments are allowed here.
                 $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
 
-                $amounts->merge($this->calculateDiscountAdjustmentAmounts($adjustment, $parentAmounts));
+                $result->merge($this->calculateDiscountAdjustment($adjustment, $parentResult));
             }
         }
 
-        return $amounts;
+        return $result;
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateSaleAmounts(SaleInterface $sale)
+    public function calculateSale(SaleInterface $sale)
     {
         // TODO don't calculate twice
 
-        $amounts = new Amounts();
+        $result = new Result();
 
-        // Items amounts
+        // Items result
         if ($sale->hasItems()) {
             foreach ($sale->getItems() as $item) {
-                $amounts->merge($this->calculateSaleItemAmounts($item));
+                $result->merge($this->calculateSaleItem($item));
             }
         }
 
-        // Discount adjustments amounts
+        // Discount adjustments results
         if ($sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
-            $parentAmounts = clone $amounts;
+            $parentResult = clone $result;
             $adjustments = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
             foreach ($adjustments as $adjustment) {
-                $amounts->merge($this->calculateDiscountAdjustmentAmounts($adjustment, $parentAmounts));
+                $result->merge($this->calculateDiscountAdjustment($adjustment, $parentResult));
             }
         }
 
-        return $amounts;
+        return $result;
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateDiscountAdjustmentAmounts(AdjustmentInterface $adjustment, Amounts $parentAmounts)
+    public function calculateDiscountAdjustment(AdjustmentInterface $adjustment, Result $parentResult)
     {
         $this->assertAdjustmentType($adjustment, AdjustmentTypes::TYPE_DISCOUNT);
 
         // TODO don't calculate twice
 
-        $amounts = new Amounts();
+        $result = new Result();
 
         $mode = $adjustment->getMode();
         if (AdjustmentModes::MODE_PERCENT === $mode) {
             $adjustmentRate = $adjustment->getAmount() / 100;
 
-            $amounts->addBase(-$this->round($parentAmounts->getBase() * $adjustmentRate));
+            $result->addBase(-$this->round($parentResult->getBase() * $adjustmentRate));
 
-            foreach ($parentAmounts->getTaxes() as $taxAmount) {
-                $amounts->addTaxAmount(
+            foreach ($parentResult->getTaxes() as $taxAmount) {
+                $result->addTax(
                     $taxAmount->getName(),
                     $taxAmount->getRate(),
                     -$this->round($taxAmount->getAmount() * $adjustmentRate)
                 );
             }
         } elseif (AdjustmentModes::MODE_FLAT === $mode) {
-            $amounts->addBase(- $this->round($adjustment->getAmount()));
+            $result->addBase(- $this->round($adjustment->getAmount()));
         } else {
             throw new InvalidArgumentException("Unexpected adjustment mode '$mode'.");
         }
 
-        return $amounts;
+        return $result;
     }
 
     /**

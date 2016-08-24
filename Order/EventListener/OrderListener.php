@@ -264,7 +264,11 @@ class OrderListener
      */
     protected function updateTotals(OrderInterface $order)
     {
-        // TODO
+        $amounts = $this->calculator->calculateSale($order);
+
+        $order
+            ->setNetTotal($amounts->getBase())
+            ->setGrandTotal($amounts->getTotal());
 
         return false;
     }
