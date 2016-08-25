@@ -91,7 +91,7 @@ class Result
     }
 
     /**
-     * Returns the base (with discounts).
+     * Returns the base.
      *
      * @return float
      */
@@ -101,7 +101,7 @@ class Result
     }
 
     /**
-     * Adds the tax amount.
+     * Adds the tax.
      *
      * @param string $name
      * @param float $rate

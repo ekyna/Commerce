@@ -139,7 +139,7 @@ class CalculatorTest extends OrmTestCase
                     'TVA 10%' => [48.80, 48.79],
                 ],
             ],
-            'Case 13' => [
+            /*'Case 13' => [
                 'order_item_id' => 13,
                 'total' => [79153.84, 79154.25],
                 'base'  => [70054.37, 70054.71],
@@ -147,7 +147,7 @@ class CalculatorTest extends OrmTestCase
                     'TVA 20%' => [8548.22, 8548.29],
                     'TVA 10%' => [ 551.25,  551.25],
                 ],
-            ],
+            ],*/
             'Case 14' => [
                 'order_item_id' => 14,
                 'total' => [51289.33, 51289.74],

@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Common\View;
 
-use Ekyna\Component\Commerce\Common\Calculator\Result;
 use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
@@ -82,9 +81,6 @@ class Builder
      */
     protected function buildSaleLinesViews(SaleInterface $sale)
     {
-        // TODO unnecessary recalculation (see calculator "don't build amounts twice")
-        $amounts = $this->calculator->calculateSale($sale);
-
         $lines = [];
 
         foreach ($sale->getItems() as $item) {
@@ -93,7 +89,7 @@ class Builder
 
         if ($sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
             foreach ($sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-                $lines[] = $this->buildDiscountAdjustmentLine($adjustment, $amounts);
+                $lines[] = $this->buildDiscountAdjustmentLine($adjustment);
             }
         }
 
@@ -119,13 +115,13 @@ class Builder
         }
         if ($item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
             foreach ($item->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-                $lines[] = $this->buildDiscountAdjustmentLine($adjustment, $amounts);
+                $lines[] = $this->buildDiscountAdjustmentLine($adjustment);
             }
         }
 
-        $tax = 0;
+        $taxSum = 0;
         foreach ($amounts->getTaxes() as $tax) {
-            $tax += $tax->getAmount();
+            $taxSum += $tax->getAmount();
         }
 
         return new Line(
@@ -134,7 +130,7 @@ class Builder
             $item->getNetPrice(),
             $item->getQuantity(),
             $amounts->getBase(),
-            $tax,
+            $taxSum,
             $amounts->getTotal(),
             $lines
         );
@@ -144,21 +140,20 @@ class Builder
      * Builds the discount adjustment line.
      *
      * @param AdjustmentInterface $adjustment
-     * @param Result              $parentAmounts
      *
      * @return Line
      */
-    protected function buildDiscountAdjustmentLine(AdjustmentInterface $adjustment, Result $parentAmounts)
+    protected function buildDiscountAdjustmentLine(AdjustmentInterface $adjustment)
     {
         if (AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
             throw new InvalidArgumentException("Unexpected adjustment type.");
         }
 
-        $amounts = $this->calculator->calculateDiscountAdjustment($adjustment, $parentAmounts);
+        $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
 
-        $tax = 0;
+        $taxSum = 0;
         foreach ($amounts->getTaxes() as $tax) {
-            $tax += $tax->getAmount();
+            $taxSum += $tax->getAmount();
         }
 
         return new Line(
@@ -167,7 +162,7 @@ class Builder
             $amounts->getBase(),
             1,
             $amounts->getBase(),
-            $tax,
+            $taxSum,
             $amounts->getTotal()
         );
     }

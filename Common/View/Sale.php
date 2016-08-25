@@ -34,6 +34,7 @@ class Sale
      */
     private $total;
 
+
     /**
      * Constructor.
      *

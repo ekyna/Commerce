@@ -85,4 +85,11 @@ interface AdjustmentInterface extends ResourceInterface
      * @return $this|AdjustmentInterface
      */
     public function setPosition($position);
+
+    /**
+     * Returns the adjustable.
+     *
+     * @return AdjustableInterface
+     */
+    public function getAdjustable();
 }

@@ -53,9 +53,8 @@ interface CalculatorInterface
      * Calculates the adjustment amounts.
      *
      * @param Model\AdjustmentInterface $adjustment
-     * @param Result                    $parentResult
      *
      * @return Result
      */
-    public function calculateDiscountAdjustment(Model\AdjustmentInterface $adjustment, Result $parentResult);
+    public function calculateDiscountAdjustment(Model\AdjustmentInterface $adjustment);
 }

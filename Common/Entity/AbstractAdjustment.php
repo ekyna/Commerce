@@ -150,9 +150,7 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     }
 
     /**
-     * Returns the adjustable.
-     *
-     * @return AdjustableInterface
+     * @inheritdoc
      */
     abstract public function getAdjustable();
 }

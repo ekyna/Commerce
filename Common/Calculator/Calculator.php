@@ -48,7 +48,7 @@ class Calculator implements CalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSaleItem(SaleItemInterface $item)
+    public function calculateSaleItem(SaleItemInterface $item, $gross = false)
     {
         // TODO don't calculate twice
 
@@ -58,7 +58,7 @@ class Calculator implements CalculatorInterface
 
             // Merge children results
             foreach ($item->getChildren() as $child) {
-                $result->merge($this->calculateSaleItem($child));
+                $result->merge($this->calculateSaleItem($child)); // not gross
             }
 
         } else { // Calculate as a "child" item
@@ -103,13 +103,10 @@ class Calculator implements CalculatorInterface
                         foreach ($adjustments as $adjustment) {
                             $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
 
-                            $gross = $this->round($base * (1 + $adjustment->getAmount() / 100));
-                            $amount = $gross - $roundedBase;
-
                             $result->addTax(
                                 $adjustment->getDesignation(),
                                 $adjustment->getAmount(),
-                                $amount
+                                $this->round($base * (1 + $adjustment->getAmount() / 100)) - $roundedBase
                             );
                         }
                     }
@@ -121,14 +118,13 @@ class Calculator implements CalculatorInterface
         }
 
         // Discount adjustments
-        if ($item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
-            $parentResult = clone $result;
+        if (!$gross && $item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
             $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
             foreach ($adjustments as $adjustment) {
                 // Only 'percent' mode adjustments are allowed here.
                 $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
 
-                $result->merge($this->calculateDiscountAdjustment($adjustment, $parentResult));
+                $result->merge($this->calculateDiscountAdjustment($adjustment));
             }
         }
 
@@ -138,9 +134,10 @@ class Calculator implements CalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSale(SaleInterface $sale)
+    public function calculateSale(SaleInterface $sale, $gross = false)
     {
         // TODO don't calculate twice
+        // TODO enable result caching
 
         $result = new Result();
 
@@ -152,13 +149,14 @@ class Calculator implements CalculatorInterface
         }
 
         // Discount adjustments results
-        if ($sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
-            $parentResult = clone $result;
+        if (!$gross && $sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
             $adjustments = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
             foreach ($adjustments as $adjustment) {
-                $result->merge($this->calculateDiscountAdjustment($adjustment, $parentResult));
+                $result->merge($this->calculateDiscountAdjustment($adjustment));
             }
         }
+
+        // TODO disable result caching
 
         return $result;
     }
@@ -166,11 +164,20 @@ class Calculator implements CalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateDiscountAdjustment(AdjustmentInterface $adjustment, Result $parentResult)
+    public function calculateDiscountAdjustment(AdjustmentInterface $adjustment)
     {
         $this->assertAdjustmentType($adjustment, AdjustmentTypes::TYPE_DISCOUNT);
 
         // TODO don't calculate twice
+
+        $adjustable = $adjustment->getAdjustable();
+        if ($adjustable instanceof SaleInterface) {
+            $parentResult = $this->calculateSale($adjustable, true);
+        } elseif ($adjustable instanceof SaleItemInterface) {
+            $parentResult = $this->calculateSaleItem($adjustable, true);
+        } else {
+            throw new InvalidArgumentException('Unexpected adjustable.');
+        }
 
         $result = new Result();
 
