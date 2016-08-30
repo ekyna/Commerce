@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
 use Doctrine\ORM\Tools\ResolveTargetEntityListener;
 use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\ORM\Tools\ToolsException;
 use Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection\DoctrineBundleMapping;
 use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener\LoadMetadataSubscriber;
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\CustomerEventSubscriber;
@@ -137,14 +138,14 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
         $config->setQueryCacheImpl(new ArrayCache());
         $config->setMetadataCacheImpl(new ArrayCache());
 
-        $dbPath = __DIR__ . '/../db.sqlite';
+        /*$dbPath = __DIR__ . '/../db.sqlite';
         if (file_exists($dbPath)) {
             unlink($dbPath);
-        }
+        }*/
         $connection = [
             'driver' => 'pdo_sqlite',
-            'path'   => $dbPath,
-            //'path' => ':memory:'
+            //'path'   => $dbPath,
+            'path' => ':memory:'
         ];
 
         // Event listeners
