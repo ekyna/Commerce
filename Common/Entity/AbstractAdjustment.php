@@ -51,7 +51,7 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     public function __construct()
     {
         $this->type = AdjustmentTypes::TYPE_DISCOUNT;
-        $this->mode = AdjustmentModes::MODE_FLAT;
+        $this->mode = AdjustmentModes::MODE_PERCENT;
         $this->position = 0;
     }
 

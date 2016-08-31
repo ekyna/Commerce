@@ -21,6 +21,7 @@ class Builder
      */
     private $calculator;
 
+    private $lineNumber;
 
     /**
      * Constructor.
@@ -41,18 +42,20 @@ class Builder
      */
     public function buildSaleView(SaleInterface $sale)
     {
+        $this->lineNumber = 1;
+
         $grossResult = $this->calculator->calculateSale($sale, true);
         $finalResult = $this->calculator->calculateSale($sale);
 
         $grossTotal = new Total(
             $grossResult->getBase(),
-            $grossResult->getTaxesTotal(),
+            $grossResult->getTaxTotal(),
             $grossResult->getTotal()
         );
 
         $finalTotal = new Total(
             $finalResult->getBase(),
-            $finalResult->getTaxesTotal(),
+            $finalResult->getTaxTotal(),
             $finalResult->getTotal()
         );
 
@@ -135,6 +138,7 @@ class Builder
     {
         $gross = !$item->hasChildren() && $item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
 
+        $lineNumber = $this->lineNumber++;
         $amounts = $this->calculator->calculateSaleItem($item, $gross);
 
         $lines = [];
@@ -156,18 +160,15 @@ class Builder
             $quantity *= $parent->getQuantity();
         }
 
-        $taxSum = 0;
-        foreach ($amounts->getTaxes() as $tax) {
-            $taxSum += $tax->getAmount();
-        }
-
         return new Line(
+            $lineNumber,
             $item->getDesignation(),
             $item->getReference(),
             $item->getNetPrice(),
             $quantity,
             $amounts->getBase(),
-            $taxSum,
+            $amounts->getTaxRate(),
+            $amounts->getTaxTotal(),
             $amounts->getTotal(),
             $lines,
             $item->hasChildren()
@@ -187,20 +188,18 @@ class Builder
             throw new InvalidArgumentException("Unexpected adjustment type.");
         }
 
+        $lineNumber = $this->lineNumber++;
         $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
 
-        $taxSum = 0;
-        foreach ($amounts->getTaxes() as $tax) {
-            $taxSum += $tax->getAmount();
-        }
-
         return new Line(
+            $lineNumber,
             $adjustment->getDesignation(),
             '',
             null,
             1,
             $amounts->getBase(),
-            $taxSum,
+            null,
+            $amounts->getTaxTotal(),
             $amounts->getTotal()
         );
     }

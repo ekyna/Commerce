@@ -10,6 +10,11 @@ namespace Ekyna\Component\Commerce\Common\View;
 class Line
 {
     /**
+     * @var int
+     */
+    private $number;
+
+    /**
      * @var string
      */
     private $designation;
@@ -37,7 +42,12 @@ class Line
     /**
      * @var float
      */
-    private $tax;
+    private $taxRate;
+
+    /**
+     * @var float
+     */
+    private $taxAmount;
 
     /**
      * @var float
@@ -58,27 +68,52 @@ class Line
     /**
      * Constructor.
      *
+     * @param int    $number
      * @param string $designation
      * @param string $reference
      * @param float  $unit
      * @param float  $quantity
      * @param float  $base
-     * @param float  $tax
+     * @param float  $taxRate
+     * @param float  $taxAmount
      * @param float  $total
      * @param array  $lines
      * @param bool   $children
      */
-    public function __construct($designation, $reference, $unit, $quantity, $base, $tax, $total, array $lines = [], $children = false)
-    {
+    public function __construct(
+        $number,
+        $designation,
+        $reference,
+        $unit,
+        $quantity,
+        $base,
+        $taxRate,
+        $taxAmount,
+        $total,
+        array $lines = [],
+        $children = false
+    ) {
+        $this->number = $number;
         $this->designation = $designation;
         $this->reference = $reference;
         $this->unit = $unit;
         $this->quantity = $quantity;
         $this->base = $base;
-        $this->tax = $tax;
+        $this->taxRate = $taxRate;
+        $this->taxAmount = $taxAmount;
         $this->total = $total;
         $this->lines = $lines;
         $this->children = $children;
+    }
+
+    /**
+     * Returns the number.
+     *
+     * @return int
+     */
+    public function getNumber()
+    {
+        return $this->number;
     }
 
     /**
@@ -132,13 +167,23 @@ class Line
     }
 
     /**
+     * Returns the tax rate.
+     *
+     * @return float
+     */
+    public function getTaxRate()
+    {
+        return $this->taxRate;
+    }
+
+    /**
      * Returns the tax.
      *
      * @return float
      */
-    public function getTax()
+    public function getTaxAmount()
     {
-        return $this->tax;
+        return $this->taxAmount;
     }
 
     /**

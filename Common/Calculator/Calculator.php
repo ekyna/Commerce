@@ -196,6 +196,18 @@ class Calculator implements CalculatorInterface
             }
         } elseif (AdjustmentModes::MODE_FLAT === $mode) {
             $result->addBase(- $this->round($adjustment->getAmount()));
+
+            // TODO calculate per tax discount (dispatch regarding to each tax total)
+
+            /*$rate = $adjustment->getAmount() / $parentResult->getBase();
+            foreach ($parentResult->getTaxes() as $taxAmount) {
+                $result->addTax(
+                    $taxAmount->getName(),
+                    $taxAmount->getRate(),
+                    -$this->round($taxAmount->getAmount() * $rate)
+                );
+            }*/
+
         } else {
             throw new InvalidArgumentException("Unexpected adjustment mode '$mode'.");
         }

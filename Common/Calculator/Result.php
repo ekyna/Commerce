@@ -138,11 +138,26 @@ class Result
     }
 
     /**
-     * Returns the taxes total.
+     * Returns the tax rate.
      *
      * @return float
      */
-    public function getTaxesTotal()
+    public function getTaxRate()
+    {
+        // TODO This method is for rendering purpose ... What if we've got multiple taxes ???
+        if (0 < count($this->taxes)) {
+            return $this->taxes[0]->getRate();
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the tax total.
+     *
+     * @return float
+     */
+    public function getTaxTotal()
     {
         $total = 0;
 
@@ -161,7 +176,7 @@ class Result
     public function getTotal()
     {
         if (null === $this->total) {
-            $this->total = $this->base + $this->getTaxesTotal();
+            $this->total = $this->base + $this->getTaxTotal();
         }
 
         return $this->total;
