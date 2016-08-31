@@ -49,6 +49,11 @@ class Line
      */
     private $lines;
 
+    /**
+     * @var bool
+     */
+    private $children = false;
+
 
     /**
      * Constructor.
@@ -61,8 +66,9 @@ class Line
      * @param float  $tax
      * @param float  $total
      * @param array  $lines
+     * @param bool   $children
      */
-    public function __construct($designation, $reference, $unit, $quantity, $base, $tax, $total, array $lines = [])
+    public function __construct($designation, $reference, $unit, $quantity, $base, $tax, $total, array $lines = [], $children = false)
     {
         $this->designation = $designation;
         $this->reference = $reference;
@@ -72,6 +78,7 @@ class Line
         $this->tax = $tax;
         $this->total = $total;
         $this->lines = $lines;
+        $this->children = $children;
     }
 
     /**
@@ -152,5 +159,15 @@ class Line
     public function getLines()
     {
         return $this->lines;
+    }
+
+    /**
+     * Returns whether the line has children (items) or not.
+     *
+     * @return boolean
+     */
+    public function isChildren()
+    {
+        return $this->children;
     }
 }

@@ -41,14 +41,28 @@ class Builder
      */
     public function buildSaleView(SaleInterface $sale)
     {
-        $amounts = $this->calculator->calculateSale($sale);
+        $grossResult = $this->calculator->calculateSale($sale, true);
+        $finalResult = $this->calculator->calculateSale($sale);
+
+        $grossTotal = new Total(
+            $grossResult->getBase(),
+            $grossResult->getTaxesTotal(),
+            $grossResult->getTotal()
+        );
+
+        $finalTotal = new Total(
+            $finalResult->getBase(),
+            $finalResult->getTaxesTotal(),
+            $finalResult->getTotal()
+        );
 
         return new Sale(
             CalculatorInterface::MODE_NET, // TODO This should be resolved regarding to the customer group
-            $this->buildSaleLinesViews($sale),
-            $amounts->getBase(),
-            $this->buildSaleLinesViews($sale),
-            $amounts->getTotal()
+            $grossTotal,
+            $finalTotal,
+            $this->buildSaleItemsLinesViews($sale),
+            $this->buildSaleDiscountsLinesViews($sale),
+            $this->buildSaleTaxesViews($sale)
         );
     }
 
@@ -79,13 +93,27 @@ class Builder
      *
      * @return Line[]
      */
-    protected function buildSaleLinesViews(SaleInterface $sale)
+    protected function buildSaleItemsLinesViews(SaleInterface $sale)
     {
         $lines = [];
 
         foreach ($sale->getItems() as $item) {
-            $lines[] = $this->buildSaleLineView($item);
+            $lines[] = $this->buildSaleItemLineView($item);
         }
+
+        return $lines;
+    }
+
+    /**
+     * Builds the sale discounts lines views.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return Line[]
+     */
+    protected function buildSaleDiscountsLinesViews(SaleInterface $sale)
+    {
+        $lines = [];
 
         if ($sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
             foreach ($sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
@@ -103,20 +131,29 @@ class Builder
      *
      * @return Line
      */
-    protected function buildSaleLineView(SaleItemInterface $item)
+    protected function buildSaleItemLineView(SaleItemInterface $item)
     {
-        $amounts = $this->calculator->calculateSaleItem($item);
+        $gross = !$item->hasChildren() && $item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
+
+        $amounts = $this->calculator->calculateSaleItem($item, $gross);
 
         $lines = [];
         if ($item->hasChildren()) {
             foreach ($item->getChildren() as $child) {
-                $lines[] = $this->buildSaleLineView($child);
+                $lines[] = $this->buildSaleItemLineView($child);
             }
         }
         if ($item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
             foreach ($item->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
                 $lines[] = $this->buildDiscountAdjustmentLine($adjustment);
             }
+        }
+
+        // Item total quantity
+        $quantity = $item->getQuantity();
+        $parent = $item;
+        while (null !== $parent = $parent->getParent()) {
+            $quantity *= $parent->getQuantity();
         }
 
         $taxSum = 0;
@@ -128,11 +165,12 @@ class Builder
             $item->getDesignation(),
             $item->getReference(),
             $item->getNetPrice(),
-            $item->getQuantity(),
+            $quantity,
             $amounts->getBase(),
             $taxSum,
             $amounts->getTotal(),
-            $lines
+            $lines,
+            $item->hasChildren()
         );
     }
 
@@ -159,7 +197,7 @@ class Builder
         return new Line(
             $adjustment->getDesignation(),
             '',
-            $amounts->getBase(),
+            null,
             1,
             $amounts->getBase(),
             $taxSum,

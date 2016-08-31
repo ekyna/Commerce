@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Model;
 
 /**
  * Interface CalculatorInterface
+ *
  * @package Ekyna\Component\Commerce\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
@@ -35,19 +36,21 @@ interface CalculatorInterface
      * Calculates the sale item's amounts.
      *
      * @param Model\SaleItemInterface $item
+     * @param bool                    $gross
      *
      * @return Result
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item);
+    public function calculateSaleItem(Model\SaleItemInterface $item, $gross = false);
 
     /**
      * Calculates the sale's amounts.
      *
      * @param Model\SaleInterface $sale
+     * @param bool                $gross
      *
      * @return Result
      */
-    public function calculateSale(Model\SaleInterface $sale);
+    public function calculateSale(Model\SaleInterface $sale, $gross = false);
 
     /**
      * Calculates the adjustment amounts.

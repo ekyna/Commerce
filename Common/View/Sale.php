@@ -15,42 +15,65 @@ class Sale
     private $mode;
 
     /**
-     * @var Line[]
+     * @var Total
      */
-    private $lines;
+    private $gross;
 
     /**
-     * @var float
+     * @var Total
      */
-    private $base;
+    private $final;
+
+    /**
+     * @var Line[]
+     */
+    private $items;
+
+    /**
+     * @var Line[]
+     */
+    private $discounts;
 
     /**
      * @var Tax[]
      */
     private $taxes;
 
-    /**
-     * @var float
-     */
-    private $total;
-
 
     /**
      * Constructor.
      *
      * @param string $mode
-     * @param Line[] $lines
-     * @param float  $base
+     * @param Total  $gross
+     * @param Total  $final
+     * @param Line[] $items
+     * @param Line[] $discounts
      * @param Tax[]  $taxes
-     * @param float  $total
      */
-    public function __construct($mode, array $lines, $base, array $taxes, $total)
+    public function __construct($mode, Total $gross, Total $final, array $items, array $discounts, array $taxes)
     {
-        $this->mode = $mode;
-        $this->lines = $lines;
-        $this->base = $base;
-        $this->taxes = $taxes;
-        $this->total = $total;
+        $this->mode      = $mode;
+        $this->gross     = $gross;
+        $this->final     = $final;
+        $this->items     = $items;
+        $this->discounts = $discounts;
+        $this->taxes     = $taxes;
+    }
+
+    /**
+     * @return Total
+     */
+    public function getGross()
+    {
+        return $this->gross;
+    }
+
+    /**
+     * @return Total
+     */
+    public function getFinal()
+    {
+        return $this->final;
     }
 
     /**
@@ -58,19 +81,19 @@ class Sale
      *
      * @return Line[]
      */
-    public function getLines()
+    public function getItems()
     {
-        return $this->lines;
+        return $this->items;
     }
 
     /**
-     * Returns the base.
+     * Returns the discounts lines.
      *
-     * @return float
+     * @return Line[]
      */
-    public function getBase()
+    public function getDiscounts()
     {
-        return $this->base;
+        return $this->discounts;
     }
 
     /**
@@ -81,15 +104,5 @@ class Sale
     public function getTaxes()
     {
         return $this->taxes;
-    }
-
-    /**
-     * Returns the total.
-     *
-     * @return float
-     */
-    public function getTotal()
-    {
-        return $this->total;
     }
 }

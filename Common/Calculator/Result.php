@@ -138,6 +138,22 @@ class Result
     }
 
     /**
+     * Returns the taxes total.
+     *
+     * @return float
+     */
+    public function getTaxesTotal()
+    {
+        $total = 0;
+
+        foreach ($this->taxes as $tax) {
+            $total += $tax->getAmount();
+        }
+
+        return $total;
+    }
+
+    /**
      * Returns the total.
      *
      * @return float
@@ -145,11 +161,7 @@ class Result
     public function getTotal()
     {
         if (null === $this->total) {
-            $this->total = $this->base;
-
-            foreach ($this->taxes as $tax) {
-                $this->total += $tax->getAmount();
-            }
+            $this->total = $this->base + $this->getTaxesTotal();
         }
 
         return $this->total;
