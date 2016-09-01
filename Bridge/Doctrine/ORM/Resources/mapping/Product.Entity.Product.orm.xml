@@ -45,7 +45,7 @@
         </many-to-one>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Product\Model\AttributeInterface" field="attributes">
-            <join-table name="product_attribute">
+            <join-table name="commerce_product_attribute">
                 <join-columns>
                     <join-column name="product_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>
