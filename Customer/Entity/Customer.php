@@ -106,12 +106,16 @@ class Customer implements CustomerInterface
     {
         $sign = '';
         if ($this->hasParent()) {
-            $sign = '&loz; ';
+            $sign = '&loz;';
         } elseif ($this->hasChildren()) {
-            $sign = '&diams; ';
+            $sign = '&diams;';
         }
 
-        return sprintf('%s%s %s', $sign, $this->firstName, $this->lastName);
+        if (0 < strlen($this->company)) {
+            return sprintf('%s [%s] %s %s', $sign, $this->company, $this->firstName, $this->lastName);
+        }
+
+        return sprintf('%s %s %s', $sign, $this->firstName, $this->lastName);
     }
 
     /**
