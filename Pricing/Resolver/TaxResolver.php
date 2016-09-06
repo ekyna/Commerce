@@ -5,9 +5,9 @@ namespace Ekyna\Component\Commerce\Pricing\Resolver;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 
 /**
  * Class TaxResolver
@@ -78,12 +78,12 @@ class TaxResolver implements TaxResolverInterface
      * @inheritdoc
      */
     public function getApplicableTaxesBySubjectAndCustomer(
-        SubjectInterface $subject,
+        TaxableInterface $taxable,
         CustomerInterface $customer,
         AddressInterface $address = null
     ) {
         return $this->getApplicableTaxesByTaxGroupAndCustomerGroups(
-            $subject->getTaxGroup(),
+            $taxable->getTaxGroup(),
             $customer->getCustomerGroups()->toArray(),
             $address
         );

@@ -5,15 +5,10 @@
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <embeddable name="Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity">
-
-        <!--<indexes>
-            <index columns="id,class" name="idx_subject" />
-        </indexes>-->
+    <embeddable name="Ekyna\Component\Commerce\Subject\Model\SubjectIdentity">
 
         <field name="id" type="integer" column="id" nullable="true" />
         <field name="class" column="class" type="string" length="255" nullable="true" />
-        <field name="data" column="data" type="array" nullable="true" />
 
     </embeddable>
 

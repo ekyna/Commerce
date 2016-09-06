@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Subject\Resolver;
 
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 
 /**
  * Interface SubjectResolverInterface
@@ -13,49 +12,40 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 interface SubjectResolverInterface
 {
     /**
-     * Returns the subject from the order item.
+     * Returns the subject from the sale item.
      *
-     * @param OrderItemInterface $item
+     * @param SaleItemInterface $item
      *
-     * @return SubjectInterface|null
+     * @return mixed
      */
-    public function resolve(OrderItemInterface $item);
+    public function resolve(SaleItemInterface $item);
 
     /**
-     * Transforms the subject to an order item.
+     * Generates the front office path for the given sale item.
      *
-     * @param SubjectInterface $subject
+     * @param SaleItemInterface $item
      *
-     * @return OrderItemInterface
+     * @return string|null
      */
-    public function transform(SubjectInterface $subject);
+    public function generateFrontOfficePath(SaleItemInterface $item);
 
     /**
-     * Generates the front office path for the given subject or order item.
+     * Generates the back office path for the given sale item.
      *
-     * @param SubjectInterface|OrderItemInterface $subjectOrItem
+     * @param SaleItemInterface $item
      *
-     * @return string
+     * @return string|null
      */
-    public function generateFrontOfficePath($subjectOrItem);
+    public function generateBackOfficePath(SaleItemInterface $item);
 
     /**
-     * Generates the back office path for the given subject or order item.
+     * Returns whether the resolver supports the given sale item.
      *
-     * @param SubjectInterface|OrderItemInterface $subjectOrItem
-     *
-     * @return string
-     */
-    public function generateBackOfficePath($subjectOrItem);
-
-    /**
-     * Returns whether the resolver supports the given subject or order item.
-     *
-     * @param SubjectInterface|OrderItemInterface $subjectOrItem
+     * @param SaleItemInterface $item
      *
      * @return boolean
      */
-    public function supports($subjectOrItem);
+    public function supports(SaleItemInterface $item);
 
     /**
      * Returns the resolver name.
@@ -63,13 +53,4 @@ interface SubjectResolverInterface
      * @return string
      */
     public function getName();
-
-    /**
-     * Sets the order item class.
-     *
-     * @param string $class
-     *
-     * @return AbstractSubjectResolver
-     */
-    public function setItemClass($class);
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Subject\Entity;
+namespace Ekyna\Component\Commerce\Subject\Model;
 
 /**
  * Class SubjectIdentity
@@ -19,21 +19,6 @@ class SubjectIdentity
      */
     private $class;
 
-    /**
-     * @var array
-     */
-    private $data;
-
-
-    /**
-     * Returns whether the identity is defined or not.
-     *
-     * @return bool
-     */
-    public function isDefined()
-    {
-        return 0 < $this->id && class_exists($this->class);
-    }
 
     /**
      * Returns the id.
@@ -52,7 +37,7 @@ class SubjectIdentity
      *
      * @return SubjectIdentity
      */
-    public function setId($id = null)
+    public function setId($id)
     {
         $this->id = $id;
 
@@ -76,33 +61,9 @@ class SubjectIdentity
      *
      * @return SubjectIdentity
      */
-    public function setClass($class = null)
+    public function setClass($class)
     {
         $this->class = $class;
-
-        return $this;
-    }
-
-    /**
-     * Returns the data.
-     *
-     * @return array
-     */
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    /**
-     * Sets the data.
-     *
-     * @param array $data
-     *
-     * @return SubjectIdentity
-     */
-    public function setData(array $data = null)
-    {
-        $this->data = $data;
 
         return $this;
     }

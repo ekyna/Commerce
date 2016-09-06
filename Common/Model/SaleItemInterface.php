@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Subject\Model\SubjectIdentity;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -12,6 +13,13 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface SaleItemInterface extends ResourceInterface, AdjustableInterface
 {
+    /**
+     * Returns the sale.
+     *
+     * @return SaleInterface
+     */
+    public function getSale();
+
     /**
      * Returns the parent item.
      *
@@ -128,4 +136,45 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
      * @return $this|SaleItemInterface
      */
     public function setPosition($position);
+
+    /**
+     * Returns whether the item has a subject identity or not.
+     *
+     * @return bool
+     */
+    public function hasSubjectIdentity();
+
+    /**
+     * Returns the subject identity.
+     *
+     * @return SubjectIdentity|null
+     */
+    public function getSubjectIdentity();
+
+    /**
+     * Sets the subject identity.
+     *
+     * @param SubjectIdentity|null $identity
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function setSubjectIdentity(SubjectIdentity $identity = null);
+
+    /**
+     * Returns the subject (may return null if it has not been resolved yet).
+     *
+     * @return object|null
+     * @internal
+     */
+    public function getSubject();
+
+    /**
+     * Sets the subject.
+     *
+     * @param object $subject
+     *
+     * @return $this|SaleItemInterface
+     * @internal
+     */
+    public function setSubject($subject = null);
 }

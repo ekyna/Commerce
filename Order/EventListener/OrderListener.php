@@ -118,6 +118,10 @@ class OrderListener
             $changed = $this->handleAddresses($order) || $changed;
         }
 
+        // TODO resolve/fix taxation adjustments if delivery address changed.
+        // - Replace based on subject.
+        // - If no subject, remove unexpected taxes ?
+
         // Update totals
         // TODO test that, maybe we have to use UnitOfWork::isCollectionScheduledFor*
         if ($event->isChanged(['items', 'adjustments', 'payments'])) {

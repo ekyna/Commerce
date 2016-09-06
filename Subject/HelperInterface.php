@@ -3,8 +3,7 @@
 namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 
 /**
  * Interface HelperInterface
@@ -16,36 +15,27 @@ interface HelperInterface
     /**
      * Returns the subject from the order item.
      *
-     * @param OrderItemInterface $item
-     * @return SubjectInterface|null
+     * @param SaleItemInterface $item
+     * @return mixed
      * @throws InvalidArgumentException
      */
-    public function resolve(OrderItemInterface $item);
-
-    /**
-     * Transforms the subject to an order item.
-     *
-     * @param SubjectInterface $subject
-     * @return OrderItemInterface
-     * @throws InvalidArgumentException
-     */
-    public function transform(SubjectInterface $subject);
+    public function resolve(SaleItemInterface $item);
 
     /**
      * Generates the front office path for the given subject or order item.
      *
-     * @param SubjectInterface|OrderItemInterface $subjectOrItem
+     * @param SaleItemInterface $item
      * @return string|null
      * @throws InvalidArgumentException
      */
-    public function generateFrontOfficePath($subjectOrItem);
+    public function generateFrontOfficePath(SaleItemInterface $item);
 
     /**
      * Generates the back office path for the given subject or order item.
      *
-     * @param SubjectInterface|OrderItemInterface $subjectOrItem
+     * @param SaleItemInterface $item
      * @return string|null
      * @throws InvalidArgumentException
      */
-    public function generateBackOfficePath($subjectOrItem);
+    public function generateBackOfficePath(SaleItemInterface $item);
 }

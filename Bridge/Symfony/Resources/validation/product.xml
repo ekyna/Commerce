@@ -324,6 +324,24 @@
             </constraint>
         </property>
 
+        <!-- Weight -->
+        <property name="weight">
+            <constraint name="IsNull">
+                <option name="groups">
+                    <value>variable</value>
+                    <value>bundle</value>
+                    <value>configurable</value>
+                </option>
+            </constraint>
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+                <option name="groups">
+                    <value>simple</value>
+                    <value>variant</value>
+                </option>
+            </constraint>
+        </property>
+
         <!-- Tax group -->
         <property name="taxGroup">
             <constraint name="IsNull">

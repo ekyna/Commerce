@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
@@ -19,6 +20,14 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     protected $order;
 
+
+    /**
+     * @inheritdoc
+     */
+    public function getSale()
+    {
+        return $this->getOrder();
+    }
 
     /**
      * @inheritdoc

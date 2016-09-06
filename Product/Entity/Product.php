@@ -69,6 +69,11 @@ class Product implements Model\ProductInterface
     protected $netPrice;
 
     /**
+     * @var float
+     */
+    protected $weight;
+
+    /**
      * @var TaxGroupInterface
      */
     protected $taxGroup;
@@ -495,6 +500,24 @@ class Product implements Model\ProductInterface
     public function setNetPrice($netPrice)
     {
         $this->netPrice = $netPrice;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getWeight()
+    {
+        return $this->weight;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setWeight($weight)
+    {
+        $this->weight = $weight;
 
         return $this;
     }

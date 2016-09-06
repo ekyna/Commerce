@@ -14,6 +14,7 @@ class SubjectResolverRegistry implements SubjectResolverRegistryInterface
      */
     protected $resolvers;
 
+
     /**
      * Constructor.
      */

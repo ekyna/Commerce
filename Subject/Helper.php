@@ -3,8 +3,7 @@
 namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Subject\Resolver\SubjectResolverRegistryInterface;
 
 /**
@@ -33,10 +32,12 @@ class Helper implements HelperInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(OrderItemInterface $item)
+    public function resolve(SaleItemInterface $item)
     {
+        /** @noinspection PhpInternalEntityUsedInspection */
         if ((null === $subject = $item->getSubject()) && $item->hasSubjectIdentity()) {
             $subject = $this->getResolver($item)->resolve($item);
+            /** @noinspection PhpInternalEntityUsedInspection */
             $item->setSubject($subject);
 
             return $subject;
@@ -48,22 +49,14 @@ class Helper implements HelperInterface
     /**
      * {@inheritdoc}
      */
-    public function transform(SubjectInterface $subject)
+    public function generateFrontOfficePath(SaleItemInterface $item)
     {
-        return $this->getResolver($subject)->transform($subject);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function generateFrontOfficePath($subjectOrItem)
-    {
-        if ($subjectOrItem instanceof OrderItemInterface && !$subjectOrItem->hasSubjectIdentity()) {
+        if (!$item->hasSubjectIdentity()) {
             return null;
         }
 
-        if (null !== $resolver = $this->getResolver($subjectOrItem)) {
-            return $resolver->generateFrontOfficePath($subjectOrItem);
+        if (null !== $resolver = $this->getResolver($item)) {
+            return $resolver->generateFrontOfficePath($item);
         }
 
         return null;
@@ -72,31 +65,31 @@ class Helper implements HelperInterface
     /**
      * {@inheritdoc}
      */
-    public function generateBackOfficePath($subjectOrItem)
+    public function generateBackOfficePath(SaleItemInterface $item)
     {
-        if ($subjectOrItem instanceof OrderItemInterface && !$subjectOrItem->hasSubjectIdentity()) {
+        if (!$item->hasSubjectIdentity()) {
             return null;
         }
 
-        if (null !== $resolver = $this->getResolver($subjectOrItem)) {
-            return $resolver->generateBackOfficePath($subjectOrItem);
+        if (null !== $resolver = $this->getResolver($item)) {
+            return $resolver->generateBackOfficePath($item);
         }
 
         return null;
     }
 
     /**
-     * Returns the resolver that supports the subject or item.
+     * Returns the resolver that supports the item.
      *
-     * @param SubjectInterface|OrderItemInterface $subjectOrItem
+     * @param SaleItemInterface $item
      *
      * @return \Ekyna\Component\Commerce\Subject\Resolver\SubjectResolverInterface
      * @throws InvalidArgumentException
      */
-    protected function getResolver($subjectOrItem)
+    protected function getResolver(SaleItemInterface $item)
     {
         foreach ($this->registry->getResolvers() as $resolver) {
-            if ($resolver->supports($subjectOrItem)) {
+            if ($resolver->supports($item)) {
                 return $resolver;
             }
         }

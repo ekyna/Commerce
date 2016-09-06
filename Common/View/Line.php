@@ -15,6 +15,11 @@ class Line
     private $number;
 
     /**
+     * @var int
+     */
+    private $level;
+
+    /**
      * @var string
      */
     private $designation;
@@ -62,13 +67,14 @@ class Line
     /**
      * @var bool
      */
-    private $children = false;
+    private $children = false; // TODO rename leaf/node ?
 
 
     /**
      * Constructor.
      *
      * @param int    $number
+     * @param int    $level
      * @param string $designation
      * @param string $reference
      * @param float  $unit
@@ -82,6 +88,7 @@ class Line
      */
     public function __construct(
         $number,
+        $level,
         $designation,
         $reference,
         $unit,
@@ -94,6 +101,7 @@ class Line
         $children = false
     ) {
         $this->number = $number;
+        $this->level = $level;
         $this->designation = $designation;
         $this->reference = $reference;
         $this->unit = $unit;
@@ -114,6 +122,16 @@ class Line
     public function getNumber()
     {
         return $this->number;
+    }
+
+    /**
+     * Returns the level.
+     *
+     * @return int
+     */
+    public function getLevel()
+    {
+        return $this->level;
     }
 
     /**

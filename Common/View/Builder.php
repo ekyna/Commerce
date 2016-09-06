@@ -21,7 +21,11 @@ class Builder
      */
     private $calculator;
 
+    /**
+     * @var int
+     */
     private $lineNumber;
+
 
     /**
      * Constructor.
@@ -131,10 +135,11 @@ class Builder
      * Builds the sale line view.
      *
      * @param SaleItemInterface $item
+     * @param int               $level
      *
      * @return Line
      */
-    protected function buildSaleItemLineView(SaleItemInterface $item)
+    protected function buildSaleItemLineView(SaleItemInterface $item, $level = 0)
     {
         $gross = !$item->hasChildren() && $item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
 
@@ -144,12 +149,12 @@ class Builder
         $lines = [];
         if ($item->hasChildren()) {
             foreach ($item->getChildren() as $child) {
-                $lines[] = $this->buildSaleItemLineView($child);
+                $lines[] = $this->buildSaleItemLineView($child, $level + 1);
             }
         }
         if ($item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
             foreach ($item->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-                $lines[] = $this->buildDiscountAdjustmentLine($adjustment);
+                $lines[] = $this->buildDiscountAdjustmentLine($adjustment, $level + 1);
             }
         }
 
@@ -162,6 +167,7 @@ class Builder
 
         return new Line(
             $lineNumber,
+            $level,
             $item->getDesignation(),
             $item->getReference(),
             $item->getNetPrice(),
@@ -179,10 +185,11 @@ class Builder
      * Builds the discount adjustment line.
      *
      * @param AdjustmentInterface $adjustment
+     * @param int                 $level
      *
      * @return Line
      */
-    protected function buildDiscountAdjustmentLine(AdjustmentInterface $adjustment)
+    protected function buildDiscountAdjustmentLine(AdjustmentInterface $adjustment, $level = 0)
     {
         if (AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
             throw new InvalidArgumentException("Unexpected adjustment type.");
@@ -193,6 +200,7 @@ class Builder
 
         return new Line(
             $lineNumber,
+            $level,
             $adjustment->getDesignation(),
             '',
             null,

@@ -5,9 +5,9 @@ namespace Ekyna\Component\Commerce\Pricing\Resolver;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 
 /**
  * Interface TaxResolverInterface
@@ -48,14 +48,14 @@ interface TaxResolverInterface
     /**
      * Resolves the applicable taxes by subject and customer.
      *
-     * @param SubjectInterface  $subject
+     * @param TaxableInterface  $taxable
      * @param CustomerInterface $customer
      * @param AddressInterface  $address
      *
      * @return array|TaxInterface[]
      */
     public function getApplicableTaxesBySubjectAndCustomer(
-        SubjectInterface $subject,
+        TaxableInterface $taxable,
         CustomerInterface $customer,
         AddressInterface $address = null
     );

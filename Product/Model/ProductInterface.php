@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Product\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -11,7 +12,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ProductInterface extends ResourceInterface
+interface ProductInterface extends ResourceInterface, TaxableInterface
 {
     /**
      * Sets the id.
@@ -278,14 +279,14 @@ interface ProductInterface extends ResourceInterface
     public function setReference($reference);
 
     /**
-     * Returns the netPrice.
+     * Returns the net price.
      *
      * @return float
      */
     public function getNetPrice();
 
     /**
-     * Sets the netPrice.
+     * Sets the net price.
      *
      * @param float $netPrice
      *
@@ -294,11 +295,20 @@ interface ProductInterface extends ResourceInterface
     public function setNetPrice($netPrice);
 
     /**
-     * Returns the tax group.
+     * Returns the weight.
      *
-     * @return TaxGroupInterface
+     * @return float
      */
-    public function getTaxGroup();
+    public function getWeight();
+
+    /**
+     * Sets the weight.
+     *
+     * @param float $weight
+     *
+     * @return $this|ProductInterface
+     */
+    public function setWeight($weight);
 
     /**
      * Sets the tax group.
