@@ -130,7 +130,4 @@
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
     </class>
 
-    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
-    </class>
-
 </constraint-mapping>

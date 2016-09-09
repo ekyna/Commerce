@@ -126,54 +126,6 @@ interface OrderInterface extends SaleInterface
     public function setPaidTotal($paidTotal);
 
     /**
-     * Returns whether the order has the item or not.
-     *
-     * @param OrderItemInterface $item
-     * @return bool
-     */
-    public function hasItem(OrderItemInterface $item);
-
-    /**
-     * Adds the item.
-     *
-     * @param OrderItemInterface $item
-     * @return $this|OrderInterface
-     */
-    public function addItem(OrderItemInterface $item);
-
-    /**
-     * Removes the item.
-     *
-     * @param OrderItemInterface $item
-     * @return $this|OrderInterface
-     */
-    public function removeItem(OrderItemInterface $item);
-
-    /**
-     * Returns whether the order has the adjustment or not.
-     *
-     * @param OrderAdjustmentInterface $adjustment
-     * @return bool
-     */
-    public function hasAdjustment(OrderAdjustmentInterface $adjustment);
-
-    /**
-     * Adds the adjustment.
-     *
-     * @param OrderAdjustmentInterface $adjustment
-     * @return $this|OrderInterface
-     */
-    public function addAdjustment(OrderAdjustmentInterface $adjustment);
-
-    /**
-     * Removes the adjustment.
-     *
-     * @param OrderAdjustmentInterface $adjustment
-     * @return $this|OrderInterface
-     */
-    public function removeAdjustment(OrderAdjustmentInterface $adjustment);
-
-    /**
      * Returns whether the order has payments or not.
      *
      * @return bool

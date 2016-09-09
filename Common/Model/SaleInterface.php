@@ -57,7 +57,7 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
      *
      * @param string $firstName
      *
-*@return $this|SaleInterface
+     * @return $this|SaleInterface
      */
     public function setFirstName($firstName);
 
@@ -73,7 +73,7 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
      *
      * @param string $lastName
      *
-*@return $this|SaleInterface
+     * @return $this|SaleInterface
      */
     public function setLastName($lastName);
 
@@ -89,7 +89,7 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
      *
      * @param string $email
      *
-*@return $this|SaleInterface
+     * @return $this|SaleInterface
      */
     public function setEmail($email);
 
@@ -145,6 +145,30 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
      * @return bool
      */
     public function hasItems();
+
+    /**
+     * Returns whether the sale has the item or not.
+     *
+     * @param SaleItemInterface $item
+     * @return bool
+     */
+    public function hasItem(SaleItemInterface $item);
+
+    /**
+     * Adds the item.
+     *
+     * @param SaleItemInterface $item
+     * @return $this|SaleInterface
+     */
+    public function addItem(SaleItemInterface $item);
+
+    /**
+     * Removes the item.
+     *
+     * @param SaleItemInterface $item
+     * @return $this|SaleInterface
+     */
+    public function removeItem(SaleItemInterface $item);
 
     /**
      * Returns the items.

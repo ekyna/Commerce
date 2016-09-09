@@ -25,44 +25,4 @@ interface OrderItemInterface extends SaleItemInterface
      * @return $this|OrderItemInterface
      */
     public function setOrder(OrderInterface $order = null);
-
-    /**
-     * Sets the parent.
-     *
-     * @param OrderItemInterface $parent
-     * @return $this|OrderItemInterface
-     */
-    public function setParent(OrderItemInterface $parent = null);
-
-    /**
-     * Adds the child item.
-     *
-     * @param OrderItemInterface $item
-     * @return $this|OrderItemInterface
-     */
-    public function addChild(OrderItemInterface $item);
-
-    /**
-     * Removes the child item.
-     *
-     * @param OrderItemInterface $item
-     * @return $this|OrderItemInterface
-     */
-    public function removeChild(OrderItemInterface $item);
-
-    /**
-     * Adds the adjustment.
-     *
-     * @param OrderItemAdjustmentInterface $adjustment
-     * @return $this|OrderItemInterface
-     */
-    public function addAdjustment(OrderItemAdjustmentInterface $adjustment);
-
-    /**
-     * Removes the adjustment.
-     *
-     * @param OrderItemAdjustmentInterface $adjustment
-     * @return $this|OrderItemInterface
-     */
-    public function removeAdjustment(OrderItemAdjustmentInterface $adjustment);
 }

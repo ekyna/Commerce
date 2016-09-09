@@ -21,6 +21,33 @@ interface AdjustableInterface
     public function hasAdjustments($type = null);
 
     /**
+     * Returns whether the adjustable has the adjustment or not.
+     *
+     * @param AdjustmentInterface $adjustment
+     *
+     * @return bool
+     */
+    public function hasAdjustment(AdjustmentInterface $adjustment);
+
+    /**
+     * Adds the adjustment.
+     *
+     * @param AdjustmentInterface $adjustment
+     *
+     * @return $this|AdjustableInterface
+     */
+    public function addAdjustment(AdjustmentInterface $adjustment);
+
+    /**
+     * Removes the adjustment.
+     *
+     * @param AdjustmentInterface $adjustment
+     *
+     * @return $this|AdjustableInterface
+     */
+    public function removeAdjustment(AdjustmentInterface $adjustment);
+
+    /**
      * Returns the adjustments, optionally filtered by type.
      *
      * @param string $type

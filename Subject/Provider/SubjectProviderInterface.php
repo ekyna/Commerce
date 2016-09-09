@@ -13,6 +13,15 @@ use Symfony\Component\Form\FormInterface;
 interface SubjectProviderInterface
 {
     /**
+     * Returns whether the subject choice is needed or not.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return bool
+     */
+    public function needChoice(SaleItemInterface $item);
+
+    /**
      * Builds the subject choice form.
      *
      * @param FormInterface $form
@@ -20,19 +29,39 @@ interface SubjectProviderInterface
     public function buildChoiceForm(FormInterface $form);
 
     /**
-     * Builds the sale item form.
-     *
-     * @param FormInterface $form
-     */
-    public function buildItemForm(FormInterface $form);
-
-    /**
-     * Sets the item default data from the given subject.
+     * Choice form submit handler.
      *
      * @param SaleItemInterface $item
-     * @param mixed             $subject
+     *
+     * @return mixed
      */
-    public function setItemDefaults(SaleItemInterface $item, $subject);
+    public function handleChoiceSubmit(SaleItemInterface $item);
+
+    /**
+     * Returns whether the subject configuration is needed or not.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return bool
+     */
+    public function needConfiguration(SaleItemInterface $item);
+
+    /**
+     * Builds the subject configuration form.
+     *
+     * @param FormInterface     $form
+     * @param SaleItemInterface $item
+     */
+    public function buildConfigurationForm(FormInterface $form, SaleItemInterface $item);
+
+    /**
+     * Configuration form submit handler.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return mixed
+     */
+    public function handleConfigurationSubmit(SaleItemInterface $item);
 
     /**
      * Returns whether the provider supports the given subject or not.

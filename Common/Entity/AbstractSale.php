@@ -14,7 +14,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AbstractSale extends AbstractAdjustable implements SaleInterface
+abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
 {
     /**
      * @var int

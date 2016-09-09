@@ -35,7 +35,7 @@ class Helper implements HelperInterface
     public function resolve(SaleItemInterface $item)
     {
         /** @noinspection PhpInternalEntityUsedInspection */
-        if ((null === $subject = $item->getSubject()) && $item->hasSubjectIdentity()) {
+        if ((null === $subject = $item->getSubject()) && $item->hasSubjectData()) {
             $subject = $this->getResolver($item)->resolve($item);
             /** @noinspection PhpInternalEntityUsedInspection */
             $item->setSubject($subject);
@@ -51,7 +51,7 @@ class Helper implements HelperInterface
      */
     public function generateFrontOfficePath(SaleItemInterface $item)
     {
-        if (!$item->hasSubjectIdentity()) {
+        if (!$item->hasSubjectData()) {
             return null;
         }
 
@@ -67,7 +67,7 @@ class Helper implements HelperInterface
      */
     public function generateBackOfficePath(SaleItemInterface $item)
     {
-        if (!$item->hasSubjectIdentity()) {
+        if (!$item->hasSubjectData()) {
             return null;
         }
 

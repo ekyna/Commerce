@@ -30,32 +30,6 @@
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="parent" inversed-by="variants">
-            <cascade>
-                <cascade-persist/>
-            </cascade>
-            <join-column name="parent_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
-        </many-to-one>
-
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\AttributeSetInterface" field="attributeSet">
-            <join-column name="attribute_set_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
-        </many-to-one>
-
-        <many-to-one target-entity="Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface" field="taxGroup">
-            <join-column name="tax_group_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
-        </many-to-one>
-
-        <many-to-many target-entity="Ekyna\Component\Commerce\Product\Model\AttributeInterface" field="attributes">
-            <join-table name="commerce_product_attribute">
-                <join-columns>
-                    <join-column name="product_id" referenced-column-name="id" on-delete="CASCADE"/>
-                </join-columns>
-                <inverse-join-columns>
-                    <join-column name="attribute_id" referenced-column-name="id" on-delete="RESTRICT"/>
-                </inverse-join-columns>
-            </join-table>
-        </many-to-many>
-
         <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="variants" mapped-by="parent">
             <cascade>
                 <cascade-persist/>
@@ -76,6 +50,32 @@
                 <cascade-remove/>
             </cascade>
         </one-to-many>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="parent" inversed-by="variants">
+            <cascade>
+                <cascade-persist/>
+            </cascade>
+            <join-column name="parent_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
+        </many-to-one>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\AttributeSetInterface" field="attributeSet">
+            <join-column name="attribute_set_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface" field="taxGroup">
+            <join-column name="tax_group_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Product\Model\AttributeInterface" field="attributes">
+            <join-table name="commerce_product_attribute">
+                <join-columns>
+                    <join-column name="product_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="attribute_id" referenced-column-name="id" on-delete="RESTRICT"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
 
     </mapped-superclass>
 

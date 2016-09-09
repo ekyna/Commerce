@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
-use Ekyna\Component\Commerce\Subject\Model\SubjectIdentity;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -21,6 +20,15 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
     public function getSale();
 
     /**
+     * Sets the parent.
+     *
+     * @param SaleItemInterface $parent
+     * @return $this|SaleItemInterface
+     * @internal
+     */
+    public function setParent(SaleItemInterface $parent = null);
+
+    /**
      * Returns the parent item.
      *
      * @return SaleItemInterface|null
@@ -33,6 +41,24 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
      * @return bool
      */
     public function hasChildren();
+
+    /**
+     * Adds the child item.
+     *
+     * @param SaleItemInterface $child
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function addChild(SaleItemInterface $child);
+
+    /**
+     * Removes the child item.
+     *
+     * @param SaleItemInterface $child
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function removeChild(SaleItemInterface $child);
 
     /**
      * Returns the children items.
@@ -138,27 +164,27 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
     public function setPosition($position);
 
     /**
-     * Returns whether the item has a subject identity or not.
+     * Returns whether the item has a subject data or not.
      *
      * @return bool
      */
-    public function hasSubjectIdentity();
+    public function hasSubjectData();
 
     /**
-     * Returns the subject identity.
+     * Returns the subject data.
      *
-     * @return SubjectIdentity|null
+     * @return array|null
      */
-    public function getSubjectIdentity();
+    public function getSubjectData();
 
     /**
-     * Sets the subject identity.
+     * Sets the subject data.
      *
-     * @param SubjectIdentity|null $identity
+     * @param array|null $data
      *
      * @return $this|SaleItemInterface
      */
-    public function setSubjectIdentity(SubjectIdentity $identity = null);
+    public function setSubjectData(array $data = null);
 
     /**
      * Returns the subject (may return null if it has not been resolved yet).

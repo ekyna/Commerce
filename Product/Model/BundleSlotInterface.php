@@ -29,6 +29,22 @@ interface BundleSlotInterface extends ResourceInterface
     public function setBundle(ProductInterface $bundle = null);
 
     /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return $this|BundleSlotInterface
+     */
+    public function setDescription($description);
+
+    /**
      * Returns the choices.
      *
      * @return ArrayCollection|BundleChoiceInterface[]

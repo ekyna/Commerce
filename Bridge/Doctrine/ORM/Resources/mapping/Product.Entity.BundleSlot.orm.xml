@@ -22,10 +22,7 @@
         </id>
 
         <field name="position" column="position" type="integer" nullable="false"/>
-
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="bundle" inversed-by="bundleSlots">
-            <join-column name="bundle_id" referenced-column-name="id" on-delete="CASCADE" nullable="false" />
-        </many-to-one>
+        <field name="description" column="description" type="string" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\BundleChoiceInterface" field="choices" mapped-by="slot" orphan-removal="true">
             <cascade>
@@ -36,6 +33,10 @@
                 <order-by-field name="position" direction="ASC"/>
             </order-by>
         </one-to-many>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="bundle" inversed-by="bundleSlots">
+            <join-column name="bundle_id" referenced-column-name="id" on-delete="CASCADE" nullable="false" />
+        </many-to-one>
 
     </mapped-superclass>
 

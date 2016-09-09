@@ -1,6 +1,7 @@
 <?php
 
 namespace Ekyna\Component\Commerce\Subject\Provider;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**
@@ -37,14 +38,24 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * Returns the provider by name.
+     * Returns the provider by name or sale item.
      *
-     * @param string $name
+     * @param string|SaleItemInterface $nameOrItem
      *
      * @return SubjectProviderInterface|mixed
      */
-    public function getProvider($name)
+    public function getProvider($nameOrItem)
     {
+        if ($nameOrItem instanceof SaleItemInterface) {
+            $data = $nameOrItem->getSubjectData();
+            if (!array_key_exists('provider', $data)) {
+                throw new InvalidArgumentException("Unexpected sale item data ('provider' key is missing).");
+            }
+            $name = $data['provider'];
+        } else {
+            $name = $nameOrItem;
+        }
+
         if (array_key_exists($name, $this->providers)) {
             return $this->providers[$name];
         }

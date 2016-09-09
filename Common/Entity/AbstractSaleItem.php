@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectIdentity;
 
 /**
  * Class AbstractSaleItem
@@ -59,9 +58,9 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     protected $position;
 
     /**
-     * @var SubjectIdentity
+     * @var array
      */
-    protected $subjectIdentity;
+    protected $subjectData;
 
     /**
      * @var mixed
@@ -80,6 +79,7 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
 
         $this->quantity = 1;
         $this->position = 0;
+        $this->subjectData = [];
     }
 
     /**
@@ -225,29 +225,25 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     /**
      * @inheritdoc
      */
-    public function hasSubjectIdentity()
+    public function hasSubjectData()
     {
-        return (
-            null !== $this->subjectIdentity
-            && 0 < $this->subjectIdentity->getId()
-            && class_exists($this->subjectIdentity->getClass())
-        );
+        return !empty($this->subjectData);
     }
 
     /**
      * @inheritdoc
      */
-    public function getSubjectIdentity()
+    public function getSubjectData()
     {
-        return $this->subjectIdentity;
+        return $this->subjectData;
     }
 
     /**
      * @inheritdoc
      */
-    public function setSubjectIdentity(SubjectIdentity $identity = null)
+    public function setSubjectData(array $data = null)
     {
-        $this->subjectIdentity = $identity;
+        $this->subjectData = $data;
 
         return $this;
     }

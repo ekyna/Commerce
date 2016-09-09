@@ -24,6 +24,11 @@ class BundleSlot implements BundleSlotInterface
     protected $bundle;
 
     /**
+     * @var string
+     */
+    protected $description;
+
+    /**
      * @var ArrayCollection|Model\BundleChoiceInterface[]
      */
     protected $choices;
@@ -76,6 +81,24 @@ class BundleSlot implements BundleSlotInterface
     public function setBundle(Model\ProductInterface $bundle = null)
     {
         $this->bundle = $bundle;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
 
         return $this;
     }
