@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Cart\Entity\Cart"
+            table="commerce_cart">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="expiresAt" column="expires_at" type="datetime" nullable="true" />
+
+        <one-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface" field="invoiceAddress">
+            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
+        </one-to-one>
+
+        <one-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface" field="deliveryAddress">
+            <join-column name="delivery_address_id" referenced-column-name="id" on-delete="SET NULL" nullable="true" />
+        </one-to-one>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItem" field="items" mapped-by="cart" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartAdjustment" field="adjustments" mapped-by="cart" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

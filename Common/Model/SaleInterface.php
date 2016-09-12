@@ -101,11 +101,29 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
     public function getInvoiceAddress();
 
     /**
+     * Sets the invoice address.
+     *
+     * @param AddressInterface $address
+     *
+     * @return $this|SaleInterface
+     */
+    public function setInvoiceAddress(AddressInterface $address);
+
+    /**
      * Returns the delivery address.
      *
      * @return AddressInterface
      */
     public function getDeliveryAddress();
+
+    /**
+     * Sets the delivery address.
+     *
+     * @param AddressInterface $address
+     *
+     * @return $this|SaleInterface
+     */
+    public function setDeliveryAddress(AddressInterface $address = null);
 
     /**
      * Returns whether the invoice address is used as delivery address or not.

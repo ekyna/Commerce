@@ -38,33 +38,67 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * Returns the provider by name or sale item.
-     *
-     * @param string|SaleItemInterface $nameOrItem
-     *
-     * @return SubjectProviderInterface|mixed
+     * @inheritdoc
      */
-    public function getProvider($nameOrItem)
+    public function getProvider($nameOrItemOrSubject)
     {
-        if ($nameOrItem instanceof SaleItemInterface) {
-            $data = $nameOrItem->getSubjectData();
-            if (!array_key_exists('provider', $data)) {
-                throw new InvalidArgumentException("Unexpected sale item data ('provider' key is missing).");
-            }
-            $name = $data['provider'];
-        } else {
-            $name = $nameOrItem;
+        if ($nameOrItemOrSubject instanceof SaleItemInterface) {
+            return $this->getProviderByItem($nameOrItemOrSubject);
+        } elseif (is_object($nameOrItemOrSubject)) {
+            return $this->getProviderBySubject($nameOrItemOrSubject);
+        } elseif (is_string($nameOrItemOrSubject)) {
+            return $this->getProviderByName($nameOrItemOrSubject);
         }
 
+        throw new InvalidArgumentException("Failed to resolve provider.");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProviderByItem(SaleItemInterface $item)
+    {
+        if (null !== $subject = $item->getSubject()) {
+            return $this->getProviderBySubject($subject);
+        }
+
+        foreach ($this->providers as $provider) {
+            if ($provider->supportsItem($item)) {
+                return $provider;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProviderBySubject($subject)
+    {
+        foreach ($this->providers as $provider) {
+            if ($provider->supportsSubject($subject)) {
+                return $provider;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProviderByName($name)
+    {
         if (array_key_exists($name, $this->providers)) {
             return $this->providers[$name];
         }
 
-        throw new InvalidArgumentException("Provider '$name' not found.");
+        return null;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getProviders()
     {

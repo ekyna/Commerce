@@ -12,6 +12,8 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface BundleSlotInterface extends ResourceInterface
 {
+    const ITEM_DATA_KEY = 'bundle_slot_id';
+
     /**
      * Returns the bundle.
      *

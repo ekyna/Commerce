@@ -2,15 +2,15 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Ekyna\Component\Commerce\Product\Repository\ProductRepositoryInterface;
+use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
 /**
- * Class ProductRepository
+ * Class CartRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ProductRepository extends ResourceRepository implements ProductRepositoryInterface
+class CartRepository extends ResourceRepository implements CartRepositoryInterface
 {
     /**
      * @inheritdoc

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection;
 
+use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Customer;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Payment;
@@ -40,6 +41,8 @@ class DoctrineBundleMapping
     static function getDefaultImplementations()
     {
         return [
+            Cart\Model\CartInterface::class                => Cart\Entity\Cart::class,
+
             Customer\Model\CustomerInterface::class        => Customer\Entity\Customer::class,
             Customer\Model\CustomerAddressInterface::class => Customer\Entity\CustomerAddress::class,
 

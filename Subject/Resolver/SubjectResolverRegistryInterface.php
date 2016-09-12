@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Subject\Resolver;
 
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+
 /**
  * Interface SubjectResolverRegistryInterface
  * @package Ekyna\Component\Commerce\Subject\Resolver
@@ -15,6 +17,15 @@ interface SubjectResolverRegistryInterface
      * @param SubjectResolverInterface $resolver
      */
     public function addResolver(SubjectResolverInterface $resolver);
+
+    /**
+     * Returns the resolver by sale item.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return SubjectResolverInterface|null
+     */
+    public function getResolverByItem(SaleItemInterface $item);
 
     /**
      * Returns the resolvers.

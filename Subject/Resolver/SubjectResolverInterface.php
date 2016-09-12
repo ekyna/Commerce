@@ -39,13 +39,13 @@ interface SubjectResolverInterface
     public function generateBackOfficePath(SaleItemInterface $item);
 
     /**
-     * Returns whether the resolver supports the given sale item.
+     * Returns whether the resolver supports the sale item or not.
      *
      * @param SaleItemInterface $item
      *
      * @return boolean
      */
-    public function supports(SaleItemInterface $item);
+    public function supportsItem(SaleItemInterface $item);
 
     /**
      * Returns the resolver name.

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
+use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -136,9 +137,13 @@ class Order extends AbstractSale implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function setInvoiceAddress(OrderAddressInterface $invoiceAddress)
+    public function setInvoiceAddress(AddressInterface $address)
     {
-        $this->invoiceAddress = $invoiceAddress;
+        if (!$address instanceof OrderAddressInterface) {
+            throw new InvalidArgumentException('Unexpected address type.');
+        }
+
+        $this->invoiceAddress = $address;
 
         return $this;
     }
@@ -146,10 +151,14 @@ class Order extends AbstractSale implements OrderInterface
     /**
      * @inheritdoc
      */
-    public function setDeliveryAddress(OrderAddressInterface $deliveryAddress = null)
+    public function setDeliveryAddress(AddressInterface $address = null)
     {
+        if (null !== $address && !($address instanceof OrderAddressInterface)) {
+            throw new InvalidArgumentException('Unexpected address type.');
+        }
+
         // TODO remove from database if null ?
-        $this->deliveryAddress = $deliveryAddress;
+        $this->deliveryAddress = $address;
 
         return $this;
     }

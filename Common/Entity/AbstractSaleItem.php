@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**
  * Class AbstractSaleItem
@@ -233,17 +234,47 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     /**
      * @inheritdoc
      */
-    public function getSubjectData()
+    public function getSubjectData($key = null)
     {
+        if (0 < strlen($key)) {
+            if (array_key_exists($key, (array)$this->subjectData)) {
+                return $this->subjectData[$key];
+            }
+
+            return null;
+        }
+
         return $this->subjectData;
     }
 
     /**
      * @inheritdoc
      */
-    public function setSubjectData(array $data = null)
+    public function setSubjectData($keyOrData, $data = null)
     {
-        $this->subjectData = $data;
+        if (is_array($keyOrData) && null === $data) {
+            $this->subjectData = $keyOrData;
+        } elseif (is_string($keyOrData) && 0 < strlen($keyOrData)) {
+            $this->subjectData[$keyOrData] = $data;
+        } else {
+            throw new InvalidArgumentException(sprintf("Bad usage of %s::setSubjectData", static::class));
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unsetSubjectData($key)
+    {
+        if (is_string($key) && 0 < strlen($key)) {
+            if (array_key_exists($key, $this->subjectData)) {
+                unset($this->subjectData[$key]);
+            }
+        } else {
+            throw new InvalidArgumentException('Expected key as string.');
+        }
 
         return $this;
     }

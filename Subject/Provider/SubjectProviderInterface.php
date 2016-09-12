@@ -32,45 +32,57 @@ interface SubjectProviderInterface
      * Choice form submit handler.
      *
      * @param SaleItemInterface $item
-     *
-     * @return mixed
      */
     public function handleChoiceSubmit(SaleItemInterface $item);
 
     /**
-     * Returns whether the subject configuration is needed or not.
+     * Prepares the item (assign subjects recursively).
      *
      * @param SaleItemInterface $item
-     *
-     * @return bool
      */
-    public function needConfiguration(SaleItemInterface $item);
+    public function prepareItem(SaleItemInterface $item);
 
     /**
-     * Builds the subject configuration form.
+     * Builds the subject item form.
      *
-     * @param FormInterface     $form
+     * @param FormInterface $form
      * @param SaleItemInterface $item
      */
-    public function buildConfigurationForm(FormInterface $form, SaleItemInterface $item);
+    public function buildItemForm(FormInterface $form, SaleItemInterface $item);
 
     /**
-     * Configuration form submit handler.
+     * Item form submit handler.
+     *
+     * @param SaleItemInterface $item
+     */
+    public function handleItemSubmit(SaleItemInterface $item);
+
+    /**
+     * Returns the subject from the sale item.
      *
      * @param SaleItemInterface $item
      *
      * @return mixed
      */
-    public function handleConfigurationSubmit(SaleItemInterface $item);
+    public function resolve(SaleItemInterface $item);
 
     /**
-     * Returns whether the provider supports the given subject or not.
+     * Returns whether the resolver supports the sale item or not.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return boolean
+     */
+    public function supportsItem(SaleItemInterface $item);
+
+    /**
+     * Returns whether the provider supports the subject or not.
      *
      * @param mixed $subject
      *
      * @return bool
      */
-    public function supports($subject);
+    public function supportsSubject($subject);
 
     /**
      * Returns the provider name.

@@ -171,26 +171,37 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
     public function hasSubjectData();
 
     /**
-     * Returns the subject data.
+     * Returns the subject data, optionally filtered by key.
+     *
+     * @param string $key
      *
      * @return array|null
      */
-    public function getSubjectData();
+    public function getSubjectData($key = null);
 
     /**
      * Sets the subject data.
      *
-     * @param array|null $data
+     * @param array|string $keyOrData The key of the data or the whole subject data.
+     * @param mixed        $data      The data assigned to the key (set to null $keyOrData is the whole subject data).
      *
      * @return $this|SaleItemInterface
      */
-    public function setSubjectData(array $data = null);
+    public function setSubjectData($keyOrData, $data = null);
+
+    /**
+     * Unset a subject data by its key.
+     *
+     * @param string $key
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function unsetSubjectData($key);
 
     /**
      * Returns the subject (may return null if it has not been resolved yet).
      *
      * @return object|null
-     * @internal
      */
     public function getSubject();
 
@@ -200,7 +211,6 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
      * @param object $subject
      *
      * @return $this|SaleItemInterface
-     * @internal
      */
     public function setSubject($subject = null);
 }

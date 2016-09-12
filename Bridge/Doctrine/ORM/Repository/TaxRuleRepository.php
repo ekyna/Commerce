@@ -2,18 +2,18 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\ORM\EntityRepository;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
 /**
  * Class TaxRuleRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class TaxRuleRepository extends EntityRepository implements TaxRuleRepositoryInterface
+class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryInterface
 {
     /**
      * @var \Doctrine\ORM\Query

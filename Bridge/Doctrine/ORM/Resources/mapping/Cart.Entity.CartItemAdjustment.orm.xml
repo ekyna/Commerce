@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity name="Ekyna\Component\Commerce\Cart\Entity\CartItemAdjustment"
+            table="commerce_cart_item_adjustment">
+
+        <indexes>
+            <index columns="position" name="idx_cart_item_adjustment_position" />
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="item_id,position" name="unique_cart_item_adjustment_position"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItem" field="item" inversed-by="adjustments">
+            <join-column name="item_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
+        </many-to-one>
+
+    </entity>
+
+</doctrine-mapping>

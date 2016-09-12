@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Subject\Resolver\SubjectResolverRegistryInterface;
+use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
 
 /**
  * Class Helper
@@ -14,7 +14,7 @@ use Ekyna\Component\Commerce\Subject\Resolver\SubjectResolverRegistryInterface;
 class Helper implements HelperInterface
 {
     /**
-     * @var SubjectResolverRegistryInterface
+     * @var SubjectProviderRegistryInterface
      */
     protected $registry;
 
@@ -22,9 +22,9 @@ class Helper implements HelperInterface
     /**
      * Constructor.
      *
-     * @param SubjectResolverRegistryInterface $registry
+     * @param SubjectProviderRegistryInterface $registry
      */
-    public function __construct(SubjectResolverRegistryInterface $registry)
+    public function __construct(SubjectProviderRegistryInterface $registry)
     {
         $this->registry = $registry;
     }
@@ -51,11 +51,7 @@ class Helper implements HelperInterface
      */
     public function generateFrontOfficePath(SaleItemInterface $item)
     {
-        if (!$item->hasSubjectData()) {
-            return null;
-        }
-
-        if (null !== $resolver = $this->getResolver($item)) {
+        if (null !== $resolver = $this->registry->getProviderByItem($item)) {
             return $resolver->generateFrontOfficePath($item);
         }
 
@@ -67,11 +63,7 @@ class Helper implements HelperInterface
      */
     public function generateBackOfficePath(SaleItemInterface $item)
     {
-        if (!$item->hasSubjectData()) {
-            return null;
-        }
-
-        if (null !== $resolver = $this->getResolver($item)) {
+        if (null !== $resolver = $this->registry->getProviderByItem($item)) {
             return $resolver->generateBackOfficePath($item);
         }
 
@@ -79,21 +71,19 @@ class Helper implements HelperInterface
     }
 
     /**
-     * Returns the resolver that supports the item.
+     * Returns the provider that supports the item.
      *
      * @param SaleItemInterface $item
      *
-     * @return \Ekyna\Component\Commerce\Subject\Resolver\SubjectResolverInterface
+     * @return \Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface
      * @throws InvalidArgumentException
      */
     protected function getResolver(SaleItemInterface $item)
     {
-        foreach ($this->registry->getResolvers() as $resolver) {
-            if ($resolver->supports($item)) {
-                return $resolver;
-            }
+        if (null === $provider = $this->registry->getProviderByItem($item)) {
+            throw new InvalidArgumentException('Unsupported subject.');
         }
 
-        throw new InvalidArgumentException('Unsupported subject.');
+        return $provider;
     }
 }

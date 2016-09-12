@@ -47,24 +47,6 @@ interface OrderInterface extends SaleInterface
     public function setNumber($reference);
 
     /**
-     * Sets the invoice address.
-     *
-     * @param OrderAddressInterface $invoiceAddress
-     *
-     * @return $this|OrderInterface
-     */
-    public function setInvoiceAddress(OrderAddressInterface $invoiceAddress);
-
-    /**
-     * Sets the delivery address.
-     *
-     * @param OrderAddressInterface $deliveryAddress
-     *
-     * @return $this|OrderInterface
-     */
-    public function setDeliveryAddress(OrderAddressInterface $deliveryAddress = null);
-
-    /**
      * Returns the state.
      *
      * @return string

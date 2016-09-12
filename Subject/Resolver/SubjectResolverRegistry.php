@@ -1,6 +1,7 @@
 <?php
 
 namespace Ekyna\Component\Commerce\Subject\Resolver;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 
 /**
  * Class SubjectResolverRegistry
@@ -33,6 +34,20 @@ class SubjectResolverRegistry implements SubjectResolverRegistryInterface
         }
 
         $this->resolvers[$resolver->getName()] = $resolver;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getResolverByItem(SaleItemInterface $item)
+    {
+        foreach ($this->resolvers as $resolver) {
+            if ($resolver->supportsItem($item)) {
+                return $resolver;
+            }
+        }
+
+        return null;
     }
 
     /**
