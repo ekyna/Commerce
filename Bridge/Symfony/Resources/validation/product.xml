@@ -176,6 +176,8 @@
             </constraint>
         </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\BundleSlot"/>
+
+        <!-- TODO translations -->
     </class>
 
     <class name="Ekyna\Component\Commerce\Product\Entity\Option">
@@ -472,6 +474,8 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Variant">
             <option name="groups">variant</option>
         </constraint>
+
+        <!-- TODO translations (none for variants) -->
 
     </class>
 

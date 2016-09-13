@@ -5,13 +5,16 @@ namespace Ekyna\Component\Commerce\Product\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Product\Model as Model;
 use Ekyna\Component\Commerce\Product\Model\BundleSlotInterface;
+use Ekyna\Component\Resource\Model\AbstractTranslatable;
 
 /**
  * Class BundleSlot
  * @package Ekyna\Component\Commerce\Product\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method Model\BundleSlotTranslationInterface translate($locale = null, $create = false)
  */
-class BundleSlot implements BundleSlotInterface
+class BundleSlot extends AbstractTranslatable implements BundleSlotInterface
 {
     /**
      * @var integer
@@ -22,11 +25,6 @@ class BundleSlot implements BundleSlotInterface
      * @var Model\ProductInterface
      */
     protected $bundle;
-
-    /**
-     * @var string
-     */
-    protected $description;
 
     /**
      * @var ArrayCollection|Model\BundleChoiceInterface[]
@@ -44,6 +42,8 @@ class BundleSlot implements BundleSlotInterface
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->choices = new ArrayCollection();
     }
 
@@ -88,20 +88,38 @@ class BundleSlot implements BundleSlotInterface
     /**
      * @inheritdoc
      */
-    public function getDescription()
+    public function getTitle()
     {
-        return $this->description;
+        return $this->translate()->getTitle();
     }
 
     /**
      * @inheritdoc
      */
-    public function setDescription($description)
+    /*public function setTitle($title)
     {
-        $this->description = $description;
+        $this->translate()->setTitle($title);
 
         return $this;
+    }*/
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->translate()->getDescription();
     }
+
+    /**
+     * @inheritdoc
+     */
+    /*public function setDescription($description)
+    {
+        $this->translate()->setDescription($description);
+
+        return $this;
+    }*/
 
     /**
      * @inheritdoc

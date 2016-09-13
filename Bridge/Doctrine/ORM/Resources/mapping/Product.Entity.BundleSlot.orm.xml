@@ -22,7 +22,6 @@
         </id>
 
         <field name="position" column="position" type="integer" nullable="false"/>
-        <field name="description" column="description" type="string" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\BundleChoiceInterface" field="choices" mapped-by="slot" orphan-removal="true">
             <cascade>

@@ -6,13 +6,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\TranslatableInterface;
 
 /**
  * Interface ProductInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ProductInterface extends ResourceInterface, TaxableInterface
+interface ProductInterface extends ResourceInterface, TranslatableInterface, TaxableInterface
 {
     /**
      * Sets the id.
@@ -72,16 +73,6 @@ interface ProductInterface extends ResourceInterface, TaxableInterface
      * @return $this|ProductInterface
      */
     public function removeVariant(ProductInterface $variant);
-
-    /**
-     * Sets the variants.
-     *
-     * @param ArrayCollection|ProductInterface[] $variants
-     *
-     * @return $this|ProductInterface
-     * @internal
-     */
-    //public function setVariants(ArrayCollection $variants);
 
     /**
      * Returns the type.
@@ -245,6 +236,38 @@ interface ProductInterface extends ResourceInterface, TaxableInterface
      * @internal
      */
     public function setBundleSlots(ArrayCollection $bundleSlots);
+
+    /**
+     * Returns the title.
+     *
+     * @return string
+     */
+    public function getTitle();
+
+    /**
+     * Sets the title.
+     *
+     * @param string $title
+     *
+     * @return $this|ProductInterface
+     */
+    //public function setTitle($title);
+
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return $this|ProductInterface
+     */
+    //public function setDescription($description);
 
     /**
      * Returns the designation.

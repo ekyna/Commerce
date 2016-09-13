@@ -5,13 +5,16 @@ namespace Ekyna\Component\Commerce\Product\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Product\Model as Model;
+use Ekyna\Component\Resource\Model\AbstractTranslatable;
 
 /**
  * Class Product
  * @package Ekyna\Component\Commerce\Product\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method Model\ProductTranslationInterface translate($locale = null, $create = false)
  */
-class Product implements Model\ProductInterface
+class Product extends AbstractTranslatable implements Model\ProductInterface
 {
     /**
      * @var int
@@ -94,6 +97,8 @@ class Product implements Model\ProductInterface
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->variants = new ArrayCollection();
         $this->attributes = new ArrayCollection();
         $this->optionGroups = new ArrayCollection();
@@ -453,6 +458,50 @@ class Product implements Model\ProductInterface
     /**
      * @inheritdoc
      */
+    public function getTitle()
+    {
+        if ($this->type === Model\ProductTypes::TYPE_VARIANT) {
+            return sprintf('%s %s', $this->parent->getTitle(), $this->getDesignation());
+        }
+
+        return $this->translate()->getTitle();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    /*public function setTitle($title)
+    {
+        $this->translate()->setTitle($title);
+
+        return $this;
+    }*/
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        if ($this->type === Model\ProductTypes::TYPE_VARIANT) {
+            return $this->parent->getDescription();
+        }
+
+        return $this->translate()->getDescription();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    /*public function setDescription($description)
+    {
+        $this->translate()->setDescription($description);
+
+        return $this;
+    }*/
+
+    /**
+     * @inheritdoc
+     */
     public function getDesignation()
     {
         return $this->designation;
@@ -590,5 +639,15 @@ class Product implements Model\ProductInterface
         sort($ids);
 
         return implode('-', $ids);
+    }
+
+    /**
+     * Return translation model class.
+     *
+     * @return string
+     */
+    protected function getTranslationClass()
+    {
+        return ProductTranslation::class;
     }
 }

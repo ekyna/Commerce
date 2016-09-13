@@ -4,13 +4,14 @@ namespace Ekyna\Component\Commerce\Product\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\TranslatableInterface;
 
 /**
  * Interface BundleSlotInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface BundleSlotInterface extends ResourceInterface
+interface BundleSlotInterface extends ResourceInterface, TranslatableInterface
 {
     const ITEM_DATA_KEY = 'bundle_slot_id';
 
@@ -31,6 +32,22 @@ interface BundleSlotInterface extends ResourceInterface
     public function setBundle(ProductInterface $bundle = null);
 
     /**
+     * Returns the title.
+     *
+     * @return string
+     */
+    public function getTitle();
+
+    /**
+     * Sets the title.
+     *
+     * @param string $title
+     *
+     * @return $this|BundleSlotInterface
+     */
+    //public function setTitle($title);
+
+    /**
      * Returns the description.
      *
      * @return string
@@ -44,7 +61,7 @@ interface BundleSlotInterface extends ResourceInterface
      *
      * @return $this|BundleSlotInterface
      */
-    public function setDescription($description);
+    //public function setDescription($description);
 
     /**
      * Returns the choices.
