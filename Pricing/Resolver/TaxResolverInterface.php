@@ -46,6 +46,15 @@ interface TaxResolverInterface
     public function setOriginAddress(AddressInterface $address);
 
     /**
+     * Resolves the default taxes by subject and customer.
+     *
+     * @param TaxableInterface  $taxable
+     *
+     * @return array|TaxInterface[]
+     */
+    public function getDefaultTaxesBySubject(TaxableInterface $taxable);
+
+    /**
      * Resolves the applicable taxes by subject and customer.
      *
      * @param TaxableInterface  $taxable

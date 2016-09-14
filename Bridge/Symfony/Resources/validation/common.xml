@@ -5,6 +5,8 @@
         xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
+    <!-- Address -->
+
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">
         <property name="firstName">
             <constraint name="NotBlank"/>
@@ -49,6 +51,136 @@
         </property>-->
     </class>
 
+    <!-- Adjustable -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAdjustable">
+        <property name="adjustments">
+            <constraint name="Valid" />
+        </property>
+    </class>
+
+    <!-- Adjustment -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment">
+        <property name="designation">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="type">
+            <constraint name="NotBlank"/>
+            <constraint name="Callback">
+                <value>Ekyna\Component\Commerce\Common\Model\AdjustmentTypes</value>
+                <value>isValidType</value>
+            </constraint>
+        </property>
+        <property name="mode">
+            <constraint name="NotBlank"/>
+            <constraint name="Callback">
+                <value>Ekyna\Component\Commerce\Common\Model\AdjustmentModes</value>
+                <value>isValidMode</value>
+            </constraint>
+        </property>
+        <property name="amount">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="position">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+    </class>
+
+    <!-- Message -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMessage">
+        <!-- TODO -->
+    </class>
+
+    <!-- Method -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMessage">
+        <!-- TODO -->
+    </class>
+
+    <!-- Sale -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">
+        <property name="firstName">
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="lastName">
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="currency">
+            <constraint name="NotNull" />
+        </property>
+        <property name="items">
+            <constraint name="Valid" />
+        </property>
+    </class>
+
+    <!-- Sale Item -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem">
+        <!-- TODO parent OR (cart/order/quote) not null-->
+        <property name="designation">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="reference">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="netPrice">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="weight">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="quantity">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">1</option>
+            </constraint>
+        </property>
+        <property name="position">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <!--<property name="subjectData">
+
+        </property>-->
+        <property name="children">
+            <constraint name="Valid" />
+        </property>
+        <!--<property name="adjustments">
+            TODO Not with mode == FLAT
+        </property>-->
+    </class>
+
+    <!-- Country -->
+
     <class name="Ekyna\Component\Commerce\Common\Entity\Country">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
@@ -69,6 +201,8 @@
         </property>
     </class>
 
+    <!-- Currency -->
+
     <class name="Ekyna\Component\Commerce\Common\Entity\Currency">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
@@ -88,6 +222,8 @@
             </constraint>
         </property>
     </class>
+
+    <!-- State -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\State">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">

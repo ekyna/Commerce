@@ -31,6 +31,11 @@ class Currency implements CurrencyInterface
      */
     protected $enabled;
 
+    /**
+     * @var bool
+     */
+    protected $default;
+
 
     /**
      * Constructor.
@@ -38,6 +43,7 @@ class Currency implements CurrencyInterface
     public function __construct()
     {
         $this->enabled = true;
+        $this->default = true;
     }
 
     /**
@@ -107,7 +113,25 @@ class Currency implements CurrencyInterface
      */
     public function setEnabled($enabled)
     {
-        $this->enabled = $enabled;
+        $this->enabled = (bool)$enabled;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isDefault()
+    {
+        return $this->default;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDefault($default)
+    {
+        $this->default = (bool)$default;
 
         return $this;
     }

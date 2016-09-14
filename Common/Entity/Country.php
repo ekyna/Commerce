@@ -34,6 +34,11 @@ class Country implements CountryInterface
     protected $enabled;
 
     /**
+     * @var boolean
+     */
+    protected $default;
+
+    /**
      * @var ArrayCollection|StateInterface[]
      */
     protected $states;
@@ -46,6 +51,7 @@ class Country implements CountryInterface
     {
         $this->states = new ArrayCollection();
         $this->enabled = true;
+        $this->default = false;
     }
 
     /**
@@ -80,6 +86,7 @@ class Country implements CountryInterface
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -97,6 +104,7 @@ class Country implements CountryInterface
     public function setCode($code)
     {
         $this->code = $code;
+
         return $this;
     }
 
@@ -113,7 +121,26 @@ class Country implements CountryInterface
      */
     public function setEnabled($enabled)
     {
-        $this->enabled = $enabled;
+        $this->enabled = (bool)$enabled;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isDefault()
+    {
+        return $this->default;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDefault($default)
+    {
+        $this->default = (bool)$default;
+
         return $this;
     }
 
@@ -142,6 +169,7 @@ class Country implements CountryInterface
             $state->setCountry($this);
             $this->states->add($state);
         }
+
         return $this;
     }
 
@@ -154,6 +182,7 @@ class Country implements CountryInterface
             $state->setCountry(null);
             $this->states->removeElement($state);
         }
+
         return $this;
     }
 
@@ -163,6 +192,7 @@ class Country implements CountryInterface
     public function setStates(ArrayCollection $states)
     {
         $this->states = $states;
+
         return $this;
     }
 }

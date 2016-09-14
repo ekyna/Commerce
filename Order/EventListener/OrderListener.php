@@ -221,9 +221,6 @@ class OrderListener
                 $order->setEmail($customer->getEmail());
                 $changed = true;
             }
-            /* TODO if (0 == strlen($order->getGender())) {
-                $order->setGender($customer->getGender());
-            }*/
             if (0 == strlen($order->getFirstName())) {
                 $order->setFirstName($customer->getFirstName());
                 $changed = true;

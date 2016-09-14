@@ -8,9 +8,9 @@
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">
 
         <field name="company" column="company" type="string" length="64" nullable="true"/>
-        <field name="firstName" column="first_name" type="string" length="64"/>
-        <field name="lastName" column="last_name" type="string" length="64"/>
-        <field name="email" column="email" type="string" length="255"/>
+        <field name="firstName" column="first_name" type="string" length="64" nullable="true"/>
+        <field name="lastName" column="last_name" type="string" length="64" nullable="true"/>
+        <field name="email" column="email" type="string" length="255" nullable="true"/>
         <field name="sameAddress" column="same_address" type="boolean" />
 
         <field name="weightTotal" column="weight_total" type="integer"/>

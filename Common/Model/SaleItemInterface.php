@@ -13,6 +13,15 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
 interface SaleItemInterface extends ResourceInterface, AdjustableInterface
 {
     /**
+     * Sets the sale.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function setSale(SaleInterface $sale = null);
+
+    /**
      * Returns the sale.
      *
      * @return SaleInterface
@@ -23,6 +32,7 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
      * Sets the parent.
      *
      * @param SaleItemInterface $parent
+     *
      * @return $this|SaleItemInterface
      * @internal
      */

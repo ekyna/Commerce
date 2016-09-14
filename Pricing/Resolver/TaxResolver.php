@@ -3,7 +3,10 @@
 namespace Ekyna\Component\Commerce\Pricing\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
@@ -16,6 +19,16 @@ use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
  */
 class TaxResolver implements TaxResolverInterface
 {
+    /**
+     * @var CustomerGroupRepositoryInterface
+     */
+    protected $customerGroupRepository;
+
+    /**
+     * @var CountryRepositoryInterface
+     */
+    protected $countryRepository;
+
     /**
      * @var TaxRuleRepositoryInterface
      */
@@ -43,14 +56,21 @@ class TaxResolver implements TaxResolverInterface
     /**
      * Constructor.
      *
-     * @param TaxRuleRepositoryInterface $taxRuleRepository
-     * @param string                     $mode
+     * @param CustomerGroupRepositoryInterface $customerGroupRepository
+     * @param CountryRepositoryInterface       $countryRepository
+     * @param TaxRuleRepositoryInterface       $taxRuleRepository
+     * @param string                           $mode
      */
     public function __construct(
+        CustomerGroupRepositoryInterface $customerGroupRepository,
+        CountryRepositoryInterface $countryRepository,
         TaxRuleRepositoryInterface $taxRuleRepository,
         $mode = TaxResolverInterface::BY_DELIVERY
     ) {
+        $this->customerGroupRepository = $customerGroupRepository;
+        $this->countryRepository = $countryRepository;
         $this->taxRuleRepository = $taxRuleRepository;
+
         $this->setMode($mode);
     }
 
@@ -77,13 +97,31 @@ class TaxResolver implements TaxResolverInterface
     /**
      * @inheritdoc
      */
+    public function getDefaultTaxesBySubject(TaxableInterface $taxable)
+    {
+        if (null === $taxGroup = $taxable->getTaxGroup()) {
+            return [];
+        }
+
+        return $this->getApplicableTaxesByTaxGroupAndCustomerGroups($taxGroup, [$this->getDefaultCustomerGroup()]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getApplicableTaxesBySubjectAndCustomer(
         TaxableInterface $taxable,
         CustomerInterface $customer,
         AddressInterface $address = null
     ) {
+        if (null === $taxGroup = $taxable->getTaxGroup()) {
+            return [];
+        }
+
+        // TODO What if customer groups is empty :s ?
+
         return $this->getApplicableTaxesByTaxGroupAndCustomerGroups(
-            $taxable->getTaxGroup(),
+            $taxGroup,
             $customer->getCustomerGroups()->toArray(),
             $address
         );
@@ -101,20 +139,21 @@ class TaxResolver implements TaxResolverInterface
             if (null === $this->originAddress) {
                 throw new \RuntimeException("Mode is set to 'origin' but origin address is not set.");
             }
-            $targetAddress = $this->originAddress;
-        } else if (null === $address) {
-            throw new InvalidArgumentException('Expected ' . AddressInterface::class);
+            $country = $this->originAddress->getCountry();
+        } else if (null !== $address) {
+            $country = $address->getCountry();
         } else {
-            $targetAddress = $address;
+            $country = $this->getDefaultCountry();
         }
 
         $taxes = [];
-        $rules = $this->taxRuleRepository->findByTaxGroupAndCustomerGroups($taxGroup, $customerGroups, $targetAddress);
+        $rules = $this
+            ->taxRuleRepository
+            ->findByTaxGroupAndCustomerGroupsAndCountry($taxGroup, $customerGroups, $country);
 
         foreach ($rules as $rule) {
             foreach ($rule->getTaxes() as $tax) {
-                if ($tax->getCountry() === $targetAddress->getCountry()
-                    && !in_array($tax, $taxes, true)) {
+                if ($tax->getCountry() === $country && !in_array($tax, $taxes, true)) {
                     array_push($taxes, $tax);
                 }
             }
@@ -123,4 +162,23 @@ class TaxResolver implements TaxResolverInterface
         return $taxes;
     }
 
+    /**
+     * Returns the default customer group.
+     *
+     * @return \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface
+     */
+    private function getDefaultCustomerGroup()
+    {
+        return $this->customerGroupRepository->findDefault();
+    }
+
+    /**
+     * Returns the default country.
+     *
+     * @return CountryInterface
+     */
+    private function getDefaultCountry()
+    {
+        return $this->countryRepository->findDefault();
+    }
 }

@@ -58,4 +58,20 @@ interface CurrencyInterface extends ResourceInterface
      * @return $this|CurrencyInterface
      */
     public function setEnabled($enabled);
+
+    /**
+     * Returns the default.
+     *
+     * @return boolean
+     */
+    public function isDefault();
+
+    /**
+     * Sets the default.
+     *
+     * @param boolean $default
+     *
+     * @return $this|CurrencyInterface
+     */
+    public function setDefault($default);
 }

@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
@@ -24,10 +24,10 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
     /**
      * @inheritdoc
      */
-    public function findByTaxGroupAndCustomerGroups(
+    public function findByTaxGroupAndCustomerGroupsAndCountry(
         TaxGroupInterface $taxGroup,
         array $customerGroups,
-        AddressInterface $address
+        CountryInterface $country
     ) {
         if (empty($customerGroups)) {
             throw new \InvalidArgumentException('Expected non empty array customer groups parameter.');
@@ -43,7 +43,7 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
             ->setParameters([
                 'tax_group'       => $taxGroup,
                 'customer_groups' => $customerGroups,
-                'country'         => $address->getCountry(),
+                'country'         => $country,
             ])
             ->getResult();
     }

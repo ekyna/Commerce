@@ -26,25 +26,9 @@
                     <value>Order</value>
                 </option>
             </constraint>
-            <constraint name="Length">
-                <option name="min">2</option>
-                <option name="max">32</option>
-                <option name="groups">
-                    <value>Information</value>
-                    <value>Order</value>
-                </option>
-            </constraint>
         </property>
         <property name="lastName">
             <constraint name="NotBlank">
-                <option name="groups">
-                    <value>Information</value>
-                    <value>Order</value>
-                </option>
-            </constraint>
-            <constraint name="Length">
-                <option name="min">2</option>
-                <option name="max">32</option>
                 <option name="groups">
                     <value>Information</value>
                     <value>Order</value>
@@ -65,9 +49,6 @@
             <constraint name="Valid" />
         </property>
 
-        <property name="currency">
-            <constraint name="NotNull" />
-        </property>
         <property name="items">
             <constraint name="Count">
                 <option name="min">1</option>
@@ -76,7 +57,6 @@
                     <value>Order</value>
                 </option>
             </constraint>
-            <constraint name="Valid" />
         </property>
         <property name="payments">
             <constraint name="Valid" />
@@ -111,23 +91,28 @@
         </property>
     </class>
 
-    <class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
+    <!--<class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
+
     </class>
 
     <class name="Ekyna\Component\Commerce\Order\Entity\AbstractAdjustment">
+
     </class>
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
+
     </class>
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderAdjustment">
+
     </class>
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderItem">
-        <!-- TODO flat adjustment can\'t be applied to an item with children -->
+
     </class>
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
-    </class>
+
+    </class>-->
 
 </constraint-mapping>

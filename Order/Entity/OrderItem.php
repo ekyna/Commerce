@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -22,6 +23,20 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     protected $order;
 
+
+    /**
+     * @inheritdoc
+     */
+    public function setSale(SaleInterface $sale = null)
+    {
+        if ((null !== $sale) && !$sale instanceof OrderInterface) {
+            throw new InvalidArgumentException('Expected instance of OrderInterface');
+        }
+
+        $this->setOrder($sale);
+
+        return $this;
+    }
 
     /**
      * @inheritdoc

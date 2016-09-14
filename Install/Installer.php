@@ -84,7 +84,7 @@ class Installer
         asort($countryNames);
 
         // TODO class parameter
-        $this->generate(Country::class, $countryNames, $codes);
+        $this->generate(Country::class, $countryNames, $codes, $codes[0]);
     }
 
     /**
@@ -104,7 +104,7 @@ class Installer
         asort($currencyNames);
 
         // TODO class parameter
-        $this->generate(Currency::class, $currencyNames, $codes);
+        $this->generate(Currency::class, $currencyNames, $codes, $codes[0]);
     }
 
     /**
@@ -113,8 +113,9 @@ class Installer
      * @param string $class
      * @param array $names
      * @param array $enabledCodes
+     * @param string $defaultCode
      */
-    private function generate($class, array $names, array $enabledCodes)
+    private function generate($class, array $names, array $enabledCodes, $defaultCode)
     {
         $repository = $this->manager->getRepository($class);
 
@@ -130,7 +131,8 @@ class Installer
                 $entity
                     ->setName($name)
                     ->setCode($code)
-                    ->setEnabled(in_array($code, $enabledCodes));
+                    ->setEnabled(in_array($code, $enabledCodes))
+                    ->setDefault($defaultCode === $code);
 
                 $this->manager->persist($entity);
 

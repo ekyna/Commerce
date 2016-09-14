@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Cart\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
@@ -22,6 +23,20 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
      */
     protected $cart;
 
+
+    /**
+     * @inheritdoc
+     */
+    public function setSale(SaleInterface $sale = null)
+    {
+        if ((null !== $sale) && !$sale instanceof CartInterface) {
+            throw new InvalidArgumentException('Expected instance of CartInterface');
+        }
+
+        $this->setCart($sale);
+
+        return $this;
+    }
 
     /**
      * @inheritdoc

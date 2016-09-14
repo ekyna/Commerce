@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ekyna\Component\Commerce\Order\Model;
-
 
 /**
  * Interface OrderEventInterface

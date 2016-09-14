@@ -58,6 +58,22 @@ interface CountryInterface extends ResourceInterface
     public function setEnabled($enabled);
 
     /**
+     * Returns the default.
+     *
+     * @return boolean
+     */
+    public function isDefault();
+
+    /**
+     * Sets the default.
+     *
+     * @param boolean $default
+     *
+     * @return $this|CountryInterface
+     */
+    public function setDefault($default);
+
+    /**
      * Returns the states.
      *
      * @return ArrayCollection|StateInterface[]
