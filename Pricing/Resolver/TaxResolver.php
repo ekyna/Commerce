@@ -120,6 +120,8 @@ class TaxResolver implements TaxResolverInterface
 
         // TODO What if customer groups is empty :s ?
 
+        // TODO if address is null get customer's default delivery address
+
         return $this->getApplicableTaxesByTaxGroupAndCustomerGroups(
             $taxGroup,
             $customer->getCustomerGroups()->toArray(),

@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 /**
- * Class Tax
+ * Class TaxView
  * @package Ekyna\Component\Commerce\Common\View
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Tax
+class TaxView extends AbstractView
 {
     /**
      * @var string

@@ -100,6 +100,18 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
+    public function resolveItemSubject(SaleItemInterface $item)
+    {
+        if (null !== $provider = $this->getProviderByItem($item)) {
+            return $provider->resolve($item);
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getProviders()
     {
         return $this->providers;

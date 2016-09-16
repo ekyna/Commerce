@@ -23,16 +23,22 @@
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItem" field="items" mapped-by="cart" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItem" field="items" mapped-by="cart" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
+            <order-by>
+                <order-by-field name="position" direction="ASC"/>
+            </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartAdjustment" field="adjustments" mapped-by="cart" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartAdjustment" field="adjustments" mapped-by="cart" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
+            <order-by>
+                <order-by-field name="position" direction="ASC"/>
+            </order-by>
         </one-to-many>
 
     </mapped-superclass>

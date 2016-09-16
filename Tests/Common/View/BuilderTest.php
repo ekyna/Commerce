@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Tests\Common\View;
 
 use Ekyna\Component\Commerce\Common\Calculator\Calculator;
-use Ekyna\Component\Commerce\Common\View\Builder;
+use Ekyna\Component\Commerce\Common\View\ViewBuilder;
 use Ekyna\Component\Commerce\Tests\OrmTestCase;
 
 /**
@@ -14,7 +14,7 @@ use Ekyna\Component\Commerce\Tests\OrmTestCase;
 class BuilderTest extends OrmTestCase
 {
     /**
-     * @var Builder
+     * @var ViewBuilder
      */
     private static $builder;
 
@@ -22,7 +22,7 @@ class BuilderTest extends OrmTestCase
     {
         parent::setUpBeforeClass();
 
-        static::$builder = new Builder(
+        static::$builder = new ViewBuilder(
             new Calculator()
         );
     }

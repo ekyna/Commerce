@@ -16,6 +16,8 @@
         <field name="weight" column="weight" type="integer" nullable="true"/>
         <field name="quantity" column="quantity" type="integer" nullable="false"/>
         <field name="position" column="position" type="integer" nullable="false"/>
+        <field name="immutable" column="immutable" type="boolean"/>
+        <field name="configurable" column="configurable" type="boolean"/>
 
         <field name="subjectData" column="subject_data" type="json_array" nullable="false"/>
 

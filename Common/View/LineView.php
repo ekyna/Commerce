@@ -3,12 +3,17 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 /**
- * Class Line
+ * Class LineView
  * @package Ekyna\Component\Commerce\Common\View
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Line
+class LineView extends AbstractView
 {
+    /**
+     * @var int
+     */
+    private $id;
+
     /**
      * @var int
      */
@@ -60,19 +65,20 @@ class Line
     private $total;
 
     /**
-     * @var Line[]
+     * @var LineView[]
      */
     private $lines;
 
     /**
      * @var bool
      */
-    private $children = false; // TODO rename leaf/node ?
+    private $immutable = false;
 
 
     /**
      * Constructor.
      *
+     * @param int    $id
      * @param int    $number
      * @param int    $level
      * @param string $designation
@@ -84,9 +90,10 @@ class Line
      * @param float  $taxAmount
      * @param float  $total
      * @param array  $lines
-     * @param bool   $children
+     * @param bool   $immutable
      */
     public function __construct(
+        $id,
         $number,
         $level,
         $designation,
@@ -98,8 +105,9 @@ class Line
         $taxAmount,
         $total,
         array $lines = [],
-        $children = false
+        $immutable = false
     ) {
+        $this->id = $id;
         $this->number = $number;
         $this->level = $level;
         $this->designation = $designation;
@@ -111,7 +119,17 @@ class Line
         $this->taxAmount = $taxAmount;
         $this->total = $total;
         $this->lines = $lines;
-        $this->children = $children;
+        $this->immutable = $immutable;
+    }
+
+    /**
+     * Returns the id of the source element.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -217,7 +235,7 @@ class Line
     /**
      * Returns the lines.
      *
-     * @return Line[]
+     * @return LineView[]
      */
     public function getLines()
     {
@@ -225,12 +243,12 @@ class Line
     }
 
     /**
-     * Returns whether the line has children (items) or not.
+     * Returns whether the line is immutable or not.
      *
      * @return boolean
      */
-    public function isChildren()
+    public function isImmutable()
     {
-        return $this->children;
+        return $this->immutable;
     }
 }

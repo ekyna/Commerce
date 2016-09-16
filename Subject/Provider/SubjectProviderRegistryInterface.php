@@ -55,6 +55,15 @@ interface SubjectProviderRegistryInterface
     public function getProviderByName($name);
 
     /**
+     * Resolves the item's subject.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return mixed|null
+     */
+    public function resolveItemSubject(SaleItemInterface $item);
+
+    /**
      * Returns the providers.
      *
      * @return array|SubjectProviderInterface[]

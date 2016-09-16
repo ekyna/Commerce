@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 /**
- * Class Sale
+ * Class SaleView
  * @package Ekyna\Component\Commerce\Common\View
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Sale
+class SaleView extends AbstractView
 {
     /**
      * @var string
@@ -15,27 +15,27 @@ class Sale
     private $mode;
 
     /**
-     * @var Total
+     * @var TotalView
      */
     private $gross;
 
     /**
-     * @var Total
+     * @var TotalView
      */
     private $final;
 
     /**
-     * @var Line[]
+     * @var LineView[]
      */
     private $items;
 
     /**
-     * @var Line[]
+     * @var LineView[]
      */
     private $discounts;
 
     /**
-     * @var Tax[]
+     * @var TaxView[]
      */
     private $taxes;
 
@@ -43,14 +43,14 @@ class Sale
     /**
      * Constructor.
      *
-     * @param string $mode
-     * @param Total  $gross
-     * @param Total  $final
-     * @param Line[] $items
-     * @param Line[] $discounts
-     * @param Tax[]  $taxes
+     * @param string     $mode
+     * @param TotalView  $gross
+     * @param TotalView  $final
+     * @param LineView[] $items
+     * @param LineView[] $discounts
+     * @param TaxView[]  $taxes
      */
-    public function __construct($mode, Total $gross, Total $final, array $items, array $discounts, array $taxes)
+    public function __construct($mode, TotalView $gross, TotalView $final, array $items, array $discounts, array $taxes)
     {
         $this->mode      = $mode;
         $this->gross     = $gross;
@@ -61,7 +61,9 @@ class Sale
     }
 
     /**
-     * @return Total
+     * Returns the gross total view.
+     *
+     * @return TotalView
      */
     public function getGross()
     {
@@ -69,7 +71,8 @@ class Sale
     }
 
     /**
-     * @return Total
+     * Returns the final total view.
+     * @return TotalView
      */
     public function getFinal()
     {
@@ -77,9 +80,9 @@ class Sale
     }
 
     /**
-     * Returns the lines.
+     * Returns the items lines views.
      *
-     * @return Line[]
+     * @return LineView[]
      */
     public function getItems()
     {
@@ -87,9 +90,9 @@ class Sale
     }
 
     /**
-     * Returns the discounts lines.
+     * Returns the discounts lines views.
      *
-     * @return Line[]
+     * @return LineView[]
      */
     public function getDiscounts()
     {
@@ -97,9 +100,9 @@ class Sale
     }
 
     /**
-     * Returns the taxes.
+     * Returns the taxes views.
      *
-     * @return Tax[]
+     * @return TaxView[]
      */
     public function getTaxes()
     {

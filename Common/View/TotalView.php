@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 /**
- * Class Total
+ * Class TotalView
  * @package Ekyna\Component\Commerce\Common\View
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Total
+class TotalView extends AbstractView
 {
     /**
      * @var float

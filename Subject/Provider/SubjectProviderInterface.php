@@ -12,6 +12,8 @@ use Symfony\Component\Form\FormInterface;
  */
 interface SubjectProviderInterface
 {
+    const DATA_KEY = 'provider';
+
     /**
      * Returns whether the subject choice is needed or not.
      *

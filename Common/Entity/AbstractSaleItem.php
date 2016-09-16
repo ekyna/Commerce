@@ -59,6 +59,16 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     protected $position;
 
     /**
+     * @var bool
+     */
+    protected $immutable;
+
+    /**
+     * @var bool
+     */
+    protected $configurable;
+
+    /**
      * @var array
      */
     protected $subjectData;
@@ -80,6 +90,8 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
 
         $this->quantity = 1;
         $this->position = 0;
+        $this->immutable = false;
+        $this->configurable = false;
         $this->subjectData = [];
     }
 
@@ -219,6 +231,42 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     public function setPosition($position)
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isImmutable()
+    {
+        return $this->immutable;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setImmutable($immutable)
+    {
+        $this->immutable = (bool)$immutable;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isConfigurable()
+    {
+        return $this->configurable;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setConfigurable($configurable)
+    {
+        $this->configurable = (bool)$configurable;
 
         return $this;
     }

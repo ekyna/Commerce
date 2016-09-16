@@ -174,6 +174,38 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
     public function setPosition($position);
 
     /**
+     * Returns whether the item is immutable or not.
+     *
+     * @return boolean
+     */
+    public function isImmutable();
+
+    /**
+     * Sets the immutable.
+     *
+     * @param boolean $immutable
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function setImmutable($immutable);
+
+    /**
+     * Returns the configurable.
+     *
+     * @return boolean
+     */
+    public function isConfigurable();
+
+    /**
+     * Sets the configurable.
+     *
+     * @param boolean $configurable
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function setConfigurable($configurable);
+
+    /**
      * Returns whether the item has a subject data or not.
      *
      * @return bool

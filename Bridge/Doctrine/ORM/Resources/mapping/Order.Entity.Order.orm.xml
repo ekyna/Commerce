@@ -50,16 +50,22 @@
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem" field="items" mapped-by="order" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem" field="items" mapped-by="order" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
+            <order-by>
+                <order-by-field name="position" direction="ASC"/>
+            </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderAdjustment" field="adjustments" mapped-by="order" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderAdjustment" field="adjustments" mapped-by="order" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
+            <order-by>
+                <order-by-field name="position" direction="ASC"/>
+            </order-by>
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentInterface" field="payments" mapped-by="order" orphan-removal="true">
