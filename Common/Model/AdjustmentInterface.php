@@ -87,6 +87,22 @@ interface AdjustmentInterface extends ResourceInterface
     public function setPosition($position);
 
     /**
+     * Returns the immutable.
+     *
+     * @return boolean
+     */
+    public function isImmutable();
+
+    /**
+     * Sets the immutable.
+     *
+     * @param boolean $immutable
+     *
+     * @return $this|AdjustmentInterface
+     */
+    public function setImmutable($immutable);
+
+    /**
      * Returns the adjustable.
      *
      * @return AdjustableInterface

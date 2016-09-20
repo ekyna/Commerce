@@ -2,17 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
-use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
+use Ekyna\Component\Commerce\Common\Model;
 
 /**
  * Class AbstractAdjustment
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAdjustment implements AdjustmentInterface
+abstract class AbstractAdjustment implements Model\AdjustmentInterface
 {
     /**
      * @var int
@@ -44,15 +41,21 @@ abstract class AbstractAdjustment implements AdjustmentInterface
      */
     protected $position;
 
+    /**
+     * @var bool
+     */
+    protected $immutable;
+
 
     /**
      * Constructor.
      */
     public function __construct()
     {
-        $this->type = AdjustmentTypes::TYPE_DISCOUNT;
-        $this->mode = AdjustmentModes::MODE_PERCENT;
+        $this->type = Model\AdjustmentTypes::TYPE_DISCOUNT;
+        $this->mode = Model\AdjustmentModes::MODE_PERCENT;
         $this->position = 0;
+        $this->immutable = false;
     }
 
     /**
@@ -77,6 +80,7 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     public function setDesignation($designation)
     {
         $this->designation = $designation;
+
         return $this;
     }
 
@@ -112,6 +116,7 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     public function setMode($mode)
     {
         $this->mode = $mode;
+
         return $this;
     }
 
@@ -129,6 +134,7 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     public function setAmount($amount)
     {
         $this->amount = $amount;
+
         return $this;
     }
 
@@ -146,6 +152,31 @@ abstract class AbstractAdjustment implements AdjustmentInterface
     public function setPosition($position)
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    /**
+     * Returns the immutable.
+     *
+     * @return boolean
+     */
+    public function isImmutable()
+    {
+        return $this->immutable;
+    }
+
+    /**
+     * Sets the immutable.
+     *
+     * @param boolean $immutable
+     *
+     * @return AbstractAdjustment
+     */
+    public function setImmutable($immutable)
+    {
+        $this->immutable = (bool)$immutable;
+
         return $this;
     }
 

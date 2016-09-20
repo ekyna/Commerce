@@ -3,11 +3,9 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -26,6 +24,11 @@ class ViewBuilder
      * @var array
      */
     private $options;
+
+    /**
+     * @var ViewVarsBuilderInterface
+     */
+    private $varsBuilder;
 
     /**
      * @var CalculatorInterface
@@ -51,14 +54,15 @@ class ViewBuilder
     /**
      * Builds the sale view.
      *
-     * @param SaleInterface $sale
-     * @param array         $options
+     * @param Model\SaleInterface $sale
+     * @param array               $options
      *
      * @return SaleView
      */
-    public function buildSaleView(SaleInterface $sale, array $options = [])
+    public function buildSaleView(Model\SaleInterface $sale, array $options = [])
     {
         $this->options = $this->getOptionsResolver()->resolve($options);
+        $this->varsBuilder = $options['vars_builder'];
 
         $this->lineNumber = 1;
 
@@ -86,7 +90,9 @@ class ViewBuilder
             $this->buildSaleTaxesViews($sale)
         );
 
-        $this->buildViewVars($view, 'sale_vars', [$sale]);
+        if ($this->varsBuilder) {
+            $view->vars = $this->varsBuilder->buildSaleViewVars($sale, $this->options);
+        }
 
         return $view;
     }
@@ -94,11 +100,11 @@ class ViewBuilder
     /**
      * Builds the sale taxes views.
      *
-     * @param SaleInterface $sale
+     * @param Model\SaleInterface $sale
      *
      * @return TaxView[]
      */
-    private function buildSaleTaxesViews(SaleInterface $sale)
+    private function buildSaleTaxesViews(Model\SaleInterface $sale)
     {
         // TODO unnecessary recalculation (see calculator "don't build amounts twice")
         $amounts = $this->calculator->calculateSale($sale);
@@ -108,17 +114,21 @@ class ViewBuilder
             $taxes[] = new TaxView($tax->getName(), $tax->getAmount());
         }
 
+        /* TODO if ($this->varsBuilder) {
+            $view->vars = $this->varsBuilder->buildSaleVars($sale, $this->options);
+        }*/
+
         return $taxes;
     }
 
     /**
      * Builds the sale lines views.
      *
-     * @param SaleInterface $sale
+     * @param Model\SaleInterface $sale
      *
      * @return LineView[]
      */
-    private function buildSaleItemsLinesViews(SaleInterface $sale)
+    private function buildSaleItemsLinesViews(Model\SaleInterface $sale)
     {
         $lines = [];
 
@@ -132,16 +142,16 @@ class ViewBuilder
     /**
      * Builds the sale discounts lines views.
      *
-     * @param SaleInterface $sale
+     * @param Model\SaleInterface $sale
      *
      * @return LineView[]
      */
-    private function buildSaleDiscountsLinesViews(SaleInterface $sale)
+    private function buildSaleDiscountsLinesViews(Model\SaleInterface $sale)
     {
         $lines = [];
 
-        if ($sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
-            foreach ($sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
+        if ($sale->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
+            foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
                 $lines[] = $this->buildDiscountAdjustmentLine($adjustment);
             }
         }
@@ -152,14 +162,14 @@ class ViewBuilder
     /**
      * Builds the sale line view.
      *
-     * @param SaleItemInterface $item
-     * @param int               $level
+     * @param Model\SaleItemInterface $item
+     * @param int                     $level
      *
      * @return LineView
      */
-    private function buildSaleItemLineView(SaleItemInterface $item, $level = 0)
+    private function buildSaleItemLineView(Model\SaleItemInterface $item, $level = 0)
     {
-        $gross = !$item->hasChildren() && $item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
+        $gross = !$item->hasChildren() && $item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT);
 
         $lineNumber = $this->lineNumber++;
         $amounts = $this->calculator->calculateSaleItem($item, $gross);
@@ -170,8 +180,8 @@ class ViewBuilder
                 $lines[] = $this->buildSaleItemLineView($child, $level + 1);
             }
         }
-        if ($item->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
-            foreach ($item->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
+        if ($item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
+            foreach ($item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
                 $lines[] = $this->buildDiscountAdjustmentLine($adjustment, $level + 1);
             }
         }
@@ -196,10 +206,13 @@ class ViewBuilder
             $amounts->getTaxTotal(),
             $amounts->getTotal(),
             $lines,
+            $item->hasChildren(),
             $item->isImmutable()
         );
 
-        $this->buildViewVars($view, 'item_vars', [$item]);
+        if ($this->varsBuilder) {
+            $view->vars = $this->varsBuilder->buildItemViewVars($item, $this->options);
+        }
 
         return $view;
     }
@@ -207,14 +220,14 @@ class ViewBuilder
     /**
      * Builds the discount adjustment line view.
      *
-     * @param AdjustmentInterface $adjustment
-     * @param int                 $level
+     * @param Model\AdjustmentInterface $adjustment
+     * @param int                       $level
      *
      * @return LineView
      */
-    private function buildDiscountAdjustmentLine(AdjustmentInterface $adjustment, $level = 0)
+    private function buildDiscountAdjustmentLine(Model\AdjustmentInterface $adjustment, $level = 0)
     {
-        if (AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
+        if (Model\AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
             throw new InvalidArgumentException("Unexpected adjustment type.");
         }
 
@@ -234,30 +247,15 @@ class ViewBuilder
             $amounts->getTaxTotal(),
             $amounts->getTotal()
             // lines
+            // node
             // immutable
         );
 
-        $this->buildViewVars($view, 'adjustment_vars', [$adjustment]);
+        if ($this->varsBuilder) {
+            $view->vars = $this->varsBuilder->buildAdjustmentViewVars($adjustment, $this->options);
+        }
 
         return $view;
-    }
-
-    /**
-     * Builds the view vars.
-     *
-     * @param AbstractView $view
-     * @param              $optionsKey
-     * @param array        $callableArgs
-     */
-    private function buildViewVars(AbstractView $view, $optionsKey, array $callableArgs)
-    {
-        $saleVars = $this->options[$optionsKey];
-
-        if (is_callable($saleVars)) {
-            $view->vars = call_user_func_array($saleVars, $callableArgs);
-        } elseif (is_array($saleVars)) {
-            $view->vars = $saleVars;
-        }
     }
 
     /**
@@ -274,15 +272,21 @@ class ViewBuilder
         $resolver = new OptionsResolver();
         $resolver
             ->setDefaults([
-                'sale_vars'       => null,
-                'item_vars'       => null,
-                'adjustment_vars' => null,
-            ])
-            ->setAllowedTypes('sale_vars', ['null', 'array', 'callable'])
-            ->setAllowedTypes('item_vars', ['null', 'array', 'callable'])
-            ->setAllowedTypes('adjustment_vars', ['null', 'array', 'callable']);
+                'private'      => false,
+                'editable'     => false,
+                'template'     => function (Options $options) {
+                    if (true === $options['editable']) {
+                        return 'EkynaCommerceBundle:Common:sale_view_editable.html.twig';
+                    }
 
-        // TODO validate callable's args types
+                    return 'EkynaCommerceBundle:Common:sale_view.html.twig';
+                },
+                'vars_builder' => null,
+            ])
+            ->setAllowedTypes('private', 'bool')
+            ->setAllowedTypes('editable', 'bool')
+            ->setAllowedTypes('template', ['null', 'string'])
+            ->setAllowedTypes('vars_builder', ['null', ViewVarsBuilderInterface::class]);
 
         return $this->optionsResolver = $resolver;
     }

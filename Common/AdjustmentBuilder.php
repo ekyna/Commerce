@@ -71,7 +71,8 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         }
 
         // Resolve taxes
-        $taxes = [];
+        /** @var \Ekyna\Component\Commerce\Pricing\Model\TaxInterface[] $taxes */
+        $taxes = null;
         if (null !== $sale = $item->getSale()) {
             $customer = $sale->getCustomer();
             $address = $sale->getDeliveryAddress();
@@ -83,7 +84,8 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
                         $taxable, $customer, $address
                     );
             }
-        } else {
+        }
+        if (null === $taxes) {
             $taxes = $this->taxResolver->getDefaultTaxesBySubject($taxable);
         }
 

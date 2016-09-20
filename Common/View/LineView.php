@@ -72,6 +72,11 @@ class LineView extends AbstractView
     /**
      * @var bool
      */
+    private $node = false;
+
+    /**
+     * @var bool
+     */
     private $immutable = false;
 
 
@@ -90,6 +95,7 @@ class LineView extends AbstractView
      * @param float  $taxAmount
      * @param float  $total
      * @param array  $lines
+     * @param bool   $node
      * @param bool   $immutable
      */
     public function __construct(
@@ -105,6 +111,7 @@ class LineView extends AbstractView
         $taxAmount,
         $total,
         array $lines = [],
+        $node = false,
         $immutable = false
     ) {
         $this->id = $id;
@@ -119,6 +126,7 @@ class LineView extends AbstractView
         $this->taxAmount = $taxAmount;
         $this->total = $total;
         $this->lines = $lines;
+        $this->node = $node;
         $this->immutable = $immutable;
     }
 
@@ -240,6 +248,16 @@ class LineView extends AbstractView
     public function getLines()
     {
         return $this->lines;
+    }
+
+    /**
+     * Returns whether the line is node or leaf.
+     *
+     * @return boolean
+     */
+    public function isNode()
+    {
+        return $this->node;
     }
 
     /**
