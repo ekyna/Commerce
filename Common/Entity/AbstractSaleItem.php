@@ -96,6 +96,16 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     }
 
     /**
+     * Returns the string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getDesignation();
+    }
+
+    /**
      * @inheritdoc
      */
     public function getId()

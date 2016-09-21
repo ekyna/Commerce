@@ -27,20 +27,6 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
     /**
      * @inheritdoc
      */
-    public function setSale(SaleInterface $sale = null)
-    {
-        if ((null !== $sale) && !$sale instanceof QuoteInterface) {
-            throw new InvalidArgumentException('Expected instance of QuoteInterface');
-        }
-
-        $this->setQuote($sale);
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSale()
     {
         if (null === $quote = $this->getQuote()) {
@@ -54,6 +40,20 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
         }
 
         return $quote;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSale(SaleInterface $sale = null)
+    {
+        if ((null !== $sale) && !$sale instanceof QuoteInterface) {
+            throw new InvalidArgumentException('Expected instance of QuoteInterface');
+        }
+
+        $this->setQuote($sale);
+
+        return $this;
     }
 
     /**
@@ -115,7 +115,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
             throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
         }
 
-        if (!$this->children->contains($child)) {
+        if ($this->children->contains($child)) {
             /** @noinspection PhpInternalEntityUsedInspection */
             $child->setParent(null);
             $this->children->removeElement($child);
@@ -129,10 +129,6 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
      */
     public function hasAdjustment(AdjustmentInterface $adjustment)
     {
-        if (!$adjustment instanceof QuoteItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteItemAdjustmentInterface.");
-        }
-
         if (!$adjustment instanceof QuoteItemAdjustmentInterface) {
             throw new InvalidArgumentException("Expected instance of QuoteItemAdjustmentInterface.");
         }
@@ -166,7 +162,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
             throw new InvalidArgumentException("Expected instance of QuoteItemAdjustmentInterface.");
         }
 
-        if (!$this->adjustments->contains($adjustment)) {
+        if ($this->adjustments->contains($adjustment)) {
             $adjustment->setItem(null);
             $this->adjustments->removeElement($adjustment);
         }

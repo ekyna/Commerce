@@ -59,6 +59,16 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     }
 
     /**
+     * Returns the string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getDesignation();
+    }
+
+    /**
      * @inheritdoc
      */
     public function getId()

@@ -91,8 +91,8 @@ class SaleFactory implements SaleFactoryInterface
             ],
             'adjustment' => [
                 Cart\Model\CartInterface::class => Cart\Entity\CartAdjustment::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderItem::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteItem::class,
+                Order\Model\OrderInterface::class => Order\Entity\OrderAdjustment::class,
+                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAdjustment::class,
             ],
             'item_adjustment' => [
                 Cart\Model\CartItemInterface::class => Cart\Entity\CartItemAdjustment::class,

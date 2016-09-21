@@ -27,20 +27,6 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setSale(SaleInterface $sale = null)
-    {
-        if ((null !== $sale) && !$sale instanceof OrderInterface) {
-            throw new InvalidArgumentException('Expected instance of OrderInterface');
-        }
-
-        $this->setOrder($sale);
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSale()
     {
         if (null === $order = $this->getOrder()) {
@@ -54,6 +40,20 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
         }
 
         return $order;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSale(SaleInterface $sale = null)
+    {
+        if ((null !== $sale) && !$sale instanceof OrderInterface) {
+            throw new InvalidArgumentException('Expected instance of OrderInterface');
+        }
+
+        $this->setOrder($sale);
+
+        return $this;
     }
 
     /**
@@ -115,7 +115,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
             throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
         }
 
-        if (!$this->children->contains($child)) {
+        if ($this->children->contains($child)) {
             /** @noinspection PhpInternalEntityUsedInspection */
             $child->setParent(null);
             $this->children->removeElement($child);
@@ -129,10 +129,6 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function hasAdjustment(AdjustmentInterface $adjustment)
     {
-        if (!$adjustment instanceof OrderItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderItemAdjustmentInterface.");
-        }
-
         if (!$adjustment instanceof OrderItemAdjustmentInterface) {
             throw new InvalidArgumentException("Expected instance of OrderItemAdjustmentInterface.");
         }
@@ -166,7 +162,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
             throw new InvalidArgumentException("Expected instance of OrderItemAdjustmentInterface.");
         }
 
-        if (!$this->adjustments->contains($adjustment)) {
+        if ($this->adjustments->contains($adjustment)) {
             $adjustment->setItem(null);
             $this->adjustments->removeElement($adjustment);
         }

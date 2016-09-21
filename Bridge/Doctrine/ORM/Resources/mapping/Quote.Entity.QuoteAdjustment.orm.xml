@@ -12,9 +12,9 @@
             <index columns="position" name="idx_quote_adjustment_position" />
         </indexes>
 
-        <unique-constraints>
+        <!-- TODO <unique-constraints>
             <unique-constraint columns="quote_id,position" name="unique_quote_adjustment_position"/>
-        </unique-constraints>
+        </unique-constraints>-->
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>

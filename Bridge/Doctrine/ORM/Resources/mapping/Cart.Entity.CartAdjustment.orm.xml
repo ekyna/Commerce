@@ -12,9 +12,9 @@
             <index columns="position" name="idx_cart_adjustment_position" />
         </indexes>
 
-        <unique-constraints>
+        <!-- TODO <unique-constraints>
             <unique-constraint columns="cart_id,position" name="unique_cart_adjustment_position"/>
-        </unique-constraints>
+        </unique-constraints>-->
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>

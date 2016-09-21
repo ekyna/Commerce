@@ -27,20 +27,6 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
     /**
      * @inheritdoc
      */
-    public function setSale(SaleInterface $sale = null)
-    {
-        if ((null !== $sale) && !$sale instanceof CartInterface) {
-            throw new InvalidArgumentException('Expected instance of CartInterface');
-        }
-
-        $this->setCart($sale);
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSale()
     {
         if (null === $cart = $this->getCart()) {
@@ -54,6 +40,20 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
         }
 
         return $cart;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSale(SaleInterface $sale = null)
+    {
+        if ((null !== $sale) && !$sale instanceof CartInterface) {
+            throw new InvalidArgumentException('Expected instance of CartInterface');
+        }
+
+        $this->setCart($sale);
+
+        return $this;
     }
 
     /**
@@ -115,7 +115,7 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
             throw new InvalidArgumentException("Expected instance of CartItemInterface.");
         }
 
-        if (!$this->children->contains($child)) {
+        if ($this->children->contains($child)) {
             /** @noinspection PhpInternalEntityUsedInspection */
             $child->setParent(null);
             $this->children->removeElement($child);
@@ -129,10 +129,6 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
      */
     public function hasAdjustment(AdjustmentInterface $adjustment)
     {
-        if (!$adjustment instanceof CartItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of CartItemAdjustmentInterface.");
-        }
-
         if (!$adjustment instanceof CartItemAdjustmentInterface) {
             throw new InvalidArgumentException("Expected instance of CartItemAdjustmentInterface.");
         }
@@ -166,7 +162,7 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
             throw new InvalidArgumentException("Expected instance of CartItemAdjustmentInterface.");
         }
 
-        if (!$this->adjustments->contains($adjustment)) {
+        if ($this->adjustments->contains($adjustment)) {
             $adjustment->setItem(null);
             $this->adjustments->removeElement($adjustment);
         }
