@@ -20,7 +20,7 @@ use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\CustomerEventSubscribe
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\OrderEventSubscriber;
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\ProductEventSubscriber;
 use Ekyna\Component\Commerce\Common\Calculator\Calculator;
-use Ekyna\Component\Commerce\Order\Generator\DefaultNumberGenerator;
+use Ekyna\Component\Commerce\Common\Generator\DefaultNumberGenerator;
 use Ekyna\Component\Commerce\Order\Resolver\StateResolver;
 use Ekyna\Component\Resource\Configuration\ConfigurationFactory;
 use Ekyna\Component\Resource\Configuration\ConfigurationRegistry;

@@ -1,26 +1,25 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Order\EventListener;
+namespace Ekyna\Component\Commerce\Quote\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderEventInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Order\Resolver\StateResolverInterface;
+use Ekyna\Component\Commerce\Quote\Model\QuoteEventInterface;
+use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
+use Ekyna\Component\Commerce\Quote\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Resource\Event\PersistenceEvent;
 
 /**
- * Class OrderEventSubscriber
- * @package Ekyna\Component\Commerce\Order\EventListener
+ * Class QuoteEventSubscriber
+ * @package Ekyna\Component\Commerce\Quote\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderListener extends AbstractSaleListener
+class QuoteListener extends AbstractSaleListener
 {
     /**
      * @var StateResolverInterface
@@ -74,29 +73,19 @@ class OrderListener extends AbstractSaleListener
     /**
      * Pre delete event handler.
      *
-     * @param OrderEventInterface $event
+     * @param QuoteEventInterface $event
      *
      * @throws IllegalOperationException
      */
-    public function onPreDelete(OrderEventInterface $event)
+    public function onPreDelete(QuoteEventInterface $event)
     {
-        $order = $event->getOrder();
+        $quote = $event->getQuote();
 
-        // Stop if order has valid payments
-        if (null !== $payments = $order->getPayments()) {
+        // Stop if quote has valid payments
+        if (null !== $payments = $quote->getPayments()) {
             $deletablePaymentStates = [PaymentStates::STATE_NEW, PaymentStates::STATE_CANCELLED];
             foreach ($payments as $payment) {
                 if (!in_array($payment->getState(), $deletablePaymentStates)) {
-                    throw new IllegalOperationException();
-                }
-            }
-        }
-
-        // Stop if order has valid shipments
-        if (null !== $shipments = $order->getShipments()) {
-            $deletableShipmentStates = [ShipmentStates::STATE_CHECKOUT, ShipmentStates::STATE_CANCELLED];
-            foreach ($shipments as $shipment) {
-                if (!in_array($shipment->getState(), $deletableShipmentStates)) {
                     throw new IllegalOperationException();
                 }
             }
@@ -110,8 +99,8 @@ class OrderListener extends AbstractSaleListener
     {
         $resource = $event->getResource();
 
-        if (!$resource instanceof OrderInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderInterface");
+        if (!$resource instanceof QuoteInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteInterface");
         }
 
         return $resource;

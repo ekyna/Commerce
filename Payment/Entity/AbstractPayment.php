@@ -3,16 +3,15 @@
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 
 /**
- * Class Payment
+ * Class AbstractPayment
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Payment implements PaymentInterface
+class AbstractPayment implements PaymentInterface
 {
     /**
      * @var int
@@ -23,11 +22,6 @@ class Payment implements PaymentInterface
      * @var string
      */
     protected $number;
-
-    /**
-     * @var OrderInterface
-     */
-    protected $order;
 
     /**
      * @var CurrencyInterface
@@ -87,24 +81,6 @@ class Payment implements PaymentInterface
     public function setNumber($number)
     {
         $this->number = $number;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
-    {
-        return $this->order;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOrder(OrderInterface $order)
-    {
-        $this->order = $order;
 
         return $this;
     }

@@ -5,29 +5,107 @@
         xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-    <!--<class name="Ekyna\Component\Commerce\Pricing\Entity\TaxRule">
+    <class name="Ekyna\Component\Commerce\Quote\Entity\Quote">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">name</option>
+            <option name="fields">number</option>
         </constraint>
-        <property name="name">
-            <constraint name="NotBlank"/>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">key</option>
+        </constraint>
+        <property name="number">
             <constraint name="Length">
-                <option name="min">2</option>
-                <option name="max">64</option>
+                <option name="min">8</option>
+                <option name="max">16</option>
             </constraint>
         </property>
-        <property name="priority">
-            <constraint name="NotBlank"/>
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
+        <property name="firstName">
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Quote</value>
+                </option>
             </constraint>
         </property>
-        <property name="position">
-            <constraint name="NotBlank"/>
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
+        <property name="lastName">
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Quote</value>
+                </option>
             </constraint>
         </property>
+
+        <property name="invoiceAddress">
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Information</value>
+                    <value>Quote</value>
+                </option>
+            </constraint>
+            <constraint name="Valid" />
+        </property>
+        <property name="deliveryAddress">
+            <constraint name="Valid" />
+        </property>
+
+        <property name="items">
+            <constraint name="Count">
+                <option name="min">1</option>
+                <option name="groups">
+                    <value>Quote</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="payments">
+            <constraint name="Valid" />
+        </property>
+
+        <property name="state">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Quote\Model\QuoteStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="paymentState">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
+
+    <!--<class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAddress">
+
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Quote\Entity\AbstractAdjustment">
+
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAddress">
+
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment">
+
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteItem">
+
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteItemAdjustment">
+
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Quote\Entity\QuotePayment">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+        </constraint>
     </class>-->
 
 </constraint-mapping>

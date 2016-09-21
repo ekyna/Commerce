@@ -20,22 +20,4 @@ interface HelperInterface
      * @throws InvalidArgumentException
      */
     public function resolve(SaleItemInterface $item);
-
-    /**
-     * Generates the front office path for the given subject or order item.
-     *
-     * @param SaleItemInterface $item
-     * @return string|null
-     * @throws InvalidArgumentException
-     */
-    public function generateFrontOfficePath(SaleItemInterface $item);
-
-    /**
-     * Generates the back office path for the given subject or order item.
-     *
-     * @param SaleItemInterface $item
-     * @return string|null
-     * @throws InvalidArgumentException
-     */
-    public function generateBackOfficePath(SaleItemInterface $item);
 }

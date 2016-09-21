@@ -30,22 +30,6 @@ interface PaymentInterface extends ResourceInterface
     public function setNumber($number);
 
     /**
-     * Returns the order.
-     *
-     * @return OrderInterface
-     */
-    public function getOrder();
-
-    /**
-     * Sets the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setOrder(OrderInterface $order);
-
-    /**
      * Returns the currency.
      *
      * @return CurrencyInterface

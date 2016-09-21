@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Payment;
 use Ekyna\Component\Commerce\Pricing;
 use Ekyna\Component\Commerce\Product;
+use Ekyna\Component\Commerce\Quote;
 use Ekyna\Component\Commerce\Shipment;
 
 /**
@@ -48,8 +49,8 @@ class DoctrineBundleMapping
 
             Order\Model\OrderInterface::class              => Order\Entity\Order::class,
             Order\Model\OrderAddressInterface::class       => Order\Entity\OrderAddress::class,
+            Order\Model\OrderPaymentInterface::class       => Order\Entity\OrderPayment::class,
 
-            Payment\Model\PaymentInterface::class          => Payment\Entity\Payment::class,
             Payment\Model\PaymentMethodInterface::class    => Payment\Entity\PaymentMethod::class,
 
             Pricing\Model\TaxGroupInterface::class         => Pricing\Entity\TaxGroup::class,
@@ -64,6 +65,10 @@ class DoctrineBundleMapping
             Product\Model\OptionGroupInterface::class      => Product\Entity\OptionGroup::class,
             Product\Model\OptionInterface::class           => Product\Entity\Option::class,
             Product\Model\ProductInterface::class          => Product\Entity\Product::class,
+
+            Quote\Model\QuoteInterface::class              => Quote\Entity\Quote::class,
+            Quote\Model\QuoteAddressInterface::class       => Quote\Entity\QuoteAddress::class,
+            Quote\Model\QuotePaymentInterface::class       => Quote\Entity\QuotePayment::class,
 
             Shipment\Model\ShipmentInterface::class        => Shipment\Entity\Shipment::class,
             Shipment\Model\ShipmentItemInterface::class    => Shipment\Entity\ShipmentItem::class,

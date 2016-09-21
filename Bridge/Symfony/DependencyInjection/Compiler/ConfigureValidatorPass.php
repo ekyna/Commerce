@@ -27,14 +27,14 @@ class ConfigureValidatorPass implements CompilerPassInterface
         // TODO
         $paths = [];
         $names = [
-            //'cart',
+            'cart',
             'common',
             'customer',
             'order',
-            //'payment',
+            'payment',
             'pricing',
             'product',
-            //'quote',
+            'quote',
             //'shipment',
         ];
         foreach ($names as $name) {

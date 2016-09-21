@@ -47,30 +47,6 @@ class Helper implements HelperInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function generateFrontOfficePath(SaleItemInterface $item)
-    {
-        if (null !== $resolver = $this->registry->getProviderByItem($item)) {
-            return $resolver->generateFrontOfficePath($item);
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function generateBackOfficePath(SaleItemInterface $item)
-    {
-        if (null !== $resolver = $this->registry->getProviderByItem($item)) {
-            return $resolver->generateBackOfficePath($item);
-        }
-
-        return null;
-    }
-
-    /**
      * Returns the provider that supports the item.
      *
      * @param SaleItemInterface $item

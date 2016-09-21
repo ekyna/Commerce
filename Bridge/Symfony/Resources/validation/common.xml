@@ -110,6 +110,9 @@
     <!-- Sale -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">
+        <property name="customer">
+            <constraint name="Valid" />
+        </property>
         <property name="firstName">
             <constraint name="Length">
                 <option name="min">2</option>
@@ -127,6 +130,12 @@
         </property>
         <property name="items">
             <constraint name="Valid" />
+        </property>
+        <property name="createdAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="updatedAt">
+            <constraint name="DateTime"/>
         </property>
     </class>
 

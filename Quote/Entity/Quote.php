@@ -1,22 +1,21 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Order\Entity;
+namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Order\Model;
+use Ekyna\Component\Commerce\Quote\Model;
+use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 
 /**
- * Class Order
- * @package Ekyna\Component\Commerce\Order\Entity
+ * Class Quote
+ * @package Ekyna\Component\Commerce\Quote\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Order extends AbstractSale  implements Model\OrderInterface
+class Quote extends AbstractSale implements Model\QuoteInterface
 {
     /**
      * @var string
@@ -39,24 +38,14 @@ class Order extends AbstractSale  implements Model\OrderInterface
     protected $paymentState;
 
     /**
-     * @var string
-     */
-    protected $shipmentState;
-
-    /**
      * @var float
      */
     protected $paidTotal;
 
     /**
-     * @var ArrayCollection|Model\OrderPaymentInterface[]
+     * @var ArrayCollection|PaymentInterface[]
      */
     protected $payments;
-
-    /**
-     * @var ArrayCollection|ShipmentInterface[]
-     */
-    protected $shipments;
 
     /**
      * @var \DateTime
@@ -71,14 +60,12 @@ class Order extends AbstractSale  implements Model\OrderInterface
     {
         parent::__construct();
 
-        $this->state = Model\OrderStates::STATE_NEW;
+        $this->state = Model\QuoteStates::STATE_NEW;
         $this->paymentState = PaymentStates::STATE_NEW;
-        $this->shipmentState = ShipmentStates::STATE_PENDING;
 
         $this->paidTotal = 0;
 
         $this->payments = new ArrayCollection();
-        $this->shipments = new ArrayCollection();
     }
 
     /**
@@ -132,7 +119,7 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function setInvoiceAddress(Common\AddressInterface $address)
     {
-        if (!$address instanceof Model\OrderAddressInterface) {
+        if (!$address instanceof Model\QuoteAddressInterface) {
             throw new InvalidArgumentException('Unexpected address type.');
         }
 
@@ -146,7 +133,7 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function setDeliveryAddress(Common\AddressInterface $address = null)
     {
-        if (null !== $address && !($address instanceof Model\OrderAddressInterface)) {
+        if (null !== $address && !($address instanceof Model\QuoteAddressInterface)) {
             throw new InvalidArgumentException('Unexpected address type.');
         }
 
@@ -193,24 +180,6 @@ class Order extends AbstractSale  implements Model\OrderInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function setShipmentState($shipmentState)
-    {
-        $this->shipmentState = $shipmentState;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getShipmentState()
-    {
-        return $this->shipmentState;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getPaidTotal()
@@ -233,8 +202,8 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function hasItem(Common\SaleItemInterface $item)
     {
-        if (!$item instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
+        if (!$item instanceof Model\QuoteItemInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
         }
 
         return $this->items->contains($item);
@@ -245,12 +214,12 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function addItem(Common\SaleItemInterface $item)
     {
-        if (!$item instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
+        if (!$item instanceof Model\QuoteItemInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
         }
 
         if (!$this->hasItem($item)) {
-            $item->setOrder($this);
+            $item->setQuote($this);
             $this->items->add($item);
         }
 
@@ -262,12 +231,12 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function removeItem(Common\SaleItemInterface $item)
     {
-        if (!$item instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
+        if (!$item instanceof Model\QuoteItemInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
         }
 
         if ($this->hasItem($item)) {
-            $item->setOrder(null);
+            $item->setQuote(null);
             $this->items->removeElement($item);
         }
 
@@ -279,8 +248,8 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function hasAdjustment(Common\AdjustmentInterface $adjustment)
     {
-        if (!$adjustment instanceof Model\OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderAdjustmentInterface.");
+        if (!$adjustment instanceof Model\QuoteAdjustmentInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteAdjustmentInterface.");
         }
 
         return $this->adjustments->contains($adjustment);
@@ -291,12 +260,12 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function addAdjustment(Common\AdjustmentInterface $adjustment)
     {
-        if (!$adjustment instanceof Model\OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderAdjustmentInterface.");
+        if (!$adjustment instanceof Model\QuoteAdjustmentInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteAdjustmentInterface.");
         }
 
         if (!$this->hasAdjustment($adjustment)) {
-            $adjustment->setOrder($this);
+            $adjustment->setQuote($this);
             $this->adjustments->add($adjustment);
         }
 
@@ -308,12 +277,12 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function removeAdjustment(Common\AdjustmentInterface $adjustment)
     {
-        if (!$adjustment instanceof Model\OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderAdjustmentInterface.");
+        if (!$adjustment instanceof Model\QuoteAdjustmentInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteAdjustmentInterface.");
         }
 
         if ($this->hasAdjustment($adjustment)) {
-            $adjustment->setOrder(null);
+            $adjustment->setQuote(null);
             $this->adjustments->removeElement($adjustment);
         }
 
@@ -339,7 +308,7 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function hasPayment(Model\OrderPaymentInterface $payment)
+    public function hasPayment(Model\QuotePaymentInterface $payment)
     {
         return $this->payments->contains($payment);
     }
@@ -347,10 +316,10 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function addPayment(Model\OrderPaymentInterface $payment)
+    public function addPayment(Model\QuotePaymentInterface $payment)
     {
         if (!$this->hasPayment($payment)) {
-            $payment->setOrder($this);
+            $payment->setQuote($this);
             $this->payments->add($payment);
         }
 
@@ -360,61 +329,11 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function removePayment(Model\OrderPaymentInterface $payment)
+    public function removePayment(Model\QuotePaymentInterface $payment)
     {
         if ($this->hasPayment($payment)) {
-            $payment->setOrder(null);
+            $payment->setQuote(null);
             $this->payments->removeElement($payment);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasShipments()
-    {
-        return 0 < $this->shipments->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShipments()
-    {
-        return $this->shipments;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasShipment(ShipmentInterface $shipment)
-    {
-        return $this->shipments->contains($shipment);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function addShipment(ShipmentInterface $shipment)
-    {
-        if (!$this->hasShipment($shipment)) {
-            $shipment->setOrder($this);
-            $this->shipments->add($shipment);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeShipment(ShipmentInterface $shipment)
-    {
-        if ($this->hasShipment($shipment)) {
-            $shipment->setOrder(null);
-            $this->shipments->removeElement($shipment);
         }
 
         return $this;

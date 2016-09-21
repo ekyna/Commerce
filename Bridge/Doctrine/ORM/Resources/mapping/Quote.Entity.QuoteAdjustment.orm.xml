@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity name="Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment"
+            table="commerce_quote_adjustment">
+
+        <indexes>
+            <index columns="position" name="idx_quote_adjustment_position" />
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="quote_id,position" name="unique_quote_adjustment_position"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface" field="quote" inversed-by="adjustments">
+            <join-column name="quote_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
+        </many-to-one>
+
+    </entity>
+
+</doctrine-mapping>

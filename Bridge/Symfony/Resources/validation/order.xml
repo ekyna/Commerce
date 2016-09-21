@@ -8,6 +8,8 @@
     <class name="Ekyna\Component\Commerce\Order\Entity\Order">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
+        </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">key</option>
         </constraint>
         <property name="number">
@@ -15,9 +17,6 @@
                 <option name="min">8</option>
                 <option name="max">16</option>
             </constraint>
-        </property>
-        <property name="customer">
-            <constraint name="Valid" />
         </property>
         <property name="firstName">
             <constraint name="NotBlank">
@@ -53,7 +52,6 @@
             <constraint name="Count">
                 <option name="min">1</option>
                 <option name="groups">
-                    <value>Cart</value>
                     <value>Order</value>
                 </option>
             </constraint>
@@ -89,6 +87,10 @@
                 </option>
             </constraint>
         </property>
+
+        <property name="completedAt">
+            <constraint name="DateTime"/>
+        </property>
     </class>
 
     <!--<class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
@@ -113,6 +115,12 @@
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
 
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderPayment">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+        </constraint>
     </class>-->
 
 </constraint-mapping>

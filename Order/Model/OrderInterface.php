@@ -3,8 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
@@ -12,40 +11,11 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderInterface extends SaleInterface
+interface OrderInterface extends
+    Common\SaleInterface,
+    Common\NumberSubjectInterface,
+    Common\KeySubjectInterface
 {
-    /**
-     * Returns the key.
-     *
-     * @return string
-     */
-    public function getKey();
-
-    /**
-     * Sets the key.
-     *
-     * @param string $key
-     *
-     * @return $this|OrderInterface
-     */
-    public function setKey($key);
-
-    /**
-     * Returns the reference.
-     *
-     * @return string
-     */
-    public function getNumber();
-
-    /**
-     * Sets the reference.
-     *
-     * @param string $reference
-     *
-     * @return $this|OrderInterface
-     */
-    public function setNumber($reference);
-
     /**
      * Returns the state.
      *
@@ -117,33 +87,33 @@ interface OrderInterface extends SaleInterface
     /**
      * Returns the payments.
      *
-     * @return ArrayCollection|PaymentInterface[]
+     * @return ArrayCollection|OrderPaymentInterface[]
      */
     public function getPayments();
 
     /**
      * Returns whether the order has the payment or not.
      *
-     * @param PaymentInterface $payment
+     * @param OrderPaymentInterface $payment
      * @return bool
      */
-    public function hasPayment(PaymentInterface $payment);
+    public function hasPayment(OrderPaymentInterface $payment);
 
     /**
      * Adds the payment.
      *
-     * @param PaymentInterface $payment
+     * @param OrderPaymentInterface $payment
      * @return $this|OrderInterface
      */
-    public function addPayment(PaymentInterface $payment);
+    public function addPayment(OrderPaymentInterface $payment);
 
     /**
      * Removes the payment.
      *
-     * @param PaymentInterface $payment
+     * @param OrderPaymentInterface $payment
      * @return $this|OrderInterface
      */
-    public function removePayment(PaymentInterface $payment);
+    public function removePayment(OrderPaymentInterface $payment);
 
     /**
      * Returns whether the order has shipments or not.

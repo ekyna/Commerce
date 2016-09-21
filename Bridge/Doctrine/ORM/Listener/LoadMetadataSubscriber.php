@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping\ClassMetadataInfo;
  * Class LoadMetadataSubscriber
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener
  * @author Étienne Dauvergne <contact@ekyna.com>
+ * @todo use resource bundle's one.
  */
 class LoadMetadataSubscriber implements EventSubscriber
 {
