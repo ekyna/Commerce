@@ -194,7 +194,7 @@ class ViewBuilder
         }
 
         $view = new LineView(
-            $item->getId(),
+            'item_' . $item->getId(),
             $lineNumber,
             $level,
             $item->getDesignation(),
@@ -235,7 +235,7 @@ class ViewBuilder
         $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
 
         $view = new LineView(
-            $adjustment->getId(),
+            'adjustment_' . $adjustment->getId(),
             $lineNumber,
             $level,
             $adjustment->getDesignation(),

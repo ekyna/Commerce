@@ -49,7 +49,8 @@
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteItem" field="items" mapped-by="quote" orphan-removal="true" index-by="id">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteItem"
+                     field="items" mapped-by="quote" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
@@ -58,7 +59,8 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment" field="adjustments" mapped-by="quote" orphan-removal="true" index-by="id">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment"
+                     field="adjustments" mapped-by="quote" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
@@ -67,7 +69,8 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface" field="payments" mapped-by="quote" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface"
+                     field="payments" mapped-by="quote" orphan-removal="true">
             <cascade>
                 <cascade-all/>
             </cascade>

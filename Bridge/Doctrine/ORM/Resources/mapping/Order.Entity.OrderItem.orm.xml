@@ -20,13 +20,15 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem" field="children" mapped-by="parent" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem"
+                     field="children" mapped-by="parent" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment" field="adjustments" mapped-by="item" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment"
+                     field="adjustments" mapped-by="item" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
