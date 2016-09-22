@@ -3,7 +3,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -30,20 +30,20 @@ interface ShipmentItemInterface extends ResourceInterface
     public function setShipment(ShipmentInterface $shipment = null);
 
     /**
-     * Returns the orderItem.
+     * Returns the sale item.
      *
-     * @return OrderItemInterface
+     * @return SaleItemInterface
      */
-    public function getOrderItem();
+    public function getSaleItem();
 
     /**
-     * Sets the orderItem.
+     * Sets the sale item.
      *
-     * @param OrderItemInterface $orderItem
+     * @param SaleItemInterface $saleItem
      *
      * @return $this|ShipmentItemInterface
      */
-    public function setOrderItem(OrderItemInterface $orderItem = null);
+    public function setSaleItem(SaleItemInterface $saleItem = null);
 
     /**
      * Returns the quantity.

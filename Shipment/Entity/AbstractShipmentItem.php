@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 
@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentItem implements ShipmentItemInterface
+class AbstractShipmentItem implements ShipmentItemInterface
 {
     /**
      * @var int
@@ -24,9 +24,9 @@ class ShipmentItem implements ShipmentItemInterface
     protected $shipment;
 
     /**
-     * @var OrderItemInterface
+     * @var SaleItemInterface
      */
-    protected $orderItem;
+    protected $saleItem;
 
     /**
      * @var int
@@ -63,17 +63,17 @@ class ShipmentItem implements ShipmentItemInterface
     /**
      * @inheritdoc
      */
-    public function getOrderItem()
+    public function getSaleItem()
     {
-        return $this->orderItem;
+        return $this->saleItem;
     }
 
     /**
      * @inheritdoc
      */
-    public function setOrderItem(OrderItemInterface $orderItem = null)
+    public function setSaleItem(SaleItemInterface $saleItem = null)
     {
-        $this->orderItem = $orderItem;
+        $this->saleItem = $saleItem;
 
         return $this;
     }

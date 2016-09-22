@@ -21,7 +21,7 @@ use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\OrderEventSubscriber;
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\ProductEventSubscriber;
 use Ekyna\Component\Commerce\Common\Calculator\Calculator;
 use Ekyna\Component\Commerce\Common\Generator\DefaultNumberGenerator;
-use Ekyna\Component\Commerce\Order\Resolver\StateResolver;
+use Ekyna\Component\Commerce\Order\Resolver\OrderStateResolver;
 use Ekyna\Component\Resource\Configuration\ConfigurationFactory;
 use Ekyna\Component\Resource\Configuration\ConfigurationRegistry;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcher;
@@ -121,7 +121,7 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
         $dispatcher->addSubscriber(new OrderEventSubscriber(
             new DefaultNumberGenerator(),
             new Calculator(),
-            new StateResolver()
+            new OrderStateResolver()
         ));
 
         self::$dispatcher = $dispatcher;

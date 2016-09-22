@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -13,22 +12,6 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface ShipmentInterface extends ResourceInterface
 {
-    /**
-     * Returns the order.
-     *
-     * @return OrderInterface
-     */
-    public function getOrder();
-
-    /**
-     * Sets the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setOrder($order);
-
     /**
      * Returns the method.
      *
@@ -85,15 +68,6 @@ interface ShipmentInterface extends ResourceInterface
      * @return $this
      */
     public function removeItem(ShipmentItemInterface $item);
-
-    /**
-     * Sets the items.
-     *
-     * @param ArrayCollection|ShipmentItemInterface[] $items
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setItems(ArrayCollection $items);
 
     /**
      * Returns the number.

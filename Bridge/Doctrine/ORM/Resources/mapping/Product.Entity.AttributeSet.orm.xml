@@ -23,7 +23,8 @@
 
         <field name="name" column="name" type="string" length="32" nullable="false" unique="true"/>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\AttributeSlotInterface" field="slots" mapped-by="set" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\AttributeSlotInterface"
+                     field="slots" mapped-by="set" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>

@@ -30,28 +30,32 @@
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="variants" mapped-by="parent">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface"
+                     field="variants" mapped-by="parent">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
             </cascade>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\OptionGroupInterface" field="optionGroups" mapped-by="product">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\OptionGroupInterface"
+                     field="optionGroups" mapped-by="product">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
             </cascade>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\BundleSlotInterface" field="bundleSlots" mapped-by="bundle">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\BundleSlotInterface"
+                     field="bundleSlots" mapped-by="bundle">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
             </cascade>
         </one-to-many>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="parent" inversed-by="variants">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface"
+                     field="parent" inversed-by="variants">
             <cascade>
                 <cascade-persist/>
             </cascade>

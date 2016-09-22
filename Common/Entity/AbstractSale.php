@@ -3,23 +3,33 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
 
 /**
  * Class AbstractSale
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
+abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInterface
 {
     /**
      * @var int
      */
     protected $id;
+
+    /**
+     * @var string
+     */
+    protected $key;
+
+    /**
+     * @var string
+     */
+    protected $number;
 
     /**
      * @var CustomerInterface
@@ -47,12 +57,12 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     protected $email;
 
     /**
-     * @var AddressInterface
+     * @var Model\AddressInterface
      */
     protected $invoiceAddress;
 
     /**
-     * @var AddressInterface
+     * @var Model\AddressInterface
      */
     protected $deliveryAddress;
 
@@ -62,7 +72,7 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     protected $sameAddress;
 
     /**
-     * @var CurrencyInterface
+     * @var Model\CurrencyInterface
      */
     protected $currency;
 
@@ -87,9 +97,29 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     protected $grandTotal;
 
     /**
-     * @var ArrayCollection|SaleItemInterface[]
+     * @var float
+     */
+    protected $paidTotal;
+
+    /**
+     * @var string
+     */
+    protected $state;
+
+    /**
+     * @var string
+     */
+    protected $paymentState;
+
+    /**
+     * @var ArrayCollection|Model\SaleItemInterface[]
      */
     protected $items;
+
+    /**
+     * @var ArrayCollection|Payment\PaymentInterface[]
+     */
+    protected $payments;
 
     /**
      * @var \DateTime
@@ -109,14 +139,32 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     {
         parent::__construct();
 
-        $this->sameAddress = false;
+        if (null === $this->state) {
+            throw new RuntimeException("Initial state must be defined.");
+        }
+
+        $this->sameAddress = true;
 
         $this->weightTotal = 0;
         $this->netTotal = 0;
         $this->adjustmentTotal = 0;
         $this->grandTotal = 0;
+        $this->paidTotal = 0;
+
+        $this->paymentState = Payment\PaymentStates::STATE_NEW;
 
         $this->items = new ArrayCollection();
+        $this->payments = new ArrayCollection();
+    }
+
+    /**
+     * Returns the string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getNumber();
     }
 
     /**
@@ -125,6 +173,42 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNumber()
+    {
+        return $this->number;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNumber($number)
+    {
+        $this->number = $number;
+
+        return $this;
     }
 
     /**
@@ -228,9 +312,35 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     /**
      * @inheritdoc
      */
+    public function setInvoiceAddress(Model\AddressInterface $address)
+    {
+        $this->validateAddressClass($address);
+
+        $this->invoiceAddress = $address;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getDeliveryAddress()
     {
         return $this->deliveryAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDeliveryAddress(Model\AddressInterface $address = null)
+    {
+        if (null !== $address) {
+            $this->validateAddressClass($address);
+        }
+
+        $this->deliveryAddress = $address;
+
+        return $this;
     }
 
     /**
@@ -262,7 +372,7 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     /**
      * @inheritdoc
      */
-    public function setCurrency(CurrencyInterface $currency)
+    public function setCurrency(Model\CurrencyInterface $currency)
     {
         $this->currency = $currency;
 
@@ -344,6 +454,60 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     /**
      * @inheritdoc
      */
+    public function getPaidTotal()
+    {
+        return $this->paidTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPaidTotal($paidTotal)
+    {
+        $this->paidTotal = $paidTotal;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setState($state)
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getState()
+    {
+        return $this->state;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setPaymentState($paymentState)
+    {
+        $this->paymentState = $paymentState;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPaymentState()
+    {
+        return $this->paymentState;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasItems()
     {
         return 0 < $this->items->count();
@@ -355,6 +519,22 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
     public function getItems()
     {
         return $this->items;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasPayments()
+    {
+        return 0 < $this->payments->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPayments()
+    {
+        return $this->payments;
     }
 
     /**
@@ -392,4 +572,13 @@ abstract class AbstractSale extends AbstractAdjustable implements SaleInterface
 
         return $this;
     }
+
+    /**
+     * Validates the address class.
+     *
+     * @param Model\AddressInterface $address
+     *
+     * @throws InvalidArgumentException
+     */
+    abstract protected function validateAddressClass(Model\AddressInterface $address);
 }

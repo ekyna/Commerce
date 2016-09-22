@@ -8,8 +8,12 @@ use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\KeySubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
+use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class AbstractSaleListener
@@ -33,6 +37,11 @@ abstract class AbstractSaleListener
      */
     protected $calculator;
 
+    /**
+     * @var StateResolverInterface
+     */
+    protected $stateResolver;
+
 
     /**
      * Constructor.
@@ -40,15 +49,18 @@ abstract class AbstractSaleListener
      * @param NumberGeneratorInterface $numberGenerator
      * @param KeyGeneratorInterface    $keyGenerator
      * @param CalculatorInterface      $calculator
+     * @param StateResolverInterface   $stateResolver
      */
     public function __construct(
         NumberGeneratorInterface $numberGenerator,
         KeyGeneratorInterface $keyGenerator,
-        CalculatorInterface $calculator
+        CalculatorInterface $calculator,
+        StateResolverInterface $stateResolver
     ) {
         $this->numberGenerator = $numberGenerator;
         $this->keyGenerator = $keyGenerator;
         $this->calculator = $calculator;
+        $this->stateResolver = $stateResolver;
     }
 
     /**
@@ -80,6 +92,8 @@ abstract class AbstractSaleListener
         // Update totals
         $changed = $this->updateTotals($sale) || $changed;
 
+        // Update state
+        $changed = $this->updateState($sale) || $changed;
 
         // TODO Timestampable behavior/listener
         $sale
@@ -105,8 +119,8 @@ abstract class AbstractSaleListener
         $changed = false;
 
         // Generate number and key
-        //$changed = $this->generateNumber($order) || $changed;
-        //$changed = $this->generateKey($order) || $changed;
+        //$changed = $this->generateNumber($sale) || $changed;
+        //$changed = $this->generateKey($sale) || $changed;
 
         // Handle identity
         $changed = $this->handleIdentity($sale) || $changed;
@@ -131,6 +145,28 @@ abstract class AbstractSaleListener
 
         if (true || $changed) { // TODO
             $event->persistAndRecompute($sale);
+        }
+    }
+
+    /**
+     * Pre delete event handler.
+     *
+     * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
+     */
+    public function onPreDelete(ResourceEventInterface $event)
+    {
+        $sale = $this->getSaleFromEvent($event);
+
+        // Stop if sale has valid payments
+        if (null !== $payments = $sale->getPayments()) {
+            $deletablePaymentStates = [PaymentStates::STATE_NEW, PaymentStates::STATE_CANCELLED];
+            foreach ($payments as $payment) {
+                if (!in_array($payment->getState(), $deletablePaymentStates)) {
+                    throw new IllegalOperationException();
+                }
+            }
         }
     }
 
@@ -204,7 +240,7 @@ abstract class AbstractSaleListener
      *
      * @param SaleInterface $sale
      *
-     * @return bool Whether the order has been changed or not.
+     * @return bool Whether the sale has been changed or not.
      */
     protected function handleAddresses(SaleInterface $sale)
     {
@@ -226,7 +262,7 @@ abstract class AbstractSaleListener
      *
      * @param SaleInterface $sale
      *
-     * @return bool Whether the order has been changed or not.
+     * @return bool Whether the sale has been changed or not.
      */
     protected function updateTotals(SaleInterface $sale)
     {
@@ -235,7 +271,28 @@ abstract class AbstractSaleListener
         $sale
             ->setNetTotal($amounts->getBase())
             ->setGrandTotal($amounts->getTotal());
-            // TODO Total weight
+
+        // TODO Total weight
+
+        return false;
+    }
+
+    /**
+     * Updates the sale state.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    protected function updateState(SaleInterface $sale)
+    {
+        $state = $this->stateResolver->resolve($sale);
+
+        if ($state != $sale->getState()) {
+            $sale->setState($state);
+
+            return true;
+        }
 
         return false;
     }
@@ -262,10 +319,10 @@ abstract class AbstractSaleListener
     /**
      * Returns the sale from the event.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      *
      * @return SaleInterface
      * @throws InvalidArgumentException
      */
-    abstract protected function getSaleFromEvent(PersistenceEvent $event);
+    abstract protected function getSaleFromEvent(ResourceEventInterface $event);
 }

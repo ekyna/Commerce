@@ -23,7 +23,8 @@
         <field name="name" column="name" type="string" length="64"/>
         <field name="default" column="is_default" type="boolean" />
 
-        <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\TaxRule" field="taxRules" mapped-by="taxGroups"/>
+        <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\TaxRule"
+                      field="taxRules" mapped-by="taxGroups"/>
 
     </entity>
 

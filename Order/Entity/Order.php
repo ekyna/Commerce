@@ -7,54 +7,23 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model;
-use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 
 /**
  * Class Order
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Order extends AbstractSale  implements Model\OrderInterface
+class Order extends AbstractSale implements Model\OrderInterface
 {
-    /**
-     * @var string
-     */
-    protected $key;
-
-    /**
-     * @var string
-     */
-    protected $number;
-
-    /**
-     * @var string
-     */
-    protected $state;
-
-    /**
-     * @var string
-     */
-    protected $paymentState;
-
     /**
      * @var string
      */
     protected $shipmentState;
 
     /**
-     * @var float
-     */
-    protected $paidTotal;
-
-    /**
-     * @var ArrayCollection|Model\OrderPaymentInterface[]
-     */
-    protected $payments;
-
-    /**
-     * @var ArrayCollection|ShipmentInterface[]
+     * @var ArrayCollection|Shipment\ShipmentInterface[]
      */
     protected $shipments;
 
@@ -69,127 +38,11 @@ class Order extends AbstractSale  implements Model\OrderInterface
      */
     public function __construct()
     {
-        parent::__construct();
-
         $this->state = Model\OrderStates::STATE_NEW;
-        $this->paymentState = PaymentStates::STATE_NEW;
-        $this->shipmentState = ShipmentStates::STATE_PENDING;
-
-        $this->paidTotal = 0;
-
-        $this->payments = new ArrayCollection();
+        $this->shipmentState = Shipment\ShipmentStates::STATE_PENDING;
         $this->shipments = new ArrayCollection();
-    }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->getNumber();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getKey()
-    {
-        return $this->key;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setKey($key)
-    {
-        $this->key = $key;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNumber()
-    {
-        return $this->number;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNumber($number)
-    {
-        $this->number = $number;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceAddress(Common\AddressInterface $address)
-    {
-        if (!$address instanceof Model\OrderAddressInterface) {
-            throw new InvalidArgumentException('Unexpected address type.');
-        }
-
-        $this->invoiceAddress = $address;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryAddress(Common\AddressInterface $address = null)
-    {
-        if (null !== $address && !($address instanceof Model\OrderAddressInterface)) {
-            throw new InvalidArgumentException('Unexpected address type.');
-        }
-
-        // TODO remove from database if null ?
-        $this->deliveryAddress = $address;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setPaymentState($paymentState)
-    {
-        $this->paymentState = $paymentState;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPaymentState()
-    {
-        return $this->paymentState;
+        parent::__construct();
     }
 
     /**
@@ -208,24 +61,6 @@ class Order extends AbstractSale  implements Model\OrderInterface
     public function getShipmentState()
     {
         return $this->shipmentState;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPaidTotal()
-    {
-        return $this->paidTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPaidTotal($paidTotal)
-    {
-        $this->paidTotal = $paidTotal;
-
-        return $this;
     }
 
     /**
@@ -323,32 +158,24 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function hasPayments()
+    public function hasPayment(Payment\PaymentInterface $payment)
     {
-        return 0 < $this->payments->count();
-    }
+        if (!$payment instanceof Model\OrderPaymentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderPaymentInterface.");
+        }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPayments()
-    {
-        return $this->payments;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasPayment(Model\OrderPaymentInterface $payment)
-    {
         return $this->payments->contains($payment);
     }
 
     /**
      * @inheritdoc
      */
-    public function addPayment(Model\OrderPaymentInterface $payment)
+    public function addPayment(Payment\PaymentInterface $payment)
     {
+        if (!$payment instanceof Model\OrderPaymentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderPaymentInterface.");
+        }
+
         if (!$this->hasPayment($payment)) {
             $payment->setOrder($this);
             $this->payments->add($payment);
@@ -360,8 +187,12 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function removePayment(Model\OrderPaymentInterface $payment)
+    public function removePayment(Payment\PaymentInterface $payment)
     {
+        if (!$payment instanceof Model\OrderPaymentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderPaymentInterface.");
+        }
+
         if ($this->hasPayment($payment)) {
             $payment->setOrder(null);
             $this->payments->removeElement($payment);
@@ -389,7 +220,7 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function hasShipment(ShipmentInterface $shipment)
+    public function hasShipment(Model\OrderShipmentInterface $shipment)
     {
         return $this->shipments->contains($shipment);
     }
@@ -397,7 +228,7 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function addShipment(ShipmentInterface $shipment)
+    public function addShipment(Model\OrderShipmentInterface $shipment)
     {
         if (!$this->hasShipment($shipment)) {
             $shipment->setOrder($this);
@@ -410,7 +241,7 @@ class Order extends AbstractSale  implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function removeShipment(ShipmentInterface $shipment)
+    public function removeShipment(Model\OrderShipmentInterface $shipment)
     {
         if ($this->hasShipment($shipment)) {
             $shipment->setOrder(null);
@@ -436,5 +267,15 @@ class Order extends AbstractSale  implements Model\OrderInterface
         $this->completedAt = $completedAt;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function validateAddressClass(Common\AddressInterface $address)
+    {
+        if (!$address instanceof Model\OrderAddressInterface) {
+            throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
+        }
     }
 }

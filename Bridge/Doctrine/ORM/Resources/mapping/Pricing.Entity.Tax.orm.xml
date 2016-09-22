@@ -28,7 +28,8 @@
             <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
-        <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\TaxRule" mapped-by="taxes" field="taxRules">
+        <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\TaxRule"
+                      mapped-by="taxes" field="taxRules">
             <cascade>
                 <cascade-merge/>
                 <cascade-refresh/>

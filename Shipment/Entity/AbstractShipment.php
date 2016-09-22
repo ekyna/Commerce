@@ -3,27 +3,21 @@
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 
 /**
- * Class Shipment
+ * Class AbstractShipment
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Shipment implements ShipmentInterface
+class AbstractShipment implements ShipmentInterface
 {
     /**
      * @var int
      */
     protected $id;
-
-    /**
-     * @var OrderInterface
-     */
-    protected $order;
 
     /**
      * @var ShipmentMethodInterface
@@ -67,24 +61,6 @@ class Shipment implements ShipmentInterface
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
-    {
-        return $this->order;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOrder($order)
-    {
-        $this->order = $order;
-
-        return $this;
     }
 
     /**
@@ -150,24 +126,6 @@ class Shipment implements ShipmentInterface
         if ($this->hasItem($item)) {
             $item->setShipment(null);
             $this->items->removeElement($item);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setItems(ArrayCollection $items)
-    {
-        foreach ($this->items as $item) {
-            $item->setShipment(null);
-        }
-
-        $this->items = new ArrayCollection();
-
-        foreach ($items as $item) {
-            $this->addItem($item);
         }
 
         return $this;

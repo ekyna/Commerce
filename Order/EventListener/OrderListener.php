@@ -3,17 +3,12 @@
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
-use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderEventInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Order\Resolver\StateResolverInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class OrderEventSubscriber
@@ -23,40 +18,15 @@ use Ekyna\Component\Resource\Event\PersistenceEvent;
 class OrderListener extends AbstractSaleListener
 {
     /**
-     * @var StateResolverInterface
-     */
-    protected $stateResolver;
-
-
-    /**
-     * Constructor.
-     *
-     * @param NumberGeneratorInterface $numberGenerator
-     * @param KeyGeneratorInterface    $keyGenerator
-     * @param CalculatorInterface      $calculator
-     * @param StateResolverInterface   $stateResolver
-     */
-    public function __construct(
-        NumberGeneratorInterface $numberGenerator,
-        KeyGeneratorInterface $keyGenerator,
-        CalculatorInterface $calculator,
-        StateResolverInterface $stateResolver
-    ) {
-        parent::__construct($numberGenerator, $keyGenerator, $calculator);
-
-        $this->stateResolver = $stateResolver;
-    }
-
-    /**
      * @inheritdoc
      */
     public function onInsert(PersistenceEvent $event)
     {
         $sale = $this->getSaleFromEvent($event);
 
-        parent::onInsert($event);
+        // TODO shipments ...
 
-        // TODO resolve states
+        parent::onInsert($event);
     }
 
     /**
@@ -66,31 +36,20 @@ class OrderListener extends AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
-        parent::onUpdate($event);
+        // TODO shipments ...
 
-        // TODO resolve states
+        parent::onUpdate($event);
     }
 
     /**
-     * Pre delete event handler.
-     *
-     * @param OrderEventInterface $event
-     *
-     * @throws IllegalOperationException
+     * @inheritdoc
      */
-    public function onPreDelete(OrderEventInterface $event)
+    public function onPreDelete(ResourceEventInterface $event)
     {
-        $order = $event->getOrder();
+        parent::onPreDelete($event);
 
-        // Stop if order has valid payments
-        if (null !== $payments = $order->getPayments()) {
-            $deletablePaymentStates = [PaymentStates::STATE_NEW, PaymentStates::STATE_CANCELLED];
-            foreach ($payments as $payment) {
-                if (!in_array($payment->getState(), $deletablePaymentStates)) {
-                    throw new IllegalOperationException();
-                }
-            }
-        }
+        /** @var OrderInterface $order */
+        $order = $this->getSaleFromEvent($event);
 
         // Stop if order has valid shipments
         if (null !== $shipments = $order->getShipments()) {
@@ -106,7 +65,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function getSaleFromEvent(PersistenceEvent $event)
+    protected function getSaleFromEvent(ResourceEventInterface $event)
     {
         $resource = $event->getResource();
 

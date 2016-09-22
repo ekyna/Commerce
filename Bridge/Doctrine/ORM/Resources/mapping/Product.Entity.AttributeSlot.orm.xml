@@ -24,7 +24,8 @@
         <field name="multiple" column="multiple" type="boolean" />
         <field name="position" column="position" type="integer" nullable="false"/>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\AttributeSetInterface" field="set" inversed-by="slots">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\AttributeSetInterface"
+                     field="set" inversed-by="slots">
             <join-column name="set_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
         </many-to-one>
 

@@ -20,7 +20,8 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartInterface" field="cart" inversed-by="adjustments">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartInterface"
+                     field="cart" inversed-by="adjustments">
             <join-column name="cart_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
         </many-to-one>
 

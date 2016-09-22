@@ -43,18 +43,19 @@ class DoctrineBundleMapping
     {
         return [
             Cart\Model\CartInterface::class                => Cart\Entity\Cart::class,
+            Cart\Model\CartAddressInterface::class         => Cart\Entity\CartAddress::class,
 
             Customer\Model\CustomerInterface::class        => Customer\Entity\Customer::class,
             Customer\Model\CustomerAddressInterface::class => Customer\Entity\CustomerAddress::class,
 
             Order\Model\OrderInterface::class              => Order\Entity\Order::class,
             Order\Model\OrderAddressInterface::class       => Order\Entity\OrderAddress::class,
-            Order\Model\OrderPaymentInterface::class       => Order\Entity\OrderPayment::class,
 
             Payment\Model\PaymentMethodInterface::class    => Payment\Entity\PaymentMethod::class,
 
             Pricing\Model\TaxGroupInterface::class         => Pricing\Entity\TaxGroup::class,
 
+            // TODO remove unused interfaces
             Product\Model\AttributeGroupInterface::class   => Product\Entity\AttributeGroup::class,
             Product\Model\AttributeInterface::class        => Product\Entity\Attribute::class,
             Product\Model\AttributeSetInterface::class     => Product\Entity\AttributeSet::class,
@@ -68,10 +69,7 @@ class DoctrineBundleMapping
 
             Quote\Model\QuoteInterface::class              => Quote\Entity\Quote::class,
             Quote\Model\QuoteAddressInterface::class       => Quote\Entity\QuoteAddress::class,
-            Quote\Model\QuotePaymentInterface::class       => Quote\Entity\QuotePayment::class,
 
-            Shipment\Model\ShipmentInterface::class        => Shipment\Entity\Shipment::class,
-            Shipment\Model\ShipmentItemInterface::class    => Shipment\Entity\ShipmentItem::class,
             Shipment\Model\ShipmentMethodInterface::class  => Shipment\Entity\ShipmentMethod::class,
         ];
     }

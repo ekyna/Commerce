@@ -27,7 +27,8 @@
         <field name="required" column="required" type="boolean" nullable="false"/>
         <field name="position" column="position" type="integer" nullable="false"/>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\OptionInterface" field="options" mapped-by="group" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\OptionInterface"
+                     field="options" mapped-by="group" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -37,7 +38,8 @@
             </order-by>
         </one-to-many>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="product" inversed-by="optionGroups">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface"
+                     field="product" inversed-by="optionGroups">
             <join-column name="product_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 

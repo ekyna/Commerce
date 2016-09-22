@@ -9,21 +9,40 @@
             name="Ekyna\Component\Commerce\Cart\Entity\Cart"
             table="commerce_cart">
 
+        <indexes>
+            <index columns="number" name="idx_cart_number" />
+            <index columns="secret" name="idx_cart_secret" />
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="number" name="unique_cart_number" />
+            <unique-constraint columns="secret" name="unique_cart_secret" />
+        </unique-constraints>
+
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
 
         <field name="expiresAt" column="expires_at" type="datetime" />
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface" field="invoiceAddress">
-            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
+        <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartAddressInterface" field="invoiceAddress">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
         </one-to-one>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface" field="deliveryAddress">
+        <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartAddressInterface" field="deliveryAddress">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItem" field="items" mapped-by="cart" orphan-removal="true" index-by="id">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItem"
+                     field="items" mapped-by="cart" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
@@ -32,12 +51,23 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartAdjustment" field="adjustments" mapped-by="cart" orphan-removal="true" index-by="id">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartAdjustment"
+                     field="adjustments" mapped-by="cart" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
             <order-by>
                 <order-by-field name="position" direction="ASC"/>
+            </order-by>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartPayment"
+                     field="payments" mapped-by="cart" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+            <order-by>
+                <order-by-field name="createdAt" direction="ASC"/>
             </order-by>
         </one-to-many>
 

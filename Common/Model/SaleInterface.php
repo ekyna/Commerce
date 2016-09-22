@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -11,7 +12,12 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleInterface extends ResourceInterface, AdjustableInterface
+interface SaleInterface extends
+    ResourceInterface,
+    AdjustableInterface,
+    NumberSubjectInterface,
+    KeySubjectInterface,
+    StateSubjectInterface
 {
     /**
      * Returns the customer.
@@ -135,11 +141,11 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
     /**
      * Sets whether to use the invoice address as delivery address or not.
      *
-     * @param boolean $sameAddress
+     * @param boolean $same
      *
      * @return $this|SaleInterface
      */
-    public function setSameAddress($sameAddress);
+    public function setSameAddress($same);
 
     /**
      * Returns the currency.
@@ -158,7 +164,102 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
     public function setCurrency(CurrencyInterface $currency);
 
     /**
-     * Returns whether the transaction has items or not.
+     * Returns the weight total.
+     *
+     * @return float
+     */
+    public function getWeightTotal();
+
+    /**
+     * Sets the weight total.
+     *
+     * @param float $total
+     *
+     * @return $this|SaleInterface
+     */
+    public function setWeightTotal($total);
+
+    /**
+     * Returns the net total.
+     *
+     * @return float
+     */
+    public function getNetTotal();
+
+    /**
+     * Sets the net total.
+     *
+     * @param float $total
+     *
+     * @return $this|SaleInterface
+     */
+    public function setNetTotal($total);
+
+    /**
+     * Returns the adjustment total.
+     *
+     * @return float
+     */
+    public function getAdjustmentTotal();
+
+    /**
+     * Sets the adjustment total.
+     *
+     * @param float $total
+     *
+     * @return $this|SaleInterface
+     */
+    public function setAdjustmentTotal($total);
+
+    /**
+     * Returns the total.
+     *
+     * @return float
+     */
+    public function getGrandTotal();
+
+    /**
+     * Sets the total.
+     *
+     * @param float $total
+     *
+     * @return $this|SaleInterface
+     */
+    public function setGrandTotal($total);
+
+    /**
+     * Returns the paid total.
+     *
+     * @return float
+     */
+    public function getPaidTotal();
+
+    /**
+     * Sets the paid total.
+     *
+     * @param float $total
+     *
+     * @return $this|SaleInterface
+     */
+    public function setPaidTotal($total);
+
+    /**
+     * Returns the payment state.
+     *
+     * @return string
+     */
+    public function getPaymentState();
+
+    /**
+     * Sets the payment state.
+     *
+     * @param string $state
+     * @return $this|SaleInterface
+     */
+    public function setPaymentState($state);
+
+    /**
+     * Returns whether the sale has items or not.
      *
      * @return bool
      */
@@ -196,68 +297,42 @@ interface SaleInterface extends ResourceInterface, AdjustableInterface
     public function getItems();
 
     /**
-     * Returns the weight total.
+     * Returns whether the order has payments or not.
      *
-     * @return float
+     * @return bool
      */
-    public function getWeightTotal();
+    public function hasPayments();
 
     /**
-     * Sets the weight total.
+     * Returns whether the order has the payment or not.
      *
-     * @param float $weightTotal
+     * @param PaymentInterface $payment
+     * @return bool
+     */
+    public function hasPayment(PaymentInterface $payment);
+
+    /**
+     * Adds the payment.
      *
+     * @param PaymentInterface $payment
      * @return $this|SaleInterface
      */
-    public function setWeightTotal($weightTotal);
+    public function addPayment(PaymentInterface $payment);
 
     /**
-     * Returns the net total.
+     * Removes the payment.
      *
-     * @return float
-     */
-    public function getNetTotal();
-
-    /**
-     * Sets the net total.
-     *
-     * @param float $netTotal
-     *
+     * @param PaymentInterface $payment
      * @return $this|SaleInterface
      */
-    public function setNetTotal($netTotal);
+    public function removePayment(PaymentInterface $payment);
 
     /**
-     * Returns the adjustment total.
+     * Returns the payments.
      *
-     * @return float
+     * @return Collection|PaymentInterface[]
      */
-    public function getAdjustmentTotal();
-
-    /**
-     * Sets the adjustment total.
-     *
-     * @param float $adjustmentTotal
-     *
-     * @return $this|SaleInterface
-     */
-    public function setAdjustmentTotal($adjustmentTotal);
-
-    /**
-     * Returns the total.
-     *
-     * @return float
-     */
-    public function getGrandTotal();
-
-    /**
-     * Sets the total.
-     *
-     * @param float $total
-     *
-     * @return $this|SaleInterface
-     */
-    public function setGrandTotal($total);
+    public function getPayments();
 
     /**
      * Returns the "created at" datetime.

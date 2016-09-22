@@ -16,7 +16,8 @@
         <field name="invoiceDefault" column="invoice_default" type="boolean"/>
         <field name="deliveryDefault" column="delivery_default" type="boolean"/>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="customer" inversed-by="addresses">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
+                     field="customer" inversed-by="addresses">
             <join-column name="customer_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
         </many-to-one>
 

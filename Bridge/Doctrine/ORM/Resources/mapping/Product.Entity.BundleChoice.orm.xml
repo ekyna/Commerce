@@ -26,7 +26,8 @@
         <field name="maxQuantity" column="max_quantity" type="integer" nullable="true"/>
         <field name="position" column="position" type="integer" nullable="false"/>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\BundleChoiceRuleInterface" field="rules" mapped-by="choice" orphan-removal="true">
+        <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\BundleChoiceRuleInterface"
+                     field="rules" mapped-by="choice" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -36,7 +37,8 @@
             </order-by>
         </one-to-many>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\BundleSlotInterface" field="slot" inversed-by="choices">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\BundleSlotInterface"
+                     field="slot" inversed-by="choices">
             <join-column name="slot_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
         </many-to-one>
         <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface" field="product">

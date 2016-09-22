@@ -28,7 +28,8 @@
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
         <field name="position" column="position" type="integer" nullable="false"/>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\OptionGroupInterface" field="group" inversed-by="options">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Product\Model\OptionGroupInterface"
+                     field="group" inversed-by="options">
             <join-column name="group_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 

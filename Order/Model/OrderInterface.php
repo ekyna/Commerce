@@ -4,48 +4,14 @@ namespace Ekyna\Component\Commerce\Order\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
  * Interface OrderInterface
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderInterface extends
-    Common\SaleInterface,
-    Common\NumberSubjectInterface,
-    Common\KeySubjectInterface
+interface OrderInterface extends Common\SaleInterface
 {
-    /**
-     * Returns the state.
-     *
-     * @return string
-     */
-    public function getState();
-
-    /**
-     * Sets the state.
-     *
-     * @param string $state
-     * @return $this|OrderInterface
-     */
-    public function setState($state);
-
-    /**
-     * Returns the payment state.
-     *
-     * @return string
-     */
-    public function getPaymentState();
-
-    /**
-     * Sets the payment state.
-     *
-     * @param string $paymentState
-     * @return $this|OrderInterface
-     */
-    public function setPaymentState($paymentState);
-
     /**
      * Returns the shipment state.
      *
@@ -62,60 +28,6 @@ interface OrderInterface extends
     public function setShipmentState($shipmentState);
 
     /**
-     * Returns the paid total.
-     *
-     * @return float
-     */
-    public function getPaidTotal();
-
-    /**
-     * Sets the paid total.
-     *
-     * @param float $paidTotal
-     *
-     * @return $this|OrderInterface
-     */
-    public function setPaidTotal($paidTotal);
-
-    /**
-     * Returns whether the order has payments or not.
-     *
-     * @return bool
-     */
-    public function hasPayments();
-
-    /**
-     * Returns the payments.
-     *
-     * @return ArrayCollection|OrderPaymentInterface[]
-     */
-    public function getPayments();
-
-    /**
-     * Returns whether the order has the payment or not.
-     *
-     * @param OrderPaymentInterface $payment
-     * @return bool
-     */
-    public function hasPayment(OrderPaymentInterface $payment);
-
-    /**
-     * Adds the payment.
-     *
-     * @param OrderPaymentInterface $payment
-     * @return $this|OrderInterface
-     */
-    public function addPayment(OrderPaymentInterface $payment);
-
-    /**
-     * Removes the payment.
-     *
-     * @param OrderPaymentInterface $payment
-     * @return $this|OrderInterface
-     */
-    public function removePayment(OrderPaymentInterface $payment);
-
-    /**
      * Returns whether the order has shipments or not.
      *
      * @return bool
@@ -125,33 +37,33 @@ interface OrderInterface extends
     /**
      * Returns the shipments.
      *
-     * @return ArrayCollection|ShipmentInterface[]
+     * @return ArrayCollection|OrderShipmentInterface[]
      */
     public function getShipments();
 
     /**
      * Returns whether the order has the shipment or not.
      *
-     * @param ShipmentInterface $shipment
+     * @param OrderShipmentInterface $shipment
      * @return bool
      */
-    public function hasShipment(ShipmentInterface $shipment);
+    public function hasShipment(OrderShipmentInterface $shipment);
 
     /**
      * Adds the shipment.
      *
-     * @param ShipmentInterface $shipment
+     * @param OrderShipmentInterface $shipment
      * @return $this|OrderInterface
      */
-    public function addShipment(ShipmentInterface $shipment);
+    public function addShipment(OrderShipmentInterface $shipment);
 
     /**
      * Removes the shipment.
      *
-     * @param ShipmentInterface $shipment
+     * @param OrderShipmentInterface $shipment
      * @return $this|OrderInterface
      */
-    public function removeShipment(ShipmentInterface $shipment);
+    public function removeShipment(OrderShipmentInterface $shipment);
 
     /**
      * Returns the "completed at" datetime.
