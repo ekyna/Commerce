@@ -52,10 +52,12 @@ class BundleSlot extends AbstractTranslatable implements BundleSlotInterface
      */
     public function __clone()
     {
-        $choices = $this->choices;
-        $this->choices = new ArrayCollection();
-        foreach ($choices as $choice) {
-            $this->addChoice(clone $choice);
+        if ($this->id) {
+            $choices = $this->choices;
+            $this->choices = new ArrayCollection();
+            foreach ($choices as $choice) {
+                $this->addChoice(clone $choice);
+            }
         }
     }
 

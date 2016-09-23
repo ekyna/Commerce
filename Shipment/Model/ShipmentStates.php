@@ -51,4 +51,18 @@ final class ShipmentStates
     {
         return in_array($state, static::getStates(), true);
     }
+
+    /**
+     * Returns the notifiable states.
+     *
+     * @return array
+     */
+    static public function getNotifiableStates()
+    {
+        return [
+            static::STATE_PENDING,
+            static::STATE_READY,
+            static::STATE_SHIPPED,
+        ];
+    }
 }

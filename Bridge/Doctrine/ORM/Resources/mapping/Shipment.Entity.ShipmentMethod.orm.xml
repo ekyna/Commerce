@@ -21,6 +21,13 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage"
+                     mapped-by="method" field="messages">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
+
     </mapped-superclass>
 
 </doctrine-mapping>

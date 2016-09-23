@@ -24,5 +24,7 @@ class CartStateResolver implements StateResolverInterface
         }
 
         // TODO: Implement resolve() method.
+
+        return $subject->getState();
     }
 }

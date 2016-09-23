@@ -1,15 +1,15 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Product\Model;
+namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\TranslationInterface;
 
 /**
- * Interface BundleSlotTranslationInterface
- * @package Ekyna\Component\Commerce\Product\Entity
+ * Interface MethodTranslationInterface
+ * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface BundleSlotTranslationInterface extends TranslationInterface
+interface MethodTranslationInterface extends TranslationInterface
 {
     /**
      * Returns the title.
@@ -23,7 +23,7 @@ interface BundleSlotTranslationInterface extends TranslationInterface
      *
      * @param string $title
      *
-     * @return $this|BundleSlotTranslationInterface
+     * @return $this|MethodTranslationInterface
      */
     public function setTitle($title);
 
@@ -39,7 +39,7 @@ interface BundleSlotTranslationInterface extends TranslationInterface
      *
      * @param string $description
      *
-     * @return $this|BundleSlotTranslationInterface
+     * @return $this|MethodTranslationInterface
      */
     public function setDescription($description);
 }

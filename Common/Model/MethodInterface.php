@@ -28,6 +28,79 @@ interface MethodInterface extends ResourceInterface
     public function setName($name);
 
     /**
+     * Returns the title (translation alias).
+     *
+     * @return string
+     */
+    public function getTitle();
+
+    /**
+     * Sets the title (translation alias).
+     *
+     * @param string $title
+     *
+     * @return $this|MethodInterface
+     */
+    public function setTitle($title);
+
+    /**
+     * Returns the description (translation alias).
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description (translation alias).
+     *
+     * @param string $description
+     *
+     * @return $this|MethodInterface
+     */
+    public function setDescription($description);
+
+    /**
+     * Returns whether the method has at least one message or not.
+     *
+     * @return bool
+     */
+    public function hasMessages();
+
+    /**
+     * Returns whether the method has the message or not.
+     *
+     * @param MessageInterface $message
+     *
+     * @return bool
+     */
+    public function hasMessage(MessageInterface $message);
+
+    /**
+     * Adds the message.
+     *
+     * @param MessageInterface $message
+     *
+     * @return $this|MethodInterface
+     */
+    public function addMessage(MessageInterface $message);
+
+    /**
+     * Removes the message.
+     *
+     * @param MessageInterface $message
+     *
+     * @return $this|MethodInterface
+     */
+    public function removeMessage(MessageInterface $message);
+
+    /**
+     * Returns the messages.
+     *
+     * @return \Doctrine\Common\Collections\Collection|MessageInterface[]
+     */
+    public function getMessages();
+
+    /**
      * Returns whether the method is enabled or not.
      *
      * @return boolean
@@ -58,4 +131,20 @@ interface MethodInterface extends ResourceInterface
      * @return $this|MethodInterface
      */
     public function setAvailable($available);
+
+    /**
+     * Returns the position.
+     *
+     * @return int
+     */
+    public function getPosition();
+
+    /**
+     * Sets the position.
+     *
+     * @param int $position
+     *
+     * @return $this|MethodInterface
+     */
+    public function setPosition($position);
 }

@@ -44,9 +44,18 @@ interface MessageInterface extends ResourceInterface
     public function setMethod(MethodInterface $method);
 
     /**
-     * Returns the content.
+     * Returns the content (translation alias).
      *
      * @return string
      */
     public function getContent();
+
+    /**
+     * Sets the content (translation alias).
+     *
+     * @param string $content
+     *
+     * @return $this|MessageInterface
+     */
+    public function setContent($content);
 }

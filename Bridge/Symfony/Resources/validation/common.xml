@@ -98,12 +98,32 @@
     <!-- Message -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMessage">
+        <property name="state">
+            <constraint name="NotBlank"/>
+        </property>
+        <property name="method">
+            <constraint name="NotNull"/>
+        </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">
+                <value>method</value>
+                <value>state</value>
+            </option>
+            <option name="message">ekyna_commerce.message.already_exists</option>
+        </constraint>
+    </class>
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMessageTranslation">
         <!-- TODO -->
     </class>
 
     <!-- Method -->
 
-    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMessage">
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMethod">
+        <property name="name">
+            <constraint name="NotBlank"/>
+        </property>
+    </class>
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMethodTranslation">
         <!-- TODO -->
     </class>
 

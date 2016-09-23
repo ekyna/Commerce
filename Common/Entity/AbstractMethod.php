@@ -2,14 +2,18 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
-use Ekyna\Component\Commerce\Common\Model\MethodInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Resource\Model\AbstractTranslatable;
 
 /**
  * Class AbstractMethod
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method Model\MethodTranslationInterface translate($locale = null, $create = false)
  */
-abstract class AbstractMethod implements MethodInterface
+abstract class AbstractMethod extends AbstractTranslatable implements Model\MethodInterface
 {
     /**
      * @var int
@@ -22,6 +26,11 @@ abstract class AbstractMethod implements MethodInterface
     protected $name;
 
     /**
+     * @var ArrayCollection|Model\MessageInterface[]
+     */
+    protected $messages;
+
+    /**
      * @var bool
      */
     protected $enabled;
@@ -31,6 +40,31 @@ abstract class AbstractMethod implements MethodInterface
      */
     protected $available;
 
+    /**
+     * @var integer
+     */
+    protected $position;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->messages = new ArrayCollection();
+    }
+
+    /**
+     * Returns the string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getName();
+    }
 
     /**
      * @inheritdoc
@@ -56,6 +90,98 @@ abstract class AbstractMethod implements MethodInterface
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitle()
+    {
+        return $this->translate()->getTitle();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTitle($title)
+    {
+        $this->translate()->setTitle($title);
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->translate()->getDescription();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->translate()->setDescription($description);
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasMessages()
+    {
+        return 0 < $this->messages->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasMessage(Model\MessageInterface $message)
+    {
+        $this->validateMessageClass($message);
+
+        return $this->messages->contains($message);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addMessage(Model\MessageInterface $message)
+    {
+        $this->validateMessageClass($message);
+
+        if (!$this->hasMessage($message)) {
+            $message->setMethod($this);
+            $this->messages->add($message);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeMessage(Model\MessageInterface $message)
+    {
+        $this->validateMessageClass($message);
+
+        if ($this->hasMessage($message)) {
+            $message->setMethod(null);
+            $this->messages->removeElement($message);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMessages()
+    {
+        return $this->messages;
     }
 
     /**
@@ -93,4 +219,31 @@ abstract class AbstractMethod implements MethodInterface
 
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPosition()
+    {
+        return $this->position;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPosition($position)
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    /**
+     * Validates the message class.
+     *
+     * @param Model\MessageInterface $message
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\InvalidArgumentException
+     */
+    abstract protected function validateMessageClass(Model\MessageInterface $message);
 }

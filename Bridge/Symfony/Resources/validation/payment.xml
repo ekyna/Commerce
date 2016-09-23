@@ -42,7 +42,20 @@
         <property name="completedAt">
             <constraint name="DateTime"/>
         </property>
+    </class>
 
+    <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethod">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethodMessage">
+        <property name="state">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
     </class>
 
 </constraint-mapping>

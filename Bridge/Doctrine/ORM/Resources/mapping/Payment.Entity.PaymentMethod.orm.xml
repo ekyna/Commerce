@@ -7,7 +7,7 @@
 
     <mapped-superclass
             name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethod"
-            table="commerce_payment_method">
+            table="commerce_shipment_method">
 
         <indexes>
             <index columns="name" name="idx_payment_method_name"/>
@@ -20,6 +20,13 @@
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Payment\Entity\PaymentMessage"
+                     mapped-by="method" field="messages">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
 
     </mapped-superclass>
 

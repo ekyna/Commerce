@@ -56,10 +56,12 @@ class OptionGroup implements Model\OptionGroupInterface
      */
     public function __clone()
     {
-        $options = $this->options;
-        $this->options = new ArrayCollection();
-        foreach ($options as $option) {
-            $this->addOption(clone $option);
+        if ($this->id) {
+            $options = $this->options;
+            $this->options = new ArrayCollection();
+            foreach ($options as $option) {
+                $this->addOption(clone $option);
+            }
         }
     }
 

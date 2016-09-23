@@ -110,28 +110,30 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
      */
     public function __clone()
     {
-        $variants = $this->variants;
-        $this->variants = new ArrayCollection();
-        foreach ($variants as $variant) {
-            $this->addVariant(clone $variant);
-        }
+        if ($this->id) {
+            $variants = $this->variants;
+            $this->variants = new ArrayCollection();
+            foreach ($variants as $variant) {
+                $this->addVariant(clone $variant);
+            }
 
-        $attributes = $this->attributes;
-        $this->attributes = new ArrayCollection();
-        foreach ($attributes as $attribute) {
-            $this->addAttribute(clone $attribute);
-        }
+            $attributes = $this->attributes;
+            $this->attributes = new ArrayCollection();
+            foreach ($attributes as $attribute) {
+                $this->addAttribute(clone $attribute);
+            }
 
-        $optionGroups = $this->optionGroups;
-        $this->optionGroups = new ArrayCollection();
-        foreach ($optionGroups as $optionGroup) {
-            $this->addOptionGroup(clone $optionGroup);
-        }
+            $optionGroups = $this->optionGroups;
+            $this->optionGroups = new ArrayCollection();
+            foreach ($optionGroups as $optionGroup) {
+                $this->addOptionGroup(clone $optionGroup);
+            }
 
-        $bundleSlots = $this->bundleSlots;
-        $this->bundleSlots = new ArrayCollection();
-        foreach ($bundleSlots as $bundleSlot) {
-            $this->addBundleSlot(clone $bundleSlot);
+            $bundleSlots = $this->bundleSlots;
+            $this->bundleSlots = new ArrayCollection();
+            foreach ($bundleSlots as $bundleSlot) {
+                $this->addBundleSlot(clone $bundleSlot);
+            }
         }
     }
 

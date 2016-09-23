@@ -34,6 +34,7 @@ final class PaymentStates
             static::STATE_CAPTURED,
             static::STATE_FAILED,
             static::STATE_CANCELLED,
+            static::STATE_REFUNDED,
             static::STATE_AUTHORIZED,
             static::STATE_SUSPENDED,
             static::STATE_EXPIRED,
@@ -51,5 +52,20 @@ final class PaymentStates
     static public function isValidState($state)
     {
         return in_array($state, static::getStates(), true);
+    }
+
+    /**
+     * Returns the notifiable states.
+     *
+     * @return array
+     */
+    static public function getNotifiableStates()
+    {
+        return [
+            static::STATE_PENDING,
+            static::STATE_CAPTURED,
+            static::STATE_FAILED,
+            static::STATE_REFUNDED,
+        ];
     }
 }

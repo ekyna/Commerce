@@ -12,13 +12,6 @@ use Ekyna\Component\Resource\Model\TranslationInterface;
 interface ProductTranslationInterface extends TranslationInterface
 {
     /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
-    /**
      * Returns the title.
      *
      * @return string
@@ -30,7 +23,7 @@ interface ProductTranslationInterface extends TranslationInterface
      *
      * @param string $title
      *
-     * @return $this|BundleSlotTranslationInterface
+     * @return $this|ProductTranslationInterface
      */
     public function setTitle($title);
 
@@ -46,7 +39,7 @@ interface ProductTranslationInterface extends TranslationInterface
      *
      * @param string $description
      *
-     * @return $this|BundleSlotTranslationInterface
+     * @return $this|ProductTranslationInterface
      */
     public function setDescription($description);
 }
