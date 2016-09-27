@@ -5,12 +5,12 @@ namespace Ekyna\Component\Commerce\Common\Calculator;
 use Ekyna\Component\Commerce\Common\Model;
 
 /**
- * Interface CalculatorInterface
+ * Interface AmountsCalculatorInterface
  *
  * @package Ekyna\Component\Commerce\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CalculatorInterface
+interface AmountsCalculatorInterface
 {
     /**
      * Calculate based on the net price.
@@ -28,19 +28,9 @@ interface CalculatorInterface
      *
      * @param string $mode
      *
-     * @return $this|CalculatorInterface
+     * @return $this|AmountsCalculatorInterface
      */
     public function setMode($mode);
-
-    /**
-     * Calculates the sale item's amounts.
-     *
-     * @param Model\SaleItemInterface $item
-     * @param bool                    $gross
-     *
-     * @return Result
-     */
-    public function calculateSaleItem(Model\SaleItemInterface $item, $gross = false);
 
     /**
      * Calculates the sale's amounts.
@@ -51,6 +41,16 @@ interface CalculatorInterface
      * @return Result
      */
     public function calculateSale(Model\SaleInterface $sale, $gross = false);
+
+    /**
+     * Calculates the sale item's amounts.
+     *
+     * @param Model\SaleItemInterface $item
+     * @param bool                    $gross
+     *
+     * @return Result
+     */
+    public function calculateSaleItem(Model\SaleItemInterface $item, $gross = false);
 
     /**
      * Calculates the adjustment amounts.

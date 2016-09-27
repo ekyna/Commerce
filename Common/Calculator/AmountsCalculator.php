@@ -10,11 +10,11 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**
- * Class Calculator
+ * Class AmountsCalculator
  * @package Ekyna\Component\Commerce\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Calculator implements CalculatorInterface
+class AmountsCalculator implements AmountsCalculatorInterface
 {
     /**
      * @var ResultCache
@@ -48,6 +48,36 @@ class Calculator implements CalculatorInterface
     /**
      * @inheritdoc
      */
+    public function calculateSale(SaleInterface $sale, $gross = false)
+    {
+        // TODO don't calculate twice
+        // TODO enable result caching
+
+        $result = new Result();
+
+        // Items result
+        if ($sale->hasItems()) {
+            foreach ($sale->getItems() as $item) {
+                $result->merge($this->calculateSaleItem($item));
+            }
+        }
+
+        // Discount adjustments results
+        if (!$gross && $sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
+            $adjustments = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
+            foreach ($adjustments as $adjustment) {
+                $result->merge($this->calculateDiscountAdjustment($adjustment));
+            }
+        }
+
+        // TODO disable result caching
+
+        return $result;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function calculateSaleItem(SaleItemInterface $item, $gross = false)
     {
         // TODO don't calculate twice
@@ -63,16 +93,9 @@ class Calculator implements CalculatorInterface
 
         } else { // Calculate as a "child" item
 
-            // Item total quantity
-            $quantity = $item->getQuantity();
-            $parent = $item;
-            while (null !== $parent = $parent->getParent()) {
-                $quantity *= $parent->getQuantity();
-            }
-
             switch ($this->mode) {
                 case self::MODE_NET :
-                    $base = $this->round($item->getNetPrice()) * $quantity;
+                    $base = $this->round($item->getNetPrice()) * $item->getTotalQuantity();
 
                     $result->addBase($base);
 
@@ -92,7 +115,7 @@ class Calculator implements CalculatorInterface
                     break;
 
                 case self::MODE_GROSS :
-                    $base = $item->getNetPrice() * $quantity;
+                    $base = $item->getNetPrice() * $item->getTotalQuantity();
                     $roundedBase = $this->round($base);
 
                     $result->addBase($roundedBase);
@@ -127,36 +150,6 @@ class Calculator implements CalculatorInterface
                 $result->merge($this->calculateDiscountAdjustment($adjustment));
             }
         }
-
-        return $result;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function calculateSale(SaleInterface $sale, $gross = false)
-    {
-        // TODO don't calculate twice
-        // TODO enable result caching
-
-        $result = new Result();
-
-        // Items result
-        if ($sale->hasItems()) {
-            foreach ($sale->getItems() as $item) {
-                $result->merge($this->calculateSaleItem($item));
-            }
-        }
-
-        // Discount adjustments results
-        if (!$gross && $sale->hasAdjustments(AdjustmentTypes::TYPE_DISCOUNT)) {
-            $adjustments = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
-            foreach ($adjustments as $adjustment) {
-                $result->merge($this->calculateDiscountAdjustment($adjustment));
-            }
-        }
-
-        // TODO disable result caching
 
         return $result;
     }

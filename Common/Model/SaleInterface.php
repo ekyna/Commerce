@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface SaleInterface
@@ -13,7 +13,9 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 interface SaleInterface extends
-    ResourceInterface,
+    ResourceModel\ResourceInterface,
+    ResourceModel\TimestampableInterface,
+    IdentityInterface,
     AdjustableInterface,
     NumberSubjectInterface,
     KeySubjectInterface,
@@ -50,38 +52,6 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setCompany($company);
-
-    /**
-     * Returns the firstName.
-     *
-     * @return string
-     */
-    public function getFirstName();
-
-    /**
-     * Sets the firstName.
-     *
-     * @param string $firstName
-     *
-     * @return $this|SaleInterface
-     */
-    public function setFirstName($firstName);
-
-    /**
-     * Returns the lastName.
-     *
-     * @return string
-     */
-    public function getLastName();
-
-    /**
-     * Sets the lastName.
-     *
-     * @param string $lastName
-     *
-     * @return $this|SaleInterface
-     */
-    public function setLastName($lastName);
 
     /**
      * Returns the email.
@@ -335,34 +305,9 @@ interface SaleInterface extends
     public function getPayments();
 
     /**
-     * Returns the "created at" datetime.
+     * Returns whether or not the sale has a weight greater that zero.
      *
-     * @return \DateTime
+     * @return bool
      */
-    public function getCreatedAt();
-
-    /**
-     * Sets the "created at" datetime.
-     *
-     * @param \DateTime $createdAt
-     *
-     * @return $this|SaleInterface
-     */
-    public function setCreatedAt(\DateTime $createdAt);
-
-    /**
-     * Returns the "updated at" datetime.
-     *
-     * @return \DateTime
-     */
-    public function getUpdatedAt();
-
-    /**
-     * Sets the "updated at" datetime.
-     *
-     * @param \DateTime $updatedAt
-     *
-     * @return $this|SaleInterface
-     */
-    public function setUpdatedAt(\DateTime $updatedAt = null);
+    public function requiresShipment();
 }

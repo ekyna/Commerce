@@ -2,31 +2,21 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
-use Ekyna\Component\Commerce\Common\Model\CountryInterface;
-use Ekyna\Component\Commerce\Common\Model\StateInterface;
+use Ekyna\Component\Commerce\Common\Model;
 
 /**
  * Class AbstractAddress
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAddress implements AddressInterface
+abstract class AbstractAddress implements Model\AddressInterface
 {
+    use Model\IdentityTrait;
+
     /**
      * @var string
      */
     protected $company;
-
-    /**
-     * @var string
-     */
-    protected $firstName;
-
-    /**
-     * @var string
-     */
-    protected $lastName;
 
     /**
      * @var string
@@ -49,14 +39,24 @@ abstract class AbstractAddress implements AddressInterface
     protected $city;
 
     /**
-     * @var CountryInterface
+     * @var Model\CountryInterface
      */
     protected $country;
 
     /**
-     * @var StateInterface
+     * @var Model\StateInterface
      */
     protected $state;
+
+    /**
+     * @var string
+     */
+    protected $phone;
+
+    /**
+     * @var string
+     */
+    protected $mobile;
 
 
     /**
@@ -73,40 +73,6 @@ abstract class AbstractAddress implements AddressInterface
     public function setCompany($company)
     {
         $this->company = $company;
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFirstName()
-    {
-        return $this->firstName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setFirstName($firstName)
-    {
-        $this->firstName = $firstName;
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getLastName()
-    {
-        return $this->lastName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setLastName($lastName)
-    {
-        $this->lastName = $lastName;
         return $this;
     }
 
@@ -189,7 +155,7 @@ abstract class AbstractAddress implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function setCountry(CountryInterface $country)
+    public function setCountry(Model\CountryInterface $country)
     {
         $this->country = $country;
 
@@ -207,9 +173,45 @@ abstract class AbstractAddress implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function setState(StateInterface $state = null)
+    public function setState(Model\StateInterface $state = null)
     {
         $this->state = $state;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPhone()
+    {
+        return $this->phone;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPhone($phone)
+    {
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMobile()
+    {
+        return $this->mobile;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setMobile($mobile)
+    {
+        $this->mobile = $mobile;
+
         return $this;
     }
 }

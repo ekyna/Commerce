@@ -68,4 +68,17 @@ final class PaymentStates
             static::STATE_REFUNDED,
         ];
     }
+
+    /**
+     * Returns the deletable states.
+     *
+     * @return array
+     */
+    static public function getDeletableStates()
+    {
+        return [
+            static::STATE_NEW,
+            static::STATE_CANCELLED,
+        ];
+    }
 }

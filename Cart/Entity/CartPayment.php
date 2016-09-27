@@ -22,6 +22,14 @@ class CartPayment extends AbstractPayment implements CartPaymentInterface
     /**
      * @inheritdoc
      */
+    public function getSale()
+    {
+        return $this->getCart();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCart()
     {
         return $this->cart;

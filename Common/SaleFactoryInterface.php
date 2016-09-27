@@ -10,6 +10,15 @@ namespace Ekyna\Component\Commerce\Common;
 interface SaleFactoryInterface
 {
     /**
+     * Creates an address regarding to the sale type.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return Model\AddressInterface
+     */
+    public function createAddressForSale(Model\SaleInterface $sale);
+
+    /**
      * Creates a sale item regarding to the sale type.
      *
      * @param Model\SaleInterface $sale

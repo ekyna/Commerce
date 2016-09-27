@@ -6,6 +6,16 @@
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
     <class name="Ekyna\Component\Commerce\Customer\Entity\Customer">
+        <property name="gender">
+            <constraint name="NotBlank" />
+            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
+        </property>
+        <property name="company">
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">64</option>
+            </constraint>
+        </property>
         <property name="firstName">
             <constraint name="NotBlank"/>
             <constraint name="Length">

@@ -3,14 +3,14 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface SaleItemInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleItemInterface extends ResourceInterface, AdjustableInterface
+interface SaleItemInterface extends ResourceModel\ResourceInterface, ResourceModel\SortableInterface, AdjustableInterface
 {
     /**
      * Sets the sale.
@@ -158,22 +158,6 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
     public function setQuantity($quantity);
 
     /**
-     * Returns the position.
-     *
-     * @return int
-     */
-    public function getPosition();
-
-    /**
-     * Sets the position.
-     *
-     * @param int $position
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setPosition($position);
-
-    /**
      * Returns whether the item is immutable or not.
      *
      * @return boolean
@@ -255,4 +239,11 @@ interface SaleItemInterface extends ResourceInterface, AdjustableInterface
      * @return $this|SaleItemInterface
      */
     public function setSubject($subject = null);
+
+    /**
+     * Returns the total quantity (multiplied by all parents quantities).
+     *
+     * @return float
+     */
+    public function getTotalQuantity();
 }

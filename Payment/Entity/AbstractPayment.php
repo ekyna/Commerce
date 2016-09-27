@@ -3,16 +3,18 @@
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
  * Class AbstractPayment
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AbstractPayment implements PaymentInterface
+abstract class AbstractPayment implements Payment\PaymentInterface
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      */
@@ -29,7 +31,7 @@ class AbstractPayment implements PaymentInterface
     protected $currency;
 
     /**
-     * @var PaymentMethodInterface
+     * @var Payment\PaymentMethodInterface
      */
     protected $method;
 
@@ -44,20 +46,40 @@ class AbstractPayment implements PaymentInterface
     protected $state;
 
     /**
-     * @var \DateTime
+     * @var array
      */
-    protected $createdAt;
+    protected $details;
 
     /**
-     * @var \DateTime
+     * @var string
      */
-    protected $updatedAt;
+    protected $description;
 
     /**
      * @var \DateTime
      */
     protected $completedAt;
 
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->amount = 0;
+        $this->state = Payment\PaymentStates::STATE_NEW;
+        $this->details = [];
+    }
+
+    /**
+     * Returns the string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getNumber();
+    }
 
     /**
      * @inheritdoc
@@ -114,11 +136,20 @@ class AbstractPayment implements PaymentInterface
     /**
      * @inheritdoc
      */
-    public function setMethod(PaymentMethodInterface $method)
+    public function setMethod(Payment\PaymentMethodInterface $method)
     {
         $this->method = $method;
 
         return $this;
+    }
+
+    public function getRoundedAmount()
+    {
+        $iso = new \Payum\ISO4217\ISO4217();
+        /** @var \Payum\ISO4217\Currency $currency */
+        $currency = $iso->findByCode($this->currency->getCode());
+
+        return round($this->amount, $currency->getExp());
     }
 
     /**
@@ -160,17 +191,17 @@ class AbstractPayment implements PaymentInterface
     /**
      * @inheritdoc
      */
-    public function getCreatedAt()
+    public function getDetails()
     {
-        return $this->createdAt;
+        return $this->details;
     }
 
     /**
      * @inheritdoc
      */
-    public function setCreatedAt(\DateTime $createdAt = null)
+    public function setDetails(array $details)
     {
-        $this->createdAt = $createdAt;
+        $this->details = $details;
 
         return $this;
     }
@@ -178,17 +209,17 @@ class AbstractPayment implements PaymentInterface
     /**
      * @inheritdoc
      */
-    public function getUpdatedAt()
+    public function getDescription()
     {
-        return $this->updatedAt;
+        return $this->description;
     }
 
     /**
      * @inheritdoc
      */
-    public function setUpdatedAt(\DateTime $updatedAt = null)
+    public function setDescription($description)
     {
-        $this->updatedAt = $updatedAt;
+        $this->description = $description;
 
         return $this;
     }

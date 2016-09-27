@@ -21,6 +21,7 @@ class CartEventSubscriber extends CartListener implements EventSubscriberInterfa
         return [
             CartEvents::INSERT => ['onInsert', 0],
             CartEvents::UPDATE => ['onUpdate', 0],
+            CartEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }
 }

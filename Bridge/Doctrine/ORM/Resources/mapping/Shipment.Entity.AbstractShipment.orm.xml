@@ -9,6 +9,7 @@
 
         <field name="number" column="number" type="string" length="16"/>
         <field name="state" column="state" type="string" length="16"/>
+        <field name="description" column="description" type="string" length="255"/>
 
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />

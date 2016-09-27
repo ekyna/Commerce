@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Resource\Model\AbstractTranslatable;
 

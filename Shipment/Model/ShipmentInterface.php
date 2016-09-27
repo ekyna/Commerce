@@ -3,15 +3,27 @@
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface ShipmentInterface
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentInterface extends ResourceInterface
+interface ShipmentInterface extends
+    ResourceModel\ResourceInterface,
+    ResourceModel\TimestampableInterface,
+    Model\NumberSubjectInterface,
+    Model\StateSubjectInterface
 {
+    /**
+     * Returns the sale.
+     *
+     * @return Model\SaleInterface
+     */
+    public function getSale();
+
     /**
      * Returns the method.
      *
@@ -70,68 +82,20 @@ interface ShipmentInterface extends ResourceInterface
     public function removeItem(ShipmentItemInterface $item);
 
     /**
-     * Returns the number.
+     * Returns the description.
      *
      * @return string
      */
-    public function getNumber();
+    public function getDescription();
 
     /**
-     * Sets the number.
+     * Sets the description.
      *
-     * @param string $number
+     * @param string $description
      *
      * @return $this|ShipmentInterface
      */
-    public function setNumber($number);
-
-    /**
-     * Returns the state.
-     *
-     * @return string
-     */
-    public function getState();
-
-    /**
-     * Sets the state.
-     *
-     * @param string $state
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setState($state);
-
-    /**
-     * Returns the createdAt.
-     *
-     * @return \DateTime
-     */
-    public function getCreatedAt();
-
-    /**
-     * Sets the createdAt.
-     *
-     * @param \DateTime $createdAt
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setCreatedAt(\DateTime $createdAt = null);
-
-    /**
-     * Returns the updateAt.
-     *
-     * @return \DateTime
-     */
-    public function getUpdatedAt();
-
-    /**
-     * Sets the updateAt.
-     *
-     * @param \DateTime $updateAt
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setUpdatedAt(\DateTime $updateAt = null);
+    public function setDescription($description);
 
     /**
      * Returns the completedAt.

@@ -8,6 +8,10 @@
     <!-- Address -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">
+        <property name="gender">
+            <constraint name="NotBlank"/>
+            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
+        </property>
         <property name="firstName">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -24,6 +28,12 @@
         </property>
         <property name="street">
             <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">128</option>
+            </constraint>
+        </property>
+        <property name="supplement">
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">128</option>
@@ -46,9 +56,17 @@
         <property name="country">
             <constraint name="NotNull"/>
         </property>
-        <!--<property name="state">
-            <constraint name="NotNull"/>
-        </property>-->
+        <!-- TODO <property name="state">belongs to the country constraint</property> -->
+        <property name="phone">
+            <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
+                <option name="type">fixed_line</option>
+            </constraint>
+        </property>
+        <property name="mobile">
+            <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
+                <option name="type">mobile</option>
+            </constraint>
+        </property>
     </class>
 
     <!-- Adjustable -->
@@ -130,8 +148,23 @@
     <!-- Sale -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">
+        <property name="number">
+            <constraint name="Length">
+                <option name="min">8</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="key">
+            <constraint name="Length">
+                <option name="min">32</option>
+                <option name="max">32</option>
+            </constraint>
+        </property>
         <property name="customer">
             <constraint name="Valid" />
+        </property>
+        <property name="gender">
+            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
         </property>
         <property name="firstName">
             <constraint name="Length">
@@ -145,11 +178,28 @@
                 <option name="max">32</option>
             </constraint>
         </property>
+        <property name="invoiceAddress">
+            <constraint name="Valid" />
+        </property>
+        <property name="deliveryAddress">
+            <constraint name="Valid" />
+        </property>
         <property name="currency">
             <constraint name="NotNull" />
         </property>
         <property name="items">
             <constraint name="Valid" />
+        </property>
+        <property name="payments">
+            <constraint name="Valid" />
+        </property>
+        <property name="paymentState">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
         </property>
         <property name="createdAt">
             <constraint name="DateTime"/>
@@ -157,6 +207,13 @@
         <property name="updatedAt">
             <constraint name="DateTime"/>
         </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+        </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">key</option>
+        </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Sale"/>
     </class>
 
     <!-- Sale Item -->
@@ -211,9 +268,6 @@
     <!-- Country -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\Country">
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">name</option>
-        </constraint>
         <property name="name">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -228,14 +282,17 @@
                 <option name="max">4</option>
             </constraint>
         </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">code</option>
+        </constraint>
     </class>
 
     <!-- Currency -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\Currency">
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">name</option>
-        </constraint>
         <property name="name">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -250,14 +307,17 @@
                 <option name="max">4</option>
             </constraint>
         </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">code</option>
+        </constraint>
     </class>
 
     <!-- State -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\State">
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">name</option>
-        </constraint>
         <property name="name">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -268,6 +328,9 @@
         <property name="country">
             <constraint name="NotNull" />
         </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">country,name</option>
+        </constraint>
     </class>
 
 </constraint-mapping>

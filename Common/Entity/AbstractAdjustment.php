@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
  * Class AbstractAdjustment
@@ -11,6 +12,8 @@ use Ekyna\Component\Commerce\Common\Model;
  */
 abstract class AbstractAdjustment implements Model\AdjustmentInterface
 {
+    use SortableTrait;
+
     /**
      * @var int
      */
@@ -37,11 +40,6 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     protected $amount;
 
     /**
-     * @var int
-     */
-    protected $position;
-
-    /**
      * @var bool
      */
     protected $immutable;
@@ -54,7 +52,6 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     {
         $this->type = Model\AdjustmentTypes::TYPE_DISCOUNT;
         $this->mode = Model\AdjustmentModes::MODE_PERCENT;
-        $this->position = 0;
         $this->immutable = false;
     }
 
@@ -144,24 +141,6 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     public function setAmount($amount)
     {
         $this->amount = $amount;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPosition()
-    {
-        return $this->position;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPosition($position)
-    {
-        $this->position = $position;
 
         return $this;
     }

@@ -2,11 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
-use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
-use Ekyna\Component\Commerce\Common\Model\KeySubjectInterface;
-use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
@@ -33,9 +32,14 @@ abstract class AbstractSaleListener
     protected $keyGenerator;
 
     /**
-     * @var CalculatorInterface
+     * @var AmountsCalculatorInterface
      */
-    protected $calculator;
+    protected $amountCalculator;
+
+    /**
+     * @var WeightCalculatorInterface
+     */
+    protected $weightCalculator;
 
     /**
      * @var StateResolverInterface
@@ -46,20 +50,23 @@ abstract class AbstractSaleListener
     /**
      * Constructor.
      *
-     * @param NumberGeneratorInterface $numberGenerator
-     * @param KeyGeneratorInterface    $keyGenerator
-     * @param CalculatorInterface      $calculator
-     * @param StateResolverInterface   $stateResolver
+     * @param NumberGeneratorInterface   $numberGenerator
+     * @param KeyGeneratorInterface      $keyGenerator
+     * @param AmountsCalculatorInterface $amountCalculator
+     * @param WeightCalculatorInterface  $weightCalculator
+     * @param StateResolverInterface     $stateResolver
      */
     public function __construct(
         NumberGeneratorInterface $numberGenerator,
         KeyGeneratorInterface $keyGenerator,
-        CalculatorInterface $calculator,
+        AmountsCalculatorInterface $amountCalculator,
+        WeightCalculatorInterface $weightCalculator,
         StateResolverInterface $stateResolver
     ) {
         $this->numberGenerator = $numberGenerator;
         $this->keyGenerator = $keyGenerator;
-        $this->calculator = $calculator;
+        $this->amountCalculator = $amountCalculator;
+        $this->weightCalculator = $weightCalculator;
         $this->stateResolver = $stateResolver;
     }
 
@@ -119,8 +126,8 @@ abstract class AbstractSaleListener
         $changed = false;
 
         // Generate number and key
-        //$changed = $this->generateNumber($sale) || $changed;
-        //$changed = $this->generateKey($sale) || $changed;
+        $changed = $this->generateNumber($sale) || $changed;
+        $changed = $this->generateKey($sale) || $changed;
 
         // Handle identity
         $changed = $this->handleIdentity($sale) || $changed;
@@ -136,9 +143,13 @@ abstract class AbstractSaleListener
 
         // Update totals
         // TODO test that, maybe we have to use UnitOfWork::isCollectionScheduledFor*
+        // TODO what about item's children ?
         if ($event->isChanged(['items', 'adjustments', 'payments'])) {
             $changed = $this->updateTotals($sale) || $changed;
         }
+
+        // Update state
+        $changed = $this->updateState($sale) || $changed;
 
         // TODO Timestampable behavior/listener
         $sale->setUpdatedAt(new \DateTime());
@@ -161,9 +172,8 @@ abstract class AbstractSaleListener
 
         // Stop if sale has valid payments
         if (null !== $payments = $sale->getPayments()) {
-            $deletablePaymentStates = [PaymentStates::STATE_NEW, PaymentStates::STATE_CANCELLED];
             foreach ($payments as $payment) {
-                if (!in_array($payment->getState(), $deletablePaymentStates)) {
+                if (!in_array($payment->getState(), PaymentStates::getDeletableStates())) {
                     throw new IllegalOperationException();
                 }
             }
@@ -171,13 +181,13 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Generates the sale number.
+     * Generates the number.
      *
-     * @param NumberSubjectInterface $sale
+     * @param SaleInterface $sale
      *
      * @return bool Whether the sale number has been generated or not.
      */
-    protected function generateNumber(NumberSubjectInterface $sale)
+    protected function generateNumber(SaleInterface $sale)
     {
         if (0 == strlen($sale->getNumber())) {
             $this->numberGenerator->generate($sale);
@@ -189,13 +199,13 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Generates the sale key.
+     * Generates the key.
      *
-     * @param KeySubjectInterface $sale
+     * @param SaleInterface $sale
      *
      * @return bool Whether the sale key has been generated or not.
      */
-    protected function generateKey(KeySubjectInterface $sale)
+    protected function generateKey(SaleInterface $sale)
     {
         if (0 == strlen($sale->getKey())) {
             $this->keyGenerator->generate($sale);
@@ -220,6 +230,14 @@ abstract class AbstractSaleListener
         if (null !== $customer = $sale->getCustomer()) {
             if (0 == strlen($sale->getEmail())) {
                 $sale->setEmail($customer->getEmail());
+                $changed = true;
+            }
+            if (0 == strlen($sale->getCompany())) {
+                $sale->setCompany($customer->getCompany());
+                $changed = true;
+            }
+            if (0 == strlen($sale->getGender())) {
+                $sale->setGender($customer->getGender());
                 $changed = true;
             }
             if (0 == strlen($sale->getFirstName())) {
@@ -258,7 +276,7 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Updates the sale totals.
+     * Updates the totals.
      *
      * @param SaleInterface $sale
      *
@@ -266,19 +284,23 @@ abstract class AbstractSaleListener
      */
     protected function updateTotals(SaleInterface $sale)
     {
-        $amounts = $this->calculator->calculateSale($sale);
+        // Amounts Totals
+        $amounts = $this->amountCalculator->calculateSale($sale);
 
         $sale
             ->setNetTotal($amounts->getBase())
             ->setGrandTotal($amounts->getTotal());
 
-        // TODO Total weight
+        // Weight total
+        $weightTotal = $this->weightCalculator->calculateSale($sale);
+
+        $sale->setWeightTotal($weightTotal);
 
         return false;
     }
 
     /**
-     * Updates the sale state.
+     * Updates the state.
      *
      * @param SaleInterface $sale
      *
@@ -286,15 +308,7 @@ abstract class AbstractSaleListener
      */
     protected function updateState(SaleInterface $sale)
     {
-        $state = $this->stateResolver->resolve($sale);
-
-        if ($state != $sale->getState()) {
-            $sale->setState($state);
-
-            return true;
-        }
-
-        return false;
+        return $this->stateResolver->resolve($sale);
     }
 
     /**

@@ -2,48 +2,42 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface PaymentInterface
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface PaymentInterface extends ResourceInterface
+interface PaymentInterface extends
+    ResourceModel\ResourceInterface,
+    ResourceModel\TimestampableInterface,
+    Model\NumberSubjectInterface,
+    Model\StateSubjectInterface
 {
     /**
-     * Returns the number.
+     * Returns the sale.
      *
-     * @return string
+     * @return Model\SaleInterface
      */
-    public function getNumber();
-
-    /**
-     * Sets the number.
-     *
-     * @param string $number
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setNumber($number);
+    public function getSale();
 
     /**
      * Returns the currency.
      *
-     * @return CurrencyInterface
+     * @return Model\CurrencyInterface
      */
     public function getCurrency();
 
     /**
      * Sets the currency.
      *
-     * @param CurrencyInterface $currency
+     * @param Model\CurrencyInterface $currency
      *
      * @return $this|PaymentInterface
      */
-    public function setCurrency(CurrencyInterface $currency);
+    public function setCurrency(Model\CurrencyInterface $currency);
 
     /**
      * Returns the method.
@@ -78,52 +72,36 @@ interface PaymentInterface extends ResourceInterface
     public function setAmount($amount);
 
     /**
-     * Returns the state.
+     * Returns the details.
+     *
+     * @return array
+     */
+    public function getDetails();
+
+    /**
+     * Sets the details.
+     *
+     * @param array $details
+     *
+     * @return $this|PaymentInterface
+     */
+    public function setDetails(array $details);
+
+    /**
+     * Returns the description.
      *
      * @return string
      */
-    public function getState();
+    public function getDescription();
 
     /**
-     * Sets the state.
+     * Sets the description.
      *
-     * @param string $state
+     * @param string $description
      *
      * @return $this|PaymentInterface
      */
-    public function setState($state);
-
-    /**
-     * Returns the createdAt.
-     *
-     * @return \DateTime
-     */
-    public function getCreatedAt();
-
-    /**
-     * Sets the createdAt.
-     *
-     * @param \DateTime $createdAt
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setCreatedAt(\DateTime $createdAt = null);
-
-    /**
-     * Returns the updateAt.
-     *
-     * @return \DateTime
-     */
-    public function getUpdatedAt();
-
-    /**
-     * Sets the updateAt.
-     *
-     * @param \DateTime $updateAt
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setUpdatedAt(\DateTime $updateAt = null);
+    public function setDescription($description);
 
     /**
      * Returns the completedAt.

@@ -9,7 +9,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AddressInterface extends ResourceInterface
+interface AddressInterface extends ResourceInterface, IdentityInterface
 {
     /**
      * Returns the company.
@@ -25,36 +25,6 @@ interface AddressInterface extends ResourceInterface
      * @return $this|AddressInterface
      */
     public function setCompany($company);
-
-    /**
-     * Returns the firstName.
-     *
-     * @return string
-     */
-    public function getFirstName();
-
-    /**
-     * Sets the firstName.
-     *
-     * @param string $firstName
-     * @return $this|AddressInterface
-     */
-    public function setFirstName($firstName);
-
-    /**
-     * Returns the lastName.
-     *
-     * @return string
-     */
-    public function getLastName();
-
-    /**
-     * Sets the lastName.
-     *
-     * @param string $lastName
-     * @return $this|AddressInterface
-     */
-    public function setLastName($lastName);
 
     /**
      * Returns the street.
@@ -142,8 +112,40 @@ interface AddressInterface extends ResourceInterface
     /**
      * Sets the state.
      *
-     * @param string $state
+     * @param StateInterface $state
      * @return $this|AddressInterface
      */
     public function setState(StateInterface $state = null);
+
+    /**
+     * Returns the phone.
+     *
+     * @return mixed
+     */
+    public function getPhone();
+
+    /**
+     * Sets the phone.
+     *
+     * @param mixed $phone
+     *
+     * @return $this|AddressInterface
+     */
+    public function setPhone($phone);
+
+    /**
+     * Returns the mobile.
+     *
+     * @return string
+     */
+    public function getMobile();
+
+    /**
+     * Sets the mobile.
+     *
+     * @param string $mobile
+     *
+     * @return $this|AddressInterface
+     */
+    public function setMobile($mobile);
 }

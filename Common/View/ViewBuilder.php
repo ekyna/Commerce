@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\View;
 
-use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Symfony\Component\OptionsResolver\Options;
@@ -31,7 +31,7 @@ class ViewBuilder
     private $varsBuilder;
 
     /**
-     * @var CalculatorInterface
+     * @var AmountsCalculatorInterface
      */
     private $calculator;
 
@@ -44,9 +44,9 @@ class ViewBuilder
     /**
      * Constructor.
      *
-     * @param CalculatorInterface $calculator
+     * @param AmountsCalculatorInterface $calculator
      */
-    public function __construct(CalculatorInterface $calculator)
+    public function __construct(AmountsCalculatorInterface $calculator)
     {
         $this->calculator = $calculator;
     }
@@ -82,7 +82,7 @@ class ViewBuilder
         );
 
         $view = new SaleView(
-            CalculatorInterface::MODE_NET, // TODO This should be resolved regarding to the customer group
+            AmountsCalculatorInterface::MODE_NET, // TODO This should be resolved regarding to the customer group
             $grossTotal,
             $finalTotal,
             $this->buildSaleItemsLinesViews($sale),

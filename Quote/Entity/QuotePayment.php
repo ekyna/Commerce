@@ -21,6 +21,14 @@ class QuotePayment extends AbstractPayment implements Model\QuotePaymentInterfac
     /**
      * @inheritdoc
      */
+    public function getSale()
+    {
+        return $this->getQuote();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getQuote()
     {
         return $this->quote;

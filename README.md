@@ -13,3 +13,7 @@ Commerce component
 - doctrine mappings : indexes and constraints (position for example)
 - attribute set update : disallow ? warn about variants with undefined attribute slots ?
 - customer / customer group (ManyToOne) and tax resolver.
+
+# ideas
+
+- print catalog

@@ -24,8 +24,6 @@ class ConfigureValidatorPass implements CompilerPassInterface
 
         $validatorBuilder = $container->getDefinition('validator.builder');
 
-        // TODO
-        $paths = [];
         $names = [
             'cart',
             'common',
@@ -35,8 +33,10 @@ class ConfigureValidatorPass implements CompilerPassInterface
             'pricing',
             'product',
             'quote',
-            //'shipment',
+            'shipment',
         ];
+
+        $paths = [];
         foreach ($names as $name) {
             $paths[] = realpath(__DIR__ . sprintf('/../../Resources/validation/%s.xml', $name));
         }

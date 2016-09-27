@@ -19,7 +19,7 @@ use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener\LoadMetadataSubscriber
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\CustomerEventSubscriber;
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\OrderEventSubscriber;
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\ProductEventSubscriber;
-use Ekyna\Component\Commerce\Common\Calculator\Calculator;
+use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculator;
 use Ekyna\Component\Commerce\Common\Generator\DefaultNumberGenerator;
 use Ekyna\Component\Commerce\Order\Resolver\OrderStateResolver;
 use Ekyna\Component\Resource\Configuration\ConfigurationFactory;
@@ -120,7 +120,7 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
         $dispatcher->addSubscriber(new ProductEventSubscriber());
         $dispatcher->addSubscriber(new OrderEventSubscriber(
             new DefaultNumberGenerator(),
-            new Calculator(),
+            new AmountsCalculator(),
             new OrderStateResolver()
         ));
 

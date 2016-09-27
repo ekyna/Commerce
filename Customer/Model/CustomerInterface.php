@@ -3,15 +3,19 @@
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
 use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface CustomerInterface
  * @package Ekyna\Component\Commerce\Customer\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CustomerInterface extends ResourceInterface
+interface CustomerInterface extends
+    ResourceModel\ResourceInterface,
+    ResourceModel\TimestampableInterface,
+    IdentityInterface
 {
     /**
      * Returns the company.
@@ -28,36 +32,6 @@ interface CustomerInterface extends ResourceInterface
      * @return $this|CustomerInterface
      */
     public function setCompany($company);
-
-    /**
-     * Returns the firstName.
-     *
-     * @return string
-     */
-    public function getFirstName();
-
-    /**
-     * Sets the firstName.
-     *
-     * @param string $firstName
-     * @return $this|CustomerInterface
-     */
-    public function setFirstName($firstName);
-
-    /**
-     * Returns the lastName.
-     *
-     * @return string
-     */
-    public function getLastName();
-
-    /**
-     * Sets the lastName.
-     *
-     * @param string $lastName
-     * @return $this|CustomerInterface
-     */
-    public function setLastName($lastName);
 
     /**
      * Returns the email.
@@ -171,16 +145,6 @@ interface CustomerInterface extends ResourceInterface
     public function hasChildren();
 
     /**
-     * Sets the children.
-     *
-     * @param ArrayCollection $children
-     *
-     * @return $this|CustomerInterface
-     * @internal
-     */
-    public function setChildren(ArrayCollection $children);
-
-    /**
      * Returns the groups.
      *
      * @return ArrayCollection|CustomerGroupInterface[]
@@ -210,14 +174,6 @@ interface CustomerInterface extends ResourceInterface
      * @return $this|CustomerInterface
      */
     public function removeCustomerGroup(CustomerGroupInterface $group);
-
-    /**
-     * Sets the groups.
-     *
-     * @param ArrayCollection $groups
-     * @return $this|CustomerInterface
-     */
-    public function setCustomerGroups(ArrayCollection $groups);
 
     /**
      * Returns the addresses.
@@ -251,14 +207,6 @@ interface CustomerInterface extends ResourceInterface
     public function removeAddress(CustomerAddressInterface $address);
 
     /**
-     * Sets the addresses.
-     *
-     * @param ArrayCollection $addresses
-     * @return $this|CustomerInterface
-     */
-    public function setAddresses(ArrayCollection $addresses);
-
-    /**
      * Returns the price lists.
      *
      * @return ArrayCollection|PriceListInterface[]
@@ -288,44 +236,4 @@ interface CustomerInterface extends ResourceInterface
      * @return $this|CustomerInterface
      */
     public function removePriceList(PriceListInterface $priceList);
-
-    /**
-     * Sets the price lists.
-     *
-     * @param ArrayCollection|PriceListInterface[] $priceLists
-     * @return $this|CustomerInterface
-     */
-    public function setPriceLists(ArrayCollection $priceLists);
-
-    /**
-     * Returns the "created at" datetime.
-     *
-     * @return \DateTime
-     */
-    public function getCreatedAt();
-
-    /**
-     * Sets the "created at" datetime.
-     *
-     * @param \DateTime $createdAt
-     *
-     * @return $this|CustomerInterface
-     */
-    public function setCreatedAt(\DateTime $createdAt);
-
-    /**
-     * Returns the "updated at" datetime.
-     *
-     * @return \DateTime
-     */
-    public function getUpdatedAt();
-
-    /**
-     * Sets the "updated at" datetime.
-     *
-     * @param \DateTime $updatedAt
-     *
-     * @return $this|CustomerInterface
-     */
-    public function setUpdatedAt(\DateTime $updatedAt = null);
 }

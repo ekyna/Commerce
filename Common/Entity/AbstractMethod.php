@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Resource\Model\AbstractTranslatable;
+use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
  * Class AbstractMethod
@@ -15,6 +16,8 @@ use Ekyna\Component\Resource\Model\AbstractTranslatable;
  */
 abstract class AbstractMethod extends AbstractTranslatable implements Model\MethodInterface
 {
+    use SortableTrait;
+
     /**
      * @var int
      */
@@ -216,24 +219,6 @@ abstract class AbstractMethod extends AbstractTranslatable implements Model\Meth
     public function setAvailable($available)
     {
         $this->available = (bool) $available;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPosition()
-    {
-        return $this->position;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPosition($position)
-    {
-        $this->position = $position;
 
         return $this;
     }

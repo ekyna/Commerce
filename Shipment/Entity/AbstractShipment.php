@@ -3,29 +3,30 @@
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
  * Class AbstractShipment
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AbstractShipment implements ShipmentInterface
+abstract class AbstractShipment implements Shipment\ShipmentInterface
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      */
     protected $id;
 
     /**
-     * @var ShipmentMethodInterface
+     * @var Shipment\ShipmentMethodInterface
      */
     protected $method;
 
     /**
-     * @var ArrayCollection|ShipmentItemInterface[]
+     * @var ArrayCollection|Shipment\ShipmentItemInterface[]
      */
     protected $items;
 
@@ -40,20 +41,24 @@ class AbstractShipment implements ShipmentInterface
     protected $state;
 
     /**
-     * @var \DateTime
+     * @var string
      */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     */
-    protected $updatedAt;
+    protected $description;
 
     /**
      * @var \DateTime
      */
     protected $completedAt;
 
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->state = Shipment\ShipmentStates::STATE_NEW;
+        $this->items = new ArrayCollection();
+    }
 
     /**
      * @inheritdoc
@@ -74,7 +79,7 @@ class AbstractShipment implements ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function setMethod(ShipmentMethodInterface $method)
+    public function setMethod(Shipment\ShipmentMethodInterface $method)
     {
         $this->method = $method;
 
@@ -100,7 +105,7 @@ class AbstractShipment implements ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function hasItem(ShipmentItemInterface $item)
+    public function hasItem(Shipment\ShipmentItemInterface $item)
     {
         return $this->items->contains($item);
     }
@@ -108,7 +113,7 @@ class AbstractShipment implements ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function addItem(ShipmentItemInterface $item)
+    public function addItem(Shipment\ShipmentItemInterface $item)
     {
         if (!$this->hasItem($item)) {
             $item->setShipment($this);
@@ -121,7 +126,7 @@ class AbstractShipment implements ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function removeItem(ShipmentItemInterface $item)
+    public function removeItem(Shipment\ShipmentItemInterface $item)
     {
         if ($this->hasItem($item)) {
             $item->setShipment(null);
@@ -170,35 +175,17 @@ class AbstractShipment implements ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function getCreatedAt()
+    public function getDescription()
     {
-        return $this->createdAt;
+        return $this->description;
     }
 
     /**
      * @inheritdoc
      */
-    public function setCreatedAt(\DateTime $createdAt = null)
+    public function setDescription($description)
     {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getUpdatedAt()
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setUpdatedAt(\DateTime $updatedAt = null)
-    {
-        $this->updatedAt = $updatedAt;
+        $this->description = $description;
 
         return $this;
     }

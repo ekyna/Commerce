@@ -19,8 +19,9 @@ class OrderEventSubscriber extends OrderListener implements EventSubscriberInter
     public static function getSubscribedEvents()
     {
         return [
-            OrderEvents::INSERT => ['onInsert', 0],
-            OrderEvents::UPDATE => ['onUpdate', 0],
+            OrderEvents::INSERT     => ['onInsert', 0],
+            OrderEvents::UPDATE     => ['onUpdate', 0],
+            OrderEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }
 }

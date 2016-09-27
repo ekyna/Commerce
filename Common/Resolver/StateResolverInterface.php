@@ -17,7 +17,7 @@ interface StateResolverInterface
      *
      * @param StateSubjectInterface $subject
      *
-     * @return string The resolved state.
+     * @return bool Whether or not the state(s) has been changed.
      * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
     public function resolve(StateSubjectInterface $subject);

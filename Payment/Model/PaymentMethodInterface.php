@@ -11,5 +11,10 @@ use Ekyna\Component\Commerce\Common\Model\MethodInterface;
  */
 interface PaymentMethodInterface extends MethodInterface
 {
-
+    /**
+     * Returns whether or not the method requires manual management of payments state.
+     *
+     * @return bool
+     */
+    public function isManual();
 }

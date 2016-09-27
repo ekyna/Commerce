@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
  * Class AbstractSaleItem
@@ -13,6 +14,8 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemInterface
 {
+    use SortableTrait;
+
     /**
      * @var int
      */
@@ -230,24 +233,6 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     /**
      * @inheritdoc
      */
-    public function getPosition()
-    {
-        return $this->position;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPosition($position)
-    {
-        $this->position = $position;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function isImmutable()
     {
         return $this->immutable;
@@ -353,5 +338,20 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
         $this->subject = $subject;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTotalQuantity()
+    {
+        $quantity = $this->getQuantity();
+
+        $parent = $this;
+        while (null !== $parent = $parent->getParent()) {
+            $quantity *= $parent->getQuantity();
+        }
+
+        return $quantity;
     }
 }

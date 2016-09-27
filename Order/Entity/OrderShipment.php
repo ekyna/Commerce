@@ -20,6 +20,14 @@ class OrderShipment extends AbstractShipment  implements OrderShipmentInterface
 
 
     /**
+     * @inheritDoc
+     */
+    public function getSale()
+    {
+        return $this->getOrder();
+    }
+
+    /**
      * @inheritdoc
      */
     public function getOrder()

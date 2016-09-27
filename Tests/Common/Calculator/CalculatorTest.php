@@ -3,8 +3,8 @@
 namespace Ekyna\Component\Commerce\Tests\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Calculator\Result;
-use Ekyna\Component\Commerce\Common\Calculator\Calculator;
-use Ekyna\Component\Commerce\Common\Calculator\CalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculator;
+use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
 use Ekyna\Component\Commerce\Tests\OrmTestCase;
 
 /**
@@ -15,12 +15,12 @@ use Ekyna\Component\Commerce\Tests\OrmTestCase;
 class CalculatorTest extends OrmTestCase
 {
     const MODES = [
-        CalculatorInterface::MODE_NET   => 0,
-        CalculatorInterface::MODE_GROSS => 1,
+        AmountsCalculatorInterface::MODE_NET   => 0,
+        AmountsCalculatorInterface::MODE_GROSS => 1,
     ];
 
     /**
-     * @var Calculator
+     * @var AmountsCalculator
      */
     private static $calculator;
 
@@ -28,7 +28,7 @@ class CalculatorTest extends OrmTestCase
     {
         parent::setUpBeforeClass();
 
-        static::$calculator = new Calculator();
+        static::$calculator = new AmountsCalculator();
     }
 
     public static function tearDownAfterClass()

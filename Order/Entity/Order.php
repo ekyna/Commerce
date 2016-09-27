@@ -39,7 +39,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function __construct()
     {
         $this->state = Model\OrderStates::STATE_NEW;
-        $this->shipmentState = Shipment\ShipmentStates::STATE_PENDING;
+        $this->shipmentState = Shipment\ShipmentStates::STATE_NEW;
         $this->shipments = new ArrayCollection();
 
         parent::__construct();

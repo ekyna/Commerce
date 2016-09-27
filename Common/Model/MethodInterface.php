@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface MethodInterface
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface MethodInterface extends ResourceInterface
+interface MethodInterface extends ResourceModel\ResourceInterface, ResourceModel\SortableInterface
 {
     /**
      * Returns the name.
@@ -131,20 +131,4 @@ interface MethodInterface extends ResourceInterface
      * @return $this|MethodInterface
      */
     public function setAvailable($available);
-
-    /**
-     * Returns the position.
-     *
-     * @return int
-     */
-    public function getPosition();
-
-    /**
-     * Sets the position.
-     *
-     * @param int $position
-     *
-     * @return $this|MethodInterface
-     */
-    public function setPosition($position);
 }

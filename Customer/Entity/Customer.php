@@ -3,10 +3,12 @@
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\IdentityTrait;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
+use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
  * Class Customer
@@ -15,6 +17,9 @@ use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
  */
 class Customer implements CustomerInterface
 {
+    use IdentityTrait,
+        TimestampableTrait;
+
     /**
      * @var int
      */
@@ -24,16 +29,6 @@ class Customer implements CustomerInterface
      * @var string
      */
     protected $company;
-
-    /**
-     * @var string
-     */
-    protected $firstName;
-
-    /**
-     * @var string
-     */
-    protected $lastName;
 
     /**
      * @var string
@@ -74,16 +69,6 @@ class Customer implements CustomerInterface
      * @var ArrayCollection|PriceListInterface[]
      */
     protected $priceLists;
-
-    /**
-     * @var \DateTime
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     */
-    protected $updatedAt;
 
 
     /**
@@ -142,42 +127,6 @@ class Customer implements CustomerInterface
     public function setCompany($company)
     {
         $this->company = $company;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFirstName()
-    {
-        return $this->firstName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setFirstName($firstName)
-    {
-        $this->firstName = $firstName;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getLastName()
-    {
-        return $this->lastName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setLastName($lastName)
-    {
-        $this->lastName = $lastName;
 
         return $this;
     }
@@ -321,19 +270,6 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setChildren(ArrayCollection $children)
-    {
-        $this->children = new ArrayCollection();
-        foreach ($children as $child) {
-            $this->addChild($child);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getCustomerGroups()
     {
         return $this->customerGroups;
@@ -366,19 +302,6 @@ class Customer implements CustomerInterface
     {
         if ($this->hasCustomerGroup($group)) {
             $this->customerGroups->removeElement($group);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCustomerGroups(ArrayCollection $customerGroups)
-    {
-        $this->customerGroups = new ArrayCollection();
-        foreach ($customerGroups as $group) {
-            $this->addCustomerGroup($group);
         }
 
         return $this;
@@ -429,19 +352,6 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setAddresses(ArrayCollection $addresses)
-    {
-        $this->addresses = new ArrayCollection();
-        foreach ($addresses as $address) {
-            $this->addAddress($address);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getPriceLists()
     {
         return $this->priceLists;
@@ -475,56 +385,6 @@ class Customer implements CustomerInterface
         if ($this->hasPriceList($priceList)) {
             $this->priceLists->removeElement($priceList);
         }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPriceLists(ArrayCollection $priceLists)
-    {
-        $this->priceLists = new ArrayCollection();
-        foreach ($priceLists as $priceList) {
-            $this->addPriceList($priceList);
-        }
-        $this->priceLists = $priceLists;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCreatedAt(\DateTime $createdAt)
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getUpdatedAt()
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setUpdatedAt(\DateTime $updatedAt = null)
-    {
-        $this->updatedAt = $updatedAt;
 
         return $this;
     }

@@ -53,9 +53,8 @@ class OrderListener extends AbstractSaleListener
 
         // Stop if order has valid shipments
         if (null !== $shipments = $order->getShipments()) {
-            $deletableShipmentStates = [ShipmentStates::STATE_CHECKOUT, ShipmentStates::STATE_CANCELLED];
             foreach ($shipments as $shipment) {
-                if (!in_array($shipment->getState(), $deletableShipmentStates)) {
+                if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
                     throw new IllegalOperationException();
                 }
             }

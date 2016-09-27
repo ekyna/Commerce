@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface AdjustmentInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AdjustmentInterface extends ResourceInterface
+interface AdjustmentInterface extends ResourceModel\ResourceInterface, ResourceModel\SortableInterface
 {
     /**
      * Returns the designation.
@@ -70,21 +70,6 @@ interface AdjustmentInterface extends ResourceInterface
      * @return $this|AdjustmentInterface
      */
     public function setAmount($amount);
-
-    /**
-     * Returns the position.
-     *
-     * @return int
-     */
-    public function getPosition();
-
-    /**
-     * Sets the position.
-     *
-     * @param int $position
-     * @return $this|AdjustmentInterface
-     */
-    public function setPosition($position);
 
     /**
      * Returns the immutable.

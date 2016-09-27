@@ -5,29 +5,53 @@
         xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-    <!--<class name="Ekyna\Component\Commerce\Pricing\Entity\TaxRule">
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">name</option>
-        </constraint>
-        <property name="name">
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipment">
+        <property name="number">
             <constraint name="NotBlank"/>
             <constraint name="Length">
-                <option name="min">2</option>
-                <option name="max">64</option>
+                <option name="min">8</option>
+                <option name="max">16</option>
             </constraint>
         </property>
-        <property name="priority">
-            <constraint name="NotBlank"/>
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
+        <property name="method">
+            <constraint name="NotNull" />
+        </property>
+        <property name="state">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Model\ShipmentStates</value>
+                    <value>getStates</value>
+                </option>
             </constraint>
         </property>
-        <property name="position">
-            <constraint name="NotBlank"/>
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
+        <property name="description">
+            <constraint name="Length">
+                <option name="max">255</option>
             </constraint>
         </property>
-    </class>-->
+        <property name="createdAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="updatedAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="completedAt">
+            <constraint name="DateTime"/>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethodMessage">
+        <property name="state">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Model\ShipmentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
 
 </constraint-mapping>

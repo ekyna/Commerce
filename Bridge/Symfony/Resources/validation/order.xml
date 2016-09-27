@@ -6,75 +6,13 @@
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
     <class name="Ekyna\Component\Commerce\Order\Entity\Order">
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">number</option>
-        </constraint>
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">key</option>
-        </constraint>
-        <property name="number">
-            <constraint name="Length">
-                <option name="min">8</option>
-                <option name="max">16</option>
-            </constraint>
-        </property>
-        <property name="firstName">
-            <constraint name="NotBlank">
-                <option name="groups">
-                    <value>Information</value>
-                    <value>Order</value>
-                </option>
-            </constraint>
-        </property>
-        <property name="lastName">
-            <constraint name="NotBlank">
-                <option name="groups">
-                    <value>Information</value>
-                    <value>Order</value>
-                </option>
-            </constraint>
-        </property>
-
-        <property name="invoiceAddress">
-            <constraint name="NotNull">
-                <option name="groups">
-                    <value>Information</value>
-                    <value>Order</value>
-                </option>
-            </constraint>
-            <constraint name="Valid" />
-        </property>
-        <property name="deliveryAddress">
-            <constraint name="Valid" />
-        </property>
-
-        <property name="items">
-            <constraint name="Count">
-                <option name="min">1</option>
-                <option name="groups">
-                    <value>Order</value>
-                </option>
-            </constraint>
-        </property>
-        <property name="payments">
-            <constraint name="Valid" />
-        </property>
         <property name="shipments">
             <constraint name="Valid" />
         </property>
-
         <property name="state">
             <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Order\Model\OrderStates</value>
-                    <value>getStates</value>
-                </option>
-            </constraint>
-        </property>
-        <property name="paymentState">
-            <constraint name="Choice">
-                <option name="callback">
-                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
                     <value>getStates</value>
                 </option>
             </constraint>
@@ -87,7 +25,6 @@
                 </option>
             </constraint>
         </property>
-
         <property name="completedAt">
             <constraint name="DateTime"/>
         </property>

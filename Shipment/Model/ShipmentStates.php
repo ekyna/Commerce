@@ -9,6 +9,7 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
  */
 final class ShipmentStates
 {
+    const STATE_NEW         = 'new';
     const STATE_CHECKOUT    = 'checkout';
 //    const STATE_ONHOLD      = 'onhold';
     const STATE_PENDING     = 'pending';
@@ -28,6 +29,7 @@ final class ShipmentStates
     static public function getStates()
     {
         return [
+            static::STATE_NEW,
             static::STATE_CHECKOUT,
 //            static::STATE_ONHOLD,
             static::STATE_PENDING,
@@ -63,6 +65,19 @@ final class ShipmentStates
             static::STATE_PENDING,
             static::STATE_READY,
             static::STATE_SHIPPED,
+        ];
+    }
+
+    /**
+     * Returns the deletable states.
+     *
+     * @return array
+     */
+    static public function getDeletableStates()
+    {
+        return [
+            static::STATE_NEW,
+            static::STATE_CANCELLED,
         ];
     }
 }

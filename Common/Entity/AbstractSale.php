@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
  * Class AbstractSale
@@ -16,6 +17,9 @@ use Ekyna\Component\Commerce\Payment\Model as Payment;
  */
 abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInterface
 {
+    use Model\IdentityTrait,
+        TimestampableTrait;
+
     /**
      * @var int
      */
@@ -40,16 +44,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
      * @var string
      */
     protected $company;
-
-    /**
-     * @var string
-     */
-    protected $firstName;
-
-    /**
-     * @var string
-     */
-    protected $lastName;
 
     /**
      * @var string
@@ -120,16 +114,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
      * @var ArrayCollection|Payment\PaymentInterface[]
      */
     protected $payments;
-
-    /**
-     * @var \DateTime
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     */
-    protected $updatedAt;
 
 
     /**
@@ -243,42 +227,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     public function setCompany($company)
     {
         $this->company = $company;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFirstName()
-    {
-        return $this->firstName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setFirstName($firstName)
-    {
-        $this->firstName = $firstName;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getLastName()
-    {
-        return $this->lastName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setLastName($lastName)
-    {
-        $this->lastName = $lastName;
 
         return $this;
     }
@@ -540,37 +488,21 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function getCreatedAt()
+    public function requiresShipment()
     {
-        return $this->createdAt;
-    }
+        foreach ($this->items as $item) {
+            if (0 < $item->getWeight()) {
+                return true;
+            }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCreatedAt(\DateTime $createdAt)
-    {
-        $this->createdAt = $createdAt;
+            foreach ($item->getChildren() as $child) {
+                if (0 < $child->getWeight()) {
+                    return true;
+                }
+            }
+        }
 
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getUpdatedAt()
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setUpdatedAt(\DateTime $updatedAt = null)
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
+        return false;
     }
 
     /**

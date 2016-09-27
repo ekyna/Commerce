@@ -22,6 +22,14 @@ class OrderPayment extends AbstractPayment implements OrderPaymentInterface
     /**
      * @inheritdoc
      */
+    public function getSale()
+    {
+        return $this->getOrder();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOrder()
     {
         return $this->order;

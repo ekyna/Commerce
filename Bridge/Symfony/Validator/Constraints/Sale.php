@@ -9,10 +9,12 @@ use Symfony\Component\Validator\Constraint;
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Order extends Constraint
+class Sale extends Constraint
 {
-    public $invoiceAddressIsMandatory = 'ekyna_order.order.invoice_address_is_mandatory';
-    public $deliveryAddressIsMandatory = 'ekyna_order.order.delivery_address_is_mandatory';
+    public $email_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.email_is_required';
+    public $identity_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.identity_is_required';
+    public $delivery_address_is_required = 'ekyna_commerce.sale.delivery_address_is_required';
+
 
     /**
      * {@inheritdoc}
