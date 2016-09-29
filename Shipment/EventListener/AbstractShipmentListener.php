@@ -3,13 +3,15 @@
 namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class AbstractShipmentListener
@@ -18,6 +20,16 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 abstract class AbstractShipmentListener
 {
+    /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
+    /**
+     * @var ResourceEventDispatcherInterface
+     */
+    protected $dispatcher;
+
     /**
      * @var NumberGeneratorInterface
      */
@@ -30,25 +42,51 @@ abstract class AbstractShipmentListener
 
 
     /**
-     * Constructor.
+     * Sets the persistence helper.
      *
-     * @param NumberGeneratorInterface $numberGenerator
-     * @param StateResolverInterface   $stateResolver
+     * @param PersistenceHelperInterface $helper
      */
-    public function __construct(
-        NumberGeneratorInterface $numberGenerator,
-        StateResolverInterface $stateResolver
-    ) {
-        $this->numberGenerator = $numberGenerator;
-        $this->stateResolver = $stateResolver;
+    public function setPersistenceHelper(PersistenceHelperInterface $helper)
+    {
+        $this->persistenceHelper = $helper;
+    }
+
+    /**
+     * Sets the resource event dispatcher.
+     *
+     * @param ResourceEventDispatcherInterface $dispatcher
+     */
+    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
+    }
+
+    /**
+     * Sets the number generator.
+     *
+     * @param NumberGeneratorInterface $generator
+     */
+    public function setNumberGenerator(NumberGeneratorInterface $generator)
+    {
+        $this->numberGenerator = $generator;
+    }
+
+    /**
+     * Sets the state resolver.
+     *
+     * @param StateResolverInterface $resolver
+     */
+    public function setStateResolver(StateResolverInterface $resolver)
+    {
+        $this->stateResolver = $resolver;
     }
 
     /**
      * Insert event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onInsert(PersistenceEvent $event)
+    public function onInsert(ResourceEventInterface $event)
     {
         $shipment = $this->getShipmentFromEvent($event);
 
@@ -57,10 +95,8 @@ abstract class AbstractShipmentListener
          * It should be a loop of operations/behaviors ...
          */
 
-        $changed = 0 < count(array_intersect(['items', 'state'], array_keys($event->getChangeSet())));
-
         // Generate number and key
-        $changed = $this->generateNumber($shipment) || $changed;
+        $changed = $this->generateNumber($shipment);
 
         // TODO Timestampable behavior/listener
         $shipment
@@ -68,49 +104,53 @@ abstract class AbstractShipmentListener
             ->setUpdatedAt(new \DateTime());
 
         if (true || $changed) {
-            $event->persistAndRecompute($shipment);
-            // Recompute the whole sale
-            $event->persistAndRecompute($shipment->getSale());
+            $this->persistenceHelper->persistAndRecompute($shipment);
         }
+
+        // TODO ShipmentItemListener
+
+        $sale = $shipment->getSale();
+        $sale->addShipment($shipment);
+
+        $this->dispatchSaleContentChangeEvent($sale);
     }
 
     /**
      * Update event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onUpdate(PersistenceEvent $event)
+    public function onUpdate(ResourceEventInterface $event)
     {
         $shipment = $this->getShipmentFromEvent($event);
 
         // TODO same shit here ... T_T
 
-        $changed = array_key_exists('state', $event->getChangeSet());
-
         // Generate number and key
-        $changed = $this->generateNumber($shipment) || $changed;
+        $changed = $this->generateNumber($shipment);
 
         // TODO Timestampable behavior/listener
         $shipment->setUpdatedAt(new \DateTime());
 
         if (true || $changed) {
-            $event->persistAndRecompute($shipment);
-            // Recompute the whole sale
-            $event->persistAndRecompute($shipment->getSale());
+            $this->persistenceHelper->persistAndRecompute($shipment);
+        }
+
+        if ($this->persistenceHelper->isChanged($shipment, 'state')) {
+            $this->dispatchSaleContentChangeEvent($shipment->getSale());
         }
     }
 
     /**
      * Delete event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onDelete(PersistenceEvent $event)
+    public function onDelete(ResourceEventInterface $event)
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        // Recompute the whole sale
-        $event->persistAndRecompute($shipment->getSale());
+        $this->dispatchSaleContentChangeEvent($shipment->getSale());
     }
 
     /**
@@ -156,16 +196,15 @@ abstract class AbstractShipmentListener
      */
     protected function updateState(ShipmentInterface $shipment)
     {
-        $state = $this->stateResolver->resolve($shipment);
-
-        if ($state != $shipment->getState()) {
-            $shipment->setState($state);
-
-            return true;
-        }
-
-        return false;
+        return $this->stateResolver->resolve($shipment);
     }
+
+    /**
+     * Dispatches the sale content change event.
+     *
+     * @param SaleInterface $sale
+     */
+    abstract protected function dispatchSaleContentChangeEvent(SaleInterface $sale);
 
     /**
      * Returns the shipment from the event.

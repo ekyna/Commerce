@@ -6,7 +6,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
 use Ekyna\Component\Commerce\Product\Updater\ProductUpdater;
 use Ekyna\Component\Commerce\Product\Updater\ProductUpdaterInterface;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class AbstractHandler
@@ -39,7 +39,7 @@ abstract class AbstractHandler implements HandlerInterface
      *
      * @param HandlerFactory $factory
      */
-    public function setFactory($factory)
+    public function setFactory(HandlerFactory $factory)
     {
         $this->factory = $factory;
     }
@@ -47,12 +47,12 @@ abstract class AbstractHandler implements HandlerInterface
     /**
      * Returns the product from the event.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      * @param string $type
      *
      * @return ProductInterface
      */
-    protected function getProductFromEvent(PersistenceEvent $event, $type = null)
+    protected function getProductFromEvent(ResourceEventInterface $event, $type = null)
     {
         $resource = $event->getResource();
 

@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Product\Model\ProductTypes;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class VariantHandler
@@ -16,7 +16,7 @@ class VariantHandler extends AbstractHandler
     /**
      * @inheritDoc
      */
-    public function handleInsert(PersistenceEvent $event)
+    public function handleInsert(ResourceEventInterface $event)
     {
         $variant = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIANT);
 
@@ -31,32 +31,34 @@ class VariantHandler extends AbstractHandler
         $changed = $this->updater->updateVariantTaxGroup($variant) || $changed;
 
         if ($changed) {
-            $event->persistAndRecompute($variant);
+            $this->factory
+                ->getPersistenceHelper()
+                ->persistAndRecompute($variant);
         }
     }
 
     /**
      * @inheritDoc
      */
-    public function handleUpdate(PersistenceEvent $event)
+    public function handleUpdate(ResourceEventInterface $event)
     {
         $variant = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIANT);
 
-        $changeSet = $event->getChangeSet();
+        $persistenceHelper = $this->factory->getPersistenceHelper();
 
         // Generate variant designation if needed
         if (0 === strlen($variant->getDesignation()) && $this->updater->updateVariantDesignation($variant)) {
-            $event->persistAndRecompute($variant);
+            $persistenceHelper->persistAndRecompute($variant);
         }
 
         // Update parent/variable minimum price if variant price has changed
-        if (array_key_exists('netPrice', $changeSet)) {
+        if ($persistenceHelper->isChanged($variant, 'netPrice')) {
             if (null === $variable = $variant->getParent()) {
                 throw new RuntimeException("Variant's parent must be defined.");
             }
 
             if ($this->updater->updateVariableMinPrice($variable)) {
-                $event->persistAndRecompute($variable);
+                $persistenceHelper->persistAndRecompute($variable);
             }
         }
     }

@@ -7,7 +7,6 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -20,7 +19,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    public function onInsert(PersistenceEvent $event)
+    public function onInsert(ResourceEventInterface $event)
     {
         $sale = $this->getSaleFromEvent($event);
 
@@ -32,7 +31,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    public function onUpdate(PersistenceEvent $event)
+    public function onUpdate(ResourceEventInterface $event)
     {
         $sale = $this->getSaleFromEvent($event);
 

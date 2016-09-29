@@ -69,6 +69,10 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function setOrder(OrderInterface $order = null)
     {
+        if ($this->order && $this->order != $order) {
+            $this->order->removeItem($this);
+        }
+
         $this->order = $order;
 
         return $this;

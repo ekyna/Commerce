@@ -19,9 +19,10 @@ class QuoteEventSubscriber extends QuoteListener implements EventSubscriberInter
     public static function getSubscribedEvents()
     {
         return [
-            QuoteEvents::INSERT     => ['onInsert', 0],
-            QuoteEvents::UPDATE     => ['onUpdate', 0],
-            QuoteEvents::PRE_DELETE => ['onPreDelete', 0],
+            QuoteEvents::INSERT         => ['onInsert', 0],
+            QuoteEvents::UPDATE         => ['onUpdate', 0],
+            QuoteEvents::CONTENT_CHANGE => ['onContentChange', 0],
+            QuoteEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }
 }

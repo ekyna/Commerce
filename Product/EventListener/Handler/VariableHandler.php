@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
 use Ekyna\Component\Commerce\Product\Model\ProductTypes;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class VariableHandler
@@ -15,28 +15,30 @@ class VariableHandler extends AbstractHandler
     /**
      * @inheritDoc
      */
-    public function handleInsert(PersistenceEvent $event)
+    public function handleInsert(ResourceEventInterface $event)
     {
         $variable = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIABLE);
 
         if ($this->updater->updateVariableMinPrice($variable)) {
-            $event->persistAndRecompute($variable);
+            $this->factory
+                ->getPersistenceHelper()
+                ->persistAndRecompute($variable);
         }
     }
 
     /**
      * @inheritDoc
      */
-    public function handleUpdate(PersistenceEvent $event)
+    public function handleUpdate(ResourceEventInterface $event)
     {
         $variable = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIABLE);
 
-        $changeSet = $event->getChangeSet();
+        $persistenceHelper = $this->factory->getPersistenceHelper();
 
-        if (array_key_exists('taxGroup', $changeSet)) {
+        if ($persistenceHelper->isChanged($variable, 'taxGroup')) {
             foreach ($variable->getVariants() as $variant) {
                 if ($this->updater->updateVariantTaxGroup($variant)) {
-                    $event->persistAndRecompute($variant);
+                    $persistenceHelper->persistAndRecompute($variable);
                 }
             }
         }

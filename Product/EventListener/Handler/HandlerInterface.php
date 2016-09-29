@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Interface HandlerInterface
@@ -14,14 +14,14 @@ interface HandlerInterface
     /**
      * Handles the product insert event.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function handleInsert(PersistenceEvent $event);
+    public function handleInsert(ResourceEventInterface $event);
 
     /**
      * Handles the product update event.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function handleUpdate(PersistenceEvent $event);
+    public function handleUpdate(ResourceEventInterface $event);
 }

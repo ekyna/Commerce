@@ -40,6 +40,10 @@ class OrderShipment extends AbstractShipment  implements OrderShipmentInterface
      */
     public function setOrder(OrderInterface $order = null)
     {
+        if ($this->order && $this->order != $order) {
+            $this->order->removeShipment($this);
+        }
+
         $this->order = $order;
 
         return $this;

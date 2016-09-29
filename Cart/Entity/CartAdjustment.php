@@ -32,7 +32,12 @@ class CartAdjustment extends AbstractAdjustment implements CartAdjustmentInterfa
      */
     public function setCart(CartInterface $cart = null)
     {
+        if ($this->cart && $this->cart != $cart) {
+            $this->cart->removeAdjustment($this);
+        }
+
         $this->cart = $cart;
+
         return $this;
     }
 

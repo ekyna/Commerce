@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Quote\Event\QuoteEvents;
 use Ekyna\Component\Commerce\Quote\Event\QuotePaymentEvents;
 use Ekyna\Component\Commerce\Payment\EventListener\AbstractPaymentListener;
 use Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface;
@@ -16,6 +18,16 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class QuotePaymentEventSubscriber extends AbstractPaymentListener implements EventSubscriberInterface
 {
+    /**
+     * @inheritdoc
+     */
+    protected function dispatchSaleContentChangeEvent(SaleInterface $sale)
+    {
+        $event = $this->dispatcher->createResourceEvent($sale);
+
+        $this->dispatcher->dispatch(QuoteEvents::CONTENT_CHANGE, $event);
+    }
+
     /**
      * @inheritdoc
      */

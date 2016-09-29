@@ -32,7 +32,12 @@ class QuoteItemAdjustment extends AbstractAdjustment implements QuoteItemAdjustm
      */
     public function setItem(QuoteItemInterface $item = null)
     {
+        if ($this->item && $this->item != $item) {
+            $this->item->removeAdjustment($this);
+        }
+
         $this->item = $item;
+
         return $this;
     }
 

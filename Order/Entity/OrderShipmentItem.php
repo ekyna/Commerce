@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentItem;
@@ -25,5 +27,17 @@ class OrderShipmentItem extends AbstractShipmentItem implements OrderShipmentIte
         }
 
         return parent::setShipment($shipment);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSaleItem(SaleItemInterface $saleItem = null)
+    {
+        if ((null !== $saleItem) && !$saleItem instanceof OrderItemInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
+        }
+
+        return parent::setSaleItem($saleItem);
     }
 }

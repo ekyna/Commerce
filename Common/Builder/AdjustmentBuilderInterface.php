@@ -1,7 +1,8 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Common;
+namespace Ekyna\Component\Commerce\Common\Builder;
 
+use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 
 /**

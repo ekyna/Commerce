@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Product\Model;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class HandlerFactory
@@ -13,10 +14,35 @@ use Ekyna\Component\Commerce\Product\Model;
 class HandlerFactory
 {
     /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
+    /**
      * @var array|HandlerInterface
      */
     private $handlers = [];
 
+
+    /**
+     * Constructor.
+     *
+     * @param PersistenceHelperInterface $persistenceHelper
+     */
+    public function __construct(PersistenceHelperInterface $persistenceHelper)
+    {
+        $this->persistenceHelper = $persistenceHelper;
+    }
+
+    /**
+     * Returns the persistence helper.
+     *
+     * @return PersistenceHelperInterface
+     */
+    public function getPersistenceHelper()
+    {
+        return $this->persistenceHelper;
+    }
 
     /**
      * Returns the handler regarding to the product type.

@@ -11,8 +11,8 @@ use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class AbstractSaleListener
@@ -21,6 +21,11 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 abstract class AbstractSaleListener
 {
+    /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
     /**
      * @var NumberGeneratorInterface
      */
@@ -48,34 +53,71 @@ abstract class AbstractSaleListener
 
 
     /**
-     * Constructor.
+     * Sets the persistence helper.
      *
-     * @param NumberGeneratorInterface   $numberGenerator
-     * @param KeyGeneratorInterface      $keyGenerator
-     * @param AmountsCalculatorInterface $amountCalculator
-     * @param WeightCalculatorInterface  $weightCalculator
-     * @param StateResolverInterface     $stateResolver
+     * @param PersistenceHelperInterface $persistenceHelper
      */
-    public function __construct(
-        NumberGeneratorInterface $numberGenerator,
-        KeyGeneratorInterface $keyGenerator,
-        AmountsCalculatorInterface $amountCalculator,
-        WeightCalculatorInterface $weightCalculator,
-        StateResolverInterface $stateResolver
-    ) {
+    public function setPersistenceHelper(PersistenceHelperInterface $persistenceHelper)
+    {
+        $this->persistenceHelper = $persistenceHelper;
+    }
+
+    /**
+     * Sets the number generator.
+     *
+     * @param NumberGeneratorInterface $numberGenerator
+     */
+    public function setNumberGenerator(NumberGeneratorInterface $numberGenerator)
+    {
         $this->numberGenerator = $numberGenerator;
+    }
+
+    /**
+     * Sets the key generator.
+     *
+     * @param KeyGeneratorInterface $keyGenerator
+     */
+    public function setKeyGenerator(KeyGeneratorInterface $keyGenerator)
+    {
         $this->keyGenerator = $keyGenerator;
+    }
+
+    /**
+     * Sets the amounts calculator.
+     *
+     * @param AmountsCalculatorInterface $amountCalculator
+     */
+    public function setAmountsCalculator(AmountsCalculatorInterface $amountCalculator)
+    {
         $this->amountCalculator = $amountCalculator;
+    }
+
+    /**
+     * Sets the weight calculator.
+     *
+     * @param WeightCalculatorInterface $weightCalculator
+     */
+    public function setWeightCalculator(WeightCalculatorInterface $weightCalculator)
+    {
         $this->weightCalculator = $weightCalculator;
+    }
+
+    /**
+     * Sets the state resolver.
+     *
+     * @param StateResolverInterface $stateResolver
+     */
+    public function setStateResolver(StateResolverInterface $stateResolver)
+    {
         $this->stateResolver = $stateResolver;
     }
 
     /**
      * Insert event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onInsert(PersistenceEvent $event)
+    public function onInsert(ResourceEventInterface $event)
     {
         $sale = $this->getSaleFromEvent($event);
 
@@ -108,16 +150,16 @@ abstract class AbstractSaleListener
             ->setUpdatedAt(new \DateTime());
 
         if (true || $changed) { // TODO
-            $event->persistAndRecompute($sale);
+            $this->persistenceHelper->persistAndRecompute($sale);
         }
     }
 
     /**
      * Update event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onUpdate(PersistenceEvent $event)
+    public function onUpdate(ResourceEventInterface $event)
     {
         $sale = $this->getSaleFromEvent($event);
 
@@ -133,7 +175,7 @@ abstract class AbstractSaleListener
         $changed = $this->handleIdentity($sale) || $changed;
 
         // Handle addresses
-        if ($event->isChanged(['deliveryAddress', 'sameAddress'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
             $changed = $this->handleAddresses($sale) || $changed;
         }
 
@@ -144,7 +186,7 @@ abstract class AbstractSaleListener
         // Update totals
         // TODO test that, maybe we have to use UnitOfWork::isCollectionScheduledFor*
         // TODO what about item's children ?
-        if ($event->isChanged(['items', 'adjustments', 'payments'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['items', 'adjustments', 'payments'])) {
             $changed = $this->updateTotals($sale) || $changed;
         }
 
@@ -155,7 +197,29 @@ abstract class AbstractSaleListener
         $sale->setUpdatedAt(new \DateTime());
 
         if (true || $changed) { // TODO
-            $event->persistAndRecompute($sale);
+            $this->persistenceHelper->persistAndRecompute($sale);
+        }
+    }
+
+    /**
+     * Content change event handler.
+     *
+     * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
+     */
+    public function onContentChange(ResourceEventInterface $event)
+    {
+        $sale = $this->getSaleFromEvent($event);
+
+        // Update totals
+        $changed = $this->updateTotals($sale);
+
+        // Update state
+        $changed = $this->updateState($sale) || $changed;
+
+        if (true || $changed) { // TODO
+            $this->persistenceHelper->persistAndRecompute($sale);
         }
     }
 
@@ -168,6 +232,10 @@ abstract class AbstractSaleListener
      */
     public function onPreDelete(ResourceEventInterface $event)
     {
+        if ($event->getHard()) {
+            return;
+        }
+
         $sale = $this->getSaleFromEvent($event);
 
         // Stop if sale has valid payments

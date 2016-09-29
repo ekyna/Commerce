@@ -40,6 +40,10 @@ class OrderPayment extends AbstractPayment implements OrderPaymentInterface
      */
     public function setOrder(OrderInterface $order = null)
     {
+        if ($this->order && $this->order != $order) {
+            $this->order->removePayment($this);
+        }
+
         $this->order = $order;
 
         return $this;

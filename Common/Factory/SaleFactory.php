@@ -1,13 +1,15 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Common;
+namespace Ekyna\Component\Commerce\Common\Factory;
 
 use Ekyna\Component\Commerce\Cart;
+use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Customer;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Quote;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
  * Class SaleFactory
@@ -61,9 +63,33 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createAdjustmentForSaleItem(Model\SaleItemInterface $item)
+    public function createAdjustmentForItem(Model\SaleItemInterface $item)
     {
         return $this->resolveClassAndCreateObject('item_adjustment', $item);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createPaymentForSale(Model\SaleInterface $sale)
+    {
+        return $this->resolveClassAndCreateObject('payment', $sale);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createShipmentForSale(Model\SaleInterface $sale)
+    {
+        return $this->resolveClassAndCreateObject('shipment', $sale);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createItemForShipment(ShipmentInterface $shipment)
+    {
+        return $this->resolveClassAndCreateObject('shipment_item', $shipment);
     }
 
     /**
@@ -94,10 +120,9 @@ class SaleFactory implements SaleFactoryInterface
     {
         return [
             'address'         => [
-//                Customer\Model\CustomerInterface::class => Customer\Entity\CustomerAddress::class,
-                Cart\Model\CartInterface::class         => Cart\Entity\CartAddress::class,
-                Order\Model\OrderInterface::class       => Order\Entity\OrderAddress::class,
-                Quote\Model\QuoteInterface::class       => Quote\Entity\QuoteAddress::class,
+                Cart\Model\CartInterface::class   => Cart\Entity\CartAddress::class,
+                Order\Model\OrderInterface::class => Order\Entity\OrderAddress::class,
+                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAddress::class,
             ],
             'item'            => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartItem::class,
@@ -113,6 +138,17 @@ class SaleFactory implements SaleFactoryInterface
                 Cart\Model\CartItemInterface::class   => Cart\Entity\CartItemAdjustment::class,
                 Order\Model\OrderItemInterface::class => Order\Entity\OrderItemAdjustment::class,
                 Quote\Model\QuoteItemInterface::class => Quote\Entity\QuoteItemAdjustment::class,
+            ],
+            'payment'         => [
+                Cart\Model\CartInterface::class   => Cart\Entity\CartPayment::class,
+                Order\Model\OrderInterface::class => Order\Entity\OrderPayment::class,
+                Quote\Model\QuoteInterface::class => Quote\Entity\QuotePayment::class,
+            ],
+            'shipment'        => [
+                Order\Model\OrderInterface::class => Order\Entity\OrderShipment::class,
+            ],
+            'shipment_item'   => [
+                Order\Model\OrderShipmentInterface::class => Order\Entity\OrderShipmentItem::class,
             ],
         ];
     }

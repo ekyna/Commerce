@@ -5,7 +5,8 @@ namespace Ekyna\Component\Commerce\Product\EventListener;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Product\EventListener\Handler;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class ProductListener
@@ -15,17 +16,32 @@ use Ekyna\Component\Resource\Event\PersistenceEvent;
 class ProductListener
 {
     /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
+    /**
      * @var Handler\HandlerFactory
      */
     private $factory;
 
 
     /**
+     * Constructor.
+     *
+     * @param PersistenceHelperInterface $persistenceHelper
+     */
+    public function __construct(PersistenceHelperInterface $persistenceHelper)
+    {
+        $this->persistenceHelper = $persistenceHelper;
+    }
+
+    /**
      * Insert event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onInsert(PersistenceEvent $event)
+    public function onInsert(ResourceEventInterface $event)
     {
         $product = $this->getProductFromEvent($event);
 
@@ -38,15 +54,16 @@ class ProductListener
         $product
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
-        $event->persistAndRecompute($product);
+
+        $this->persistenceHelper->persistAndRecompute($product);
     }
 
     /**
      * Update event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onUpdate(PersistenceEvent $event)
+    public function onUpdate(ResourceEventInterface $event)
     {
         $product = $this->getProductFromEvent($event);
 
@@ -57,15 +74,16 @@ class ProductListener
 
         // TODO Timestampable behavior/listener
         $product->setUpdatedAt(new \DateTime());
-        $event->persistAndRecompute($product);
+
+        $this->persistenceHelper->persistAndRecompute($product);
     }
 
     /**
      * Delete event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onDelete(PersistenceEvent $event)
+    public function onDelete(ResourceEventInterface $event)
     {
         //$product = $this->getProductFromEvent($event);
     }
@@ -80,7 +98,7 @@ class ProductListener
     protected function getHandler(ProductInterface $product)
     {
         if (null === $this->factory) {
-            $this->factory = new Handler\HandlerFactory();
+            $this->factory = new Handler\HandlerFactory($this->persistenceHelper);
         }
 
         return $this->factory->getHandler($product);
@@ -89,11 +107,11 @@ class ProductListener
     /**
      * Returns the product from the event.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      *
      * @return ProductInterface
      */
-    private function getProductFromEvent(PersistenceEvent $event)
+    private function getProductFromEvent(ResourceEventInterface $event)
     {
         $resource = $event->getResource();
 

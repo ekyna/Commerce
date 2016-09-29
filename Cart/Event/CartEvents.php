@@ -15,6 +15,9 @@ final class CartEvents
     const DELETE         = 'ekyna_commerce.cart.delete';
 
     // Domain
+    const STATE_CHANGE   = 'ekyna_commerce.cart.state_change';
+    const CONTENT_CHANGE = 'ekyna_commerce.cart.content_change';
+
     const PRE_CREATE     = 'ekyna_commerce.cart.pre_create';
     const POST_CREATE    = 'ekyna_commerce.cart.post_create';
 

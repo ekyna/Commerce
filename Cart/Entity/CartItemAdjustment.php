@@ -32,7 +32,12 @@ class CartItemAdjustment extends AbstractAdjustment implements CartItemAdjustmen
      */
     public function setItem(CartItemInterface $item = null)
     {
+        if ($this->item && $this->item != $item) {
+            $this->item->removeAdjustment($this);
+        }
+
         $this->item = $item;
+
         return $this;
     }
 

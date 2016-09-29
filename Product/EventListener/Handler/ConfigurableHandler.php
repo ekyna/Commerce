@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class ConfigurableHandler
@@ -14,7 +14,7 @@ class ConfigurableHandler extends AbstractHandler
     /**
      * @inheritDoc
      */
-    public function handleInsert(PersistenceEvent $event)
+    public function handleInsert(ResourceEventInterface $event)
     {
         // TODO: Implement handleInsert() method.
     }
@@ -22,7 +22,7 @@ class ConfigurableHandler extends AbstractHandler
     /**
      * @inheritDoc
      */
-    public function handleUpdate(PersistenceEvent $event)
+    public function handleUpdate(ResourceEventInterface $event)
     {
         // TODO: Implement handleUpdate() method.
     }

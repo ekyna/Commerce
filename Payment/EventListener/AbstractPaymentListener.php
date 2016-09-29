@@ -3,12 +3,14 @@
 namespace Ekyna\Component\Commerce\Payment\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class AbstractPaymentListener
@@ -18,27 +20,57 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 abstract class AbstractPaymentListener
 {
     /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
+    /**
+     * @var ResourceEventDispatcherInterface
+     */
+    protected $dispatcher;
+
+    /**
      * @var NumberGeneratorInterface
      */
     protected $numberGenerator;
 
 
     /**
-     * Constructor.
+     * Sets the persistence helper.
      *
-     * @param NumberGeneratorInterface $numberGenerator
+     * @param PersistenceHelperInterface $helper
      */
-    public function __construct(NumberGeneratorInterface $numberGenerator)
+    public function setPersistenceHelper(PersistenceHelperInterface $helper)
     {
-        $this->numberGenerator = $numberGenerator;
+        $this->persistenceHelper = $helper;
+    }
+
+    /**
+     * Sets the resource event dispatcher.
+     *
+     * @param ResourceEventDispatcherInterface $dispatcher
+     */
+    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
+    }
+
+    /**
+     * Sets the number generator.
+     *
+     * @param NumberGeneratorInterface $generator
+     */
+    public function setNumberGenerator(NumberGeneratorInterface $generator)
+    {
+        $this->numberGenerator = $generator;
     }
 
     /**
      * Insert event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onInsert(PersistenceEvent $event)
+    public function onInsert(ResourceEventInterface $event)
     {
         $payment = $this->getPaymentFromEvent($event);
 
@@ -47,10 +79,8 @@ abstract class AbstractPaymentListener
          * It should be a loop of operations/behaviors ...
          */
 
-        $changed = 0 < count(array_intersect(['amount', 'state'], array_keys($event->getChangeSet())));
-
         // Generate number and key
-        $changed = $this->generateNumber($payment) || $changed;
+        $changed = $this->generateNumber($payment);
 
         // TODO Timestampable behavior/listener
         $payment
@@ -58,50 +88,51 @@ abstract class AbstractPaymentListener
             ->setUpdatedAt(new \DateTime());
 
         if (true || $changed) {
-            $event->persistAndRecompute($payment);
-            // Recompute the whole sale
-            $event->persistAndRecompute($payment->getSale());
+            $this->persistenceHelper->persistAndRecompute($payment);
         }
+
+        $sale = $payment->getSale();
+        $sale->addPayment($payment);
+
+        $this->dispatchSaleContentChangeEvent($sale);
     }
 
     /**
      * Update event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onUpdate(PersistenceEvent $event)
+    public function onUpdate(ResourceEventInterface $event)
     {
         $payment = $this->getPaymentFromEvent($event);
 
         // TODO same shit here ... T_T
 
-        $changed = array_key_exists('state', $event->getChangeSet());
-
         // Generate number and key
-        $changed = $this->generateNumber($payment) || $changed;
+        $changed = $this->generateNumber($payment);
 
         // TODO Timestampable behavior/listener
         $payment->setUpdatedAt(new \DateTime());
 
         if (true || $changed) {
-            $event->persistAndRecompute($payment);
-            // Recompute the whole sale
-            $event->persistAndRecompute($payment->getSale());
-            // TODO this does not trigger a sale update T_T
+            $this->persistenceHelper->persistAndRecompute($payment);
+        }
+
+        if ($this->persistenceHelper->isChanged($payment, ['amount', 'state'])) {
+            $this->dispatchSaleContentChangeEvent($payment->getSale());
         }
     }
 
     /**
      * Delete event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onDelete(PersistenceEvent $event)
+    public function onDelete(ResourceEventInterface $event)
     {
         $payment = $this->getPaymentFromEvent($event);
 
-        // Recompute the whole sale
-        $event->persistAndRecompute($payment->getSale());
+        $this->dispatchSaleContentChangeEvent($payment->getSale());
     }
 
     /**
@@ -137,6 +168,13 @@ abstract class AbstractPaymentListener
 
         return false;
     }
+
+    /**
+     * Dispatches the sale content change event.
+     *
+     * @param SaleInterface $sale
+     */
+    abstract protected function dispatchSaleContentChangeEvent(SaleInterface $sale);
 
     /**
      * Returns the payment from the event.

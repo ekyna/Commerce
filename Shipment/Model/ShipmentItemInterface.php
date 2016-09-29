@@ -43,19 +43,19 @@ interface ShipmentItemInterface extends ResourceInterface
      *
      * @return $this|ShipmentItemInterface
      */
-    public function setSaleItem(SaleItemInterface $saleItem = null);
+    public function setSaleItem(SaleItemInterface $saleItem);
 
     /**
      * Returns the quantity.
      *
-     * @return int
+     * @return float
      */
     public function getQuantity();
 
     /**
      * Sets the quantity.
      *
-     * @param int $quantity
+     * @param float $quantity
      *
      * @return $this|ShipmentItemInterface
      */

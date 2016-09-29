@@ -5,7 +5,8 @@ namespace Ekyna\Component\Commerce\Customer\EventListener;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Resource\Event\PersistenceEvent;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class CustomerListener
@@ -15,11 +16,27 @@ use Ekyna\Component\Resource\Event\PersistenceEvent;
 class CustomerListener
 {
     /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
+
+    /**
+     * Constructor.
+     *
+     * @param PersistenceHelperInterface $persistenceHelper
+     */
+    public function __construct(PersistenceHelperInterface $persistenceHelper)
+    {
+        $this->persistenceHelper = $persistenceHelper;
+    }
+
+    /**
      * Insert event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onInsert(PersistenceEvent $event)
+    public function onInsert(ResourceEventInterface $event)
     {
         $customer = $this->getCustomerFromEvent($event);
 
@@ -33,21 +50,21 @@ class CustomerListener
             ->setUpdatedAt(new \DateTime());
 
         if (true || $changed) { // TODO
-            $event->persistAndRecompute($customer);
+            $this->persistenceHelper->persistAndRecompute($customer);
         }
     }
 
     /**
      * Update event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onUpdate(PersistenceEvent $event)
+    public function onUpdate(ResourceEventInterface $event)
     {
         $customer = $this->getCustomerFromEvent($event);
 
         $changed = false;
-        $changeSet = $event->getChangeSet();
+        $changeSet = $this->persistenceHelper->getChangeSet($customer);
 
         if (array_key_exists('parent', $changeSet)) {
             $changed = $this->updateCompanyNameFromParent($customer) || $changed;
@@ -56,7 +73,7 @@ class CustomerListener
         if (array_key_exists('company', $changeSet)) {
             $childrenToPersist = $this->updateChildrenCompanyName($customer);
             foreach ($childrenToPersist as $child) {
-                $event->persistAndRecompute($child);
+                $this->persistenceHelper->persistAndRecompute($child);
             }
         }
 
@@ -64,16 +81,16 @@ class CustomerListener
         $customer->setUpdatedAt(new \DateTime());
 
         if (true || $changed) { // TODO
-            $event->persistAndRecompute($customer);
+            $this->persistenceHelper->persistAndRecompute($customer);
         }
     }
 
     /**
      * Delete event handler.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      */
-    public function onDelete(PersistenceEvent $event)
+    public function onDelete(ResourceEventInterface $event)
     {
         //$customer = $this->getCustomerFromEvent($event);
     }
@@ -133,12 +150,12 @@ class CustomerListener
     /**
      * Returns the customer from the event.
      *
-     * @param PersistenceEvent $event
+     * @param ResourceEventInterface $event
      *
      * @return CustomerInterface
      * @throws InvalidArgumentException
      */
-    private function getCustomerFromEvent(PersistenceEvent $event)
+    private function getCustomerFromEvent(ResourceEventInterface $event)
     {
         $resource = $event->getResource();
 

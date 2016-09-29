@@ -29,7 +29,7 @@ class AbstractShipmentItem implements ShipmentItemInterface
     protected $saleItem;
 
     /**
-     * @var int
+     * @var float
      */
     protected $quantity;
 
@@ -55,6 +55,10 @@ class AbstractShipmentItem implements ShipmentItemInterface
      */
     public function setShipment(ShipmentInterface $shipment = null)
     {
+        if ($this->shipment && $this->shipment != $shipment) {
+            $this->shipment->removeItem($this);
+        }
+
         $this->shipment = $shipment;
 
         return $this;
@@ -71,7 +75,7 @@ class AbstractShipmentItem implements ShipmentItemInterface
     /**
      * @inheritdoc
      */
-    public function setSaleItem(SaleItemInterface $saleItem = null)
+    public function setSaleItem(SaleItemInterface $saleItem)
     {
         $this->saleItem = $saleItem;
 

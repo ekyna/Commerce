@@ -20,7 +20,7 @@ interface ShipmentInterface extends
     /**
      * Returns the sale.
      *
-     * @return Model\SaleInterface
+     * @return Model\SaleInterface|ShipmentSubjectInterface
      */
     public function getSale();
 

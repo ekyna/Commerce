@@ -32,7 +32,12 @@ class OrderAdjustment extends AbstractAdjustment implements OrderAdjustmentInter
      */
     public function setOrder(OrderInterface $order = null)
     {
+        if ($this->order && $this->order != $order) {
+            $this->order->removeAdjustment($this);
+        }
+
         $this->order = $order;
+
         return $this;
     }
 

@@ -220,16 +220,24 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function hasShipment(Model\OrderShipmentInterface $shipment)
+    public function hasShipment(Shipment\ShipmentInterface $shipment)
     {
+        if (!$shipment instanceof Model\OrderShipmentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderShipmentInterface.");
+        }
+
         return $this->shipments->contains($shipment);
     }
 
     /**
      * @inheritdoc
      */
-    public function addShipment(Model\OrderShipmentInterface $shipment)
+    public function addShipment(Shipment\ShipmentInterface $shipment)
     {
+        if (!$shipment instanceof Model\OrderShipmentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderShipmentInterface.");
+        }
+
         if (!$this->hasShipment($shipment)) {
             $shipment->setOrder($this);
             $this->shipments->add($shipment);
@@ -238,11 +246,17 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
+
+
     /**
      * @inheritdoc
      */
-    public function removeShipment(Model\OrderShipmentInterface $shipment)
+    public function removeShipment(Shipment\ShipmentInterface $shipment)
     {
+        if (!$shipment instanceof Model\OrderShipmentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderShipmentInterface.");
+        }
+
         if ($this->hasShipment($shipment)) {
             $shipment->setOrder(null);
             $this->shipments->removeElement($shipment);

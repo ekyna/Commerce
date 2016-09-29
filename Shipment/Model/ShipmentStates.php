@@ -17,7 +17,7 @@ final class ShipmentStates
     const STATE_READY       = 'ready';
     const STATE_SHIPPED     = 'shipped';
     const STATE_COMPLETED   = 'completed';
-    const STATE_RETURNED    = 'returned';
+//    const STATE_RETURNED    = 'returned';
     const STATE_CANCELLED   = 'cancelled';
 
 
@@ -37,7 +37,7 @@ final class ShipmentStates
             static::STATE_READY,
             static::STATE_SHIPPED,
             static::STATE_COMPLETED,
-            static::STATE_RETURNED,
+//            static::STATE_RETURNED,
             static::STATE_CANCELLED,
         ];
     }

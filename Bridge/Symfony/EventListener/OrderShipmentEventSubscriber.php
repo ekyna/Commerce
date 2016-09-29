@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Event\OrderShipmentEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\EventListener\AbstractShipmentListener;
@@ -16,6 +18,16 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class OrderShipmentEventSubscriber extends AbstractShipmentListener implements EventSubscriberInterface
 {
+    /**
+     * @inheritdoc
+     */
+    protected function dispatchSaleContentChangeEvent(SaleInterface $sale)
+    {
+        $event = $this->dispatcher->createResourceEvent($sale);
+
+        $this->dispatcher->dispatch(OrderEvents::CONTENT_CHANGE, $event);
+    }
+
     /**
      * @inheritdoc
      */

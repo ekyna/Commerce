@@ -1,7 +1,9 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Common;
+namespace Ekyna\Component\Commerce\Common\Builder;
 
+use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
@@ -98,7 +100,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
 
         // Build adjustments from taxes
         foreach ($taxes as $tax) {
-            $adjustment = $this->saleFactory->createAdjustmentForSaleItem($item);
+            $adjustment = $this->saleFactory->createAdjustmentForItem($item);
             $adjustment
                 ->setMode(Model\AdjustmentModes::MODE_PERCENT)
                 ->setType(Model\AdjustmentTypes::TYPE_TAXATION)
