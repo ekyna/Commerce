@@ -31,7 +31,12 @@ class AbstractShipmentItem implements ShipmentItemInterface
     /**
      * @var float
      */
-    protected $quantity;
+    protected $shippedQuantity = 0;
+
+    /**
+     * @var float
+     */
+    protected $debitedQuantity = 0;
 
 
     /**
@@ -83,19 +88,49 @@ class AbstractShipmentItem implements ShipmentItemInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the shipped quantity.
+     *
+     * @return float
      */
-    public function getQuantity()
+    public function getShippedQuantity()
     {
-        return $this->quantity;
+        return $this->shippedQuantity;
     }
 
     /**
-     * @inheritdoc
+     * Sets the shipped quantity.
+     *
+     * @param float $quantity
+     *
+     * @return AbstractShipmentItem
      */
-    public function setQuantity($quantity)
+    public function setShippedQuantity($quantity)
     {
-        $this->quantity = $quantity;
+        $this->shippedQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * Returns the debited quantity.
+     *
+     * @return float
+     */
+    public function getDebitedQuantity()
+    {
+        return $this->debitedQuantity;
+    }
+
+    /**
+     * Sets the debited quantity.
+     *
+     * @param float $quantity
+     *
+     * @return AbstractShipmentItem
+     */
+    public function setDebitedQuantity($quantity)
+    {
+        $this->debitedQuantity = $quantity;
 
         return $this;
     }

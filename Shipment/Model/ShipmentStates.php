@@ -80,4 +80,17 @@ final class ShipmentStates
             static::STATE_CANCELLED,
         ];
     }
+
+    /**
+     * Returns the debit stock states.
+     *
+     * @return array
+     */
+    static public function getDebitStockStates()
+    {
+        return [
+            static::STATE_SHIPPED,
+            static::STATE_COMPLETED
+        ];
+    }
 }

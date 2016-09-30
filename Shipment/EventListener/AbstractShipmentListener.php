@@ -154,6 +154,20 @@ abstract class AbstractShipmentListener
     }
 
     /**
+     * Content change event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onContentChange(ResourceEventInterface $event)
+    {
+        $shipment = $this->getShipmentFromEvent($event);
+
+
+
+        $this->dispatchSaleContentChangeEvent($shipment->getSale());
+    }
+
+    /**
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
