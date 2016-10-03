@@ -98,6 +98,8 @@ abstract class AbstractShipmentListener
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
+        $changed = $this->updateState($shipment) || $changed;
+
         // TODO Timestampable behavior/listener
         $shipment
             ->setCreatedAt(new \DateTime())
@@ -106,8 +108,6 @@ abstract class AbstractShipmentListener
         if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($shipment);
         }
-
-        // TODO ShipmentItemListener
 
         $sale = $shipment->getSale();
         $sale->addShipment($shipment);
@@ -128,6 +128,8 @@ abstract class AbstractShipmentListener
 
         // Generate number and key
         $changed = $this->generateNumber($shipment);
+
+        $changed = $this->updateState($shipment) || $changed;
 
         // TODO Timestampable behavior/listener
         $shipment->setUpdatedAt(new \DateTime());
@@ -162,9 +164,13 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
+        $changed = $this->updateState($shipment);
 
+        if ($changed) {
+            $this->persistenceHelper->persistAndRecompute($shipment);
 
-        $this->dispatchSaleContentChangeEvent($shipment->getSale());
+            $this->dispatchSaleContentChangeEvent($shipment->getSale());
+        }
     }
 
     /**

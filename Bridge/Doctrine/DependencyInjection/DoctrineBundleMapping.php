@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Pricing;
 use Ekyna\Component\Commerce\Product;
 use Ekyna\Component\Commerce\Quote;
 use Ekyna\Component\Commerce\Shipment;
+use Ekyna\Component\Commerce\Supplier;
 
 /**
  * Class DoctrineBundleMapping
@@ -42,35 +43,39 @@ class DoctrineBundleMapping
     static function getDefaultImplementations()
     {
         return [
-            Cart\Model\CartInterface::class                => Cart\Entity\Cart::class,
-            Cart\Model\CartAddressInterface::class         => Cart\Entity\CartAddress::class,
+            Cart\Model\CartInterface::class                  => Cart\Entity\Cart::class,
+            Cart\Model\CartAddressInterface::class           => Cart\Entity\CartAddress::class,
 
-            Customer\Model\CustomerInterface::class        => Customer\Entity\Customer::class,
-            Customer\Model\CustomerAddressInterface::class => Customer\Entity\CustomerAddress::class,
+            Customer\Model\CustomerInterface::class          => Customer\Entity\Customer::class,
+            Customer\Model\CustomerAddressInterface::class   => Customer\Entity\CustomerAddress::class,
 
-            Order\Model\OrderInterface::class              => Order\Entity\Order::class,
-            Order\Model\OrderAddressInterface::class       => Order\Entity\OrderAddress::class,
+            Order\Model\OrderInterface::class                => Order\Entity\Order::class,
+            Order\Model\OrderAddressInterface::class         => Order\Entity\OrderAddress::class,
 
-            Payment\Model\PaymentMethodInterface::class    => Payment\Entity\PaymentMethod::class,
+            Payment\Model\PaymentMethodInterface::class      => Payment\Entity\PaymentMethod::class,
 
-            Pricing\Model\TaxGroupInterface::class         => Pricing\Entity\TaxGroup::class,
+            Pricing\Model\TaxGroupInterface::class           => Pricing\Entity\TaxGroup::class,
 
             // TODO remove unused interfaces
-            Product\Model\AttributeGroupInterface::class   => Product\Entity\AttributeGroup::class,
-            Product\Model\AttributeInterface::class        => Product\Entity\Attribute::class,
-            Product\Model\AttributeSetInterface::class     => Product\Entity\AttributeSet::class,
-            Product\Model\AttributeSlotInterface::class    => Product\Entity\AttributeSlot::class,
-            Product\Model\BundleChoiceInterface::class     => Product\Entity\BundleChoice::class,
-            Product\Model\BundleChoiceRuleInterface::class => Product\Entity\BundleChoiceRule::class,
-            Product\Model\BundleSlotInterface::class       => Product\Entity\BundleSlot::class,
-            Product\Model\OptionGroupInterface::class      => Product\Entity\OptionGroup::class,
-            Product\Model\OptionInterface::class           => Product\Entity\Option::class,
-            Product\Model\ProductInterface::class          => Product\Entity\Product::class,
+            Product\Model\AttributeGroupInterface::class     => Product\Entity\AttributeGroup::class,
+            Product\Model\AttributeInterface::class          => Product\Entity\Attribute::class,
+            Product\Model\AttributeSetInterface::class       => Product\Entity\AttributeSet::class,
+            Product\Model\AttributeSlotInterface::class      => Product\Entity\AttributeSlot::class,
+            Product\Model\BundleChoiceInterface::class       => Product\Entity\BundleChoice::class,
+            Product\Model\BundleChoiceRuleInterface::class   => Product\Entity\BundleChoiceRule::class,
+            Product\Model\BundleSlotInterface::class         => Product\Entity\BundleSlot::class,
+            Product\Model\OptionGroupInterface::class        => Product\Entity\OptionGroup::class,
+            Product\Model\OptionInterface::class             => Product\Entity\Option::class,
+            Product\Model\ProductInterface::class            => Product\Entity\Product::class,
 
-            Quote\Model\QuoteInterface::class              => Quote\Entity\Quote::class,
-            Quote\Model\QuoteAddressInterface::class       => Quote\Entity\QuoteAddress::class,
+            Quote\Model\QuoteInterface::class                => Quote\Entity\Quote::class,
+            Quote\Model\QuoteAddressInterface::class         => Quote\Entity\QuoteAddress::class,
 
-            Shipment\Model\ShipmentMethodInterface::class  => Shipment\Entity\ShipmentMethod::class,
+            Shipment\Model\ShipmentMethodInterface::class    => Shipment\Entity\ShipmentMethod::class,
+
+            Supplier\Model\SupplierInterface::class          => Supplier\Entity\Supplier::class,
+            Supplier\Model\SupplierDeliveryInterface::class  => Supplier\Entity\SupplierDelivery::class,
+            Supplier\Model\SupplierOrderInterface::class     => Supplier\Entity\SupplierOrder::class,
         ];
     }
 }

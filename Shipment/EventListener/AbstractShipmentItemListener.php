@@ -122,6 +122,16 @@ abstract class AbstractShipmentItemListener
     }
 
     /**
+     * Updates the relative stock and persist it if needed.
+     *
+     * @param ShipmentItemInterface $item
+     */
+    protected function updateStock(ShipmentItemInterface $item)
+    {
+
+    }
+
+    /**
      * Dispatches the shipment content change event.
      *
      * @param ShipmentInterface $shipment

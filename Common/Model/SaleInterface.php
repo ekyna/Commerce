@@ -224,12 +224,13 @@ interface SaleInterface extends
      * Sets the payment state.
      *
      * @param string $state
+     *
      * @return $this|SaleInterface
      */
     public function setPaymentState($state);
 
     /**
-     * Returns whether the sale has items or not.
+     * Returns whether or not the sale has at least one item.
      *
      * @return bool
      */
@@ -239,6 +240,7 @@ interface SaleInterface extends
      * Returns whether the sale has the item or not.
      *
      * @param SaleItemInterface $item
+     *
      * @return bool
      */
     public function hasItem(SaleItemInterface $item);
@@ -247,6 +249,7 @@ interface SaleInterface extends
      * Adds the item.
      *
      * @param SaleItemInterface $item
+     *
      * @return $this|SaleInterface
      */
     public function addItem(SaleItemInterface $item);
@@ -255,6 +258,7 @@ interface SaleInterface extends
      * Removes the item.
      *
      * @param SaleItemInterface $item
+     *
      * @return $this|SaleInterface
      */
     public function removeItem(SaleItemInterface $item);
@@ -277,6 +281,7 @@ interface SaleInterface extends
      * Returns whether the order has the payment or not.
      *
      * @param PaymentInterface $payment
+     *
      * @return bool
      */
     public function hasPayment(PaymentInterface $payment);
@@ -285,6 +290,7 @@ interface SaleInterface extends
      * Adds the payment.
      *
      * @param PaymentInterface $payment
+     *
      * @return $this|SaleInterface
      */
     public function addPayment(PaymentInterface $payment);
@@ -293,6 +299,7 @@ interface SaleInterface extends
      * Removes the payment.
      *
      * @param PaymentInterface $payment
+     *
      * @return $this|SaleInterface
      */
     public function removePayment(PaymentInterface $payment);
