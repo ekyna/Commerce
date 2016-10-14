@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
 
 /**
@@ -32,32 +33,30 @@ class Helper implements HelperInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(SaleItemInterface $item)
+    public function resolve(SubjectRelativeInterface $relative)
     {
-        /** @noinspection PhpInternalEntityUsedInspection */
-        if ((null === $subject = $item->getSubject()) && $item->hasSubjectData()) {
-            $subject = $this->getResolver($item)->resolve($item);
-            /** @noinspection PhpInternalEntityUsedInspection */
-            $item->setSubject($subject);
-
-            return $subject;
+        if (null === $subject = $relative->getSubject()) {
+            if ($relative->hasSubjectData()) {
+                $subject = $this->getProvider($relative)->resolve($relative);
+                $relative->setSubject($subject);
+            }
         }
 
-        return null;
+        return $subject;
     }
 
     /**
-     * Returns the provider that supports the item.
+     * Returns the provider that supports the subject relative.
      *
-     * @param SaleItemInterface $item
+     * @param SubjectRelativeInterface $relative
      *
      * @return \Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface
      * @throws InvalidArgumentException
      */
-    protected function getResolver(SaleItemInterface $item)
+    protected function getProvider(SubjectRelativeInterface $relative)
     {
-        if (null === $provider = $this->registry->getProviderByItem($item)) {
-            throw new InvalidArgumentException('Unsupported subject.');
+        if (null === $provider = $this->registry->getProviderByRelative($relative)) {
+            throw new InvalidArgumentException('Unsupported subject relative.');
         }
 
         return $provider;

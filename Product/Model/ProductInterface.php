@@ -3,17 +3,20 @@
 namespace Ekyna\Component\Commerce\Product\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
-use Ekyna\Component\Resource\Model\ResourceInterface;
-use Ekyna\Component\Resource\Model\TranslatableInterface;
+use Ekyna\Component\Commerce\Pricing\Model as PricingModel;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Interface ProductInterface
  * @package Ekyna\Component\Commerce\Product\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ProductInterface extends ResourceInterface, TranslatableInterface, TaxableInterface
+interface ProductInterface extends
+    ResourceModel\ResourceInterface,
+    ResourceModel\TranslatableInterface,
+    PricingModel\TaxableInterface,
+    StockSubjectInterface
 {
     /**
      * Sets the id.
@@ -336,11 +339,11 @@ interface ProductInterface extends ResourceInterface, TranslatableInterface, Tax
     /**
      * Sets the tax group.
      *
-     * @param TaxGroupInterface $group
+     * @param PricingModel\TaxGroupInterface $group
      *
      * @return $this|ProductInterface
      */
-    public function setTaxGroup(TaxGroupInterface $group);
+    public function setTaxGroup(PricingModel\TaxGroupInterface $group);
 
     /**
      * Returns the "created at" datetime.

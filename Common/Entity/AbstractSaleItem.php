@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
@@ -14,7 +14,8 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  */
 abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemInterface
 {
-    use SortableTrait;
+    use SubjectRelativeTrait,
+        SortableTrait;
 
     /**
      * @var int
@@ -44,42 +45,27 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     /**
      * @var float
      */
-    protected $netPrice;
+    protected $netPrice = 0;
 
     /**
      * @var float
      */
-    protected $weight;
+    protected $weight = 0;
 
     /**
      * @var float
      */
-    protected $quantity;
-
-    /**
-     * @var int
-     */
-    protected $position;
+    protected $quantity = 1;
 
     /**
      * @var bool
      */
-    protected $immutable;
+    protected $immutable = false;
 
     /**
      * @var bool
      */
-    protected $configurable;
-
-    /**
-     * @var array
-     */
-    protected $subjectData;
-
-    /**
-     * @var mixed
-     */
-    protected $subject;
+    protected $configurable = false;
 
 
     /**
@@ -90,12 +76,6 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
         parent::__construct();
 
         $this->children = new ArrayCollection();
-
-        $this->quantity = 1;
-        $this->position = 0;
-        $this->immutable = false;
-        $this->configurable = false;
-        $this->subjectData = [];
     }
 
     /**
@@ -189,7 +169,7 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
      */
     public function setNetPrice($netPrice)
     {
-        $this->netPrice = $netPrice;
+        $this->netPrice = (float)$netPrice;
 
         return $this;
     }
@@ -207,7 +187,7 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
      */
     public function setWeight($weight)
     {
-        $this->weight = $weight;
+        $this->weight = (float)$weight;
 
         return $this;
     }
@@ -225,7 +205,7 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
      */
     public function setQuantity($quantity)
     {
-        $this->quantity = $quantity;
+        $this->quantity = (float)$quantity;
 
         return $this;
     }
@@ -262,80 +242,6 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     public function setConfigurable($configurable)
     {
         $this->configurable = (bool)$configurable;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasSubjectData()
-    {
-        return !empty($this->subjectData);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSubjectData($key = null)
-    {
-        if (0 < strlen($key)) {
-            if (array_key_exists($key, (array)$this->subjectData)) {
-                return $this->subjectData[$key];
-            }
-
-            return null;
-        }
-
-        return $this->subjectData;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setSubjectData($keyOrData, $data = null)
-    {
-        if (is_array($keyOrData) && null === $data) {
-            $this->subjectData = $keyOrData;
-        } elseif (is_string($keyOrData) && 0 < strlen($keyOrData)) {
-            $this->subjectData[$keyOrData] = $data;
-        } else {
-            throw new InvalidArgumentException(sprintf("Bad usage of %s::setSubjectData", static::class));
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function unsetSubjectData($key)
-    {
-        if (is_string($key) && 0 < strlen($key)) {
-            if (array_key_exists($key, $this->subjectData)) {
-                unset($this->subjectData[$key]);
-            }
-        } else {
-            throw new InvalidArgumentException('Expected key as string.');
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setSubject($subject = null)
-    {
-        $this->subject = $subject;
 
         return $this;
     }

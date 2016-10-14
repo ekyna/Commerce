@@ -217,6 +217,7 @@ abstract class AbstractShipmentListener
     protected function updateState(ShipmentInterface $shipment)
     {
         return $this->stateResolver->resolve($shipment);
+        // TODO + completed at
     }
 
     /**

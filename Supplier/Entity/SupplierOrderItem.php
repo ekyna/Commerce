@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Commerce\Supplier\Model;
 
 /**
@@ -11,6 +12,8 @@ use Ekyna\Component\Commerce\Supplier\Model;
  */
 class SupplierOrderItem implements Model\SupplierOrderItemInterface
 {
+    use SubjectRelativeTrait;
+
     /**
      * @var int
      */
@@ -20,6 +23,11 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
      * @var Model\SupplierOrderInterface
      */
     protected $order;
+
+    /**
+     * @var Model\SupplierProductInterface
+     */
+    protected $product;
 
     /**
      * @var string
@@ -34,22 +42,12 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @var float
      */
-    protected $quantity;
+    protected $quantity = 1;
 
     /**
      * @var float
      */
-    protected $netPrice;
-
-    /**
-     * @var array
-     */
-    protected $subjectData;
-
-    /**
-     * @var array
-     */
-    protected $subject;
+    protected $netPrice = 0;
 
 
     /**
@@ -74,6 +72,24 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     public function setOrder(Model\SupplierOrderInterface $order = null)
     {
         $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProduct()
+    {
+        return $this->product;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setProduct(Model\SupplierProductInterface $product = null)
+    {
+        $this->product = $product;
 
         return $this;
     }
@@ -146,42 +162,6 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     public function setNetPrice($netPrice)
     {
         $this->netPrice = (float)$netPrice;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSubjectData()
-    {
-        return $this->subjectData;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setSubjectData(array $subjectData)
-    {
-        $this->subjectData = $subjectData;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setSubject($subject)
-    {
-        $this->subject = $subject;
 
         return $this;
     }

@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -10,7 +11,11 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleItemInterface extends ResourceModel\ResourceInterface, ResourceModel\SortableInterface, AdjustableInterface
+interface SaleItemInterface extends
+    ResourceModel\ResourceInterface,
+    ResourceModel\SortableInterface,
+    SubjectRelativeInterface,
+    AdjustableInterface
 {
     /**
      * Sets the sale.
@@ -188,57 +193,6 @@ interface SaleItemInterface extends ResourceModel\ResourceInterface, ResourceMod
      * @return $this|SaleItemInterface
      */
     public function setConfigurable($configurable);
-
-    /**
-     * Returns whether the item has a subject data or not.
-     *
-     * @return bool
-     */
-    public function hasSubjectData();
-
-    /**
-     * Returns the subject data, optionally filtered by key.
-     *
-     * @param string $key
-     *
-     * @return array|null
-     */
-    public function getSubjectData($key = null);
-
-    /**
-     * Sets the subject data.
-     *
-     * @param array|string $keyOrData The key of the data or the whole subject data.
-     * @param mixed        $data      The data assigned to the key (set to null $keyOrData is the whole subject data).
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setSubjectData($keyOrData, $data = null);
-
-    /**
-     * Unset a subject data by its key.
-     *
-     * @param string $key
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function unsetSubjectData($key);
-
-    /**
-     * Returns the subject (may return null if it has not been resolved yet).
-     *
-     * @return object|null
-     */
-    public function getSubject();
-
-    /**
-     * Sets the subject.
-     *
-     * @param object $subject
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setSubject($subject = null);
 
     /**
      * Returns the total quantity (multiplied by all parents quantities).

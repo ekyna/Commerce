@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\Supplier">
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="gender">
+            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
+        </property>
+        <property name="firstName">
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="lastName">
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="email">
+            <constraint name="NotBlank"/>
+            <constraint name="Email"/>
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="address">
+            <constraint name="Valid"/>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder">
+        <property name="number">
+            <constraint name="Length">
+                <option name="min">8</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="currency">
+            <constraint name="NotNull" />
+        </property>
+        <property name="items">
+            <constraint name="Valid"/>
+        </property>
+        <property name="state">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Model\ShipmentStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="paymentTotal">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="paymentDate">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="estimatedDateOfArrival">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="createdAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="updatedAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="completedAt">
+            <constraint name="DateTime"/>
+        </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+        </constraint>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem">
+        <property name="designation">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="reference">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="quantity">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">1</option>
+            </constraint>
+        </property>
+        <property name="netPrice">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+    </class>
+
+</constraint-mapping>

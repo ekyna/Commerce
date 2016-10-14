@@ -21,7 +21,8 @@
             </cascade>
         </one-to-many>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface" field="order">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface"
+                     field="order" inversed-by="deliveries">
             <join-column name="supplier_order_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
         </many-to-one>
 

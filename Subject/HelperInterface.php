@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
  * Interface HelperInterface
@@ -13,11 +13,12 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 interface HelperInterface
 {
     /**
-     * Returns the subject from the order item.
+     * Returns the subject from the relative.
      *
-     * @param SaleItemInterface $item
+     * @param SubjectRelativeInterface $relative
+     *
      * @return mixed
      * @throws InvalidArgumentException
      */
-    public function resolve(SaleItemInterface $item);
+    public function resolve(SubjectRelativeInterface $relative);
 }

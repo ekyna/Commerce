@@ -27,11 +27,15 @@
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
         <field name="weight" column="weight" type="integer" nullable="true"/>
 
+        <field name="stockMode" column="stock_mode" type="string" length="16"/>
+        <field name="stockState" column="stock_state" type="string" length="16"/>
+        <field name="stock" column="stock" type="decimal" precision="10" scale="3"/>
+
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\ProductInterface"
-                     field="variants" mapped-by="parent">
+                     field="variants" mapped-by="parent" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -39,7 +43,7 @@
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\OptionGroupInterface"
-                     field="optionGroups" mapped-by="product">
+                     field="optionGroups" mapped-by="product" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -47,7 +51,7 @@
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Product\Model\BundleSlotInterface"
-                     field="bundleSlots" mapped-by="bundle">
+                     field="bundleSlots" mapped-by="bundle" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -58,6 +62,7 @@
                      field="parent" inversed-by="variants">
             <cascade>
                 <cascade-persist/>
+                <cascade-remove/>
             </cascade>
             <join-column name="parent_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>

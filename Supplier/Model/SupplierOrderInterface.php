@@ -3,33 +3,35 @@
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
-use Ekyna\Component\Resource\Model\ResourceInterface;
-use Ekyna\Component\Resource\Model\TimestampableInterface;
+use Ekyna\Component\Commerce\Common\Model as CommonModel;
+use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
  * Class SupplierOrderInterface
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SupplierOrderInterface extends ResourceInterface, NumberSubjectInterface, TimestampableInterface
+interface SupplierOrderInterface extends
+    ResourceModel\ResourceInterface,
+    CommonModel\NumberSubjectInterface,
+    CommonModel\StateSubjectInterface,
+    ResourceModel\TimestampableInterface
 {
     /**
      * Returns the currency.
      *
-     * @return CurrencyInterface
+     * @return CommonModel\CurrencyInterface
      */
     public function getCurrency();
 
     /**
      * Sets the currency.
      *
-     * @param CurrencyInterface $currency
+     * @param CommonModel\CurrencyInterface $currency
      *
      * @return $this|SupplierOrderInterface
      */
-    public function setCurrency(CurrencyInterface $currency);
+    public function setCurrency(CommonModel\CurrencyInterface $currency);
 
     /**
      * Returns the supplier.
@@ -89,20 +91,45 @@ interface SupplierOrderInterface extends ResourceInterface, NumberSubjectInterfa
     public function getItems();
 
     /**
-     * Returns the state.
+     * Returns whether or not the supplier order has at least one delivery.
      *
-     * @return string
+     * @return bool
      */
-    public function getState();
+    public function hasDeliveries();
 
     /**
-     * Sets the state.
+     * Returns whether the supplier order has the delivery or not.
      *
-     * @param string $state
+     * @param SupplierDeliveryInterface $delivery
+     *
+     * @return bool
+     */
+    public function hasDelivery(SupplierDeliveryInterface $delivery);
+
+    /**
+     * Adds the delivery.
+     *
+     * @param SupplierDeliveryInterface $delivery
      *
      * @return $this|SupplierOrderInterface
      */
-    public function setState($state);
+    public function addDelivery(SupplierDeliveryInterface $delivery);
+
+    /**
+     * Removes the delivery.
+     *
+     * @param SupplierDeliveryInterface $delivery
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function removeDelivery(SupplierDeliveryInterface $delivery);
+
+    /**
+     * Returns the deliveries.
+     *
+     * @return ArrayCollection|SupplierDeliveryInterface[]
+     */
+    public function getDeliveries();
 
     /**
      * Returns the paymentTotal.
@@ -137,18 +164,50 @@ interface SupplierOrderInterface extends ResourceInterface, NumberSubjectInterfa
     public function setPaymentDate(\DateTime $date = null);
 
     /**
-     * Returns the expectedDeliveryDate.
+     * Returns the estimated date of arrival.
      *
      * @return \DateTime
      */
-    public function getExpectedDeliveryDate();
+    public function getEstimatedDateOfArrival();
 
     /**
-     * Sets the expectedDeliveryDate.
+     * Sets the estimated date of arrival.
      *
      * @param \DateTime $date
      *
      * @return $this|SupplierOrderInterface
      */
-    public function setExpectedDeliveryDate(\DateTime $date = null);
+    public function setEstimatedDateOfArrival(\DateTime $date = null);
+
+    /**
+     * Returns the orderedAt.
+     *
+     * @return \DateTime
+     */
+    public function getOrderedAt();
+
+    /**
+     * Sets the orderedAt.
+     *
+     * @param \DateTime $orderedAt
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setOrderedAt(\DateTime $orderedAt = null);
+
+    /**
+     * Returns the completed at.
+     *
+     * @return \DateTime
+     */
+    public function getCompletedAt();
+
+    /**
+     * Sets the completed at.
+     *
+     * @param \DateTime $completedAt
+     *
+     * @return SupplierOrderInterface
+     */
+    public function setCompletedAt(\DateTime $completedAt = null);
 }

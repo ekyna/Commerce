@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -59,4 +60,20 @@ interface SupplierInterface extends ResourceInterface, IdentityInterface
      * @return $this|SupplierInterface
      */
     public function setAddress(SupplierAddressInterface $address = null);
+
+    /**
+     * Returns the currency.
+     *
+     * @return CurrencyInterface
+     */
+    public function getCurrency();
+
+    /**
+     * Sets the currency.
+     *
+     * @param CurrencyInterface $currency
+     *
+     * @return $this|SupplierInterface
+     */
+    public function setCurrency(CurrencyInterface $currency);
 }

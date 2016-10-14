@@ -35,6 +35,10 @@
             <join-column name="address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
+            <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
+        </many-to-one>
+
     </mapped-superclass>
 
 </doctrine-mapping>

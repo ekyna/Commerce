@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -9,7 +10,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SupplierOrderItemInterface extends ResourceInterface
+interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeInterface
 {
     /**
      * Returns the supplier order.
@@ -26,6 +27,22 @@ interface SupplierOrderItemInterface extends ResourceInterface
      * @return $this|SupplierOrderItemInterface
      */
     public function setOrder(SupplierOrderInterface $order = null);
+
+    /**
+     * Returns the supplier product.
+     *
+     * @return SupplierProductInterface
+     */
+    public function getProduct();
+
+    /**
+     * Sets the supplier product.
+     *
+     * @param SupplierProductInterface $product
+     *
+     * @return $this|SupplierOrderItemInterface
+     */
+    public function setProduct(SupplierProductInterface $product = null);
 
     /**
      * Returns the designation.
@@ -90,36 +107,4 @@ interface SupplierOrderItemInterface extends ResourceInterface
      * @return $this|SupplierOrderItemInterface
      */
     public function setNetPrice($netPrice);
-
-    /**
-     * Returns the subjectData.
-     *
-     * @return array
-     */
-    public function getSubjectData();
-
-    /**
-     * Sets the subjectData.
-     *
-     * @param array $subjectData
-     *
-     * @return $this|SupplierOrderItemInterface
-     */
-    public function setSubjectData(array $subjectData);
-
-    /**
-     * Returns the subject.
-     *
-     * @return array
-     */
-    public function getSubject();
-
-    /**
-     * Sets the subject.
-     *
-     * @param array $subject
-     *
-     * @return $this|SupplierOrderItemInterface
-     */
-    public function setSubject($subject);
 }

@@ -21,4 +21,6 @@ final class ProductEvents
 
     const PRE_DELETE     = 'ekyna_commerce.product.pre_delete';
     const POST_DELETE    = 'ekyna_commerce.product.post_delete';
+
+    const STOCK_UNIT_CHANGE   = 'ekyna_commerce.product.stock_unit_change';
 }

@@ -1,8 +1,9 @@
 <?php
 
 namespace Ekyna\Component\Commerce\Subject\Provider;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
  * Interface SubjectProviderInterface
@@ -40,14 +41,14 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProvider($nameOrItemOrSubject)
+    public function getProvider($nameOrRelativeOrSubject)
     {
-        if ($nameOrItemOrSubject instanceof SaleItemInterface) {
-            return $this->getProviderByItem($nameOrItemOrSubject);
-        } elseif (is_object($nameOrItemOrSubject)) {
-            return $this->getProviderBySubject($nameOrItemOrSubject);
-        } elseif (is_string($nameOrItemOrSubject)) {
-            return $this->getProviderByName($nameOrItemOrSubject);
+        if ($nameOrRelativeOrSubject instanceof SubjectRelativeInterface) {
+            return $this->getProviderByRelative($nameOrRelativeOrSubject);
+        } elseif (is_object($nameOrRelativeOrSubject)) {
+            return $this->getProviderBySubject($nameOrRelativeOrSubject);
+        } elseif (is_string($nameOrRelativeOrSubject)) {
+            return $this->getProviderByName($nameOrRelativeOrSubject);
         }
 
         throw new InvalidArgumentException("Failed to resolve provider.");
@@ -56,14 +57,14 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProviderByItem(SaleItemInterface $item)
+    public function getProviderByRelative(SubjectRelativeInterface $relative)
     {
-        if (null !== $subject = $item->getSubject()) {
+        if (null !== $subject = $relative->getSubject()) {
             return $this->getProviderBySubject($subject);
         }
 
         foreach ($this->providers as $provider) {
-            if ($provider->supportsItem($item)) {
+            if ($provider->supportsRelative($relative)) {
                 return $provider;
             }
         }
@@ -100,10 +101,10 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function resolveItemSubject(SaleItemInterface $item)
+    public function resolveRelativeSubject(SubjectRelativeInterface $relative)
     {
-        if (null !== $provider = $this->getProviderByItem($item)) {
-            return $provider->resolve($item);
+        if (null !== $provider = $this->getProviderByRelative($relative)) {
+            return $provider->resolve($relative);
         }
 
         return null;

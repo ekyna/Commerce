@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Product\EventListener;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Product\EventListener\Handler;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
+use Ekyna\Component\Commerce\Stock\Updater\StockSubjectUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -21,6 +22,11 @@ class ProductListener
     protected $persistenceHelper;
 
     /**
+     * @var StockSubjectUpdaterInterface
+     */
+    protected $stockStateUpdater;
+
+    /**
      * @var Handler\HandlerFactory
      */
     private $factory;
@@ -30,10 +36,14 @@ class ProductListener
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
+     * @param StockSubjectUpdaterInterface $stockStateUpdater
      */
-    public function __construct(PersistenceHelperInterface $persistenceHelper)
-    {
+    public function __construct(
+        PersistenceHelperInterface $persistenceHelper,
+        StockSubjectUpdaterInterface $stockStateUpdater
+    ) {
         $this->persistenceHelper = $persistenceHelper;
+        $this->stockStateUpdater = $stockStateUpdater;
     }
 
     /**
@@ -47,15 +57,20 @@ class ProductListener
 
         $handler = $this->getHandler($product);
 
-        $handler->handleInsert($event);
+        $changed = false;
 
+        $changed = $handler->handleInsert($event) || $changed;
+
+        $changed = $this->stockStateUpdater->update($product) || $changed;
 
         // TODO Timestampable behavior/listener
         $product
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
 
-        $this->persistenceHelper->persistAndRecompute($product);
+        if ($changed || true) { // TODO
+            $this->persistenceHelper->persistAndRecompute($product);
+        }
     }
 
     /**
@@ -69,13 +84,18 @@ class ProductListener
 
         $handler = $this->getHandler($product);
 
-        $handler->handleUpdate($event);
+        $changed = false;
 
+        $handler->handleUpdate($event) || $changed;
+
+        $this->stockStateUpdater->update($product) || $changed;
 
         // TODO Timestampable behavior/listener
         $product->setUpdatedAt(new \DateTime());
 
-        $this->persistenceHelper->persistAndRecompute($product);
+        if ($changed || true) { // TODO
+            $this->persistenceHelper->persistAndRecompute($product);
+        }
     }
 
     /**
@@ -86,6 +106,20 @@ class ProductListener
     public function onDelete(ResourceEventInterface $event)
     {
         //$product = $this->getProductFromEvent($event);
+    }
+
+    /**
+     * Stock unit change event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onStockUnitChange(ResourceEventInterface $event)
+    {
+        $product = $this->getProductFromEvent($event);
+
+        if ($this->stockStateUpdater->update($product)) {
+            $this->persistenceHelper->persistAndRecompute($product);
+        }
     }
 
     /**

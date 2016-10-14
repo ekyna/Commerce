@@ -178,6 +178,12 @@
                 <option name="max">32</option>
             </constraint>
         </property>
+        <property name="email">
+            <constraint name="Email"/>
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
         <property name="invoiceAddress">
             <constraint name="Valid" />
         </property>
@@ -219,7 +225,6 @@
     <!-- Sale Item -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem">
-        <!-- TODO parent OR (cart/order/quote) not null-->
         <property name="designation">
             <constraint name="NotBlank"/>
             <constraint name="Length">

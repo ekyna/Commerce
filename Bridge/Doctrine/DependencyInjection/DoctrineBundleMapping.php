@@ -67,6 +67,7 @@ class DoctrineBundleMapping
             Product\Model\OptionGroupInterface::class        => Product\Entity\OptionGroup::class,
             Product\Model\OptionInterface::class             => Product\Entity\Option::class,
             Product\Model\ProductInterface::class            => Product\Entity\Product::class,
+            Product\Model\ProductStockUnitInterface::class   => Product\Entity\ProductStockUnit::class,
 
             Quote\Model\QuoteInterface::class                => Quote\Entity\Quote::class,
             Quote\Model\QuoteAddressInterface::class         => Quote\Entity\QuoteAddress::class,
@@ -76,6 +77,7 @@ class DoctrineBundleMapping
             Supplier\Model\SupplierInterface::class          => Supplier\Entity\Supplier::class,
             Supplier\Model\SupplierDeliveryInterface::class  => Supplier\Entity\SupplierDelivery::class,
             Supplier\Model\SupplierOrderInterface::class     => Supplier\Entity\SupplierOrder::class,
+            Supplier\Model\SupplierProductInterface::class   => Supplier\Entity\SupplierProduct::class,
         ];
     }
 }

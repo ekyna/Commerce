@@ -42,6 +42,11 @@ class SupplierOrder implements Model\SupplierOrderInterface
     private $items;
 
     /**
+     * @var ArrayCollection|Model\SupplierDeliveryInterface[]
+     */
+    private $deliveries;
+
+    /**
      * @var string
      */
     private $state;
@@ -59,7 +64,17 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @var \DateTime
      */
-    private $expectedDeliveryDate;
+    private $estimatedDateOfArrival;
+
+    /**
+     * @var \DateTime
+     */
+    private $orderedAt;
+
+    /**
+     * @var \DateTime
+     */
+    private $completedAt;
 
 
     /**
@@ -67,7 +82,10 @@ class SupplierOrder implements Model\SupplierOrderInterface
      */
     public function __construct()
     {
+        $this->state = Model\SupplierOrderStates::STATE_NEW;
+
         $this->items = new ArrayCollection();
+        $this->deliveries = new ArrayCollection();
     }
 
     /**
@@ -195,6 +213,58 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
+    public function hasDeliveries()
+    {
+        return 0 < $this->deliveries->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasDelivery(Model\SupplierDeliveryInterface $delivery)
+    {
+        return $this->deliveries->contains($delivery);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addDelivery(Model\SupplierDeliveryInterface $delivery)
+    {
+        if (!$this->hasDelivery($delivery)) {
+            $delivery->setOrder($this);
+            $this->deliveries->add($delivery);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeDelivery(Model\SupplierDeliveryInterface $delivery)
+    {
+        if ($this->hasDelivery($delivery)) {
+            $delivery->setOrder(null);
+            $this->deliveries->removeElement($delivery);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns the deliveries.
+     *
+     * @return ArrayCollection|Model\SupplierDeliveryInterface[]
+     */
+    public function getDeliveries()
+    {
+        return $this->deliveries;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getState()
     {
         return $this->state;
@@ -249,17 +319,53 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
-    public function getExpectedDeliveryDate()
+    public function getEstimatedDateOfArrival()
     {
-        return $this->expectedDeliveryDate;
+        return $this->estimatedDateOfArrival;
     }
 
     /**
      * @inheritdoc
      */
-    public function setExpectedDeliveryDate(\DateTime $date = null)
+    public function setEstimatedDateOfArrival(\DateTime $date = null)
     {
-        $this->expectedDeliveryDate = $date;
+        $this->estimatedDateOfArrival = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOrderedAt()
+    {
+        return $this->orderedAt;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOrderedAt(\DateTime $orderedAt = null)
+    {
+        $this->orderedAt = $orderedAt;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCompletedAt()
+    {
+        return $this->completedAt;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCompletedAt(\DateTime $completedAt = null)
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }

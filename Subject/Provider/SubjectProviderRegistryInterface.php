@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
  * Interface SubjectProviderRegistryInterface
@@ -19,22 +19,22 @@ interface SubjectProviderRegistryInterface
     public function addProvider(SubjectProviderInterface $provider);
 
     /**
-     * Returns the provider by name or sale item.
+     * Returns the provider by name or relative or subject.
      *
-     * @param string|SaleItemInterface|object $nameOrItemOrSubjectOrSubject
+     * @param string|SubjectRelativeInterface|object $nameOrRelativeOrSubject
      *
      * @return SubjectProviderInterface|null
      */
-    public function getProvider($nameOrItemOrSubjectOrSubject);
+    public function getProvider($nameOrRelativeOrSubject);
 
     /**
      * Returns the provider supporting the item.
      *
-     * @param SaleItemInterface $item
+     * @param SubjectRelativeInterface $relative
      *
      * @return SubjectProviderInterface|null
      */
-    public function getProviderByItem(SaleItemInterface $item);
+    public function getProviderByRelative(SubjectRelativeInterface $relative);
 
     /**
      * Returns the provider supporting the subject.
@@ -55,13 +55,13 @@ interface SubjectProviderRegistryInterface
     public function getProviderByName($name);
 
     /**
-     * Resolves the item's subject.
+     * Resolves the relative's subject.
      *
-     * @param SaleItemInterface $item
+     * @param SubjectRelativeInterface $relative
      *
      * @return mixed|null
      */
-    public function resolveItemSubject(SaleItemInterface $item);
+    public function resolveRelativeSubject(SubjectRelativeInterface $relative);
 
     /**
      * Returns the providers.

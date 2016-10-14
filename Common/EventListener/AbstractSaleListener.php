@@ -377,6 +377,7 @@ abstract class AbstractSaleListener
     protected function updateState(SaleInterface $sale)
     {
         return $this->stateResolver->resolve($sale);
+        // TODO + completed at
     }
 
     /**

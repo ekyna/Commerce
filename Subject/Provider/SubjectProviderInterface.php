@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Symfony\Component\Form\FormInterface;
 
 /**
@@ -13,6 +15,8 @@ use Symfony\Component\Form\FormInterface;
 interface SubjectProviderInterface
 {
     const DATA_KEY = 'provider';
+
+    // TODO Move SaleItemInterface management methods to a dedicated service
 
     /**
      * Returns whether the subject choice is needed or not.
@@ -60,22 +64,22 @@ interface SubjectProviderInterface
     public function handleItemSubmit(SaleItemInterface $item);
 
     /**
-     * Returns the subject from the sale item.
+     * Returns the subject from the relative.
      *
-     * @param SaleItemInterface $item
+     * @param SubjectRelativeInterface $relative
      *
      * @return mixed
      */
-    public function resolve(SaleItemInterface $item);
+    public function resolve(SubjectRelativeInterface $relative);
 
     /**
-     * Returns whether the resolver supports the sale item or not.
+     * Returns whether the resolver supports the relative or not.
      *
-     * @param SaleItemInterface $item
+     * @param SubjectRelativeInterface $relative
      *
      * @return boolean
      */
-    public function supportsItem(SaleItemInterface $item);
+    public function supportsRelative(SubjectRelativeInterface $relative);
 
     /**
      * Returns whether the provider supports the subject or not.
@@ -85,6 +89,20 @@ interface SubjectProviderInterface
      * @return bool
      */
     public function supportsSubject($subject);
+
+    /**
+     * Returns the subject stock unit repository.
+     *
+     * @return StockUnitRepositoryInterface
+     */
+    public function getStockUnitRepository();
+
+    /**
+     * Returns the stock unit change event name.
+     *
+     * @return string
+     */
+    public function getStockUnitChangeEventName();
 
     /**
      * Returns the provider name.

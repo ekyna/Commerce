@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Product\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Product\Model as Model;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectTrait;
 use Ekyna\Component\Resource\Model\AbstractTranslatable;
 
 /**
@@ -16,6 +17,8 @@ use Ekyna\Component\Resource\Model\AbstractTranslatable;
  */
 class Product extends AbstractTranslatable implements Model\ProductInterface
 {
+    use StockSubjectTrait;
+
     /**
      * @var int
      */
@@ -103,6 +106,8 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
         $this->attributes = new ArrayCollection();
         $this->optionGroups = new ArrayCollection();
         $this->bundleSlots = new ArrayCollection();
+
+        $this->initializeStock();
     }
 
     /**
@@ -238,22 +243,6 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
 
         return $this;
     }
-
-    /**
-     * @inheritdoc
-     */
-    /*public function setVariants(ArrayCollection $variants)
-    {
-        foreach ($this->variants as $variant) {
-            $this->removeVariant($variant);
-        }
-
-        foreach ($variants as $variant) {
-            $this->addVariant($variant);
-        }
-
-        return $this;
-    }*/
 
     /**
      * @inheritdoc
@@ -644,9 +633,15 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
     }
 
     /**
-     * Return translation model class.
-     *
-     * @return string
+     * @inheritdoc
+     */
+    public function getStockUnitClass()
+    {
+        return ProductStockUnit::class;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected function getTranslationClass()
     {
