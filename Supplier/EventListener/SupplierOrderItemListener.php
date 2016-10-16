@@ -32,9 +32,9 @@ class SupplierOrderItemListener extends AbstractListener
         }
 
         // Create the stock unit
-        $this->createStockUnit($item);
+        $this->findStockUnit($item);
 
-        // TODO if not already scheduled for insert
+        // TODO if not already scheduled
         $this->dispatchSupplierOrderContentChangeEvent($item->getOrder());
     }
 
@@ -54,16 +54,12 @@ class SupplierOrderItemListener extends AbstractListener
         }
 
         if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
-            $changeSet = $this->persistenceHelper->getChangeSet($item);
+            $this->updateOrderedQuantity($item);
 
-            // Delta quantity (difference between new and old)
-            $deltaQuantity = $changeSet['quantity'][1] - $changeSet['quantity'][0];
-
-            // Update stock ordered unit
-            $this->updateOrderedQuantity($item, $deltaQuantity);
+            // Prevent quantity to be set as lower than delivered quantity
 
             // Dispatch supplier order content change event
-            // TODO if not already scheduled for update
+            // TODO if not already scheduled
             $this->dispatchSupplierOrderContentChangeEvent($item->getOrder());
         }
     }

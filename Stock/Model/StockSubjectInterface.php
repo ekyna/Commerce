@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -45,20 +44,52 @@ interface StockSubjectInterface extends ResourceInterface
     public function setStockState($state);
 
     /**
-     * Returns the stock.
+     * Returns the in stock quantity.
      *
      * @return float
      */
-    public function getStock();
+    public function getInStock();
 
     /**
-     * Sets the stock.
+     * Sets the in stock quantity.
      *
-     * @param float $stock
+     * @param float $quantity
      *
      * @return $this|StockSubjectInterface
      */
-    public function setStock($stock);
+    public function setInStock($quantity);
+
+    /**
+     * Returns the ordered stock quantity.
+     *
+     * @return float
+     */
+    public function getOrderedStock();
+
+    /**
+     * Sets the ordered stock quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setOrderedStock($quantity);
+
+    /**
+     * Returns the shipped stock quantity.
+     *
+     * @return float
+     */
+    public function getShippedStock();
+
+    /**
+     * Sets the shipped stock quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setShippedStock($quantity);
 
     /**
      * Returns the estimated date of arrival.
@@ -75,47 +106,6 @@ interface StockSubjectInterface extends ResourceInterface
      * @return $this|StockSubjectInterface
      */
     public function setEstimatedDateOfArrival(\DateTime $eta);
-
-    /**
-     * Returns whether or not the subject has at least one stock unit.
-     *
-     * @return bool
-     */
-    //public function hasStockUnits();
-
-    /**
-     * Returns the stock units.
-     *
-     * @return ArrayCollection|StockUnitInterface[]
-     */
-    //public function getStockUnits();
-
-    /**
-     * Returns whether or not the subject has the given stock unit.
-     *
-     * @param StockUnitInterface $stockUnit
-     *
-     * @return bool
-     */
-    //public function hasStockUnit(StockUnitInterface $stockUnit);
-
-    /**
-     * Returns whether or not the subject has the given stock unit.
-     *
-     * @param StockUnitInterface $stockUnit
-     *
-     * @return $this|StockSubjectInterface
-     */
-    //public function addStockUnit(StockUnitInterface $stockUnit);
-
-    /**
-     * Returns whether or not the subject has the given stock unit.
-     *
-     * @param StockUnitInterface $stockUnit
-     *
-     * @return $this|StockSubjectInterface
-     */
-    //public function removeStockUnit(StockUnitInterface $stockUnit);
 
     /**
      * Returns the stock unit class.

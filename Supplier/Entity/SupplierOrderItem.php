@@ -151,6 +151,28 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
+    public function getDeliveryRemainingQuantity(Model\SupplierDeliveryInterface $delivery = null)
+    {
+        $remainingQuantity = $this->getQuantity();
+
+        foreach ($this->getOrder()->getDeliveries() as $orderDelivery) {
+            if ($delivery && $delivery->getId() && $delivery->getId() == $orderDelivery->getId()) {
+                continue;
+            }
+            foreach ($orderDelivery->getItems() as $deliveryItem) {
+                if ($this === $deliveryItem->getOrderItem()) {
+                    $remainingQuantity -= $deliveryItem->getQuantity();
+                    continue 2;
+                }
+            }
+        }
+
+        return $remainingQuantity;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getNetPrice()
     {
         return $this->netPrice;

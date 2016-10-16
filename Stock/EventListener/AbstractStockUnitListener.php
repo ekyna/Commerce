@@ -89,8 +89,6 @@ abstract class AbstractStockUnitListener
     {
         $stockUnit = $this->getStockUnitFromEvent($event);
 
-        // TODO resolve stock unit state
-
         $trackProperties = [
             'orderedQuantity',
             'deliveredQuantity',
@@ -142,7 +140,7 @@ abstract class AbstractStockUnitListener
     /**
      * Dispatches the subject's "stock unit change" event.
      *
-     * @param StockSubjectInterface $subject
+     * @param StockUnitInterface $stockUnit
      */
-    abstract protected function dispatchSubjectStockUnitChangeEvent(StockSubjectInterface $subject);
+    abstract protected function dispatchSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit);
 }

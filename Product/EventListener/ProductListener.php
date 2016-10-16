@@ -24,7 +24,7 @@ class ProductListener
     /**
      * @var StockSubjectUpdaterInterface
      */
-    protected $stockStateUpdater;
+    protected $stockUpdater;
 
     /**
      * @var Handler\HandlerFactory
@@ -36,14 +36,14 @@ class ProductListener
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockSubjectUpdaterInterface $stockStateUpdater
+     * @param StockSubjectUpdaterInterface $stockUpdater
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        StockSubjectUpdaterInterface $stockStateUpdater
+        StockSubjectUpdaterInterface $stockUpdater
     ) {
         $this->persistenceHelper = $persistenceHelper;
-        $this->stockStateUpdater = $stockStateUpdater;
+        $this->stockUpdater = $stockUpdater;
     }
 
     /**
@@ -57,11 +57,10 @@ class ProductListener
 
         $handler = $this->getHandler($product);
 
-        $changed = false;
+        $changed = $handler->handleInsert($event);
 
-        $changed = $handler->handleInsert($event) || $changed;
-
-        $changed = $this->stockStateUpdater->update($product) || $changed;
+        // TODO bundled or variable stock, stock state and eda
+        $changed = $this->stockUpdater->update($product) || $changed;
 
         // TODO Timestampable behavior/listener
         $product
@@ -84,11 +83,13 @@ class ProductListener
 
         $handler = $this->getHandler($product);
 
-        $changed = false;
+        $changed = $handler->handleUpdate($event);
 
-        $handler->handleUpdate($event) || $changed;
-
-        $this->stockStateUpdater->update($product) || $changed;
+        // TODO bundled or variable stock, stock state and eda
+        // TODO move this in stock handler and use inheritance
+        if ($this->persistenceHelper->isChanged($product, ['inStock', 'orderedStock', 'estimatedDateOfArrival'])) {
+            $this->stockUpdater->updateStockState($product);
+        }
 
         // TODO Timestampable behavior/listener
         $product->setUpdatedAt(new \DateTime());
@@ -117,7 +118,28 @@ class ProductListener
     {
         $product = $this->getProductFromEvent($event);
 
-        if ($this->stockStateUpdater->update($product)) {
+        $stockUnitChangeSet = $event->getData('stock_unit_change_set');
+
+        $changed = false;
+
+        // By stock unit change set
+        if ($event->hasData('stock_unit_change_set')) {
+            if (in_array('inStock', $stockUnitChangeSet)) {
+                $changed = $this->stockUpdater->updateInStock($product);
+            }
+            if (in_array('orderedStock', $stockUnitChangeSet)) {
+                $changed = $this->stockUpdater->updateOrderedStock($product) || $changed;
+            }
+            if ($changed || in_array('estimatedDateOfArrival', $stockUnitChangeSet)) {
+                $changed = $this->stockUpdater->updateEstimatedDateOfArrival($product) || $changed;
+            }
+        } else { // Whole update
+            $changed = $this->stockUpdater->updateInStock($product);
+            $changed = $this->stockUpdater->updateOrderedStock($product) || $changed;
+            $changed = $this->stockUpdater->updateEstimatedDateOfArrival($product) || $changed;
+        }
+
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($product);
         }
     }

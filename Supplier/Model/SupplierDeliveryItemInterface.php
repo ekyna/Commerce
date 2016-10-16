@@ -2,20 +2,15 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use Ekyna\Component\Resource\Model\ResourceInterface;
+
 /**
  * Class SupplierDeliveryItem
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SupplierDeliveryItemInterface
+interface SupplierDeliveryItemInterface extends ResourceInterface
 {
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
-
     /**
      * Returns the supplier delivery.
      *

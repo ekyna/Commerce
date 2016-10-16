@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Product\Event\ProductEvents;
 use Ekyna\Component\Commerce\Product\Model\ProductStockUnitInterface;
 use Ekyna\Component\Commerce\Stock\EventListener\AbstractStockUnitListener;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -33,9 +34,10 @@ class ProductStockUnitListener extends AbstractStockUnitListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSubjectStockUnitChangeEvent(StockSubjectInterface $subject)
+    protected function dispatchSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
     {
-        $event = $this->dispatcher->createResourceEvent($subject);
+        $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
+        $event->addData('stock_unit_change_set', $this->persistenceHelper->getChangeSet($stockUnit));
 
         $this->dispatcher->dispatch(ProductEvents::STOCK_UNIT_CHANGE, $event);
     }

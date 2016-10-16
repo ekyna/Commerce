@@ -6,7 +6,7 @@
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
     <entity name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem"
-            table="commerce_suplier_order_item">
+            table="commerce_supplier_order_item">
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>

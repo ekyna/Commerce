@@ -2,8 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
 /**
  * Trait StockSubjectTrait
  * @package Ekyna\Component\Commerce\Stock\Model
@@ -11,11 +9,6 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 trait StockSubjectTrait
 {
-    /**
-     * @var ArrayCollection|StockUnitInterface[]
-     */
-    //protected $stockUnits;
-
     /**
      * @var string
      */
@@ -29,7 +22,17 @@ trait StockSubjectTrait
     /**
      * @var float
      */
-    protected $stock;
+    protected $inStock;
+
+    /**
+     * @var float
+     */
+    protected $orderedStock;
+
+    /**
+     * @var float
+     */
+    protected $shippedStock;
 
     /**
      * @var \DateTime
@@ -42,14 +45,17 @@ trait StockSubjectTrait
      */
     protected function initializeStock()
     {
-        //$this->stockUnits = new ArrayCollection();
         $this->stockMode = StockModes::MODE_DISABLED;
         $this->stockState = StockStates::STATE_OUT_OF_STOCK;
-        $this->stock = 0;
+        $this->inStock = 0;
+        $this->orderedStock = 0;
+        $this->shippedStock = 0;
     }
 
     /**
-     * @inheritdoc
+     * Returns the stock mode.
+     *
+     * @return string
      */
     public function getStockMode()
     {
@@ -57,7 +63,11 @@ trait StockSubjectTrait
     }
 
     /**
-     * @inheritdoc
+     * Sets the stock mode.
+     *
+     * @param string $mode
+     *
+     * @return $this|StockSubjectInterface
      */
     public function setStockMode($mode)
     {
@@ -67,7 +77,9 @@ trait StockSubjectTrait
     }
 
     /**
-     * @inheritdoc
+     * Returns the stock state.
+     *
+     * @return string
      */
     public function getStockState()
     {
@@ -75,7 +87,11 @@ trait StockSubjectTrait
     }
 
     /**
-     * @inheritdoc
+     * Sets the stock state.
+     *
+     * @param string $state
+     *
+     * @return $this|StockSubjectInterface
      */
     public function setStockState($state)
     {
@@ -85,19 +101,73 @@ trait StockSubjectTrait
     }
 
     /**
-     * @inheritdoc
+     * Returns the in stock quantity.
+     *
+     * @return float
      */
-    public function getStock()
+    public function getInStock()
     {
-        return $this->stock;
+        return $this->inStock;
     }
 
     /**
-     * @inheritdoc
+     * Sets the in stock quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
      */
-    public function setStock($stock)
+    public function setInStock($quantity)
     {
-        $this->stock = $stock;
+        $this->inStock = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * Returns the ordered stock.
+     *
+     * @return float
+     */
+    public function getOrderedStock()
+    {
+        return $this->orderedStock;
+    }
+
+    /**
+     * Sets the ordered stock.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setOrderedStock($quantity)
+    {
+        $this->orderedStock = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * Returns the shipped stock quantity.
+     *
+     * @return float
+     */
+    public function getShippedStock()
+    {
+        return $this->shippedStock;
+    }
+
+    /**
+     * Sets the shipped stock quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setShippedStock($quantity)
+    {
+        $this->shippedStock = $quantity;
 
         return $this;
     }
@@ -122,63 +192,10 @@ trait StockSubjectTrait
         $this->estimatedDateOfArrival = $estimatedDateOfArrival;
     }
 
-
-
     /**
-     * @inheritdoc
+     * Returns the stock unit class.
+     *
+     * @return string
      */
-    /*public function hasStockUnits()
-    {
-        return 0 < $this->stockUnits->count();
-    }*/
-
-    /**
-     * @inheritdoc
-     */
-    /*public function getStockUnits()
-    {
-        return $this->stockUnits;
-    }*/
-
-    /**
-     * @inheritdoc
-     */
-    /*public function hasStockUnit(StockUnitInterface $stockUnit)
-    {
-        return $this->stockUnits->contains($stockUnit);
-    }*/
-
-    /**
-     * @inheritdoc
-     */
-    /*public function addStockUnit(StockUnitInterface $stockUnit)
-    {
-        $this->validateStockUnitClass($stockUnit);
-
-        if (!$this->hasStockUnit($stockUnit)) {
-            $stockUnit->setSubject($this);
-            $this->stockUnits->add($stockUnit);
-        }
-
-        return $this;
-    }*/
-
-    /**
-     * @inheritdoc
-     */
-    /*public function removeStockUnit(StockUnitInterface $stockUnit)
-    {
-        $this->validateStockUnitClass($stockUnit);
-
-        if ($this->hasStockUnit($stockUnit)) {
-            $stockUnit->setSubject(null);
-            $this->stockUnits->removeElement($stockUnit);
-        }
-
-        return $this;
-    }*/
-
-    //abstract protected function validateStockUnitClass(StockUnitInterface $stockUnit);
-
     abstract public function getStockUnitClass();
 }

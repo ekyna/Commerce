@@ -77,7 +77,7 @@ abstract class AbstractListener
     }
 
     /**
-     * Finds the supplier order item's relative stock unit.
+     * Finds the supplier order item's relative stock unit, create if not exists.
      *
      * @param SupplierOrderItemInterface $item
      *
@@ -87,32 +87,20 @@ abstract class AbstractListener
     {
         // Get subject provider
         $provider = $this->stockUnitResolver->getProviderByRelative($item);
-        if (null !== $provider) {
-            // Get the stock unit repository
-            $repository = $provider->getStockUnitRepository();
-
-            // Find the stock unit
-            return $repository->findOneBySupplierOrderItem($item);
+        if (null === $provider) {
+            return null;
         }
 
-        return null;
-    }
+        // Get the stock unit repository
+        $repository = $provider->getStockUnitRepository();
 
-    /**
-     * Creates the supplier order item's relative stock unit.
-     *
-     * @param SupplierOrderItemInterface $item
-     */
-    protected function createStockUnit(SupplierOrderItemInterface $item)
-    {
-        // Look for an existing stock unit
-        if (null === $stockUnit = $this->findStockUnit($item)) { // TODO greedy ?
-            // Get subject provider
-            $provider = $this->stockUnitResolver->getProviderByRelative($item);
-            if (null === $provider) {
-                return;
-            }
+        // Find the stock unit
+        $stockUnit = null;
+        if ($item->getId()) {
+            $stockUnit = $repository->findOneBySupplierOrderItem($item);
+        }
 
+        if (!$stockUnit) {
             // Resolve the subject
             $subject = $provider->resolve($item);
 
@@ -125,50 +113,27 @@ abstract class AbstractListener
             // Set the subject and supplier order item
             $stockUnit
                 ->setSubject($subject)
-                ->setSupplierOrderItem($item);
+                ->setSupplierOrderItem($item)
+                ->setOrderedQuantity($item->getQuantity())
+                ->setEstimatedDateOfArrival($item->getOrder()->getEstimatedDateOfArrival());
+
+            $this->persistenceHelper->persistAndRecompute($stockUnit);
         }
 
-        // Set the ordered quantity and estimated date of arrival
-        $stockUnit
-            ->setOrderedQuantity($item->getQuantity())
-            ->setEstimatedDateOfArrival($item->getOrder()->getEstimatedDateOfArrival());
-
-        $this->persistenceHelper->persistAndRecompute($stockUnit);
-
-        // TODO This should be handled by the persistence helper
-        if (null !== $eventName = $this->dispatcher->getResourceEventName($stockUnit, 'insert')) {
-            $event = $this->dispatcher->createResourceEvent($stockUnit);
-            $this->dispatcher->dispatch($eventName, $event);
-        }
+        return $stockUnit;
     }
 
     /**
      * Updates the stock unit ordered quantity from given supplier order item.
      *
      * @param SupplierOrderItemInterface $item
-     * @param float                      $quantity
      */
-    protected function updateOrderedQuantity(SupplierOrderItemInterface $item, $quantity)
+    protected function updateOrderedQuantity(SupplierOrderItemInterface $item)
     {
         // Find the stock unit
         if (null !== $stockUnit = $this->findStockUnit($item)) {
             // Updates the ordered quantity
-            $this->stockUnitUpdater->updateOrdered($stockUnit, $quantity);
-        }
-    }
-
-    /**
-     * Updates the stock unit estimated date of arrival from given supplier order item.
-     *
-     * @param SupplierOrderItemInterface $item
-     * @param \DateTime                  $date
-     */
-    protected function updateEstimatedDateOfArrival(SupplierOrderItemInterface $item, \DateTime $date)
-    {
-        // Find the stock unit
-        if (null !== $stockUnit = $this->findStockUnit($item)) {
-            // Updates the estimated date of arrival
-            $this->stockUnitUpdater->updateEstimatedDateOfArrival($stockUnit, $date);
+            $this->stockUnitUpdater->updateOrdered($stockUnit, $item->getQuantity(), false);
         }
     }
 
@@ -198,8 +163,25 @@ abstract class AbstractListener
     {
         // Find the stock unit
         if (null !== $stockUnit = $this->findStockUnit($item)) {
+            // TODO fetch deliveryItems to calculate the quantity
+
             // Updates the ordered quantity
             $this->stockUnitUpdater->updateDelivered($stockUnit, $quantity);
+        }
+    }
+
+    /**
+     * Updates the stock unit estimated date of arrival from given supplier order item.
+     *
+     * @param SupplierOrderItemInterface $item
+     * @param \DateTime                  $date
+     */
+    protected function updateEstimatedDateOfArrival(SupplierOrderItemInterface $item, \DateTime $date)
+    {
+        // Find the stock unit
+        if (null !== $stockUnit = $this->findStockUnit($item)) {
+            // Updates the estimated date of arrival
+            $this->stockUnitUpdater->updateEstimatedDateOfArrival($stockUnit, $date);
         }
     }
 }

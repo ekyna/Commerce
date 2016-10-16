@@ -92,11 +92,11 @@ class SupplierOrderListener extends AbstractListener
         $order->setUpdatedAt(new \DateTime());
 
         // Update stock unit's estimated date of arrival
-        if ($this->persistenceHelper->isChanged($order, 'estimatedDateOfArrival')) {
+        /*if ($this->persistenceHelper->isChanged($order, 'estimatedDateOfArrival')) {
             foreach ($order->getItems() as $item) {
                 $this->updateEstimatedDateOfArrival($item, $order->getEstimatedDateOfArrival());
             }
-        }
+        }*/
 
         if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($order);

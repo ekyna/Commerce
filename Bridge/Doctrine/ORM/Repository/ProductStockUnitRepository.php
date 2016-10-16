@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
@@ -19,9 +20,15 @@ class ProductStockUnitRepository extends ResourceRepository implements StockUnit
      */
     public function findAvailableOrPendingStockUnitsBySubject(StockSubjectInterface $subject)
     {
-        // TODO: Implement findAvailableOrPendingStockUnitsBySubject() method.
+        $qb = $this->createQueryBuilder('s');
 
-        return [];
+        return $qb
+            ->andWhere($qb->expr()->in('s.product', ':product'))
+            ->andWhere($qb->expr()->in('s.state', ':states'))
+            ->setParameter('product', $subject)
+            ->setParameter('states', [StockUnitStates::STATE_OPENED, StockUnitStates::STATE_PENDING])
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -29,8 +36,12 @@ class ProductStockUnitRepository extends ResourceRepository implements StockUnit
      */
     public function findOneBySupplierOrderItem(SupplierOrderItemInterface $item)
     {
-        // TODO: Implement findOneBySupplierOrderItem() method.
+        $qb = $this->createQueryBuilder('s');
 
-        return null;
+        return $qb
+            ->andWhere($qb->expr()->eq('s.supplierOrderItem', ':item'))
+            ->setParameter('item', $item)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

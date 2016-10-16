@@ -635,6 +635,50 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
     /**
      * @inheritdoc
      */
+    public function getStockState()
+    {
+        // TODO if bundled or variable, resolve stock state
+
+        return $this->stockState;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getInStock()
+    {
+        // TODO if bundled or variable, resolve stock
+
+        return $this->inStock;
+    }
+
+    /**
+     * Returns the ordered stock.
+     *
+     * @return float
+     */
+    public function getOrderedStock()
+    {
+        // TODO if bundled or variable, resolve stock
+
+        return $this->orderedStock;
+    }
+
+    /**
+     * Returns the estimated date of arrival.
+     *
+     * @return \DateTime
+     */
+    public function getEstimatedDateOfArrival()
+    {
+        // TODO if bundled or variable, resolve eda
+
+        return $this->estimatedDateOfArrival;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getStockUnitClass()
     {
         return ProductStockUnit::class;

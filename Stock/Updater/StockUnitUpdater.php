@@ -32,19 +32,49 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateOrdered(StockUnitInterface $stockUnit, $quantity)
+    public function updateOrdered(StockUnitInterface $stockUnit, $quantity, $relative = true)
     {
-        if (0 == $quantity) {
-            throw new InvalidArgumentException("Please provide a non zero ordered quantity.");
-        }
-
-        $result = $stockUnit->getOrderedQuantity() + $quantity;
-
-        if (0 > $result) {
+        if ($relative) {
+            $quantity = $stockUnit->getOrderedQuantity() + $quantity;
+        } elseif (0 >= $quantity) {
             throw new InvalidArgumentException("Unexpected ordered quantity.");
         }
 
-        $stockUnit->setOrderedQuantity($result);
+        $stockUnit->setOrderedQuantity($quantity);
+
+        $this->persistenceHelper->persistAndRecompute($stockUnit);
+        // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateDelivered(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    {
+        if ($relative) {
+            $quantity = $stockUnit->getDeliveredQuantity() + $quantity;
+        } elseif (0 >= $quantity) {
+            throw new InvalidArgumentException("Unexpected delivered quantity.");
+        }
+
+        $stockUnit->setDeliveredQuantity($quantity);
+
+        $this->persistenceHelper->persistAndRecompute($stockUnit);
+        // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateShipped(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    {
+        if ($relative) {
+            $quantity = $stockUnit->getShippedQuantity() + $quantity;
+        } elseif (0 >= $quantity) {
+            throw new InvalidArgumentException("Unexpected shipped quantity.");
+        }
+
+        $stockUnit->setShippedQuantity($quantity);
 
         $this->persistenceHelper->persistAndRecompute($stockUnit);
         // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
@@ -61,47 +91,5 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $this->persistenceHelper->persistAndRecompute($stockUnit);
             // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateDelivered(StockUnitInterface $stockUnit, $quantity)
-    {
-        if (0 == $quantity) {
-            throw new InvalidArgumentException("Please provide a non zero delivered quantity.");
-        }
-
-        $result = $stockUnit->getDeliveredQuantity() + $quantity;
-
-        if (0 > $result) {
-            throw new InvalidArgumentException("Unexpected delivered quantity.");
-        }
-
-        $stockUnit->setDeliveredQuantity($result);
-
-        $this->persistenceHelper->persistAndRecompute($stockUnit);
-        // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateShipped(StockUnitInterface $stockUnit, $quantity)
-    {
-        if (0 == $quantity) {
-            throw new InvalidArgumentException("Please provide a non zero shipped quantity.");
-        }
-
-        $result = $stockUnit->getShippedQuantity() + $quantity;
-
-        if (0 > $result) {
-            throw new InvalidArgumentException("Unexpected shipped quantity.");
-        }
-
-        $stockUnit->setShippedQuantity($result);
-
-        $this->persistenceHelper->persistAndRecompute($stockUnit);
-        // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
     }
 }

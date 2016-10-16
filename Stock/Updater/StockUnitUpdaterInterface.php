@@ -16,8 +16,27 @@ interface StockUnitUpdaterInterface
      *
      * @param StockUnitInterface $stockUnit
      * @param float              $quantity
+     * @param bool               $relative
      */
-    public function updateOrdered(StockUnitInterface $stockUnit, $quantity);
+    public function updateOrdered(StockUnitInterface $stockUnit, $quantity, $relative = true);
+
+    /**
+     * Updates the delivered quantity (from supplier).
+     *
+     * @param StockUnitInterface $stockUnit
+     * @param float              $quantity
+     * @param bool               $relative
+     */
+    public function updateDelivered(StockUnitInterface $stockUnit, $quantity, $relative = true);
+
+    /**
+     * Updates the shipped quantity (to customers).
+     *
+     * @param StockUnitInterface $stockUnit
+     * @param float              $quantity
+     * @param bool               $relative
+     */
+    public function updateShipped(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
     /**
      * Updates the estimated date of arrival.
@@ -26,20 +45,4 @@ interface StockUnitUpdaterInterface
      * @param \DateTime $date
      */
     public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date);
-
-    /**
-     * Updates the delivered quantity (from supplier).
-     *
-     * @param StockUnitInterface $stockUnit
-     * @param float              $quantity
-     */
-    public function updateDelivered(StockUnitInterface $stockUnit, $quantity);
-
-    /**
-     * Updates the shipped quantity (to customers).
-     *
-     * @param StockUnitInterface $stockUnit
-     * @param float              $quantity
-     */
-    public function updateShipped(StockUnitInterface $stockUnit, $quantity);
 }
