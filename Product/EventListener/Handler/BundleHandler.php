@@ -49,7 +49,7 @@ class BundleHandler extends AbstractHandler
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function handleInsert(ResourceEventInterface $event)
     {
@@ -59,7 +59,7 @@ class BundleHandler extends AbstractHandler
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function handleUpdate(ResourceEventInterface $event)
     {
@@ -73,15 +73,7 @@ class BundleHandler extends AbstractHandler
     }
 
     /**
-     * @inheritDoc
-     */
-    public function handleDelete(ResourceEventInterface $event)
-    {
-
-    }
-
-    /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function handleChildStockChange(ResourceEventInterface $event)
     {
@@ -91,15 +83,7 @@ class BundleHandler extends AbstractHandler
     }
 
     /**
-     * @inheritDoc
-     */
-    public function handleStockUnitChange(ResourceEventInterface $event)
-    {
-
-    }
-
-    /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function supports(ProductInterface $product)
     {

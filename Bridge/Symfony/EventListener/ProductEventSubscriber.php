@@ -23,6 +23,7 @@ class ProductEventSubscriber extends ProductListener implements EventSubscriberI
             ProductEvents::UPDATE             => ['onUpdate', 0],
             ProductEvents::DELETE             => ['onDelete', 0],
             ProductEvents::STOCK_UNIT_CHANGE  => ['onStockUnitChange', 0],
+            ProductEvents::STOCK_UNIT_REMOVAL => ['onStockUnitRemoval', 0],
             ProductEvents::CHILD_STOCK_CHANGE => ['onChildStockChange', 0],
         ];
     }

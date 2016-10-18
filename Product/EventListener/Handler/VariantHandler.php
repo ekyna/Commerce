@@ -3,14 +3,12 @@
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Product\Event\ProductEvents;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
 use Ekyna\Component\Commerce\Product\Model\ProductTypes;
 use Ekyna\Component\Commerce\Product\Updater\VariableUpdater;
 use Ekyna\Component\Commerce\Product\Updater\VariantUpdater;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
-use Elastica\Connection\Strategy\Simple;
 
 /**
  * Class VariantHandler

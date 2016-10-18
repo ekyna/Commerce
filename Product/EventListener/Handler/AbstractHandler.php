@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
-use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -43,11 +42,15 @@ abstract class AbstractHandler implements HandlerInterface
      */
     public function handleStockUnitChange(ResourceEventInterface $event)
     {
-        $product = $this->getProductFromEvent($event);
+        return false;
+    }
 
-        throw new IllegalOperationException(
-            "Product of type '{$product->getType()}'' does not support 'stock unit change' event."
-        );
+    /**
+     * @inheritdoc
+     */
+    public function handleStockUnitRemoval(ResourceEventInterface $event)
+    {
+        return false;
     }
 
     /**
@@ -55,11 +58,7 @@ abstract class AbstractHandler implements HandlerInterface
      */
     public function handleChildStockChange(ResourceEventInterface $event)
     {
-        $product = $this->getProductFromEvent($event);
-
-        throw new IllegalOperationException(
-            "Product of type '{$product->getType()}' does not support 'child stock change' event."
-        );
+        return false;
     }
 
     /**

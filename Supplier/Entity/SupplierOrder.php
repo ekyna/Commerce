@@ -177,7 +177,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
-    public function addItem(Model\SupplierOrderItemInterface $item)
+    public function addItem(Model\SupplierOrderItemInterface $item, $index = null)
     {
         if (!$this->hasItem($item)) {
             $item->setOrder($this);

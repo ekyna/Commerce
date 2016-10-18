@@ -105,6 +105,20 @@ class ProductListener
     }
 
     /**
+     * Stock unit delete event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onStockUnitRemoval(ResourceEventInterface $event)
+    {
+        $product = $this->getProductFromEvent($event);
+
+        if ($this->executeHandlers($event, HandlerInterface::STOCK_UNIT_REMOVAL)) {
+            $this->persistenceHelper->persistAndRecompute($product);
+        }
+    }
+
+    /**
      * Stock unit change event handler.
      *
      * @param ResourceEventInterface $event

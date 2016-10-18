@@ -38,4 +38,12 @@ class ProductStockUnitListener extends AbstractStockUnitListener
     {
         return ProductEvents::STOCK_UNIT_CHANGE;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSubjectStockUnitRemovalEventName()
+    {
+        return ProductEvents::STOCK_UNIT_REMOVAL;
+    }
 }

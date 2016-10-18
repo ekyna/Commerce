@@ -42,10 +42,19 @@ class SupplierOrderItemListener extends AbstractListener
      * Update event handler.
      *
      * @param ResourceEventInterface $event
+     * @throws IllegalOperationException
      */
     public function onUpdate(ResourceEventInterface $event)
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
+
+        // Disallow product change
+        if ($this->persistenceHelper->isChanged($item, 'product')) {
+            $cs = $this->persistenceHelper->getChangeSet($item);
+            if ($cs['product'][1] != $cs['product'][0]) {
+                throw new IllegalOperationException("Changing supplier order item product is not supported yet.");
+            }
+        }
 
         $changed = $this->syncSubjectDataWithProduct($item);
 
@@ -53,7 +62,7 @@ class SupplierOrderItemListener extends AbstractListener
             $this->persistenceHelper->persistAndRecompute($item);
         }
 
-        if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
+        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
             $this->updateOrderedQuantity($item);
 
             // Prevent quantity to be set as lower than delivered quantity
@@ -68,30 +77,9 @@ class SupplierOrderItemListener extends AbstractListener
      * Delete event handler.
      *
      * @param ResourceEventInterface $event
-     */
-    public function onDelete(ResourceEventInterface $event)
-    {
-        $item = $this->getSupplierOrderItemFromEvent($event);
-
-        // Stock unit is configured for cascade removal
-        if (null === $order = $item->getOrder()) {
-            $changeSet = $this->persistenceHelper->getChangeSet($item);
-            if (array_key_exists('order', $changeSet)) {
-                $order = $changeSet['order'][0];
-            }
-        }
-
-        $this->dispatchSupplierOrderContentChangeEvent($order);
-    }
-
-    /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
      * @throws IllegalOperationException
      */
-    public function onPreDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event)
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
@@ -99,6 +87,21 @@ class SupplierOrderItemListener extends AbstractListener
         if ($this->isStockUnitShipped($item)) {
             throw new IllegalOperationException();
         }
+
+        // Stock unit is configured for cascade removal at DBMS level:
+        // ORM won't dispatch the delete event during flush.
+        // Let's do it ourselves.
+        $this->dispatchStockUnitDeleteEvent($item);
+
+        // Supplier order has been set to null by the removeItem method.
+        // Retrieve it from the change set.
+        if (null === $order = $item->getOrder()) {
+            $changeSet = $this->persistenceHelper->getChangeSet($item);
+            if (array_key_exists('order', $changeSet)) {
+                $order = $changeSet['order'][0];
+            }
+        }
+        $this->dispatchSupplierOrderContentChangeEvent($order);
     }
 
     /**

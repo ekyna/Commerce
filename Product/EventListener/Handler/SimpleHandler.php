@@ -104,9 +104,29 @@ class SimpleHandler extends AbstractHandler
         $product = $this->getProductFromEvent($event, ProductTypes::getChildTypes());
 
         if (null !== $stockUnit = $event->getData('stock_unit')) {
-            $changed = $this->stockUnitStockUpdate($product, $stockUnit);
+            $changed = $this->updateStockByStockUnitChange($product, $stockUnit);
         } else {
-            $changed = $this->regularStockUpdate($product);
+            $changed = $this->updateStock($product);
+        }
+
+        if ($changed) {
+            $this->handleChildStockUpdate($product);
+        }
+
+        return $changed;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleStockUnitRemoval(ResourceEventInterface $event)
+    {
+        $product = $this->getProductFromEvent($event, ProductTypes::getChildTypes());
+
+        if (null !== $stockUnit = $event->getData('stock_unit')) {
+            $changed = $this->updateStockByStockUnitRemoval($product, $stockUnit);
+        } else {
+            $changed = $this->updateStock($product);
         }
 
         if ($changed) {
@@ -123,7 +143,7 @@ class SimpleHandler extends AbstractHandler
      *
      * @return bool
      */
-    private function regularStockUpdate(ProductInterface $product)
+    private function updateStock(ProductInterface $product)
     {
         // In stock update
         $changed = $this->stockUpdater->updateInStock($product);
@@ -143,7 +163,7 @@ class SimpleHandler extends AbstractHandler
      *
      * @return bool
      */
-    private function stockUnitStockUpdate(ProductInterface $product, StockUnitInterface $stockUnit)
+    private function updateStockByStockUnitChange(ProductInterface $product, StockUnitInterface $stockUnit)
     {
         $cs = $this->persistenceHelper->getChangeSet($stockUnit);
 
@@ -177,6 +197,32 @@ class SimpleHandler extends AbstractHandler
 
             $changed = $this->stockUpdater->updateEstimatedDateOfArrival($product, $date) || $changed;
         }
+
+        return $changed;
+    }
+
+    /**
+     * Updates stock data regarding to the stock unit changes.
+     *
+     * @param ProductInterface   $product
+     * @param StockUnitInterface $stockUnit
+     *
+     * @return bool
+     */
+    private function updateStockByStockUnitRemoval(ProductInterface $product, StockUnitInterface $stockUnit)
+    {
+        $changed = false;
+
+        // We don't care about delivered and shipped stocks because the
+        // stock unit removal is prevented if those stocks are not null.
+
+        // Update ordered quantity
+        if (0 < $stockUnit->getOrderedQuantity()) {
+            $changed = $this->stockUpdater->updateOrderedStock($product, -$stockUnit->getOrderedQuantity());
+        }
+
+        // Update the estimated date of arrival
+        $changed = $this->stockUpdater->updateEstimatedDateOfArrival($product) || $changed;
 
         return $changed;
     }

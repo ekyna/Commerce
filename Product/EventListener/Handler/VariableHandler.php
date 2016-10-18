@@ -74,7 +74,7 @@ class VariableHandler extends AbstractHandler
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function handleChildStockChange(ResourceEventInterface $event)
     {

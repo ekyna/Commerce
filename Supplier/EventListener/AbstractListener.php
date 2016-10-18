@@ -187,4 +187,22 @@ abstract class AbstractListener
             $this->stockUnitUpdater->updateEstimatedDateOfArrival($stockUnit, $date);
         }
     }
+
+    /**
+     * Dispatches the supplier order item's related stock unit's delete event.
+     *
+     * @param SupplierOrderItemInterface $item
+     */
+    protected function dispatchStockUnitDeleteEvent(SupplierOrderItemInterface $item)
+    {
+        // Find the stock unit
+        if (null !== $stockUnit = $this->findStockUnit($item)) {
+            $event = $this->dispatcher->createResourceEvent($stockUnit);
+            $eventName = $this->dispatcher->getResourceEventName($stockUnit, 'delete');
+
+            if ($event && $eventName) {
+                $this->dispatcher->dispatch($eventName, $event);
+            }
+        }
+    }
 }

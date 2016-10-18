@@ -115,15 +115,16 @@ abstract class AbstractStockUnitListener
     {
         $stockUnit = $this->getStockUnitFromEvent($event);
 
-        if (null !== $stockUnit->getSupplierOrderItem()) {
+        /*if (null !== $stockUnit->getSupplierOrderItem()) {
+            // TODO disallow only if order item not scheduled for deletion
             throw new IllegalOperationException("The stock unit can't be deleted as it is linked to a supplier order.");
-        }
+        }*/
 
         if (0 < $stockUnit->getDeliveredQuantity() || 0 < $stockUnit->getShippedQuantity()) {
             throw new IllegalOperationException("The stock unit can't be deleted as it has been delivered or shipped.");
         }
 
-        $this->dispatchSubjectStockUnitChangeEvent($stockUnit);
+        $this->dispatchSubjectStockUnitRemovalEvent($stockUnit);
     }
 
     /**
@@ -137,6 +138,19 @@ abstract class AbstractStockUnitListener
         $event->addData('stock_unit', $stockUnit);
 
         $this->dispatcher->dispatch($this->getSubjectStockUnitChangeEventName(), $event);
+    }
+
+    /**
+     * Dispatches the subject's "stock unit remove" event.
+     *
+     * @param StockUnitInterface $stockUnit
+     */
+    protected function dispatchSubjectStockUnitRemovalEvent(StockUnitInterface $stockUnit)
+    {
+        $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
+        $event->addData('stock_unit', $stockUnit);
+
+        $this->dispatcher->dispatch($this->getSubjectStockUnitRemovalEventName(), $event);
     }
 
     /**
@@ -155,4 +169,11 @@ abstract class AbstractStockUnitListener
      * @return string
      */
     abstract protected function getSubjectStockUnitChangeEventName();
+
+    /**
+     * Returns the subject's "stock unit removal" event name.
+     *
+     * @return string
+     */
+    abstract protected function getSubjectStockUnitRemovalEventName();
 }
