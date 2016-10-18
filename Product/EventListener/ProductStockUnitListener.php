@@ -34,11 +34,8 @@ class ProductStockUnitListener extends AbstractStockUnitListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
+    protected function getSubjectStockUnitChangeEventName()
     {
-        $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
-        $event->addData('stock_unit_change_set', $this->persistenceHelper->getChangeSet($stockUnit));
-
-        $this->dispatcher->dispatch(ProductEvents::STOCK_UNIT_CHANGE, $event);
+        return ProductEvents::STOCK_UNIT_CHANGE;
     }
 }

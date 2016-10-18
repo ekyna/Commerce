@@ -2,10 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
+use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
-use Ekyna\Component\Commerce\Product\Updater\ProductUpdater;
-use Ekyna\Component\Commerce\Product\Updater\ProductUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -16,43 +15,64 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 abstract class AbstractHandler implements HandlerInterface
 {
     /**
-     * @var HandlerFactory
+     * @inheritdoc
      */
-    protected $factory;
-
-    /**
-     * @var ProductUpdaterInterface
-     */
-    protected $updater;
-
-
-    /**
-     * Constructor.
-     */
-    public function __construct()
+    public function handleInsert(ResourceEventInterface $event)
     {
-        $this->updater = new ProductUpdater();
+        return false;
     }
 
     /**
-     * Sets the factory.
-     *
-     * @param HandlerFactory $factory
+     * @inheritdoc
      */
-    public function setFactory(HandlerFactory $factory)
+    public function handleUpdate(ResourceEventInterface $event)
     {
-        $this->factory = $factory;
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleDelete(ResourceEventInterface $event)
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleStockUnitChange(ResourceEventInterface $event)
+    {
+        $product = $this->getProductFromEvent($event);
+
+        throw new IllegalOperationException(
+            "Product of type '{$product->getType()}'' does not support 'stock unit change' event."
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleChildStockChange(ResourceEventInterface $event)
+    {
+        $product = $this->getProductFromEvent($event);
+
+        throw new IllegalOperationException(
+            "Product of type '{$product->getType()}' does not support 'child stock change' event."
+        );
     }
 
     /**
      * Returns the product from the event.
      *
      * @param ResourceEventInterface $event
-     * @param string $type
+     * @param string|array           $types
+     *
+     * @todo Greedy : assertions are made by the 'supports' method.
      *
      * @return ProductInterface
      */
-    protected function getProductFromEvent(ResourceEventInterface $event, $type = null)
+    protected function getProductFromEvent(ResourceEventInterface $event, $types = null)
     {
         $resource = $event->getResource();
 
@@ -60,8 +80,10 @@ abstract class AbstractHandler implements HandlerInterface
             throw new InvalidArgumentException("Expected ProductInterface");
         }
 
-        if (null !== $type && $type != $resource->getType()) {
-            throw new InvalidArgumentException("Expected product with type '$type'.");
+        if (null !== $types && !in_array($resource->getType(), (array) $types)) {
+            throw new InvalidArgumentException(
+                "Expected product with type '" . implode("' or '", (array) $types) . "'."
+            );
         }
 
         return $resource;

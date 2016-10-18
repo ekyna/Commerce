@@ -20,4 +20,13 @@ interface ProductRepositoryInterface extends TranslatableResourceRepositoryInter
      * @return ProductInterface|null
      */
     public function findOneById($id);
+
+    /**
+     * Finds the parents products of the given bundled product.
+     *
+     * @param ProductInterface $bundled
+     *
+     * @return array|ProductInterface[]
+     */
+    public function findParentsByBundled(ProductInterface $bundled);
 }

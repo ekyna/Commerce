@@ -34,6 +34,33 @@ class ProductTypes
     }
 
     /**
+     * Returns the 'child' types.
+     *
+     * @return array
+     */
+    static public function getChildTypes()
+    {
+        return [
+            ProductTypes::TYPE_SIMPLE,
+            ProductTypes::TYPE_VARIANT
+        ];
+    }
+
+    /**
+     * Returns the 'parent' types.
+     *
+     * @return array
+     */
+    static public function getParentTypes()
+    {
+        return [
+            ProductTypes::TYPE_VARIABLE,
+            ProductTypes::TYPE_BUNDLE,
+            ProductTypes::TYPE_CONFIGURABLE
+        ];
+    }
+
+    /**
      * Returns whether the given type is valid or not.
      *
      * @param string $type
@@ -98,6 +125,30 @@ class ProductTypes
     static public function assertConfigurable(ProductInterface $product)
     {
         static::assertType($product, static::TYPE_CONFIGURABLE);
+    }
+
+    /**
+     * Asserts that the product is of 'child' type.
+     *
+     * @param ProductInterface $product
+     */
+    static public function assetChildType(ProductInterface $product)
+    {
+        if (!in_array($product->getType(), static::getChildTypes(), true)) {
+            throw new InvalidArgumentException("Expected product of 'child' type.");
+        }
+    }
+
+    /**
+     * Asserts that the product is of 'parent' type.
+     *
+     * @param ProductInterface $product
+     */
+    static public function assetParentType(ProductInterface $product)
+    {
+        if (!in_array($product->getType(), static::getParentTypes(), true)) {
+            throw new InvalidArgumentException("Expected product of 'parent' type.");
+        }
     }
 
     /**

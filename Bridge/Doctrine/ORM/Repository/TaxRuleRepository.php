@@ -56,19 +56,19 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
     private function getByTaxGroupAndCustomerGroupsQuery()
     {
         if (null === $this->byTaxGroupAndCustomerGroupsQuery) {
-            $qb = $this->createQueryBuilder('rule');
+            $qb = $this->getQueryBuilder();
             $this->byTaxGroupAndCustomerGroupsQuery = $qb
-                ->leftJoin('rule.taxes', 'tax')
-                ->andWhere($qb->expr()->isMemberOf(':tax_group', 'rule.taxGroups'))
-                ->andWhere($qb->expr()->isMemberOf(':customer_groups', 'rule.customerGroups'))
+                ->leftJoin('o.taxes', 't')
+                ->andWhere($qb->expr()->isMemberOf(':tax_group', 'o.taxGroups'))
+                ->andWhere($qb->expr()->isMemberOf(':customer_groups', 'o.customerGroups'))
                 ->andWhere(
                     $qb->expr()->orX(
-                        $qb->expr()->isNull('tax.id'),
-                        $qb->expr()->eq('tax.country', ':country')
+                        $qb->expr()->isNull('t.id'),
+                        $qb->expr()->eq('t.country', ':country')
                     )
                 )
-                ->addOrderBy('rule.priority', 'DESC')
-                ->addGroupBy('rule.id')
+                ->addOrderBy('o.priority', 'DESC')
+                ->addGroupBy('o.id')
                 ->getQuery();
         }
 

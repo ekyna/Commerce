@@ -12,12 +12,17 @@ use Ekyna\Component\Commerce\Product\Model\ProductTypes;
  * @package Ekyna\Component\Commerce\Product\Updater
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ProductUpdater implements ProductUpdaterInterface
+class VariantUpdater
 {
     /**
-     * {@inheritdoc}
+     * Updates the variant designation regarding to his attributes.
+     *
+     * @param ProductInterface $variant The variant product
+     *
+     * @return bool Whether the variable has been changed or not.
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
-    public function updateVariantDesignation(ProductInterface $variant)
+    public function updateDesignation(ProductInterface $variant)
     {
         $this->assertVariantWithParent($variant);
 
@@ -54,9 +59,14 @@ class ProductUpdater implements ProductUpdaterInterface
     }
 
     /**
-     * @inheritdoc
+     * Updates the tax group regarding to his parent/variable product.
+     *
+     * @param ProductInterface $variant
+     *
+     * @return bool Whether the variable has been changed or not.
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
-    public function updateVariantTaxGroup(ProductInterface $variant)
+    public function updateTaxGroup(ProductInterface $variant)
     {
         $this->assertVariantWithParent($variant);
 
@@ -71,37 +81,10 @@ class ProductUpdater implements ProductUpdaterInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function updateVariableMinPrice(ProductInterface $variable)
-    {
-        ProductTypes::assertVariable($variable);
-
-        $variants = $variable->getVariants()->getIterator();
-        if (0 == count($variants)) {
-            return $this;
-        }
-
-        $minPrice = null;
-        foreach ($variants as $variant) {
-            if (null === $minPrice || $minPrice > $variant->getNetPrice()) {
-                $minPrice = $variant->getNetPrice();
-            }
-        }
-
-        if (null !== $minPrice && 0 !== bccomp($variable->getNetPrice(), $minPrice, 5)) {
-            $variable->setNetPrice($minPrice);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Asserts that the variant has a parent.
      *
      * @param ProductInterface $variant
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
     protected function assertVariantWithParent(ProductInterface $variant)
     {

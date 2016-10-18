@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Stock\Model\StockModes;
 use Ekyna\Component\Commerce\Stock\Model\StockStates;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
@@ -33,45 +32,23 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * Finds the available or pending stock units.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     * @inheritdoc
      */
-    private function findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
+    public function updateInStock(StockSubjectInterface $subject, $quantity = null)
     {
-        // Get the stock unit repository
-        $repository = $this
-            ->stockUnitResolver
-            ->getRepositoryBySubject($subject);
-
-        if (!$repository) {
-            // Subject does not support stock unit management.
-            return [];
-        }
-
-        return $repository->findAvailableOrPendingStockUnitsBySubject($subject);
-    }
-
-    /**
-     * 1. Updates the subject's "in stock" quantity.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return bool Whether or not the subject has been updated.
-     */
-    public function updateInStock(StockSubjectInterface $subject)
-    {
-        // Find subject stock units
-        $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
-
         $stock = 0;
-        foreach ($stockUnits as $stockUnit) {
-            $stock += $stockUnit->getInStockQuantity();
+        if (null !== $quantity) {
+            // Relative update
+            $stock = $subject->getInStock() + (float)$quantity;
+        } else {
+            // Resolve the in stock quantity
+            // TODO What about reserved stocks ?
+            $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
+            foreach ($stockUnits as $stockUnit) {
+                $stock += $stockUnit->getInStockQuantity();
+            }
         }
 
-        // Update subject stock
         if ($stock != $subject->getInStock()) { // TODO use packaging format (bccomp for float)
             $subject->setInStock($stock);
 
@@ -82,23 +59,23 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * 2. Updates the subject's "ordered stock" quantity.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return bool Whether or not the subject has been updated.
+     * @inheritdoc
      */
-    public function updateOrderedStock(StockSubjectInterface $subject)
+    public function updateOrderedStock(StockSubjectInterface $subject, $quantity = null)
     {
-        // Find subject stock units
-        $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
-
         $ordered = 0;
-        foreach ($stockUnits as $stockUnit) {
-            $ordered += $stockUnit->getOrderedQuantity();
+        if (null !== $quantity) {
+            //  Relative update
+            $ordered = $subject->getOrderedStock() + (float)$quantity;
+        } else {
+            // Resolve the ordered stock
+            // TODO What about reserved stocks ?
+            $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
+            foreach ($stockUnits as $stockUnit) {
+                $ordered += $stockUnit->getOrderedQuantity();
+            }
         }
 
-        // Update subject stock
         if ($ordered != $subject->getOrderedStock()) { // TODO use packaging format (bccomp for float)
             $subject->setOrderedStock($ordered);
 
@@ -109,17 +86,15 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * 3. Updates the subject's estimated date of arrival date.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return bool Whether or not the subject has been updated.
+     * @inheritdoc
      */
-    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject)
+    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject, \DateTime $date = null)
     {
+        $currentDate = $subject->getEstimatedDateOfArrival();
+
         // Abort if subject has in stock greater than zero or a zero ordered stock
         if ((0 < $subject->getInStock()) || (0 >= $subject->getOrderedStock())) {
-            if (null !== $subject->getEstimatedDateOfArrival()) {
+            if (null !== $currentDate) {
                 $subject->setEstimatedDateOfArrival(null);
 
                 return true;
@@ -128,31 +103,33 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             return false;
         }
 
-        // Find subject stock units
-        $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
-
-        $minEDA = $maxEDA = null;
-
-        foreach ($stockUnits as $stockUnit) {
-            $eda = $stockUnit->getEstimatedDateOfArrival();
-
-            if (null === $minEDA || $minEDA > $eda) {
-                $minEDA = $eda;
+        if (null !== $date) {
+            // Relative update : cancel if the date is greater than current
+            if ($currentDate && $date >= $currentDate) {
+                $date = null;
             }
-            /*if (null === $maxEDA || $maxEDA < $eda) {
-                $maxEDA = $eda;
-            }*/
+        } else {
+            // Resolve the minimum estimated date of arrival
+            $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
+            foreach ($stockUnits as $stockUnit) {
+                $unitEDA = $stockUnit->getEstimatedDateOfArrival();
+
+                if (null === $date || $date > $unitEDA) {
+                    $date = $unitEDA;
+                }
+            }
         }
 
-        // Eda must be greater than today's first second
+        // EDA must be greater than today's first second
         $today = new \DateTime();
         $today->setTime(0, 0, 0);
-        if ($today < $minEDA) {
-            if ($minEDA != $subject->getEstimatedDateOfArrival()) {
-                $subject->setEstimatedDateOfArrival($minEDA);
+        if ($date && $today < $date) {
+            if ($date != $currentDate) {
+                $subject->setEstimatedDateOfArrival($date);
+
                 return true;
             }
-        } elseif (null !== $subject->getEstimatedDateOfArrival()) {
+        } elseif (null !== $currentDate) {
             $subject->setEstimatedDateOfArrival(null);
 
             return true;
@@ -162,11 +139,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * 4. Updates the subject's stock state.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return bool Whether or not the subject has been updated.
+     * @inheritdoc
      */
     public function updateStockState(StockSubjectInterface $subject)
     {
@@ -194,10 +167,13 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // Current subject stock state
         $currentState = $subject->getStockState();
 
+        // TODO What about reserved stocks ?
+
         // "In stock" resolved state
         if (0 < $subject->getInStock()) {
             if ($currentState != StockStates::STATE_IN_STOCK) {
                 $subject->setStockState(StockStates::STATE_IN_STOCK);
+
                 return true;
             }
 
@@ -208,6 +184,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         if ((0 < $subject->getOrderedStock()) && (null !== $subject->getEstimatedDateOfArrival())) {
             if ($currentState != StockStates::STATE_PRE_ORDER) {
                 $subject->setStockState(StockStates::STATE_PRE_ORDER);
+
                 return true;
             }
 
@@ -217,6 +194,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // "Out of stock" resolved state
         if ($currentState != StockStates::STATE_OUT_OF_STOCK) {
             $subject->setStockState(StockStates::STATE_OUT_OF_STOCK);
+
             return true;
         }
 
@@ -224,11 +202,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * Updates the subject's stocks, eda and state.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return bool Whether or not the subject has been updated.
+     * @inheritdoc
      */
     public function update(StockSubjectInterface $subject)
     {
@@ -239,5 +213,27 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $changed = $this->updateEstimatedDateOfArrival($subject) || $changed;
 
         return $this->updateStockState($subject) || $changed;
+    }
+
+    /**
+     * Finds the available or pending stock units.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    private function findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
+    {
+        // Get the stock unit repository
+        $repository = $this
+            ->stockUnitResolver
+            ->getRepositoryBySubject($subject);
+
+        if (!$repository) {
+            // Subject does not support stock unit management.
+            return [];
+        }
+
+        return $repository->findAvailableOrPendingStockUnitsBySubject($subject);
     }
 }

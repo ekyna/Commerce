@@ -114,8 +114,11 @@ abstract class AbstractListener
             $stockUnit
                 ->setSubject($subject)
                 ->setSupplierOrderItem($item)
-                ->setOrderedQuantity($item->getQuantity())
-                ->setEstimatedDateOfArrival($item->getOrder()->getEstimatedDateOfArrival());
+                ->setOrderedQuantity($item->getQuantity());
+
+            if ($product = $item->getProduct()) {
+                $stockUnit->setEstimatedDateOfArrival($product->getEstimatedDateOfArrival());
+            }
 
             $this->persistenceHelper->persistAndRecompute($stockUnit);
         }

@@ -2,8 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
+use Ekyna\Component\Commerce\Product\Model\ProductInterface;
 use Ekyna\Component\Commerce\Product\Model\ProductTypes;
+use Ekyna\Component\Commerce\Product\Updater\VariableUpdater;
+use Ekyna\Component\Commerce\Product\Updater\VariantUpdater;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class VariableHandler
@@ -13,34 +17,77 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class VariableHandler extends AbstractHandler
 {
     /**
-     * @inheritDoc
+     * @var PersistenceHelperInterface
+     */
+    private $persistenceHelper;
+
+    /**
+     * @var VariantUpdater
+     */
+    private $variantUpdater;
+
+    /**
+     * @var VariableUpdater
+     */
+    private $variableUpdater;
+
+
+    /**
+     * Constructor.
+     *
+     * @param PersistenceHelperInterface $persistenceHelper
+     */
+    public function __construct(PersistenceHelperInterface $persistenceHelper)
+    {
+        $this->persistenceHelper = $persistenceHelper;
+
+        $this->variantUpdater = new VariantUpdater();
+        $this->variableUpdater = new VariableUpdater();
+    }
+
+    /**
+     * @inheritdoc
      */
     public function handleInsert(ResourceEventInterface $event)
     {
         $variable = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIABLE);
 
-        if ($this->updater->updateVariableMinPrice($variable)) {
-            $this->factory
-                ->getPersistenceHelper()
-                ->persistAndRecompute($variable);
-        }
+        return $this->variableUpdater->updateMinPrice($variable);
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function handleUpdate(ResourceEventInterface $event)
     {
         $variable = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIABLE);
 
-        $persistenceHelper = $this->factory->getPersistenceHelper();
-
-        if ($persistenceHelper->isChanged($variable, 'taxGroup')) {
+        if ($this->persistenceHelper->isChanged($variable, 'taxGroup')) {
             foreach ($variable->getVariants() as $variant) {
-                if ($this->updater->updateVariantTaxGroup($variant)) {
-                    $persistenceHelper->persistAndRecompute($variable);
+                if ($this->variantUpdater->updateTaxGroup($variant)) {
+                    $this->persistenceHelper->persistAndRecompute($variant);
                 }
             }
         }
+
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function handleChildStockChange(ResourceEventInterface $event)
+    {
+        $variable = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIABLE);
+
+        return $this->variableUpdater->updateStockState($variable);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function supports(ProductInterface $product)
+    {
+        return $product->getType() === ProductTypes::TYPE_VARIABLE;
     }
 }

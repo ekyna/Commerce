@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Stock\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
@@ -77,7 +76,7 @@ abstract class AbstractStockUnitListener
             $this->persistenceHelper->persistAndRecompute($stockUnit);
         }
 
-        $this->dispatchSubjectStockUnitChangeEvent($stockUnit->getSubject());
+        $this->dispatchSubjectStockUnitChangeEvent($stockUnit);
     }
 
     /**
@@ -101,7 +100,7 @@ abstract class AbstractStockUnitListener
                 $this->persistenceHelper->persistAndRecompute($stockUnit);
             }
 
-            $this->dispatchSubjectStockUnitChangeEvent($stockUnit->getSubject());
+            $this->dispatchSubjectStockUnitChangeEvent($stockUnit);
         }
     }
 
@@ -124,7 +123,20 @@ abstract class AbstractStockUnitListener
             throw new IllegalOperationException("The stock unit can't be deleted as it has been delivered or shipped.");
         }
 
-        $this->dispatchSubjectStockUnitChangeEvent($stockUnit->getSubject());
+        $this->dispatchSubjectStockUnitChangeEvent($stockUnit);
+    }
+
+    /**
+     * Dispatches the subject's "stock unit change" event.
+     *
+     * @param StockUnitInterface $stockUnit
+     */
+    protected function dispatchSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
+    {
+        $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
+        $event->addData('stock_unit', $stockUnit);
+
+        $this->dispatcher->dispatch($this->getSubjectStockUnitChangeEventName(), $event);
     }
 
     /**
@@ -138,9 +150,9 @@ abstract class AbstractStockUnitListener
     abstract protected function getStockUnitFromEvent(ResourceEventInterface $event);
 
     /**
-     * Dispatches the subject's "stock unit change" event.
+     * Returns the subject's "stock unit change" event name.
      *
-     * @param StockUnitInterface $stockUnit
+     * @return string
      */
-    abstract protected function dispatchSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit);
+    abstract protected function getSubjectStockUnitChangeEventName();
 }

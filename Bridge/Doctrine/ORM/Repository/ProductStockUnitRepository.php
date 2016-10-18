@@ -20,11 +20,15 @@ class ProductStockUnitRepository extends ResourceRepository implements StockUnit
      */
     public function findAvailableOrPendingStockUnitsBySubject(StockSubjectInterface $subject)
     {
-        $qb = $this->createQueryBuilder('s');
+        if (!$subject->getId()) {
+            return [];
+        }
+
+        $qb = $this->getQueryBuilder();
 
         return $qb
-            ->andWhere($qb->expr()->in('s.product', ':product'))
-            ->andWhere($qb->expr()->in('s.state', ':states'))
+            ->andWhere($qb->expr()->in('o.product', ':product'))
+            ->andWhere($qb->expr()->in('o.state', ':states'))
             ->setParameter('product', $subject)
             ->setParameter('states', [StockUnitStates::STATE_OPENED, StockUnitStates::STATE_PENDING])
             ->getQuery()
@@ -36,10 +40,14 @@ class ProductStockUnitRepository extends ResourceRepository implements StockUnit
      */
     public function findOneBySupplierOrderItem(SupplierOrderItemInterface $item)
     {
-        $qb = $this->createQueryBuilder('s');
+        if (!$item->getId()) {
+            return null;
+        }
+
+        $qb = $this->getQueryBuilder();
 
         return $qb
-            ->andWhere($qb->expr()->eq('s.supplierOrderItem', ':item'))
+            ->andWhere($qb->expr()->eq('o.supplierOrderItem', ':item'))
             ->setParameter('item', $item)
             ->getQuery()
             ->getOneOrNullResult();

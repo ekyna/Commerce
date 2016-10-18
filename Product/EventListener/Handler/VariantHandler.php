@@ -3,8 +3,14 @@
 namespace Ekyna\Component\Commerce\Product\EventListener\Handler;
 
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Product\Event\ProductEvents;
+use Ekyna\Component\Commerce\Product\Model\ProductInterface;
 use Ekyna\Component\Commerce\Product\Model\ProductTypes;
+use Ekyna\Component\Commerce\Product\Updater\VariableUpdater;
+use Ekyna\Component\Commerce\Product\Updater\VariantUpdater;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use Elastica\Connection\Strategy\Simple;
 
 /**
  * Class VariantHandler
@@ -13,6 +19,35 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class VariantHandler extends AbstractHandler
 {
+    /**
+     * @var PersistenceHelperInterface
+     */
+    private $persistenceHelper;
+
+    /**
+     * @var VariantUpdater
+     */
+    private $variantUpdater;
+
+    /**
+     * @var VariableUpdater
+     */
+    private $variableUpdater;
+
+
+    /**
+     * Constructor.
+     *
+     * @param PersistenceHelperInterface $persistenceHelper
+     */
+    public function __construct(PersistenceHelperInterface $persistenceHelper)
+    {
+        $this->persistenceHelper = $persistenceHelper;
+
+        $this->variantUpdater = new VariantUpdater();
+        $this->variableUpdater = new VariableUpdater();
+    }
+
     /**
      * @inheritDoc
      */
@@ -23,18 +58,16 @@ class VariantHandler extends AbstractHandler
         $changed = false;
 
         // Generate variant designation if needed
-        if (0 === strlen($variant->getDesignation())) {
-            $changed = $this->updater->updateVariantDesignation($variant);
+        if (0 === strlen($variant->getDesignation()) && $this->variantUpdater->updateDesignation($variant)) {
+            $changed = true;
         }
 
         // Set tax group regarding to parent/variable if needed
-        $changed = $this->updater->updateVariantTaxGroup($variant) || $changed;
-
-        if ($changed) {
-            $this->factory
-                ->getPersistenceHelper()
-                ->persistAndRecompute($variant);
+        if ($this->variantUpdater->updateTaxGroup($variant)) {
+            $changed = true;
         }
+
+        return $changed;
     }
 
     /**
@@ -44,22 +77,32 @@ class VariantHandler extends AbstractHandler
     {
         $variant = $this->getProductFromEvent($event, ProductTypes::TYPE_VARIANT);
 
-        $persistenceHelper = $this->factory->getPersistenceHelper();
+        if (null === $variable = $variant->getParent()) {
+            throw new RuntimeException("Variant's parent must be defined.");
+        }
+
+        $changed = false;
 
         // Generate variant designation if needed
-        if (0 === strlen($variant->getDesignation()) && $this->updater->updateVariantDesignation($variant)) {
-            $persistenceHelper->persistAndRecompute($variant);
+        if (0 === strlen($variant->getDesignation()) && $this->variantUpdater->updateDesignation($variant)) {
+            $changed = true;
         }
 
         // Update parent/variable minimum price if variant price has changed
-        if ($persistenceHelper->isChanged($variant, 'netPrice')) {
-            if (null === $variable = $variant->getParent()) {
-                throw new RuntimeException("Variant's parent must be defined.");
-            }
-
-            if ($this->updater->updateVariableMinPrice($variable)) {
-                $persistenceHelper->persistAndRecompute($variable);
+        if ($this->persistenceHelper->isChanged($variant, 'netPrice')) {
+            if ($this->variableUpdater->updateMinPrice($variable)) {
+                $this->persistenceHelper->persistAndRecompute($variable);
             }
         }
+
+        return $changed;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function supports(ProductInterface $product)
+    {
+        return $product->getType() === ProductTypes::TYPE_VARIANT;
     }
 }

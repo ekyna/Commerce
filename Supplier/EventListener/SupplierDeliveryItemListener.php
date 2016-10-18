@@ -53,7 +53,7 @@ class SupplierDeliveryItemListener extends AbstractListener
             $changeSet = $this->persistenceHelper->getChangeSet($item);
 
             // Delta quantity (difference between new and old)
-            if (0 != $deltaQuantity = $changeSet['quantity'][1] - $changeSet['quantity'][0]) {
+            if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
                 // Update stock unit delivered quantity
                 $this->updateDeliveredQuantity($orderItem, $deltaQuantity);
             }

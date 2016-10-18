@@ -3,9 +3,8 @@
 namespace Ekyna\Component\Commerce\Product\EventListener;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Product\EventListener\Handler;
+use Ekyna\Component\Commerce\Product\EventListener\Handler\HandlerInterface;
 use Ekyna\Component\Commerce\Product\Model\ProductInterface;
-use Ekyna\Component\Commerce\Stock\Updater\StockSubjectUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -22,28 +21,23 @@ class ProductListener
     protected $persistenceHelper;
 
     /**
-     * @var StockSubjectUpdaterInterface
+     * @var Handler\HandlerRegistry
      */
-    protected $stockUpdater;
-
-    /**
-     * @var Handler\HandlerFactory
-     */
-    private $factory;
+    private $handlerRegistry;
 
 
     /**
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockSubjectUpdaterInterface $stockUpdater
+     * @param Handler\HandlerRegistry    $registry
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        StockSubjectUpdaterInterface $stockUpdater
+        Handler\HandlerRegistry $registry
     ) {
         $this->persistenceHelper = $persistenceHelper;
-        $this->stockUpdater = $stockUpdater;
+        $this->handlerRegistry = $registry;
     }
 
     /**
@@ -55,12 +49,7 @@ class ProductListener
     {
         $product = $this->getProductFromEvent($event);
 
-        $handler = $this->getHandler($product);
-
-        $changed = $handler->handleInsert($event);
-
-        // TODO bundled or variable stock, stock state and eda
-        $changed = $this->stockUpdater->update($product) || $changed;
+        $changed = $this->executeHandlers($event, HandlerInterface::INSERT);
 
         // TODO Timestampable behavior/listener
         $product
@@ -81,15 +70,7 @@ class ProductListener
     {
         $product = $this->getProductFromEvent($event);
 
-        $handler = $this->getHandler($product);
-
-        $changed = $handler->handleUpdate($event);
-
-        // TODO bundled or variable stock, stock state and eda
-        // TODO move this in stock handler and use inheritance
-        if ($this->persistenceHelper->isChanged($product, ['inStock', 'orderedStock', 'estimatedDateOfArrival'])) {
-            $this->stockUpdater->updateStockState($product);
-        }
+        $changed = $this->executeHandlers($event, HandlerInterface::UPDATE);
 
         // TODO Timestampable behavior/listener
         $product->setUpdatedAt(new \DateTime());
@@ -106,7 +87,7 @@ class ProductListener
      */
     public function onDelete(ResourceEventInterface $event)
     {
-        //$product = $this->getProductFromEvent($event);
+        $this->executeHandlers($event, HandlerInterface::DELETE);
     }
 
     /**
@@ -118,46 +99,46 @@ class ProductListener
     {
         $product = $this->getProductFromEvent($event);
 
-        $stockUnitChangeSet = $event->getData('stock_unit_change_set');
-
-        $changed = false;
-
-        // By stock unit change set
-        if ($event->hasData('stock_unit_change_set')) {
-            if (in_array('inStock', $stockUnitChangeSet)) {
-                $changed = $this->stockUpdater->updateInStock($product);
-            }
-            if (in_array('orderedStock', $stockUnitChangeSet)) {
-                $changed = $this->stockUpdater->updateOrderedStock($product) || $changed;
-            }
-            if ($changed || in_array('estimatedDateOfArrival', $stockUnitChangeSet)) {
-                $changed = $this->stockUpdater->updateEstimatedDateOfArrival($product) || $changed;
-            }
-        } else { // Whole update
-            $changed = $this->stockUpdater->updateInStock($product);
-            $changed = $this->stockUpdater->updateOrderedStock($product) || $changed;
-            $changed = $this->stockUpdater->updateEstimatedDateOfArrival($product) || $changed;
-        }
-
-        if ($changed) {
+        if ($this->executeHandlers($event, HandlerInterface::STOCK_UNIT_CHANGE)) {
             $this->persistenceHelper->persistAndRecompute($product);
         }
     }
 
     /**
-     * Returns the product handler regarding to product type.
+     * Stock unit change event handler.
      *
-     * @param ProductInterface $product
-     *
-     * @return Handler\HandlerInterface
+     * @param ResourceEventInterface $event
      */
-    protected function getHandler(ProductInterface $product)
+    public function onChildStockChange(ResourceEventInterface $event)
     {
-        if (null === $this->factory) {
-            $this->factory = new Handler\HandlerFactory($this->persistenceHelper);
+        $product = $this->getProductFromEvent($event);
+
+        if ($this->executeHandlers($event, HandlerInterface::CHILD_STOCK_CHANGE)) {
+            $this->persistenceHelper->persistAndRecompute($product);
+        }
+    }
+
+    /**
+     * Execute the event handlers method regarding to the product type,
+     * and returns whether or the product has been changed.
+     *
+     * @param ResourceEventInterface $event
+     * @param string                 $method
+     *
+     * @return bool
+     */
+    private function executeHandlers(ResourceEventInterface $event, $method)
+    {
+        $product = $this->getProductFromEvent($event);
+
+        $changed = false;
+
+        $handlers = $this->handlerRegistry->getHandlers($product);
+        foreach ($handlers as $handler) {
+            $changed = call_user_func([$handler, $method], $event) || $changed;
         }
 
-        return $this->factory->getHandler($product);
+        return $changed;
     }
 
     /**

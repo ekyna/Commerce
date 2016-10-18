@@ -479,4 +479,16 @@
 
     </class>
 
+    <class name="Ekyna\Component\Commerce\Product\Entity\ProductStockUnit">
+        <property name="product">
+            <constraint name="NotNull"/>
+            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\ProductType">
+                <option name="types">
+                    <value>simple</value>
+                    <value>variant</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
+
 </constraint-mapping>

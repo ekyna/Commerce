@@ -15,28 +15,31 @@ interface StockSubjectUpdaterInterface
      * 1. Updates the subject's "in stock" quantity.
      *
      * @param StockSubjectInterface $subject
+     * @param float                 $quantity
      *
      * @return bool Whether or not the subject has been updated.
      */
-    public function updateInStock(StockSubjectInterface $subject);
+    public function updateInStock(StockSubjectInterface $subject, $quantity = null);
 
     /**
      * 2. Updates the subject's "ordered stock" quantity.
      *
      * @param StockSubjectInterface $subject
+     * @param float                 $quantity
      *
      * @return bool Whether or not the subject has been updated.
      */
-    public function updateOrderedStock(StockSubjectInterface $subject);
+    public function updateOrderedStock(StockSubjectInterface $subject, $quantity = null);
 
     /**
      * 3. Updates the subject's estimated date of arrival date.
      *
      * @param StockSubjectInterface $subject
+     * @param \DateTime             $date
      *
      * @return bool Whether or not the subject has been updated.
      */
-    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject);
+    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject, \DateTime $date = null);
 
     /**
      * 4. Updates the subject's stock state.
