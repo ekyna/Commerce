@@ -15,7 +15,7 @@
         <field name="name" column="number" type="string" length="255" unique="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice"
-                     field="prices" mapped-by="zone">
+                     field="prices" mapped-by="zone" fetch="EXTRA_LAZY">
             <cascade>
                 <cascade-persist/>
             </cascade>

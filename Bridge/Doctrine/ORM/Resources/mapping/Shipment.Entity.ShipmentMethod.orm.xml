@@ -22,10 +22,21 @@
         </id>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage"
-                     mapped-by="method" field="messages">
+                     mapped-by="method" field="messages" fetch="EXTRA_LAZY">
             <cascade>
                 <cascade-all/>
             </cascade>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice"
+                     field="prices" mapped-by="method" fetch="EXTRA_LAZY">
+            <cascade>
+                <cascade-persist/>
+            </cascade>
+            <order-by>
+                <order-by-field name="zone" direction="ASC"/>
+                <order-by-field name="weight" direction="ASC"/>
+            </order-by>
         </one-to-many>
 
     </mapped-superclass>

@@ -54,4 +54,25 @@
         </property>
     </class>
 
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice">
+        <property name="weight">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThan">
+                <value>0</value>
+            </constraint>
+            <constraint name="LessThan">
+                <value>10000</value>
+            </constraint>
+        </property>
+        <property name="weight">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThan">
+                <value>0</value>
+            </constraint>
+            <constraint name="LessThan">
+                <value>1000</value>
+            </constraint>
+        </property>
+    </class>
+
 </constraint-mapping>

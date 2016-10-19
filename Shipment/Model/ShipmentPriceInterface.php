@@ -41,7 +41,7 @@ interface ShipmentPriceInterface extends ResourceInterface
      *
      * @return $this|ShipmentPriceInterface
      */
-    public function setMethod(ShipmentMethodInterface $method);
+    public function setMethod(ShipmentMethodInterface $method = null);
 
     /**
      * Returns the weight.

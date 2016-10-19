@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
@@ -88,7 +89,7 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function setMethod(ShipmentMethodInterface $method)
+    public function setMethod(ShipmentMethodInterface $method = null)
     {
         $this->method = $method;
 
