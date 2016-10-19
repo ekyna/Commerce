@@ -7,8 +7,7 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentItem">
 
-        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="5"/>
-        <field name="debitedQuantity" column="debited_quantity" type="decimal" precision="10" scale="5"/>
+        <field name="quantity" column="shipped_quantity" type="decimal" precision="10" scale="5"/>
 
     </mapped-superclass>
 

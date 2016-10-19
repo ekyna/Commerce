@@ -46,34 +46,18 @@ interface ShipmentItemInterface extends ResourceInterface
     public function setSaleItem(SaleItemInterface $saleItem);
 
     /**
-     * Returns the shipped quantity.
+     * Returns the quantity.
      *
      * @return float
      */
-    public function getShippedQuantity();
+    public function getQuantity();
 
     /**
-     * Sets the shipped quantity.
+     * Sets the quantity.
      *
      * @param float $quantity
      *
      * @return $this|ShipmentItemInterface
      */
-    public function setShippedQuantity($quantity);
-
-    /**
-     * Returns the debited quantity.
-     *
-     * @return float
-     */
-    public function getDebitedQuantity();
-
-    /**
-     * Sets the debited quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|ShipmentItemInterface
-     */
-    public function setDebitedQuantity($quantity);
+    public function setQuantity($quantity);
 }
