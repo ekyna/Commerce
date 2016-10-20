@@ -2,13 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Event\OrderPaymentEvents;
-use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
-use Ekyna\Component\Commerce\Payment\EventListener\AbstractPaymentListener;
-use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Commerce\Order\EventListener\OrderPaymentListener;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -16,32 +11,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @package Ekyna\Bundle\CommerceBundle\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderPaymentEventSubscriber extends AbstractPaymentListener implements EventSubscriberInterface
+class OrderPaymentEventSubscriber extends OrderPaymentListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritdoc
-     */
-    protected function dispatchSaleContentChangeEvent(SaleInterface $sale)
-    {
-        $event = $this->dispatcher->createResourceEvent($sale);
-
-        $this->dispatcher->dispatch(OrderEvents::CONTENT_CHANGE, $event);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getPaymentFromEvent(ResourceEventInterface $event)
-    {
-        $resource = $event->getResource();
-
-        if (!$resource instanceof OrderPaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderPaymentInterface");
-        }
-
-        return $resource;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -51,6 +22,8 @@ class OrderPaymentEventSubscriber extends AbstractPaymentListener implements Eve
             OrderPaymentEvents::INSERT     => ['onInsert', 0],
             OrderPaymentEvents::UPDATE     => ['onUpdate', 0],
             OrderPaymentEvents::DELETE     => ['onDelete', 0],
+            OrderPaymentEvents::PRE_CREATE => ['onPreCreate', 0],
+            OrderPaymentEvents::PRE_UPDATE => ['onPreUpdate', 0],
             OrderPaymentEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }

@@ -136,6 +136,22 @@ abstract class AbstractPaymentListener
     }
 
     /**
+     * Pre update event handler.
+     *
+     * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
+     */
+    public function onPreUpdate(ResourceEventInterface $event)
+    {
+        /*$payment = $this->getPaymentFromEvent($event);
+        // TODO assert updateable states
+        if (!in_array($payment->getState(), PaymentStates::getDeletableStates())) {
+            throw new IllegalOperationException();
+        }*/
+    }
+
+    /**
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event

@@ -186,6 +186,7 @@ abstract class AbstractSaleListener
         // Update totals
         // TODO test that, maybe we have to use UnitOfWork::isCollectionScheduledFor*
         // TODO what about item's children ?
+        // TODO Actually, this is handled by content change event.
         if ($this->persistenceHelper->isChanged($sale, ['items', 'adjustments', 'payments'])) {
             $changed = $this->updateTotals($sale) || $changed;
         }

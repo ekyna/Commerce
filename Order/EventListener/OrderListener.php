@@ -23,7 +23,7 @@ class OrderListener extends AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
-        // TODO shipments ...
+        // TODO shipments state (move on content change event handler) ...
 
         parent::onInsert($event);
     }
@@ -35,7 +35,7 @@ class OrderListener extends AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
-        // TODO shipments ...
+        // TODO shipments state (move on content change event handler) ...
 
         parent::onUpdate($event);
     }

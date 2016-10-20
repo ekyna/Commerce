@@ -174,6 +174,22 @@ abstract class AbstractShipmentListener
     }
 
     /**
+     * Pre update event handler.
+     *
+     * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
+     */
+    public function onPreUpdate(ResourceEventInterface $event)
+    {
+        /*$shipment = $this->getShipmentFromEvent($event);
+        // TODO assert updateable states
+        if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
+            throw new IllegalOperationException();
+        }*/
+    }
+
+    /**
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
