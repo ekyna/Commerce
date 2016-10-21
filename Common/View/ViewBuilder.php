@@ -87,6 +87,7 @@ class ViewBuilder
             $finalTotal,
             $this->buildSaleItemsLinesViews($sale),
             $this->buildSaleDiscountsLinesViews($sale),
+            $this->buildShipmentLine($sale),
             $this->buildSaleTaxesViews($sale)
         );
 
@@ -253,6 +254,52 @@ class ViewBuilder
 
         if ($this->varsBuilder) {
             $view->vars = $this->varsBuilder->buildAdjustmentViewVars($adjustment, $this->options);
+        }
+
+        return $view;
+    }
+
+    /**
+     * Builds the shipment adjustment line view.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return LineView|null
+     */
+    private function buildShipmentLine(Model\SaleInterface $sale)
+    {
+        if (!$sale->requiresShipment()) {
+            return null;
+        }
+
+        $amounts = $this->calculator->calculateShipment($sale);
+
+        $lineNumber = $this->lineNumber++;
+
+        $designation = 'Frais de port'; // TODO translate ?
+        if (null !== $method = $sale->getPreferredShipmentMethod()) {
+            $designation = $method->getTitle();
+        }
+
+        $view = new LineView(
+            'shipment',
+            $lineNumber,
+            0,
+            $designation,
+            '',
+            null,
+            1,
+            $amounts->getBase(),
+            null,
+            $amounts->getTaxTotal(),
+            $amounts->getTotal()
+            // lines
+            // node
+            // immutable
+        );
+
+        if ($this->varsBuilder) {
+            $view->vars = $this->varsBuilder->buildShipmentViewVars($sale, $this->options);
         }
 
         return $view;

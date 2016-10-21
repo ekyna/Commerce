@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -66,6 +67,11 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     protected $sameAddress;
 
     /**
+     * @var Shipment\ShipmentMethodInterface
+     */
+    protected $preferredShipmentMethod;
+
+    /**
      * @var Model\CurrencyInterface
      */
     protected $currency;
@@ -84,6 +90,21 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
      * @var float
      */
     protected $adjustmentTotal;
+
+    /**
+     * @var float
+     */
+    protected $shipmentAmount;
+
+    /**
+     * @var float
+     */
+    protected $shipmentTaxRate;
+
+    /**
+     * @var string
+     */
+    protected $shipmentTaxName;
 
     /**
      * @var float
@@ -312,6 +333,24 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
+    public function getPreferredShipmentMethod()
+    {
+        return $this->preferredShipmentMethod;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPreferredShipmentMethod(Shipment\ShipmentMethodInterface $method = null)
+    {
+        $this->preferredShipmentMethod = $method;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCurrency()
     {
         return $this->currency;
@@ -338,9 +377,9 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function setWeightTotal($weightTotal)
+    public function setWeightTotal($total)
     {
-        $this->weightTotal = $weightTotal;
+        $this->weightTotal = $total;
 
         return $this;
     }
@@ -356,9 +395,9 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function setNetTotal($netTotal)
+    public function setNetTotal($total)
     {
-        $this->netTotal = $netTotal;
+        $this->netTotal = $total;
 
         return $this;
     }
@@ -374,9 +413,63 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function setAdjustmentTotal($adjustmentTotal)
+    public function setAdjustmentTotal($total)
     {
-        $this->adjustmentTotal = $adjustmentTotal;
+        $this->adjustmentTotal = $total;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShipmentAmount()
+    {
+        return $this->shipmentAmount;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setShipmentAmount($amount)
+    {
+        $this->shipmentAmount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShipmentTaxRate()
+    {
+        return $this->shipmentTaxRate;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setShipmentTaxRate($rate)
+    {
+        $this->shipmentTaxRate = $rate;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShipmentTaxName()
+    {
+        return $this->shipmentTaxName;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setShipmentTaxName($name)
+    {
+        $this->shipmentTaxName = $name;
 
         return $this;
     }
@@ -392,9 +485,9 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function setGrandTotal($grandTotal)
+    public function setGrandTotal($total)
     {
-        $this->grandTotal = $grandTotal;
+        $this->grandTotal = $total;
 
         return $this;
     }
@@ -410,9 +503,9 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function setPaidTotal($paidTotal)
+    public function setPaidTotal($total)
     {
-        $this->paidTotal = $paidTotal;
+        $this->paidTotal = $total;
 
         return $this;
     }
@@ -438,9 +531,9 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * {@inheritdoc}
      */
-    public function setPaymentState($paymentState)
+    public function setPaymentState($state)
     {
-        $this->paymentState = $paymentState;
+        $this->paymentState = $state;
 
         return $this;
     }

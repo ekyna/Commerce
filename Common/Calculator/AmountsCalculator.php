@@ -70,7 +70,32 @@ class AmountsCalculator implements AmountsCalculatorInterface
             }
         }
 
+        // Shipment result
+        $result->merge($this->calculateShipment($sale));
+
         // TODO disable result caching
+
+        return $result;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateShipment(SaleInterface $sale)
+    {
+        $result = new Result();
+
+        if (0 < $sale->getShipmentAmount()) {
+            $result->addBase($sale->getShipmentAmount());
+
+            if (0 < $sale->getShipmentTaxRate()) {
+                $result->addTax(
+                    $sale->getShipmentTaxName(),
+                    $sale->getShipmentTaxRate(),
+                    $this->round($sale->getShipmentAmount() * $sale->getShipmentTaxRate() / 100)
+                );
+            }
+        }
 
         return $result;
     }

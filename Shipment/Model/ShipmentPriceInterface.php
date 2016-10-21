@@ -44,14 +44,14 @@ interface ShipmentPriceInterface extends ResourceInterface
     public function setMethod(ShipmentMethodInterface $method = null);
 
     /**
-     * Returns the weight.
+     * Returns the weight (kilograms).
      *
      * @return float
      */
     public function getWeight();
 
     /**
-     * Sets the weight.
+     * Sets the weight (kilograms).
      *
      * @param float $weight
      *

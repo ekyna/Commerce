@@ -4,8 +4,8 @@ namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentMethodRepositoryInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentPriceRepositoryInterface;
 
@@ -14,7 +14,7 @@ use Ekyna\Component\Commerce\Shipment\Repository\ShipmentPriceRepositoryInterfac
  * @package Ekyna\Component\Commerce\Shipment\Resolver
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentPriceResolver
+class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 {
     /**
      * @var ShipmentMethodRepositoryInterface
@@ -42,12 +42,31 @@ class ShipmentPriceResolver
     }
 
     /**
-     * Returns the available shipment methods by country and weight.
-     *
-     * @param CountryInterface $country
-     * @param float            $weight The weight in Kg.
-     *
-     * @return array|ShipmentMethodInterface[]
+     * @inheritdoc
+     */
+    public function getAvailableMethodsBySale(SaleInterface $sale)
+    {
+        if (null !== $country = $this->getSaleDeliveryCountry($sale)) {
+            return $this->getAvailableMethodsByCountryAndWeight($country, $sale->getWeightTotal());
+        }
+
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAvailablePricesBySale(SaleInterface $sale)
+    {
+        if (null !== $country = $this->getSaleDeliveryCountry($sale)) {
+            return $this->getAvailablePricesByCountryAndWeight($country, $sale->getWeightTotal());
+        }
+
+        return [];
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getAvailableMethodsByCountryAndWeight(CountryInterface $country, $weight)
     {
@@ -57,12 +76,7 @@ class ShipmentPriceResolver
     }
 
     /**
-     * Returns the available shipment prices by country and weight.
-     *
-     * @param CountryInterface $country
-     * @param float            $weight The weight in Kg.
-     *
-     * @return array|ShipmentPriceInterface[]
+     * @inheritdoc
      */
     public function getAvailablePricesByCountryAndWeight(CountryInterface $country, $weight)
     {
@@ -71,7 +85,7 @@ class ShipmentPriceResolver
         $methods = $this->getAvailableMethodsByCountryAndWeight($country, $weight);
 
         foreach ($methods as $method) {
-            /** @var ShipmentPriceInterface[] $prices */
+            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[] $prices */
             $prices = $method->getPrices()->matching(
                 new Criteria(null, ['weight' => 'ASC'])
             );
@@ -88,13 +102,7 @@ class ShipmentPriceResolver
     }
 
     /**
-     * Returns the shipment price by country, method and weight.
-     *
-     * @param CountryInterface        $country
-     * @param ShipmentMethodInterface $method
-     * @param float                   $weight The weight in Kg.
-     *
-     * @return ShipmentPriceInterface
+     * @inheritdoc
      */
     public function getPriceByCountryAndMethodAndWeight(
         CountryInterface $country,
@@ -104,5 +112,21 @@ class ShipmentPriceResolver
         return $this
             ->priceRepository
             ->findOneByCountryAndMethodAndWeight($country, $method, $weight);
+    }
+
+    /**
+     * Returns the sale delivery country.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return CountryInterface|null
+     */
+    private function getSaleDeliveryCountry(SaleInterface $sale)
+    {
+        $address = $sale->getSameAddress()
+            ? $sale->getInvoiceAddress()
+            : $sale->getDeliveryAddress();
+
+        return null !== $address ? $address->getCountry() : null;
     }
 }

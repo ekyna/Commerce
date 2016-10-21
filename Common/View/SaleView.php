@@ -35,6 +35,11 @@ class SaleView extends AbstractView
     private $discounts;
 
     /**
+     * @var LineView
+     */
+    private $shipment;
+
+    /**
      * @var TaxView[]
      */
     private $taxes;
@@ -48,16 +53,25 @@ class SaleView extends AbstractView
      * @param TotalView  $final
      * @param LineView[] $items
      * @param LineView[] $discounts
+     * @param LineView   $shipment
      * @param TaxView[]  $taxes
      */
-    public function __construct($mode, TotalView $gross, TotalView $final, array $items, array $discounts, array $taxes)
-    {
-        $this->mode      = $mode;
-        $this->gross     = $gross;
-        $this->final     = $final;
-        $this->items     = $items;
+    public function __construct(
+        $mode,
+        TotalView $gross,
+        TotalView $final,
+        array $items,
+        array $discounts,
+        $shipment,
+        array $taxes
+    ) {
+        $this->mode = $mode;
+        $this->gross = $gross;
+        $this->final = $final;
+        $this->items = $items;
         $this->discounts = $discounts;
-        $this->taxes     = $taxes;
+        $this->shipment = $shipment;
+        $this->taxes = $taxes;
     }
 
     /**
@@ -97,6 +111,16 @@ class SaleView extends AbstractView
     public function getDiscounts()
     {
         return $this->discounts;
+    }
+
+    /**
+     * Returns the shipment line view.
+     *
+     * @return LineView|null
+     */
+    public function getShipment()
+    {
+        return $this->shipment;
     }
 
     /**

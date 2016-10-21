@@ -40,4 +40,14 @@ interface ViewVarsBuilderInterface
      * @return array
      */
     public function buildAdjustmentViewVars(Model\AdjustmentInterface $adjustment, array $options = []);
+
+    /**
+     * Builds the shipment view vars.
+     *
+     * @param Model\SaleInterface $sale
+     * @param array               $options
+     *
+     * @return array
+     */
+    public function buildShipmentViewVars(Model\SaleInterface $sale, array $options = []);
 }

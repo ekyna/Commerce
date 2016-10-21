@@ -115,14 +115,14 @@ interface SaleItemInterface extends
     public function setReference($reference);
 
     /**
-     * Returns the netPrice.
+     * Returns the net price.
      *
      * @return float
      */
     public function getNetPrice();
 
     /**
-     * Sets the netPrice.
+     * Sets the net price.
      *
      * @param float $netPrice
      *
@@ -131,14 +131,14 @@ interface SaleItemInterface extends
     public function setNetPrice($netPrice);
 
     /**
-     * Returns the weight.
+     * Returns the weight (kilograms).
      *
      * @return float
      */
     public function getWeight();
 
     /**
-     * Sets the weight.
+     * Sets the weight (kilograms).
      *
      * @param float $weight
      *

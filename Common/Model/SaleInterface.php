@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -118,6 +119,22 @@ interface SaleInterface extends
     public function setSameAddress($same);
 
     /**
+     * Returns the preferred shipment method.
+     *
+     * @return ShipmentMethodInterface
+     */
+    public function getPreferredShipmentMethod();
+
+    /**
+     * Sets the preferred shipment method.
+     *
+     * @param ShipmentMethodInterface $method
+     *
+     * @return $this|SaleInterface
+     */
+    public function setPreferredShipmentMethod(ShipmentMethodInterface $method = null);
+
+    /**
      * Returns the currency.
      *
      * @return CurrencyInterface
@@ -134,14 +151,14 @@ interface SaleInterface extends
     public function setCurrency(CurrencyInterface $currency);
 
     /**
-     * Returns the weight total.
+     * Returns the weight total (kilograms).
      *
      * @return float
      */
     public function getWeightTotal();
 
     /**
-     * Sets the weight total.
+     * Sets the weight total (kilograms).
      *
      * @param float $total
      *
@@ -180,6 +197,54 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setAdjustmentTotal($total);
+
+    /**
+     * Returns the shipment amount.
+     *
+     * @return float
+     */
+    public function getShipmentAmount();
+
+    /**
+     * Sets the shipment amount.
+     *
+     * @param float $amount
+     *
+     * @return $this|SaleInterface
+     */
+    public function setShipmentAmount($amount);
+
+    /**
+     * Returns the shipment tax rate.
+     *
+     * @return float
+     */
+    public function getShipmentTaxRate();
+
+    /**
+     * Sets the shipment tax rate.
+     *
+     * @param float $rate
+     *
+     * @return $this|SaleInterface
+     */
+    public function setShipmentTaxRate($rate);
+
+    /**
+     * Returns the shipment tax name.
+     *
+     * @return string
+     */
+    public function getShipmentTaxName();
+
+    /**
+     * Sets the shipment tax name.
+     *
+     * @param string $name
+     *
+     * @return $this|SaleInterface
+     */
+    public function setShipmentTaxName($name);
 
     /**
      * Returns the total.

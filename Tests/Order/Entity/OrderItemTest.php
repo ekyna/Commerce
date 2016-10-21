@@ -30,7 +30,7 @@ class OrderItemTest extends \PHPUnit_Framework_TestCase
             ->setNetPrice(10)
             ->setTaxName('Tax 1')
             ->setTaxRate(0.2)
-            ->setWeight(100)
+            ->setWeight(0.2)
             ->setQuantity(1)
             ->addChild($this->getTestChildItemOne())
             ->addAdjustment($this->getTestItemAdjustmentOne());

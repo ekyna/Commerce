@@ -33,7 +33,7 @@ interface AmountsCalculatorInterface
     public function setMode($mode);
 
     /**
-     * Calculates the sale's amounts.
+     * Calculates the sale amounts.
      *
      * @param Model\SaleInterface $sale
      * @param bool                $gross
@@ -43,7 +43,16 @@ interface AmountsCalculatorInterface
     public function calculateSale(Model\SaleInterface $sale, $gross = false);
 
     /**
-     * Calculates the sale item's amounts.
+     * Calculates the sale shipment amounts.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return Result
+     */
+    public function calculateShipment(Model\SaleInterface $sale);
+
+    /**
+     * Calculates the sale item amounts.
      *
      * @param Model\SaleItemInterface $item
      * @param bool                    $gross

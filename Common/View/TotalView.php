@@ -40,6 +40,8 @@ class TotalView extends AbstractView
     }
 
     /**
+     * Returns the base total.
+     *
      * @return float
      */
     public function getBase()
@@ -48,6 +50,8 @@ class TotalView extends AbstractView
     }
 
     /**
+     * Returns the tax total.
+     *
      * @return float
      */
     public function getTax()
@@ -56,6 +60,8 @@ class TotalView extends AbstractView
     }
 
     /**
+     * Returns the final total.
+     *
      * @return float
      */
     public function getTotal()
