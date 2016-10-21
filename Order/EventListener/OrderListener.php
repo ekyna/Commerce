@@ -3,9 +3,11 @@
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
@@ -58,6 +60,25 @@ class OrderListener extends AbstractSaleListener
                 }
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function updateState(SaleInterface $sale)
+    {
+        if (parent::updateState($sale)) {
+            /** @var OrderInterface $sale */
+            if (($sale->getState() === OrderStates::STATE_COMPLETED) && (null === $sale->getCompletedAt())) {
+                $sale->setCompletedAt(new \DateTime());
+            } elseif (($sale->getState() !== OrderStates::STATE_COMPLETED) && (null !== $sale->getCompletedAt())) {
+                $sale->setCompletedAt(null);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

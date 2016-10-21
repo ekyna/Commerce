@@ -14,6 +14,8 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class CartListener extends AbstractSaleListener
 {
+    // TODO expiresAt updates
+
     /**
      * @inheritdoc
      */

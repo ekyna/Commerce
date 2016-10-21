@@ -15,4 +15,13 @@ interface TaxableInterface
      * @return TaxGroupInterface
      */
     public function getTaxGroup();
+
+    /**
+     * Sets the tax group.
+     *
+     * @param TaxGroupInterface $taxGroup
+     *
+     * @return $this|TaxableInterface
+     */
+    public function setTaxGroup(TaxGroupInterface $taxGroup = null);
 }

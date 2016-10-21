@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Entity\Country;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Symfony\Component\Intl\Intl;
 
 /**
@@ -49,7 +50,7 @@ class Installer
                 ));
             };
         } else {
-            $this->log = function($name) {};
+            $this->log = function($name, $result) {};
         }
     }
 
@@ -65,6 +66,7 @@ class Installer
     {
         $this->installCountries($countries);
         $this->installCurrencies($currencies);
+        $this->installTaxGroups();
     }
 
     /**
@@ -108,6 +110,33 @@ class Installer
     }
 
     /**
+     * Installs the default tax group.
+     */
+    public function installTaxGroups()
+    {
+        /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
+        $repository = $this->manager->getRepository(TaxGroup::class);
+
+        $name = 'Default tax group';
+
+        $result = 'already exists';
+        if (null === $repository->findOneBy(['default' => true])) {
+            /** @var \Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface $taxGroup */
+            $taxGroup = $repository->createNew();
+            $taxGroup
+                ->setName($name)
+                ->setDefault(true);
+
+            $this->manager->persist($taxGroup);
+            $this->manager->flush();
+
+            $result = 'done';
+        }
+
+        call_user_func($this->log, $name, $result);
+    }
+
+    /**
      * Generates the entities.
      *
      * @param string $class
@@ -117,6 +146,7 @@ class Installer
      */
     private function generate($class, array $names, array $enabledCodes, $defaultCode)
     {
+        /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
         $repository = $this->manager->getRepository($class);
 
         $enabledCodes = array_map(function($code) {
@@ -127,7 +157,7 @@ class Installer
             $result = 'already exists';
             if (null === $repository->findOneBy(['code' => $code])) {
                 /** @var CountryInterface|CurrencyInterface $entity */
-                $entity = new $class();
+                $entity = $repository->createNew();
                 $entity
                     ->setName($name)
                     ->setCode($code)

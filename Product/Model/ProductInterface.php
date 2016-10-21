@@ -337,15 +337,6 @@ interface ProductInterface extends
     public function setWeight($weight);
 
     /**
-     * Sets the tax group.
-     *
-     * @param PricingModel\TaxGroupInterface $group
-     *
-     * @return $this|ProductInterface
-     */
-    public function setTaxGroup(PricingModel\TaxGroupInterface $group);
-
-    /**
      * Returns the "created at" datetime.
      *
      * @return \DateTime

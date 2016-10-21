@@ -573,7 +573,7 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
     /**
      * @inheritdoc
      */
-    public function setTaxGroup(TaxGroupInterface $group)
+    public function setTaxGroup(TaxGroupInterface $group = null)
     {
         $this->taxGroup = $group;
 

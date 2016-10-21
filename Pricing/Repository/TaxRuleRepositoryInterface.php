@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Pricing\Repository;
 
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
@@ -21,7 +20,7 @@ interface TaxRuleRepositoryInterface extends ResourceRepositoryInterface
      *
      * @param TaxGroupInterface              $taxGroup
      * @param array|CustomerGroupInterface[] $customerGroups
-     * @param CountryInterface $country
+     * @param CountryInterface               $country
      *
      * @return array|TaxRuleInterface[]
      */

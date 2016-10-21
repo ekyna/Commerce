@@ -25,7 +25,7 @@ class SaleValidator extends ConstraintValidator
 
         $this->validateIdentity($sale, $constraint);
 
-        if ($sale->requiresShipment() && (!$sale->getSameAddress() && null === $sale->getDeliveryAddress())) {
+        if ($sale->requiresShipment() && (!$sale->isSameAddress() && null === $sale->getDeliveryAddress())) {
             $this->context
                 ->buildViolation($constraint->delivery_address_is_required)
                 ->atPath('deliveryAddress');

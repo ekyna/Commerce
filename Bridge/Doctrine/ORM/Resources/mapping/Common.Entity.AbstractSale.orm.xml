@@ -23,6 +23,8 @@
         <field name="shipmentTaxRate" column="shipment_tax_rate" type="decimal" precision="10" scale="5" nullable="true"/>
         <field name="shipmentTaxName" column="shipment_tax_name" type="string" length="64" nullable="true" />
 
+        <field name="taxExempt" column="tax_exempt" type="boolean" />
+
         <field name="netTotal" column="net_total" type="decimal" precision="12" scale="5"/>
         <field name="adjustmentTotal" column="adjustment_total" type="decimal" precision="10" scale="5"/>
         <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>

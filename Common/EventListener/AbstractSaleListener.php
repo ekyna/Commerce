@@ -206,8 +206,6 @@ abstract class AbstractSaleListener
      * Content change event handler.
      *
      * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
      */
     public function onContentChange(ResourceEventInterface $event)
     {
@@ -222,6 +220,31 @@ abstract class AbstractSaleListener
         if (true || $changed) { // TODO
             $this->persistenceHelper->persistAndRecompute($sale);
         }
+    }
+
+    public function onDeliveryChange(ResourceEventInterface $event)
+    {
+        $sale = $this->getSaleFromEvent($event);
+
+        // Abort if completed (order).
+
+        // Get tax resolution mode. (by invoice/delivery/origin).
+
+        // Resolve the old target country.
+
+        // Resolve the new target country.
+
+        // If target country, tax exemption or customer groups changed (and taxables tax group ?)
+
+            // Update items taxation adjustments and shipment tax rate and name.
+
+            // If any adjustments or tax rate changes
+
+                // Update sale totals
+
+                    // If totals changed
+
+                        // Resolve state
     }
 
     /**
@@ -331,12 +354,12 @@ abstract class AbstractSaleListener
      */
     protected function handleAddresses(SaleInterface $sale)
     {
-        if ((null !== $deliveryAddress = $sale->getDeliveryAddress()) && $sale->getSameAddress()) {
+        if ((null !== $deliveryAddress = $sale->getDeliveryAddress()) && $sale->isSameAddress()) {
             // Unset delivery address
             $sale->setDeliveryAddress(null);
 
             // Delete the delivery address
-            // TODO $this->manager->delete($deliveryAddress);
+            $this->persistenceHelper->getManager()->remove($deliveryAddress);
 
             return true;
         }
@@ -378,27 +401,7 @@ abstract class AbstractSaleListener
     protected function updateState(SaleInterface $sale)
     {
         return $this->stateResolver->resolve($sale);
-        // TODO + completed at
     }
-
-    /**
-     * Fills the address identity fields if needed.
-     *
-     * @param AddressInterface $address
-     * @param UserInterface    $user
-     */
-    /*private function handleAddressIdentity(AddressInterface $address, UserInterface $user)
-    {
-        if (null === $address->getGender()) {
-            $address->setGender($user->getGender());
-        }
-        if (null === $address->getFirstName()) {
-            $address->setFirstName($user->getFirstName());
-        }
-        if (null === $address->getLastName()) {
-            $address->setLastName($user->getLastName());
-        }
-    }*/
 
     /**
      * Returns the sale from the event.

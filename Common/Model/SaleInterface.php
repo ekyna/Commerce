@@ -107,7 +107,7 @@ interface SaleInterface extends
      *
      * @return boolean
      */
-    public function getSameAddress();
+    public function isSameAddress();
 
     /**
      * Sets whether to use the invoice address as delivery address or not.
@@ -133,6 +133,22 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setPreferredShipmentMethod(ShipmentMethodInterface $method = null);
+
+    /**
+     * Returns whether the sale is tax exempt.
+     *
+     * @return boolean
+     */
+    public function isTaxExempt();
+
+    /**
+     * Sets the tax exempt.
+     *
+     * @param boolean $exempt
+     *
+     * @return $this|SaleInterface
+     */
+    public function setTaxExempt($exempt);
 
     /**
      * Returns the currency.

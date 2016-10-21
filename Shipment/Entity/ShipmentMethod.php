@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethod;
 use Ekyna\Component\Commerce\Common\Model\MessageInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 
@@ -16,6 +17,11 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
  */
 class ShipmentMethod extends AbstractMethod implements ShipmentMethodInterface
 {
+    /**
+     * @var TaxGroupInterface
+     */
+    protected $taxGroup;
+
     /**
      * @var ArrayCollection|ShipmentPriceInterface[]
      */
@@ -30,6 +36,24 @@ class ShipmentMethod extends AbstractMethod implements ShipmentMethodInterface
         parent::__construct();
 
         $this->prices = new ArrayCollection();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTaxGroup()
+    {
+        return $this->taxGroup;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTaxGroup(TaxGroupInterface $taxGroup = null)
+    {
+        $this->taxGroup = $taxGroup;
+
+        return $this;
     }
 
     /**

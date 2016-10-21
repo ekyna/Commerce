@@ -39,7 +39,8 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
             }
         }
 
-        return $this->getByTaxGroupAndCustomerGroupsQuery()
+        return $this
+            ->getByTaxGroupAndCustomerGroupsQuery()
             ->setParameters([
                 'tax_group'       => $taxGroup,
                 'customer_groups' => $customerGroups,

@@ -4,13 +4,14 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\MethodInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 
 /**
  * Interface ShipmentMethodInterface
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentMethodInterface extends MethodInterface
+interface ShipmentMethodInterface extends MethodInterface, TaxableInterface
 {
     /**
      * Returns the prices.

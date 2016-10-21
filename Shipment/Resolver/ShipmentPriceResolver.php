@@ -123,7 +123,7 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      */
     private function getSaleDeliveryCountry(SaleInterface $sale)
     {
-        $address = $sale->getSameAddress()
+        $address = $sale->isSameAddress()
             ? $sale->getInvoiceAddress()
             : $sale->getDeliveryAddress();
 

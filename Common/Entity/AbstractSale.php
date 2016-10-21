@@ -72,6 +72,11 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     protected $preferredShipmentMethod;
 
     /**
+     * @var bool
+     */
+    protected $taxExempt;
+
+    /**
      * @var Model\CurrencyInterface
      */
     protected $currency;
@@ -149,6 +154,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
         }
 
         $this->sameAddress = true;
+        $this->taxExempt = false;
 
         $this->weightTotal = 0;
         $this->netTotal = 0;
@@ -315,7 +321,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function getSameAddress()
+    public function isSameAddress()
     {
         return $this->sameAddress;
     }
@@ -344,6 +350,30 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     public function setPreferredShipmentMethod(Shipment\ShipmentMethodInterface $method = null)
     {
         $this->preferredShipmentMethod = $method;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether the sale is tax exempt.
+     *
+     * @return boolean
+     */
+    public function isTaxExempt()
+    {
+        return $this->taxExempt;
+    }
+
+    /**
+     * Sets the tax exempt.
+     *
+     * @param boolean $exempt
+     *
+     * @return AbstractSale
+     */
+    public function setTaxExempt($exempt)
+    {
+        $this->taxExempt = $exempt;
 
         return $this;
     }

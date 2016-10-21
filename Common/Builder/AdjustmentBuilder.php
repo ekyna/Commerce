@@ -79,7 +79,9 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
             $customer = $sale->getCustomer();
             $address = $sale->getDeliveryAddress();
 
-            if (null !== $customer && null !== $address) {
+            if ($sale->isTaxExempt()) {
+                $taxes = [];
+            } elseif (null !== $customer && null !== $address) {
                 $taxes = $this
                     ->taxResolver
                     ->getApplicableTaxesBySubjectAndCustomer(
@@ -92,6 +94,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         }
 
         // Remove taxation adjustments
+        // TODO : don't remove to add the same ...
         foreach ($item->getAdjustments() as $adjustment) {
             if ($adjustment->getType() === Model\AdjustmentTypes::TYPE_TAXATION) {
                 $item->removeAdjustment($adjustment);

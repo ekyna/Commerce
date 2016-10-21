@@ -42,6 +42,7 @@ class DoctrineBundleMapping
      */
     static function getDefaultImplementations()
     {
+        // TODO remove unused/useless interfaces
         return [
             Cart\Model\CartInterface::class                  => Cart\Entity\Cart::class,
             Cart\Model\CartAddressInterface::class           => Cart\Entity\CartAddress::class,
@@ -56,7 +57,6 @@ class DoctrineBundleMapping
 
             Pricing\Model\TaxGroupInterface::class           => Pricing\Entity\TaxGroup::class,
 
-            // TODO remove unused interfaces
             Product\Model\AttributeGroupInterface::class     => Product\Entity\AttributeGroup::class,
             Product\Model\AttributeInterface::class          => Product\Entity\Attribute::class,
             Product\Model\AttributeSetInterface::class       => Product\Entity\AttributeSet::class,
