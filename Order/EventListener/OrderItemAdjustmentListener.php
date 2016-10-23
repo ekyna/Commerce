@@ -7,16 +7,16 @@ use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
-use Ekyna\Component\Commerce\Order\Model\OrderAdjustmentInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
- * Class OrderAdjustmentListener
+ * Class OrderItemAdjustmentListener
  * @package Ekyna\Component\Commerce\Order\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderAdjustmentListener extends AbstractAdjustmentListener
+class OrderItemAdjustmentListener extends AbstractAdjustmentListener
 {
     /**
      * Pre create event handler.
@@ -79,9 +79,9 @@ class OrderAdjustmentListener extends AbstractAdjustmentListener
      */
     private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
     {
-        $adjustment = $this->getAdjustmentFromEvent($event);
+        $item = $this->getAdjustmentFromEvent($event);
         /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
-        $order = $adjustment->getAdjustable();
+        $order = $item->getAdjustable();
 
         // Stop sale is completed.
         if ($order->getState() === OrderStates::STATE_COMPLETED) {
@@ -94,10 +94,10 @@ class OrderAdjustmentListener extends AbstractAdjustmentListener
      */
     protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
     {
-        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
-        $order = $adjustment->getAdjustable();
+        /** @var \Ekyna\Component\Commerce\Order\Model\OrderItemInterface $item */
+        $item = $adjustment->getAdjustable();
 
-        $event = $this->dispatcher->createResourceEvent($order);
+        $event = $this->dispatcher->createResourceEvent($item->getSale());
 
         $this->dispatcher->dispatch(OrderEvents::CONTENT_CHANGE, $event);
     }
@@ -109,8 +109,8 @@ class OrderAdjustmentListener extends AbstractAdjustmentListener
     {
         $adjustment = $event->getResource();
 
-        if (!$adjustment instanceof OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderAdjustmentInterface");
+        if (!$adjustment instanceof OrderItemAdjustmentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderItemAdjustmentInterface");
         }
 
         return $adjustment;

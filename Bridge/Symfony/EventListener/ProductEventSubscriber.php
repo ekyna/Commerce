@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class ProductEventSubscriber extends ProductListener implements EventSubscriberInterface
 {
     /**
-     * {@inheritDoc}
+     * @inheritdoc
      */
     public static function getSubscribedEvents()
     {

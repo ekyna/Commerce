@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
+use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
@@ -35,6 +36,11 @@ abstract class AbstractSaleListener
      * @var KeyGeneratorInterface
      */
     protected $keyGenerator;
+
+    /**
+     * @var AdjustmentBuilderInterface
+     */
+    protected $adjustmentBuilder;
 
     /**
      * @var AmountsCalculatorInterface
@@ -80,6 +86,16 @@ abstract class AbstractSaleListener
     public function setKeyGenerator(KeyGeneratorInterface $keyGenerator)
     {
         $this->keyGenerator = $keyGenerator;
+    }
+
+    /**
+     * Sets the adjustment builder.
+     *
+     * @param AdjustmentBuilderInterface $adjustmentBuilder
+     */
+    public function setAdjustmentBuilder(AdjustmentBuilderInterface $adjustmentBuilder)
+    {
+        $this->adjustmentBuilder = $adjustmentBuilder;
     }
 
     /**
@@ -138,6 +154,9 @@ abstract class AbstractSaleListener
         // Handle addresses
         $changed = $this->handleAddresses($sale) || $changed;
 
+        // Update taxation
+        $changed = $this->updateTaxation($sale) || $changed;
+
         // Update totals
         $changed = $this->updateTotals($sale) || $changed;
 
@@ -165,7 +184,7 @@ abstract class AbstractSaleListener
 
         // TODO same shit here ... T_T
 
-        $changed = false;
+        $changed = $doTotalsUpdate = false;
 
         // Generate number and key
         $changed = $this->generateNumber($sale) || $changed;
@@ -179,25 +198,51 @@ abstract class AbstractSaleListener
             $changed = $this->handleAddresses($sale) || $changed;
         }
 
-        // TODO resolve/fix taxation adjustments if delivery address changed.
-        // - Replace based on subject.
-        // - If no subject, remove unexpected taxes ?
+        // TODO Timestampable behavior/listener
+        $sale->setUpdatedAt(new \DateTime());
+        $changed = true;
+
+        // Recompute to get an update-to-date change set.
+        if ($changed) {
+            $this->persistenceHelper->persistAndRecompute($sale);
+        }
+
+        $this->onTaxResolution($event);
+    }
+
+    /**
+     * Tax resolution event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onTaxResolution(ResourceEventInterface $event)
+    {
+        $sale = $this->getSaleFromEvent($event);
+
+        $changed = $doTotalsUpdate = false;
+
+        // Update taxation
+        if ($event->getHard() || $this->isTaxationUpdateNeeded($sale)) {
+            if ($this->updateTaxation($sale)) {
+                $changed = $doTotalsUpdate = true;
+            }
+        } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
+            if ($this->updateShipmentTaxation($sale)) {
+                $changed = $doTotalsUpdate = true;
+            }
+        }
 
         // Update totals
-        // TODO test that, maybe we have to use UnitOfWork::isCollectionScheduledFor*
-        // TODO what about item's children ?
-        // TODO Actually, this is handled by content change event.
-        if ($this->persistenceHelper->isChanged($sale, ['items', 'adjustments', 'payments'])) {
+        // TODO create and use isTotalsUpdateNeeded() method
+        if ($event->getHard() || $doTotalsUpdate) {
             $changed = $this->updateTotals($sale) || $changed;
         }
 
         // Update state
+        // TODO create and use isStateUpdateNeeded() method
         $changed = $this->updateState($sale) || $changed;
 
-        // TODO Timestampable behavior/listener
-        $sale->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) { // TODO
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
     }
@@ -212,39 +257,16 @@ abstract class AbstractSaleListener
         $sale = $this->getSaleFromEvent($event);
 
         // Update totals
+        // TODO create and use isTotalsUpdateNeeded() method
         $changed = $this->updateTotals($sale);
 
         // Update state
+        // TODO create and use isStateUpdateNeeded() method
         $changed = $this->updateState($sale) || $changed;
 
-        if (true || $changed) { // TODO
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
-    }
-
-    public function onDeliveryChange(ResourceEventInterface $event)
-    {
-        $sale = $this->getSaleFromEvent($event);
-
-        // Abort if completed (order).
-
-        // Get tax resolution mode. (by invoice/delivery/origin).
-
-        // Resolve the old target country.
-
-        // Resolve the new target country.
-
-        // If target country, tax exemption or customer groups changed (and taxables tax group ?)
-
-            // Update items taxation adjustments and shipment tax rate and name.
-
-            // If any adjustments or tax rate changes
-
-                // Update sale totals
-
-                    // If totals changed
-
-                        // Resolve state
     }
 
     /**
@@ -270,6 +292,68 @@ abstract class AbstractSaleListener
                 }
             }
         }
+    }
+
+    /**
+     * Returns whether or not the taxation adjustments should be updated.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function isTaxationUpdateNeeded(SaleInterface $sale)
+    {
+        // TODO Abort if completed (order) ?
+
+        // TODO Get tax resolution mode. (by invoice/delivery/origin).
+
+        $saleCs = $this->persistenceHelper->getChangeSet($sale);
+
+        // Watch for tax exempt, customer group or customer change
+        if (isset($saleCs['taxExempt']) || isset($saleCs['customerGroup']) || isset($saleCs['customer'])) {
+            return true;
+        }
+
+        // Watch for delivery country change
+        $oldCountry = $newCountry = null;
+
+        // Resolve the old tax resolution target country
+        $oldSameAddress = isset($saleCs['sameAddress']) ? $saleCs['sameAddress'][0] : $sale->isSameAddress();
+        if ($oldSameAddress) {
+            $oldAddress = isset($saleCs['invoiceAddress']) ? $saleCs['invoiceAddress'][0] : $sale->getInvoiceAddress();
+        } else {
+            $oldAddress = isset($saleCs['deliveryAddress']) ? $saleCs['deliveryAddress'][0] : $sale->getDeliveryAddress();
+        }
+        if (null !== $oldAddress) {
+            $oldAddressCs = $this->persistenceHelper->getChangeSet($oldAddress);
+            $oldCountry = isset($oldAddressCs['country']) ? $oldAddressCs['country'][0] : $oldAddress->getCountry();
+        }
+
+        // Resolve the new tax resolution target country
+        $newAddress = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
+        if (null !== $newAddress) {
+            $newCountry = $newAddress->getCountry();
+        }
+
+        if ($oldCountry != $newCountry) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether or not the shipment related taxation adjustments should be updated.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale)
+    {
+        $saleCs = $this->persistenceHelper->getChangeSet($sale);
+
+        return isset($saleCs['preferredShipmentMethod']);
     }
 
     /**
@@ -359,12 +443,37 @@ abstract class AbstractSaleListener
             $sale->setDeliveryAddress(null);
 
             // Delete the delivery address
-            $this->persistenceHelper->getManager()->remove($deliveryAddress);
+            $this->persistenceHelper->remove($deliveryAddress);
 
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Updates the whole sale taxation adjustments.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    protected function updateTaxation(SaleInterface $sale)
+    {
+        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItems($sale, true)
+            || $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, true);
+    }
+
+    /**
+     * Updates the sale shipment related taxation adjustments.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    protected function updateShipmentTaxation(SaleInterface $sale)
+    {
+        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, true);
     }
 
     /**
@@ -376,19 +485,27 @@ abstract class AbstractSaleListener
      */
     protected function updateTotals(SaleInterface $sale)
     {
+        $change = false;
+
         // Amounts Totals
         $amounts = $this->amountCalculator->calculateSale($sale);
-
-        $sale
-            ->setNetTotal($amounts->getBase())
-            ->setGrandTotal($amounts->getTotal());
+        if ($sale->getNetTotal() != $amounts->getBase()) {
+            $sale->setNetTotal($amounts->getBase());
+            $change = true;
+        }
+        if ($sale->getGrandTotal() != $amounts->getTotal()) {
+            $sale->setGrandTotal($amounts->getTotal());
+            $change = true;
+        }
 
         // Weight total
         $weightTotal = $this->weightCalculator->calculateSale($sale);
+        if ($sale->getWeightTotal() != $weightTotal) {
+            $sale->setWeightTotal($weightTotal);
+            $change = true;
+        }
 
-        $sale->setWeightTotal($weightTotal);
-
-        return false;
+        return $change;
     }
 
     /**

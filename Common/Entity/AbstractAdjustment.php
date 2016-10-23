@@ -146,9 +146,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     }
 
     /**
-     * Returns the immutable.
-     *
-     * @return boolean
+     * @inheritdoc
      */
     public function isImmutable()
     {
@@ -156,17 +154,25 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     }
 
     /**
-     * Sets the immutable.
-     *
-     * @param boolean $immutable
-     *
-     * @return AbstractAdjustment
+     * @inheritdoc
      */
     public function setImmutable($immutable)
     {
         $this->immutable = (bool)$immutable;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function equals(Model\AdjustmentInterface $adjustment)
+    {
+        return $this->designation == $adjustment->getDesignation()
+            && $this->type == $adjustment->getType()
+            && $this->mode == $adjustment->getMode()
+            && $this->amount == $adjustment->getAmount()
+            && $this->immutable == $adjustment->isImmutable();
     }
 
     /**

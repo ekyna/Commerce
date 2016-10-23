@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
+use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
@@ -21,6 +22,11 @@ abstract class AbstractSaleItemListener
     protected $persistenceHelper;
 
     /**
+     * @var AdjustmentBuilderInterface
+     */
+    protected $adjustmentBuilder;
+
+    /**
      * @var ResourceEventDispatcherInterface
      */
     protected $dispatcher;
@@ -34,6 +40,16 @@ abstract class AbstractSaleItemListener
     public function setPersistenceHelper(PersistenceHelperInterface $persistenceHelper)
     {
         $this->persistenceHelper = $persistenceHelper;
+    }
+
+    /**
+     * Sets the adjustment builder.
+     *
+     * @param AdjustmentBuilderInterface $adjustmentBuilder
+     */
+    public function setAdjustmentBuilder(AdjustmentBuilderInterface $adjustmentBuilder)
+    {
+        $this->adjustmentBuilder = $adjustmentBuilder;
     }
 
     /**
@@ -55,6 +71,10 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
+        if ($this->updateTaxation($item)) {
+            $this->persistenceHelper->persistAndRecompute($item);
+        }
+
         $this->dispatchSaleContentChangeEvent($item->getSale());
     }
 
@@ -67,7 +87,32 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($item->getSale());
+        $change = false;
+
+        // Handle taxation update
+        if ($this->persistenceHelper->isChanged($item, 'subjectData')) {
+            if ($change = $this->updateTaxation($item)) {
+                $this->persistenceHelper->persistAndRecompute($item);
+            }
+        }
+
+        // If net price, quantity or adjustments change : trigger sale content change event
+        if ($change || $this->persistenceHelper->isChanged($item, ['netPrice', 'quantity'])) {
+            // TODO use event queue
+            $this->dispatchSaleContentChangeEvent($item->getSale());
+        }
+    }
+
+    /**
+     * Updates the item's taxation adjustments.
+     *
+     * @param Model\SaleItemInterface $item
+     *
+     * @return bool Whether the adjustments has been updated or not.
+     */
+    protected function updateTaxation(Model\SaleItemInterface $item)
+    {
+        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItem($item, true);
     }
 
     /**

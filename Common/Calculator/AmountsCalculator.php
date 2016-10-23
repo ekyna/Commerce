@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
@@ -86,15 +87,10 @@ class AmountsCalculator implements AmountsCalculatorInterface
         $result = new Result();
 
         if (0 < $sale->getShipmentAmount()) {
-            $result->addBase($sale->getShipmentAmount());
-
-            if (0 < $sale->getShipmentTaxRate()) {
-                $result->addTax(
-                    $sale->getShipmentTaxName(),
-                    $sale->getShipmentTaxRate(),
-                    $this->round($sale->getShipmentAmount() * $sale->getShipmentTaxRate() / 100)
-                );
-            }
+            // TODO round base regarding to calculator mode ?
+            $result
+                ->addBase($base = $sale->getShipmentAmount())
+                ->merge($this->calculateTaxationAdjustments($sale, $base));
         }
 
         return $result;
@@ -113,12 +109,21 @@ class AmountsCalculator implements AmountsCalculatorInterface
 
             // Merge children results
             foreach ($item->getChildren() as $child) {
-                $result->merge($this->calculateSaleItem($child)); // not gross
+                // Item result must take account of child's discounts, so not gross
+                $result->merge($this->calculateSaleItem($child));
             }
 
         } else { // Calculate as a "child" item
 
-            switch ($this->mode) {
+            $base = $this->mode === self::MODE_NET
+                ? $this->round($item->getNetPrice()) * $item->getTotalQuantity()
+                : $item->getNetPrice() * $item->getTotalQuantity();
+
+            $result
+                ->addBase($base)
+                ->merge($this->calculateTaxationAdjustments($item, $base));
+
+            /*switch ($this->mode) {
                 case self::MODE_NET :
                     $base = $this->round($item->getNetPrice()) * $item->getTotalQuantity();
 
@@ -162,7 +167,7 @@ class AmountsCalculator implements AmountsCalculatorInterface
 
                 default:
                     throw new InvalidArgumentException('Unexpected mode.');
-            }
+            }*/
         }
 
         // Discount adjustments
@@ -173,6 +178,35 @@ class AmountsCalculator implements AmountsCalculatorInterface
                 $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
 
                 $result->merge($this->calculateDiscountAdjustment($adjustment));
+            }
+        }
+
+        return $result;
+    }
+
+    public function calculateTaxationAdjustments(AdjustableInterface $adjustable, $base)
+    {
+        $result = new Result();
+
+        if (0 == $base) {
+            return $result;
+        }
+
+        if ($adjustable->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
+            $adjustments = $adjustable->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
+            foreach ($adjustments as $adjustment) {
+                // Only 'percent' mode adjustments are allowed here.
+                $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
+
+                if ($this->mode === self::MODE_NET) {
+                    // By multiplication
+                    $amount = $this->round($base * $adjustment->getAmount() / 100);
+                } else {
+                    // By difference (ATI - NET)
+                    $amount = $this->round($base * (1 + $adjustment->getAmount() / 100)) - $this->round($base);
+                }
+
+                $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $amount);
             }
         }
 

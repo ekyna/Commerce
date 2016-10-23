@@ -145,35 +145,20 @@ interface CustomerInterface extends
     public function hasChildren();
 
     /**
-     * Returns the groups.
+     * Returns the customer group.
      *
-     * @return ArrayCollection|CustomerGroupInterface[]
+     * @return CustomerGroupInterface
      */
-    public function getCustomerGroups();
+    public function getCustomerGroup();
 
     /**
-     * Returns whether the customer has the group or not.
+     * Sets the customer group.
      *
-     * @param CustomerGroupInterface $group
-     * @return bool
-     */
-    public function hasCustomerGroup(CustomerGroupInterface $group);
-
-    /**
-     * Adds the group.
+     * @param CustomerGroupInterface $customerGroup
      *
-     * @param CustomerGroupInterface $group
      * @return $this|CustomerInterface
      */
-    public function addCustomerGroup(CustomerGroupInterface $group);
-
-    /**
-     * Removes the group.
-     *
-     * @param CustomerGroupInterface $group
-     * @return $this|CustomerInterface
-     */
-    public function removeCustomerGroup(CustomerGroupInterface $group);
+    public function setCustomerGroup(CustomerGroupInterface $customerGroup);
 
     /**
      * Returns the addresses.

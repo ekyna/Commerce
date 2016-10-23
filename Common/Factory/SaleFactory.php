@@ -55,6 +55,19 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
+    public function createAdjustmentFor(Model\AdjustableInterface $adjustable)
+    {
+        if ($adjustable instanceof Model\SaleInterface) {
+            return $this->createAdjustmentForSale($adjustable);
+        } elseif ($adjustable instanceof Model\SaleItemInterface) {
+            return $this->createAdjustmentForItem($adjustable);
+        }
+        throw new InvalidArgumentException("Expected instanceof SaleInterface or SaleItemInterface.");
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function createAdjustmentForSale(Model\SaleInterface $sale)
     {
         return $this->resolveClassAndCreateObject('adjustment', $sale);

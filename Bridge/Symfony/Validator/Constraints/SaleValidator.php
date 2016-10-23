@@ -25,10 +25,15 @@ class SaleValidator extends ConstraintValidator
 
         $this->validateIdentity($sale, $constraint);
 
-        if ($sale->requiresShipment() && (!$sale->isSameAddress() && null === $sale->getDeliveryAddress())) {
-            $this->context
-                ->buildViolation($constraint->delivery_address_is_required)
-                ->atPath('deliveryAddress');
+        if ($sale->requiresShipment()) {
+            if (null === $sale->getPreferredShipmentMethod()) {
+                // TODO
+            }
+            if (!$sale->isSameAddress() && null === $sale->getDeliveryAddress()) {
+                $this->context
+                    ->buildViolation($constraint->delivery_address_is_required)
+                    ->atPath('deliveryAddress');
+            }
         }
     }
 
@@ -42,6 +47,11 @@ class SaleValidator extends ConstraintValidator
     {
         /** @var Sale $constraint */
         if (null === $sale->getCustomer()) {
+            if (null === $sale->getCustomerGroup()) {
+                $this->context
+                    ->buildViolation($constraint->customer_group_is_required_if_no_customer)
+                    ->atPath('customerGroup');
+            }
             if (0 == strlen($sale->getEmail())) {
                 $this->context
                     ->buildViolation($constraint->email_is_required_if_no_customer)

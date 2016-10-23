@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class QuoteAdjustmentEventSubscriber extends QuoteAdjustmentListener implements EventSubscriberInterface
 {
     /**
-     * {@inheritDoc}
+     * @inheritdoc
      */
     public static function getSubscribedEvents()
     {

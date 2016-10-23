@@ -50,9 +50,9 @@ class LineView extends AbstractView
     private $base;
 
     /**
-     * @var float
+     * @var array
      */
-    private $taxRate;
+    private $taxRates;
 
     /**
      * @var float
@@ -91,7 +91,7 @@ class LineView extends AbstractView
      * @param float  $unit
      * @param float  $quantity
      * @param float  $base
-     * @param float  $taxRate
+     * @param array  $taxRates
      * @param float  $taxAmount
      * @param float  $total
      * @param array  $lines
@@ -107,7 +107,7 @@ class LineView extends AbstractView
         $unit,
         $quantity,
         $base,
-        $taxRate,
+        array $taxRates,
         $taxAmount,
         $total,
         array $lines = [],
@@ -122,7 +122,7 @@ class LineView extends AbstractView
         $this->unit = $unit;
         $this->quantity = $quantity;
         $this->base = $base;
-        $this->taxRate = $taxRate;
+        $this->taxRates = $taxRates;
         $this->taxAmount = $taxAmount;
         $this->total = $total;
         $this->lines = $lines;
@@ -213,11 +213,11 @@ class LineView extends AbstractView
     /**
      * Returns the tax rate.
      *
-     * @return float
+     * @return array
      */
-    public function getTaxRate()
+    public function getTaxRates()
     {
-        return $this->taxRate;
+        return $this->taxRates;
     }
 
     /**

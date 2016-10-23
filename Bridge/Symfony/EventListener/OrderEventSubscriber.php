@@ -14,16 +14,16 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class OrderEventSubscriber extends OrderListener implements EventSubscriberInterface
 {
     /**
-     * {@inheritDoc}
+     * @inheritdoc
      */
     public static function getSubscribedEvents()
     {
         return [
-            OrderEvents::INSERT          => ['onInsert', 0],
-            OrderEvents::UPDATE          => ['onUpdate', 0],
-            OrderEvents::CONTENT_CHANGE  => ['onContentChange', 0],
-            OrderEvents::DELIVERY_CHANGE => ['onDeliveryChange', 0],
-            OrderEvents::PRE_DELETE      => ['onPreDelete', 0],
+            OrderEvents::INSERT         => ['onInsert', 0],
+            OrderEvents::UPDATE         => ['onUpdate', 0],
+            OrderEvents::CONTENT_CHANGE => ['onContentChange', 0],
+            OrderEvents::TAX_RESOLUTION => ['onTaxResolution', 0],
+            OrderEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }
 }

@@ -32,6 +32,15 @@ interface SaleFactoryInterface
     public function createItemForSale(Model\SaleInterface $sale);
 
     /**
+     * Creates an adjustment for the given adjustable.
+     *
+     * @param Model\AdjustableInterface $adjustable
+     *
+     * @return Model\AdjustmentInterface
+     */
+    public function createAdjustmentFor(Model\AdjustableInterface $adjustable);
+
+    /**
      * Creates an adjustment regarding to the sale type.
      *
      * @param Model\SaleInterface $sale

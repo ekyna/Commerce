@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Builder;
 
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 
 /**
  * Interface AdjustmentBuilderInterface
@@ -13,13 +12,32 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 interface AdjustmentBuilderInterface
 {
     /**
+     * Builds the taxation adjustments for the sale.
+     *
+     * @param Model\SaleInterface $sale
+     * @param bool                $persistence
+     *
+     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     */
+    public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false);
+
+    /**
+     * Builds the taxation adjustments for the sale items recursively.
+     *
+     * @param Model\SaleInterface|Model\SaleItemInterface $parent
+     * @param bool                                        $persistence
+     *
+     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     */
+    public function buildTaxationAdjustmentsForSaleItems($parent, $persistence = false);
+
+    /**
      * Builds the taxation adjustments for the sale item.
      *
      * @param Model\SaleItemInterface $item
-     * @param TaxableInterface        $taxable
+     * @param bool                    $persistence
+     *
+     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
      */
-    public function buildTaxationAdjustmentsForSaleItem(
-        Model\SaleItemInterface $item,
-        TaxableInterface $taxable = null
-    );
+    public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false);
 }

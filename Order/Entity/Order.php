@@ -66,6 +66,56 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
+    public function getInvoiceAddress()
+    {
+        return $this->invoiceAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setInvoiceAddress(Common\AddressInterface $address)
+    {
+        if (!$address instanceof Model\OrderAddressInterface) {
+            throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
+        }
+
+        if ($address != $this->invoiceAddress) {
+            $this->invoiceAddress = $address;
+            $address->setInvoiceOrder($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDeliveryAddress()
+    {
+        return $this->deliveryAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDeliveryAddress(Common\AddressInterface $address = null)
+    {
+        if (!$address instanceof Model\OrderAddressInterface) {
+            throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
+        }
+
+        if ($address != $this->deliveryAddress) {
+            $this->deliveryAddress = $address;
+            $address->setDeliveryOrder($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasItem(Common\SaleItemInterface $item)
     {
         if (!$item instanceof Model\OrderItemInterface) {
@@ -281,15 +331,5 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->completedAt = $completedAt;
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function validateAddressClass(Common\AddressInterface $address)
-    {
-        if (!$address instanceof Model\OrderAddressInterface) {
-            throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
-        }
     }
 }

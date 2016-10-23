@@ -116,7 +116,7 @@ class ViewBuilder
         }
 
         /* TODO if ($this->varsBuilder) {
-            $view->vars = $this->varsBuilder->buildSaleVars($sale, $this->options);
+            $view->vars = $this->varsBuilder->buildSaleTaxesViewVars($sale, $this->options);
         }*/
 
         return $taxes;
@@ -203,7 +203,7 @@ class ViewBuilder
             $item->getNetPrice(),
             $quantity,
             $amounts->getBase(),
-            $amounts->getTaxRate(),
+            $amounts->getTaxRates(),
             $amounts->getTaxTotal(),
             $amounts->getTotal(),
             $lines,
@@ -244,7 +244,7 @@ class ViewBuilder
             null,
             1,
             $amounts->getBase(),
-            null,
+            [],
             $amounts->getTaxTotal(),
             $amounts->getTotal()
             // lines
@@ -268,7 +268,7 @@ class ViewBuilder
      */
     private function buildShipmentLine(Model\SaleInterface $sale)
     {
-        if (!$sale->requiresShipment()) {
+        if (!$sale->requiresShipment() && 0 == $sale->getShipmentAmount()) {
             return null;
         }
 
@@ -276,10 +276,13 @@ class ViewBuilder
 
         $lineNumber = $this->lineNumber++;
 
+        // Method title
         $designation = 'Frais de port'; // TODO translate ?
         if (null !== $method = $sale->getPreferredShipmentMethod()) {
             $designation = $method->getTitle();
         }
+        // Total weight
+        $designation .= ' (' . number_format($sale->getWeightTotal(), 3, ',', '') . ' kg)';
 
         $view = new LineView(
             'shipment',
@@ -290,7 +293,7 @@ class ViewBuilder
             null,
             1,
             $amounts->getBase(),
-            null,
+            $amounts->getTaxRates(),
             $amounts->getTaxTotal(),
             $amounts->getTotal()
             // lines

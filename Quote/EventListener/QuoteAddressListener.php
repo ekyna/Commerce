@@ -3,6 +3,11 @@
 namespace Ekyna\Component\Commerce\Quote\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleAddressListener;
+use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Quote\Event\QuoteEvents;
+use Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class QuoteAddressListener
@@ -11,5 +16,30 @@ use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleAddressListener;
  */
 class QuoteAddressListener extends AbstractSaleAddressListener
 {
-    // TODO
+    /**
+     * @inheritdoc
+     */
+    protected function dispatchSaleTaxResolutionEvent(Model\AddressInterface $address)
+    {
+        /** @var QuoteAddressInterface $address */
+        $quote = $address->getQuote();
+
+        $event = $this->dispatcher->createResourceEvent($quote);
+
+        $this->dispatcher->dispatch(QuoteEvents::TAX_RESOLUTION, $event);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getAddressFromEvent(ResourceEventInterface $event)
+    {
+        $address = $event->getResource();
+
+        if (!$address instanceof QuoteAddressInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteAddressInterface.");
+        }
+
+        return $address;
+    }
 }

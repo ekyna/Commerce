@@ -20,7 +20,7 @@ interface AmountsCalculatorInterface
     /**
      * Calculate based on the gross price.
      */
-    const MODE_GROSS = 'gross';
+    const MODE_GROSS = 'gross'; // Rename to final ?
 
 
     /**

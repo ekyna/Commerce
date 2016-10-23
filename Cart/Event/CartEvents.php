@@ -10,21 +10,21 @@ namespace Ekyna\Component\Commerce\Cart\Event;
 final class CartEvents
 {
     // Persistence
-    const INSERT          = 'ekyna_commerce.cart.insert';
-    const UPDATE          = 'ekyna_commerce.cart.update';
-    const DELETE          = 'ekyna_commerce.cart.delete';
+    const INSERT         = 'ekyna_commerce.cart.insert';
+    const UPDATE         = 'ekyna_commerce.cart.update';
+    const DELETE         = 'ekyna_commerce.cart.delete';
 
     // Domain
-    const STATE_CHANGE    = 'ekyna_commerce.cart.state_change';
-    const CONTENT_CHANGE  = 'ekyna_commerce.cart.content_change';
-    const DELIVERY_CHANGE = 'ekyna_commerce.cart.delivery_change';
+    const STATE_CHANGE   = 'ekyna_commerce.cart.state_change';
+    const CONTENT_CHANGE = 'ekyna_commerce.cart.content_change';
+    const TAX_RESOLUTION = 'ekyna_commerce.cart.tax_resolution';
 
-    const PRE_CREATE      = 'ekyna_commerce.cart.pre_create';
-    const POST_CREATE     = 'ekyna_commerce.cart.post_create';
+    const PRE_CREATE     = 'ekyna_commerce.cart.pre_create';
+    const POST_CREATE    = 'ekyna_commerce.cart.post_create';
 
-    const PRE_UPDATE      = 'ekyna_commerce.cart.pre_update';
-    const POST_UPDATE     = 'ekyna_commerce.cart.post_update';
+    const PRE_UPDATE     = 'ekyna_commerce.cart.pre_update';
+    const POST_UPDATE    = 'ekyna_commerce.cart.post_update';
 
-    const PRE_DELETE      = 'ekyna_commerce.cart.pre_delete';
-    const POST_DELETE     = 'ekyna_commerce.cart.post_delete';
+    const PRE_DELETE     = 'ekyna_commerce.cart.pre_delete';
+    const POST_DELETE    = 'ekyna_commerce.cart.post_delete';
 }

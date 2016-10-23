@@ -43,8 +43,9 @@ class SaleTransformer implements SaleTransformerInterface
     public function copySale(Model\SaleInterface $source, Model\SaleInterface $target)
     {
         $this->copy($source, $target, [
-            'customer', 'company', 'gender', 'firstName', 'lastName',
-            'email', 'sameAddress', 'currency',
+            'currency', 'customer', 'customerGroup',
+            'email', 'company', 'gender', 'firstName', 'lastName',
+            'sameAddress', 'preferredShipmentMethod', 'shipmentAmount'
         ]);
 
         // Invoice address

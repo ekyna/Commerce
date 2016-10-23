@@ -24,27 +24,17 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
     /**
      * @inheritdoc
      */
-    public function findByTaxGroupAndCustomerGroupsAndCountry(
+    public function findByTaxGroupAndCustomerGroupAndCountry(
         TaxGroupInterface $taxGroup,
-        array $customerGroups,
+        CustomerGroupInterface $customerGroup,
         CountryInterface $country
     ) {
-        if (empty($customerGroups)) {
-            throw new \InvalidArgumentException('Expected non empty array customer groups parameter.');
-        } else {
-            foreach ($customerGroups as $group) {
-                if (!$group instanceof CustomerGroupInterface) {
-                    throw new \InvalidArgumentException('Expected instances of Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface.');
-                }
-            }
-        }
-
         return $this
             ->getByTaxGroupAndCustomerGroupsQuery()
             ->setParameters([
-                'tax_group'       => $taxGroup,
-                'customer_groups' => $customerGroups,
-                'country'         => $country,
+                'tax_group'      => $taxGroup,
+                'customer_group' => $customerGroup,
+                'country'        => $country,
             ])
             ->getResult();
     }
@@ -61,7 +51,7 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
             $this->byTaxGroupAndCustomerGroupsQuery = $qb
                 ->leftJoin('o.taxes', 't')
                 ->andWhere($qb->expr()->isMemberOf(':tax_group', 'o.taxGroups'))
-                ->andWhere($qb->expr()->isMemberOf(':customer_groups', 'o.customerGroups'))
+                ->andWhere($qb->expr()->isMemberOf(':customer_group', 'o.customerGroups'))
                 ->andWhere(
                     $qb->expr()->orX(
                         $qb->expr()->isNull('t.id'),

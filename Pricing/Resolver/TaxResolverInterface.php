@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Pricing\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
@@ -48,14 +50,24 @@ interface TaxResolverInterface
     /**
      * Resolves the default taxes by subject and customer.
      *
-     * @param TaxableInterface  $taxable
+     * @param TaxableInterface $taxable
      *
      * @return array|TaxInterface[]
      */
-    public function getDefaultTaxesBySubject(TaxableInterface $taxable);
+    public function resolveDefaultTaxes(TaxableInterface $taxable);
 
     /**
-     * Resolves the applicable taxes by subject and customer.
+     * Resolves the taxable's applicable taxes by sale.
+     *
+     * @param TaxableInterface $taxable
+     * @param SaleInterface    $sale
+     *
+     * @return mixed
+     */
+    public function resolveTaxesBySale(TaxableInterface $taxable, SaleInterface $sale);
+
+    /**
+     * Resolves the taxable's applicable taxes by customer and address.
      *
      * @param TaxableInterface  $taxable
      * @param CustomerInterface $customer
@@ -63,7 +75,7 @@ interface TaxResolverInterface
      *
      * @return array|TaxInterface[]
      */
-    public function getApplicableTaxesBySubjectAndCustomer(
+    public function resolveTaxesByCustomerAndAddress(
         TaxableInterface $taxable,
         CustomerInterface $customer,
         AddressInterface $address = null
@@ -72,15 +84,15 @@ interface TaxResolverInterface
     /**
      * Resolves the applicable taxes by tax group and customer group.
      *
-     * @param TaxGroupInterface              $taxGroup
-     * @param array|CustomerGroupInterface[] $customerGroups
-     * @param AddressInterface               $address
+     * @param TaxGroupInterface      $taxGroup
+     * @param CustomerGroupInterface $customerGroup
+     * @param CountryInterface       $country
      *
      * @return array|TaxInterface[]
      */
-    public function getApplicableTaxesByTaxGroupAndCustomerGroups(
+    public function getTaxesByTaxGroupAndCustomerGroupAndCountry(
         TaxGroupInterface $taxGroup,
-        array $customerGroups,
-        AddressInterface $address = null
+        CustomerGroupInterface $customerGroup = null,
+        CountryInterface $country = null
     );
 }

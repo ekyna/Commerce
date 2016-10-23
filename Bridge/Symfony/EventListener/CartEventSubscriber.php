@@ -14,16 +14,16 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class CartEventSubscriber extends CartListener implements EventSubscriberInterface
 {
     /**
-     * {@inheritDoc}
+     * @inheritdoc
      */
     public static function getSubscribedEvents()
     {
         return [
-            CartEvents::INSERT          => ['onInsert', 0],
-            CartEvents::UPDATE          => ['onUpdate', 0],
-            CartEvents::CONTENT_CHANGE  => ['onContentChange', 0],
-            CartEvents::DELIVERY_CHANGE => ['onDeliveryChange', 0],
-            CartEvents::PRE_DELETE      => ['onPreDelete', 0],
+            CartEvents::INSERT         => ['onInsert', 0],
+            CartEvents::UPDATE         => ['onUpdate', 0],
+            CartEvents::CONTENT_CHANGE => ['onContentChange', 0],
+            CartEvents::TAX_RESOLUTION => ['onTaxResolution', 0],
+            CartEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }
 }

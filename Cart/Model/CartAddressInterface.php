@@ -11,5 +11,42 @@ use Ekyna\Component\Commerce\Common\Model\AddressInterface;
  */
 interface CartAddressInterface extends AddressInterface
 {
+    /**
+     * Returns the cart this address is the invoice one.
+     *
+     * @return CartInterface|null
+     */
+    public function getInvoiceCart();
 
+    /**
+     * Sets the cart this address is the invoice one.
+     *
+     * @param CartInterface $cart
+     *
+     * @return $this|CartAddressInterface
+     */
+    public function setInvoiceCart(CartInterface $cart = null);
+
+    /**
+     * Returns the cart this address is the delivery one.
+     *
+     * @return CartInterface|null
+     */
+    public function getDeliveryCart();
+
+    /**
+     * Sets the cart this address is the delivery one.
+     *
+     * @param CartInterface $cart
+     *
+     * @return $this|CartAddressInterface
+     */
+    public function setDeliveryCart(CartInterface $cart = null);
+
+    /**
+     * Returns the related cart.
+     *
+     * @return CartInterface|null
+     */
+    public function getCart();
 }

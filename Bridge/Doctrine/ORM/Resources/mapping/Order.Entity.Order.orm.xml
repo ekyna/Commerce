@@ -26,7 +26,8 @@
         <field name="shipmentState" column="shipment_state" type="string" length="16"/>
         <field name="completedAt" column="completed_at" type="datetime" nullable="true" />
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface" field="invoiceAddress">
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
+                    field="invoiceAddress" inversed-by="invoiceOrder" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -34,7 +35,8 @@
             <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
         </one-to-one>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface" field="deliveryAddress">
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
+                    field="deliveryAddress" inversed-by="deliveryOrder" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>

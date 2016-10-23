@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraint;
  */
 class Sale extends Constraint
 {
+    public $customer_group_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.customer_group_is_required';
     public $email_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.email_is_required';
     public $identity_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.identity_is_required';
     public $delivery_address_is_required = 'ekyna_commerce.sale.delivery_address_is_required';

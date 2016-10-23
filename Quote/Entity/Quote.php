@@ -28,6 +28,56 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
+    public function getInvoiceAddress()
+    {
+        return $this->invoiceAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setInvoiceAddress(Common\AddressInterface $address)
+    {
+        if (!$address instanceof Model\QuoteAddressInterface) {
+            throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
+        }
+
+        if ($address != $this->invoiceAddress) {
+            $this->invoiceAddress = $address;
+            $address->setInvoiceQuote($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDeliveryAddress()
+    {
+        return $this->deliveryAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDeliveryAddress(Common\AddressInterface $address = null)
+    {
+        if (!$address instanceof Model\QuoteAddressInterface) {
+            throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
+        }
+
+        if ($address != $this->deliveryAddress) {
+            $this->deliveryAddress = $address;
+            $address->setDeliveryQuote($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasItem(Common\SaleItemInterface $item)
     {
         if (!$item instanceof Model\QuoteItemInterface) {
@@ -161,15 +211,5 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function validateAddressClass(Common\AddressInterface $address)
-    {
-        if (!$address instanceof Model\QuoteAddressInterface) {
-            throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
-        }
     }
 }

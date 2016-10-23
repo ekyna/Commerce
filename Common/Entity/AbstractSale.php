@@ -4,8 +4,8 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -40,6 +40,11 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
      * @var CustomerInterface
      */
     protected $customer;
+
+    /**
+     * @var CustomerGroupInterface
+     */
+    protected $customerGroup;
 
     /**
      * @var string
@@ -100,16 +105,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
      * @var float
      */
     protected $shipmentAmount;
-
-    /**
-     * @var float
-     */
-    protected $shipmentTaxRate;
-
-    /**
-     * @var string
-     */
-    protected $shipmentTaxName;
 
     /**
      * @var float
@@ -243,6 +238,24 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
+    public function getCustomerGroup()
+    {
+        return $this->customerGroup;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCustomerGroup(CustomerGroupInterface $customerGroup = null)
+    {
+        $this->customerGroup = $customerGroup;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCompany()
     {
         return $this->company;
@@ -272,48 +285,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     public function setEmail($email)
     {
         $this->email = $email;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getInvoiceAddress()
-    {
-        return $this->invoiceAddress;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceAddress(Model\AddressInterface $address)
-    {
-        $this->validateAddressClass($address);
-
-        $this->invoiceAddress = $address;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDeliveryAddress()
-    {
-        return $this->deliveryAddress;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryAddress(Model\AddressInterface $address = null)
-    {
-        if (null !== $address) {
-            $this->validateAddressClass($address);
-        }
-
-        $this->deliveryAddress = $address;
 
         return $this;
     }
@@ -471,42 +442,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function getShipmentTaxRate()
-    {
-        return $this->shipmentTaxRate;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setShipmentTaxRate($rate)
-    {
-        $this->shipmentTaxRate = $rate;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShipmentTaxName()
-    {
-        return $this->shipmentTaxName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setShipmentTaxName($name)
-    {
-        $this->shipmentTaxName = $name;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getGrandTotal()
     {
         return $this->grandTotal;
@@ -627,13 +562,4 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
 
         return false;
     }
-
-    /**
-     * Validates the address class.
-     *
-     * @param Model\AddressInterface $address
-     *
-     * @throws InvalidArgumentException
-     */
-    abstract protected function validateAddressClass(Model\AddressInterface $address);
 }

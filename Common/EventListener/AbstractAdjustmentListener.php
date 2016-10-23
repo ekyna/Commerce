@@ -55,7 +55,7 @@ abstract class AbstractAdjustmentListener
     {
         $adjustment = $this->getAdjustmentFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($adjustment->getAdjustable());
+        $this->dispatchSaleContentChangeEvent($adjustment);
     }
 
     /**
@@ -67,7 +67,10 @@ abstract class AbstractAdjustmentListener
     {
         $adjustment = $this->getAdjustmentFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($adjustment->getAdjustable());
+        // TODO only if amount, mode or type changed ?
+        if ($this->persistenceHelper->isChanged($adjustment, ['amount', 'mode', 'type'])) {
+            $this->dispatchSaleContentChangeEvent($adjustment);
+        }
     }
 
     /**
@@ -79,7 +82,7 @@ abstract class AbstractAdjustmentListener
     {
         $adjustment = $this->getAdjustmentFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($adjustment->getAdjustable());
+        $this->dispatchSaleContentChangeEvent($adjustment);
     }
 
     /**
@@ -126,9 +129,9 @@ abstract class AbstractAdjustmentListener
     /**
      * Dispatches the sale content change event.
      *
-     * @param Model\SaleInterface $sale
+     * @param Model\AdjustmentInterface $adjustment
      */
-    abstract protected function dispatchSaleContentChangeEvent(Model\SaleInterface $sale);
+    abstract protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment);
 
     /**
      * Returns the adjustment from the resource event.

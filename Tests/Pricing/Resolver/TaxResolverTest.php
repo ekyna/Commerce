@@ -26,7 +26,7 @@ class TaxResolverTest extends OrmTestCase
 
         $resolver = $this->createTaxResolver(TaxResolver::BY_ORIGIN);
 
-        $resolver->getApplicableTaxesByTaxGroupAndCustomerGroups(new TaxGroup(), []);
+        $resolver->getTaxesByTaxGroupAndCustomerGroupAndCountry(new TaxGroup(), []);
     }
 
     /**
@@ -46,7 +46,7 @@ class TaxResolverTest extends OrmTestCase
         $resolver = $this->createTaxResolver(TaxResolver::BY_ORIGIN);
         $resolver->setOriginAddress($address);
 
-        $result = $resolver->getApplicableTaxesBySubjectAndCustomer($subject, $customer);
+        $result = $resolver->resolveTaxesByCustomerAndAddress($subject, $customer);
 
         $expected = array($this->find('tax', 1));
 
@@ -141,7 +141,7 @@ class TaxResolverTest extends OrmTestCase
                 $address = $this->createAddress($country);
             }
 
-            $result = $resolver->getApplicableTaxesByTaxGroupAndCustomerGroups(
+            $result = $resolver->getTaxesByTaxGroupAndCustomerGroupAndCountry(
                 $taxGroup, $customerGroups, $address
             );
 
@@ -211,7 +211,7 @@ class TaxResolverTest extends OrmTestCase
             $country = $this->find('country', $case['address_country_id']);
             $address = $this->createAddress($country);
 
-            $result = $resolver->getApplicableTaxesByTaxGroupAndCustomerGroups(
+            $result = $resolver->getTaxesByTaxGroupAndCustomerGroupAndCountry(
                 $taxGroup, $customerGroups, $address
             );
 

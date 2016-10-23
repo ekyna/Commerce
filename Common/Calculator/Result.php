@@ -138,18 +138,19 @@ class Result
     }
 
     /**
-     * Returns the tax rate.
+     * Returns the taxes rates.
      *
-     * @return float
+     * @return array
      */
-    public function getTaxRate()
+    public function getTaxRates()
     {
-        // TODO This method is for rendering purpose ... What if we've got multiple taxes ???
-        if (0 < count($this->taxes)) {
-            return $this->taxes[0]->getRate();
+        $rates = [];
+
+        foreach ($this->taxes as $tax) {
+            $rates[] = $tax->getRate();
         }
 
-        return null;
+        return $rates;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
@@ -37,6 +38,22 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setCustomer(CustomerInterface $customer);
+
+    /**
+     * Returns the customer group.
+     *
+     * @return CustomerGroupInterface
+     */
+    public function getCustomerGroup();
+
+    /**
+     * Sets the customer group.
+     *
+     * @param CustomerGroupInterface $customerGroup
+     *
+     * @return $this|SaleInterface
+     */
+    public function setCustomerGroup(CustomerGroupInterface $customerGroup);
 
     /**
      * Returns the company.
@@ -229,38 +246,6 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setShipmentAmount($amount);
-
-    /**
-     * Returns the shipment tax rate.
-     *
-     * @return float
-     */
-    public function getShipmentTaxRate();
-
-    /**
-     * Sets the shipment tax rate.
-     *
-     * @param float $rate
-     *
-     * @return $this|SaleInterface
-     */
-    public function setShipmentTaxRate($rate);
-
-    /**
-     * Returns the shipment tax name.
-     *
-     * @return string
-     */
-    public function getShipmentTaxName();
-
-    /**
-     * Sets the shipment tax name.
-     *
-     * @param string $name
-     *
-     * @return $this|SaleInterface
-     */
-    public function setShipmentTaxName($name);
 
     /**
      * Returns the total.

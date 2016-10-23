@@ -6,25 +6,25 @@ use Ekyna\Component\Commerce\Common\EventListener\AbstractAdjustmentListener;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Quote\Event\QuoteEvents;
-use Ekyna\Component\Commerce\Quote\Model\QuoteAdjustmentInterface;
+use Ekyna\Component\Commerce\Quote\Model\QuoteItemAdjustmentInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
- * Class QuoteAdjustmentListener
+ * Class QuoteItemAdjustmentListener
  * @package Ekyna\Component\Commerce\Quote\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class QuoteAdjustmentListener extends AbstractAdjustmentListener
+class QuoteItemAdjustmentListener extends AbstractAdjustmentListener
 {
     /**
      * @inheritdoc
      */
     protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
     {
-        /** @var \Ekyna\Component\Commerce\Quote\Model\QuoteInterface $quote */
-        $quote = $adjustment->getAdjustable();
+        /** @var \Ekyna\Component\Commerce\Quote\Model\QuoteItemInterface $item */
+        $item = $adjustment->getAdjustable();
 
-        $event = $this->dispatcher->createResourceEvent($quote);
+        $event = $this->dispatcher->createResourceEvent($item->getSale());
 
         $this->dispatcher->dispatch(QuoteEvents::CONTENT_CHANGE, $event);
     }
@@ -36,8 +36,8 @@ class QuoteAdjustmentListener extends AbstractAdjustmentListener
     {
         $adjustment = $event->getResource();
 
-        if (!$adjustment instanceof QuoteAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteAdjustmentInterface");
+        if (!$adjustment instanceof QuoteItemAdjustmentInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteItemAdjustmentInterface");
         }
 
         return $adjustment;

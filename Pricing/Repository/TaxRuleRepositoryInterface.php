@@ -16,17 +16,17 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface TaxRuleRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
-     * Finds tax rules by tax group, customer groups and country.
+     * Finds tax rules by tax group, customer group and country.
      *
-     * @param TaxGroupInterface              $taxGroup
-     * @param array|CustomerGroupInterface[] $customerGroups
-     * @param CountryInterface               $country
+     * @param TaxGroupInterface      $taxGroup
+     * @param CustomerGroupInterface $customerGroup
+     * @param CountryInterface       $country
      *
      * @return array|TaxRuleInterface[]
      */
-    public function findByTaxGroupAndCustomerGroupsAndCountry(
+    public function findByTaxGroupAndCustomerGroupAndCountry(
         TaxGroupInterface $taxGroup,
-        array $customerGroups,
+        CustomerGroupInterface $customerGroup,
         CountryInterface $country
     );
 }

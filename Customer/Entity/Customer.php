@@ -56,9 +56,9 @@ class Customer implements CustomerInterface
     protected $children;
 
     /**
-     * @var ArrayCollection|CustomerGroupInterface[]
+     * @var CustomerGroupInterface
      */
-    protected $customerGroups;
+    protected $customerGroup;
 
     /**
      * @var ArrayCollection|CustomerAddressInterface[]
@@ -77,7 +77,6 @@ class Customer implements CustomerInterface
     public function __construct()
     {
         $this->children = new ArrayCollection();
-        $this->customerGroups = new ArrayCollection();
         $this->addresses = new ArrayCollection();
         $this->priceLists = new ArrayCollection();
     }
@@ -270,39 +269,17 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getCustomerGroups()
+    public function getCustomerGroup()
     {
-        return $this->customerGroups;
+        return $this->customerGroup;
     }
 
     /**
      * @inheritdoc
      */
-    public function hasCustomerGroup(CustomerGroupInterface $group)
+    public function setCustomerGroup(CustomerGroupInterface $customerGroup)
     {
-        return $this->customerGroups->contains($group);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function addCustomerGroup(CustomerGroupInterface $group)
-    {
-        if (!$this->hasCustomerGroup($group)) {
-            $this->customerGroups->add($group);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeCustomerGroup(CustomerGroupInterface $group)
-    {
-        if ($this->hasCustomerGroup($group)) {
-            $this->customerGroups->removeElement($group);
-        }
+        $this->customerGroup = $customerGroup;
 
         return $this;
     }

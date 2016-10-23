@@ -34,10 +34,8 @@
             <constraint name="NotBlank" />
             <constraint name="Email" />
         </property>
-        <property name="customerGroups">
-            <constraint name="Count">
-                <option name="min">1</option>
-            </constraint>
+        <property name="customerGroup">
+            <constraint name="NotNull"/>
         </property>
         <property name="parent">
             <constraint name="Valid" />

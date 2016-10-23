@@ -34,6 +34,56 @@ class Cart extends AbstractSale implements Model\CartInterface
     /**
      * @inheritdoc
      */
+    public function getInvoiceAddress()
+    {
+        return $this->invoiceAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setInvoiceAddress(Common\AddressInterface $address)
+    {
+        if (!$address instanceof Model\CartAddressInterface) {
+            throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
+        }
+
+        if ($address != $this->invoiceAddress) {
+            $this->invoiceAddress = $address;
+            $address->setInvoiceCart($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDeliveryAddress()
+    {
+        return $this->deliveryAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDeliveryAddress(Common\AddressInterface $address = null)
+    {
+        if (!$address instanceof Model\CartAddressInterface) {
+            throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
+        }
+
+        if ($address != $this->deliveryAddress) {
+            $this->deliveryAddress = $address;
+            $address->setDeliveryCart($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasItem(Common\SaleItemInterface $item)
     {
         if (!$item instanceof Model\CartItemInterface) {
@@ -185,15 +235,5 @@ class Cart extends AbstractSale implements Model\CartInterface
         $this->expiresAt = $expiresAt;
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function validateAddressClass(Common\AddressInterface $address)
-    {
-        if (!$address instanceof Model\CartAddressInterface) {
-            throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
-        }
     }
 }
