@@ -22,6 +22,7 @@
         "symfony/intl": "~2.7|~3.0",
         "symfony/config": "~2.7|~3.0",
         "ekyna/resource": "0.6.x-dev",
+        "payum/iso4217": "~1.0",
         "giggsey/libphonenumber-for-php": "~5.7|~6.0|~7.0"
     },
     "require-dev": {

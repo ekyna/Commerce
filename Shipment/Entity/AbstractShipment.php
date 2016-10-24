@@ -46,6 +46,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $description;
 
     /**
+     * @var string
+     */
+    protected $trackingNumber;
+
+    /**
      * @var \DateTime
      */
     protected $completedAt;
@@ -58,6 +63,14 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     {
         $this->state = Shipment\ShipmentStates::STATE_NEW;
         $this->items = new ArrayCollection();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString()
+    {
+        return $this->getNumber();
     }
 
     /**
@@ -186,6 +199,24 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function setDescription($description)
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTrackingNumber()
+    {
+        return $this->trackingNumber;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTrackingNumber($number)
+    {
+        $this->trackingNumber = $number;
 
         return $this;
     }

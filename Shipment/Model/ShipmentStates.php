@@ -10,14 +10,15 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 final class ShipmentStates
 {
     const STATE_NEW         = 'new';
-    const STATE_CHECKOUT    = 'checkout';
+//    const STATE_CHECKOUT    = 'checkout';
 //    const STATE_ONHOLD      = 'onhold';
     const STATE_PENDING     = 'pending';
 //    const STATE_BACKORDERED = 'backordered';
     const STATE_READY       = 'ready';
     const STATE_SHIPPED     = 'shipped';
+    const STATE_PARTIAL     = 'partial';
     const STATE_COMPLETED   = 'completed';
-//    const STATE_RETURNED    = 'returned';
+    const STATE_RETURNED    = 'returned';
     const STATE_CANCELLED   = 'cancelled';
 
 
@@ -30,14 +31,15 @@ final class ShipmentStates
     {
         return [
             static::STATE_NEW,
-            static::STATE_CHECKOUT,
+//            static::STATE_CHECKOUT,
 //            static::STATE_ONHOLD,
             static::STATE_PENDING,
 //            static::STATE_BACKORDERED,
             static::STATE_READY,
             static::STATE_SHIPPED,
+            static::STATE_PARTIAL,
             static::STATE_COMPLETED,
-//            static::STATE_RETURNED,
+            static::STATE_RETURNED,
             static::STATE_CANCELLED,
         ];
     }
@@ -90,7 +92,8 @@ final class ShipmentStates
     {
         return [
             static::STATE_SHIPPED,
-            static::STATE_COMPLETED
+            static::STATE_COMPLETED,
+            static::STATE_RETURNED,
         ];
     }
 }

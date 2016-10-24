@@ -98,6 +98,22 @@ interface ShipmentInterface extends
     public function setDescription($description);
 
     /**
+     * Returns the tracking number.
+     *
+     * @return string
+     */
+    public function getTrackingNumber();
+
+    /**
+     * Sets the tracking number.
+     *
+     * @param string $number
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setTrackingNumber($number);
+
+    /**
      * Returns the completedAt.
      *
      * @return \DateTime

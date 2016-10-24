@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 
 /**
@@ -27,6 +28,7 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
         if (0 < $payments->count()) {
             // Gather state amounts
             foreach ($payments as $payment) {
+                // TODO Deal with payment currency conversion ...
                 if ($payment->getState() == PaymentStates::STATE_CAPTURED) {
                     $capturedTotal += $payment->getAmount();
                 } else if ($payment->getState() == PaymentStates::STATE_AUTHORIZED) {
@@ -40,14 +42,16 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
 
             $granTotal = $sale->getGrandTotal();
 
+            $currency = $sale->getCurrency(); // TODO from sale's currency
+
             // State by amounts
-            if ($capturedTotal >= $granTotal) {
+            if (0 <= Money::compare($capturedTotal, $granTotal, $currency)) {
                 return PaymentStates::STATE_CAPTURED;
-            } elseif ($authorizedTotal + $capturedTotal >= $granTotal) {
+            } elseif (0 <= Money::compare($authorizedTotal + $capturedTotal, $granTotal, $currency)) {
                 return PaymentStates::STATE_AUTHORIZED;
-            } elseif ($refundTotal >= $granTotal) {
+            } elseif (0 <= Money::compare($refundTotal, $granTotal, $currency)) {
                 return PaymentStates::STATE_REFUNDED;
-            } elseif ($failedTotal >= $granTotal) {
+            } elseif (0 <= Money::compare($failedTotal, $granTotal, $currency)) {
                 return PaymentStates::STATE_FAILED;
             }
 

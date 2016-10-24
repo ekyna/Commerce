@@ -36,6 +36,10 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     {
         $sale = $shipment->getSale();
 
+        if (null !== $method = $sale->getPreferredShipmentMethod()) {
+            $shipment->setMethod($method);
+        }
+
         foreach ($sale->getItems() as $saleItem) {
             $this->buildItem($saleItem, $shipment);
         }

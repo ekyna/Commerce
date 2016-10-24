@@ -2,10 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Order\Resolver;
 
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates as Pay;
@@ -34,7 +36,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         $shipmentState = $this->resolveShipmentsState($order);
 
         if ($order->hasItems()) {
-            if ($paymentState === Pay::STATE_CAPTURED && $shipmentState === Ship::STATE_SHIPPED) {
+            if ($paymentState === Pay::STATE_CAPTURED && in_array($shipmentState, Ship::getDebitStockStates())) {
                 $newState = OrderStates::STATE_COMPLETED;
             } elseif (in_array($paymentState, [Pay::STATE_PENDING, Pay::STATE_AUTHORIZED, Pay::STATE_CAPTURED])) {
                 $newState = OrderStates::STATE_ACCEPTED;
@@ -79,15 +81,87 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
     private function resolveShipmentsState(OrderInterface $order)
     {
         if (!$order->requiresShipment()) {
-            return Ship::STATE_SHIPPED;
+            return Ship::STATE_COMPLETED;
         }
 
         if (!$order->hasItems()) {
             return Ship::STATE_PENDING;
         }
 
-        // TODO Shipments states
+        $shipments = $order->getShipments();
+        $quantities = [];
+
+        // Build ordered quantities.
+        foreach ($order->getItems() as $item) {
+            $this->buildOrderedQuantities($item, $quantities);
+        }
+
+        // Build shipped quantities.
+        foreach ($shipments as $shipment) {
+            // Ignore if shipment is not shipped or completed
+            if (!in_array($shipment->getState(), Ship::getDebitStockStates(), true)) {
+                continue;
+            }
+
+            foreach ($shipment->getItems() as $shipmentItem) {
+                $orderItem = $shipmentItem->getSaleItem();
+                if (!isset($quantities[$orderItem->getId()])) {
+                    throw new RuntimeException("Shipment item / Sale item miss match.");
+                }
+
+                $quantities[$orderItem->getId()]['shipped'] += $shipmentItem->getQuantity();
+            }
+        }
+
+        $doneCount = $partialCount = 0;
+
+        foreach ($quantities as $q) {
+            // If shipped quantity equals ordered quantity : increment done count
+            if ($q['shipped'] == $q['ordered']) {
+                $doneCount++;
+                continue;
+            }
+            // If shipped quantity is greater than zero : increment partial count
+            if (0 < $q['shipped']) {
+                $partialCount++;
+                continue;
+            }
+        }
+
+        // If all done
+        if ($doneCount == count($quantities)) {
+            // Watch for non completed shipment
+            foreach ($shipments as $shipment) {
+                if ($shipment->getState() != Ship::STATE_COMPLETED) {
+                    return Ship::STATE_SHIPPED;
+                }
+            }
+            // All clear !
+            return Ship::STATE_COMPLETED;
+        } elseif (0 < $partialCount) {
+            return Ship::STATE_PARTIAL;
+        }
 
         return Ship::STATE_PENDING;
+    }
+
+    /**
+     * Builds the quantity (order item / shipments items) array.
+     *
+     * @param SaleItemInterface $item
+     * @param array             $quantities
+     */
+    private function buildOrderedQuantities(SaleItemInterface $item, array &$quantities)
+    {
+        if ($item->hasChildren()) {
+            foreach ($item->getChildren() as $child) {
+                $this->buildOrderedQuantities($child, $quantities);
+            }
+        } else {
+            $quantities[$item->getId()] = array(
+                'ordered' => $item->getTotalQuantity(),
+                'shipped' => 0,
+            );
+        }
     }
 }
