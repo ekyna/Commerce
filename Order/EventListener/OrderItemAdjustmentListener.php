@@ -31,7 +31,7 @@ class OrderItemAdjustmentListener extends AbstractAdjustmentListener
             return;
         }
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**
@@ -49,7 +49,7 @@ class OrderItemAdjustmentListener extends AbstractAdjustmentListener
 
         parent::onPreUpdate($event);
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**
@@ -67,7 +67,7 @@ class OrderItemAdjustmentListener extends AbstractAdjustmentListener
 
         parent::onPreDelete($event);
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**

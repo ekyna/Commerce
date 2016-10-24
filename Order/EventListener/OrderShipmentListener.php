@@ -31,7 +31,7 @@ class OrderShipmentListener extends AbstractShipmentListener
             return;
         }
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**
@@ -49,7 +49,7 @@ class OrderShipmentListener extends AbstractShipmentListener
 
         parent::onPreUpdate($event);
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**
@@ -67,7 +67,7 @@ class OrderShipmentListener extends AbstractShipmentListener
 
         parent::onPreDelete($event);
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**

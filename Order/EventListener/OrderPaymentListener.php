@@ -31,7 +31,7 @@ class OrderPaymentListener extends AbstractPaymentListener
             return;
         }
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**
@@ -49,7 +49,7 @@ class OrderPaymentListener extends AbstractPaymentListener
 
         parent::onPreUpdate($event);
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**
@@ -67,7 +67,7 @@ class OrderPaymentListener extends AbstractPaymentListener
 
         parent::onPreDelete($event);
 
-        $this->throwIllegalOperationIfOrderIsCompleted($event);
+        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
 
     /**

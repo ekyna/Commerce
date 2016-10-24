@@ -58,13 +58,7 @@ abstract class AbstractShipmentItemListener
     {
         $shipmentItem = $this->getShipmentItemFromEvent($event);
 
-        $shipment = $shipmentItem->getShipment();
-
-        /*if (true || $changed) {
-            $this->persistenceHelper->persistAndRecompute($shipment);
-        }*/
-
-        //$this->dispatchShipmentContentChangeEvent($shipment);
+        $this->dispatchShipmentContentChangeEvent($shipmentItem->getShipment());
     }
 
     /**
@@ -76,15 +70,9 @@ abstract class AbstractShipmentItemListener
     {
         $shipmentItem = $this->getShipmentItemFromEvent($event);
 
-        $shipment = $shipmentItem->getShipment();
-
-        /*if (true || $changed) {
-            $this->persistenceHelper->persistAndRecompute($shipment);
-        }*/
-
-        /*if ($this->persistenceHelper->isChanged($shipment, 'state')) {
-            $this->dispatchShipmentContentChangeEvent($shipment);
-        }*/
+        if ($this->persistenceHelper->isChanged($shipmentItem, 'quantity')) {
+            $this->dispatchShipmentContentChangeEvent($shipmentItem->getShipment());
+        }
     }
 
     /**
@@ -96,11 +84,7 @@ abstract class AbstractShipmentItemListener
     {
         $shipmentItem = $this->getShipmentItemFromEvent($event);
 
-        $shipment = $shipmentItem->getShipment();
-
-        /*if ($this->persistenceHelper->isChanged($shipment, 'state')) {
-            $this->dispatchShipmentContentChangeEvent($shipment);
-        }*/
+        $this->dispatchShipmentContentChangeEvent($shipmentItem->getShipment());
     }
 
     /**
