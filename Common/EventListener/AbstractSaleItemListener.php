@@ -125,6 +125,8 @@ abstract class AbstractSaleItemListener
         $item = $this->getSaleItemFromEvent($event);
 
         $this->dispatchSaleContentChangeEvent($item->getSale());
+
+        // TODO Set sale and parent to null ?
     }
 
     /**

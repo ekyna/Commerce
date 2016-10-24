@@ -12,7 +12,7 @@ interface TaxableInterface
     /**
      * Returns the tax group.
      *
-     * @return TaxGroupInterface
+     * @return TaxGroupInterface|null
      */
     public function getTaxGroup();
 

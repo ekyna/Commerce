@@ -111,6 +111,7 @@
                 <option name="value">0</option>
             </constraint>
         </property>
+        <!-- TODO TAXATION can't be immutable -->
     </class>
 
     <!-- Message -->
@@ -265,6 +266,10 @@
         <property name="children">
             <constraint name="Valid" />
         </property>
+        <!-- TODO Must have a parent or a sale -->
+        <!--<property name="taxGroup">
+            TODO Not null if item has no children
+        </property>-->
         <!--<property name="adjustments">
             TODO Not with mode == FLAT
         </property>-->

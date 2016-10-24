@@ -47,7 +47,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function setSale(SaleInterface $sale = null)
     {
-        if ((null !== $sale) && !$sale instanceof OrderInterface) {
+        if (null !== $sale && !$sale instanceof OrderInterface) {
             throw new InvalidArgumentException('Expected instance of OrderInterface');
         }
 
@@ -69,7 +69,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function setOrder(OrderInterface $order = null)
     {
-        if ($this->order && $this->order != $order) {
+        if (null !== $this->order && $this->order != $order) {
             $this->order->removeItem($this);
         }
 
@@ -102,9 +102,8 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
         }
 
         if (!$this->children->contains($child)) {
-            /** @noinspection PhpInternalEntityUsedInspection */
-            $child->setParent($this);
             $this->children->add($child);
+            $child->setParent($this);
         }
 
         return $this;
@@ -120,9 +119,8 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
         }
 
         if ($this->children->contains($child)) {
-            /** @noinspection PhpInternalEntityUsedInspection */
-            $child->setParent(null);
             $this->children->removeElement($child);
+            //$child->setParent(null);
         }
 
         return $this;
@@ -150,8 +148,8 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
         }
 
         if (!$this->adjustments->contains($adjustment)) {
-            $adjustment->setItem($this);
             $this->adjustments->add($adjustment);
+            $adjustment->setItem($this);
         }
 
         return $this;
@@ -167,8 +165,8 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
         }
 
         if ($this->adjustments->contains($adjustment)) {
-            $adjustment->setItem(null);
             $this->adjustments->removeElement($adjustment);
+            //$adjustment->setItem(null);
         }
 
         return $this;

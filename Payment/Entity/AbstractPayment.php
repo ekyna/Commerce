@@ -145,6 +145,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
 
     public function getRoundedAmount()
     {
+        // TODO not used / dependency !?
         $iso = new \Payum\ISO4217\ISO4217();
         /** @var \Payum\ISO4217\Currency $currency */
         $currency = $iso->findByCode($this->currency->getCode());

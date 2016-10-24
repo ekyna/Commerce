@@ -24,6 +24,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
 
     /**
      * @var SubjectProviderRegistryInterface
+     * TODO remove
      */
     private $providerRegistry;
 
@@ -89,10 +90,10 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $change = false;
 
         foreach ($children as $child) {
-            $change = $this->buildTaxationAdjustmentsForSaleItem($child) || $change;
+            $change = $this->buildTaxationAdjustmentsForSaleItem($child, $persistence) || $change;
 
             if ($child->hasChildren()) {
-                $change = $this->buildTaxationAdjustmentsForSaleItems($child) || $change;
+                $change = $this->buildTaxationAdjustmentsForSaleItems($child, $persistence) || $change;
             }
         }
 
@@ -104,7 +105,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
-        if (null === $provider = $this->providerRegistry->getProvider($item)) {
+        /*if (null === $provider = $this->providerRegistry->getProvider($item)) {
             return false;
         }
 
@@ -114,13 +115,13 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
 
         if (!$taxable instanceof TaxableInterface) {
             return false;
-        }
+        }*/
 
         // Resolve taxes
         if (null !== $sale = $item->getSale()) {
-            $taxes = $this->taxResolver->resolveTaxesBySale($taxable, $sale);
+            $taxes = $this->taxResolver->resolveTaxesBySale($item, $sale);
         } else {
-            $taxes = $this->taxResolver->resolveDefaultTaxes($taxable);
+            $taxes = $this->taxResolver->resolveDefaultTaxes($item);
         }
 
         return $this->buildTaxationAdjustments($item, $taxes, $persistence);
@@ -147,8 +148,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
                 ->setMode(Model\AdjustmentModes::MODE_PERCENT)
                 ->setType(Model\AdjustmentTypes::TYPE_TAXATION)
                 ->setDesignation($tax->getName())
-                ->setAmount($tax->getRate())
-                ->setImmutable(true);
+                ->setAmount($tax->getRate());
 
             $newAdjustments[] = $adjustment;
         }
@@ -159,9 +159,10 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         // Remove current adjustments that do not match any generated adjustments
         foreach ($oldAdjustments as $oldAdjustment) {
             // Skip non-immutable adjustment as they have been defined by the user.
-            if (!$oldAdjustment->isImmutable()) {
+            // Commented because taxation adjustment should never be immutable.
+            /*if (!$oldAdjustment->isImmutable()) {
                 continue;
-            }
+            }*/
 
             // Look for a corresponding adjustment
             foreach ($newAdjustments as $index => $newAdjustment) {

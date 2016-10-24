@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Shipment\Entity\AbstractShipment;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderShipment extends AbstractShipment  implements OrderShipmentInterface
+class OrderShipment extends AbstractShipment implements OrderShipmentInterface
 {
     /**
      * @var OrderInterface
@@ -40,7 +40,7 @@ class OrderShipment extends AbstractShipment  implements OrderShipmentInterface
      */
     public function setOrder(OrderInterface $order = null)
     {
-        if ($this->order && $this->order != $order) {
+        if (null !== $this->order && $this->order != $order) {
             $this->order->removeShipment($this);
         }
 

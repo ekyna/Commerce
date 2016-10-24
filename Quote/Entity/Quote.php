@@ -97,8 +97,8 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         }
 
         if (!$this->hasItem($item)) {
-            $item->setQuote($this);
             $this->items->add($item);
+            $item->setQuote($this);
         }
 
         return $this;
@@ -114,8 +114,8 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         }
 
         if ($this->hasItem($item)) {
-            $item->setQuote(null);
             $this->items->removeElement($item);
+            //$item->setQuote(null);
         }
 
         return $this;
@@ -143,8 +143,8 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         }
 
         if (!$this->hasAdjustment($adjustment)) {
-            $adjustment->setQuote($this);
             $this->adjustments->add($adjustment);
+            $adjustment->setQuote($this);
         }
 
         return $this;
@@ -160,8 +160,8 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         }
 
         if ($this->hasAdjustment($adjustment)) {
-            $adjustment->setQuote(null);
             $this->adjustments->removeElement($adjustment);
+            //$adjustment->setQuote(null);
         }
 
         return $this;
@@ -189,8 +189,8 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         }
 
         if (!$this->hasPayment($payment)) {
-            $payment->setQuote($this);
             $this->payments->add($payment);
+            $payment->setQuote($this);
         }
 
         return $this;
@@ -206,8 +206,8 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         }
 
         if ($this->hasPayment($payment)) {
-            $payment->setQuote(null);
             $this->payments->removeElement($payment);
+            //$payment->setQuote(null);
         }
 
         return $this;

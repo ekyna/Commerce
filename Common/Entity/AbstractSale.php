@@ -73,6 +73,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
 
     /**
      * @var Shipment\ShipmentMethodInterface
+     * TODO rename to shipmentMethod
      */
     protected $preferredShipmentMethod;
 

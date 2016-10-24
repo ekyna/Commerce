@@ -22,7 +22,7 @@ class OrderShipmentItem extends AbstractShipmentItem implements OrderShipmentIte
      */
     public function setShipment(ShipmentInterface $shipment = null)
     {
-        if ((null !== $shipment) && !$shipment instanceof OrderShipmentInterface) {
+        if (null !== $shipment && !$shipment instanceof OrderShipmentInterface) {
             throw new InvalidArgumentException("Expected instance of OrderShipmentInterface.");
         }
 
@@ -34,7 +34,7 @@ class OrderShipmentItem extends AbstractShipmentItem implements OrderShipmentIte
      */
     public function setSaleItem(SaleItemInterface $saleItem = null)
     {
-        if ((null !== $saleItem) && !$saleItem instanceof OrderItemInterface) {
+        if (null !== $saleItem && !$saleItem instanceof OrderItemInterface) {
             throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
         }
 

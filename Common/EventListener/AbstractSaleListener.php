@@ -460,8 +460,10 @@ abstract class AbstractSaleListener
      */
     protected function updateTaxation(SaleInterface $sale)
     {
-        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItems($sale, true)
-            || $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, true);
+        $changed = $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItems($sale, true);
+        $changed = $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, true) || $changed;
+
+        return $changed;
     }
 
     /**

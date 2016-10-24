@@ -103,8 +103,8 @@ class Cart extends AbstractSale implements Model\CartInterface
         }
 
         if (!$this->hasItem($item)) {
-            $item->setCart($this);
             $this->items->add($item);
+            $item->setCart($this);
         }
 
         return $this;
@@ -120,8 +120,8 @@ class Cart extends AbstractSale implements Model\CartInterface
         }
 
         if ($this->hasItem($item)) {
-            $item->setCart(null);
             $this->items->removeElement($item);
+            //$item->setCart(null);
         }
 
         return $this;
@@ -149,8 +149,8 @@ class Cart extends AbstractSale implements Model\CartInterface
         }
 
         if (!$this->hasAdjustment($adjustment)) {
-            $adjustment->setCart($this);
             $this->adjustments->add($adjustment);
+            $adjustment->setCart($this);
         }
 
         return $this;
@@ -166,8 +166,8 @@ class Cart extends AbstractSale implements Model\CartInterface
         }
 
         if ($this->hasAdjustment($adjustment)) {
-            $adjustment->setCart(null);
             $this->adjustments->removeElement($adjustment);
+            //$adjustment->setCart(null);
         }
 
         return $this;
@@ -195,8 +195,8 @@ class Cart extends AbstractSale implements Model\CartInterface
         }
 
         if (!$this->hasPayment($payment)) {
-            $payment->setCart($this);
             $this->payments->add($payment);
+            $payment->setCart($this);
         }
 
         return $this;
@@ -212,8 +212,8 @@ class Cart extends AbstractSale implements Model\CartInterface
         }
 
         if ($this->hasPayment($payment)) {
-            $payment->setCart(null);
             $this->payments->removeElement($payment);
+            //$payment->setCart(null);
         }
 
         return $this;

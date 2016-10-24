@@ -11,6 +11,7 @@
         <field name="type" column="type" type="string" length="16" nullable="false"/>
         <field name="mode" column="mode" type="string" length="16" nullable="false"/>
         <field name="amount" column="amount" type="decimal" precision="10" scale="5" nullable="false"/>
+        <field name="immutable" column="immutable" type="boolean"/>
         <field name="position" column="position" type="smallint" nullable="false"/>
 
     </mapped-superclass>

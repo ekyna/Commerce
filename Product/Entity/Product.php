@@ -60,6 +60,11 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
     protected $bundleSlots;
 
     /**
+     * @var TaxGroupInterface
+     */
+    protected $taxGroup;
+
+    /**
      * @var string
      */
     protected $designation;
@@ -78,11 +83,6 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
      * @var float
      */
     protected $weight;
-
-    /**
-     * @var TaxGroupInterface
-     */
-    protected $taxGroup;
 
     /**
      * @var \DateTime
@@ -449,6 +449,24 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
     /**
      * @inheritdoc
      */
+    public function getTaxGroup()
+    {
+        return $this->taxGroup;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTaxGroup(TaxGroupInterface $group = null)
+    {
+        $this->taxGroup = $group;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTitle()
     {
         if ($this->type === Model\ProductTypes::TYPE_VARIANT) {
@@ -558,24 +576,6 @@ class Product extends AbstractTranslatable implements Model\ProductInterface
     public function setWeight($weight)
     {
         $this->weight = $weight;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxGroup()
-    {
-        return $this->taxGroup;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxGroup(TaxGroupInterface $group = null)
-    {
-        $this->taxGroup = $group;
 
         return $this;
     }

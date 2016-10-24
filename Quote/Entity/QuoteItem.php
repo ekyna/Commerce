@@ -47,7 +47,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
      */
     public function setSale(SaleInterface $sale = null)
     {
-        if ((null !== $sale) && !$sale instanceof QuoteInterface) {
+        if (null !== $sale && !$sale instanceof QuoteInterface) {
             throw new InvalidArgumentException('Expected instance of QuoteInterface');
         }
 
@@ -69,7 +69,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
      */
     public function setQuote(QuoteInterface $quote = null)
     {
-        if ($this->quote && $this->quote != $quote) {
+        if (null !== $this->quote && $this->quote != $quote) {
             $this->quote->removeItem($this);
         }
 
@@ -87,7 +87,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
             throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
         }
 
-        if ($this->parent && $this->parent != $parent) {
+        if (null !== $this->parent && $this->parent != $parent) {
             $this->parent->removeChild($this);
         }
 
@@ -106,9 +106,8 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
         }
 
         if (!$this->children->contains($child)) {
-            /** @noinspection PhpInternalEntityUsedInspection */
-            $child->setParent($this);
             $this->children->add($child);
+            $child->setParent($this);
         }
 
         return $this;
@@ -124,9 +123,8 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
         }
 
         if ($this->children->contains($child)) {
-            /** @noinspection PhpInternalEntityUsedInspection */
-            $child->setParent(null);
             $this->children->removeElement($child);
+            //$child->setParent(null);
         }
 
         return $this;
@@ -154,8 +152,8 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
         }
 
         if (!$this->adjustments->contains($adjustment)) {
-            $adjustment->setItem($this);
             $this->adjustments->add($adjustment);
+            $adjustment->setItem($this);
         }
 
         return $this;
@@ -171,8 +169,8 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
         }
 
         if ($this->adjustments->contains($adjustment)) {
-            $adjustment->setItem(null);
             $this->adjustments->removeElement($adjustment);
+            //$adjustment->setItem(null);
         }
 
         return $this;

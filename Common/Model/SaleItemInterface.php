@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
@@ -15,6 +16,7 @@ interface SaleItemInterface extends
     ResourceModel\ResourceInterface,
     ResourceModel\SortableInterface,
     SubjectRelativeInterface,
+    TaxableInterface,
     AdjustableInterface
 {
     /**
@@ -29,7 +31,7 @@ interface SaleItemInterface extends
     /**
      * Returns the sale.
      *
-     * @return SaleInterface
+     * @return SaleInterface|null
      */
     public function getSale();
 
@@ -39,7 +41,6 @@ interface SaleItemInterface extends
      * @param SaleItemInterface $parent
      *
      * @return $this|SaleItemInterface
-     * @internal
      */
     public function setParent(SaleItemInterface $parent = null);
 
