@@ -23,11 +23,6 @@ abstract class AbstractShipmentItemListener
      */
     protected $persistenceHelper;
 
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
-
 
     /**
      * Sets the persistence helper.
@@ -40,16 +35,6 @@ abstract class AbstractShipmentItemListener
     }
 
     /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-    }
-
-    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -58,7 +43,7 @@ abstract class AbstractShipmentItemListener
     {
         $shipmentItem = $this->getShipmentItemFromEvent($event);
 
-        $this->dispatchShipmentContentChangeEvent($shipmentItem->getShipment());
+        $this->scheduleShipmentContentChangeEvent($shipmentItem->getShipment());
     }
 
     /**
@@ -71,7 +56,7 @@ abstract class AbstractShipmentItemListener
         $shipmentItem = $this->getShipmentItemFromEvent($event);
 
         if ($this->persistenceHelper->isChanged($shipmentItem, 'quantity')) {
-            $this->dispatchShipmentContentChangeEvent($shipmentItem->getShipment());
+            $this->scheduleShipmentContentChangeEvent($shipmentItem->getShipment());
         }
     }
 
@@ -84,7 +69,7 @@ abstract class AbstractShipmentItemListener
     {
         $shipmentItem = $this->getShipmentItemFromEvent($event);
 
-        $this->dispatchShipmentContentChangeEvent($shipmentItem->getShipment());
+        $this->scheduleShipmentContentChangeEvent($shipmentItem->getShipment());
     }
 
     /**
@@ -130,15 +115,15 @@ abstract class AbstractShipmentItemListener
      */
     protected function updateStock(ShipmentItemInterface $item)
     {
-
+        // TODO
     }
 
     /**
-     * Dispatches the shipment content change event.
+     * Schedules the shipment content change event.
      *
      * @param ShipmentInterface $shipment
      */
-    abstract protected function dispatchShipmentContentChangeEvent(ShipmentInterface $shipment);
+    abstract protected function scheduleShipmentContentChangeEvent(ShipmentInterface $shipment);
 
     /**
      * Returns the shipment item from the event.

@@ -19,14 +19,12 @@ class CartItemAdjustmentListener extends AbstractAdjustmentListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
+    protected function scheduleSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
     {
         /** @var \Ekyna\Component\Commerce\Cart\Model\CartItemInterface $item */
         $item = $adjustment->getAdjustable();
 
-        $event = $this->dispatcher->createResourceEvent($item->getSale());
-
-        $this->dispatcher->dispatch(CartEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(CartEvents::CONTENT_CHANGE, $item->getSale());
     }
 
     /**

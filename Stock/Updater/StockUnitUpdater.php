@@ -42,7 +42,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setOrderedQuantity($quantity);
 
-        $this->persistenceHelper->persistAndRecompute($stockUnit);
+        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
         // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
     }
 
@@ -59,7 +59,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setDeliveredQuantity($quantity);
 
-        $this->persistenceHelper->persistAndRecompute($stockUnit);
+        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
         // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
     }
 
@@ -76,7 +76,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setShippedQuantity($quantity);
 
-        $this->persistenceHelper->persistAndRecompute($stockUnit);
+        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
         // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
     }
 
@@ -88,7 +88,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         if ($date != $stockUnit->getEstimatedDateOfArrival()) {
             $stockUnit->setEstimatedDateOfArrival($date);
 
-            $this->persistenceHelper->persistAndRecompute($stockUnit);
+            $this->persistenceHelper->persistAndRecompute($stockUnit, true);
             // TODO Do we need to dispatch STOCK_UNIT_CHANGE event ?
         }
     }

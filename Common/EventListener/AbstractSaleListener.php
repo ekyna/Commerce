@@ -443,7 +443,7 @@ abstract class AbstractSaleListener
             $sale->setDeliveryAddress(null);
 
             // Delete the delivery address
-            $this->persistenceHelper->remove($deliveryAddress);
+            $this->persistenceHelper->remove($deliveryAddress, true);
 
             return true;
         }

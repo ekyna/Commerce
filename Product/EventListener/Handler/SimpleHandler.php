@@ -240,12 +240,12 @@ class SimpleHandler extends AbstractHandler
             if (!$variable = $child->getParent()) {
                 throw new RuntimeException("Variant's parent must be set.");
             }
-            $this->dispatchChildStockChangeEvent($variable);
+            $this->scheduleChildStockChangeEvent($variable);
         }
 
         $parents = $this->productRepository->findParentsByBundled($child);
         foreach ($parents as $parent) {
-            $this->dispatchChildStockChangeEvent($parent);
+            $this->scheduleChildStockChangeEvent($parent);
         }
     }
 
@@ -254,13 +254,11 @@ class SimpleHandler extends AbstractHandler
      *
      * @param ProductInterface $parent
      */
-    private function dispatchChildStockChangeEvent(ProductInterface $parent)
+    private function scheduleChildStockChangeEvent(ProductInterface $parent)
     {
         ProductTypes::assetParentType($parent);
 
-        $event = $this->dispatcher->createResourceEvent($parent);
-
-        $this->dispatcher->dispatch(ProductEvents::CHILD_STOCK_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(ProductEvents::CHILD_STOCK_CHANGE, $parent);
     }
 
     /**

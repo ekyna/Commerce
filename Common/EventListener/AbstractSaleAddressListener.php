@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -19,11 +18,6 @@ abstract class AbstractSaleAddressListener
      */
     protected $persistenceHelper;
 
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
-
 
     /**
      * Sets the persistence helper.
@@ -36,16 +30,6 @@ abstract class AbstractSaleAddressListener
     }
 
     /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-    }
-
-    /**
      * Update event handler.
      *
      * @param ResourceEventInterface $event
@@ -54,18 +38,17 @@ abstract class AbstractSaleAddressListener
     {
         $address = $this->getAddressFromEvent($event);
 
-        // Dispatch
         if ($this->persistenceHelper->isChanged($address, 'country')) {
-            $this->dispatchSaleTaxResolutionEvent($address);
+            $this->scheduleSaleTaxResolutionEvent($address);
         }
     }
 
     /**
-     * Dispatches the sale tax resolution event.
+     * Schedules the sale tax resolution event.
      *
      * @param Model\AddressInterface $address
      */
-    abstract protected function dispatchSaleTaxResolutionEvent(Model\AddressInterface $address);
+    abstract protected function scheduleSaleTaxResolutionEvent(Model\AddressInterface $address);
 
     /**
      * Returns the sale item from the resource event.

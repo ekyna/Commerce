@@ -4,12 +4,10 @@ namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -26,19 +24,9 @@ abstract class AbstractShipmentListener
     protected $persistenceHelper;
 
     /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
-
-    /**
      * @var NumberGeneratorInterface
      */
     protected $numberGenerator;
-
-    /**
-     * @var StateResolverInterface
-     */
-    protected $stateResolver;
 
 
     /**
@@ -52,16 +40,6 @@ abstract class AbstractShipmentListener
     }
 
     /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-    }
-
-    /**
      * Sets the number generator.
      *
      * @param NumberGeneratorInterface $generator
@@ -69,16 +47,6 @@ abstract class AbstractShipmentListener
     public function setNumberGenerator(NumberGeneratorInterface $generator)
     {
         $this->numberGenerator = $generator;
-    }
-
-    /**
-     * Sets the state resolver.
-     *
-     * @param StateResolverInterface $resolver
-     */
-    public function setStateResolver(StateResolverInterface $resolver)
-    {
-        $this->stateResolver = $resolver;
     }
 
     /**
@@ -98,8 +66,6 @@ abstract class AbstractShipmentListener
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
-        //$changed = $this->updateState($shipment) || $changed;
-
         // TODO Timestampable behavior/listener
         $shipment
             ->setCreatedAt(new \DateTime())
@@ -112,7 +78,7 @@ abstract class AbstractShipmentListener
         $sale = $shipment->getSale();
         $sale->addShipment($shipment);
 
-        $this->dispatchSaleContentChangeEvent($sale);
+        $this->scheduleSaleContentChangeEvent($sale);
     }
 
     /**
@@ -125,11 +91,17 @@ abstract class AbstractShipmentListener
         $shipment = $this->getShipmentFromEvent($event);
 
         // TODO same shit here ... T_T
+        $doScheduleSaleContentChange = false;
 
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
-        //$changed = $this->updateState($shipment) || $changed;
+        if ($this->persistenceHelper->isChanged($shipment, 'state')) {
+            // TODO completed at datetime
+
+            $doScheduleSaleContentChange = true;
+            $this->scheduleSaleContentChangeEvent($shipment->getSale());
+        }
 
         // TODO Timestampable behavior/listener
         $shipment->setUpdatedAt(new \DateTime());
@@ -138,8 +110,8 @@ abstract class AbstractShipmentListener
             $this->persistenceHelper->persistAndRecompute($shipment);
         }
 
-        if ($this->persistenceHelper->isChanged($shipment, 'state')) {
-            $this->dispatchSaleContentChangeEvent($shipment->getSale());
+        if ($doScheduleSaleContentChange) {
+            $this->scheduleSaleContentChangeEvent($shipment->getSale());
         }
     }
 
@@ -152,7 +124,7 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($shipment->getSale());
+        $this->scheduleSaleContentChangeEvent($shipment->getSale());
     }
 
     /**
@@ -164,13 +136,7 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-//        $changed = $this->updateState($shipment);
-
-//        if ($changed) {
-//            $this->persistenceHelper->persistAndRecompute($shipment);
-
-            $this->dispatchSaleContentChangeEvent($shipment->getSale());
-//        }
+        $this->scheduleSaleContentChangeEvent($shipment->getSale());
     }
 
     /**
@@ -200,6 +166,8 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
+        // TODO look for returns ?
+
         if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
             throw new IllegalOperationException();
         }
@@ -224,24 +192,11 @@ abstract class AbstractShipmentListener
     }
 
     /**
-     * Updates the state.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return bool Whether the shipment has been changed or not.
-     */
-    protected function updateState(ShipmentInterface $shipment)
-    {
-        return $this->stateResolver->resolve($shipment);
-        // TODO + completed at
-    }
-
-    /**
      * Dispatches the sale content change event.
      *
      * @param SaleInterface $sale
      */
-    abstract protected function dispatchSaleContentChangeEvent(SaleInterface $sale);
+    abstract protected function scheduleSaleContentChangeEvent(SaleInterface $sale);
 
     /**
      * Returns the shipment from the event.

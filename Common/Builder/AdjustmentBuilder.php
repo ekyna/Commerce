@@ -177,7 +177,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
             $adjustable->removeAdjustment($oldAdjustment);
 
             if ($persistence) {
-                $this->persistenceHelper->remove($oldAdjustment);
+                $this->persistenceHelper->remove($oldAdjustment, true);
             }
 
             $change = true;
@@ -188,7 +188,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
             $adjustable->addAdjustment($newAdjustment);
 
             if ($persistence) {
-                $this->persistenceHelper->persistAndRecompute($newAdjustment);
+                $this->persistenceHelper->persistAndRecompute($newAdjustment, true);
             }
 
             $change = true;

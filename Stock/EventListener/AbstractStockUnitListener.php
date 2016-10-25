@@ -76,7 +76,7 @@ abstract class AbstractStockUnitListener
             $this->persistenceHelper->persistAndRecompute($stockUnit);
         }
 
-        $this->dispatchSubjectStockUnitChangeEvent($stockUnit);
+        $this->scheduleSubjectStockUnitChangeEvent($stockUnit);
     }
 
     /**
@@ -100,7 +100,7 @@ abstract class AbstractStockUnitListener
                 $this->persistenceHelper->persistAndRecompute($stockUnit);
             }
 
-            $this->dispatchSubjectStockUnitChangeEvent($stockUnit);
+            $this->scheduleSubjectStockUnitChangeEvent($stockUnit);
         }
     }
 
@@ -124,7 +124,7 @@ abstract class AbstractStockUnitListener
             throw new IllegalOperationException("The stock unit can't be deleted as it has been delivered or shipped.");
         }
 
-        $this->dispatchSubjectStockUnitRemovalEvent($stockUnit);
+        $this->scheduleSubjectStockUnitRemovalEvent($stockUnit);
     }
 
     /**
@@ -132,12 +132,12 @@ abstract class AbstractStockUnitListener
      *
      * @param StockUnitInterface $stockUnit
      */
-    protected function dispatchSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
+    protected function scheduleSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
     {
         $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
         $event->addData('stock_unit', $stockUnit);
 
-        $this->dispatcher->dispatch($this->getSubjectStockUnitChangeEventName(), $event);
+        $this->persistenceHelper->scheduleEvent($this->getSubjectStockUnitChangeEventName(), $event);
     }
 
     /**
@@ -145,12 +145,12 @@ abstract class AbstractStockUnitListener
      *
      * @param StockUnitInterface $stockUnit
      */
-    protected function dispatchSubjectStockUnitRemovalEvent(StockUnitInterface $stockUnit)
+    protected function scheduleSubjectStockUnitRemovalEvent(StockUnitInterface $stockUnit)
     {
         $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
         $event->addData('stock_unit', $stockUnit);
 
-        $this->dispatcher->dispatch($this->getSubjectStockUnitRemovalEventName(), $event);
+        $this->persistenceHelper->scheduleEvent($this->getSubjectStockUnitRemovalEventName(), $event);
     }
 
     /**

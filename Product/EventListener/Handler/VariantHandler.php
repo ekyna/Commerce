@@ -89,7 +89,7 @@ class VariantHandler extends AbstractHandler
         // Update parent/variable minimum price if variant price has changed
         if ($this->persistenceHelper->isChanged($variant, 'netPrice')) {
             if ($this->variableUpdater->updateMinPrice($variable)) {
-                $this->persistenceHelper->persistAndRecompute($variable);
+                $this->persistenceHelper->persistAndRecompute($variable, true);
             }
         }
 

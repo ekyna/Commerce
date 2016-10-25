@@ -8,7 +8,6 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -25,11 +24,6 @@ abstract class AbstractPaymentListener
     protected $persistenceHelper;
 
     /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
-
-    /**
      * @var NumberGeneratorInterface
      */
     protected $numberGenerator;
@@ -43,16 +37,6 @@ abstract class AbstractPaymentListener
     public function setPersistenceHelper(PersistenceHelperInterface $helper)
     {
         $this->persistenceHelper = $helper;
-    }
-
-    /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -94,7 +78,7 @@ abstract class AbstractPaymentListener
         $sale = $payment->getSale();
         $sale->addPayment($payment);
 
-        $this->dispatchSaleContentChangeEvent($sale);
+        $this->scheduleSaleContentChangeEvent($sale);
     }
 
     /**
@@ -119,7 +103,7 @@ abstract class AbstractPaymentListener
         }
 
         if ($this->persistenceHelper->isChanged($payment, ['amount', 'state'])) {
-            $this->dispatchSaleContentChangeEvent($payment->getSale());
+            $this->scheduleSaleContentChangeEvent($payment->getSale());
         }
     }
 
@@ -132,7 +116,7 @@ abstract class AbstractPaymentListener
     {
         $payment = $this->getPaymentFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($payment->getSale());
+        $this->scheduleSaleContentChangeEvent($payment->getSale());
     }
 
     /**
@@ -186,11 +170,11 @@ abstract class AbstractPaymentListener
     }
 
     /**
-     * Dispatches the sale content change event.
+     * Schedules the sale content change event.
      *
      * @param SaleInterface $sale
      */
-    abstract protected function dispatchSaleContentChangeEvent(SaleInterface $sale);
+    abstract protected function scheduleSaleContentChangeEvent(SaleInterface $sale);
 
     /**
      * Returns the payment from the event.

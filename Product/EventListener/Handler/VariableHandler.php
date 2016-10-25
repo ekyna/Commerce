@@ -65,7 +65,7 @@ class VariableHandler extends AbstractHandler
         if ($this->persistenceHelper->isChanged($variable, 'taxGroup')) {
             foreach ($variable->getVariants() as $variant) {
                 if ($this->variantUpdater->updateTaxGroup($variant)) {
-                    $this->persistenceHelper->persistAndRecompute($variant);
+                    $this->persistenceHelper->persistAndRecompute($variant, true);
                 }
             }
         }

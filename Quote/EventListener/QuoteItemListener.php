@@ -19,11 +19,9 @@ class QuoteItemListener extends AbstractSaleItemListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(Model\SaleInterface $sale)
+    protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale)
     {
-        $event = $this->dispatcher->createResourceEvent($sale);
-
-        $this->dispatcher->dispatch(QuoteEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(QuoteEvents::CONTENT_CHANGE, $sale);
     }
 
     /**

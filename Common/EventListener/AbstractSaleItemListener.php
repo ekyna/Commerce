@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Common\EventListener;
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
-use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -25,11 +24,6 @@ abstract class AbstractSaleItemListener
      * @var AdjustmentBuilderInterface
      */
     protected $adjustmentBuilder;
-
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
 
 
     /**
@@ -53,16 +47,6 @@ abstract class AbstractSaleItemListener
     }
 
     /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-    }
-
-    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -75,7 +59,7 @@ abstract class AbstractSaleItemListener
             $this->persistenceHelper->persistAndRecompute($item);
         }
 
-        $this->dispatchSaleContentChangeEvent($item->getSale());
+        $this->scheduleSaleContentChangeEvent($item->getSale());
     }
 
     /**
@@ -99,7 +83,7 @@ abstract class AbstractSaleItemListener
         // If net price, quantity or adjustments change : trigger sale content change event
         if ($change || $this->persistenceHelper->isChanged($item, ['netPrice', 'quantity'])) {
             // TODO use event queue
-            $this->dispatchSaleContentChangeEvent($item->getSale());
+            $this->scheduleSaleContentChangeEvent($item->getSale());
         }
     }
 
@@ -124,7 +108,7 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($item->getSale());
+        $this->scheduleSaleContentChangeEvent($item->getSale());
 
         // TODO Set sale and parent to null ?
     }
@@ -171,11 +155,11 @@ abstract class AbstractSaleItemListener
     }
 
     /**
-     * Dispatches the sale content change event.
+     * Schedules the sale content change event.
      *
      * @param Model\SaleInterface $sale
      */
-    abstract protected function dispatchSaleContentChangeEvent(Model\SaleInterface $sale);
+    abstract protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale);
 
     /**
      * Returns the sale item from the resource event.

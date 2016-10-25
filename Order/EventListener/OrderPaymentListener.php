@@ -92,11 +92,9 @@ class OrderPaymentListener extends AbstractPaymentListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(SaleInterface $sale)
+    protected function scheduleSaleContentChangeEvent(SaleInterface $sale)
     {
-        $event = $this->dispatcher->createResourceEvent($sale);
-
-        $this->dispatcher->dispatch(OrderEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $sale);
     }
 
     /**

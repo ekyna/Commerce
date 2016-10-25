@@ -16,7 +16,6 @@ final class OrderPaymentEvents
 
     // Domain
     const STATE_CHANGE   = 'ekyna_commerce.order_payment.state_change';
-    const CONTENT_CHANGE = 'ekyna_commerce.order_payment.content_change';
 
     const PRE_CREATE     = 'ekyna_commerce.order_payment.pre_create';
     const POST_CREATE    = 'ekyna_commerce.order_payment.post_create';

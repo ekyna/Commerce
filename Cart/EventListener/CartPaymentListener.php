@@ -19,11 +19,9 @@ class CartPaymentListener extends AbstractPaymentListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(SaleInterface $sale)
+    protected function scheduleSaleContentChangeEvent(SaleInterface $sale)
     {
-        $event = $this->dispatcher->createResourceEvent($sale);
-
-        $this->dispatcher->dispatch(CartEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(CartEvents::CONTENT_CHANGE, $sale);
     }
 
     /**

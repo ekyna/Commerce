@@ -35,7 +35,7 @@ class SupplierOrderItemListener extends AbstractListener
         $this->findStockUnit($item);
 
         // TODO if not already scheduled
-        $this->dispatchSupplierOrderContentChangeEvent($item->getOrder());
+        $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
     }
 
     /**
@@ -69,7 +69,7 @@ class SupplierOrderItemListener extends AbstractListener
 
             // Dispatch supplier order content change event
             // TODO if not already scheduled
-            $this->dispatchSupplierOrderContentChangeEvent($item->getOrder());
+            $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
         }
     }
 
@@ -91,7 +91,7 @@ class SupplierOrderItemListener extends AbstractListener
         // Stock unit is configured for cascade removal at DBMS level:
         // ORM won't dispatch the delete event during flush.
         // Let's do it ourselves.
-        $this->dispatchStockUnitDeleteEvent($item);
+        $this->scheduleStockUnitDeleteEvent($item);
 
         // Supplier order has been set to null by the removeItem method.
         // Retrieve it from the change set.
@@ -101,7 +101,7 @@ class SupplierOrderItemListener extends AbstractListener
                 $order = $changeSet['order'][0];
             }
         }
-        $this->dispatchSupplierOrderContentChangeEvent($order);
+        $this->scheduleSupplierOrderContentChangeEvent($order);
     }
 
     /**
@@ -148,14 +148,12 @@ class SupplierOrderItemListener extends AbstractListener
     }
 
     /**
-     * Dispatches the supplier order content change event.
+     * Schedules the supplier order content change event.
      *
      * @param SupplierOrderInterface $order
      */
-    protected function dispatchSupplierOrderContentChangeEvent(SupplierOrderInterface $order)
+    protected function scheduleSupplierOrderContentChangeEvent(SupplierOrderInterface $order)
     {
-        $event = $this->dispatcher->createResourceEvent($order);
-
-        $this->dispatcher->dispatch(SupplierOrderEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(SupplierOrderEvents::CONTENT_CHANGE, $order);
     }
 }

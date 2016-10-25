@@ -19,11 +19,9 @@ class CartItemListener extends AbstractSaleItemListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(Model\SaleInterface $sale)
+    protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale)
     {
-        $event = $this->dispatcher->createResourceEvent($sale);
-
-        $this->dispatcher->dispatch(CartEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(CartEvents::CONTENT_CHANGE, $sale);
     }
 
     /**

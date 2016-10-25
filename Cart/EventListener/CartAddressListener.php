@@ -19,14 +19,10 @@ class CartAddressListener extends AbstractSaleAddressListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleTaxResolutionEvent(Model\AddressInterface $address)
+    protected function scheduleSaleTaxResolutionEvent(Model\AddressInterface $address)
     {
         /** @var CartAddressInterface $address */
-        $cart = $address->getCart();
-
-        $event = $this->dispatcher->createResourceEvent($cart);
-
-        $this->dispatcher->dispatch(CartEvents::TAX_RESOLUTION, $event);
+        $this->persistenceHelper->scheduleEvent(CartEvents::TAX_RESOLUTION, $address->getCart());
     }
 
     /**

@@ -92,14 +92,12 @@ class OrderItemAdjustmentListener extends AbstractAdjustmentListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
+    protected function scheduleSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
     {
         /** @var \Ekyna\Component\Commerce\Order\Model\OrderItemInterface $item */
         $item = $adjustment->getAdjustable();
 
-        $event = $this->dispatcher->createResourceEvent($item->getSale());
-
-        $this->dispatcher->dispatch(OrderEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $item->getSale());
     }
 
     /**

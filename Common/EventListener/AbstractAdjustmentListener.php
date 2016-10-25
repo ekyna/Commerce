@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Common\EventListener;
 
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
-use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -20,11 +19,6 @@ abstract class AbstractAdjustmentListener
      */
     protected $persistenceHelper;
 
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
-
 
     /**
      * Sets the persistence helper.
@@ -37,16 +31,6 @@ abstract class AbstractAdjustmentListener
     }
 
     /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-    }
-
-    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -55,7 +39,7 @@ abstract class AbstractAdjustmentListener
     {
         $adjustment = $this->getAdjustmentFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($adjustment);
+        $this->scheduleSaleContentChangeEvent($adjustment);
     }
 
     /**
@@ -69,7 +53,7 @@ abstract class AbstractAdjustmentListener
 
         // TODO only if amount, mode or type changed ?
         if ($this->persistenceHelper->isChanged($adjustment, ['amount', 'mode', 'type'])) {
-            $this->dispatchSaleContentChangeEvent($adjustment);
+            $this->scheduleSaleContentChangeEvent($adjustment);
         }
     }
 
@@ -82,7 +66,7 @@ abstract class AbstractAdjustmentListener
     {
         $adjustment = $this->getAdjustmentFromEvent($event);
 
-        $this->dispatchSaleContentChangeEvent($adjustment);
+        $this->scheduleSaleContentChangeEvent($adjustment);
     }
 
     /**
@@ -131,7 +115,7 @@ abstract class AbstractAdjustmentListener
      *
      * @param Model\AdjustmentInterface $adjustment
      */
-    abstract protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment);
+    abstract protected function scheduleSaleContentChangeEvent(Model\AdjustmentInterface $adjustment);
 
     /**
      * Returns the adjustment from the resource event.

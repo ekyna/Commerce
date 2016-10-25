@@ -8,7 +8,6 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -77,26 +76,24 @@ class OrderItemListener extends AbstractSaleItemListener
      *
      * @throws IllegalOperationException
      */
-    private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
-    {
-        $item = $this->getSaleItemFromEvent($event);
-        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
-        $order = $item->getSale();
-
-        // Stop sale is completed.
-        if ($order->getState() === OrderStates::STATE_COMPLETED) {
-            throw new IllegalOperationException(); // TODO reason message
-        }
-    }
+//    private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
+//    {
+//        $item = $this->getSaleItemFromEvent($event);
+//        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
+//        $order = $item->getSale();
+//
+//        // Stop sale is completed.
+//        if ($order->getState() === OrderStates::STATE_COMPLETED) {
+//            throw new IllegalOperationException(); // TODO reason message
+//        }
+//    }
 
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(Model\SaleInterface $sale)
+    protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale)
     {
-        $event = $this->dispatcher->createResourceEvent($sale);
-
-        $this->dispatcher->dispatch(OrderEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $sale);
     }
 
     /**

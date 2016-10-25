@@ -19,14 +19,12 @@ class QuoteAdjustmentListener extends AbstractAdjustmentListener
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
+    protected function scheduleSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
     {
         /** @var \Ekyna\Component\Commerce\Quote\Model\QuoteInterface $quote */
         $quote = $adjustment->getAdjustable();
 
-        $event = $this->dispatcher->createResourceEvent($quote);
-
-        $this->dispatcher->dispatch(QuoteEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(QuoteEvents::CONTENT_CHANGE, $quote);
     }
 
     /**

@@ -8,7 +8,6 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderAdjustmentInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -77,29 +76,27 @@ class OrderAdjustmentListener extends AbstractAdjustmentListener
      *
      * @throws IllegalOperationException
      */
-    private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
-    {
-        $adjustment = $this->getAdjustmentFromEvent($event);
-        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
-        $order = $adjustment->getAdjustable();
-
-        // Stop sale is completed.
-        if ($order->getState() === OrderStates::STATE_COMPLETED) {
-            throw new IllegalOperationException(); // TODO reason message
-        }
-    }
+//    private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
+//    {
+//        $adjustment = $this->getAdjustmentFromEvent($event);
+//        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
+//        $order = $adjustment->getAdjustable();
+//
+//        // Stop sale is completed.
+//        if ($order->getState() === OrderStates::STATE_COMPLETED) {
+//            throw new IllegalOperationException(); // TODO reason message
+//        }
+//    }
 
     /**
      * @inheritdoc
      */
-    protected function dispatchSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
+    protected function scheduleSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
     {
         /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
         $order = $adjustment->getAdjustable();
 
-        $event = $this->dispatcher->createResourceEvent($order);
-
-        $this->dispatcher->dispatch(OrderEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $order);
     }
 
     /**

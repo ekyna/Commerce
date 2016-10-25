@@ -34,7 +34,7 @@ class SupplierDeliveryItemListener extends AbstractListener
 
         // Dispatch supplier order content change event
         // TODO if not already scheduled for update
-        $this->dispatchSupplierOrderContentChangeEvent($orderItem->getOrder());
+        $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
     }
 
     /**
@@ -60,7 +60,7 @@ class SupplierDeliveryItemListener extends AbstractListener
 
             // Dispatch supplier order content change event
             // TODO if not already scheduled for update
-            $this->dispatchSupplierOrderContentChangeEvent($orderItem->getOrder());
+            $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
         }
     }
 
@@ -80,7 +80,7 @@ class SupplierDeliveryItemListener extends AbstractListener
         $this->updateDeliveredQuantity($orderItem, -$item->getQuantity());
 
         // Trigger the supplier order item update
-        $this->dispatchSupplierOrderContentChangeEvent($orderItem->getOrder());
+        $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
     }
 
     /**
@@ -120,14 +120,12 @@ class SupplierDeliveryItemListener extends AbstractListener
     }
 
     /**
-     * Dispatches the supplier order content change event.
+     * Schedules the supplier order content change event.
      *
      * @param SupplierOrderInterface $order
      */
-    protected function dispatchSupplierOrderContentChangeEvent(SupplierOrderInterface $order)
+    protected function scheduleSupplierOrderContentChangeEvent(SupplierOrderInterface $order)
     {
-        $event = $this->dispatcher->createResourceEvent($order);
-
-        $this->dispatcher->dispatch(SupplierOrderEvents::CONTENT_CHANGE, $event);
+        $this->persistenceHelper->scheduleEvent(SupplierOrderEvents::CONTENT_CHANGE, $order);
     }
 }

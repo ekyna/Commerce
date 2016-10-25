@@ -73,7 +73,7 @@ class CustomerListener
         if (array_key_exists('company', $changeSet)) {
             $childrenToPersist = $this->updateChildrenCompanyName($customer);
             foreach ($childrenToPersist as $child) {
-                $this->persistenceHelper->persistAndRecompute($child);
+                $this->persistenceHelper->persistAndRecompute($child, true);
             }
         }
 

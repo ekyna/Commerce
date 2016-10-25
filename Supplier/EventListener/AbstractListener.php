@@ -120,7 +120,7 @@ abstract class AbstractListener
                 $stockUnit->setEstimatedDateOfArrival($product->getEstimatedDateOfArrival());
             }
 
-            $this->persistenceHelper->persistAndRecompute($stockUnit);
+            $this->persistenceHelper->persistAndRecompute($stockUnit, true);
         }
 
         return $stockUnit;
@@ -189,19 +189,16 @@ abstract class AbstractListener
     }
 
     /**
-     * Dispatches the supplier order item's related stock unit's delete event.
+     * Schedules the supplier order item's related stock unit's delete event.
      *
      * @param SupplierOrderItemInterface $item
      */
-    protected function dispatchStockUnitDeleteEvent(SupplierOrderItemInterface $item)
+    protected function scheduleStockUnitDeleteEvent(SupplierOrderItemInterface $item)
     {
         // Find the stock unit
         if (null !== $stockUnit = $this->findStockUnit($item)) {
-            $event = $this->dispatcher->createResourceEvent($stockUnit);
-            $eventName = $this->dispatcher->getResourceEventName($stockUnit, 'delete');
-
-            if ($event && $eventName) {
-                $this->dispatcher->dispatch($eventName, $event);
+            if (null !== $eventName = $this->dispatcher->getResourceEventName($stockUnit, 'delete')) {
+                $this->persistenceHelper->scheduleEvent($eventName, $stockUnit);
             }
         }
     }
