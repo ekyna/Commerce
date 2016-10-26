@@ -31,11 +31,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * Returns the relative subject provider.
-     *
-     * @param SubjectRelativeInterface $relative
-     *
-     * @return \Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface|null
+     * @inheritdoc
      */
     public function getProviderByRelative(SubjectRelativeInterface $relative)
     {
@@ -72,7 +68,7 @@ class StockUnitResolver implements StockUnitResolverInterface
         if (null !== $provider) {
             return $provider
                 ->getStockUnitRepository()
-                ->findAvailableOrPendingStockUnitsBySubject($subject);
+                ->findAvailableOrPendingBySubject($subject);
         }
 
         return [];

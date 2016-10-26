@@ -6,7 +6,7 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderShipmentEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentItemInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
+//use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\EventListener\AbstractShipmentItemListener;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -77,17 +77,17 @@ class OrderShipmentItemListener extends AbstractShipmentItemListener
      *
      * @throws IllegalOperationException
      */
-    private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
-    {
-        $item = $this->getShipmentItemFromEvent($event);
-        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
-        $order = $item->getShipment()->getSale();
-
-        // Stop sale is completed.
-        if ($order->getState() === OrderStates::STATE_COMPLETED) {
-            throw new IllegalOperationException(); // TODO reason message
-        }
-    }
+//    private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
+//    {
+//        $item = $this->getShipmentItemFromEvent($event);
+//        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
+//        $order = $item->getShipment()->getSale();
+//
+//        // Stop sale is completed.
+//        if ($order->getState() === OrderStates::STATE_COMPLETED) {
+//            throw new IllegalOperationException(); // TODO reason message
+//        }
+//    }
 
     /**
      * @inheritdoc

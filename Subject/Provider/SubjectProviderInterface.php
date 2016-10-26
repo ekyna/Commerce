@@ -93,7 +93,7 @@ interface SubjectProviderInterface
     /**
      * Returns the subject stock unit repository.
      *
-     * @return StockUnitRepositoryInterface
+     * @return StockUnitRepositoryInterface|null
      */
     public function getStockUnitRepository();
 
@@ -101,6 +101,7 @@ interface SubjectProviderInterface
      * Returns the stock unit change event name.
      *
      * @return string
+     * @todo remove ?
      */
     public function getStockUnitChangeEventName();
 

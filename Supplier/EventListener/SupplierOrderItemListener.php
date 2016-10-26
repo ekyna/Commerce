@@ -34,7 +34,6 @@ class SupplierOrderItemListener extends AbstractListener
         // Create the stock unit
         $this->findStockUnit($item);
 
-        // TODO if not already scheduled
         $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
     }
 
@@ -65,10 +64,9 @@ class SupplierOrderItemListener extends AbstractListener
         if ($this->persistenceHelper->isChanged($item, 'quantity')) {
             $this->updateOrderedQuantity($item);
 
-            // Prevent quantity to be set as lower than delivered quantity
+            // TODO Prevent quantity to be set as lower than delivered quantity
 
             // Dispatch supplier order content change event
-            // TODO if not already scheduled
             $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
         }
     }

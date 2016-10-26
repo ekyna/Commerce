@@ -33,7 +33,6 @@ class SupplierDeliveryItemListener extends AbstractListener
         $this->updateDeliveredQuantity($orderItem, $item->getQuantity());
 
         // Dispatch supplier order content change event
-        // TODO if not already scheduled for update
         $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
     }
 
@@ -59,7 +58,6 @@ class SupplierDeliveryItemListener extends AbstractListener
             }
 
             // Dispatch supplier order content change event
-            // TODO if not already scheduled for update
             $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
         }
     }

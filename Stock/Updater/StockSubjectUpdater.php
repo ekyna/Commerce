@@ -234,6 +234,6 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             return [];
         }
 
-        return $repository->findAvailableOrPendingStockUnitsBySubject($subject);
+        return $repository->findAvailableOrPendingBySubject($subject);
     }
 }

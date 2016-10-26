@@ -27,7 +27,16 @@ interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findAvailableOrPendingStockUnitsBySubject(StockSubjectInterface $subject);
+    public function findAvailableOrPendingBySubject(StockSubjectInterface $subject);
+
+    /**
+     * Finds the subject's new stock units.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    public function findNewBySubject(StockSubjectInterface $subject);
 
     /**
      * Find the stock unit by supplier order item.

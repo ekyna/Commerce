@@ -9,6 +9,7 @@ namespace Ekyna\Component\Commerce\Stock\Model;
  */
 final class StockUnitStates
 {
+    const STATE_NEW     = 'new';
     const STATE_PENDING = 'pending';
     const STATE_OPENED  = 'opened';
     const STATE_CLOSED  = 'closed';

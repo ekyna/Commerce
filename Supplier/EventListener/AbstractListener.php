@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
-use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -29,11 +28,6 @@ abstract class AbstractListener
      * @var StockUnitUpdaterInterface
      */
     protected $stockUnitUpdater;
-
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
 
 
     /**
@@ -67,16 +61,6 @@ abstract class AbstractListener
     }
 
     /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-    }
-
-    /**
      * Finds the supplier order item's relative stock unit, create if not exists.
      *
      * @param SupplierOrderItemInterface $item
@@ -98,6 +82,8 @@ abstract class AbstractListener
         $stockUnit = null;
         if ($item->getId()) {
             $stockUnit = $repository->findOneBySupplierOrderItem($item);
+            // TODO if not found, look for 'new' (unassigned) stock units
+            // TODO (created by sale shipment items and not linked yet to an order item)
         }
 
         if (!$stockUnit) {
@@ -166,7 +152,7 @@ abstract class AbstractListener
     {
         // Find the stock unit
         if (null !== $stockUnit = $this->findStockUnit($item)) {
-            // TODO fetch deliveryItems to calculate the quantity
+            // TODO fetch deliveryItems to calculate the quantity (?)
 
             // Updates the ordered quantity
             $this->stockUnitUpdater->updateDelivered($stockUnit, $quantity);
@@ -197,9 +183,7 @@ abstract class AbstractListener
     {
         // Find the stock unit
         if (null !== $stockUnit = $this->findStockUnit($item)) {
-            if (null !== $eventName = $this->dispatcher->getResourceEventName($stockUnit, 'delete')) {
-                $this->persistenceHelper->scheduleEvent($eventName, $stockUnit);
-            }
+            $this->persistenceHelper->remove($stockUnit, true);
         }
     }
 }

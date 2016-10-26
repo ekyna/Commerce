@@ -18,7 +18,27 @@ class ProductStockUnitRepository extends ResourceRepository implements StockUnit
     /**
      * @inheritDoc
      */
-    public function findAvailableOrPendingStockUnitsBySubject(StockSubjectInterface $subject)
+    public function findAvailableOrPendingBySubject(StockSubjectInterface $subject)
+    {
+        if (!$subject->getId()) {
+            return [];
+        }
+
+        $qb = $this->getQueryBuilder();
+
+        return $qb
+            ->andWhere($qb->expr()->in('o.product', ':product'))
+            ->andWhere($qb->expr()->in('o.state', ':state'))
+            ->setParameter('product', $subject)
+            ->setParameter('state', [StockUnitStates::STATE_OPENED, StockUnitStates::STATE_PENDING])
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findNewBySubject(StockSubjectInterface $subject)
     {
         if (!$subject->getId()) {
             return [];
@@ -30,7 +50,7 @@ class ProductStockUnitRepository extends ResourceRepository implements StockUnit
             ->andWhere($qb->expr()->in('o.product', ':product'))
             ->andWhere($qb->expr()->in('o.state', ':states'))
             ->setParameter('product', $subject)
-            ->setParameter('states', [StockUnitStates::STATE_OPENED, StockUnitStates::STATE_PENDING])
+            ->setParameter('state', StockUnitStates::STATE_NEW)
             ->getQuery()
             ->getResult();
     }

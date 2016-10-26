@@ -97,7 +97,14 @@ abstract class AbstractShipmentListener
         $changed = $this->generateNumber($shipment);
 
         if ($this->persistenceHelper->isChanged($shipment, 'state')) {
-            // TODO completed at datetime
+            // Handle "Completed at" datetime
+            if (($shipment->getState() === ShipmentStates::STATE_COMPLETED) && (null === $shipment->getCompletedAt())) {
+                $shipment->setCompletedAt(new \DateTime());
+                $changed = true;
+            } elseif (($shipment->getState() !== ShipmentStates::STATE_COMPLETED) && (null !== $shipment->getCompletedAt())) {
+                $shipment->setCompletedAt(null);
+                $changed = true;
+            }
 
             $doScheduleSaleContentChange = true;
             $this->scheduleSaleContentChangeEvent($shipment->getSale());
