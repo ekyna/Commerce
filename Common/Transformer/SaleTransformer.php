@@ -62,10 +62,17 @@ class SaleTransformer implements SaleTransformerInterface
             $target->setDeliveryAddress($targetDeliveryAddress);
         }
 
+        // Attachments
+        foreach ($source->getAttachments() as $sourceAttachment) {
+            $targetAttachment = $this->saleFactory->createAttachmentForSale($target);
+            $target->addAttachment($targetAttachment);
+            $this->copyAttachment($sourceAttachment, $targetAttachment);
+        }
+
         // Items
         foreach ($source->getItems() as $sourceItem) {
             $targetItem = $this->saleFactory->createItemForSale($target);
-            $target->addItem($targetItem); // So that the sale is accessible
+            $target->addItem($targetItem); // So that the sale is available for listeners
             $this->copyItem($sourceItem, $targetItem);
         }
 
@@ -100,6 +107,16 @@ class SaleTransformer implements SaleTransformerInterface
             'company', 'gender', 'firstName', 'lastName',
             'street', 'supplement', 'postalCode', 'city',
             'country', 'state', 'phone', 'mobile',
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target)
+    {
+        $this->copy($source, $target, [
+            'path', 'size', 'internal'
         ]);
     }
 

@@ -39,6 +39,14 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
+    public function createAttachmentForSale(Model\SaleInterface $sale)
+    {
+        return $this->resolveClassAndCreateObject('attachment', $sale);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function createAddressForSale(Model\SaleInterface $sale)
     {
         return $this->resolveClassAndCreateObject('address', $sale);
@@ -136,6 +144,11 @@ class SaleFactory implements SaleFactoryInterface
                 Cart\Model\CartInterface::class   => Cart\Entity\CartAddress::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderAddress::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAddress::class,
+            ],
+            'attachment'      => [
+                Cart\Model\CartInterface::class   => Cart\Entity\CartAttachment::class,
+                Order\Model\OrderInterface::class => Order\Entity\OrderAttachment::class,
+                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAttachment::class,
             ],
             'item'            => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartItem::class,

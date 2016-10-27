@@ -84,6 +84,52 @@ class Cart extends AbstractSale implements Model\CartInterface
     /**
      * @inheritdoc
      */
+    public function hasAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\CartAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of CartAttachmentInterface.");
+        }
+
+        return $this->attachments->contains($attachment);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\CartAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of CartAttachmentInterface.");
+        }
+
+        if (!$this->hasAttachment($attachment)) {
+            $this->attachments->add($attachment);
+            $attachment->setCart($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\CartAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of CartAttachmentInterface.");
+        }
+
+        if ($this->hasAttachment($attachment)) {
+            $this->attachments->removeElement($attachment);
+            //$attachment->setCart(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasItem(Common\SaleItemInterface $item)
     {
         if (!$item instanceof Model\CartItemInterface) {

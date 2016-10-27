@@ -41,6 +41,15 @@
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
 
+        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteAttachment"
+                     field="attachments" mapped-by="quote" orphan-removal="true">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+                <cascade-refresh/>
+            </cascade>
+        </one-to-many>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteItem"
                      field="items" mapped-by="quote" orphan-removal="true" index-by="id">
             <cascade>

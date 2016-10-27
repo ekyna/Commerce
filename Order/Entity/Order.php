@@ -116,6 +116,52 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
+    public function hasAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\OrderAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderAttachmentInterface.");
+        }
+
+        return $this->attachments->contains($attachment);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\OrderAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderAttachmentInterface.");
+        }
+
+        if (!$this->hasAttachment($attachment)) {
+            $this->attachments->add($attachment);
+            $attachment->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\OrderAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderAttachmentInterface.");
+        }
+
+        if ($this->hasAttachment($attachment)) {
+            $this->attachments->removeElement($attachment);
+            //$attachment->setOrder(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasItem(Common\SaleItemInterface $item)
     {
         if (!$item instanceof Model\OrderItemInterface) {

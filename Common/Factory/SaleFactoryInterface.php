@@ -23,6 +23,15 @@ interface SaleFactoryInterface
     public function createAddressForSale(Model\SaleInterface $sale);
 
     /**
+     * Creates an attachment regarding to the sale type.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return Model\SaleAttachmentInterface
+     */
+    public function createAttachmentForSale(Model\SaleInterface $sale);
+
+    /**
      * Creates a sale item regarding to the sale type.
      *
      * @param Model\SaleInterface $sale

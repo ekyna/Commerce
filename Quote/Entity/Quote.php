@@ -78,6 +78,52 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
+    public function hasAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\QuoteAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteAttachmentInterface.");
+        }
+
+        return $this->attachments->contains($attachment);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\QuoteAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteAttachmentInterface.");
+        }
+
+        if (!$this->hasAttachment($attachment)) {
+            $this->attachments->add($attachment);
+            $attachment->setQuote($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeAttachment(Common\SaleAttachmentInterface $attachment)
+    {
+        if (!$attachment instanceof Model\QuoteAttachmentInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteAttachmentInterface.");
+        }
+
+        if ($this->hasAttachment($attachment)) {
+            $this->attachments->removeElement($attachment);
+            //$attachment->setQuote(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasItem(Common\SaleItemInterface $item)
     {
         if (!$item instanceof Model\QuoteItemInterface) {

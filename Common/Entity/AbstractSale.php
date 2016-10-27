@@ -128,6 +128,11 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     protected $paymentState;
 
     /**
+     * @var ArrayCollection|Model\SaleAttachmentInterface[]
+     */
+    protected $attachments;
+
+    /**
      * @var ArrayCollection|Model\SaleItemInterface[]
      */
     protected $items;
@@ -160,6 +165,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
 
         $this->paymentState = Payment\PaymentStates::STATE_NEW;
 
+        $this->attachments = new ArrayCollection();
         $this->items = new ArrayCollection();
         $this->payments = new ArrayCollection();
     }
@@ -510,6 +516,22 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     public function getPaymentState()
     {
         return $this->paymentState;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasAttachments()
+    {
+        return 0 < $this->attachments->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
     }
 
     /**

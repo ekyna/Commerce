@@ -296,6 +296,47 @@ interface SaleInterface extends
     public function setPaymentState($state);
 
     /**
+     * Returns whether the order has attachments or not.
+     *
+     * @return bool
+     */
+    public function hasAttachments();
+
+    /**
+     * Returns whether the order has the attachment or not.
+     *
+     * @param SaleAttachmentInterface $attachment
+     *
+     * @return bool
+     */
+    public function hasAttachment(SaleAttachmentInterface $attachment);
+
+    /**
+     * Adds the attachment.
+     *
+     * @param SaleAttachmentInterface $attachment
+     *
+     * @return $this|SaleInterface
+     */
+    public function addAttachment(SaleAttachmentInterface $attachment);
+
+    /**
+     * Removes the attachment.
+     *
+     * @param SaleAttachmentInterface $attachment
+     *
+     * @return $this|SaleInterface
+     */
+    public function removeAttachment(SaleAttachmentInterface $attachment);
+
+    /**
+     * Returns the attachments.
+     *
+     * @return Collection|SaleAttachmentInterface[]
+     */
+    public function getAttachments();
+
+    /**
      * Returns whether or not the sale has at least one item.
      *
      * @return bool
