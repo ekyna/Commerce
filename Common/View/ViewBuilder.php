@@ -27,6 +27,7 @@ class ViewBuilder
 
     /**
      * @var ViewVarsBuilderInterface
+     * @todo VarsBuilderRegistry
      */
     private $varsBuilder;
 
@@ -91,6 +92,7 @@ class ViewBuilder
             $this->buildSaleTaxesViews($sale)
         );
 
+        // TODO use VarsBuilderRegistry
         if ($this->varsBuilder) {
             $view->vars = $this->varsBuilder->buildSaleViewVars($sale, $this->options);
         }
@@ -115,6 +117,7 @@ class ViewBuilder
             $taxes[] = new TaxView($tax->getName(), $tax->getAmount());
         }
 
+        // TODO use VarsBuilderRegistry
         /* TODO if ($this->varsBuilder) {
             $view->vars = $this->varsBuilder->buildSaleTaxesViewVars($sale, $this->options);
         }*/
@@ -211,6 +214,7 @@ class ViewBuilder
             $item->isImmutable()
         );
 
+        // TODO use VarsBuilderRegistry
         if ($this->varsBuilder) {
             $view->vars = $this->varsBuilder->buildItemViewVars($item, $this->options);
         }
@@ -252,6 +256,7 @@ class ViewBuilder
             // immutable
         );
 
+        // TODO use VarsBuilderRegistry
         if ($this->varsBuilder) {
             $view->vars = $this->varsBuilder->buildAdjustmentViewVars($adjustment, $this->options);
         }
@@ -301,6 +306,7 @@ class ViewBuilder
             // immutable
         );
 
+        // TODO use VarsBuilderRegistry
         if ($this->varsBuilder) {
             $view->vars = $this->varsBuilder->buildShipmentViewVars($sale, $this->options);
         }

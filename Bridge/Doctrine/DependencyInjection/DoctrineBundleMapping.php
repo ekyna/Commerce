@@ -7,7 +7,6 @@ use Ekyna\Component\Commerce\Customer;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Payment;
 use Ekyna\Component\Commerce\Pricing;
-use Ekyna\Component\Commerce\Product;
 use Ekyna\Component\Commerce\Quote;
 use Ekyna\Component\Commerce\Shipment;
 use Ekyna\Component\Commerce\Supplier;
@@ -42,7 +41,6 @@ class DoctrineBundleMapping
      */
     static function getDefaultImplementations()
     {
-        // TODO remove unused/useless interfaces
         return [
             Cart\Model\CartInterface::class                  => Cart\Entity\Cart::class,
             Cart\Model\CartAddressInterface::class           => Cart\Entity\CartAddress::class,
@@ -56,18 +54,6 @@ class DoctrineBundleMapping
             Payment\Model\PaymentMethodInterface::class      => Payment\Entity\PaymentMethod::class,
 
             Pricing\Model\TaxGroupInterface::class           => Pricing\Entity\TaxGroup::class,
-
-            Product\Model\AttributeGroupInterface::class     => Product\Entity\AttributeGroup::class,
-            Product\Model\AttributeInterface::class          => Product\Entity\Attribute::class,
-            Product\Model\AttributeSetInterface::class       => Product\Entity\AttributeSet::class,
-            Product\Model\AttributeSlotInterface::class      => Product\Entity\AttributeSlot::class,
-            Product\Model\BundleChoiceInterface::class       => Product\Entity\BundleChoice::class,
-            Product\Model\BundleChoiceRuleInterface::class   => Product\Entity\BundleChoiceRule::class,
-            Product\Model\BundleSlotInterface::class         => Product\Entity\BundleSlot::class,
-            Product\Model\OptionGroupInterface::class        => Product\Entity\OptionGroup::class,
-            Product\Model\OptionInterface::class             => Product\Entity\Option::class,
-            Product\Model\ProductInterface::class            => Product\Entity\Product::class,
-            Product\Model\ProductStockUnitInterface::class   => Product\Entity\ProductStockUnit::class,
 
             Quote\Model\QuoteInterface::class                => Quote\Entity\Quote::class,
             Quote\Model\QuoteAddressInterface::class         => Quote\Entity\QuoteAddress::class,

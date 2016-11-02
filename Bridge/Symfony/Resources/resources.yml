@@ -1,10 +1,4 @@
 ekyna_commerce:
-    attribute:
-        resource: Ekyna\Component\Commerce\Product\Entity\Attribute
-    attribute_group:
-        resource: Ekyna\Component\Commerce\Product\Entity\AttributeGroup
-    attribute_set:
-        resource: Ekyna\Component\Commerce\Product\Entity\AttributeSet
     country:
         resource: Ekyna\Component\Commerce\Common\Entity\Country
     currency:
@@ -17,8 +11,6 @@ ekyna_commerce:
         resource: Ekyna\Component\Commerce\Customer\Entity\CustomerGroup
     order:
         resource: Ekyna\Component\Commerce\Order\Entity\Order
-    product:
-        resource: Ekyna\Component\Commerce\Product\Entity\Product
     tax:
         resource: Ekyna\Component\Commerce\Pricing\Entity\Tax
     tax_group:
