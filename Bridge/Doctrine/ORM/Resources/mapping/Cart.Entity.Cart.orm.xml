@@ -10,13 +10,13 @@
             table="commerce_cart">
 
         <indexes>
-            <index columns="number" name="idx_cart_number" />
-            <index columns="secret" name="idx_cart_secret" />
+            <index columns="number" name="idx_commerce_cart_number" />
+            <index columns="secret" name="idx_commerce_cart_secret" />
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_cart_number" />
-            <unique-constraint columns="secret" name="unique_cart_secret" />
+            <unique-constraint columns="number" name="unique_commerce_cart_number" />
+            <unique-constraint columns="secret" name="unique_commerce_cart_secret" />
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

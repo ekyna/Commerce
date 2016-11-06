@@ -10,12 +10,12 @@
             table="commerce_tax_rule">
 
         <indexes>
-            <index columns="name" name="idx_tax_rule_name"/>
-            <index columns="position" name="idx_tax_rule_position"/>
+            <index columns="name" name="idx_commerce_tax_rule_name"/>
+            <index columns="position" name="idx_commerce_tax_rule_position"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="name" name="unique_tax_rule_name"/>
+            <unique-constraint columns="name" name="unique_commerce_tax_rule_name"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

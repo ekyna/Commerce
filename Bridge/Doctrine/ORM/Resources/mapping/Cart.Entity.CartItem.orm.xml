@@ -9,11 +9,11 @@
             table="commerce_cart_item">
 
         <indexes>
-            <index columns="position" name="idx_cart_item_position" />
+            <index columns="position" name="idx_commerce_cart_item_position" />
         </indexes>
 
         <!-- TODO <unique-constraints>
-            <unique-constraint columns="cart_id,parent_id,position" name="unique_cart_item_position"/>
+            <unique-constraint columns="cart_id,parent_id,position" name="unique_commerce_cart_item_position"/>
         </unique-constraints>-->
 
         <id name="id" type="integer" column="id">

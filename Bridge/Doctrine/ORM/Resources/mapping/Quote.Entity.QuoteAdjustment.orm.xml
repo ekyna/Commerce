@@ -9,11 +9,11 @@
             table="commerce_quote_adjustment">
 
         <indexes>
-            <index columns="position" name="idx_quote_adjustment_position" />
+            <index columns="position" name="idx_commerce_quote_adjustment_position" />
         </indexes>
 
         <!-- TODO <unique-constraints>
-            <unique-constraint columns="quote_id,position" name="unique_quote_adjustment_position"/>
+            <unique-constraint columns="quote_id,position" name="unique_commerce_quote_adjustment_position"/>
         </unique-constraints>-->
 
         <id name="id" type="integer" column="id">

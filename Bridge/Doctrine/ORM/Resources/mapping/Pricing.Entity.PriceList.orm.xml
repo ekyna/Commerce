@@ -9,11 +9,11 @@
             table="commerce_price_list">
 
         <indexes>
-            <index columns="name" name="idx_price_list_name"/>
+            <index columns="name" name="idx_commerce_price_list_name"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="name" name="unique_price_list_name"/>
+            <unique-constraint columns="name" name="unique_commerce_price_list_name"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

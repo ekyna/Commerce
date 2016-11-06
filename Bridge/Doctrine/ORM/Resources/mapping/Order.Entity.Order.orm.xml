@@ -10,13 +10,13 @@
             table="commerce_order">
 
         <indexes>
-            <index columns="number" name="idx_order_number" />
-            <index columns="secret" name="idx_order_secret" />
+            <index columns="number" name="idx_commerce_order_number" />
+            <index columns="secret" name="idx_commerce_order_secret" />
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_order_number" />
-            <unique-constraint columns="secret" name="unique_order_secret" />
+            <unique-constraint columns="number" name="unique_commerce_order_number" />
+            <unique-constraint columns="secret" name="unique_commerce_order_secret" />
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

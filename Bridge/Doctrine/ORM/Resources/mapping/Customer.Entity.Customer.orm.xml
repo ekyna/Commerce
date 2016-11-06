@@ -14,11 +14,11 @@
         </entity-listeners>-->
 
         <indexes>
-            <index columns="email" name="idx_customer_email"/>
+            <index columns="email" name="idx_commerce_customer_email"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="email" name="unique_customer_email"/>
+            <unique-constraint columns="email" name="unique_commerce_customer_email"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

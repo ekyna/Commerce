@@ -9,11 +9,11 @@
             table="commerce_tax_group">
 
         <indexes>
-            <index columns="name" name="idx_tax_group_name"/>
+            <index columns="name" name="idx_commerce_tax_group_name"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="name" name="unique_tax_group_name"/>
+            <unique-constraint columns="name" name="unique_commerce_tax_group_name"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

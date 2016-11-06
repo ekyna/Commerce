@@ -9,7 +9,7 @@
             table="commerce_cart_adjustment">
 
         <indexes>
-            <index columns="position" name="idx_cart_adjustment_position" />
+            <index columns="position" name="idx_commerce_cart_adjustment_position" />
         </indexes>
 
         <!-- TODO <unique-constraints>

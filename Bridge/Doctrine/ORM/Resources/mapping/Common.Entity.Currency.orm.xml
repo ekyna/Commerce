@@ -9,11 +9,11 @@
             table="commerce_currency">
 
         <indexes>
-            <index columns="code" name="idx_currency_code"/>
+            <index columns="code" name="idx_commerce_currency_code"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="code" name="unique_currency_code"/>
+            <unique-constraint columns="code" name="unique_commerce_currency_code"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

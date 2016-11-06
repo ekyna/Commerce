@@ -10,11 +10,11 @@
             table="commerce_supplier_order">
 
         <indexes>
-            <index columns="number" name="idx_supplier_order_number" />
+            <index columns="number" name="idx_commerce_supplier_order_number" />
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_supplier_order_number" />
+            <unique-constraint columns="number" name="unique_commerce_supplier_order_number" />
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
