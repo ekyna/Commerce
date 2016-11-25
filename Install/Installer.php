@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Entity\Country;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Customer\Entity\CustomerGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Symfony\Component\Intl\Intl;
 
@@ -40,7 +41,7 @@ class Installer
         $this->manager = $manager;
 
         if (in_array('Symfony\Component\Console\Output\OutputInterface', class_implements($logger))) {
-            $this->log = function($name, $result) use ($logger) {
+            $this->log = function ($name, $result) use ($logger) {
                 /** @var \Symfony\Component\Console\Output\OutputInterface $logger */
                 $logger->writeln(sprintf(
                     '- <comment>%s</comment> %s %s.',
@@ -50,7 +51,8 @@ class Installer
                 ));
             };
         } else {
-            $this->log = function($name, $result) {};
+            $this->log = function ($name, $result) {
+            };
         }
     }
 
@@ -62,7 +64,7 @@ class Installer
      *
      * @throws \Exception
      */
-    public function install($countries = array('US'), $currencies = array('USD'))
+    public function install($countries = ['US'], $currencies = ['USD'])
     {
         $this->installCountries($countries);
         $this->installCurrencies($currencies);
@@ -76,7 +78,7 @@ class Installer
      *
      * @throws \Exception
      */
-    public function installCountries($codes = array('US'))
+    public function installCountries($codes = ['US'])
     {
         if (empty($codes)) {
             throw new \Exception("Expected non empty array of enabled country codes.");
@@ -96,7 +98,7 @@ class Installer
      *
      * @throws \Exception
      */
-    public function installCurrencies($codes = array('USD'))
+    public function installCurrencies($codes = ['USD'])
     {
         if (empty($codes)) {
             throw new \Exception("Expected non empty array of currency codes.");
@@ -110,7 +112,7 @@ class Installer
     }
 
     /**
-     * Installs the default tax group.
+     * Installs the default tax groups.
      */
     public function installTaxGroups()
     {
@@ -137,11 +139,38 @@ class Installer
     }
 
     /**
+     * Installs the default customer groups.
+     */
+    public function installCustomerGroups()
+    {
+        /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
+        $repository = $this->manager->getRepository(CustomerGroup::class);
+
+        $name = 'Default customer group';
+
+        $result = 'already exists';
+        if (null === $repository->findOneBy(['default' => true])) {
+            /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface $customerGroup */
+            $customerGroup = $repository->createNew();
+            $customerGroup
+                ->setName($name)
+                ->setDefault(true);
+
+            $this->manager->persist($customerGroup);
+            $this->manager->flush();
+
+            $result = 'done';
+        }
+
+        call_user_func($this->log, $name, $result);
+    }
+
+    /**
      * Generates the entities.
      *
      * @param string $class
-     * @param array $names
-     * @param array $enabledCodes
+     * @param array  $names
+     * @param array  $enabledCodes
      * @param string $defaultCode
      */
     private function generate($class, array $names, array $enabledCodes, $defaultCode)
@@ -149,7 +178,7 @@ class Installer
         /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
         $repository = $this->manager->getRepository($class);
 
-        $enabledCodes = array_map(function($code) {
+        $enabledCodes = array_map(function ($code) {
             return strtoupper($code);
         }, $enabledCodes);
 
