@@ -31,7 +31,7 @@
                 <cascade-persist/>
                 <cascade-remove/>
             </cascade>
-            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
+            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartAddressInterface"
