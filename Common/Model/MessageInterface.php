@@ -8,6 +8,8 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * Interface MessageInterface
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method MessageTranslationInterface translate($locale = null, $create = false)
  */
 interface MessageInterface extends ResourceInterface
 {

@@ -4,8 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Resource\Model\AbstractTranslatable;
-use Ekyna\Component\Resource\Model\SortableTrait;
+use Ekyna\Component\Resource\Model as RM;
 
 /**
  * Class AbstractMethod
@@ -14,9 +13,9 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  *
  * @method Model\MethodTranslationInterface translate($locale = null, $create = false)
  */
-abstract class AbstractMethod extends AbstractTranslatable implements Model\MethodInterface
+abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\MethodInterface
 {
-    use SortableTrait;
+    use RM\SortableTrait;
 
     /**
      * @var int

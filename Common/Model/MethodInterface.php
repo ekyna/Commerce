@@ -8,6 +8,8 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * Interface MethodInterface
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method MethodTranslationInterface translate($locale = null, $create = false)
  */
 interface MethodInterface extends ResourceModel\ResourceInterface, ResourceModel\SortableInterface
 {
