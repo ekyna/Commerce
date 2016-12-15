@@ -114,7 +114,8 @@ abstract class AbstractCartProvider implements CartProviderInterface
         $this->cart->setExpiresAt($expiresAt);
 
         $this->cartManager->persist($this->cart);
-        $this->cartManager->flush();
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $this->cartManager->flush($this->cart);
 
         return $this;
     }
@@ -126,7 +127,8 @@ abstract class AbstractCartProvider implements CartProviderInterface
     {
         if ($this->hasCart()) {
             $this->cartManager->remove($this->cart);
-            $this->cartManager->flush();
+            /** @noinspection PhpMethodParametersCountMismatchInspection */
+            $this->cartManager->flush($this->cart);
         }
 
         $this->cart = null;
