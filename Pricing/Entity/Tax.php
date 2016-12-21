@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Pricing\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\StateInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
@@ -229,5 +230,37 @@ class Tax implements TaxInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMode()
+    {
+        return AdjustmentModes::MODE_PERCENT;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDesignation()
+    {
+        return $this->getName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAmount()
+    {
+        return $this->getRate();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isImmutable()
+    {
+        return true;
     }
 }

@@ -246,7 +246,7 @@ class ViewBuilder
             $adjustment->getDesignation(),
             '',
             null,
-            1,
+            null,
             $amounts->getBase(),
             [],
             $amounts->getTaxTotal(),

@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentDataInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\StateInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -12,7 +13,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TaxInterface extends ResourceInterface
+interface TaxInterface extends AdjustmentDataInterface, ResourceInterface
 {
     /**
      * Returns the name.

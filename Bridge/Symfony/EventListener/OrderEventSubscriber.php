@@ -22,7 +22,7 @@ class OrderEventSubscriber extends OrderListener implements EventSubscriberInter
             OrderEvents::INSERT         => ['onInsert', 0],
             OrderEvents::UPDATE         => ['onUpdate', 0],
             OrderEvents::CONTENT_CHANGE => ['onContentChange', 0],
-            OrderEvents::TAX_RESOLUTION => ['onTaxResolution', 0],
+            OrderEvents::ADDRESS_CHANGE => ['onAddressChange', 0],
             OrderEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }

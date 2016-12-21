@@ -35,7 +35,7 @@ abstract class AbstractAdjustable implements AdjustableInterface
     public function hasAdjustments($type = null)
     {
         if (null !== $type) {
-            $this->validateAdjustmentType($type);
+            AdjustmentTypes::isValidType($type);
 
             return $this->getAdjustments($type)->count();
         }
@@ -49,7 +49,7 @@ abstract class AbstractAdjustable implements AdjustableInterface
     public function getAdjustments($type = null)
     {
         if (null !== $type) {
-            $this->validateAdjustmentType($type);
+            AdjustmentTypes::isValidType($type);
 
             return $this
                 ->adjustments
@@ -59,19 +59,5 @@ abstract class AbstractAdjustable implements AdjustableInterface
         }
 
         return $this->adjustments;
-    }
-
-    /**
-     * Validates the adjustment type.
-     *
-     * @param string $type
-     *
-     * @throws InvalidArgumentException
-     */
-    private function validateAdjustmentType($type)
-    {
-        if (!AdjustmentTypes::isValidType($type)) {
-            throw new InvalidArgumentException('Invalid adjustment type');
-        }
     }
 }

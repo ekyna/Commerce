@@ -14,5 +14,10 @@ use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
  */
 interface CartRepositoryInterface extends SaleRepositoryInterface
 {
-
+    /**
+     * Creates a new cart instance.
+     *
+     * @return CartInterface
+     */
+    public function createNew();
 }

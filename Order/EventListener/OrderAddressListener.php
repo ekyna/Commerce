@@ -22,7 +22,7 @@ class OrderAddressListener extends AbstractSaleAddressListener
     protected function scheduleSaleTaxResolutionEvent(Model\AddressInterface $address)
     {
         /** @var OrderAddressInterface $address */
-        $this->persistenceHelper->scheduleEvent(OrderEvents::TAX_RESOLUTION, $address->getOrder());
+        $this->persistenceHelper->scheduleEvent(OrderEvents::ADDRESS_CHANGE, $address->getOrder());
     }
 
     /**

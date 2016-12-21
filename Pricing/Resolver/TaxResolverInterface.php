@@ -62,7 +62,7 @@ interface TaxResolverInterface
      * @param TaxableInterface $taxable
      * @param SaleInterface    $sale
      *
-     * @return mixed
+     * @return array|TaxInterface[]
      */
     public function resolveTaxesBySale(TaxableInterface $taxable, SaleInterface $sale);
 

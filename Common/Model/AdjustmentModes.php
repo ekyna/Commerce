@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
 /**
  * Class AdjustmentModes
  * @package Ekyna\Component\Commerce\Common\Model
@@ -30,11 +32,20 @@ final class AdjustmentModes
      * Returns whether the given mode is valid or not.
      *
      * @param string $mode
+     * @param bool $throw
      *
      * @return bool
      */
-    static public function isValidMode($mode)
+    static public function isValidMode($mode, $throw = true)
     {
-        return in_array($mode, static::getModes(), true);
+        if (in_array($mode, static::getModes(), true)) {
+            return true;
+        }
+
+        if ($throw) {
+            throw new InvalidArgumentException('Invalid adjustment mode.');
+        }
+
+        return false;
     }
 }

@@ -17,7 +17,7 @@ final class CartEvents
     // Domain
     const STATE_CHANGE   = 'ekyna_commerce.cart.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.cart.content_change';
-    const TAX_RESOLUTION = 'ekyna_commerce.cart.tax_resolution';
+    const ADDRESS_CHANGE = 'ekyna_commerce.cart.address_change';
 
     const PRE_CREATE     = 'ekyna_commerce.cart.pre_create';
     const POST_CREATE    = 'ekyna_commerce.cart.post_create';

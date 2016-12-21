@@ -168,6 +168,8 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
      */
     public function equals(Model\AdjustmentInterface $adjustment)
     {
+        // TODO unique hash (other data may vary)
+
         return $this->designation == $adjustment->getDesignation()
             && $this->type == $adjustment->getType()
             && $this->mode == $adjustment->getMode()

@@ -17,7 +17,7 @@ final class QuoteEvents
     // Domain
     const STATE_CHANGE   = 'ekyna_commerce.quote.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.quote.content_change';
-    const TAX_RESOLUTION = 'ekyna_commerce.quote.tax_resolution';
+    const ADDRESS_CHANGE = 'ekyna_commerce.quote.address_change';
 
     const PRE_CREATE     = 'ekyna_commerce.quote.pre_create';
     const POST_CREATE    = 'ekyna_commerce.quote.post_create';

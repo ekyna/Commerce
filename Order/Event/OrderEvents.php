@@ -17,7 +17,7 @@ final class OrderEvents
     // Domain
     const STATE_CHANGE   = 'ekyna_commerce.order.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.order.content_change';
-    const TAX_RESOLUTION = 'ekyna_commerce.order.tax_resolution';
+    const ADDRESS_CHANGE = 'ekyna_commerce.order.address_change';
 
     const PRE_CREATE     = 'ekyna_commerce.order.pre_create';
     const POST_CREATE    = 'ekyna_commerce.order.post_create';

@@ -51,7 +51,6 @@ abstract class AbstractAdjustmentListener
     {
         $adjustment = $this->getAdjustmentFromEvent($event);
 
-        // TODO only if amount, mode or type changed ?
         if ($this->persistenceHelper->isChanged($adjustment, ['amount', 'mode', 'type'])) {
             $this->scheduleSaleContentChangeEvent($adjustment);
         }

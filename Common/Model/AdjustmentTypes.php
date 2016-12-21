@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
 /**
  * Class AdjustmentTypes
  * @package Ekyna\Component\Commerce\Common\Model
@@ -32,11 +34,20 @@ final class AdjustmentTypes
      * Returns whether the given type is valid or not.
      *
      * @param string $type
+     * @param bool   $throw
      *
      * @return bool
      */
-    static public function isValidType($type)
+    static public function isValidType($type, $throw = true)
     {
-        return in_array($type, static::getTypes(), true);
+        if (in_array($type, static::getTypes(), true)) {
+            return true;
+        }
+
+        if ($throw) {
+            throw new InvalidArgumentException('Invalid adjustment type.');
+        }
+
+        return false;
     }
 }

@@ -64,6 +64,15 @@ interface SubjectProviderInterface
     public function handleItemSubmit(SaleItemInterface $item);
 
     /**
+     * Returns the applicable discounts for the given sale item.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return \Ekyna\Component\Commerce\Common\Model\AdjustmentData[]
+     */
+    public function resolveDiscounts(SaleItemInterface $item);
+
+    /**
      * Returns the subject from the relative.
      *
      * @param SubjectRelativeInterface $relative

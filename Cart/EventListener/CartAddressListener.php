@@ -22,7 +22,7 @@ class CartAddressListener extends AbstractSaleAddressListener
     protected function scheduleSaleTaxResolutionEvent(Model\AddressInterface $address)
     {
         /** @var CartAddressInterface $address */
-        $this->persistenceHelper->scheduleEvent(CartEvents::TAX_RESOLUTION, $address->getCart());
+        $this->persistenceHelper->scheduleEvent(CartEvents::ADDRESS_CHANGE, $address->getCart());
     }
 
     /**

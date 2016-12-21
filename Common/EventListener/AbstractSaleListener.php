@@ -2,13 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
-use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
-use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
-use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
+use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
@@ -38,19 +36,9 @@ abstract class AbstractSaleListener
     protected $keyGenerator;
 
     /**
-     * @var AdjustmentBuilderInterface
+     * @var SaleUpdaterInterface
      */
-    protected $adjustmentBuilder;
-
-    /**
-     * @var AmountsCalculatorInterface
-     */
-    protected $amountCalculator;
-
-    /**
-     * @var WeightCalculatorInterface
-     */
-    protected $weightCalculator;
+    protected $saleUpdater;
 
     /**
      * @var StateResolverInterface
@@ -89,33 +77,13 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Sets the adjustment builder.
+     * Sets the sale updater.
      *
-     * @param AdjustmentBuilderInterface $adjustmentBuilder
+     * @param SaleUpdaterInterface $saleUpdater
      */
-    public function setAdjustmentBuilder(AdjustmentBuilderInterface $adjustmentBuilder)
+    public function setSaleUpdater(SaleUpdaterInterface $saleUpdater)
     {
-        $this->adjustmentBuilder = $adjustmentBuilder;
-    }
-
-    /**
-     * Sets the amounts calculator.
-     *
-     * @param AmountsCalculatorInterface $amountCalculator
-     */
-    public function setAmountsCalculator(AmountsCalculatorInterface $amountCalculator)
-    {
-        $this->amountCalculator = $amountCalculator;
-    }
-
-    /**
-     * Sets the weight calculator.
-     *
-     * @param WeightCalculatorInterface $weightCalculator
-     */
-    public function setWeightCalculator(WeightCalculatorInterface $weightCalculator)
-    {
-        $this->weightCalculator = $weightCalculator;
+        $this->saleUpdater = $saleUpdater;
     }
 
     /**
@@ -154,11 +122,14 @@ abstract class AbstractSaleListener
         // Handle addresses
         $changed = $this->handleAddresses($sale) || $changed;
 
+        // Update discounts
+        $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
+
         // Update taxation
-        $changed = $this->updateTaxation($sale) || $changed;
+        $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
 
         // Update totals
-        $changed = $this->updateTotals($sale) || $changed;
+        $changed = $this->saleUpdater->updateTotals($sale) || $changed;
 
         // Update state
         $changed = $this->updateState($sale) || $changed;
@@ -184,7 +155,7 @@ abstract class AbstractSaleListener
 
         // TODO same shit here ... T_T
 
-        $changed = $doTotalsUpdate = false;
+        $changed = false;
 
         // Generate number and key
         $changed = $this->generateNumber($sale) || $changed;
@@ -199,47 +170,44 @@ abstract class AbstractSaleListener
         }
 
         // TODO Timestampable behavior/listener
-        $sale->setUpdatedAt(new \DateTime());
-        $changed = true;
+//        $sale->setUpdatedAt(new \DateTime());
+//        $changed = true;
 
         // Recompute to get an update-to-date change set.
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
 
-        $this->onTaxResolution($event);
+        //$this->onTaxResolution($event);
     }
 
     /**
-     * Tax resolution event handler.
+     * Address change event handler.
      *
      * @param ResourceEventInterface $event
      */
-    public function onTaxResolution(ResourceEventInterface $event)
+    public function onAddressChange(ResourceEventInterface $event)
     {
         $sale = $this->getSaleFromEvent($event);
 
-        $changed = $doTotalsUpdate = false;
+        $changed = false;
+
+        // Update discounts
+        if ($this->isDiscountUpdateNeeded($sale)) {
+            $changed = $this->saleUpdater->updateDiscounts($sale) || $changed;
+        }
 
         // Update taxation
-        if ($event->getHard() || $this->isTaxationUpdateNeeded($sale)) {
-            if ($this->updateTaxation($sale)) {
-                $changed = $doTotalsUpdate = true;
-            }
+        if ($this->isTaxationUpdateNeeded($sale)) {
+            $changed = $this->saleUpdater->updateTaxation($sale) || $changed;
         } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            if ($this->updateShipmentTaxation($sale)) {
-                $changed = $doTotalsUpdate = true;
-            }
+            $changed = $this->saleUpdater->updateShipmentTaxation($sale) || $changed;
         }
 
         // Update totals
-        // TODO create and use isTotalsUpdateNeeded() method
-        if ($event->getHard() || $doTotalsUpdate) {
-            $changed = $this->updateTotals($sale) || $changed;
-        }
+        $changed = $this->saleUpdater->updateTotals($sale) || $changed;
 
         // Update state
-        // TODO create and use isStateUpdateNeeded() method
         $changed = $this->updateState($sale) || $changed;
 
         if ($changed) {
@@ -248,7 +216,7 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Content change event handler.
+     * Content (item/adjustment/payment/shipment) change event handler.
      *
      * @param ResourceEventInterface $event
      */
@@ -257,11 +225,9 @@ abstract class AbstractSaleListener
         $sale = $this->getSaleFromEvent($event);
 
         // Update totals
-        // TODO create and use isTotalsUpdateNeeded() method
-        $changed = $this->updateTotals($sale);
+        $changed = $this->saleUpdater->updateTotals($sale);
 
         // Update state
-        // TODO create and use isStateUpdateNeeded() method
         $changed = $this->updateState($sale) || $changed;
 
         if ($changed) {
@@ -292,6 +258,43 @@ abstract class AbstractSaleListener
                 }
             }
         }
+    }
+
+    /**
+     * Returns whether or not the discount adjustments should be updated.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function isDiscountUpdateNeeded(SaleInterface $sale)
+    {
+        $saleCs = $this->persistenceHelper->getChangeSet($sale);
+
+        // Watch for customer group or customer change
+        if (isset($saleCs['customerGroup']) || isset($saleCs['customer'])) {
+            return true;
+        }
+
+        // Watch for invoice country change
+        $oldCountry = $newCountry = null;
+
+        $oldAddress = isset($saleCs['invoiceAddress']) ? $saleCs['invoiceAddress'][0] : $sale->getInvoiceAddress();
+        if (null !== $oldAddress) {
+            $oldAddressCs = $this->persistenceHelper->getChangeSet($oldAddress);
+            $oldCountry = isset($oldAddressCs['country']) ? $oldAddressCs['country'][0] : $oldAddress->getCountry();
+        }
+
+        // Resolve the new tax resolution target country
+        if (null !== $newAddress = $sale->getInvoiceAddress()) {
+            $newCountry = $newAddress->getCountry();
+        }
+
+        if ($oldCountry != $newCountry) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -449,65 +452,6 @@ abstract class AbstractSaleListener
         }
 
         return false;
-    }
-
-    /**
-     * Updates the whole sale taxation adjustments.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     */
-    protected function updateTaxation(SaleInterface $sale)
-    {
-        $changed = $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItems($sale, true);
-        $changed = $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, true) || $changed;
-
-        return $changed;
-    }
-
-    /**
-     * Updates the sale shipment related taxation adjustments.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     */
-    protected function updateShipmentTaxation(SaleInterface $sale)
-    {
-        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, true);
-    }
-
-    /**
-     * Updates the totals.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     */
-    protected function updateTotals(SaleInterface $sale)
-    {
-        $change = false;
-
-        // Amounts Totals
-        $amounts = $this->amountCalculator->calculateSale($sale);
-        if ($sale->getNetTotal() != $amounts->getBase()) {
-            $sale->setNetTotal($amounts->getBase());
-            $change = true;
-        }
-        if ($sale->getGrandTotal() != $amounts->getTotal()) {
-            $sale->setGrandTotal($amounts->getTotal());
-            $change = true;
-        }
-
-        // Weight total
-        $weightTotal = $this->weightCalculator->calculateSale($sale);
-        if ($sale->getWeightTotal() != $weightTotal) {
-            $sale->setWeightTotal($weightTotal);
-            $change = true;
-        }
-
-        return $change;
     }
 
     /**

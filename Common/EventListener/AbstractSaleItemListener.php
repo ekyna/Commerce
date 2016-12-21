@@ -75,16 +75,32 @@ abstract class AbstractSaleItemListener
 
         // Handle taxation update
         if ($this->persistenceHelper->isChanged($item, 'subjectData')) {
-            if ($change = $this->updateTaxation($item)) {
-                $this->persistenceHelper->persistAndRecompute($item);
-            }
+            $change = $this->updateTaxation($item);
         }
 
-        // If net price, quantity or adjustments change : trigger sale content change event
+        // Handle discount update
         if ($change || $this->persistenceHelper->isChanged($item, ['netPrice', 'quantity'])) {
-            // TODO use event queue
+            $change = $this->updateDiscount($item) || $change;
+        }
+
+        // If changed : persist, recompute and dispatch sale content change event.
+        if ($change) {
+            $this->persistenceHelper->persistAndRecompute($item);
+
             $this->scheduleSaleContentChangeEvent($item->getSale());
         }
+    }
+
+    /**
+     * Updates the item's discount adjustments.
+     *
+     * @param Model\SaleItemInterface $item
+     *
+     * @return bool Whether the adjustments has been updated or not.
+     */
+    protected function updateDiscount(Model\SaleItemInterface $item)
+    {
+        return $this->adjustmentBuilder->buildDiscountAdjustmentsForSaleItem($item, true);
     }
 
     /**
