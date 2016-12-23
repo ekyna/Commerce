@@ -69,7 +69,9 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
         if ($address != $this->deliveryAddress) {
             $this->deliveryAddress = $address;
-            $address->setDeliveryQuote($this);
+            if (null !== $address) {
+                $address->setDeliveryQuote($this);
+            }
         }
 
         return $this;

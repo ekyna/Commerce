@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
+use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 
 /**
@@ -30,6 +31,11 @@ abstract class AbstractCartProvider implements CartProviderInterface
      * @var CustomerProviderInterface
      */
     protected $customerProvider;
+
+    /**
+     * @var CustomerGroupRepositoryInterface
+     */
+    protected $customerGroupRepository;
 
     /**
      * @var CurrencyRepositoryInterface
@@ -70,6 +76,16 @@ abstract class AbstractCartProvider implements CartProviderInterface
     public function setCustomerProvider(CustomerProviderInterface $provider)
     {
         $this->customerProvider = $provider;
+    }
+
+    /**
+     * Sets the customer group repository.
+     *
+     * @param CustomerGroupRepositoryInterface $repository
+     */
+    public function setCustomerGroupRepository(CustomerGroupRepositoryInterface $repository)
+    {
+        $this->customerGroupRepository = $repository;
     }
 
     /**
@@ -155,6 +171,8 @@ abstract class AbstractCartProvider implements CartProviderInterface
             $cart->setCustomer($this->customerProvider->getCustomer());
 
             // TODO customer preferred currency
+        } else {
+            $cart->setCustomerGroup($this->customerGroupRepository->findDefault());
         }
 
         // Sets the currency

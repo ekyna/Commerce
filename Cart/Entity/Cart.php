@@ -75,7 +75,9 @@ class Cart extends AbstractSale implements Model\CartInterface
 
         if ($address != $this->deliveryAddress) {
             $this->deliveryAddress = $address;
-            $address->setDeliveryCart($this);
+            if (null !== $address) {
+                $address->setDeliveryCart($this);
+            }
         }
 
         return $this;
