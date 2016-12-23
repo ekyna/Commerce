@@ -155,7 +155,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritdoc
      */
-    public function setCountry(Model\CountryInterface $country)
+    public function setCountry(Model\CountryInterface $country = null)
     {
         $this->country = $country;
 

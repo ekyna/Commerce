@@ -63,7 +63,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
      */
     public function setDeliveryAddress(Common\AddressInterface $address = null)
     {
-        if (!$address instanceof Model\QuoteAddressInterface) {
+        if (null !== $address && !$address instanceof Model\QuoteAddressInterface) {
             throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
         }
 

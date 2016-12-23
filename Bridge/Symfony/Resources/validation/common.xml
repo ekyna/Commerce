@@ -9,62 +9,134 @@
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">
         <property name="gender">
-            <constraint name="NotBlank"/>
-            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
+            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
         </property>
         <property name="firstName">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">64</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="lastName">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">64</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="street">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">128</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="supplement">
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">128</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="postalCode">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">16</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="city">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">64</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="country">
-            <constraint name="NotNull"/>
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
         </property>
         <!-- TODO <property name="state">belongs to the country constraint</property> -->
         <property name="phone">
             <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
                 <option name="type">fixed_line</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="mobile">
             <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
                 <option name="type">mobile</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
     </class>
@@ -198,7 +270,7 @@
             <constraint name="Valid" />
         </property>
         <property name="deliveryAddress">
-            <constraint name="Valid" />
+            <constraint name="Valid"/>
         </property>
         <property name="currency">
             <constraint name="NotNull" />

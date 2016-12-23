@@ -24,16 +24,35 @@ class SaleValidator extends ConstraintValidator
          */
 
         $this->validateIdentity($sale, $constraint);
+        $this->validateDeliveryAddress($sale, $constraint);
 
         if ($sale->requiresShipment()) {
             if (null === $sale->getPreferredShipmentMethod()) {
                 // TODO
             }
-            if (!$sale->isSameAddress() && null === $sale->getDeliveryAddress()) {
-                $this->context
-                    ->buildViolation($constraint->delivery_address_is_required)
-                    ->atPath('deliveryAddress');
-            }
+        }
+    }
+
+    /**
+     * Validates the delivery address.
+     *
+     * @param SaleInterface $sale
+     * @param Constraint    $constraint
+     */
+    protected function validateDeliveryAddress(SaleInterface $sale, Constraint $constraint)
+    {
+        /** @var Sale $constraint */
+        if (!$sale->isSameAddress() && null === $sale->getDeliveryAddress()) {
+            $this->context
+                ->buildViolation($constraint->delivery_address_is_required)
+                ->atPath('deliveryAddress')
+                ->addViolation();
+
+        } elseif ($sale->isSameAddress() && null !== $sale->getDeliveryAddress()) {
+            $this->context
+                ->buildViolation($constraint->delivery_address_should_be_null)
+                ->atPath('deliveryAddress')
+                ->addViolation();
         }
     }
 
@@ -50,31 +69,36 @@ class SaleValidator extends ConstraintValidator
             if (null === $sale->getCustomerGroup()) {
                 $this->context
                     ->buildViolation($constraint->customer_group_is_required_if_no_customer)
-                    ->atPath('customerGroup');
+                    ->atPath('customerGroup')
+                    ->addViolation();
             }
             if (0 == strlen($sale->getEmail())) {
                 $this->context
                     ->buildViolation($constraint->email_is_required_if_no_customer)
-                    ->atPath('email');
+                    ->atPath('email')
+                    ->addViolation();
             }
             if (0 == strlen($sale->getGender())) {
                 $this->context
                     ->buildViolation($constraint->identity_is_required_if_no_customer)
-                    ->atPath('gender');
+                    ->atPath('gender')
+                    ->addViolation();
 
                 return;
             }
             if (0 == strlen($sale->getFirstName())) {
                 $this->context
                     ->buildViolation($constraint->identity_is_required_if_no_customer)
-                    ->atPath('firstName');
+                    ->atPath('firstName')
+                    ->addViolation();
 
                 return;
             }
             if (0 == strlen($sale->getLastName())) {
                 $this->context
                     ->buildViolation($constraint->identity_is_required_if_no_customer)
-                    ->atPath('lastName');
+                    ->atPath('lastName')
+                    ->addViolation();
 
                 return;
             }

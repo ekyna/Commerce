@@ -7,48 +7,109 @@
 
     <class name="Ekyna\Component\Commerce\Customer\Entity\Customer">
         <property name="gender">
-            <constraint name="NotBlank" />
-            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
+            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
         </property>
         <property name="company">
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">64</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="firstName">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">64</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="lastName">
-            <constraint name="NotBlank" />
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">64</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
             </constraint>
         </property>
         <property name="email">
-            <constraint name="NotBlank" />
-            <constraint name="Email" />
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
+            <constraint name="Email">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
         </property>
         <property name="customerGroup">
-            <constraint name="NotNull"/>
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
         </property>
         <property name="parent">
             <constraint name="Valid" />
         </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">email</option>
+            <option name="groups">
+                <value>Default</value>
+                <value>Registration</value>
+            </option>
         </constraint>
-        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Customer" />
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Customer">
+            <option name="groups">
+                <value>Default</value>
+                <value>Registration</value>
+            </option>
+        </constraint>
     </class>
 
     <class name="Ekyna\Component\Commerce\Customer\Entity\CustomerAddress">
         <property name="customer">
-            <constraint name="NotNull" />
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
         </property>
     </class>
 

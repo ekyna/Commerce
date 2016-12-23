@@ -19,11 +19,15 @@ class CartAddress extends AbstractAddress implements Model\CartAddressInterface
 
     /**
      * @var Model\CartInterface
+     *
+     * @todo remove ?
      */
     protected $invoiceCart;
 
     /**
      * @var Model\CartInterface
+     *
+     * @todo remove ?
      */
     protected $deliveryCart;
 

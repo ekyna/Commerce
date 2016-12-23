@@ -9,7 +9,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  * @package Ekyna\Component\Commerce\Customer\Provider
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AbstractCustomerProvider implements CustomerProviderInterface
+abstract class AbstractCustomerProvider implements CustomerProviderInterface
 {
     /**
      * @var CustomerInterface

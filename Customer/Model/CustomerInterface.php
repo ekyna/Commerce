@@ -51,7 +51,7 @@ interface CustomerInterface extends
     /**
      * Returns the phone.
      *
-     * @return string
+     * @return \libphonenumber\PhoneNumber|string
      */
     public function getPhone();
 
@@ -66,7 +66,7 @@ interface CustomerInterface extends
     /**
      * Returns the mobile.
      *
-     * @return string
+     * @return \libphonenumber\PhoneNumber|string
      */
     public function getMobile();
 

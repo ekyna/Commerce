@@ -101,13 +101,15 @@ class Order extends AbstractSale implements Model\OrderInterface
      */
     public function setDeliveryAddress(Common\AddressInterface $address = null)
     {
-        if (!$address instanceof Model\OrderAddressInterface) {
+        if (null !== $address && !$address instanceof Model\OrderAddressInterface) {
             throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
         }
 
         if ($address != $this->deliveryAddress) {
             $this->deliveryAddress = $address;
-            $address->setDeliveryOrder($this);
+            if (null !== $address) {
+                $address->setDeliveryOrder($this);
+            }
         }
 
         return $this;

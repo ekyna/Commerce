@@ -238,7 +238,7 @@ class TaxResolver implements TaxResolverInterface
      */
     private function getCustomerFallbackAddress(CustomerInterface $customer)
     {
-        $criteria = new Criteria([], [], 0, 1);
+        $criteria = new Criteria(null, [], 0, 1);
         if ($this->mode === static::BY_INVOICE) {
             $criteria->where(Criteria::expr()->eq('invoiceDefault', true));
         } elseif ($this->mode === static::BY_DELIVERY) {

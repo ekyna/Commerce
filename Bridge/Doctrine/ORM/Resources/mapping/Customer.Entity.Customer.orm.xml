@@ -30,8 +30,8 @@
         <field name="gender" column="gender" type="string" length="8"/>
         <field name="firstName" column="first_name" type="string" length="64"/>
         <field name="lastName" column="last_name" type="string" length="64"/>
-        <field name="phone" column="phone" type="string" length="16" nullable="true"/>
-        <field name="mobile" column="mobile" type="string" length="16" nullable="true"/>
+        <field name="phone" column="phone" type="phone_number" nullable="true"/>
+        <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
 
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />

@@ -120,7 +120,7 @@ abstract class AbstractSaleListener
         $changed = $this->handleIdentity($sale) || $changed;
 
         // Handle addresses
-        $changed = $this->handleAddresses($sale) || $changed;
+        //$changed = $this->handleAddresses($sale) || $changed;
 
         // Update discounts
         $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
@@ -165,9 +165,9 @@ abstract class AbstractSaleListener
         $changed = $this->handleIdentity($sale) || $changed;
 
         // Handle addresses
-        if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
+        /*if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
             $changed = $this->handleAddresses($sale) || $changed;
-        }
+        }*/
 
         // TODO Timestampable behavior/listener
 //        $sale->setUpdatedAt(new \DateTime());
@@ -194,14 +194,14 @@ abstract class AbstractSaleListener
 
         // Update discounts
         if ($this->isDiscountUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateDiscounts($sale) || $changed;
+            $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
         }
 
         // Update taxation
         if ($this->isTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateTaxation($sale) || $changed;
+            $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
         } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateShipmentTaxation($sale) || $changed;
+            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
         }
 
         // Update totals
@@ -438,10 +438,11 @@ abstract class AbstractSaleListener
      * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed or not.
+     * @deprecated
      */
     protected function handleAddresses(SaleInterface $sale)
     {
-        if ((null !== $deliveryAddress = $sale->getDeliveryAddress()) && $sale->isSameAddress()) {
+        if ($sale->isSameAddress() && null !== $deliveryAddress = $sale->getDeliveryAddress()) {
             // Unset delivery address
             $sale->setDeliveryAddress(null);
 

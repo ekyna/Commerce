@@ -120,7 +120,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
     /**
      * Returns the phone.
      *
-     * @return mixed
+     * @return \libphonenumber\PhoneNumber|string
      */
     public function getPhone();
 
@@ -136,7 +136,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
     /**
      * Returns the mobile.
      *
-     * @return string
+     * @return \libphonenumber\PhoneNumber|string
      */
     public function getMobile();
 

@@ -29,7 +29,7 @@ class CustomerValidator extends ConstraintValidator
         /* @var CustomerInterface $customer */
         /* @var Customer $constraint */
 
-        // Prevent setting a parent to a customer that is already a parent (has chidren)
+        // Prevent setting a parent to a customer that is already a parent (has children)
         if ($customer->hasChildren() && $customer->hasParent()) {
             $this
                 ->context
