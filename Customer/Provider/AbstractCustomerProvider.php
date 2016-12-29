@@ -18,7 +18,7 @@ abstract class AbstractCustomerProvider implements CustomerProviderInterface
 
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function hasCustomer()
     {
@@ -26,10 +26,18 @@ abstract class AbstractCustomerProvider implements CustomerProviderInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getCustomer()
     {
         return $this->customer;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function reset()
+    {
+        $this->customer = null;
     }
 }

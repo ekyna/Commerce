@@ -34,7 +34,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @var PersistenceHelperInterface
      */
-    protected $persistenceHelper;
+    private $persistenceHelper;
 
 
     /**

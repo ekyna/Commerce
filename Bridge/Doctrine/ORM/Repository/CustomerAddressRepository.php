@@ -27,8 +27,11 @@ class CustomerAddressRepository extends ResourceRepository implements CustomerAd
             ->orWhere($qb->expr()->in('c.parent', ':customer'))
             ->orWhere($qb->expr()->in('p.parent', ':customer'))
             ->groupBy('a.id')
+            ->addOrderBy('a.invoiceDefault', 'DESC')
+            ->addOrderBy('a.deliveryDefault', 'DESC')
+            ->addOrderBy('a.id', 'DESC')
             ->getQuery()
-//            ->useQueryCache(true)
+            ->useQueryCache(true)
             ->setParameter('customer', $customer)
             ->getResult();
     }

@@ -14,14 +14,10 @@
         </id>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface"
-                    field="invoiceQuote" mapped-by="invoiceAddress">
-            <join-column name="invoice_quote_id" referenced-column-name="id" nullable="true" on-delete="CASCADE"/>
-        </one-to-one>
+                    field="invoiceQuote" mapped-by="invoiceAddress"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface"
-                    field="deliveryQuote" mapped-by="deliveryAddress">
-            <join-column name="delivery_quote_id" referenced-column-name="id" nullable="true" on-delete="CASCADE"/>
-        </one-to-one>
+                    field="deliveryQuote" mapped-by="deliveryAddress"/>
 
     </mapped-superclass>
 

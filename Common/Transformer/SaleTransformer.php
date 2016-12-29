@@ -50,15 +50,13 @@ class SaleTransformer implements SaleTransformerInterface
 
         // Invoice address
         if (null !== $sourceInvoiceAddress = $source->getInvoiceAddress()) {
-            $targetInvoiceAddress = $this->saleFactory->createAddressForSale($target);
-            $this->copyAddress($sourceInvoiceAddress, $targetInvoiceAddress);
+            $targetInvoiceAddress = $this->saleFactory->createAddressForSale($target, $sourceInvoiceAddress);
             $target->setInvoiceAddress($targetInvoiceAddress);
         }
 
         // Delivery address
         if (null !== $sourceDeliveryAddress = $source->getDeliveryAddress()) {
-            $targetDeliveryAddress = $this->saleFactory->createAddressForSale($target);
-            $this->copyAddress($sourceDeliveryAddress, $targetDeliveryAddress);
+            $targetDeliveryAddress = $this->saleFactory->createAddressForSale($target, $sourceDeliveryAddress);
             $target->setDeliveryAddress($targetDeliveryAddress);
         }
 

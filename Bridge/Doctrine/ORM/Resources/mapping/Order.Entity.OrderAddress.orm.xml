@@ -14,14 +14,10 @@
         </id>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface"
-                    field="invoiceOrder" mapped-by="invoiceAddress">
-            <join-column name="invoice_order_id" referenced-column-name="id" nullable="true" on-delete="CASCADE"/>
-        </one-to-one>
+                    field="invoiceOrder" mapped-by="invoiceAddress"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface"
-                    field="deliveryOrder" mapped-by="deliveryAddress">
-            <join-column name="delivery_order_id" referenced-column-name="id" nullable="true" on-delete="CASCADE"/>
-        </one-to-one>
+                    field="deliveryOrder" mapped-by="deliveryAddress"/>
 
     </mapped-superclass>
 

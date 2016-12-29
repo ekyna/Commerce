@@ -3,7 +3,9 @@
 namespace Ekyna\Component\Commerce\Quote\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Quote\Event\QuoteEvents;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
@@ -26,5 +28,17 @@ class QuoteListener extends AbstractSaleListener
         }
 
         return $resource;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function scheduleAddressChangeEvent(SaleInterface $sale)
+    {
+        if (!$sale instanceof QuoteInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteInterface");
+        }
+
+        $this->persistenceHelper->scheduleEvent(QuoteEvents::ADDRESS_CHANGE, $sale);
     }
 }

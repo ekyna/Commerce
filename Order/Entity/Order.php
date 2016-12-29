@@ -65,24 +65,34 @@ class Order extends AbstractSale implements Model\OrderInterface
 
     /**
      * @inheritdoc
+     *
+     * @return Model\OrderAddressInterface
      */
     public function getInvoiceAddress()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->invoiceAddress;
     }
 
     /**
      * @inheritdoc
      */
-    public function setInvoiceAddress(Common\AddressInterface $address)
+    public function setInvoiceAddress(Common\AddressInterface $address = null)
     {
-        if (!$address instanceof Model\OrderAddressInterface) {
+        if (null !== $address & !$address instanceof Model\OrderAddressInterface) {
             throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
         }
 
-        if ($address != $this->invoiceAddress) {
+        if ($address != $current = $this->getInvoiceAddress()) {
+            if (null !== $current) {
+                $current->setInvoiceOrder(null);
+            }
+
             $this->invoiceAddress = $address;
-            $address->setInvoiceOrder($this);
+
+            if (null !== $address) {
+                $address->setInvoiceOrder($this);
+            }
         }
 
         return $this;
@@ -90,9 +100,12 @@ class Order extends AbstractSale implements Model\OrderInterface
 
     /**
      * @inheritdoc
+     *
+     * @return Model\OrderAddressInterface
      */
     public function getDeliveryAddress()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->deliveryAddress;
     }
 
@@ -105,8 +118,13 @@ class Order extends AbstractSale implements Model\OrderInterface
             throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
         }
 
-        if ($address != $this->deliveryAddress) {
+        if ($address != $current = $this->getDeliveryAddress()) {
+            if (null !== $current) {
+                $current->setDeliveryOrder(null);
+            }
+
             $this->deliveryAddress = $address;
+
             if (null !== $address) {
                 $address->setDeliveryOrder($this);
             }

@@ -2,10 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Common\Updater;
 
+use Ekyna\Component\Commerce\Common\Builder\AddressBuilderInterface;
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Util\AddressUtil;
 
 /**
  * Class SaleUpdater
@@ -14,6 +18,11 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
  */
 class SaleUpdater implements SaleUpdaterInterface
 {
+    /**
+     * @var AddressBuilderInterface
+     */
+    protected $addressBuilder;
+
     /**
      * @var AdjustmentBuilderInterface
      */
@@ -29,22 +38,33 @@ class SaleUpdater implements SaleUpdaterInterface
      */
     protected $weightCalculator;
 
+    /**
+     * @var SaleFactoryInterface
+     */
+    protected $saleFactory;
+
 
     /**
      * Constructor.
      *
+     * @param AddressBuilderInterface    $addressBuilder
      * @param AdjustmentBuilderInterface $adjustmentBuilder
      * @param AmountsCalculatorInterface $amountCalculator
      * @param WeightCalculatorInterface  $weightCalculator
+     * @param SaleFactoryInterface       $saleFactory
      */
     public function __construct(
+        AddressBuilderInterface    $addressBuilder,
         AdjustmentBuilderInterface $adjustmentBuilder,
         AmountsCalculatorInterface $amountCalculator,
-        WeightCalculatorInterface $weightCalculator
+        WeightCalculatorInterface $weightCalculator,
+        SaleFactoryInterface $saleFactory
     ) {
+        $this->addressBuilder = $addressBuilder;
         $this->adjustmentBuilder = $adjustmentBuilder;
         $this->amountCalculator = $amountCalculator;
         $this->weightCalculator = $weightCalculator;
+        $this->saleFactory = $saleFactory;
     }
 
     /**
@@ -62,6 +82,28 @@ class SaleUpdater implements SaleUpdaterInterface
         $changed = $this->updateTaxation($sale);
 
         return $this->updateTotals($sale) || $changed;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateInvoiceAddressFromAddress(
+        SaleInterface $sale,
+        AddressInterface $source,
+        $persistence = false
+    ) {
+        return $this->addressBuilder->buildSaleInvoiceAddressFromAddress($sale, $source, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateDeliveryAddressFromAddress(
+        SaleInterface $sale,
+        AddressInterface $source,
+        $persistence = false
+    ) {
+        return $this->addressBuilder->buildSaleDeliveryAddressFromAddress($sale, $source, true);
     }
 
     /**

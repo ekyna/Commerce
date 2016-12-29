@@ -44,6 +44,7 @@ interface CustomerInterface extends
      * Sets the email.
      *
      * @param string $email
+     *
      * @return $this|CustomerInterface
      */
     public function setEmail($email);
@@ -59,6 +60,7 @@ interface CustomerInterface extends
      * Sets the phone.
      *
      * @param string $phone
+     *
      * @return $this|CustomerInterface
      */
     public function setPhone($phone);
@@ -74,6 +76,7 @@ interface CustomerInterface extends
      * Sets the mobile.
      *
      * @param string $mobile
+     *
      * @return $this|CustomerInterface
      */
     public function setMobile($mobile);
@@ -171,6 +174,7 @@ interface CustomerInterface extends
      * Returns whether the customer has the address or not.
      *
      * @param CustomerAddressInterface $address
+     *
      * @return bool
      */
     public function hasAddress(CustomerAddressInterface $address);
@@ -179,6 +183,7 @@ interface CustomerInterface extends
      * Adds the address.
      *
      * @param CustomerAddressInterface $address
+     *
      * @return $this|CustomerInterface
      */
     public function addAddress(CustomerAddressInterface $address);
@@ -187,9 +192,24 @@ interface CustomerInterface extends
      * Removes the address.
      *
      * @param CustomerAddressInterface $address
+     *
      * @return $this|CustomerInterface
      */
     public function removeAddress(CustomerAddressInterface $address);
+
+    /**
+     * Returns the default invoice address.
+     *
+     * @return CustomerAddressInterface|null
+     */
+    public function getDefaultInvoiceAddress();
+
+    /**
+     * Returns the default delivery address.
+     *
+     * @return CustomerAddressInterface|null
+     */
+    public function getDefaultDeliveryAddress();
 
     /**
      * Returns the price lists.
@@ -202,6 +222,7 @@ interface CustomerInterface extends
      * Returns whether the customer has the price list or not.
      *
      * @param PriceListInterface $priceList
+     *
      * @return bool
      */
     public function hasPriceList(PriceListInterface $priceList);
@@ -210,6 +231,7 @@ interface CustomerInterface extends
      * Adds the price list.
      *
      * @param PriceListInterface $priceList
+     *
      * @return $this|CustomerInterface
      */
     public function addPriceList(PriceListInterface $priceList);
@@ -218,6 +240,7 @@ interface CustomerInterface extends
      * Removes the price list.
      *
      * @param PriceListInterface $priceList
+     *
      * @return $this|CustomerInterface
      */
     public function removePriceList(PriceListInterface $priceList);

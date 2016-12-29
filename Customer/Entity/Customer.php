@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model\IdentityTrait;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -324,6 +325,44 @@ class Customer implements CustomerInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultInvoiceAddress()
+    {
+        if (0 < $this->addresses->count()) {
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('invoiceDefault', true))
+                ->setMaxResults(1);
+
+            $matches = $this->addresses->matching($criteria);
+            if ($matches->count() == 1) {
+                return $matches->first();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultDeliveryAddress()
+    {
+        if (0 < $this->addresses->count()) {
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('deliveryDefault', true))
+                ->setMaxResults(1);
+
+            $matches = $this->addresses->matching($criteria);
+            if ($matches->count() == 1) {
+                return $matches->first();
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -33,24 +33,34 @@ class Cart extends AbstractSale implements Model\CartInterface
 
     /**
      * @inheritdoc
+     *
+     * @return Model\CartAddressInterface
      */
     public function getInvoiceAddress()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->invoiceAddress;
     }
 
     /**
      * @inheritdoc
      */
-    public function setInvoiceAddress(Common\AddressInterface $address)
+    public function setInvoiceAddress(Common\AddressInterface $address = null)
     {
-        if (!$address instanceof Model\CartAddressInterface) {
+        if (null !== $address && !$address instanceof Model\CartAddressInterface) {
             throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
         }
 
-        if ($address != $this->invoiceAddress) {
+        if ($address != $current = $this->getInvoiceAddress()) {
+            if (null !== $current) {
+                $current->setInvoiceCart(null);
+            }
+
             $this->invoiceAddress = $address;
-            $address->setInvoiceCart($this);
+
+            if (null !== $address) {
+                $address->setInvoiceCart($this);
+            }
         }
 
         return $this;
@@ -58,9 +68,12 @@ class Cart extends AbstractSale implements Model\CartInterface
 
     /**
      * @inheritdoc
+     *
+     * @return Model\CartAddressInterface
      */
     public function getDeliveryAddress()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->deliveryAddress;
     }
 
@@ -73,8 +86,13 @@ class Cart extends AbstractSale implements Model\CartInterface
             throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
         }
 
-        if ($address != $this->deliveryAddress) {
+        if ($address != $current = $this->getDeliveryAddress()) {
+            if (null !== $current) {
+                $current->setDeliveryCart(null);
+            }
+
             $this->deliveryAddress = $address;
+
             if (null !== $address) {
                 $address->setDeliveryCart($this);
             }

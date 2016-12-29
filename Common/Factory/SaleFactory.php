@@ -4,8 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Factory;
 
 use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Customer;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Util\AddressUtil;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Quote;
@@ -47,9 +46,16 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createAddressForSale(Model\SaleInterface $sale)
+    public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null)
     {
-        return $this->resolveClassAndCreateObject('address', $sale);
+        /** @var Model\AddressInterface $address */
+        $address = $this->resolveClassAndCreateObject('address', $sale);
+
+        if (null !== $source) {
+            AddressUtil::copy($source, $address);
+        }
+
+        return $address;
     }
 
     /**

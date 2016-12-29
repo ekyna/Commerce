@@ -27,24 +27,34 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
     /**
      * @inheritdoc
+     *
+     * @return Model\QuoteAddressInterface
      */
     public function getInvoiceAddress()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->invoiceAddress;
     }
 
     /**
      * @inheritdoc
      */
-    public function setInvoiceAddress(Common\AddressInterface $address)
+    public function setInvoiceAddress(Common\AddressInterface $address = null)
     {
-        if (!$address instanceof Model\QuoteAddressInterface) {
+        if (null !== $address && !$address instanceof Model\QuoteAddressInterface) {
             throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
         }
 
-        if ($address != $this->invoiceAddress) {
+        if ($address != $current = $this->getInvoiceAddress()) {
+            if (null !== $current) {
+                $current->setInvoiceQuote(null);
+            }
+
             $this->invoiceAddress = $address;
-            $address->setInvoiceQuote($this);
+
+            if (null !== $address) {
+                $address->setInvoiceQuote($this);
+            }
         }
 
         return $this;
@@ -52,9 +62,12 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
     /**
      * @inheritdoc
+     *
+     * @return Model\QuoteAddressInterface
      */
     public function getDeliveryAddress()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->deliveryAddress;
     }
 
@@ -67,8 +80,13 @@ class Quote extends AbstractSale implements Model\QuoteInterface
             throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
         }
 
-        if ($address != $this->deliveryAddress) {
+        if ($address != $current = $this->getDeliveryAddress()) {
+            if (null !== $current) {
+                $current->setDeliveryQuote(null);
+            }
+
             $this->deliveryAddress = $address;
+
             if (null !== $address) {
                 $address->setDeliveryQuote($this);
             }

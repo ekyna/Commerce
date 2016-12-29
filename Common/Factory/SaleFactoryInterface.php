@@ -16,11 +16,12 @@ interface SaleFactoryInterface
     /**
      * Creates an address regarding to the sale type.
      *
-     * @param Model\SaleInterface $sale
+     * @param Model\SaleInterface    $sale
+     * @param Model\AddressInterface $source
      *
      * @return Model\AddressInterface
      */
-    public function createAddressForSale(Model\SaleInterface $sale);
+    public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null);
 
     /**
      * Creates an attachment regarding to the sale type.

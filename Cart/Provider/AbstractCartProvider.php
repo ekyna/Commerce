@@ -140,6 +140,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
      */
     public function clearCart()
     {
+        // TODO Prevent clearing if there is a processing payment
         if ($this->hasCart()) {
             $this->cartManager->remove($this->cart);
             /** @noinspection PhpMethodParametersCountMismatchInspection */
@@ -147,6 +148,28 @@ abstract class AbstractCartProvider implements CartProviderInterface
         }
 
         $this->cart = null;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clearInformation()
+    {
+        // TODO Prevent clearing if there is a processing payment
+        if ($this->hasCart()) {
+            $this->cart
+                ->setCustomer(null)
+                ->setEmail(null)
+                ->setCompany(null)
+                ->setGender(null)
+                ->setFirstName(null)
+                ->setLastName(null)
+                ->setInvoiceAddress(null)
+                ->setDeliveryAddress(null)
+                ->setSameAddress(true);
+        }
 
         return $this;
     }

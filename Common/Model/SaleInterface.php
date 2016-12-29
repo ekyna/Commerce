@@ -101,7 +101,7 @@ interface SaleInterface extends
      *
      * @return $this|SaleInterface
      */
-    public function setInvoiceAddress(AddressInterface $address);
+    public function setInvoiceAddress(AddressInterface $address = null);
 
     /**
      * Returns the delivery address.

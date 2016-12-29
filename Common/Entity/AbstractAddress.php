@@ -73,6 +73,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setCompany($company)
     {
         $this->company = $company;
+
         return $this;
     }
 
@@ -90,6 +91,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setStreet($street)
     {
         $this->street = $street;
+
         return $this;
     }
 
@@ -107,6 +109,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setSupplement($supplement)
     {
         $this->supplement = $supplement;
+
         return $this;
     }
 
@@ -124,6 +127,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setPostalCode($postalCode)
     {
         $this->postalCode = $postalCode;
+
         return $this;
     }
 
@@ -141,6 +145,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setCity($city)
     {
         $this->city = $city;
+
         return $this;
     }
 
@@ -176,6 +181,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setState(Model\StateInterface $state = null)
     {
         $this->state = $state;
+
         return $this;
     }
 

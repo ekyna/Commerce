@@ -116,11 +116,8 @@ abstract class AbstractSaleListener
         $changed = $this->generateNumber($sale) || $changed;
         $changed = $this->generateKey($sale) || $changed;
 
-        // Handle identity
-        $changed = $this->handleIdentity($sale) || $changed;
-
-        // Handle addresses
-        //$changed = $this->handleAddresses($sale) || $changed;
+        // Handle customer information
+        $changed = $this->handleInformation($sale) || $changed;
 
         // Update discounts
         $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
@@ -161,13 +158,8 @@ abstract class AbstractSaleListener
         $changed = $this->generateNumber($sale) || $changed;
         $changed = $this->generateKey($sale) || $changed;
 
-        // Handle identity
-        $changed = $this->handleIdentity($sale) || $changed;
-
-        // Handle addresses
-        /*if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
-            $changed = $this->handleAddresses($sale) || $changed;
-        }*/
+        // Handle customer information
+        $changed = $this->handleInformation($sale) || $changed;
 
         // TODO Timestampable behavior/listener
 //        $sale->setUpdatedAt(new \DateTime());
@@ -178,7 +170,10 @@ abstract class AbstractSaleListener
             $this->persistenceHelper->persistAndRecompute($sale);
         }
 
-        //$this->onTaxResolution($event);
+        // Handle addresses changes
+        /*if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
+            $this->scheduleAddressChangeEvent($sale);
+        }*/
     }
 
     /**
@@ -396,21 +391,24 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Handles the identity.
+     * Handles the customer information.
      *
      * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed or not.
      */
-    protected function handleIdentity(SaleInterface $sale)
+    protected function handleInformation(SaleInterface $sale)
     {
         $changed = false;
 
         if (null !== $customer = $sale->getCustomer()) {
+            // Email
             if (0 == strlen($sale->getEmail())) {
                 $sale->setEmail($customer->getEmail());
                 $changed = true;
             }
+
+            // Identity
             if (0 == strlen($sale->getCompany())) {
                 $sale->setCompany($customer->getCompany());
                 $changed = true;
@@ -427,32 +425,19 @@ abstract class AbstractSaleListener
                 $sale->setLastName($customer->getLastName());
                 $changed = true;
             }
+
+            // Invoice address
+            if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress()) {
+                $changed = $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address) || $changed;
+            }
+
+            // Delivery address
+            if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
+                $changed = $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address) || $changed;
+            }
         }
 
         return $changed;
-    }
-
-    /**
-     * Handles the addresses.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     * @deprecated
-     */
-    protected function handleAddresses(SaleInterface $sale)
-    {
-        if ($sale->isSameAddress() && null !== $deliveryAddress = $sale->getDeliveryAddress()) {
-            // Unset delivery address
-            $sale->setDeliveryAddress(null);
-
-            // Delete the delivery address
-            $this->persistenceHelper->remove($deliveryAddress, true);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -476,4 +461,11 @@ abstract class AbstractSaleListener
      * @throws InvalidArgumentException
      */
     abstract protected function getSaleFromEvent(ResourceEventInterface $event);
+
+    /**
+     * Schedule the address change event handler.
+     *
+     * @param SaleInterface $sale
+     */
+    abstract protected function scheduleAddressChangeEvent(SaleInterface $sale);
 }

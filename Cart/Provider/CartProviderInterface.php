@@ -40,6 +40,13 @@ interface CartProviderInterface
     public function clearCart();
 
     /**
+     * Clears the cart information (customer/addresses).
+     *
+     * @return CartProviderInterface
+     */
+    public function clearInformation();
+
+    /**
      * Saves the cart.
      *
      * @return CartProviderInterface

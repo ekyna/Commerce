@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
@@ -93,5 +94,17 @@ class OrderListener extends AbstractSaleListener
         }
 
         return $resource;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function scheduleAddressChangeEvent(SaleInterface $sale)
+    {
+        if (!$sale instanceof OrderInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderInterface");
+        }
+
+        $this->persistenceHelper->scheduleEvent(OrderEvents::ADDRESS_CHANGE, $sale);
     }
 }

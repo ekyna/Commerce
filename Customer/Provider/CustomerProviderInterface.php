@@ -24,4 +24,9 @@ interface CustomerProviderInterface
      * @return CustomerInterface|null
      */
     public function getCustomer();
+
+    /**
+     * Resets the customer provider.
+     */
+    public function reset();
 }

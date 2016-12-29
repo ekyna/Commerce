@@ -17,7 +17,7 @@ interface AdjustmentBuilderInterface
      * @param Model\SaleInterface $sale
      * @param bool                $persistence
      *
-     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     * @return bool Whether at least one adjustment has been changed.
      */
     public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false);
 
@@ -27,7 +27,7 @@ interface AdjustmentBuilderInterface
      * @param Model\SaleInterface|Model\SaleItemInterface $parent
      * @param bool                                        $persistence
      *
-     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     * @return bool Whether at least one adjustment has been changed.
      */
     public function buildDiscountAdjustmentsForSaleItems($parent, $persistence = false);
 
@@ -37,7 +37,7 @@ interface AdjustmentBuilderInterface
      * @param Model\SaleItemInterface $item
      * @param bool                    $persistence
      *
-     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     * @return bool Whether at least one adjustment has been changed.
      */
     public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false);
 
@@ -47,7 +47,7 @@ interface AdjustmentBuilderInterface
      * @param Model\SaleInterface $sale
      * @param bool                $persistence
      *
-     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     * @return bool Whether at least one adjustment has been changed.
      */
     public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false);
 
@@ -57,7 +57,7 @@ interface AdjustmentBuilderInterface
      * @param Model\SaleInterface|Model\SaleItemInterface $parent
      * @param bool                                        $persistence
      *
-     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     * @return bool Whether at least one adjustment has been changed.
      */
     public function buildTaxationAdjustmentsForSaleItems($parent, $persistence = false);
 
@@ -67,7 +67,7 @@ interface AdjustmentBuilderInterface
      * @param Model\SaleItemInterface $item
      * @param bool                    $persistence
      *
-     * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
+     * @return bool Whether at least one adjustment has been changed.
      */
     public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false);
 }
