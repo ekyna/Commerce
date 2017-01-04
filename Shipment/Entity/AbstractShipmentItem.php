@@ -61,6 +61,10 @@ class AbstractShipmentItem implements ShipmentItemInterface
 
         $this->shipment = $shipment;
 
+        if (null !== $this->shipment) {
+            $this->shipment->addItem($this);
+        }
+
         return $this;
     }
 

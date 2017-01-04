@@ -42,11 +42,6 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
      */
     protected $available;
 
-    /**
-     * @var integer
-     */
-    protected $position;
-
 
     /**
      * Constructor.
@@ -199,7 +194,7 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
      */
     public function setEnabled($enabled)
     {
-        $this->enabled = (bool) $enabled;
+        $this->enabled = (bool)$enabled;
 
         return $this;
     }
@@ -217,7 +212,7 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
      */
     public function setAvailable($available)
     {
-        $this->available = (bool) $available;
+        $this->available = (bool)$available;
 
         return $this;
     }

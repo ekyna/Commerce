@@ -4,7 +4,9 @@ namespace Ekyna\Component\Commerce\Common\Factory;
 
 use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\AddressUtil;
+use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Quote;
@@ -18,6 +20,16 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 class SaleFactory implements SaleFactoryInterface
 {
     /**
+     * @var CustomerGroupRepositoryInterface
+     */
+    private $customerGroupRepository;
+
+    /**
+     * @var CurrencyRepositoryInterface
+     */
+    private $currencyRepository;
+
+    /**
      * @var array
      */
     private $classes;
@@ -26,10 +38,18 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * Constructor.
      *
-     * @param array $classes
+     * @param CustomerGroupRepositoryInterface $customerGroupRepository
+     * @param CurrencyRepositoryInterface      $currencyRepository
+     * @param array                            $classes
      */
-    public function __construct(array $classes = [])
-    {
+    public function __construct(
+        CustomerGroupRepositoryInterface $customerGroupRepository,
+        CurrencyRepositoryInterface $currencyRepository,
+        array $classes = []
+    ) {
+        $this->customerGroupRepository = $customerGroupRepository;
+        $this->currencyRepository = $currencyRepository;
+
         $this->classes = array_replace_recursive($this->getDefaultClasses(), $classes);
 
         // TODO validate classes
@@ -38,9 +58,17 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createAttachmentForSale(Model\SaleInterface $sale)
+    public function getDefaultCustomerGroup()
     {
-        return $this->resolveClassAndCreateObject('attachment', $sale);
+        return $this->customerGroupRepository->findDefault();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultCurrency()
+    {
+        return $this->currencyRepository->findDefault();
     }
 
     /**
@@ -61,9 +89,9 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createItemForSale(Model\SaleInterface $sale)
+    public function createAttachmentForSale(Model\SaleInterface $sale)
     {
-        return $this->resolveClassAndCreateObject('item', $sale);
+        return $this->resolveClassAndCreateObject('attachment', $sale);
     }
 
     /**
@@ -76,15 +104,8 @@ class SaleFactory implements SaleFactoryInterface
         } elseif ($adjustable instanceof Model\SaleItemInterface) {
             return $this->createAdjustmentForItem($adjustable);
         }
-        throw new InvalidArgumentException("Expected instanceof SaleInterface or SaleItemInterface.");
-    }
 
-    /**
-     * @inheritdoc
-     */
-    public function createAdjustmentForSale(Model\SaleInterface $sale)
-    {
-        return $this->resolveClassAndCreateObject('adjustment', $sale);
+        throw new InvalidArgumentException("Expected instanceof SaleInterface or SaleItemInterface.");
     }
 
     /**
@@ -98,17 +119,17 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createPaymentForSale(Model\SaleInterface $sale)
+    public function createAdjustmentForSale(Model\SaleInterface $sale)
     {
-        return $this->resolveClassAndCreateObject('payment', $sale);
+        return $this->resolveClassAndCreateObject('adjustment', $sale);
     }
 
     /**
      * @inheritdoc
      */
-    public function createShipmentForSale(Model\SaleInterface $sale)
+    public function createItemForSale(Model\SaleInterface $sale)
     {
-        return $this->resolveClassAndCreateObject('shipment', $sale);
+        return $this->resolveClassAndCreateObject('item', $sale);
     }
 
     /**
@@ -117,6 +138,29 @@ class SaleFactory implements SaleFactoryInterface
     public function createItemForShipment(ShipmentInterface $shipment)
     {
         return $this->resolveClassAndCreateObject('shipment_item', $shipment);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createPaymentForSale(Model\SaleInterface $sale)
+    {
+        /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentInterface $payment */
+        $payment = $this->resolveClassAndCreateObject('payment', $sale);
+
+        $payment
+            ->setCurrency($this->getDefaultCurrency())
+            ->setAmount($sale->getGrandTotal() - $sale->getPaidTotal());
+
+        return $payment;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createShipmentForSale(Model\SaleInterface $sale)
+    {
+        return $this->resolveClassAndCreateObject('shipment', $sale);
     }
 
     /**

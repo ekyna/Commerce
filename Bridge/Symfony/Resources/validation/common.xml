@@ -275,6 +275,9 @@
         <property name="currency">
             <constraint name="NotNull" />
         </property>
+        <property name="state">
+            <constraint name="NotBlank"/>
+        </property>
         <property name="items">
             <constraint name="Valid" />
         </property>

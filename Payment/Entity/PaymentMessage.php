@@ -13,14 +13,6 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractMessage;
 class PaymentMessage extends AbstractMessage
 {
     /**
-     * Constructor.
-     */
-    public function __construct()
-    {
-        $this->translations = new ArrayCollection();
-    }
-
-    /**
      * @inheritdoc
      */
     protected function getTranslationClass()

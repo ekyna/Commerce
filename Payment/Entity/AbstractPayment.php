@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -13,22 +13,16 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 abstract class AbstractPayment implements Payment\PaymentInterface
 {
-    use TimestampableTrait;
+    use Common\KeySubjectTrait,
+        Common\NumberSubjectTrait,
+        Common\CurrencySubjectTrait,
+        Common\StateSubjectTrait,
+        TimestampableTrait;
 
     /**
      * @var int
      */
     protected $id;
-
-    /**
-     * @var string
-     */
-    protected $number;
-
-    /**
-     * @var CurrencyInterface
-     */
-    protected $currency;
 
     /**
      * @var Payment\PaymentMethodInterface
@@ -39,11 +33,6 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      * @var float
      */
     protected $amount;
-
-    /**
-     * @var string
-     */
-    protected $state;
 
     /**
      * @var array
@@ -92,42 +81,6 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     /**
      * @inheritdoc
      */
-    public function getNumber()
-    {
-        return $this->number;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNumber($number)
-    {
-        $this->number = $number;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCurrency()
-    {
-        return $this->currency;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCurrency(CurrencyInterface $currency)
-    {
-        $this->currency = $currency;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getMethod()
     {
         return $this->method;
@@ -164,24 +117,6 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     /**
      * @inheritdoc
      */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getDetails()
     {
         return $this->details;
@@ -190,8 +125,12 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     /**
      * @inheritdoc
      */
-    public function setDetails(array $details)
+    public function setDetails($details)
     {
+        if ($details instanceof \Traversable) {
+            $details = iterator_to_array($details);
+        }
+
         $this->details = $details;
 
         return $this;
@@ -231,5 +170,53 @@ abstract class AbstractPayment implements Payment\PaymentInterface
         $this->completedAt = $completedAt;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->details);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetExists($offset)
+    {
+        return isset($this->details[$offset]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetGet($offset)
+    {
+        if ($this->details[$offset]) {
+            return $this->details[$offset];
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetSet($offset, $value)
+    {
+        if (is_null($offset)) {
+            $this->details[] = $value;
+        } else {
+            $this->details[$offset] = $value;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetUnset($offset)
+    {
+        unset($this->details[$offset]);
     }
 }

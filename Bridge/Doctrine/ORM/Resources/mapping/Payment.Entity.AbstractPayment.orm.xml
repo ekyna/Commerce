@@ -7,6 +7,7 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Payment\Entity\AbstractPayment">
 
+        <field name="key" column="secret" type="string" length="32" />
         <field name="number" column="number" type="string" length="16"/>
         <field name="amount" column="amount" type="decimal" precision="10" scale="5"/>
         <field name="state" column="state" type="string" length="16"/>

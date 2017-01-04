@@ -19,4 +19,13 @@ interface SaleRepositoryInterface
      * @return SaleInterface|null
      */
     public function findOneById($id);
+
+    /**
+     * Finds the sale by its key.
+     *
+     * @param string $key
+     *
+     * @return SaleInterface|null
+     */
+    public function findOneByKey($key);
 }

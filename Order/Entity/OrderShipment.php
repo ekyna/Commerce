@@ -21,6 +21,8 @@ class OrderShipment extends AbstractShipment implements OrderShipmentInterface
 
     /**
      * @inheritDoc
+     *
+     * @return OrderInterface
      */
     public function getSale()
     {

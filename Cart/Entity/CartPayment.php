@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Cart\Entity;
 
-use Ekyna\Component\Commerce\Cart\Model\CartInterface;
-use Ekyna\Component\Commerce\Cart\Model\CartPaymentInterface;
+use Ekyna\Component\Commerce\Cart\Model;
 use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
 
 /**
@@ -11,16 +10,18 @@ use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
  * @package Ekyna\Component\Commerce\Cart\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CartPayment extends AbstractPayment implements CartPaymentInterface
+class CartPayment extends AbstractPayment implements Model\CartPaymentInterface
 {
     /**
-     * @var CartInterface
+     * @var Model\CartInterface
      */
     protected $cart;
 
 
     /**
      * @inheritdoc
+     *
+     * @return Model\CartInterface
      */
     public function getSale()
     {
@@ -38,7 +39,7 @@ class CartPayment extends AbstractPayment implements CartPaymentInterface
     /**
      * @inheritdoc
      */
-    public function setCart(CartInterface $cart = null)
+    public function setCart(Model\CartInterface $cart = null)
     {
         if (null !== $this->cart && $this->cart != $cart) {
             $this->cart->removePayment($this);

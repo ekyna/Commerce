@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -16,25 +16,19 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInterface
+abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInterface
 {
-    use Model\IdentityTrait,
+    use Common\IdentityTrait,
+        Common\KeySubjectTrait,
+        Common\NumberSubjectTrait,
+        Common\StateSubjectTrait,
+        Common\CurrencySubjectTrait,
         TimestampableTrait;
 
     /**
      * @var int
      */
     protected $id;
-
-    /**
-     * @var string
-     */
-    protected $key;
-
-    /**
-     * @var string
-     */
-    protected $number;
 
     /**
      * @var CustomerInterface
@@ -57,12 +51,12 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     protected $email;
 
     /**
-     * @var Model\AddressInterface
+     * @var Common\AddressInterface
      */
     protected $invoiceAddress;
 
     /**
-     * @var Model\AddressInterface
+     * @var Common\AddressInterface
      */
     protected $deliveryAddress;
 
@@ -81,11 +75,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
      * @var bool
      */
     protected $taxExempt;
-
-    /**
-     * @var Model\CurrencyInterface
-     */
-    protected $currency;
 
     /**
      * @var float
@@ -120,20 +109,15 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @var string
      */
-    protected $state;
-
-    /**
-     * @var string
-     */
     protected $paymentState;
 
     /**
-     * @var ArrayCollection|Model\SaleAttachmentInterface[]
+     * @var ArrayCollection|Common\SaleAttachmentInterface[]
      */
     protected $attachments;
 
     /**
-     * @var ArrayCollection|Model\SaleItemInterface[]
+     * @var ArrayCollection|Common\SaleItemInterface[]
      */
     protected $items;
 
@@ -186,42 +170,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getKey()
-    {
-        return $this->key;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setKey($key)
-    {
-        $this->key = $key;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNumber()
-    {
-        return $this->number;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNumber($number)
-    {
-        $this->number = $number;
-
-        return $this;
     }
 
     /**
@@ -359,24 +307,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
     /**
      * @inheritdoc
      */
-    public function getCurrency()
-    {
-        return $this->currency;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCurrency(Model\CurrencyInterface $currency)
-    {
-        $this->currency = $currency;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getWeightTotal()
     {
         return $this->weightTotal;
@@ -480,24 +410,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Model\SaleInte
         $this->paidTotal = $total;
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getState()
-    {
-        return $this->state;
     }
 
     /**

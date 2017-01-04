@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -13,7 +14,9 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 abstract class AbstractShipment implements Shipment\ShipmentInterface
 {
-    use TimestampableTrait;
+    use Common\NumberSubjectTrait,
+        Common\StateSubjectTrait,
+        TimestampableTrait;
 
     /**
      * @var int
@@ -29,16 +32,6 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
      * @var ArrayCollection|Shipment\ShipmentItemInterface[]
      */
     protected $items;
-
-    /**
-     * @var string
-     */
-    protected $number;
-
-    /**
-     * @var string
-     */
-    protected $state;
 
     /**
      * @var string
@@ -129,8 +122,8 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function addItem(Shipment\ShipmentItemInterface $item)
     {
         if (!$this->hasItem($item)) {
-            $this->items->add($item);
             $item->setShipment($this);
+            //$this->items->add($item);
         }
 
         return $this;
@@ -142,45 +135,9 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function removeItem(Shipment\ShipmentItemInterface $item)
     {
         if ($this->hasItem($item)) {
-            $this->items->removeElement($item);
-            //$item->setShipment(null);
+            $item->setShipment(null);
+            //$this->items->removeElement($item);
         }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNumber()
-    {
-        return $this->number;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNumber($number)
-    {
-        $this->number = $number;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
 
         return $this;
     }

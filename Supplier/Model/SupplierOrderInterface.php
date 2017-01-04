@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model as CommonModel;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -13,26 +13,11 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  */
 interface SupplierOrderInterface extends
     ResourceModel\ResourceInterface,
-    CommonModel\NumberSubjectInterface,
-    CommonModel\StateSubjectInterface,
+    Common\NumberSubjectInterface,
+    Common\CurrencySubjectInterface,
+    Common\StateSubjectInterface,
     ResourceModel\TimestampableInterface
 {
-    /**
-     * Returns the currency.
-     *
-     * @return CommonModel\CurrencyInterface
-     */
-    public function getCurrency();
-
-    /**
-     * Sets the currency.
-     *
-     * @param CommonModel\CurrencyInterface $currency
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setCurrency(CommonModel\CurrencyInterface $currency);
-
     /**
      * Returns the supplier.
      *

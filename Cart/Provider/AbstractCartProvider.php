@@ -5,9 +5,8 @@ namespace Ekyna\Component\Commerce\Cart\Provider;
 use Doctrine\Common\Persistence\ObjectManager;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
-use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
+use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
-use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 
 /**
@@ -28,19 +27,14 @@ abstract class AbstractCartProvider implements CartProviderInterface
     protected $cartManager;
 
     /**
+     * @var SaleFactoryInterface
+     */
+    protected $saleFactory;
+
+    /**
      * @var CustomerProviderInterface
      */
     protected $customerProvider;
-
-    /**
-     * @var CustomerGroupRepositoryInterface
-     */
-    protected $customerGroupRepository;
-
-    /**
-     * @var CurrencyRepositoryInterface
-     */
-    protected $currencyRepository;
 
     /**
      * @var CartInterface
@@ -69,6 +63,16 @@ abstract class AbstractCartProvider implements CartProviderInterface
     }
 
     /**
+     * Sets the sale factory.
+     *
+     * @param SaleFactoryInterface $saleFactory
+     */
+    public function setSaleFactory(SaleFactoryInterface $saleFactory)
+    {
+        $this->saleFactory = $saleFactory;
+    }
+
+    /**
      * Sets the customer provider.
      *
      * @param CustomerProviderInterface $provider
@@ -76,26 +80,6 @@ abstract class AbstractCartProvider implements CartProviderInterface
     public function setCustomerProvider(CustomerProviderInterface $provider)
     {
         $this->customerProvider = $provider;
-    }
-
-    /**
-     * Sets the customer group repository.
-     *
-     * @param CustomerGroupRepositoryInterface $repository
-     */
-    public function setCustomerGroupRepository(CustomerGroupRepositoryInterface $repository)
-    {
-        $this->customerGroupRepository = $repository;
-    }
-
-    /**
-     * Sets the currency repository.
-     *
-     * @param CurrencyRepositoryInterface $repository
-     */
-    public function setCurrencyRepository(CurrencyRepositoryInterface $repository)
-    {
-        $this->currencyRepository = $repository;
     }
 
     /**
@@ -169,6 +153,9 @@ abstract class AbstractCartProvider implements CartProviderInterface
                 ->setInvoiceAddress(null)
                 ->setDeliveryAddress(null)
                 ->setSameAddress(true);
+
+            // TODO Default customer group (?)
+            // TODO Default currency (?)
         }
 
         return $this;
@@ -195,12 +182,12 @@ abstract class AbstractCartProvider implements CartProviderInterface
 
             // TODO customer preferred currency
         } else {
-            $cart->setCustomerGroup($this->customerGroupRepository->findDefault());
+            $cart->setCustomerGroup($this->saleFactory->getDefaultCustomerGroup());
         }
 
         // Sets the currency
         if (null === $cart->getCurrency()) {
-            $cart->setCurrency($this->currencyRepository->findDefault());
+            $cart->setCurrency($this->saleFactory->getDefaultCurrency());
         }
 
         $this->setCart($cart);

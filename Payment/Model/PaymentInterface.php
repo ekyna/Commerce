@@ -2,42 +2,35 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
-use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Resource\Model as ResourceModel;
+use Payum\Core\Model as Payum;
 
 /**
  * Interface PaymentInterface
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method $this|PaymentInterface setDetails($details)
  */
 interface PaymentInterface extends
     ResourceModel\ResourceInterface,
     ResourceModel\TimestampableInterface,
-    Model\NumberSubjectInterface,
-    Model\StateSubjectInterface
+    Common\NumberSubjectInterface,
+    Common\KeySubjectInterface,
+    Common\CurrencySubjectInterface,
+    Common\StateSubjectInterface,
+    Payum\DetailsAggregateInterface,
+    Payum\DetailsAwareInterface,
+    \ArrayAccess,
+    \IteratorAggregate
 {
     /**
      * Returns the sale.
      *
-     * @return Model\SaleInterface
+     * @return Common\SaleInterface
      */
     public function getSale();
-
-    /**
-     * Returns the currency.
-     *
-     * @return Model\CurrencyInterface
-     */
-    public function getCurrency();
-
-    /**
-     * Sets the currency.
-     *
-     * @param Model\CurrencyInterface $currency
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setCurrency(Model\CurrencyInterface $currency);
 
     /**
      * Returns the method.
@@ -70,22 +63,6 @@ interface PaymentInterface extends
      * @return $this|PaymentInterface
      */
     public function setAmount($amount);
-
-    /**
-     * Returns the details.
-     *
-     * @return array
-     */
-    public function getDetails();
-
-    /**
-     * Sets the details.
-     *
-     * @param array $details
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setDetails(array $details);
 
     /**
      * Returns the description.

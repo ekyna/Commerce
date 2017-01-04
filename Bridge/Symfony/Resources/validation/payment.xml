@@ -7,10 +7,15 @@
 
     <class name="Ekyna\Component\Commerce\Payment\Entity\AbstractPayment">
         <property name="number">
-            <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="min">8</option>
                 <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="key">
+            <constraint name="Length">
+                <option name="min">32</option>
+                <option name="max">32</option>
             </constraint>
         </property>
         <property name="currency">
@@ -26,6 +31,7 @@
             </constraint>
         </property>
         <property name="state">
+            <constraint name="NotBlank"/>
             <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
@@ -54,6 +60,7 @@
 
     <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethodMessage">
         <property name="state">
+            <constraint name="NotBlank"/>
             <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>

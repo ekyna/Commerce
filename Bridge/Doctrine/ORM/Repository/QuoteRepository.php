@@ -2,20 +2,20 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
+use Ekyna\Component\Commerce\Quote\Repository\QuoteRepositoryInterface;
 
 /**
- * Class CartRepository
+ * Class QuoteRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CartRepository extends AbstractSaleRepository implements CartRepositoryInterface
+class QuoteRepository extends AbstractSaleRepository implements QuoteRepositoryInterface
 {
     /**
      * @inheritdoc
      */
     protected function getAlias()
     {
-        return 'c';
+        return 'q';
     }
 }

@@ -14,6 +14,20 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 interface SaleFactoryInterface
 {
     /**
+     * Returns the default customer group.
+     *
+     * @return \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface
+     */
+    public function getDefaultCustomerGroup();
+
+    /**
+     * Returns the default currency.
+     *
+     * @return Model\CurrencyInterface
+     */
+    public function getDefaultCurrency();
+
+    /**
      * Creates an address regarding to the sale type.
      *
      * @param Model\SaleInterface    $sale
@@ -33,15 +47,6 @@ interface SaleFactoryInterface
     public function createAttachmentForSale(Model\SaleInterface $sale);
 
     /**
-     * Creates a sale item regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Model\SaleItemInterface
-     */
-    public function createItemForSale(Model\SaleInterface $sale);
-
-    /**
      * Creates an adjustment for the given adjustable.
      *
      * @param Model\AdjustableInterface $adjustable
@@ -49,6 +54,15 @@ interface SaleFactoryInterface
      * @return Model\AdjustmentInterface
      */
     public function createAdjustmentFor(Model\AdjustableInterface $adjustable);
+
+    /**
+     * Creates an adjustment regarding to the sale item type.
+     *
+     * @param Model\SaleItemInterface $item
+     *
+     * @return Model\AdjustmentInterface
+     */
+    public function createAdjustmentForItem(Model\SaleItemInterface $item);
 
     /**
      * Creates an adjustment regarding to the sale type.
@@ -60,13 +74,22 @@ interface SaleFactoryInterface
     public function createAdjustmentForSale(Model\SaleInterface $sale);
 
     /**
-     * Creates an adjustment regarding to the sale item type.
+     * Creates a sale item regarding to the sale type.
      *
-     * @param Model\SaleItemInterface $item
+     * @param Model\SaleInterface $sale
      *
-     * @return Model\AdjustmentInterface
+     * @return Model\SaleItemInterface
      */
-    public function createAdjustmentForItem(Model\SaleItemInterface $item);
+    public function createItemForSale(Model\SaleInterface $sale);
+
+    /**
+     * Creates a shipment regarding to the sale type.
+     *
+     * @param Shipment\ShipmentInterface $shipment
+     *
+     * @return Shipment\ShipmentItemInterface
+     */
+    public function createItemForShipment(Shipment\ShipmentInterface $shipment);
 
     /**
      * Creates an address regarding to the sale type.
@@ -85,13 +108,4 @@ interface SaleFactoryInterface
      * @return Shipment\ShipmentInterface
      */
     public function createShipmentForSale(Model\SaleInterface $sale);
-
-    /**
-     * Creates a shipment regarding to the sale type.
-     *
-     * @param Shipment\ShipmentInterface $shipment
-     *
-     * @return Shipment\ShipmentItemInterface
-     */
-    public function createItemForShipment(Shipment\ShipmentInterface $shipment);
 }

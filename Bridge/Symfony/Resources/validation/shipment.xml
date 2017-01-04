@@ -7,7 +7,6 @@
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipment">
         <property name="number">
-            <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="min">8</option>
                 <option name="max">16</option>
@@ -45,6 +44,7 @@
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethodMessage">
         <property name="state">
+            <constraint name="NotBlank"/>
             <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Shipment\Model\ShipmentStates</value>
@@ -64,7 +64,7 @@
                 <value>10000</value>
             </constraint>
         </property>
-        <property name="weight">
+        <property name="netPrice">
             <constraint name="NotBlank"/>
             <constraint name="GreaterThan">
                 <value>0</value>

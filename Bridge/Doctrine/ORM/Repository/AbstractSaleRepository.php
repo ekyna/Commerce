@@ -1,9 +1,9 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Common\Repository;
+namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
+use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
 /**
@@ -18,26 +18,10 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
      */
     public function findOneById($id)
     {
-        $qb = $this->createQueryBuilder('o');
+        $qb = $this->getOneQueryBuilder('o');
 
         $sale = $qb
-            ->select(
-                'o',
-                'customer',
-                'customer_group',
-                'invoice_address',
-                'delivery_address',
-                'shipment_method',
-                'currency'
-            )
-            ->leftJoin('o.customer', 'customer')
-            ->leftJoin('o.customerGroup', 'customer_group')
-            ->leftJoin('o.invoiceAddress', 'invoice_address')
-            ->leftJoin('o.deliveryAddress', 'delivery_address')
-            ->leftJoin('o.preferredShipmentMethod', 'shipment_method')
-            ->leftJoin('o.currency', 'currency')
             ->andWhere($qb->expr()->eq('o.id', ':id'))
-            ->setMaxResults(1)
             ->getQuery()
             ->useQueryCache(true)
             ->setParameter('id' , $id)
@@ -50,6 +34,59 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
         }
 
         return $sale;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findOneByKey($key)
+    {
+        $qb = $this->getOneQueryBuilder('o');
+
+        $sale = $qb
+            ->andWhere($qb->expr()->eq('o.key', ':key'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameter('key' , $key)
+            ->getOneOrNullResult();
+
+        if (null !== $sale) {
+            $this
+                ->loadLines($sale)
+                ->loadPayments($sale);
+        }
+
+        return $sale;
+    }
+
+    /**
+     * Returns the "find one result" query builder.
+     *
+     * @param string $alias
+     * @param string $indexBy
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    protected function getOneQueryBuilder($alias = null, $indexBy = null)
+    {
+        return $this
+            ->createQueryBuilder($alias, $indexBy)
+            ->select(
+                $alias,
+                'customer',
+                'customer_group',
+                'invoice_address',
+                'delivery_address',
+                'shipment_method',
+                'currency'
+            )
+            ->leftJoin($alias.'.customer', 'customer')
+            ->leftJoin($alias.'.customerGroup', 'customer_group')
+            ->leftJoin($alias.'.invoiceAddress', 'invoice_address')
+            ->leftJoin($alias.'.deliveryAddress', 'delivery_address')
+            ->leftJoin($alias.'.preferredShipmentMethod', 'shipment_method')
+            ->leftJoin($alias.'.currency', 'currency')
+            ->setMaxResults(1);
     }
 
     /**

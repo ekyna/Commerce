@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @method CartInterface|null findOneById($id)
+ * @method CartInterface|null findOneByKey($key)
  */
 interface CartRepositoryInterface extends SaleRepositoryInterface
 {

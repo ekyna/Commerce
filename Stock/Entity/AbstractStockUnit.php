@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
@@ -12,15 +13,12 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
  */
 abstract class AbstractStockUnit implements Model\StockUnitInterface
 {
+    use StateSubjectTrait;
+
     /**
      * @var int
      */
     protected $id;
-
-    /**
-     * @var string
-     */
-    protected $state;
 
     /**
      * @var string
@@ -87,29 +85,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return $this->id;
     }
 
-    /**
-     * Returns the state.
-     *
-     * @return string
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * Sets the state.
-     *
-     * @param string $state
-     *
-     * @return AbstractStockUnit
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-
-        return $this;
-    }
 
     /**
      * @inheritdoc

@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Payment\EventListener;
 
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -24,9 +24,9 @@ abstract class AbstractPaymentListener
     protected $persistenceHelper;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var KeyGeneratorInterface
      */
-    protected $numberGenerator;
+    protected $keyGenerator;
 
 
     /**
@@ -40,13 +40,13 @@ abstract class AbstractPaymentListener
     }
 
     /**
-     * Sets the number generator.
+     * Sets the key generator.
      *
-     * @param NumberGeneratorInterface $generator
+     * @param KeyGeneratorInterface $keyGenerator
      */
-    public function setNumberGenerator(NumberGeneratorInterface $generator)
+    public function setKeyGenerator(KeyGeneratorInterface $keyGenerator)
     {
-        $this->numberGenerator = $generator;
+        $this->keyGenerator = $keyGenerator;
     }
 
     /**
@@ -65,6 +65,7 @@ abstract class AbstractPaymentListener
 
         // Generate number and key
         $changed = $this->generateNumber($payment);
+        $changed = $this->generateKey($payment) || $changed;
 
         // TODO Timestampable behavior/listener
         $payment
@@ -94,6 +95,7 @@ abstract class AbstractPaymentListener
 
         // Generate number and key
         $changed = $this->generateNumber($payment);
+        $changed = $this->generateKey($payment) || $changed;
 
         // TODO Timestampable behavior/listener
         $payment->setUpdatedAt(new \DateTime());
@@ -152,16 +154,48 @@ abstract class AbstractPaymentListener
     }
 
     /**
-     * Generates the sale number.
+     * Generates the payment number.
      *
      * @param PaymentInterface $payment
      *
-     * @return bool Whether the sale number has been generated or not.
+     * @return bool Whether the payment has been changed or not.
      */
     protected function generateNumber(PaymentInterface $payment)
     {
         if (0 == strlen($payment->getNumber())) {
-            $this->numberGenerator->generate($payment);
+            if (null === $sale = $payment->getSale()) {
+                return false;
+            }
+
+            $number = 1;
+            foreach ($sale->getPayments() as $p) {
+                if (preg_match('~\d+-(\d+)~', $p->getNumber(), $matches)) {
+                    $n = intval($matches[1]);
+                    if ($number <= $n) {
+                        $number = $n + 1;
+                    }
+                }
+            }
+
+            $payment->setNumber(sprintf('%s-%s', $sale->getNumber(), $number));
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Generates the payment key.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool Whether the payment has been changed or not.
+     */
+    protected function generateKey(PaymentInterface $payment)
+    {
+        if (0 == strlen($payment->getKey())) {
+            $this->keyGenerator->generate($payment);
 
             return true;
         }

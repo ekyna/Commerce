@@ -21,7 +21,8 @@ interface SaleInterface extends
     AdjustableInterface,
     NumberSubjectInterface,
     KeySubjectInterface,
-    StateSubjectInterface
+    StateSubjectInterface,
+    CurrencySubjectInterface
 {
     /**
      * Returns the customer.
@@ -166,22 +167,6 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setTaxExempt($exempt);
-
-    /**
-     * Returns the currency.
-     *
-     * @return CurrencyInterface
-     */
-    public function getCurrency();
-
-    /**
-     * Sets the currency.
-     *
-     * @param CurrencyInterface $currency
-     *
-     * @return $this|SaleInterface
-     */
-    public function setCurrency(CurrencyInterface $currency);
 
     /**
      * Returns the weight total (kilograms).

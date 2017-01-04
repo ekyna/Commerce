@@ -432,7 +432,13 @@ abstract class AbstractSaleListener
             }
 
             // Delivery address
-            if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
+            if ($sale->isSameAddress()) {
+                // Remove unused address
+                if (null !== $address = $sale->getDeliveryAddress()) {
+                    $sale->setDeliveryAddress(null);
+                    $this->persistenceHelper->remove($address, true);
+                }
+            } else if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
                 $changed = $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address) || $changed;
             }
         }

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -10,7 +11,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface StockUnitInterface extends ResourceInterface
+interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
 {
     /**
      * Sets the subject.
@@ -27,22 +28,6 @@ interface StockUnitInterface extends ResourceInterface
      * @return StockSubjectInterface
      */
     public function getSubject();
-
-    /**
-     * Returns the state.
-     *
-     * @return string
-     */
-    public function getState();
-
-    /**
-     * Sets the state.
-     *
-     * @param string $state
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setState($state);
 
     /**
      * Returns the geocode.

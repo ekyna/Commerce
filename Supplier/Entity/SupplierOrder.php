@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Supplier\Model;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -14,22 +14,15 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class SupplierOrder implements Model\SupplierOrderInterface
 {
-    use TimestampableTrait;
+    use Common\NumberSubjectTrait,
+        Common\CurrencySubjectTrait,
+        Common\StateSubjectTrait,
+        TimestampableTrait;
 
     /**
      * @var int
      */
     private $id;
-
-    /**
-     * @var string
-     */
-    private $number;
-
-    /**
-     * @var CurrencyInterface
-     */
-    private $currency;
 
     /**
      * @var Model\SupplierInterface
@@ -45,11 +38,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
      * @var ArrayCollection|Model\SupplierDeliveryInterface[]
      */
     private $deliveries;
-
-    /**
-     * @var string
-     */
-    private $state;
 
     /**
      * @var float
@@ -102,42 +90,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNumber()
-    {
-        return $this->number;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNumber($number)
-    {
-        $this->number = $number;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCurrency()
-    {
-        return $this->currency;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCurrency(CurrencyInterface $currency)
-    {
-        $this->currency = $currency;
-
-        return $this;
     }
 
     /**
@@ -253,31 +205,11 @@ class SupplierOrder implements Model\SupplierOrderInterface
     }
 
     /**
-     * Returns the deliveries.
-     *
-     * @return ArrayCollection|Model\SupplierDeliveryInterface[]
+     * @inheritdoc
      */
     public function getDeliveries()
     {
         return $this->deliveries;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-
-        return $this;
     }
 
     /**

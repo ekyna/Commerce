@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
+use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
 
 /**
@@ -11,16 +10,18 @@ use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderPayment extends AbstractPayment implements OrderPaymentInterface
+class OrderPayment extends AbstractPayment implements Model\OrderPaymentInterface
 {
     /**
-     * @var OrderInterface
+     * @var Model\OrderInterface
      */
     protected $order;
 
 
     /**
      * @inheritdoc
+     *
+     * @return Model\OrderInterface
      */
     public function getSale()
     {
@@ -38,7 +39,7 @@ class OrderPayment extends AbstractPayment implements OrderPaymentInterface
     /**
      * @inheritdoc
      */
-    public function setOrder(OrderInterface $order = null)
+    public function setOrder(Model\OrderInterface $order = null)
     {
         if (null !== $this->order && $this->order != $order) {
             $this->order->removePayment($this);
