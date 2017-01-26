@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
- * Class OrderValidator
+ * Class SaleValidator
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */

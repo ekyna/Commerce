@@ -21,7 +21,7 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
         $currentState = $stockUnit->getState();
 
         if (null !== $stockUnit->getSupplierOrderItem()) {
-            $currentState = StockUnitStates::STATE_PENDING;
+            $resolvedState = StockUnitStates::STATE_PENDING;
         }
 
         // If quantity has been delivered (by supplier)

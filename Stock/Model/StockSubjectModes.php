@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 /**
- * Class StockModes
+ * Class StockSubjectModes
  * @package Ekyna\Component\Commerce\Stock\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-final class StockModes
+final class StockSubjectModes
 {
     const MODE_DISABLED     = 'disabled';
     const MODE_ENABLED      = 'enabled';

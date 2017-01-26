@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 /**
- * Class StockStates
+ * Class StockSubjectStates
  * @package Ekyna\Component\Commerce\Stock\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-final class StockStates
+final class StockSubjectStates
 {
     const STATE_IN_STOCK     = 'in_stock';
     const STATE_PRE_ORDER    = 'pre_order';

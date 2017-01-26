@@ -74,7 +74,23 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function __construct()
     {
-        $this->state = Model\StockUnitStates::STATE_PENDING;
+        $this->state = Model\StockUnitStates::STATE_NEW;
+    }
+
+    /**
+     * Returns the string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        if (0 < strlen($this->getGeocode())) {
+            return $this->getGeocode();
+        } elseif (0 < $this->getId()) {
+            return '#'.$this->getId();
+        }
+
+        return 'Unknown';
     }
 
     /**

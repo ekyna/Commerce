@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class AdjustmentModes
 {
-    const MODE_FLAT = 'flat';
+    const MODE_FLAT    = 'flat';
     const MODE_PERCENT = 'percent';
 
 
@@ -32,7 +32,7 @@ final class AdjustmentModes
      * Returns whether the given mode is valid or not.
      *
      * @param string $mode
-     * @param bool $throw
+     * @param bool   $throw
      *
      * @return bool
      */

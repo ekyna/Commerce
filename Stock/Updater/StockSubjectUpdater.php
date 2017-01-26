@@ -3,8 +3,8 @@
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Stock\Model\StockModes;
-use Ekyna\Component\Commerce\Stock\Model\StockStates;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 
@@ -144,14 +144,14 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     public function updateStockState(StockSubjectInterface $subject)
     {
         // If subject stock mode is 'disabled', do nothing.
-        if ($subject->getStockMode() === StockModes::MODE_DISABLED) {
+        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
             return false;
         }
 
         // If subject stock mode is 'just in time', set state to 'available'.
-        if ($subject->getStockMode() === StockModes::MODE_JUST_IN_TIME) {
-            if ($subject->getStockState() != StockStates::STATE_IN_STOCK) {
-                $subject->setStockState(StockStates::STATE_IN_STOCK);
+        if ($subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME) {
+            if ($subject->getStockState() != StockSubjectStates::STATE_IN_STOCK) {
+                $subject->setStockState(StockSubjectStates::STATE_IN_STOCK);
 
                 return true;
             }
@@ -160,7 +160,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         // Stock mode should be 'enabled'
-        if ($subject->getStockMode() != StockModes::MODE_ENABLED) {
+        if ($subject->getStockMode() != StockSubjectModes::MODE_ENABLED) {
             throw new InvalidArgumentException("Unexpected stock mode.");
         }
 
@@ -171,8 +171,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         // "In stock" resolved state
         if (0 < $subject->getInStock()) {
-            if ($currentState != StockStates::STATE_IN_STOCK) {
-                $subject->setStockState(StockStates::STATE_IN_STOCK);
+            if ($currentState != StockSubjectStates::STATE_IN_STOCK) {
+                $subject->setStockState(StockSubjectStates::STATE_IN_STOCK);
 
                 return true;
             }
@@ -182,8 +182,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         // "Pre order" resolved state
         if ((0 < $subject->getOrderedStock()) && (null !== $subject->getEstimatedDateOfArrival())) {
-            if ($currentState != StockStates::STATE_PRE_ORDER) {
-                $subject->setStockState(StockStates::STATE_PRE_ORDER);
+            if ($currentState != StockSubjectStates::STATE_PRE_ORDER) {
+                $subject->setStockState(StockSubjectStates::STATE_PRE_ORDER);
 
                 return true;
             }
@@ -192,8 +192,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         // "Out of stock" resolved state
-        if ($currentState != StockStates::STATE_OUT_OF_STOCK) {
-            $subject->setStockState(StockStates::STATE_OUT_OF_STOCK);
+        if ($currentState != StockSubjectStates::STATE_OUT_OF_STOCK) {
+            $subject->setStockState(StockSubjectStates::STATE_OUT_OF_STOCK);
 
             return true;
         }

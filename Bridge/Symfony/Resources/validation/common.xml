@@ -183,7 +183,6 @@
                 <option name="value">0</option>
             </constraint>
         </property>
-        <!-- TODO TAXATION can't be immutable -->
     </class>
 
     <!-- Attachment -->

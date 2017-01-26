@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * Class Order
+ * Class Sale
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */

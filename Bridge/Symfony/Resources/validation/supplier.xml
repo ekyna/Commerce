@@ -53,9 +53,10 @@
             <constraint name="Valid"/>
         </property>
         <property name="state">
+            <constraint name="NotNull"/>
             <constraint name="Choice">
                 <option name="callback">
-                    <value>Ekyna\Component\Commerce\Shipment\Model\ShipmentStates</value>
+                    <value>Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates</value>
                     <value>getStates</value>
                 </option>
             </constraint>

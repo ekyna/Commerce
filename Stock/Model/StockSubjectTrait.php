@@ -45,8 +45,8 @@ trait StockSubjectTrait
      */
     protected function initializeStock()
     {
-        $this->stockMode = StockModes::MODE_DISABLED;
-        $this->stockState = StockStates::STATE_OUT_OF_STOCK;
+        $this->stockMode = StockSubjectModes::MODE_DISABLED;
+        $this->stockState = StockSubjectStates::STATE_OUT_OF_STOCK;
         $this->inStock = 0;
         $this->orderedStock = 0;
         $this->shippedStock = 0;

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit">
+        <property name="state">
+            <constraint name="NotNull"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Stock\Model\StockUnitStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="geocode">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="estimatedDateOfArrival">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="orderedQuantity">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="deliveredQuantity">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="shippedQuantity">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="netPrice">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="closedAt">
+            <constraint name="DateTime"/>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\StockUnit"/>
+    </class>
+
+</constraint-mapping>
