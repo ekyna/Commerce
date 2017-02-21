@@ -58,16 +58,40 @@ final class SupplierOrderStates
     }
 
     /**
-     * Returns the debit stock states.
+     * Returns whether the given state is a deletable state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isDeletableState($state)
+    {
+        return in_array($state, static::getDeletableStates());
+    }
+
+    /**
+     * Returns the states which must result in a stock management.
      *
      * @return array
      */
-    static public function getCreditStockStates()
+    static public function getStockStates()
     {
         return [
             static::STATE_ORDERED,
             static::STATE_PARTIAL,
             static::STATE_COMPLETED
         ];
+    }
+
+    /**
+     * Returns whether the given state is a stock state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isStockState($state)
+    {
+        return in_array($state, static::getStockStates());
     }
 }

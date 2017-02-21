@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -10,6 +11,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
  * Class OrderItem
@@ -23,6 +25,21 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     protected $order;
 
+    /**
+     * @var ArrayCollection|StockUnitInterface[]
+     */
+    protected $stockUnits;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->stockUnits = new ArrayCollection();
+    }
 
     /**
      * @inheritdoc
@@ -76,6 +93,40 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
         $this->order = $order;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addStockUnit(StockUnitInterface $unit)
+    {
+        if (!$this->stockUnits->contains($unit)) {
+            $this->stockUnits->add($unit);
+            $unit->addOrderItem($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeStockUnit(StockUnitInterface $unit)
+    {
+        if ($this->stockUnits->contains($unit)) {
+            $this->stockUnits->removeElement($unit);
+            $unit->removeOrderItem($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStockUnits()
+    {
+        return $this->stockUnits;
     }
 
     /**

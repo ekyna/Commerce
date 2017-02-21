@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Order\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
  * Interface OrderItemInterface
@@ -25,4 +27,29 @@ interface OrderItemInterface extends SaleItemInterface
      * @return $this|OrderItemInterface
      */
     public function setOrder(OrderInterface $order = null);
+
+    /**
+     * Adds the stock unit.
+     *
+     * @param StockUnitInterface $unit
+     *
+     * @return $this|OrderItemInterface
+     */
+    public function addStockUnit(StockUnitInterface $unit);
+
+    /**
+     * Removes the stock unit.
+     *
+     * @param StockUnitInterface $unit
+     *
+     * @return $this|OrderItemInterface
+     */
+    public function removeStockUnit(StockUnitInterface $unit);
+
+    /**
+     * Returns the stock units.
+     *
+     * @return ArrayCollection|StockUnitInterface[]
+     */
+    public function getStockUnits();
 }

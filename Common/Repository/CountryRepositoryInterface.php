@@ -17,4 +17,13 @@ interface CountryRepositoryInterface
      * @return CountryInterface
      */
     public function findDefault();
+
+    /**
+     * Finds a country by its code.
+     *
+     * @param string $code
+     *
+     * @return CountryInterface
+     */
+    public function findOneByCode($code);
 }

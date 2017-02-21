@@ -16,6 +16,15 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 interface StockUnitResolverInterface
 {
     /**
+     * Create stock unit for the given object.
+     *
+     * @param SubjectRelativeInterface|object|string $object
+     *
+     * @return StockUnitInterface
+     */
+    public function createStockUnit($object);
+
+    /**
      * Returns the relative subject provider.
      *
      * @param SubjectRelativeInterface $relative

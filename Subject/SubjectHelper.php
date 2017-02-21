@@ -8,11 +8,11 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
 
 /**
- * Class Helper
+ * Class SubjectHelper
  * @package Ekyna\Component\Commerce\Subject
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Helper implements HelperInterface
+class SubjectHelper implements SubjectHelperInterface
 {
     /**
      * @var SubjectProviderRegistryInterface
@@ -35,14 +35,16 @@ class Helper implements HelperInterface
      */
     public function resolve(SubjectRelativeInterface $relative)
     {
-        if (null === $subject = $relative->getSubject()) {
-            if ($relative->hasSubjectData()) {
-                $subject = $this->getProvider($relative)->resolve($relative);
-                $relative->setSubject($subject);
-            }
-        }
+        return $this->getProvider($relative)->resolve($relative);
+    }
 
-        return $subject;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function assign(SubjectRelativeInterface $relative, $subject)
+    {
+        return $this->getProvider($subject)->assign($relative, $subject);
     }
 
     /**

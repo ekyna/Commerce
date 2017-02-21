@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
@@ -28,6 +29,18 @@ class StockUnitResolver implements StockUnitResolverInterface
     public function __construct(SubjectProviderRegistryInterface $subjectProviderRegistry)
     {
         $this->subjectProviderRegistry = $subjectProviderRegistry;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createStockUnit($object)
+    {
+        return $this
+            ->subjectProviderRegistry
+            ->getProvider($object)
+            ->getStockUnitRepository()
+            ->createNew();
     }
 
     /**

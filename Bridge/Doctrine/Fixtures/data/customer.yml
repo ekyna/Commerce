@@ -1,11 +1,13 @@
 customer-1:
+    gender: 'mr'
     firstName: John
     lastName: Doe
     email: john.doe@example.org
-    customerGroups:
-        - '#customer-group-1'
+    customerGroup: '#customer-group-1'
+    createdAt: 'now'
     addresses:
         -
+            gender: 'mr'
             firstName: John
             lastName: Doe
             street: 12 rue de Nantes
@@ -16,13 +18,15 @@ customer-1:
             deliveryDefault: true
 
 customer-2:
+    gender: 'mr'
     firstName: Jane
     lastName: Doe
     email: jane.doe@example.org
-    customerGroups:
-        - '#customer-group-2'
+    customerGroup: '#customer-group-2'
+    createdAt: 'now'
     addresses:
         -
+            gender: 'mr'
             firstName: Jane
             lastName: Doe
             street: 34 rue de Rennes

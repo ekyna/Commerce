@@ -24,4 +24,17 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
 
         throw new RuntimeException('Default country not found.');
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function findOneByCode($code)
+    {
+        return $this
+            ->getQueryBuilder('c')
+            ->andWhere('c.code = :code')
+            ->getQuery()
+            ->setParameter('code', strtoupper($code))
+            ->getOneOrNullResult();
+    }
 }

@@ -59,8 +59,9 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
      */
     public function getProviderByRelative(SubjectRelativeInterface $relative)
     {
-        if (null !== $subject = $relative->getSubject()) {
-            return $this->getProviderBySubject($subject);
+        /** @noinspection PhpInternalEntityUsedInspection */
+        if (!empty($name = $relative->getSubjectIdentity()->getProvider())) {
+            return $this->getProviderByName($name);
         }
 
         foreach ($this->providers as $provider) {
@@ -100,6 +101,8 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
 
     /**
      * @inheritdoc
+     *
+     * @TODO Remove : use providers
      */
     public function resolveRelativeSubject(SubjectRelativeInterface $relative)
     {

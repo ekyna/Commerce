@@ -31,8 +31,6 @@
         <field name="orderedStock" column="ordered_stock" type="decimal" precision="10" scale="5" nullable="true"/>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
 
-        <field name="subjectData" column="subject_data" type="json_array" nullable="false"/>
-
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier">
             <join-column name="supplier_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
         </many-to-one>

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Commerce\Supplier\Model;
 
@@ -30,6 +31,11 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     protected $product;
 
     /**
+     * @var StockUnitInterface
+     */
+    protected $stockUnit;
+
+    /**
      * @var string
      */
     protected $designation;
@@ -49,6 +55,14 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
      */
     protected $netPrice = 0;
 
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->initializeSubjectIdentity();
+    }
 
     /**
      * @inheritdoc
@@ -90,6 +104,31 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     public function setProduct(Model\SupplierProductInterface $product = null)
     {
         $this->product = $product;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStockUnit()
+    {
+        return $this->stockUnit;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setStockUnit(StockUnitInterface $stockUnit = null)
+    {
+        if ($this->stockUnit != $stockUnit) {
+            if ($this->stockUnit) {
+                $this->stockUnit->setSupplierOrderItem(null);
+            }
+
+            $this->stockUnit = $stockUnit;
+            $stockUnit->setSupplierOrderItem($this);
+        }
 
         return $this;
     }

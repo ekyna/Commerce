@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -43,6 +44,22 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      * @return $this|SupplierOrderItemInterface
      */
     public function setProduct(SupplierProductInterface $product = null);
+
+    /**
+     * Returns the stock unit.
+     *
+     * @return StockUnitInterface
+     */
+    public function getStockUnit();
+
+    /**
+     * Sets the stock unit.
+     *
+     * @param StockUnitInterface $stockUnit
+     *
+     * @return $this|SupplierOrderItemInterface
+     */
+    public function setStockUnit(StockUnitInterface $stockUnit);
 
     /**
      * Returns the designation.

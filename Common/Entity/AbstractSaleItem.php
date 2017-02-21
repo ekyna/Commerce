@@ -81,6 +81,8 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     {
         parent::__construct();
 
+        $this->initializeSubjectIdentity();
+
         $this->children = new ArrayCollection();
     }
 

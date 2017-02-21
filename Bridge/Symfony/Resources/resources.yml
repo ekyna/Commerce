@@ -1,19 +1,127 @@
 ekyna_commerce:
+    cart:
+        entity: Ekyna\Component\Commerce\Cart\Entity\Cart
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CartRepository
+    cart_address:
+        entity: Ekyna\Component\Commerce\Cart\Entity\CartAddress
+    cart_adjustment:
+        entity: Ekyna\Component\Commerce\Cart\Entity\CartAdjustment
+    cart_item:
+        entity: Ekyna\Component\Commerce\Cart\Entity\CartItem
+#    cart_item_adjustment:
+#        entity: Ekyna\Component\Commerce\Cart\Entity\CartItemAdjustment
+    cart_payment:
+        entity: Ekyna\Component\Commerce\Cart\Entity\CartPayment
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CartPaymentRepository
+
     country:
-        resource: Ekyna\Component\Commerce\Common\Entity\Country
+        entity: Ekyna\Component\Commerce\Common\Entity\Country
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CountryRepository
     currency:
-        resource: Ekyna\Component\Commerce\Common\Entity\Currency
-    customer_address:
-        resource: Ekyna\Component\Commerce\Customer\Entity\CustomerAddress
+        entity: Ekyna\Component\Commerce\Common\Entity\Currency
+        entity: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CurrencyRepository
+
     customer:
-        resource: Ekyna\Component\Commerce\Customer\Entity\Customer
+        entity: Ekyna\Component\Commerce\Customer\Entity\Customer
+        repository: Ekyna\Bundle\CommerceBundle\Repository\CustomerRepository
+    customer_address:
+        entity: Ekyna\Component\Commerce\Customer\Entity\CustomerAddress
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CustomerAddressRepository
     customer_group:
-        resource: Ekyna\Component\Commerce\Customer\Entity\CustomerGroup
+        entity: Ekyna\Component\Commerce\Customer\Entity\CustomerGroup
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CustomerGroupRepository
+
     order:
-        resource: Ekyna\Component\Commerce\Order\Entity\Order
+        entity: Ekyna\Component\Commerce\Order\Entity\Order
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\OrderRepository
+    order_address:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderAddress
+    order_attachment:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderAttachment
+    order_adjustment:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderAdjustment
+    order_item:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderItem
+#    order_item_adjustment:
+#        entity: Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment
+    order_payment:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderPayment
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\OrderPaymentRepository
+    order_shipment:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderShipment
+    order_shipment_item:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderShipmentItem
+
+    payment_message:
+        entity: Ekyna\Component\Commerce\Payment\Entity\PaymentMessage
+        translation:
+            entity: Ekyna\Component\Commerce\Payment\Entity\PaymentMessageTranslation
+            fields: [content]
+    payment_method:
+        entity: Ekyna\Component\Commerce\Payment\Entity\PaymentMethod
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\PaymentMethodRepository
+        translation:
+            entity: Ekyna\Component\Commerce\Payment\Entity\PaymentMethodTranslation
+            fields: [title, description]
+
+    quote:
+        entity: Ekyna\Component\Commerce\Quote\Entity\Quote
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\QuoteRepository
+    quote_address:
+        entity: Ekyna\Component\Commerce\Quote\Entity\QuoteAddress
+    quote_attachment:
+        entity: Ekyna\Component\Commerce\Quote\Entity\QuoteAttachment
+    quote_adjustment:
+        entity: Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment
+    quote_item:
+        entity: Ekyna\Component\Commerce\Quote\Entity\QuoteItem
+    quote_payment:
+        entity: Ekyna\Component\Commerce\Quote\Entity\QuotePayment
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\QuotePaymentRepository
+#    quote_item_adjustment:
+#        entity: Ekyna\Component\Commerce\Quote\Entity\QuoteItemAdjustment
+
+# TODO   stock_unit:
+#        entity: Ekyna\Component\Commerce\Stock\Entity\StockUnit
+
+    shipment_message:
+        entity: Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage
+        translation:
+            entity: Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessageTranslation
+            fields: [content]
+    shipment_method:
+        entity: Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\ShipmentMethodRepository
+        translation:
+            entity: Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethodTranslation
+            fields: [title, description]
+    shipment_price:
+        entity: Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\ShipmentPriceRepository
+    shipment_zone:
+        entity: Ekyna\Component\Commerce\Shipment\Entity\ShipmentZone
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\ShipmentZoneRepository
+
+    supplier:
+        entity: Ekyna\Component\Commerce\Supplier\Entity\Supplier
+    supplier_address:
+        entity: Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress
+    supplier_delivery:
+        entity: Ekyna\Component\Commerce\Supplier\Entity\SupplierDelivery
+    supplier_delivery_item:
+        entity: Ekyna\Component\Commerce\Supplier\Entity\SupplierDeliveryItem
+    supplier_order:
+        entity: Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder
+    supplier_order_item:
+        entity: Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem
+    supplier_product:
+        entity: Ekyna\Component\Commerce\Supplier\Entity\SupplierProduct
+
     tax:
-        resource: Ekyna\Component\Commerce\Pricing\Entity\Tax
+        entity: Ekyna\Component\Commerce\Pricing\Entity\Tax
     tax_group:
-        resource: Ekyna\Component\Commerce\Pricing\Entity\TaxGroup
+        entity: Ekyna\Component\Commerce\Pricing\Entity\TaxGroup
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\TaxGroupRepository
     tax_rule:
-        resource: Ekyna\Component\Commerce\Pricing\Entity\TaxRule
+        entity: Ekyna\Component\Commerce\Pricing\Entity\TaxRule
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\TaxRuleRepository

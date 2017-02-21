@@ -17,8 +17,6 @@
         <field name="immutable" column="immutable" type="boolean"/>
         <field name="configurable" column="configurable" type="boolean"/>
 
-        <field name="subjectData" column="subject_data" type="json_array" nullable="false"/>
-
         <many-to-one target-entity="Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface" field="taxGroup">
             <join-column name="tax_group_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>

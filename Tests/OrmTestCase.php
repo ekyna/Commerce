@@ -8,6 +8,8 @@ use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
@@ -15,17 +17,20 @@ use Doctrine\ORM\Tools\ResolveTargetEntityListener;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\ToolsException;
 use Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection\DoctrineBundleMapping;
-use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener\LoadMetadataSubscriber;
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\CustomerEventSubscriber;
 use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\OrderEventSubscriber;
-use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\ProductEventSubscriber;
+//use Ekyna\Component\Commerce\Bridge\Symfony\EventListener\ProductEventSubscriber;
+use Ekyna\Component\Commerce\Common\Builder\AddressBuilder;
+use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilder;
 use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculator;
+use Ekyna\Component\Commerce\Common\Entity\Currency;
+use Ekyna\Component\Commerce\Common\Factory\SaleFactory;
+use Ekyna\Component\Commerce\Common\Generator\DefaultKeyGenerator;
 use Ekyna\Component\Commerce\Common\Generator\DefaultNumberGenerator;
+use Ekyna\Component\Commerce\Common\Updater\SaleUpdater;
+use Ekyna\Component\Commerce\Customer\Entity\CustomerGroup;
 use Ekyna\Component\Commerce\Order\Resolver\OrderStateResolver;
-use Ekyna\Component\Resource\Configuration\ConfigurationFactory;
-use Ekyna\Component\Resource\Configuration\ConfigurationRegistry;
-use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcher;
-use Ekyna\Component\Resource\Doctrine\ORM\Listener\EntityListener;
+use Ekyna\Component\Resource\ResourceComponent;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -38,37 +43,67 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
     /**
      * @var array
      */
-    protected static $_aliases = [
+    /*protected static $_aliases = [
+        'cart'               => 'Ekyna\Component\Commerce\Cart\Entity\Cart',
+        'cartAddress'        => 'Ekyna\Component\Commerce\Cart\Entity\CartAddress',
+        'cartAdjustment'     => 'Ekyna\Component\Commerce\Cart\Entity\CartAdjustment',
+        'cartItem'           => 'Ekyna\Component\Commerce\Cart\Entity\CartItem',
+        'cartItemAdjustment' => 'Ekyna\Component\Commerce\Cart\Entity\CartItemAdjustment',
+
         'country'  => 'Ekyna\Component\Commerce\Common\Entity\Country',
         'currency' => 'Ekyna\Component\Commerce\Common\Entity\Currency',
-
-        //'priceList' => 'Ekyna\Component\Commerce\Pricing\Entity\PriceList',
-        'tax'       => 'Ekyna\Component\Commerce\Pricing\Entity\Tax',
-        'taxGroup'  => 'Ekyna\Component\Commerce\Pricing\Entity\TaxGroup',
-        'taxRule'   => 'Ekyna\Component\Commerce\Pricing\Entity\TaxRule',
 
         'customer'        => 'Ekyna\Component\Commerce\Customer\Entity\Customer',
         'customerAddress' => 'Ekyna\Component\Commerce\Customer\Entity\CustomerAddress',
         'customerGroup'   => 'Ekyna\Component\Commerce\Customer\Entity\CustomerGroup',
-
-        //'subject' => 'Ekyna\Component\Commerce\Subject\Entity\Subject',
-        //'offer'   => 'Ekyna\Component\Commerce\Subject\Entity\Offer',
 
         'order'               => 'Ekyna\Component\Commerce\Order\Entity\Order',
         'orderAddress'        => 'Ekyna\Component\Commerce\Order\Entity\OrderAddress',
         'orderAdjustment'     => 'Ekyna\Component\Commerce\Order\Entity\OrderAdjustment',
         'orderItem'           => 'Ekyna\Component\Commerce\Order\Entity\OrderItem',
         'orderItemAdjustment' => 'Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment',
-    ];
+
+        // TODO 'payment'   => 'Ekyna\Component\Commerce\Payment\Entity\Payment',
+        'paymentMessage'  => 'Ekyna\Component\Commerce\Payment\Entity\PaymentMessage',
+        'paymentMethod'   => 'Ekyna\Component\Commerce\Payment\Entity\PaymentMethod',
+
+        'quote'               => 'Ekyna\Component\Commerce\Quote\Entity\Quote',
+        'quoteAddress'        => 'Ekyna\Component\Commerce\Quote\Entity\QuoteAddress',
+        'quoteAdjustment'     => 'Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment',
+        'quoteItem'           => 'Ekyna\Component\Commerce\Quote\Entity\QuoteItem',
+        'quoteItemAdjustment' => 'Ekyna\Component\Commerce\Quote\Entity\QuoteItemAdjustment',
+
+        // TODO 'stockUnit' => 'Ekyna\Component\Commerce\Stock\Entity\StockUnit',
+
+        // TODO 'shipment'   => 'Ekyna\Component\Commerce\Shipment\Entity\Shipment',
+        'shipmentMessage' => 'Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage',
+        'shipmentMethod'  => 'Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod',
+        'shipmentPrice'   => 'Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice',
+        'shipmentZone'    => 'Ekyna\Component\Commerce\Shipment\Entity\ShipmentZone',
+
+        'supplier'             => 'Ekyna\Component\Commerce\Supplier\Entity\Supplier',
+        'supplierAddress'      => 'Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress',
+        'supplierDelivery'     => 'Ekyna\Component\Commerce\Supplier\Entity\SupplierDelivery',
+        'supplierDeliveryItem' => 'Ekyna\Component\Commerce\Supplier\Entity\SupplierDeliveryItem',
+        'supplierOrder'        => 'Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder',
+        'supplierOrderItem'    => 'Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem',
+        'supplierProduct'      => 'Ekyna\Component\Commerce\Supplier\Entity\SupplierProduct',
+
+        'tax'      => 'Ekyna\Component\Commerce\Pricing\Entity\Tax',
+        'taxGroup' => 'Ekyna\Component\Commerce\Pricing\Entity\TaxGroup',
+        'taxRule'  => 'Ekyna\Component\Commerce\Pricing\Entity\TaxRule',
+    ];*/
 
     /**
      * @var EntityManager
      */
     protected static $em;
 
-    protected static $registry;
+    /**
+     * @var ResourceComponent
+     */
+    protected static $rc;
 
-    protected static $dispatcher;
 
     public static function setUpBeforeClass()
     {
@@ -79,102 +114,21 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
             throw new \PHPUnit_Framework_SkippedTestError('The pdo_sqlite extension is not loaded. It is required to run doctrine tests.');
         }
 
-        static::setUpResourceRegistry();
-        static::setUpResourceEventDispatcher();
-
         static::setUpEntityManager();
+        static::setUpResourceComponent();
+
         static::setUpDatabase();
         static::loadFixtures();
     }
 
-    /*protected function setUp()
+    /*public static function tearDownAfterClass()
     {
-
+        static::dropDatabase();
     }*/
-
-    protected static function setUpResourceRegistry()
-    {
-        $resources = Yaml::parse(file_get_contents(__DIR__ . '/../Bridge/Symfony/Resources/resources.yml'));
-
-        $factory = new ConfigurationFactory();
-
-        $configurations = [];
-        foreach ($resources as $namespace => $resource) {
-            foreach ($resource as $id => $classes) {
-                $configurations[] = $factory->createConfiguration([
-                    'namespace' => $namespace,
-                    'id'        => $id,
-                    'classes'   => $classes,
-                ]);
-            }
-        }
-
-        self::$registry = new ConfigurationRegistry($configurations);
-    }
-
-    protected static function setUpResourceEventDispatcher()
-    {
-        $dispatcher = new ResourceEventDispatcher();
-
-        $dispatcher->addSubscriber(new CustomerEventSubscriber());
-        $dispatcher->addSubscriber(new ProductEventSubscriber());
-        $dispatcher->addSubscriber(new OrderEventSubscriber(
-            new DefaultNumberGenerator(),
-            new AmountsCalculator(),
-            new OrderStateResolver()
-        ));
-
-        self::$dispatcher = $dispatcher;
-    }
 
     protected static function setUpEntityManager()
     {
-        $config = new Configuration();
-        $config->setSQLLogger(null);
-        $config->setAutoGenerateProxyClasses(true);
-        $config->setProxyDir(\sys_get_temp_dir());
-        $config->setProxyNamespace('Proxies');
-        $config->setMetadataDriverImpl(static::getMetadataDriverImpl());
-        $config->setQueryCacheImpl(new ArrayCache());
-        $config->setMetadataCacheImpl(new ArrayCache());
-
-        /*$dbPath = __DIR__ . '/../db.sqlite';
-        if (file_exists($dbPath)) {
-            unlink($dbPath);
-        }*/
-        $connection = [
-            'driver' => 'pdo_sqlite',
-            //'path'   => $dbPath,
-            'path' => ':memory:'
-        ];
-
-        // Event listeners
-        $interfaces = DoctrineBundleMapping::getDefaultImplementations();
-        $evm = new EventManager();
-
-        // Resolve entity target subscriber
-        $rtel = new ResolveTargetEntityListener();
-        foreach ($interfaces as $model => $implementation) {
-            $rtel->addResolveTargetEntity($model, $implementation, []);
-        }
-        $evm->addEventSubscriber($rtel);
-
-        // Load metadata subscriber
-        $lm = new LoadMetadataSubscriber([], $interfaces);
-        $evm->addEventSubscriber($lm);
-
-        // Load Entity listener
-        $el = new EntityListener(self::$registry, self::$dispatcher);
-        $evm->addEventSubscriber($el);
-
-        static::$em = EntityManager::create($connection, $config, $evm);
-    }
-
-    /**
-     * @return MappingDriver
-     */
-    protected static function getMetadataDriverImpl()
-    {
+        // Drive
         $rootDir = realpath(__DIR__ . '/..');
         if (false === $rootDir || false === is_file($rootDir . '/Commerce.php')) {
             throw new \RuntimeException('Cannot guess Commerce root dir.');
@@ -183,7 +137,74 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
             $rootDir . '/Bridge/Doctrine/ORM/Resources/mapping' => 'Ekyna\Component\Commerce',
         ]);
 
-        return $driver;
+        // Custom mapping types
+        Type::addType('phone_number', 'Misd\PhoneNumberBundle\Doctrine\DBAL\Types\PhoneNumberType');
+
+        // Configuration
+        $config = new Configuration();
+        $config->setSQLLogger(null);
+        $config->setAutoGenerateProxyClasses(true);
+        $config->setProxyDir(sys_get_temp_dir().'/doctrine-proxies');
+        $config->setProxyNamespace('Proxies');
+        $config->setMetadataDriverImpl($driver);
+        $config->setQueryCacheImpl(new ArrayCache());
+        $config->setMetadataCacheImpl(new ArrayCache());
+
+        // Event manager
+        $evm = new EventManager();
+
+        // Connection
+        $connection = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            //'path'   => ':memory:',
+            'memory' => true,
+        ], $config, $evm);
+
+        static::$em = EntityManager::create($connection, $config, $evm);
+    }
+
+    protected static function setUpResourceComponent()
+    {
+        // Resource component
+        $rc = new ResourceComponent(static::$em);
+        $definitions = Yaml::parse(file_get_contents(__DIR__ . '/../Bridge/Symfony/Resources/resources.yml'));
+        $interfaceMap = DoctrineBundleMapping::getDefaultImplementations();
+        $rc->configureResources($definitions, $interfaceMap);
+
+        $dispatcher = $rc->getEventDispatcher();
+        $persistenceHelper = $rc->getPersistenceHelper();
+
+        // Customer listener
+        $dispatcher->addSubscriber(new CustomerEventSubscriber($persistenceHelper));
+
+        // TODO $dispatcher->addSubscriber(new ProductEventSubscriber());
+
+        /** @noinspection PhpParamsInspection */
+        $saleFactory = new SaleFactory(
+            static::$em->getRepository(CustomerGroup::class),
+            static::$em->getRepository(Currency::class)
+        );
+
+        // Sale updater
+        $saleUpdater = new SaleUpdater(
+            new AddressBuilder($saleFactory, $persistenceHelper),
+            new AdjustmentBuilder($saleFactory, $persistenceHelper)
+        );
+
+        // Order listener
+        $orderListener = new OrderEventSubscriber(
+            new DefaultNumberGenerator(),
+            new AmountsCalculator(),
+            new OrderStateResolver()
+        );
+        $orderListener->setPersistenceHelper($persistenceHelper);
+        $orderListener->setNumberGenerator(new DefaultNumberGenerator());
+        $orderListener->setKeyGenerator(new DefaultKeyGenerator());
+        $orderListener->setSaleUpdater();
+        $orderListener->setStateResolver(new OrderStateResolver());
+        $dispatcher->addSubscriber($orderListener);
+
+        static::$rc = $rc;
     }
 
     protected static function setUpDatabase()
@@ -191,9 +212,17 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
         $classes = static::$em->getMetadataFactory()->getAllMetadata();
 
         $schemaTool = new SchemaTool(static::$em);
-        $schemaTool->dropSchema($classes);
+        $schemaTool->dropDatabase();
         $schemaTool->createSchema($classes);
     }
+
+    /*protected static function dropDatabase()
+    {
+        $classes = static::$em->getMetadataFactory()->getAllMetadata();
+
+        $schemaTool = new SchemaTool(static::$em);
+        $schemaTool->dropSchema($classes);
+    }*/
 
     protected static function loadFixtures()
     {
@@ -205,22 +234,8 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Returns the FQCN by name.
+     * Returns the entity manager.
      *
-     * @param string $name
-     *
-     * @return string
-     */
-    protected function getClass($name)
-    {
-        if (!array_key_exists($name, static::$_aliases)) {
-            throw new \InvalidArgumentException("Undefined class '{$name}'.");
-        }
-
-        return static::$_aliases[$name];
-    }
-
-    /**
      * @return EntityManager
      */
     protected function getEntityManager()
@@ -229,21 +244,34 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Returns the repository by class.
+     * Returns the resource fully qualified class.
      *
-     * @return \Doctrine\ORM\EntityRepository
+     * @param string $resource
+     *
+     * @return string
      */
-    protected function getRepository($class)
+    protected function getResourceClass($resource)
     {
-        if (!class_exists($class)) {
-            $class = $this->getClass($class);
-        }
-
-        return static::$em->getRepository($class);
+        return static::$rc
+            ->getConfigurationRegistry()
+            ->get('ekyna_commerce.' . $resource)
+            ->getResourceClass();
     }
 
     /**
-     * Finds the entity by id.
+     * Returns the resource repository.
+     *
+     * @param string $resource
+     *
+     * @return \Doctrine\ORM\EntityRepository
+     */
+    protected function getResourceRepository($resource)
+    {
+        return static::$em->getRepository($this->getResourceClass($resource));
+    }
+
+    /**
+     * Finds the resource by id.
      *
      * @param string $class
      * @param int    $id
@@ -252,6 +280,6 @@ abstract class OrmTestCase extends \PHPUnit_Framework_TestCase
      */
     protected function find($class, $id)
     {
-        return $this->getRepository($class)->find($id);
+        return $this->getResourceRepository($class)->find($id);
     }
 }

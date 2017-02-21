@@ -29,13 +29,16 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
             $resolvedState = StockUnitStates::STATE_OPENED;
 
             // If quantity has been entirely shipped (to customers)
-            if ($stockUnit->getShippedQuantity() == $stockUnit->getDeliveredQuantity()) { // TODO use bccomp() with packaging precision ?
+            // TODO use bccomp() with packaging precision ?
+            if ($stockUnit->getShippedQuantity() == $stockUnit->getDeliveredQuantity()) {
                 $resolvedState = StockUnitStates::STATE_CLOSED;
             }
         }
 
         if ($currentState != $resolvedState) {
             $stockUnit->setState($resolvedState);
+
+            // TODO set closeAt datetime
 
             return true;
         }

@@ -2,10 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
-use Symfony\Component\Form\FormInterface;
+use Ekyna\Component\Commerce\Subject;
 
 /**
  * Interface SubjectProviderInterface
@@ -16,79 +14,62 @@ interface SubjectProviderInterface
 {
     const DATA_KEY = 'provider';
 
-    // TODO Move SaleItemInterface management methods to a dedicated service
 
     /**
-     * Returns whether the subject choice is needed or not.
+     * Sets the subject int the relative.
      *
-     * @param SaleItemInterface $item
+     * This method must set the relative subject fields (provider and identifier) for next resolutions.
      *
-     * @return bool
+     * @param Subject\Model\SubjectRelativeInterface $relative
+     * @param object                                 $subject
+     *
+     * @return SubjectProviderInterface
      */
-    public function needChoice(SaleItemInterface $item);
-
-    /**
-     * Builds the subject choice form.
-     *
-     * @param FormInterface $form
-     */
-    public function buildChoiceForm(FormInterface $form);
-
-    /**
-     * Choice form submit handler.
-     *
-     * @param SaleItemInterface $item
-     */
-    public function handleChoiceSubmit(SaleItemInterface $item);
-
-    /**
-     * Prepares the item (assign subjects recursively).
-     *
-     * @param SaleItemInterface $item
-     */
-    public function prepareItem(SaleItemInterface $item);
-
-    /**
-     * Builds the subject item form.
-     *
-     * @param FormInterface $form
-     * @param SaleItemInterface $item
-     */
-    public function buildItemForm(FormInterface $form, SaleItemInterface $item);
-
-    /**
-     * Item form submit handler.
-     *
-     * @param SaleItemInterface $item
-     */
-    public function handleItemSubmit(SaleItemInterface $item);
-
-    /**
-     * Returns the applicable discounts for the given sale item.
-     *
-     * @param SaleItemInterface $item
-     *
-     * @return \Ekyna\Component\Commerce\Common\Model\AdjustmentData[]
-     */
-    public function resolveDiscounts(SaleItemInterface $item);
+    public function assign(Subject\Model\SubjectRelativeInterface $relative, $subject);
 
     /**
      * Returns the subject from the relative.
      *
-     * @param SubjectRelativeInterface $relative
+     * This method should set the subject into the relative for future resolutions.
      *
-     * @return mixed
+     * @param Subject\Model\SubjectRelativeInterface $relative
+     *
+     * @return object
      */
-    public function resolve(SubjectRelativeInterface $relative);
+    public function resolve(Subject\Model\SubjectRelativeInterface $relative);
+
+    /**
+     * Transforms the subject into the identity.
+     *
+     * This method must set the subject identity fields (provider and identifier) and
+     * set the subject into the identity prior to next reverse transformations.
+     *
+     * @param mixed                          $subject
+     * @param Subject\Entity\SubjectIdentity $identity
+     *
+     * @return SubjectProviderInterface
+     */
+    public function transform($subject, Subject\Entity\SubjectIdentity $identity);
+
+    /**
+     * Reverse transform the identity into the subject.
+     *
+     * This method must set the subject into the identity prior to next reverse transformations.
+     *
+     * @param Subject\Entity\SubjectIdentity $identity
+     *
+     * @return object
+     */
+    public function reverseTransform(Subject\Entity\SubjectIdentity $identity);
 
     /**
      * Returns whether the resolver supports the relative or not.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param Subject\Model\SubjectRelativeInterface $relative
      *
      * @return boolean
      */
-    public function supportsRelative(SubjectRelativeInterface $relative);
+    public function supportsRelative(Subject\Model\SubjectRelativeInterface $relative);
 
     /**
      * Returns whether the provider supports the subject or not.
@@ -98,6 +79,27 @@ interface SubjectProviderInterface
      * @return bool
      */
     public function supportsSubject($subject);
+
+    /**
+     * Returns the item builder.
+     *
+     * @return Subject\Builder\ItemBuilderInterface
+     */
+    public function getItemBuilder();
+
+    /**
+     * Returns the form builder.
+     *
+     * @return Subject\Builder\FormBuilderInterface
+     */
+    public function getFormBuilder();
+
+    /**
+     * Returns the productRepository.
+     *
+     * @return Subject\Repository\SubjectRepositoryInterface
+     */
+    public function getProductRepository();
 
     /**
      * Returns the subject stock unit repository.

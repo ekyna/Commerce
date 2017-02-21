@@ -16,6 +16,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class ViewBuilder
 {
     /**
+     * @var ViewTypeRegistryInterface
+     */
+    private $registry;
+
+    /**
+     * @var AmountsCalculatorInterface
+     */
+    private $calculator;
+
+    /**
      * @var OptionsResolver
      */
     private $optionsResolver;
@@ -26,15 +36,9 @@ class ViewBuilder
     private $options;
 
     /**
-     * @var ViewVarsBuilderInterface
-     * @todo VarsBuilderRegistry
+     * @var ViewTypeInterface[]
      */
-    private $varsBuilder;
-
-    /**
-     * @var AmountsCalculatorInterface
-     */
-    private $calculator;
+    private $types;
 
     /**
      * @var int
@@ -45,10 +49,14 @@ class ViewBuilder
     /**
      * Constructor.
      *
+     * @param ViewTypeRegistryInterface  $registry
      * @param AmountsCalculatorInterface $calculator
      */
-    public function __construct(AmountsCalculatorInterface $calculator)
-    {
+    public function __construct(
+        ViewTypeRegistryInterface $registry,
+        AmountsCalculatorInterface $calculator
+    ) {
+        $this->registry = $registry;
         $this->calculator = $calculator;
     }
 
@@ -63,8 +71,8 @@ class ViewBuilder
     public function buildSaleView(Model\SaleInterface $sale, array $options = [])
     {
         $this->options = $this->getOptionsResolver()->resolve($options);
-        $this->varsBuilder = $options['vars_builder'];
 
+        $this->types = $this->registry->getTypesForSale($sale);
         $this->lineNumber = 1;
 
         $grossResult = $this->calculator->calculateSale($sale, true);
@@ -92,9 +100,8 @@ class ViewBuilder
             $this->buildSaleTaxesViews($sale)
         );
 
-        // TODO use VarsBuilderRegistry
-        if ($this->varsBuilder) {
-            $view->vars = $this->varsBuilder->buildSaleViewVars($sale, $this->options);
+        foreach ($this->types as $type) {
+            $type->buildSaleView($sale, $view, $this->options);
         }
 
         return $view;
@@ -117,9 +124,8 @@ class ViewBuilder
             $taxes[] = new TaxView($tax->getName(), $tax->getAmount());
         }
 
-        // TODO use VarsBuilderRegistry
-        /* TODO if ($this->varsBuilder) {
-            $view->vars = $this->varsBuilder->buildSaleTaxesViewVars($sale, $this->options);
+        /*foreach ($this->types as $type) {
+            $type->buildSaleTaxesView($sale, $view, $options);
         }*/
 
         return $taxes;
@@ -214,9 +220,8 @@ class ViewBuilder
             $item->isImmutable()
         );
 
-        // TODO use VarsBuilderRegistry
-        if ($this->varsBuilder) {
-            $view->vars = $this->varsBuilder->buildItemViewVars($item, $this->options);
+        foreach ($this->types as $type) {
+            $type->buildItemView($item, $view, $this->options);
         }
 
         return $view;
@@ -256,9 +261,8 @@ class ViewBuilder
             // immutable
         );
 
-        // TODO use VarsBuilderRegistry
-        if ($this->varsBuilder) {
-            $view->vars = $this->varsBuilder->buildAdjustmentViewVars($adjustment, $this->options);
+        foreach ($this->types as $type) {
+            $type->buildAdjustmentView($adjustment, $view, $this->options);
         }
 
         return $view;
@@ -306,9 +310,8 @@ class ViewBuilder
             // immutable
         );
 
-        // TODO use VarsBuilderRegistry
-        if ($this->varsBuilder) {
-            $view->vars = $this->varsBuilder->buildShipmentViewVars($sale, $this->options);
+        foreach ($this->types as $type) {
+            $type->buildShipmentView($sale, $view, $this->options);
         }
 
         return $view;
@@ -328,21 +331,19 @@ class ViewBuilder
         $resolver = new OptionsResolver();
         $resolver
             ->setDefaults([
-                'private'      => false,
-                'editable'     => false,
-                'template'     => function (Options $options) {
+                'private'  => false,
+                'editable' => false,
+                'template' => function (Options $options) {
                     if (true === $options['editable']) {
                         return 'EkynaCommerceBundle:Common:sale_view_editable.html.twig';
                     }
 
                     return 'EkynaCommerceBundle:Common:sale_view.html.twig';
                 },
-                'vars_builder' => null,
             ])
             ->setAllowedTypes('private', 'bool')
             ->setAllowedTypes('editable', 'bool')
-            ->setAllowedTypes('template', ['null', 'string'])
-            ->setAllowedTypes('vars_builder', ['null', ViewVarsBuilderInterface::class]);
+            ->setAllowedTypes('template', ['null', 'string']);
 
         return $this->optionsResolver = $resolver;
     }

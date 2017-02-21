@@ -38,9 +38,7 @@
         "misd/phone-number-bundle": "^1.2"
     },
     "autoload": {
-        "psr-4": {
-            "Ekyna\\Component\\Commerce\\": ""
-        }
+        "psr-4": {"Ekyna\\Component\\Commerce\\": ""}
     },
     "config": {
         "bin-dir": "bin"

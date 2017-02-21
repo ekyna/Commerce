@@ -5,7 +5,15 @@
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <mapped-superclass name="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit">
+    <entity name="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit"
+            table="commerce_stock_unit"
+            inheritance-type="SINGLE_TABLE">
+
+        <discriminator-column name="type" type="string" />
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO" />
+        </id>
 
         <!-- TODO indexes -->
 
@@ -16,12 +24,15 @@
         <field name="deliveredQuantity" column="delivered_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
+        <field name="createdAt" column="created_at" type="datetime" nullable="false" />
         <field name="closedAt" column="closed_at" type="datetime" nullable="true" />
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem" field="supplierOrderItem">
-            <join-column name="supplier_order_item_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
-        </one-to-one>
+        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem"
+                    field="supplierOrderItem" mapped-by="stockUnit"/>
 
-    </mapped-superclass>
+        <many-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem"
+                      field="orderItems" mapped-by="stockUnits"/>
+
+    </entity>
 
 </doctrine-mapping>

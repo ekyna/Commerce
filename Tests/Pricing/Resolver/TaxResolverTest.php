@@ -227,7 +227,7 @@ class TaxResolverTest extends OrmTestCase
     private function createTaxResolver($mode)
     {
         /** @var \Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface $taxRuleRepository */
-        $taxRuleRepository = $this->getRepository('taxRule');
+        $taxRuleRepository = $this->getResourceRepository('taxRule');
 
         return new TaxResolver($taxRuleRepository, $mode);
     }

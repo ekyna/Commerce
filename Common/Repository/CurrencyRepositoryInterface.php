@@ -17,4 +17,13 @@ interface CurrencyRepositoryInterface
      * @return CurrencyInterface
      */
     public function findDefault();
+
+    /**
+     * Finds a currency by its code.
+     *
+     * @param string $code
+     *
+     * @return CurrencyInterface
+     */
+    public function findOneByCode($code);
 }

@@ -91,15 +91,45 @@ class SupplierOrderListener extends AbstractListener
         // TODO Timestampable behavior/listener
         $order->setUpdatedAt(new \DateTime());
 
-        // Update stock unit's estimated date of arrival
-        /*if ($this->persistenceHelper->isChanged($order, 'estimatedDateOfArrival')) {
-            foreach ($order->getItems() as $item) {
-                $this->updateEstimatedDateOfArrival($item, $order->getEstimatedDateOfArrival());
-            }
-        }*/
-
         if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($order);
+        }
+
+        // Deletable <=> Stockable state change case.
+        $stateCs = null;
+        if ($this->persistenceHelper->isChanged($order, 'state')) {
+            $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
+        }
+        // If order state has changed to a deletable state
+        if ($stateCs && SupplierOrderStates::isStockState([0]) && SupplierOrderStates::isDeletableState($stateCs[1])) {
+            // Delete stock unit (if exists) for each supplier order items.
+            foreach ($order->getItems() as $item) {
+                $this->deleteSupplierOrderItemStockUnit($item);
+            }
+        }
+        // Else if order state has changed to a stockable state
+        elseif ($stateCs && SupplierOrderStates::isDeletableState([0]) && SupplierOrderStates::isStockState($stateCs[1])) {
+            // Create stock unit (if not exists) for each supplier order items.
+            foreach ($order->getItems() as $item) {
+                $this->createSupplierOrderItemStockUnit($item);
+            }
+        }
+
+        // Update stock unit's estimated date of arrival
+        if (
+            $this->persistenceHelper->isChanged($order, 'estimatedDateOfArrival')
+            && SupplierOrderStates::isStockState($order->getState())
+        ) {
+            foreach ($order->getItems() as $item) {
+                if (null === $stockUnit = $item->getStockUnit()) {
+                    // TODO This should never append as order state is stockable.
+                    continue;
+                }
+                $stockUnit->setEstimatedDateOfArrival($order->getEstimatedDateOfArrival());
+
+                $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+                $this->updateEstimatedDateOfArrival($item, $order->getEstimatedDateOfArrival());
+            }
         }
     }
 

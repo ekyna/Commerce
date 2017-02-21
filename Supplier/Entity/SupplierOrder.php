@@ -42,7 +42,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @var float
      */
-    private $paymentTotal;
+    private $paymentTotal = 0;
 
     /**
      * @var \DateTime

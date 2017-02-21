@@ -2,8 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
+use Ekyna\Component\Commerce\Exception\IllegalOperationException;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -61,6 +65,56 @@ abstract class AbstractListener
     }
 
     /**
+     * Creates the stock unit for the given supplier order item.
+     *
+     * @param SupplierOrderItemInterface $item
+     */
+    protected function createSupplierOrderItemStockUnit(SupplierOrderItemInterface $item)
+    {
+        if (null !== $stockUnit = $item->getStockUnit()) {
+            if ($stockUnit->getOrderedQuantity() != $item->getQuantity()) {
+                throw new InvalidArgumentException(
+                    "Stock unit's ordered quantity does not match the supplier order item quantity."
+                );
+            }
+
+            return;
+        }
+
+        $stockUnit = $this->stockUnitResolver->createStockUnit($item);
+
+        $stockUnit
+            ->setSupplierOrderItem($item)
+            ->setOrderedQuantity($item->getQuantity());
+
+        $this->persistenceHelper->persistAndRecompute($stockUnit);
+    }
+
+    /**
+     * Deletes the stock unit from the given supplier order item.
+     *
+     * @param SupplierOrderItemInterface $item
+     *
+     * @throws IllegalOperationException
+     */
+    protected function deleteSupplierOrderItemStockUnit(SupplierOrderItemInterface $item)
+    {
+        if (null === $stockUnit = $item->getStockUnit()) {
+            return;
+        }
+
+        if (0 < $stockUnit->getShippedQuantity()) {
+            throw new IllegalOperationException(
+                "Stock unit can't be deleted as it has been partially or fully shipped."
+            );
+        }
+
+        $stockUnit->setSupplierOrderItem(null);
+
+        $this->persistenceHelper->remove($stockUnit, true);
+    }
+
+    /**
      * Finds the supplier order item's relative stock unit, create if not exists.
      *
      * @param SupplierOrderItemInterface $item
@@ -74,6 +128,8 @@ abstract class AbstractListener
         if (null === $provider) {
             return null;
         }
+        // Resolve the subject
+        $subject = $provider->resolve($item);
 
         // Get the stock unit repository
         $repository = $provider->getStockUnitRepository();
@@ -81,15 +137,17 @@ abstract class AbstractListener
         // Find the stock unit
         $stockUnit = null;
         if ($item->getId()) {
-            $stockUnit = $repository->findOneBySupplierOrderItem($item);
-            // TODO if not found, look for 'new' (unassigned) stock units
-            // TODO (created by sale shipment items and not linked yet to an order item)
+            if (null === $stockUnit = $repository->findOneBySupplierOrderItem($item)) {
+                // Look for 'new' (unassigned) stock units (created manually or by sale shipment items
+                // and not linked yet to an order item)
+                $stockUnit = $repository->findNewBySubject($subject);
+            }
+
+            // TODO Only one stock unit created manually or by a sale shipment item may not be enough.
+            // TODO We should fetch an array of stock units.
         }
 
         if (!$stockUnit) {
-            // Resolve the subject
-            $subject = $provider->resolve($item);
-
             // Get the stock unit repository
             $repository = $provider->getStockUnitRepository();
 
@@ -132,6 +190,7 @@ abstract class AbstractListener
      * @param SupplierOrderItemInterface $item
      *
      * @return bool
+     * @deprecated
      */
     protected function isStockUnitShipped(SupplierOrderItemInterface $item)
     {
@@ -164,6 +223,8 @@ abstract class AbstractListener
      *
      * @param SupplierOrderItemInterface $item
      * @param \DateTime                  $date
+     *
+     * @deprecated
      */
     protected function updateEstimatedDateOfArrival(SupplierOrderItemInterface $item, \DateTime $date)
     {
@@ -175,15 +236,12 @@ abstract class AbstractListener
     }
 
     /**
-     * Schedules the supplier order item's related stock unit's delete event.
+     * Schedules the stock unit's delete event.
      *
-     * @param SupplierOrderItemInterface $item
+     * @param StockUnitInterface $stockUnit
      */
-    protected function scheduleStockUnitDeleteEvent(SupplierOrderItemInterface $item)
+    /*protected function scheduleStockUnitDeleteEvent(StockUnitInterface $stockUnit)
     {
-        // Find the stock unit
-        if (null !== $stockUnit = $this->findStockUnit($item)) {
-            $this->persistenceHelper->remove($stockUnit, true);
-        }
-    }
+        $this->persistenceHelper->remove($stockUnit, true);
+    }*/
 }

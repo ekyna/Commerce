@@ -42,6 +42,8 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setOrderedQuantity($quantity);
 
+        // TODO Prevent quantity to be set as lower than delivered quantity
+
         $this->persistenceHelper->persistAndRecompute($stockUnit, true);
     }
 
@@ -79,6 +81,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
     /**
      * @inheritdoc
+     * @deprecated
      */
     public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date)
     {

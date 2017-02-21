@@ -120,7 +120,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             }
         }
 
-        // EDA must be greater than today's first second
+        // ETA must be greater than today's first second
         $today = new \DateTime();
         $today->setTime(0, 0, 0);
         if ($date && $today < $date) {

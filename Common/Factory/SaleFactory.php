@@ -189,6 +189,8 @@ class SaleFactory implements SaleFactoryInterface
      */
     private function getDefaultClasses()
     {
+        // TODO use constants for keys
+
         return [
             'address'         => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartAddress::class,

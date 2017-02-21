@@ -64,6 +64,14 @@ class SupplierProduct implements SupplierProductInterface
 
 
     /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->initializeSubjectIdentity();
+    }
+
+    /**
      * Returns the string representation.
      *
      * @return string

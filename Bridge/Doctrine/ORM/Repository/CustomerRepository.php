@@ -9,6 +9,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  * Class CustomerRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ * @deprecated
  */
 class CustomerRepository extends ResourceRepository
 {
@@ -16,6 +17,7 @@ class CustomerRepository extends ResourceRepository
      * @var CustomerGroupRepositoryInterface
      */
     protected $groupRepository;
+
 
     /**
      * Sets the groupRepository.
@@ -39,6 +41,7 @@ class CustomerRepository extends ResourceRepository
         /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerInterface $customer */
         $customer = new $class;
 
+        // TODO $this->getEntityManager()->getRepository();
         if ($this->groupRepository) {
             $customer->setCustomerGroup($this->groupRepository->findDefault());
         }

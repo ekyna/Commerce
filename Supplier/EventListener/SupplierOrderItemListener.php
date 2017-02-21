@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -27,14 +28,20 @@ class SupplierOrderItemListener extends AbstractListener
 
         $changed = $this->syncSubjectDataWithProduct($item);
 
-        if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($item);
+         // If supplier order state is 'ordered', 'partial' or 'completed'
+        if (SupplierOrderStates::isStockState($item->getOrder()->getState())) {
+            // Associated stock unit (if not exists) must be created (absolute ordered quantity).
+            $this->createSupplierOrderItemStockUnit($item);
+        } else { // Supplier order state is 'new' or 'cancelled'
+            // Associated stock unit (if exists) must be deleted.
+            $this->deleteSupplierOrderItemStockUnit($item);
         }
 
-        // Create the stock unit
-        $this->findStockUnit($item);
+        if ($changed) {
+            $this->persistenceHelper->persistAndRecompute($item);
 
-        $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
+            $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
+        }
     }
 
     /**
@@ -54,17 +61,35 @@ class SupplierOrderItemListener extends AbstractListener
                 throw new IllegalOperationException("Changing supplier order item product is not supported yet.");
             }
         }
-
-        $changed = $this->syncSubjectDataWithProduct($item);
-
+        /*$changed = $this->syncSubjectDataWithProduct($item);
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($item);
+        }*/
+
+        // TODO These tests are made in the supplier order listener and should not be done twice...
+        $order = $item->getOrder();
+        $stateCs = null;
+        if ($this->persistenceHelper->isChanged($order, 'state')) {
+            $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
+        }
+        // If order state has changed to a deletable state
+        if ($stateCs && SupplierOrderStates::isStockState([0]) && SupplierOrderStates::isDeletableState($stateCs[1])) {
+            // Associated stock unit (if exists) must be deleted.
+            // (made by the supplier order listener)
+            return;
+        }
+        // Else if order state has changed to a stockable state
+        elseif ($stateCs && SupplierOrderStates::isDeletableState([0]) && SupplierOrderStates::isStockState($stateCs[1])) {
+            // Associated stock unit (if not exists) must be created (absolute ordered quantity).
+            // (made by the supplier order listener)
+            return;
         }
 
-        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
+        if (
+            $this->persistenceHelper->isChanged($item, 'quantity')
+            && SupplierOrderStates::isStockState($item->getOrder()->getState())
+        ) {
             $this->updateOrderedQuantity($item);
-
-            // TODO Prevent quantity to be set as lower than delivered quantity
 
             // Dispatch supplier order content change event
             $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
@@ -81,15 +106,7 @@ class SupplierOrderItemListener extends AbstractListener
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
-        // Prevent removal if related stock unit shipped quantity is greater than zero
-        if ($this->isStockUnitShipped($item)) {
-            throw new IllegalOperationException();
-        }
-
-        // Stock unit is configured for cascade removal at DBMS level:
-        // ORM won't dispatch the delete event during flush.
-        // Let's do it ourselves.
-        $this->scheduleStockUnitDeleteEvent($item);
+        $this->deleteSupplierOrderItemStockUnit($item);
 
         // Supplier order has been set to null by the removeItem method.
         // Retrieve it from the change set.
@@ -111,6 +128,7 @@ class SupplierOrderItemListener extends AbstractListener
      */
     protected function syncSubjectDataWithProduct(SupplierOrderItemInterface $item)
     {
+        // TODO What about stock management if subject change ???
         if (null !== $product = $item->getProduct()) {
             if ($item->getSubjectData() != $product->getSubjectData()) {
                 $item->setSubjectData($product->getSubjectData());

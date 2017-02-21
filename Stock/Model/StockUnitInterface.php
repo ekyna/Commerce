@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -60,6 +62,31 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return $this|StockUnitInterface
      */
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null);
+
+    /**
+     * Adds the order item.
+     *
+     * @param OrderItemInterface $item
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function addOrderItem(OrderItemInterface $item);
+
+    /**
+     * Removes the order item.
+     *
+     * @param OrderItemInterface $item
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function removeOrderItem(OrderItemInterface $item);
+
+    /**
+     * Returns the order items.
+     *
+     * @return ArrayCollection|OrderItemInterface[]
+     */
+    public function getOrderItems();
 
     /**
      * Returns the ordered quantity.
@@ -140,6 +167,22 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return $this|StockUnitInterface
      */
     public function setNetPrice($price);
+
+    /**
+     * Returns the "created at" date.
+     *
+     * @return \DateTime
+     */
+    public function getCreatedAt();
+
+    /**
+     * Sets the "created at" date.
+     *
+     * @param \DateTime $date
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setCreatedAt(\DateTime $date = null);
 
     /**
      * Returns the "closed at" date time.

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <embeddable name="Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity">
+
+        <field name="provider" column="provider" type="string" length="16" nullable="true"/>
+        <field name="identifier" column="identifier" type="string" length="16" nullable="true"/>
+
+    </embeddable>
+
+</doctrine-mapping>

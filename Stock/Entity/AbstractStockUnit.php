@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
@@ -18,7 +20,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @var int
      */
-    protected $id;
+    protected $id; // TODO Should not be defined here (accessors too...)
 
     /**
      * @var string
@@ -29,6 +31,11 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      * @var SupplierOrderItemInterface
      */
     protected $supplierOrderItem;
+
+    /**
+     * @var ArrayCollection|OrderItemInterface[]
+     */
+    protected $orderItems;
 
     /**
      * The estimated date of arrival (for ordered quantity).
@@ -66,6 +73,11 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @var \DateTime
      */
+    protected $createdAt;
+
+    /**
+     * @var \DateTime
+     */
     protected $closedAt;
 
 
@@ -74,7 +86,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function __construct()
     {
+        $this->orderItems = new ArrayCollection();
         $this->state = Model\StockUnitStates::STATE_NEW;
+        $this->createdAt = new \DateTime();
     }
 
     /**
@@ -133,9 +147,50 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null)
     {
-        $this->supplierOrderItem = $item;
+        if ($this->supplierOrderItem != $item) {
+            if ($this->supplierOrderItem) {
+                $this->supplierOrderItem->setStockUnit(null);
+            }
+
+            $this->supplierOrderItem = $item;
+            $item->setStockUnit($this);
+        }
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addOrderItem(OrderItemInterface $item)
+    {
+        if (!$this->orderItems->contains($item)) {
+            $this->orderItems->add($item);
+            $item->addStockUnit($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeOrderItem(OrderItemInterface $item)
+    {
+        if ($this->orderItems->contains($item)) {
+            $this->orderItems->removeElement($item);
+            $item->removeStockUnit($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOrderItems()
+    {
+        return $this->orderItems;
     }
 
     /**
@@ -224,6 +279,24 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function setNetPrice($price)
     {
         $this->netPrice = $price;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCreatedAt(\DateTime $date = null)
+    {
+        $this->createdAt = $date;
 
         return $this;
     }

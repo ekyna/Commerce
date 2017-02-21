@@ -102,7 +102,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         // Get subject provider
         if (null !== $provider = $this->subjectProviderRegistry->getProviderByRelative($item)) {
             // Resolve adjustments data.
-            $discounts = $provider->resolveDiscounts($item);
+            $discounts = $provider->getItemBuilder()->buildAdjustmentsData($item);
         }
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $discounts, $persistence);

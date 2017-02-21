@@ -18,7 +18,14 @@
         <field name="quantity" column="quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
 
-        <field name="subjectData" column="subject_data" type="json_array" nullable="false"/>
+        <one-to-one target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit"
+                    field="stockUnit" inversed-by="supplierOrderItem">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+            <join-column name="stock_unit_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+        </one-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface"
                      field="order" inversed-by="items">

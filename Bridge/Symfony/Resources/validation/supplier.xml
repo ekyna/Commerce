@@ -13,15 +13,18 @@
             </constraint>
         </property>
         <property name="gender">
+            <constraint name="NotBlank"/>
             <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
         </property>
         <property name="firstName">
+            <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">32</option>
             </constraint>
         </property>
         <property name="lastName">
+            <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">32</option>

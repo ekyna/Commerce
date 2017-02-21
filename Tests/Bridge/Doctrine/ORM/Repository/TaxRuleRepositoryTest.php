@@ -59,7 +59,7 @@ class TaxRuleRepositoryTest extends OrmTestCase
             }
 
             /** @var \Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface $repository */
-            $repository = $this->getRepository('taxRule');
+            $repository = $this->getResourceRepository('taxRule');
             $result = $repository->findByTaxGroupAndCustomerGroupAndCountry(
                 $taxGroup,
                 $customer->getCustomerGroups()->toArray(),
