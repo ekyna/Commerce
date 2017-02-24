@@ -191,11 +191,4 @@ trait StockSubjectTrait
     {
         $this->estimatedDateOfArrival = $estimatedDateOfArrival;
     }
-
-    /**
-     * Returns the stock unit class.
-     *
-     * @return string
-     */
-    abstract public function getStockUnitClass();
 }

@@ -20,7 +20,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @var int
      */
-    protected $id; // TODO Should not be defined here (accessors too...)
+    protected $id;
 
     /**
      * @var string
@@ -153,7 +153,10 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
             }
 
             $this->supplierOrderItem = $item;
-            $item->setStockUnit($this);
+
+            if ($item) {
+                $item->setStockUnit($this);
+            }
         }
 
         return $this;

@@ -38,7 +38,9 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
         if ($currentState != $resolvedState) {
             $stockUnit->setState($resolvedState);
 
-            // TODO set closeAt datetime
+            if ($resolvedState === StockUnitStates::STATE_CLOSED) {
+                $stockUnit->setClosedAt(new \DateTime());
+            }
 
             return true;
         }

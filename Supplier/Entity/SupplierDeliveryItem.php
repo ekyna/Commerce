@@ -53,6 +53,18 @@ class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
      */
     public function setDelivery(Model\SupplierDeliveryInterface $delivery = null)
     {
+        if ($delivery != $this->delivery) {
+            if ($this->delivery) {
+                $this->delivery->removeItem($this);
+            }
+
+            $this->delivery = $delivery;
+
+            if ($delivery) {
+                $delivery->addItem($this);
+            }
+        }
+
         $this->delivery = $delivery;
 
         return $this;

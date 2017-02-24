@@ -16,13 +16,13 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 interface StockUnitResolverInterface
 {
     /**
-     * Create stock unit for the given object.
+     * Creates (and initializes) a stock unit for the given supplier order item.
      *
-     * @param SubjectRelativeInterface|object|string $object
+     * @param SupplierOrderItemInterface $item
      *
-     * @return StockUnitInterface
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
      */
-    public function createStockUnit($object);
+    public function createBySupplierOrderItem(SupplierOrderItemInterface $item);
 
     /**
      * Returns the relative subject provider.
@@ -30,33 +30,26 @@ interface StockUnitResolverInterface
      * @param SubjectRelativeInterface $relative
      *
      * @return \Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface|null
+     *
+     * @deprecated
      */
     public function getProviderByRelative(SubjectRelativeInterface $relative);
+
+    /**
+     * Returns the stock unit repository by subject relative.
+     *
+     * @param SubjectRelativeInterface $relative
+     *
+     * @return StockUnitRepositoryInterface
+     */
+    public function getRepositoryByRelative(SubjectRelativeInterface $relative);
 
     /**
      * Returns the stock unit repository by subject.
      *
      * @param StockSubjectInterface $subject
      *
-     * @return StockUnitRepositoryInterface|null
+     * @return StockUnitRepositoryInterface
      */
     public function getRepositoryBySubject(StockSubjectInterface $subject);
-
-    /**
-     * Returns the subject's available or pending stock units.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return StockUnitInterface[]
-     */
-    public function resolveBySubject(StockSubjectInterface $subject);
-
-    /**
-     * Returns the stock unit attached to the given supplier order item.
-     *
-     * @param SupplierOrderItemInterface $supplierOrderItem
-     *
-     * @return StockUnitInterface|null
-     */
-    public function resolveBySupplierOrderItem(SupplierOrderItemInterface $supplierOrderItem);
 }

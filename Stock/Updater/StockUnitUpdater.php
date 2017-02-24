@@ -42,7 +42,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setOrderedQuantity($quantity);
 
-        // TODO Prevent quantity to be set as lower than delivered quantity
+        // Prevent quantity to be set as lower than delivered quantity
+        if ($stockUnit->getOrderedQuantity() < $stockUnit->getDeliveredQuantity()) {
+            throw new InvalidArgumentException("The ordered quantity can't be lower than the delivered quantity.");
+        }
 
         $this->persistenceHelper->persistAndRecompute($stockUnit, true);
     }
@@ -81,7 +84,22 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
     /**
      * @inheritdoc
-     * @deprecated
+     */
+    public function updateNetPrice(StockUnitInterface $stockUnit, $netPrice)
+    {
+        if ($netPrice != $stockUnit->getNetPrice()) {
+            $stockUnit->setNetPrice($netPrice);
+
+            $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date)
     {
@@ -89,6 +107,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $stockUnit->setEstimatedDateOfArrival($date);
 
             $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+
+            return true;
         }
+
+        return false;
     }
 }

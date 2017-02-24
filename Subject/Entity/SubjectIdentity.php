@@ -46,6 +46,30 @@ final class SubjectIdentity
     }
 
     /**
+     * Returns whether or not this subject identity equals the given one.
+     *
+     * @param SubjectIdentity $identity
+     *
+     * @return bool
+     */
+    public function equals(SubjectIdentity $identity)
+    {
+        return $this->provider === $identity->getProvider()
+            && $this->identifier === $identity->getIdentifier();
+    }
+
+    /**
+     * Copy the given subject identity.
+     *
+     * @param SubjectIdentity $identity
+     */
+    public function copy(SubjectIdentity $identity)
+    {
+        $this->provider = $identity->getProvider();
+        $this->identifier = $identity->getIdentifier();
+    }
+
+    /**
      * Returns the provider.
      *
      * @return string

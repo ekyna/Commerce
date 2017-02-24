@@ -44,7 +44,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
      */
     public function __toString()
     {
-        return $this->getOrder()->getNumber() . '#' . $this->getId(); // TODO
+        return $this->getOrder()->getNumber() . '#' . $this->getId(); // TODO created At
     }
 
     /**
@@ -68,7 +68,17 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
      */
     public function setOrder(Model\SupplierOrderInterface $order)
     {
-        $this->order = $order;
+        if ($order != $this->order) {
+            if ($this->order) {
+                $this->order->removeDelivery($this);
+            }
+
+            $this->order = $order;
+
+            if (null !== $order) {
+                $order->addDelivery($this);
+            }
+        }
 
         return $this;
     }
@@ -95,8 +105,8 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     public function addItem(Model\SupplierDeliveryItemInterface $item)
     {
         if (!$this->hasItem($item)) {
-            $item->setDelivery($this);
             $this->items->add($item);
+            $item->setDelivery($this);
         }
 
         return $this;
@@ -108,8 +118,8 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     public function removeItem(Model\SupplierDeliveryItemInterface $item)
     {
         if ($this->hasItem($item)) {
-            $item->setDelivery(null);
             $this->items->removeElement($item);
+            $item->setDelivery(null);
         }
 
         return $this;

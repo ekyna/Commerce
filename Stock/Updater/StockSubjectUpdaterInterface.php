@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
  * Interface StockSubjectUpdaterInterface
@@ -58,4 +59,24 @@ interface StockSubjectUpdaterInterface
      * @return bool Whether or not the subject has been updated.
      */
     public function update(StockSubjectInterface $subject);
+
+    /**
+     * Updates stock data regarding to the stock unit changes (persistence event).
+     *
+     * @param StockSubjectInterface $subject
+     * @param StockUnitInterface    $stockUnit
+     *
+     * @return bool
+     */
+    public function updateFromStockUnitChange(StockSubjectInterface $subject, StockUnitInterface $stockUnit);
+
+    /**
+     * Updates stock data regarding to the stock unit removal (persistence event).
+     *
+     * @param StockSubjectInterface $subject
+     * @param StockUnitInterface    $stockUnit
+     *
+     * @return bool
+     */
+    public function updateFromStockUnitRemoval(StockSubjectInterface $subject, StockUnitInterface $stockUnit);
 }

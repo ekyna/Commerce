@@ -6,7 +6,10 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class StockSubjectUpdater
@@ -20,14 +23,23 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     protected $stockUnitResolver;
 
+    /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
 
     /**
      * Constructor.
      *
+     * @param PersistenceHelperInterface $persistenceHelper
      * @param StockUnitResolverInterface $stockUnitResolver
      */
-    public function __construct(StockUnitResolverInterface $stockUnitResolver)
-    {
+    public function __construct(
+        PersistenceHelperInterface $persistenceHelper,
+        StockUnitResolverInterface $stockUnitResolver
+    ) {
+        $this->persistenceHelper = $persistenceHelper;
         $this->stockUnitResolver = $stockUnitResolver;
     }
 
@@ -213,6 +225,73 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $changed = $this->updateEstimatedDateOfArrival($subject) || $changed;
 
         return $this->updateStockState($subject) || $changed;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function updateFromStockUnitChange(StockSubjectInterface $subject, StockUnitInterface $stockUnit)
+    {
+        // TODO prevent call while not in a persistence phase (flush).
+
+        $cs = $this->persistenceHelper->getChangeSet($stockUnit);
+
+        $changed = false;
+
+        if (isset($cs['deliveredQuantity']) || isset($cs['shippedQuantity'])) {
+            // Resolve delivered and shipped quantity changes
+            $deliveredDelta = $deltaShipped = 0;
+            if (isset($cs['deliveredQuantity'])) {
+                $deliveredDelta = ((float)$cs['deliveredQuantity'][1]) - ((float)$cs['deliveredQuantity'][0]);
+            }
+            if (isset($cs['shippedQuantity'])) {
+                $deltaShipped = ((float)$cs['shippedQuantity'][1]) - ((float)$cs['shippedQuantity'][0]);
+            }
+
+            // TODO really need tests T_T
+            $changed = $this->updateInStock($subject, $deliveredDelta - $deltaShipped);
+        }
+
+        if (isset($cs['orderedQuantity'])) {
+            // Resolve ordered quantity change
+            $delta = ((float)$cs['orderedQuantity'][1]) - ((float)$cs['orderedQuantity'][0]);
+
+            $changed = $this->updateOrderedStock($subject, $delta) || $changed;
+        }
+
+        if ($changed || isset($cs['estimatedDateOfArrival'])) {
+            $date = $stockUnit->getState() !== StockUnitStates::STATE_CLOSED
+                ? $stockUnit->getEstimatedDateOfArrival()
+                : null;
+
+            $changed = $this->updateEstimatedDateOfArrival($subject, $date) || $changed;
+        }
+
+        return $changed;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateFromStockUnitRemoval(StockSubjectInterface $subject, StockUnitInterface $stockUnit)
+    {
+        // TODO prevent call while not in a persistence phase (flush).
+
+        $changed = false;
+
+        // We don't care about delivered and shipped stocks because the
+        // stock unit removal is prevented if those stocks are not null.
+
+        // Update ordered quantity
+        if (0 < $stockUnit->getOrderedQuantity()) {
+            $changed = $this->updateOrderedStock($subject, -$stockUnit->getOrderedQuantity());
+        }
+
+        // Update the estimated date of arrival
+        $changed = $this->updateEstimatedDateOfArrival($subject) || $changed;
+
+        return $changed;
     }
 
     /**

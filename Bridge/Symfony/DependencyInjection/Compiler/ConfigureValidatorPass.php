@@ -34,6 +34,7 @@ class ConfigureValidatorPass implements CompilerPassInterface
             'quote',
             'shipment',
             'stock',
+            'subject',
             'supplier',
         ];
 

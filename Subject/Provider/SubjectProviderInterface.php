@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
+use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject;
 
@@ -58,6 +59,8 @@ interface SubjectProviderInterface
      *
      * @param Subject\Entity\SubjectIdentity $identity
      *
+     * @throws SubjectException
+     *
      * @return object
      */
     public function reverseTransform(Subject\Entity\SubjectIdentity $identity);
@@ -98,23 +101,17 @@ interface SubjectProviderInterface
      * Returns the productRepository.
      *
      * @return Subject\Repository\SubjectRepositoryInterface
+     *
+     * @deprecated Retrieve from subject class
      */
     public function getProductRepository();
 
     /**
-     * Returns the subject stock unit repository.
-     *
-     * @return StockUnitRepositoryInterface|null
-     */
-    public function getStockUnitRepository();
-
-    /**
-     * Returns the stock unit change event name.
+     * Returns the subject class.
      *
      * @return string
-     * @todo remove ?
      */
-    public function getStockUnitChangeEventName();
+    public function getSubjectClass();
 
     /**
      * Returns the provider name.

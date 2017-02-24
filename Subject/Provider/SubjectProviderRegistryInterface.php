@@ -55,15 +55,6 @@ interface SubjectProviderRegistryInterface
     public function getProviderByName($name);
 
     /**
-     * Resolves the relative's subject.
-     *
-     * @param SubjectRelativeInterface $relative
-     *
-     * @return mixed|null
-     */
-    public function resolveRelativeSubject(SubjectRelativeInterface $relative);
-
-    /**
      * Returns the providers.
      *
      * @return array|SubjectProviderInterface[]

@@ -45,7 +45,6 @@
     <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder">
         <property name="number">
             <constraint name="Length">
-                <option name="min">8</option>
                 <option name="max">16</option>
             </constraint>
         </property>
@@ -65,7 +64,7 @@
             </constraint>
         </property>
         <property name="paymentTotal">
-            <constraint name="GreaterThanOrEqual">
+            <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
         </property>

@@ -66,7 +66,7 @@ final class SupplierOrderStates
      */
     static public function isDeletableState($state)
     {
-        return in_array($state, static::getDeletableStates());
+        return in_array($state, static::getDeletableStates(), true);
     }
 
     /**
@@ -92,6 +92,6 @@ final class SupplierOrderStates
      */
     static public function isStockState($state)
     {
-        return in_array($state, static::getStockStates());
+        return in_array($state, static::getStockStates(), true);
     }
 }

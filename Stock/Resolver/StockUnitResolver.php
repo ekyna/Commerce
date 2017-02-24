@@ -2,10 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
-use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
+use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
 /**
@@ -16,31 +18,28 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 class StockUnitResolver implements StockUnitResolverInterface
 {
     /**
-     * @var SubjectProviderRegistryInterface
+     * @var SubjectHelperInterface
      */
-    protected $subjectProviderRegistry;
+    protected $subjectHelper;
+
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager;
 
 
     /**
      * Constructor.
      *
-     * @param SubjectProviderRegistryInterface $subjectProviderRegistry
+     * @param SubjectHelperInterface $subjectHelper
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(SubjectProviderRegistryInterface $subjectProviderRegistry)
-    {
-        $this->subjectProviderRegistry = $subjectProviderRegistry;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createStockUnit($object)
-    {
-        return $this
-            ->subjectProviderRegistry
-            ->getProvider($object)
-            ->getStockUnitRepository()
-            ->createNew();
+    public function __construct(
+        SubjectHelperInterface $subjectHelper,
+        EntityManagerInterface $entityManager
+    ) {
+        $this->subjectHelper = $subjectHelper;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -54,55 +53,56 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
+     * Creates (and initializes) a stock unit for the given supplier order item.
+     *
+     * @param SupplierOrderItemInterface $item
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
+     */
+    public function createBySupplierOrderItem(SupplierOrderItemInterface $item)
+    {
+        /** @var StockSubjectInterface $subject */
+        $subject = $this->subjectHelper->resolve($item);
+
+        $stockUnit = $this
+            ->getRepositoryBySubject($subject)
+            ->createNew();
+
+        return $stockUnit
+            ->setSubject($subject)
+            ->setSupplierOrderItem($item)
+            ->setNetPrice($item->getNetPrice())
+            ->setOrderedQuantity($item->getQuantity())
+            ->setEstimatedDateOfArrival($item->getOrder()->getEstimatedDateOfArrival());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRepositoryByRelative(SubjectRelativeInterface $relative)
+    {
+        $subject = $this->subjectHelper->resolve($relative);
+
+        if (!$subject instanceof StockSubjectInterface) {
+            throw new InvalidArgumentException('Expected instance of ' . StockSubjectInterface::class);
+        }
+
+        return $this->getRepositoryBySubject($subject);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getRepositoryBySubject(StockSubjectInterface $subject)
     {
-        $provider = $this
-            ->subjectProviderRegistry
-            ->getProviderBySubject($subject);
+        // TODO repository cache map
 
-        if (null !== $provider) {
-            return $provider->getStockUnitRepository();
+        $repository = $this->entityManager->getRepository($subject::getStockUnitClass());
+
+        if (!$repository instanceof StockUnitRepositoryInterface) {
+            throw new InvalidArgumentException('Expected instance of ' . StockUnitRepositoryInterface::class);
         }
 
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resolveBySubject(StockSubjectInterface $subject)
-    {
-        $provider = $this
-            ->subjectProviderRegistry
-            ->getProviderBySubject($subject);
-
-        if (null !== $provider) {
-            return $provider
-                ->getStockUnitRepository()
-                ->findAvailableOrPendingBySubject($subject);
-        }
-
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resolveBySupplierOrderItem(SupplierOrderItemInterface $supplierOrderItem)
-    {
-        $provider = $this
-            ->subjectProviderRegistry
-            ->getProviderByRelative($supplierOrderItem);
-
-        if (null !== $provider) {
-            $repository = $provider->getStockUnitRepository();
-            if (null !== $repository) {
-                return $repository->findOneBySupplierOrderItem($supplierOrderItem);
-            }
-        }
-
-        return null;
+        return $repository;
     }
 }

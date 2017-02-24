@@ -39,11 +39,11 @@ interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
     public function findNewBySubject(StockSubjectInterface $subject);
 
     /**
-     * Find the stock unit by supplier order item.
+     * Finds the subject's not closed stock units.
      *
-     * @param SupplierOrderItemInterface $item
+     * @param StockSubjectInterface $subject
      *
-     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface|null
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findOneBySupplierOrderItem(SupplierOrderItemInterface $item);
+    public function findNotClosedSubject(StockSubjectInterface $subject);
 }

@@ -184,8 +184,8 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function addDelivery(Model\SupplierDeliveryInterface $delivery)
     {
         if (!$this->hasDelivery($delivery)) {
-            $delivery->setOrder($this);
             $this->deliveries->add($delivery);
+            $delivery->setOrder($this);
         }
 
         return $this;
@@ -197,8 +197,8 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function removeDelivery(Model\SupplierDeliveryInterface $delivery)
     {
         if ($this->hasDelivery($delivery)) {
-            $delivery->setOrder(null);
             $this->deliveries->removeElement($delivery);
+            $delivery->setOrder(null);
         }
 
         return $this;

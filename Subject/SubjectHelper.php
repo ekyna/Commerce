@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
 
@@ -33,11 +34,18 @@ class SubjectHelper implements SubjectHelperInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(SubjectRelativeInterface $relative)
+    public function resolve(SubjectRelativeInterface $relative, $throw = true)
     {
-        return $this->getProvider($relative)->resolve($relative);
-    }
+        try {
+            return $this->getProvider($relative)->resolve($relative);
+        } catch (SubjectException $e) {
+            if ($throw) {
+                throw $e;
+            }
+        }
 
+        return null;
+    }
 
     /**
      * {@inheritdoc}

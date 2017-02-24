@@ -39,7 +39,7 @@
             </constraint>
         </property>
         <property name="netPrice">
-            <constraint name="GreaterThanOrEqual">
+            <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
         </property>

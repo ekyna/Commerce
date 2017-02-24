@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -115,10 +116,14 @@ abstract class AbstractStockUnitListener
     {
         $stockUnit = $this->getStockUnitFromEvent($event);
 
-        /*if (null !== $stockUnit->getSupplierOrderItem()) {
-            // TODO disallow only if order item not scheduled for deletion
-            throw new IllegalOperationException("The stock unit can't be deleted as it is linked to a supplier order.");
-        }*/
+        if (null !== $orderItem = $stockUnit->getSupplierOrderItem()) {
+            // Prevent deletion if the supplier order has a stockable state
+            if (SupplierOrderStates::isStockState($orderItem->getOrder()->getState())) {
+                throw new IllegalOperationException(
+                    "The stock unit can't be deleted as it is linked to a supplier order with a stockable state."
+                );
+            }
+        }
 
         if (0 < $stockUnit->getDeliveredQuantity() || 0 < $stockUnit->getShippedQuantity()) {
             throw new IllegalOperationException("The stock unit can't be deleted as it has been delivered or shipped.");

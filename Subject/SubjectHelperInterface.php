@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
@@ -16,10 +17,13 @@ interface SubjectHelperInterface
      * Resolves the subject from the relative.
      *
      * @param SubjectRelativeInterface $relative
+     * @param bool                     $throw
+     *
+     * @throws SubjectException
      *
      * @return object
      */
-    public function resolve(SubjectRelativeInterface $relative);
+    public function resolve(SubjectRelativeInterface $relative, $throw = true);
 
     /**
      * Assigns the subject to the relative.

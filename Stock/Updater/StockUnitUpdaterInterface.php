@@ -39,6 +39,14 @@ interface StockUnitUpdaterInterface
     public function updateShipped(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
     /**
+     * Updates the net price.
+     *
+     * @param StockUnitInterface $stockUnit
+     * @param float              $netPrice
+     */
+    public function updateNetPrice(StockUnitInterface $stockUnit, $netPrice);
+
+    /**
      * Updates the estimated date of arrival.
      *
      * @param StockUnitInterface $stockUnit

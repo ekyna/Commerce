@@ -112,5 +112,5 @@ interface StockSubjectInterface extends ResourceInterface
      *
      * @return string
      */
-    public function getStockUnitClass();
+    public static function getStockUnitClass();
 }

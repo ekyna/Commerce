@@ -61,10 +61,11 @@ class SupplierOrderItemListener extends AbstractListener
                 throw new IllegalOperationException("Changing supplier order item product is not supported yet.");
             }
         }
-        /*$changed = $this->syncSubjectDataWithProduct($item);
+
+        $changed = $this->syncSubjectDataWithProduct($item);
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($item);
-        }*/
+        }
 
         // TODO These tests are made in the supplier order listener and should not be done twice...
         $order = $item->getOrder();
@@ -85,14 +86,26 @@ class SupplierOrderItemListener extends AbstractListener
             return;
         }
 
-        if (
-            $this->persistenceHelper->isChanged($item, 'quantity')
-            && SupplierOrderStates::isStockState($item->getOrder()->getState())
-        ) {
-            $this->updateOrderedQuantity($item);
+        if (SupplierOrderStates::isStockState($item->getOrder()->getState())) {
+            $scheduleContentChange = false;
+            if ($this->persistenceHelper->isChanged($item, 'quantity')) {
+                // Updates the ordered quantity
+                $this->stockUnitUpdater->updateOrdered($item->getStockUnit(), $item->getQuantity(), false);
 
-            // Dispatch supplier order content change event
-            $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
+                $scheduleContentChange = true;
+            }
+
+            if ($this->persistenceHelper->isChanged($item, 'netPrice')) {
+                // Updates the net price
+                $this->stockUnitUpdater->updateNetPrice($item->getStockUnit(), $item->getNetPrice());
+
+                $scheduleContentChange = true;
+            }
+
+            if ($scheduleContentChange) {
+                // Dispatch supplier order content change event
+                $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
+            }
         }
     }
 
@@ -130,15 +143,39 @@ class SupplierOrderItemListener extends AbstractListener
     {
         // TODO What about stock management if subject change ???
         if (null !== $product = $item->getProduct()) {
-            if ($item->getSubjectData() != $product->getSubjectData()) {
-                $item->setSubjectData($product->getSubjectData());
+            // TODO Create an utility class to do this
+            $productSID = $product->getSubjectIdentity();
+            if ($productSID->hasIdentity()) {
+                $itemSID = $item->getSubjectIdentity();
 
-                return true;
+                if ($itemSID->hasIdentity()) {
+                    if (!$itemSID->equals($productSID)) {
+                        // TODO Specific exception
+                        throw new InvalidArgumentException(
+                            'Desynchronizing supplier order item and supplier product subject data is not supported.'
+                        );
+                    }
+
+                    return false;
+                } else {
+                    $itemSID->copy($productSID);
+
+                    return true;
+                }
             }
-        } elseif (!empty($item->getSubjectData())) {
-            $item->setSubjectData([]);
+        } elseif ($item->getSubjectIdentity()->hasIdentity()) {
+            // TODO Specific exception
+            throw new InvalidArgumentException(
+                'Desynchronizing supplier order item and supplier product subject data is not supported.'
+            );
 
-            return true;
+            /*$item
+                ->setSubjectData([])
+                ->getSubjectIdentity()
+                ->setProvider(null)
+                ->setIdentifier(null);
+
+            return true;*/
         }
 
         return false;

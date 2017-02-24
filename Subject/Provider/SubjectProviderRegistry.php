@@ -101,20 +101,6 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
 
     /**
      * @inheritdoc
-     *
-     * @TODO Remove : use providers
-     */
-    public function resolveRelativeSubject(SubjectRelativeInterface $relative)
-    {
-        if (null !== $provider = $this->getProviderByRelative($relative)) {
-            return $provider->resolve($relative);
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getProviders()
     {

@@ -30,7 +30,7 @@ class SupplierDeliveryItemListener extends AbstractListener
         }
 
         // Credit stock unit delivered quantity
-        $this->updateDeliveredQuantity($orderItem, $item->getQuantity());
+        $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $item->getQuantity());
 
         // Dispatch supplier order content change event
         $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
@@ -54,7 +54,7 @@ class SupplierDeliveryItemListener extends AbstractListener
             // Delta quantity (difference between new and old)
             if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
                 // Update stock unit delivered quantity
-                $this->updateDeliveredQuantity($orderItem, $deltaQuantity);
+                $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $deltaQuantity);
             }
 
             // Dispatch supplier order content change event
@@ -75,7 +75,7 @@ class SupplierDeliveryItemListener extends AbstractListener
         }
 
         // Debit stock unit delivered quantity
-        $this->updateDeliveredQuantity($orderItem, -$item->getQuantity());
+        $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), -$item->getQuantity());
 
         // Trigger the supplier order item update
         $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
@@ -93,7 +93,7 @@ class SupplierDeliveryItemListener extends AbstractListener
         $item = $this->getSupplierDeliveryItemFromEvent($event);
 
         // Prevent removal if related stock unit shipped quantity is greater than zero
-        if ($this->isStockUnitShipped($item->getOrderItem())) {
+        if (0 < $item->getOrderItem()->getStockUnit()->getShippedQuantity()) {
             throw new IllegalOperationException();
         }
     }
