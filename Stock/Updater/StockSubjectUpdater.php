@@ -239,25 +239,29 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         $changed = false;
 
+        if (isset($cs['orderedQuantity'])) {
+            // Resolve ordered quantity change
+            if (0 != $orderedDelta = ((float)$cs['orderedQuantity'][1]) - ((float)$cs['orderedQuantity'][0])) {
+                $changed = $this->updateOrderedStock($subject, $orderedDelta) || $changed;
+            }
+        }
+
         if (isset($cs['deliveredQuantity']) || isset($cs['shippedQuantity'])) {
             // Resolve delivered and shipped quantity changes
             $deliveredDelta = $deltaShipped = 0;
             if (isset($cs['deliveredQuantity'])) {
-                $deliveredDelta = ((float)$cs['deliveredQuantity'][1]) - ((float)$cs['deliveredQuantity'][0]);
+                if (0 != $deliveredDelta = ((float)$cs['deliveredQuantity'][1]) - ((float)$cs['deliveredQuantity'][0])) {
+                    $changed = $this->updateOrderedStock($subject, -$deliveredDelta) || $changed;
+                }
             }
             if (isset($cs['shippedQuantity'])) {
                 $deltaShipped = ((float)$cs['shippedQuantity'][1]) - ((float)$cs['shippedQuantity'][0]);
             }
 
             // TODO really need tests T_T
-            $changed = $this->updateInStock($subject, $deliveredDelta - $deltaShipped);
-        }
-
-        if (isset($cs['orderedQuantity'])) {
-            // Resolve ordered quantity change
-            $delta = ((float)$cs['orderedQuantity'][1]) - ((float)$cs['orderedQuantity'][0]);
-
-            $changed = $this->updateOrderedStock($subject, $delta) || $changed;
+            if (0 != $inStockDelta = $deliveredDelta - $deltaShipped) {
+                $changed = $this->updateInStock($subject, $inStockDelta);
+            }
         }
 
         if ($changed || isset($cs['estimatedDateOfArrival'])) {

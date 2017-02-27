@@ -9,5 +9,8 @@ namespace Ekyna\Component\Commerce;
  */
 class Commerce
 {
-
+    public function setup()
+    {
+        // TODO
+    }
 }

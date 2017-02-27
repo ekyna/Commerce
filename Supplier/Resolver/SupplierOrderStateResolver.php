@@ -35,9 +35,13 @@ class SupplierOrderStateResolver implements StateResolverInterface
         // Default state is 'new'
         $resolvedState = SupplierOrderStates::STATE_NEW;
 
+        // If ordered at is set
         if (null !== $subject->getOrderedAt()) {
             $resolvedState = SupplierOrderStates::STATE_ORDERED;
-        } elseif ($subject->hasDeliveries()) {
+        }
+
+        // If the order has deliveries
+        if ($subject->hasDeliveries()) {
             // Assume the order state is 'completed' for now
             $resolvedState = SupplierOrderStates::STATE_COMPLETED;
 

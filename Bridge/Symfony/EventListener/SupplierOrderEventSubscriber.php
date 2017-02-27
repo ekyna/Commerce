@@ -19,10 +19,11 @@ class SupplierOrderEventSubscriber extends SupplierOrderListener implements Even
     public static function getSubscribedEvents()
     {
         return [
-            SupplierOrderEvents::INSERT     => ['onInsert', 0],
-            SupplierOrderEvents::UPDATE     => ['onUpdate', 0],
+            SupplierOrderEvents::INSERT         => ['onInsert', 0],
+            SupplierOrderEvents::UPDATE         => ['onUpdate', 0],
 //            SupplierOrderEvents::DELETE     => ['onDelete', 0],
-            SupplierOrderEvents::PRE_DELETE => ['onPreDelete', 0],
+            SupplierOrderEvents::CONTENT_CHANGE => ['onContentChange', 0],
+            SupplierOrderEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }
 }

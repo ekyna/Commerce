@@ -15,7 +15,7 @@ class SupplierOrderEvents
     const DELETE         = 'ekyna_commerce.supplier_order.delete';
 
     // Domain
-    const STATE_CHANGE   = 'ekyna_commerce.supplier_order.state_change';
+    //const STATE_CHANGE   = 'ekyna_commerce.supplier_order.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.supplier_order.content_change';
 
     const PRE_CREATE     = 'ekyna_commerce.supplier_order.pre_create';
