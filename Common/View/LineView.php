@@ -17,6 +17,11 @@ class LineView extends AbstractView
     /**
      * @var int
      */
+    private $formId;
+
+    /**
+     * @var int
+     */
     private $number;
 
     /**
@@ -84,6 +89,7 @@ class LineView extends AbstractView
      * Constructor.
      *
      * @param int    $id
+     * @param int    $formId
      * @param int    $number
      * @param int    $level
      * @param string $designation
@@ -100,6 +106,7 @@ class LineView extends AbstractView
      */
     public function __construct(
         $id,
+        $formId,
         $number,
         $level,
         $designation,
@@ -115,6 +122,7 @@ class LineView extends AbstractView
         $immutable = false
     ) {
         $this->id = $id;
+        $this->formId = $formId;
         $this->number = $number;
         $this->level = $level;
         $this->designation = $designation;
@@ -131,13 +139,23 @@ class LineView extends AbstractView
     }
 
     /**
-     * Returns the id of the source element.
+     * Returns the id.
      *
      * @return int
      */
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Returns the form id.
+     *
+     * @return int
+     */
+    public function getFormId()
+    {
+        return $this->formId;
     }
 
     /**

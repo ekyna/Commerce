@@ -75,7 +75,7 @@ class CustomerGroup implements CustomerGroupInterface
     /**
      * @inheritdoc
      */
-    public function getDefault()
+    public function isDefault()
     {
         return $this->default;
     }

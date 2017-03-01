@@ -204,6 +204,7 @@ class ViewBuilder
         }
 
         $view = new LineView(
+            'item_' . ($lineNumber-1),
             'item_' . $item->getId(),
             $lineNumber,
             $level,
@@ -245,6 +246,7 @@ class ViewBuilder
         $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
 
         $view = new LineView(
+            'adjustment_' . ($lineNumber-1),
             'adjustment_' . $adjustment->getId(),
             $lineNumber,
             $level,
@@ -294,6 +296,7 @@ class ViewBuilder
         $designation .= ' (' . number_format($sale->getWeightTotal(), 3, ',', '') . ' kg)';
 
         $view = new LineView(
+            'shipment',
             'shipment',
             $lineNumber,
             0,

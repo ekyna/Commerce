@@ -31,7 +31,7 @@ interface CustomerGroupInterface extends ResourceInterface
      *
      * @return bool
      */
-    public function getDefault();
+    public function isDefault();
 
     /**
      * Sets whether this is the default customer group or not.

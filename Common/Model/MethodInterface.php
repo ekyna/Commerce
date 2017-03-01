@@ -11,7 +11,7 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  *
  * @method MethodTranslationInterface translate($locale = null, $create = false)
  */
-interface MethodInterface extends ResourceModel\ResourceInterface, ResourceModel\SortableInterface
+interface MethodInterface extends ResourceModel\TranslatableInterface, ResourceModel\SortableInterface
 {
     /**
      * Returns the name.

@@ -402,6 +402,12 @@ abstract class AbstractSaleListener
         $changed = false;
 
         if (null !== $customer = $sale->getCustomer()) {
+            // Customer group
+            if (null === $sale->getCustomerGroup()) {
+                $sale->setCustomerGroup($customer->getCustomerGroup());
+                $changed = true;
+            }
+
             // Email
             if (0 == strlen($sale->getEmail())) {
                 $sale->setEmail($customer->getEmail());

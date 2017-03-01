@@ -81,7 +81,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
     private function resolveShipmentsState(OrderInterface $order)
     {
         if (!$order->requiresShipment()) {
-            return Ship::STATE_COMPLETED;
+            return Ship::STATE_NONE;
         }
 
         if (!$order->hasItems()) {

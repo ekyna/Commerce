@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\TranslatableInterface;
 
 /**
  * Interface MessageInterface
@@ -11,7 +11,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  *
  * @method MessageTranslationInterface translate($locale = null, $create = false)
  */
-interface MessageInterface extends ResourceInterface
+interface MessageInterface extends TranslatableInterface
 {
     /**
      * Returns the state.

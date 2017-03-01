@@ -9,6 +9,7 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
  */
 final class ShipmentStates
 {
+    const STATE_NONE        = 'none';
     const STATE_NEW         = 'new';
 //    const STATE_CHECKOUT    = 'checkout';
 //    const STATE_ONHOLD      = 'onhold';
@@ -30,6 +31,7 @@ final class ShipmentStates
     static public function getStates()
     {
         return [
+            static::STATE_NONE,
             static::STATE_NEW,
 //            static::STATE_CHECKOUT,
 //            static::STATE_ONHOLD,
@@ -78,6 +80,7 @@ final class ShipmentStates
     static public function getDeletableStates()
     {
         return [
+            static::STATE_NONE,
             static::STATE_NEW,
             static::STATE_CANCELLED,
         ];
