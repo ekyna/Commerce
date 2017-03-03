@@ -99,28 +99,20 @@ class SupplierOrderListener extends AbstractListener
         $stateCs = null;
         if ($this->persistenceHelper->isChanged($order, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
-        }
 
-        // If order's state has changed to a deletable state
-        if (
-            $stateCs &&
-            SupplierOrderStates::isStockState($stateCs[0]) &&
-            SupplierOrderStates::isDeletableState($stateCs[1])
-        ) {
-            // Delete stock unit (if exists) for each supplier order items.
-            foreach ($order->getItems() as $item) {
-                $this->deleteSupplierOrderItemStockUnit($item);
+            // If order's state has changed to a deletable state
+            if (SupplierOrderStates::hasChangedToDeletable($stateCs)) {
+                // Delete stock unit (if exists) for each supplier order items.
+                foreach ($order->getItems() as $item) {
+                    $this->deleteSupplierOrderItemStockUnit($item);
+                }
             }
-        }
-        // Else if order state's has changed to a stockable state
-        elseif (
-            $stateCs &&
-            SupplierOrderStates::isDeletableState($stateCs[0]) &&
-            SupplierOrderStates::isStockState($stateCs[1])
-        ) {
-            // Create stock unit (if not exists) for each supplier order items.
-            foreach ($order->getItems() as $item) {
-                $this->createSupplierOrderItemStockUnit($item);
+            // Else if order state's has changed to a stockable state
+            elseif (SupplierOrderStates::hasChangedToStock($stateCs)) {
+                // Create stock unit (if not exists) for each supplier order items.
+                foreach ($order->getItems() as $item) {
+                    $this->createSupplierOrderItemStockUnit($item);
+                }
             }
         }
 

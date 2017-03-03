@@ -36,7 +36,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         $shipmentState = $this->resolveShipmentsState($order);
 
         if ($order->hasItems()) {
-            if ($paymentState === Pay::STATE_CAPTURED && in_array($shipmentState, Ship::getDebitStockStates())) {
+            if ($paymentState === Pay::STATE_CAPTURED && in_array($shipmentState, Ship::getStockStates())) {
                 $newState = OrderStates::STATE_COMPLETED;
             } elseif (in_array($paymentState, [Pay::STATE_PENDING, Pay::STATE_AUTHORIZED, Pay::STATE_CAPTURED])) {
                 $newState = OrderStates::STATE_ACCEPTED;
@@ -99,7 +99,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         // Build shipped quantities.
         foreach ($shipments as $shipment) {
             // Ignore if shipment is not shipped or completed
-            if (!in_array($shipment->getState(), Ship::getDebitStockStates(), true)) {
+            if (!in_array($shipment->getState(), Ship::getStockStates(), true)) {
                 continue;
             }
 

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Builder;
 
+use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
@@ -14,19 +15,19 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 class ShipmentBuilder implements ShipmentBuilderInterface
 {
     /**
-     * @var string
+     * @var SaleFactoryInterface
      */
-    private $shipmentItemClass;
+    private $factory;
 
 
     /**
      * Constructor.
      *
-     * @param string $shipmentItemClass
+     * @param SaleFactoryInterface $factory
      */
-    public function __construct($shipmentItemClass)
+    public function __construct(SaleFactoryInterface $factory)
     {
-        $this->shipmentItemClass = $shipmentItemClass;
+        $this->factory = $factory;
     }
 
     /**
@@ -61,9 +62,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
             return;
         }
 
-        /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface $item */
-        $item = new $this->shipmentItemClass;
-
+        $item = $this->factory->createItemForShipment($shipment);
         $item
             ->setSaleItem($saleItem)
             ->setQuantity(

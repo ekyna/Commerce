@@ -73,6 +73,18 @@ final class ShipmentStates
     }
 
     /**
+     * Returns whether the given state is a notifiable state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isNotifiableState($state)
+    {
+        return in_array($state, static::getNotifiableStates(), true);
+    }
+
+    /**
      * Returns the deletable states.
      *
      * @return array
@@ -87,16 +99,68 @@ final class ShipmentStates
     }
 
     /**
+     * Returns whether the given state is a deletable state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isDeletableState($state)
+    {
+        return in_array($state, static::getDeletableStates(), true);
+    }
+
+    /**
      * Returns the debit stock states.
      *
      * @return array
      */
-    static public function getDebitStockStates()
+    static public function getStockStates()
     {
         return [
             static::STATE_SHIPPED,
             static::STATE_COMPLETED,
             static::STATE_RETURNED,
         ];
+    }
+
+    /**
+     * Returns whether the given state is a stock state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isStockState($state)
+    {
+        return in_array($state, static::getStockStates(), true);
+    }
+
+    /**
+     * Returns whether the state has changed from a stockable state to a deletable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedToDeletable(array $cs)
+    {
+        return (isset($cs[0]) && isset($cs[1]))
+            && static::isStockState($cs[0])
+            && static::isDeletableState($cs[1]);
+    }
+
+    /**
+     * Returns whether the state has changed from a deletable state to a stockable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedToStock(array $cs)
+    {
+        return (isset($cs[0]) && isset($cs[1]))
+            && static::isDeletableState($cs[0])
+            && static::isStockState($cs[1]);
     }
 }

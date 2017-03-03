@@ -32,7 +32,7 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
     public function addType(ViewTypeInterface $type)
     {
         if (array_key_exists($name = $type->getName(), $this->types)) {
-            throw new InvalidArgumentException("The view type '{$name}' is already register.");
+            throw new InvalidArgumentException("The view type '{$name}' is already registerd.");
         }
 
         $this->types[$name] = $type;

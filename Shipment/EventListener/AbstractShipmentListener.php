@@ -50,6 +50,8 @@ abstract class AbstractShipmentListener
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
+        $changed = $this->handleCompletedState($shipment) || $changed;
+
         // TODO Timestampable behavior/listener
         $shipment
             ->setCreatedAt(new \DateTime())
@@ -60,7 +62,7 @@ abstract class AbstractShipmentListener
         }
 
         $sale = $shipment->getSale();
-        $sale->addShipment($shipment);
+        $sale->addShipment($shipment); // TODO wtf ?
 
         $this->scheduleSaleContentChangeEvent($sale);
     }
@@ -75,23 +77,12 @@ abstract class AbstractShipmentListener
         $shipment = $this->getShipmentFromEvent($event);
 
         // TODO same shit here ... T_T
-        $doScheduleSaleContentChange = false;
 
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
         if ($this->persistenceHelper->isChanged($shipment, 'state')) {
-            // Handle "Completed at" datetime
-            if (($shipment->getState() === ShipmentStates::STATE_COMPLETED) && (null === $shipment->getCompletedAt())) {
-                $shipment->setCompletedAt(new \DateTime());
-                $changed = true;
-            } elseif (($shipment->getState() !== ShipmentStates::STATE_COMPLETED) && (null !== $shipment->getCompletedAt())) {
-                $shipment->setCompletedAt(null);
-                $changed = true;
-            }
-
-            $doScheduleSaleContentChange = true;
-            $this->scheduleSaleContentChangeEvent($shipment->getSale());
+            $changed = $this->handleCompletedState($shipment) || $changed;
         }
 
         // TODO Timestampable behavior/listener
@@ -99,10 +90,6 @@ abstract class AbstractShipmentListener
 
         if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($shipment);
-        }
-
-        if ($doScheduleSaleContentChange) {
-            $this->scheduleSaleContentChangeEvent($shipment->getSale());
         }
     }
 
@@ -173,6 +160,8 @@ abstract class AbstractShipmentListener
      */
     protected function generateNumber(ShipmentInterface $shipment)
     {
+        // TODO Use a number generator
+
         if (0 == strlen($shipment->getNumber())) {
             if (null === $sale = $shipment->getSale()) {
                 return false;
@@ -194,6 +183,35 @@ abstract class AbstractShipmentListener
         }
 
         return false;
+    }
+
+    /**
+     * Handle the 'completed' state.
+     *
+     * @param ShipmentInterface $shipment
+     *
+     * @return bool Whether or not the shipment has been changed.
+     */
+    protected function handleCompletedState(ShipmentInterface $shipment)
+    {
+        $changed = false;
+
+        $state = $shipment->getState();
+        $completedAt = $shipment->getCompletedAt();
+
+        if (($state === ShipmentStates::STATE_COMPLETED) && (null === $completedAt)) {
+            $shipment->setCompletedAt(new \DateTime());
+            $changed = true;
+        } elseif (($state != ShipmentStates::STATE_COMPLETED) && (null !== $completedAt)) {
+            $shipment->setCompletedAt(null);
+            $changed = true;
+        }
+
+        if ($changed) {
+            $this->scheduleSaleContentChangeEvent($shipment->getSale());
+        }
+
+        return $changed;
     }
 
     /**

@@ -84,20 +84,6 @@ interface SubjectProviderInterface
     public function supportsSubject($subject);
 
     /**
-     * Returns the item builder.
-     *
-     * @return Subject\Builder\ItemBuilderInterface
-     */
-    public function getItemBuilder();
-
-    /**
-     * Returns the form builder.
-     *
-     * @return Subject\Builder\FormBuilderInterface
-     */
-    public function getFormBuilder();
-
-    /**
      * Returns the productRepository.
      *
      * @return Subject\Repository\SubjectRepositoryInterface

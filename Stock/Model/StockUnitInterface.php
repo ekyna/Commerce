@@ -2,9 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -13,7 +11,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
+interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, StockAssignmentsInterface
 {
     /**
      * Sets the subject.
@@ -64,31 +62,6 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null);
 
     /**
-     * Adds the order item.
-     *
-     * @param OrderItemInterface $item
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function addOrderItem(OrderItemInterface $item);
-
-    /**
-     * Removes the order item.
-     *
-     * @param OrderItemInterface $item
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function removeOrderItem(OrderItemInterface $item);
-
-    /**
-     * Returns the order items.
-     *
-     * @return ArrayCollection|OrderItemInterface[]
-     */
-    public function getOrderItems();
-
-    /**
      * Returns the ordered quantity.
      *
      * @return float
@@ -135,6 +108,22 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return $this|StockUnitInterface
      */
     public function setDeliveredQuantity($quantity);
+
+    /**
+     * Returns the reserved quantity.
+     *
+     * @return float
+     */
+    public function getReservedQuantity();
+
+    /**
+     * Sets the reserved quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setReservedQuantity($quantity);
 
     /**
      * Returns the shipped quantity.

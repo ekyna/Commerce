@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
@@ -16,6 +16,7 @@ use Ekyna\Component\Resource\Model\SortableTrait;
 abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemInterface
 {
     use SubjectRelativeTrait,
+        TaxableTrait,
         SortableTrait;
 
     /**
@@ -32,11 +33,6 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
      * @var ArrayCollection|SaleItemInterface[]
      */
     protected $children;
-
-    /**
-     * @var TaxGroupInterface
-     */
-    protected $taxGroup;
 
     /**
      * @var string
@@ -126,24 +122,6 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     public function getChildren()
     {
         return $this->children;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxGroup()
-    {
-        return $this->taxGroup;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxGroup(TaxGroupInterface $taxGroup = null)
-    {
-        $this->taxGroup = $taxGroup;
-
-        return $this;
     }
 
     /**

@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -17,6 +18,64 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class OrderItemListener extends AbstractSaleItemListener
 {
+    /**
+     * @var StockUnitAssignerInterface
+     */
+    protected $stockAssigner;
+
+
+    /**
+     * Sets the stock assigner.
+     *
+     * @param StockUnitAssignerInterface $stockAssigner
+     */
+    public function setStockAssigner(StockUnitAssignerInterface $stockAssigner)
+    {
+        $this->stockAssigner = $stockAssigner;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function onInsert(ResourceEventInterface $event)
+    {
+        parent::onInsert($event);
+
+        // TODO
+        // If order is in stockable state
+        //   $this->stockAssigner->createAssignments($item);
+        // Else if order is at a deletable state
+        //   $this->stockAssigner->removeAssignments($item);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function onUpdate(ResourceEventInterface $event)
+    {
+        parent::onUpdate($event);
+
+        // TODO
+        // If order state has changed from deletable to stockable or from stockable to deletable
+        //   -> abort (stock assignments operation has been made at order level)
+
+        // TODO (in a dedicated service : handleSaleItemUpdate ?)
+        // If order is in stockable state and order item quantity has changed
+        //   $this->stockAssigner->dispatchQuantityChange($item, $deltaQuantity);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function onDelete(ResourceEventInterface $event)
+    {
+        parent::onDelete($event);
+
+        // TODO (in a dedicated service : handleSaleItemRemove ?)
+        // If order is in stockable state
+        //   $this->stockAssigner->removeAssignments($item);
+    }
+
     /**
      * Pre create event handler.
      *

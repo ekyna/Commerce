@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
@@ -33,9 +32,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $supplierOrderItem;
 
     /**
-     * @var ArrayCollection|OrderItemInterface[]
+     * @var ArrayCollection|Model\StockAssignmentInterface[]
      */
-    protected $orderItems;
+    protected $stockAssignments;
 
     /**
      * The estimated date of arrival (for ordered quantity).
@@ -55,6 +54,12 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      * @var float
      */
     protected $deliveredQuantity = 0;
+
+    /**
+     * The quantity reserved from sales.
+     * @var float
+     */
+    protected $reservedQuantity = 0;
 
     /**
      * The quantity shipped through sales.
@@ -86,7 +91,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function __construct()
     {
-        $this->orderItems = new ArrayCollection();
+        $this->stockAssignments = new ArrayCollection();
         $this->state = Model\StockUnitStates::STATE_NEW;
         $this->createdAt = new \DateTime();
     }
@@ -154,8 +159,8 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
 
             $this->supplierOrderItem = $item;
 
-            if ($item) {
-                $item->setStockUnit($this);
+            if ($this->supplierOrderItem) {
+                $this->supplierOrderItem->setStockUnit($this);
             }
         }
 
@@ -165,11 +170,11 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function addOrderItem(OrderItemInterface $item)
+    public function addStockAssignment(Model\StockAssignmentInterface $item)
     {
-        if (!$this->orderItems->contains($item)) {
-            $this->orderItems->add($item);
-            $item->addStockUnit($this);
+        if (!$this->stockAssignments->contains($item)) {
+            $this->stockAssignments->add($item);
+            $item->setStockUnit($this);
         }
 
         return $this;
@@ -178,11 +183,11 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function removeOrderItem(OrderItemInterface $item)
+    public function removeStockAssignment(Model\StockAssignmentInterface $item)
     {
-        if ($this->orderItems->contains($item)) {
-            $this->orderItems->removeElement($item);
-            $item->removeStockUnit($this);
+        if ($this->stockAssignments->contains($item)) {
+            $this->stockAssignments->removeElement($item);
+            $item->setStockUnit($this);
         }
 
         return $this;
@@ -191,9 +196,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function getOrderItems()
+    public function getStockAssignments()
     {
-        return $this->orderItems;
+        return $this->stockAssignments;
     }
 
     /**
@@ -246,6 +251,24 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function setDeliveredQuantity($quantity)
     {
         $this->deliveredQuantity = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReservedQuantity()
+    {
+        return $this->reservedQuantity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setReservedQuantity($quantity)
+    {
+        $this->reservedQuantity = $quantity;
 
         return $this;
     }

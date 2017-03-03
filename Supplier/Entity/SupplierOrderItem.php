@@ -85,7 +85,17 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
      */
     public function setOrder(Model\SupplierOrderInterface $order = null)
     {
-        $this->order = $order;
+        if ($this->order != $order) {
+            if ($this->order) {
+                $this->order->removeItem($this);
+            }
+
+            $this->order = $order;
+
+            if ($this->order) {
+                $this->order->addItem($this);
+            }
+        }
 
         return $this;
     }
@@ -128,8 +138,8 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
 
             $this->stockUnit = $stockUnit;
 
-            if ($stockUnit) {
-                $stockUnit->setSupplierOrderItem($this);
+            if ($this->stockUnit) {
+                $this->stockUnit->setSupplierOrderItem($this);
             }
         }
 

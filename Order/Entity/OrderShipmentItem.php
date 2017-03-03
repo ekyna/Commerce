@@ -18,6 +18,12 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 class OrderShipmentItem extends AbstractShipmentItem implements OrderShipmentItemInterface
 {
     /**
+     * @var OrderItemInterface
+     */
+    protected $orderItem;
+
+
+    /**
      * @inheritdoc
      */
     public function setShipment(ShipmentInterface $shipment = null)
@@ -32,12 +38,38 @@ class OrderShipmentItem extends AbstractShipmentItem implements OrderShipmentIte
     /**
      * @inheritdoc
      */
-    public function setSaleItem(SaleItemInterface $saleItem = null)
+    public function setOrderItem(OrderItemInterface $orderItem)
     {
-        if (null !== $saleItem && !$saleItem instanceof OrderItemInterface) {
+        $this->orderItem = $orderItem;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOrderItem()
+    {
+        return $this->orderItem;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSaleItem(SaleItemInterface $saleItem)
+    {
+        if (!$saleItem instanceof OrderItemInterface) {
             throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
         }
 
-        return parent::setSaleItem($saleItem);
+        return $this->setOrderItem($saleItem);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSaleItem()
+    {
+        return $this->getOrderItem();
     }
 }

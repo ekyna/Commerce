@@ -132,8 +132,8 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function addItem(Model\SupplierOrderItemInterface $item, $index = null)
     {
         if (!$this->hasItem($item)) {
-            $item->setOrder($this);
             $this->items->add($item);
+            $item->setOrder($this);
         }
 
         return $this;
@@ -145,8 +145,8 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function removeItem(Model\SupplierOrderItemInterface $item)
     {
         if ($this->hasItem($item)) {
-            $item->setOrder(null);
             $this->items->removeElement($item);
+            $item->setOrder(null);
         }
 
         return $this;

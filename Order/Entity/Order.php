@@ -362,8 +362,6 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-
-
     /**
      * @inheritdoc
      */

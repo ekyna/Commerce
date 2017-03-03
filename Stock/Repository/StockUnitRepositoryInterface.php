@@ -2,48 +2,51 @@
 
 namespace Ekyna\Component\Commerce\Stock\Repository;
 
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
  * Interface StockUnitRepositoryInterface
  * @package Ekyna\Component\Commerce\Stock\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method Stock\StockUnitInterface createNew()
  */
 interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
-     * Creates a new stock unit.
-     *
-     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
-     */
-    public function createNew();
-
-    /**
      * Finds the subject's available or pending stock units.
      *
-     * @param StockSubjectInterface $subject
+     * @param Stock\StockSubjectInterface $subject
      *
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findAvailableOrPendingBySubject(StockSubjectInterface $subject);
+    public function findAvailableOrPendingBySubject(Stock\StockSubjectInterface $subject);
+
+    /**
+     * Finds the subject's unassigned (i.e. not fully assigned) stock units.
+     *
+     * @param Stock\StockSubjectInterface $subject
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    public function findUnassignedBySubject(Stock\StockSubjectInterface $subject);
 
     /**
      * Finds the subject's new stock units.
      *
-     * @param StockSubjectInterface $subject
+     * @param Stock\StockSubjectInterface $subject
      *
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findNewBySubject(StockSubjectInterface $subject);
+    public function findNewBySubject(Stock\StockSubjectInterface $subject);
 
     /**
      * Finds the subject's not closed stock units.
      *
-     * @param StockSubjectInterface $subject
+     * @param Stock\StockSubjectInterface $subject
      *
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findNotClosedSubject(StockSubjectInterface $subject);
+    public function findNotClosedSubject(Stock\StockSubjectInterface $subject);
 }

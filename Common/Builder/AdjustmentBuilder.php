@@ -2,12 +2,15 @@
 
 namespace Ekyna\Component\Commerce\Common\Builder;
 
+use Ekyna\Component\Commerce\Common\Event\SaleItemAdjustmentEvent;
+use Ekyna\Component\Commerce\Common\Event\SaleItemEvents;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class AdjustmentBuilder
@@ -32,6 +35,11 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     private $taxResolver;
 
     /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
      * @var PersistenceHelperInterface
      */
     private $persistenceHelper;
@@ -43,17 +51,20 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      * @param SaleFactoryInterface             $saleFactory
      * @param SubjectProviderRegistryInterface $subjectProviderRegistry
      * @param TaxResolverInterface             $taxResolver
+     * @param EventDispatcherInterface         $eventDispatcher
      * @param PersistenceHelperInterface       $persistenceHelper
      */
     public function __construct(
         SaleFactoryInterface $saleFactory,
         SubjectProviderRegistryInterface $subjectProviderRegistry,
         TaxResolverInterface $taxResolver,
+        EventDispatcherInterface $eventDispatcher,
         PersistenceHelperInterface $persistenceHelper
     ) {
         $this->saleFactory = $saleFactory;
         $this->subjectProviderRegistry = $subjectProviderRegistry;
         $this->taxResolver = $taxResolver;
+        $this->eventDispatcher = $eventDispatcher;
         $this->persistenceHelper = $persistenceHelper;
     }
 
@@ -62,7 +73,14 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false)
     {
-        // Nothing for now.
+        /* TODO $event = new SaleAdjustmentEvent($sale);
+
+        $this->eventDispatcher->dispatch(SaleEvents::ADJUSTMENTS, $event);
+
+        $data = $event->getAdjustmentsData();
+
+        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence);*/
+
         return false;
     }
 
@@ -97,15 +115,13 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
-        $discounts = [];
+        $event = new SaleItemAdjustmentEvent($item);
 
-        // Get subject provider
-        if (null !== $provider = $this->subjectProviderRegistry->getProviderByRelative($item)) {
-            // Resolve adjustments data.
-            $discounts = $provider->getItemBuilder()->buildAdjustmentsData($item);
-        }
+        $this->eventDispatcher->dispatch(SaleItemEvents::ADJUSTMENTS, $event);
 
-        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $discounts, $persistence);
+        $data = $event->getAdjustmentsData();
+
+        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
 
     /**

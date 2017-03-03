@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -31,6 +33,11 @@ class LoadMetadataListener implements EventSubscriber
      * @var EmbeddableMapper
      */
     private $subjectIdentityMapper;
+
+    /**
+     * @var array
+     */
+    private $taxableClassCache = [];
 
     /**
      * @var array
@@ -65,6 +72,12 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
+        // TODO TaxableInterface => taxGroup field mapping
+
+        if (is_subclass_of($class, TaxableInterface::class)) {
+            $this->configureTaxableMapping($eventArgs);
+        }
+
         if (is_subclass_of($class, StockSubjectInterface::class)) {
             $this->configureStockSubjectMapping($eventArgs);
         }
@@ -79,6 +92,52 @@ class LoadMetadataListener implements EventSubscriber
     }
 
     /**
+     * Configures the taxable mapping.
+     *
+     * @param LoadClassMetadataEventArgs $eventArgs
+     */
+    private function configureTaxableMapping(LoadClassMetadataEventArgs $eventArgs)
+    {
+        /** @var ClassMetadata $metadata */
+        $metadata = $eventArgs->getClassMetadata();
+        $class = $metadata->getName();
+
+        // Check class
+        if (!is_subclass_of($class, TaxableInterface::class)) {
+            return;
+        }
+
+        // Skip abstract classes.
+        if ((new \ReflectionClass($class))->isAbstract()) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->taxableClassCache)) {
+            return;
+        }
+
+        if (!$metadata->hasAssociation('taxGroup')) {
+            $metadata->mapManyToOne([
+                'fieldName'    => 'taxGroup',
+                'targetEntity' => TaxGroupInterface::class,
+                //'cascade'       => [],
+                'joinColumns'  => [
+                    [
+                        'name'                 => 'tax_group_id',
+                        'referencedColumnName' => 'id',
+                        'onDelete'             => 'RESTRICT',
+                        'nullable'             => true,
+                    ],
+                ],
+            ]);
+        }
+
+        // Cache class
+        $this->taxableClassCache[] = $class;
+    }
+
+    /**
      * Configures the subject relative mapping.
      *
      * @param LoadClassMetadataEventArgs $eventArgs
@@ -89,13 +148,18 @@ class LoadMetadataListener implements EventSubscriber
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
-        // Don't add twice
-        if (in_array($class, $this->relativeClassCache)) {
+        // Check class
+        if (!is_subclass_of($class, SubjectRelativeInterface::class)) {
             return;
         }
 
-        // Check class
-        if (!is_subclass_of($class, SubjectRelativeInterface::class)) {
+        // Skip abstract classes.
+        if ((new \ReflectionClass($class))->isAbstract()) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->relativeClassCache)) {
             return;
         }
 
@@ -122,13 +186,18 @@ class LoadMetadataListener implements EventSubscriber
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
-        // Don't add twice
-        if (in_array($class, $this->stockClassCache)) {
+        // Check class
+        if (!is_subclass_of($class, StockSubjectInterface::class)) {
             return;
         }
 
-        // Check class
-        if (!is_subclass_of($class, StockSubjectInterface::class)) {
+        // Skip abstract classes.
+        if ((new \ReflectionClass($class))->isAbstract()) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->stockClassCache)) {
             return;
         }
 

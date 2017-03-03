@@ -9,11 +9,11 @@
             table="commerce_order_shipment_item">
 
         <indexes>
-            <index columns="shipment_id,sale_item_id" name="idx_commerce_order_shipment_item_sale_item_id" />
+            <index columns="shipment_id,order_item_id" name="idx_commerce_order_shipment_item_order_item_id" />
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="shipment_id,sale_item_id" name="unique_commerce_order_shipment_item_item_sale_item_id" />
+            <unique-constraint columns="shipment_id,order_item_id" name="unique_commerce_order_shipment_item_item_order_item_id" />
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
@@ -21,8 +21,8 @@
         </id>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem"
-                     field="saleItem">
-            <join-column name="sale_item_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+                     field="orderItem">
+            <join-column name="order_item_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipment"

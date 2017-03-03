@@ -69,13 +69,22 @@ abstract class AbstractShipmentItemListener
      */
     public function onInsert(ResourceEventInterface $event)
     {
-        $shipmentItem = $this->getShipmentItemFromEvent($event);
+        $item = $this->getShipmentItemFromEvent($event);
 
-        if ($this->isShipmentInDebitStockState($shipmentItem->getShipment())) {
-            $this->updateShipped($shipmentItem, $shipmentItem->getQuantity());
+        // If supplier order state is 'ordered', 'partial' or 'completed'
+        if (Model\ShipmentStates::isStockState($item->getShipment()->getState())) {
+            // Associated stock unit (if not exists) must be created (absolute ordered quantity).
+            $this->createSupplierOrderItemStockUnit($item);
+        } else { // Supplier order state is 'new' or 'cancelled'
+            // Associated stock unit (if exists) must be deleted.
+            $this->deleteSupplierOrderItemStockUnit($item);
         }
 
-        $this->scheduleShipmentContentChangeEvent($shipmentItem->getShipment());
+        if ($this->isShipmentInDebitStockState($item->getShipment())) {
+            $this->updateShipped($item, $item->getQuantity());
+        }
+
+        $this->scheduleShipmentContentChangeEvent($item->getShipment());
     }
 
     /**
@@ -86,6 +95,8 @@ abstract class AbstractShipmentItemListener
     public function onUpdate(ResourceEventInterface $event)
     {
         $shipmentItem = $this->getShipmentItemFromEvent($event);
+
+        // TODO Abort on shipment state transition (deletable <=> stockable)
 
         $changeSet = $this->persistenceHelper->getChangeSet($shipmentItem);
         if (isset($changeSet['quantity'])) {
@@ -162,7 +173,8 @@ abstract class AbstractShipmentItemListener
         $shipmentCS = $this->persistenceHelper->getChangeSet($shipment);
         $shipmentState = isset($shipmentCS['state']) ? $shipmentCS['state'][0] : $shipment->getState();
 
-        return in_array($shipmentState, Model\ShipmentStates::getDebitStockStates());
+        // TODO Use constant method
+        return in_array($shipmentState, Model\ShipmentStates::getStockStates());
     }
 
     /**
@@ -173,7 +185,12 @@ abstract class AbstractShipmentItemListener
      */
     protected function updateShipped(Model\ShipmentItemInterface $item, $quantity)
     {
+        throw new \Exception('BROKEN CODE');
+
         $saleItem = $item->getSaleItem();
+
+        // TODO
+        // - retrieve stock units through order item stock assignments
 
         // Get subject provider
         $provider = $this->stockUnitResolver->getProviderByRelative($saleItem);

@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 
 /**
  * Class OrderItem
@@ -26,9 +26,9 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     protected $order;
 
     /**
-     * @var ArrayCollection|StockUnitInterface[]
+     * @var ArrayCollection|StockAssignmentInterface[]
      */
-    protected $stockUnits;
+    protected $stockAssignments;
 
 
     /**
@@ -38,7 +38,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     {
         parent::__construct();
 
-        $this->stockUnits = new ArrayCollection();
+        $this->stockAssignments = new ArrayCollection();
     }
 
     /**
@@ -98,11 +98,11 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     /**
      * @inheritdoc
      */
-    public function addStockUnit(StockUnitInterface $unit)
+    public function addStockAssignment(StockAssignmentInterface $unit)
     {
-        if (!$this->stockUnits->contains($unit)) {
-            $this->stockUnits->add($unit);
-            $unit->addOrderItem($this);
+        if (!$this->stockAssignments->contains($unit)) {
+            $this->stockAssignments->add($unit);
+            $unit->setSaleItem($this);
         }
 
         return $this;
@@ -111,11 +111,11 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     /**
      * @inheritdoc
      */
-    public function removeStockUnit(StockUnitInterface $unit)
+    public function removeStockAssignment(StockAssignmentInterface $unit)
     {
-        if ($this->stockUnits->contains($unit)) {
-            $this->stockUnits->removeElement($unit);
-            $unit->removeOrderItem($this);
+        if ($this->stockAssignments->contains($unit)) {
+            $this->stockAssignments->removeElement($unit);
+            $unit->setSaleItem(null);
         }
 
         return $this;
@@ -124,9 +124,9 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getStockUnits()
+    public function getStockAssignments()
     {
-        return $this->stockUnits;
+        return $this->stockAssignments;
     }
 
     /**

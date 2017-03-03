@@ -92,6 +92,7 @@ abstract class AbstractStockUnitListener
         $trackProperties = [
             'orderedQuantity',
             'deliveredQuantity',
+            'reservedQuantity',
             'shippedQuantity',
             'estimatedDateOfArrival'
         ];
@@ -139,6 +140,7 @@ abstract class AbstractStockUnitListener
      */
     protected function scheduleSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
     {
+        // TODO Create and use a StockUnitChangeEvent class
         $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
         $event->addData('stock_unit', $stockUnit);
 
@@ -152,6 +154,7 @@ abstract class AbstractStockUnitListener
      */
     protected function scheduleSubjectStockUnitRemovalEvent(StockUnitInterface $stockUnit)
     {
+        // TODO Create and use a StockUnitRemoveEvent class
         $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
         $event->addData('stock_unit', $stockUnit);
 
@@ -179,6 +182,8 @@ abstract class AbstractStockUnitListener
      * Returns the subject's "stock unit removal" event name.
      *
      * @return string
+     *
+     * TODO rename to getSubjectStockUnitRemoveEventName
      */
     abstract protected function getSubjectStockUnitRemovalEventName();
 }

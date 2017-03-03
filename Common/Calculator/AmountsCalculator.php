@@ -72,7 +72,9 @@ class AmountsCalculator implements AmountsCalculatorInterface
         }
 
         // Shipment result
-        $result->merge($this->calculateShipment($sale));
+        if (!$gross) {
+            $result->merge($this->calculateShipment($sale));
+        }
 
         // TODO disable result caching
 
@@ -84,6 +86,8 @@ class AmountsCalculator implements AmountsCalculatorInterface
      */
     public function calculateShipment(SaleInterface $sale)
     {
+        // TODO don't calculate twice
+
         $result = new Result();
 
         if (0 < $sale->getShipmentAmount()) {
@@ -184,35 +188,6 @@ class AmountsCalculator implements AmountsCalculatorInterface
         return $result;
     }
 
-    public function calculateTaxationAdjustments(AdjustableInterface $adjustable, $base)
-    {
-        $result = new Result();
-
-        if (0 == $base) {
-            return $result;
-        }
-
-        if ($adjustable->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
-            $adjustments = $adjustable->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
-            foreach ($adjustments as $adjustment) {
-                // Only 'percent' mode adjustments are allowed here.
-                $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
-
-                if ($this->mode === self::MODE_NET) {
-                    // By multiplication
-                    $amount = $this->round($base * $adjustment->getAmount() / 100);
-                } else {
-                    // By difference (ATI - NET)
-                    $amount = $this->round($base * (1 + $adjustment->getAmount() / 100)) - $this->round($base);
-                }
-
-                $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $amount);
-            }
-        }
-
-        return $result;
-    }
-
     /**
      * @inheritdoc
      */
@@ -247,7 +222,7 @@ class AmountsCalculator implements AmountsCalculatorInterface
                 );
             }
         } elseif (AdjustmentModes::MODE_FLAT === $mode) {
-            $result->addBase(- $this->round($adjustment->getAmount()));
+            $result->addBase(-$this->round($adjustment->getAmount()));
 
             // TODO calculate per tax discount (dispatch regarding to each tax total)
 
@@ -262,6 +237,43 @@ class AmountsCalculator implements AmountsCalculatorInterface
 
         } else {
             throw new InvalidArgumentException("Unexpected adjustment mode '$mode'.");
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate the taxation adjustments.
+     *
+     * @param AdjustableInterface $adjustable
+     * @param float               $base
+     *
+     * @return Result
+     */
+    protected function calculateTaxationAdjustments(AdjustableInterface $adjustable, $base)
+    {
+        $result = new Result();
+
+        if (0 == $base) {
+            return $result;
+        }
+
+        if ($adjustable->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
+            $adjustments = $adjustable->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
+            foreach ($adjustments as $adjustment) {
+                // Only 'percent' mode adjustments are allowed here.
+                $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
+
+                if ($this->mode === self::MODE_NET) {
+                    // By multiplication
+                    $amount = $this->round($base * $adjustment->getAmount() / 100);
+                } else {
+                    // By difference (ATI - NET)
+                    $amount = $this->round($base * (1 + $adjustment->getAmount() / 100)) - $this->round($base);
+                }
+
+                $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $amount);
+            }
         }
 
         return $result;

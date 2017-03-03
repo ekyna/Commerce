@@ -45,20 +45,6 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
-    public function getProviderByRelative(SubjectRelativeInterface $relative)
-    {
-        return $this
-            ->subjectProviderRegistry
-            ->getProviderByRelative($relative);
-    }
-
-    /**
-     * Creates (and initializes) a stock unit for the given supplier order item.
-     *
-     * @param SupplierOrderItemInterface $item
-     *
-     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
-     */
     public function createBySupplierOrderItem(SupplierOrderItemInterface $item)
     {
         /** @var StockSubjectInterface $subject */
@@ -79,15 +65,53 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
-    public function getRepositoryByRelative(SubjectRelativeInterface $relative)
+    public function findAvailableOrPending($subjectOrRelative)
     {
-        $subject = $this->subjectHelper->resolve($relative);
+        /**
+         * @var StockSubjectInterface $subject
+         * @var StockUnitRepositoryInterface $repository
+         */
+        list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        if (!$subject instanceof StockSubjectInterface) {
-            throw new InvalidArgumentException('Expected instance of ' . StockSubjectInterface::class);
+        return $repository->findAvailableOrPendingBySubject($subject);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findUnassigned($subjectOrRelative)
+    {
+        /**
+         * @var StockSubjectInterface $subject
+         * @var StockUnitRepositoryInterface $repository
+         */
+        list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
+
+        return $repository->findUnassignedBySubject($subject);
+    }
+
+    /**
+     * Returns the subject and his stock unit repository.
+     *
+     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     *
+     * @return array(StockSubjectInterface, StockUnitRepositoryInterface)
+     */
+    protected function getSubjectAndRepository($subjectOrRelative)
+    {
+        if ($subjectOrRelative instanceof SubjectRelativeInterface) {
+            $subject = $this->subjectHelper->resolve($subjectOrRelative);
+        } elseif($subjectOrRelative instanceof StockSubjectInterface) {
+            $subject = $subjectOrRelative;
+        } else {
+            throw new InvalidArgumentException(sprintf(
+                "Expected instance of '%s' or '%s'.",
+                SubjectRelativeInterface::class,
+                StockSubjectInterface::class
+            ));
         }
 
-        return $this->getRepositoryBySubject($subject);
+        return [$subject, $this->getRepositoryBySubject($subject)];
     }
 
     /**

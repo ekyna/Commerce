@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AbstractShipmentItem implements ShipmentItemInterface
+abstract class AbstractShipmentItem implements ShipmentItemInterface
 {
     /**
      * @var int
@@ -22,11 +22,6 @@ class AbstractShipmentItem implements ShipmentItemInterface
      * @var ShipmentInterface
      */
     protected $shipment;
-
-    /**
-     * @var SaleItemInterface
-     */
-    protected $saleItem;
 
     /**
      * @var float
@@ -55,33 +50,17 @@ class AbstractShipmentItem implements ShipmentItemInterface
      */
     public function setShipment(ShipmentInterface $shipment = null)
     {
-        if (null !== $this->shipment && $this->shipment != $shipment) {
-            $this->shipment->removeItem($this);
+        if ($this->shipment != $shipment) {
+            if ($this->shipment) {
+                $this->shipment->removeItem($this);
+            }
+
+            $this->shipment = $shipment;
+
+            if ($this->shipment) {
+                $this->shipment->addItem($this);
+            }
         }
-
-        $this->shipment = $shipment;
-
-        if (null !== $this->shipment) {
-            $this->shipment->addItem($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSaleItem()
-    {
-        return $this->saleItem;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setSaleItem(SaleItemInterface $saleItem)
-    {
-        $this->saleItem = $saleItem;
 
         return $this;
     }

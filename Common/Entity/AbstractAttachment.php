@@ -32,7 +32,7 @@ abstract class AbstractAttachment implements AttachmentInterface
      */
     public function __toString()
     {
-        return $this->guessFilename();
+        return $this->getFilename();
     }
 
     /**

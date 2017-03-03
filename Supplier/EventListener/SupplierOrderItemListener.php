@@ -28,7 +28,7 @@ class SupplierOrderItemListener extends AbstractListener
 
         $changed = $this->syncSubjectDataWithProduct($item);
 
-         // If supplier order state is 'ordered', 'partial' or 'completed'
+        // If supplier order state is 'ordered', 'partial' or 'completed'
         if (SupplierOrderStates::isStockState($item->getOrder()->getState())) {
             // Associated stock unit (if not exists) must be created (absolute ordered quantity).
             $this->createSupplierOrderItemStockUnit($item);
@@ -72,18 +72,19 @@ class SupplierOrderItemListener extends AbstractListener
         $stateCs = null;
         if ($this->persistenceHelper->isChanged($order, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
-        }
-        // If order state has changed to a deletable state
-        if ($stateCs && SupplierOrderStates::isStockState([0]) && SupplierOrderStates::isDeletableState($stateCs[1])) {
-            // Associated stock unit (if exists) must be deleted.
-            // (made by the supplier order listener)
-            return;
-        }
-        // Else if order state has changed to a stockable state
-        elseif ($stateCs && SupplierOrderStates::isDeletableState([0]) && SupplierOrderStates::isStockState($stateCs[1])) {
-            // Associated stock unit (if not exists) must be created (absolute ordered quantity).
-            // (made by the supplier order listener)
-            return;
+
+            // If order state has changed to a deletable state
+            if (SupplierOrderStates::hasChangedToDeletable($stateCs)) {
+                // Associated stock unit (if exists) must be deleted.
+                // (made by the supplier order listener)
+                return;
+            }
+            // Else if order state has changed to a stockable state
+            elseif (SupplierOrderStates::hasChangedToStock($stateCs)) {
+                // Associated stock unit (if not exists) must be created (absolute ordered quantity).
+                // (made by the supplier order listener)
+                return;
+            }
         }
 
         if (SupplierOrderStates::isStockState($item->getOrder()->getState())) {

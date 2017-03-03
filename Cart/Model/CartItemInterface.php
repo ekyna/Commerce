@@ -22,6 +22,7 @@ interface CartItemInterface extends SaleItemInterface
      * Sets the cart.
      *
      * @param CartInterface $cart
+     *
      * @return $this|CartItemInterface
      */
     public function setCart(CartInterface $cart = null);

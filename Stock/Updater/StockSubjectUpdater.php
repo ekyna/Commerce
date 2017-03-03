@@ -222,6 +222,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         $changed = $this->updateOrderedStock($subject) || $changed;
 
+        // TODO shipped ?
+
         $changed = $this->updateEstimatedDateOfArrival($subject) || $changed;
 
         return $this->updateStockState($subject) || $changed;
@@ -304,6 +306,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      * @param StockSubjectInterface $subject
      *
      * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     *
+     * @deprecated Use the resolver method findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
      */
     private function findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
     {

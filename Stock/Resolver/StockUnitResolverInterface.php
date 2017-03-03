@@ -25,24 +25,22 @@ interface StockUnitResolverInterface
     public function createBySupplierOrderItem(SupplierOrderItemInterface $item);
 
     /**
-     * Returns the relative subject provider.
+     * Finds the available or pending stock units.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
      *
-     * @return \Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface|null
-     *
-     * @deprecated
+     * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function getProviderByRelative(SubjectRelativeInterface $relative);
+    public function findAvailableOrPending($subjectOrRelative);
 
     /**
-     * Returns the stock unit repository by subject relative.
+     * Finds the unassigned (i.e. not fully assigned) stock units.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
      *
-     * @return StockUnitRepositoryInterface
+     * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function getRepositoryByRelative(SubjectRelativeInterface $relative);
+    public function findUnassigned($subjectOrRelative);
 
     /**
      * Returns the stock unit repository by subject.
@@ -50,6 +48,8 @@ interface StockUnitResolverInterface
      * @param StockSubjectInterface $subject
      *
      * @return StockUnitRepositoryInterface
+     *
+     * @deprecated Use findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
      */
     public function getRepositoryBySubject(StockSubjectInterface $subject);
 }

@@ -11,5 +11,19 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
  */
 interface OrderShipmentItemInterface extends ShipmentItemInterface
 {
+    /**
+     * Set the order item.
+     *
+     * @param OrderItemInterface $orderItem
+     *
+     * @return $this|OrderShipmentItemInterface
+     */
+    public function setOrderItem(OrderItemInterface $orderItem);
 
+    /**
+     * Returns the order item.
+     *
+     * @return OrderItemInterface
+     */
+    public function getOrderItem();
 }

@@ -131,7 +131,8 @@ abstract class AbstractPaymentListener
     public function onPreUpdate(ResourceEventInterface $event)
     {
         /*$payment = $this->getPaymentFromEvent($event);
-        // TODO assert updateable states
+
+        // TODO assert deletable states
         if (!in_array($payment->getState(), PaymentStates::getDeletableStates())) {
             throw new IllegalOperationException();
         }*/
@@ -162,6 +163,8 @@ abstract class AbstractPaymentListener
      */
     protected function generateNumber(PaymentInterface $payment)
     {
+        // TODO Use a number generator
+
         if (0 == strlen($payment->getNumber())) {
             if (null === $sale = $payment->getSale()) {
                 return false;

@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -19,6 +20,22 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class OrderListener extends AbstractSaleListener
 {
+    /**
+     * @var StockUnitAssignerInterface
+     */
+    protected $stockAssigner;
+
+
+    /**
+     * Sets the stock assigner.
+     *
+     * @param StockUnitAssignerInterface $stockAssigner
+     */
+    public function setStockAssigner(StockUnitAssignerInterface $stockAssigner)
+    {
+        $this->stockAssigner = $stockAssigner;
+    }
+
     /**
      * @inheritdoc
      */
@@ -41,6 +58,13 @@ class OrderListener extends AbstractSaleListener
         // TODO shipments state (move on content change event handler) ...
 
         parent::onUpdate($event);
+
+        // If order state has changed from deletable to stockable
+        //    -> for each order items
+        //       $this->stockAssigner->createAssignments($item);
+        // Else If order state has changed from stockable to deletable
+        //    -> for each order items
+        //       $this->stockAssigner->removeAssignments($item);
     }
 
     /**

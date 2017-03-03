@@ -122,8 +122,8 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function addItem(Shipment\ShipmentItemInterface $item)
     {
         if (!$this->hasItem($item)) {
+            $this->items->add($item);
             $item->setShipment($this);
-            //$this->items->add($item);
         }
 
         return $this;
@@ -135,8 +135,8 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function removeItem(Shipment\ShipmentItemInterface $item)
     {
         if ($this->hasItem($item)) {
+            $this->items->removeElement($item);
             $item->setShipment(null);
-            //$this->items->removeElement($item);
         }
 
         return $this;

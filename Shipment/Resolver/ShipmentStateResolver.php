@@ -26,6 +26,7 @@ class ShipmentStateResolver implements StateResolverInterface
         $changed = false;
 
         // TODO: Implement resolve() method.
+        // State can be changed in the shipment form ... so we should not change it.
 
         return $changed;
     }

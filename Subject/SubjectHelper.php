@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
@@ -56,17 +55,17 @@ class SubjectHelper implements SubjectHelperInterface
     }
 
     /**
-     * Returns the provider that supports the subject relative.
+     * Returns the provider by name or supporting the given relative or subject.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param string|SubjectRelativeInterface|object $nameOrRelativeOrSubject
      *
      * @return \Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface
      * @throws InvalidArgumentException
      */
-    protected function getProvider(SubjectRelativeInterface $relative)
+    protected function getProvider($nameOrRelativeOrSubject)
     {
-        if (null === $provider = $this->registry->getProviderByRelative($relative)) {
-            throw new InvalidArgumentException('Unsupported subject relative.');
+        if (null === $provider = $this->registry->getProvider($nameOrRelativeOrSubject)) {
+            throw new InvalidArgumentException('Failed to get provider.');
         }
 
         return $provider;

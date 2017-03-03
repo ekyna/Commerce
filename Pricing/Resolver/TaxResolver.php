@@ -113,6 +113,7 @@ class TaxResolver implements TaxResolverInterface
         }
 
         // Resolve customer group (sale customer group has precedence)
+        // TODO Remove this block as sale customer group is always set.
         $customer = $sale->getCustomer();
         if ((null === $customerGroup = $sale->getCustomerGroup()) && null !== $customer) {
             $customerGroup = $customer->getCustomerGroup();

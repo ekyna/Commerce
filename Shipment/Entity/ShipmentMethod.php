@@ -6,24 +6,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethod;
 use Ekyna\Component\Commerce\Common\Model\MessageInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
+use Ekyna\Component\Commerce\Pricing\Model as Pricing;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 
 /**
  * Class ShipmentMethod
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentMethod extends AbstractMethod implements ShipmentMethodInterface
+class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodInterface
 {
-    /**
-     * @var TaxGroupInterface
-     */
-    protected $taxGroup;
+    use Pricing\TaxableTrait;
 
     /**
-     * @var ArrayCollection|ShipmentPriceInterface[]
+     * @var ArrayCollection|Shipment\ShipmentPriceInterface[]
      */
     protected $prices;
 
@@ -36,24 +32,6 @@ class ShipmentMethod extends AbstractMethod implements ShipmentMethodInterface
         parent::__construct();
 
         $this->prices = new ArrayCollection();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxGroup()
-    {
-        return $this->taxGroup;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxGroup(TaxGroupInterface $taxGroup = null)
-    {
-        $this->taxGroup = $taxGroup;
-
-        return $this;
     }
 
     /**
@@ -75,7 +53,7 @@ class ShipmentMethod extends AbstractMethod implements ShipmentMethodInterface
     /**
      * @inheritdoc
      */
-    public function hasPrice(ShipmentPriceInterface $price)
+    public function hasPrice(Shipment\ShipmentPriceInterface $price)
     {
         return $this->prices->contains($price);
     }
@@ -83,7 +61,7 @@ class ShipmentMethod extends AbstractMethod implements ShipmentMethodInterface
     /**
      * @inheritdoc
      */
-    public function addPrice(ShipmentPriceInterface $price)
+    public function addPrice(Shipment\ShipmentPriceInterface $price)
     {
         if (!$this->hasPrice($price)) {
             $price->setMethod($this);
@@ -96,7 +74,7 @@ class ShipmentMethod extends AbstractMethod implements ShipmentMethodInterface
     /**
      * @inheritdoc
      */
-    public function removePrice(ShipmentPriceInterface $price)
+    public function removePrice(Shipment\ShipmentPriceInterface $price)
     {
         if ($this->hasPrice($price)) {
             $price->setMethod(null);
