@@ -187,7 +187,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     {
         if ($this->stockAssignments->contains($item)) {
             $this->stockAssignments->removeElement($item);
-            $item->setStockUnit($this);
+            $item->setStockUnit(null);
         }
 
         return $this;
@@ -350,6 +350,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getInStockQuantity()
     {
-        return $this->getDeliveredQuantity() - $this->getShippedQuantity();
+        return $this->getDeliveredQuantity() - $this->getShippedQuantity(); // TODO - reserved stock ?
     }
 }

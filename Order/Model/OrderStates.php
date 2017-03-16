@@ -47,4 +47,115 @@ final class OrderStates
     {
         return in_array($state, static::getStates(), true);
     }
+
+    /**
+     * Returns the deletable states.
+     *
+     * @return array
+     */
+    static public function getDeletableStates()
+    {
+        return [
+            static::STATE_NEW,
+            static::STATE_CANCELLED,
+            static::STATE_REFUSED,
+        ];
+    }
+
+    /**
+     * Returns whether the given state is a deletable state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isDeletableState($state)
+    {
+        return in_array($state, static::getDeletableStates(), true);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a non deletable state to a deletable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedToDeletable(array $cs)
+    {
+        return (isset($cs[0]) && isset($cs[1]))
+            && !static::isDeletableState($cs[0])
+            && static::isDeletableState($cs[1]);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a deletable state to a non deletable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedFromDeletable(array $cs)
+    {
+        return (isset($cs[0]) && isset($cs[1]))
+            && static::isDeletableState($cs[0])
+            && !static::isDeletableState($cs[1]);
+    }
+
+    /**
+     * Returns the states which must result in a stock management.
+     *
+     * @return array
+     */
+    static public function getStockableStates()
+    {
+        return [
+            static::STATE_ACCEPTED,
+            static::STATE_COMPLETED
+        ];
+    }
+
+    /**
+     * Returns whether the given state is a stock state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isStockableState($state)
+    {
+        return in_array($state, static::getStockableStates(), true);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a non stockable state to a stockable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedToStockable(array $cs)
+    {
+        return (isset($cs[0]) && isset($cs[1]))
+            && !static::isStockableState($cs[0])
+            && static::isStockableState($cs[1]);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a stockable state to a non stockable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedFromStockable(array $cs)
+    {
+        return (isset($cs[0]) && isset($cs[1]))
+            && static::isStockableState($cs[0])
+            && !static::isStockableState($cs[1]);
+    }
 }

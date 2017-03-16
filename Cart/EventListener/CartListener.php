@@ -43,4 +43,16 @@ class CartListener extends AbstractSaleListener
 
         $this->persistenceHelper->scheduleEvent(CartEvents::ADDRESS_CHANGE, $sale);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function scheduleStateChangeEvent(SaleInterface $sale)
+    {
+        if (!$sale instanceof CartInterface) {
+            throw new InvalidArgumentException("Expected instance of CartInterface");
+        }
+
+        $this->persistenceHelper->scheduleEvent(CartEvents::STATE_CHANGE, $sale);
+    }
 }

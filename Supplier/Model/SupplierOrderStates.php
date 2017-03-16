@@ -70,11 +70,25 @@ final class SupplierOrderStates
     }
 
     /**
+     * Returns whether the state has changed from a stockable state to a deletable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedToDeletable(array $cs)
+    {
+        return (isset($cs[0]) && isset($cs[1]))
+            && static::isStockableState($cs[0])
+            && static::isDeletableState($cs[1]);
+    }
+
+    /**
      * Returns the states which must result in a stock management.
      *
      * @return array
      */
-    static public function getStockStates()
+    static public function getStockableStates()
     {
         return [
             static::STATE_ORDERED,
@@ -90,24 +104,12 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function isStockState($state)
+    static public function isStockableState($state)
     {
-        return in_array($state, static::getStockStates(), true);
+        return in_array($state, static::getStockableStates(), true);
     }
 
-    /**
-     * Returns whether the state has changed from a stockable state to a deletable state.
-     *
-     * @param array $cs The persistence change set
-     *
-     * @return bool
-     */
-    static public function hasChangedToDeletable(array $cs)
-    {
-        return (isset($cs[0]) && isset($cs[1]))
-            && static::isStockState($cs[0])
-            && static::isDeletableState($cs[1]);
-    }
+    // TODO Change the following methods (see order states)
 
     /**
      * Returns whether the state has changed from a deletable state to a stockable state.
@@ -120,6 +122,6 @@ final class SupplierOrderStates
     {
         return (isset($cs[0]) && isset($cs[1]))
             && static::isDeletableState($cs[0])
-            && static::isStockState($cs[1]);
+            && static::isStockableState($cs[1]);
     }
 }

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
@@ -39,33 +40,26 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    public function onInsert(ResourceEventInterface $event)
+    /*public function onInsert(ResourceEventInterface $event)
     {
-        $sale = $this->getSaleFromEvent($event);
+        //$sale = $this->getSaleFromEvent($event);
 
         // TODO shipments state (move on content change event handler) ...
 
         parent::onInsert($event);
-    }
+    }*/
 
     /**
      * @inheritdoc
      */
-    public function onUpdate(ResourceEventInterface $event)
+    /*public function onUpdate(ResourceEventInterface $event)
     {
-        $sale = $this->getSaleFromEvent($event);
+        //$sale = $this->getSaleFromEvent($event);
 
         // TODO shipments state (move on content change event handler) ...
 
         parent::onUpdate($event);
-
-        // If order state has changed from deletable to stockable
-        //    -> for each order items
-        //       $this->stockAssigner->createAssignments($item);
-        // Else If order state has changed from stockable to deletable
-        //    -> for each order items
-        //       $this->stockAssigner->removeAssignments($item);
-    }
+    }*/
 
     /**
      * @inheritdoc
@@ -88,6 +82,33 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
+     * @inheritDoc
+     */
+    public function onStateChange(ResourceEventInterface $event)
+    {
+        parent::onStateChange($event);
+
+        $sale = $this->getSaleFromEvent($event);
+
+        if ($this->persistenceHelper->isChanged($sale, 'state')) {
+            $stateCs = $this->persistenceHelper->getChangeSet($sale)['state'];
+
+            // If order state has changed from non stockable to stockable
+            if (OrderStates::hasChangedToStockable($stateCs)) {
+                foreach ($sale->getItems() as $item) {
+                    $this->createAssignmentsRecursively($item);
+                }
+            }
+            // If order state has changed from stockable to non stockable
+            elseif(OrderStates::hasChangedFromStockable($stateCs)) {
+                foreach ($sale->getItems() as $item) {
+                    $this->removeAssignmentsRecursively($item);
+                }
+            }
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     protected function updateState(SaleInterface $sale)
@@ -104,6 +125,34 @@ class OrderListener extends AbstractSaleListener
         }
 
         return false;
+    }
+
+    /**
+     * Creates the sale item's stock assignments recursively.
+     *
+     * @param SaleItemInterface $item
+     */
+    protected function createAssignmentsRecursively(SaleItemInterface $item)
+    {
+        $this->stockAssigner->createAssignments($item);
+
+        foreach ($item->getChildren() as $child) {
+            $this->createAssignmentsRecursively($child);
+        }
+    }
+
+    /**
+     * Removes the sale item's stock assignments recursively.
+     *
+     * @param SaleItemInterface $item
+     */
+    protected function removeAssignmentsRecursively(SaleItemInterface $item)
+    {
+        $this->stockAssigner->removeAssignments($item);
+
+        foreach ($item->getChildren() as $child) {
+            $this->removeAssignmentsRecursively($child);
+        }
     }
 
     /**
@@ -130,5 +179,17 @@ class OrderListener extends AbstractSaleListener
         }
 
         $this->persistenceHelper->scheduleEvent(OrderEvents::ADDRESS_CHANGE, $sale);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function scheduleStateChangeEvent(SaleInterface $sale)
+    {
+        if (!$sale instanceof OrderInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderInterface");
+        }
+
+        $this->persistenceHelper->scheduleEvent(OrderEvents::STATE_CHANGE, $sale);
     }
 }

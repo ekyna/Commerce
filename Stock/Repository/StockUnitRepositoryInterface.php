@@ -24,15 +24,6 @@ interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
     public function findAvailableOrPendingBySubject(Stock\StockSubjectInterface $subject);
 
     /**
-     * Finds the subject's unassigned (i.e. not fully assigned) stock units.
-     *
-     * @param Stock\StockSubjectInterface $subject
-     *
-     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
-     */
-    public function findUnassignedBySubject(Stock\StockSubjectInterface $subject);
-
-    /**
      * Finds the subject's new stock units.
      *
      * @param Stock\StockSubjectInterface $subject
@@ -49,4 +40,13 @@ interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
     public function findNotClosedSubject(Stock\StockSubjectInterface $subject);
+
+    /**
+     * Finds the subject's not fully assigned stock units.
+     *
+     * @param Stock\StockSubjectInterface $subject
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    public function findAssignableBySubject(Stock\StockSubjectInterface $subject);
 }

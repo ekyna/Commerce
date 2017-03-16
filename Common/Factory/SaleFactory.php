@@ -119,6 +119,14 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
+    public function createStockAssignmentForItem(Model\SaleItemInterface $item)
+    {
+        return $this->resolveClassAndCreateObject('item_stock_assignment', $item);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function createAdjustmentForSale(Model\SaleInterface $sale)
     {
         return $this->resolveClassAndCreateObject('adjustment', $sale);
@@ -216,6 +224,9 @@ class SaleFactory implements SaleFactoryInterface
                 Cart\Model\CartItemInterface::class   => Cart\Entity\CartItemAdjustment::class,
                 Order\Model\OrderItemInterface::class => Order\Entity\OrderItemAdjustment::class,
                 Quote\Model\QuoteItemInterface::class => Quote\Entity\QuoteItemAdjustment::class,
+            ],
+            'item_stock_assignment' => [
+                Order\Model\OrderItemInterface::class => Order\Entity\OrderItemStockAssignment::class,
             ],
             'payment'         => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartPayment::class,

@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderItemStockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment;
 
 /**
@@ -12,7 +13,7 @@ use Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderItemStockAssignment extends AbstractStockAssignment
+class OrderItemStockAssignment extends AbstractStockAssignment implements OrderItemStockAssignmentInterface
 {
     /**
      * @var OrderItemInterface
@@ -21,9 +22,7 @@ class OrderItemStockAssignment extends AbstractStockAssignment
 
 
     /**
-     * Returns the order item.
-     *
-     * @return OrderItemInterface
+     * @inheritdoc
      */
     public function getOrderItem()
     {
@@ -31,11 +30,7 @@ class OrderItemStockAssignment extends AbstractStockAssignment
     }
 
     /**
-     * Sets the order item.
-     *
-     * @param OrderItemInterface $orderItem
-     *
-     * @return OrderItemStockAssignment
+     * @inheritdoc
      */
     public function setOrderItem(OrderItemInterface $orderItem = null)
     {
@@ -45,7 +40,7 @@ class OrderItemStockAssignment extends AbstractStockAssignment
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getSaleItem()
     {
@@ -53,7 +48,7 @@ class OrderItemStockAssignment extends AbstractStockAssignment
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function setSaleItem(SaleItemInterface $saleItem = null)
     {

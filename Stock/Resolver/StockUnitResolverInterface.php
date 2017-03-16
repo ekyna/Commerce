@@ -16,6 +16,15 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 interface StockUnitResolverInterface
 {
     /**
+     * Creates a stock unit for the given subject relative.
+     *
+     * @param SubjectRelativeInterface $relative
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
+     */
+    public function createBySubjectRelative(SubjectRelativeInterface $relative);
+
+    /**
      * Creates (and initializes) a stock unit for the given supplier order item.
      *
      * @param SupplierOrderItemInterface $item
@@ -34,13 +43,13 @@ interface StockUnitResolverInterface
     public function findAvailableOrPending($subjectOrRelative);
 
     /**
-     * Finds the unassigned (i.e. not fully assigned) stock units.
+     * Finds the not fully assigned stock units by subject or relative.
      *
      * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
      *
      * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findUnassigned($subjectOrRelative);
+    public function findAssignable($subjectOrRelative);
 
     /**
      * Returns the stock unit repository by subject.

@@ -96,7 +96,6 @@ class SupplierOrderListener extends AbstractListener
         }
 
         // Deletable <=> Stockable state change case.
-        $stateCs = null;
         if ($this->persistenceHelper->isChanged($order, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
 
@@ -119,7 +118,7 @@ class SupplierOrderListener extends AbstractListener
         // If order's estimated date of arrival has changed and order's state is stockable
         if (
             $this->persistenceHelper->isChanged($order, 'estimatedDateOfArrival')
-            && SupplierOrderStates::isStockState($order->getState())
+            && SupplierOrderStates::isStockableState($order->getState())
         ) {
             // Update stock units estimated date of arrival
             foreach ($order->getItems() as $item) {

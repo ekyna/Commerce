@@ -250,18 +250,23 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
         return $this;
     }
 
+    public function getParentsQuantity()
+    {
+        $modifier = 1;
+
+        $parent = $this;
+        while (null !== $parent = $parent->getParent()) {
+            $modifier *= $parent->getQuantity();
+        }
+
+        return $modifier;
+    }
+
     /**
      * @inheritdoc
      */
     public function getTotalQuantity()
     {
-        $quantity = $this->getQuantity();
-
-        $parent = $this;
-        while (null !== $parent = $parent->getParent()) {
-            $quantity *= $parent->getQuantity();
-        }
-
-        return $quantity;
+        return $this->getQuantity() * $this->getParentsQuantity();
     }
 }

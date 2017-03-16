@@ -222,6 +222,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         $changed = $this->updateOrderedStock($subject) || $changed;
 
+        // TODO reserved ?
+
         // TODO shipped ?
 
         $changed = $this->updateEstimatedDateOfArrival($subject) || $changed;
@@ -266,6 +268,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             }
         }
 
+        // TODO Reserved ?
+
         if ($changed || isset($cs['estimatedDateOfArrival'])) {
             $date = $stockUnit->getState() !== StockUnitStates::STATE_CLOSED
                 ? $stockUnit->getEstimatedDateOfArrival()
@@ -286,7 +290,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         $changed = false;
 
-        // We don't care about delivered and shipped stocks because the
+        // We don't care about delivered, reserved and shipped stocks because the
         // stock unit removal is prevented if those stocks are not null.
 
         // Update ordered quantity

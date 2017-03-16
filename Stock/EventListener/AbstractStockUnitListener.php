@@ -119,15 +119,21 @@ abstract class AbstractStockUnitListener
 
         if (null !== $orderItem = $stockUnit->getSupplierOrderItem()) {
             // Prevent deletion if the supplier order has a stockable state
-            if (SupplierOrderStates::isStockState($orderItem->getOrder()->getState())) {
+            if (SupplierOrderStates::isStockableState($orderItem->getOrder()->getState())) {
                 throw new IllegalOperationException(
                     "The stock unit can't be deleted as it is linked to a supplier order with a stockable state."
                 );
             }
         }
 
-        if (0 < $stockUnit->getDeliveredQuantity() || 0 < $stockUnit->getShippedQuantity()) {
-            throw new IllegalOperationException("The stock unit can't be deleted as it has been delivered or shipped.");
+        if (
+            0 < $stockUnit->getDeliveredQuantity() ||
+            0 < $stockUnit->getReservedQuantity() ||
+            0 < $stockUnit->getShippedQuantity()
+        ) {
+            throw new IllegalOperationException(
+                "The stock unit can't be deleted as it has been delivered, reserved or shipped."
+            );
         }
 
         $this->scheduleSubjectStockUnitRemovalEvent($stockUnit);

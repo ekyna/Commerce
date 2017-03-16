@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
@@ -17,6 +18,8 @@ interface StockUnitUpdaterInterface
      * @param StockUnitInterface $stockUnit
      * @param float              $quantity
      * @param bool               $relative
+     *
+     * @throws InvalidArgumentException
      */
     public function updateOrdered(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
@@ -26,8 +29,21 @@ interface StockUnitUpdaterInterface
      * @param StockUnitInterface $stockUnit
      * @param float              $quantity
      * @param bool               $relative
+     *
+     * @throws InvalidArgumentException
      */
     public function updateDelivered(StockUnitInterface $stockUnit, $quantity, $relative = true);
+
+    /**
+     * Updates the reserved quantity (from customers).
+     *
+     * @param StockUnitInterface $stockUnit
+     * @param float              $quantity
+     * @param bool               $relative
+     *
+     * @throws InvalidArgumentException
+     */
+    public function updateReserved(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
     /**
      * Updates the shipped quantity (to customers).
@@ -35,6 +51,8 @@ interface StockUnitUpdaterInterface
      * @param StockUnitInterface $stockUnit
      * @param float              $quantity
      * @param bool               $relative
+     *
+     * @throws InvalidArgumentException
      */
     public function updateShipped(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
@@ -50,7 +68,7 @@ interface StockUnitUpdaterInterface
      * Updates the estimated date of arrival.
      *
      * @param StockUnitInterface $stockUnit
-     * @param \DateTime $date
+     * @param \DateTime          $date
      */
     public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date);
 }

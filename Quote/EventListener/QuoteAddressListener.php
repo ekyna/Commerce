@@ -19,7 +19,7 @@ class QuoteAddressListener extends AbstractSaleAddressListener
     /**
      * @inheritdoc
      */
-    protected function scheduleSaleTaxResolutionEvent(Model\AddressInterface $address)
+    protected function scheduleSaleAddressChangeEvent(Model\AddressInterface $address)
     {
         /** @var QuoteAddressInterface $address */
         $this->persistenceHelper->scheduleEvent(QuoteEvents::ADDRESS_CHANGE, $address->getQuote());

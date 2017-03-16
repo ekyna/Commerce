@@ -19,12 +19,11 @@ interface StockUnitAssignerInterface
     public function createAssignments(SaleItemInterface $item);
 
     /**
-     * Dispatch the quantity change on sale item stock assignments.
+     * Updates the stock assignments of the given sale item.
      *
      * @param SaleItemInterface $item
-     * @param float             $deltaQuantity The difference between the new and old quantity.
      */
-    public function dispatchQuantityChange(SaleItemInterface $item, $deltaQuantity);
+    public function updateAssignments(SaleItemInterface $item);
 
     /**
      * Removes the stock assignments from the given sale item.

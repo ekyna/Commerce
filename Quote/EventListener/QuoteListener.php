@@ -41,4 +41,16 @@ class QuoteListener extends AbstractSaleListener
 
         $this->persistenceHelper->scheduleEvent(QuoteEvents::ADDRESS_CHANGE, $sale);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function scheduleStateChangeEvent(SaleInterface $sale)
+    {
+        if (!$sale instanceof QuoteInterface) {
+            throw new InvalidArgumentException("Expected instance of QuoteInterface");
+        }
+
+        $this->persistenceHelper->scheduleEvent(QuoteEvents::STATE_CHANGE, $sale);
+    }
 }

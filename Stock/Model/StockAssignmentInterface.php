@@ -26,7 +26,7 @@ interface StockAssignmentInterface extends ResourceInterface
      *
      * @return $this|StockAssignmentInterface
      */
-    public function setStockUnit(StockUnitInterface $stockUnit);
+    public function setStockUnit(StockUnitInterface $stockUnit = null);
 
     /**
      * Returns the sale item.

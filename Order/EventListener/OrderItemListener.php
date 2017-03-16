@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
@@ -21,7 +22,7 @@ class OrderItemListener extends AbstractSaleItemListener
     /**
      * @var StockUnitAssignerInterface
      */
-    protected $stockAssigner;
+    private $stockAssigner;
 
 
     /**
@@ -41,11 +42,14 @@ class OrderItemListener extends AbstractSaleItemListener
     {
         parent::onInsert($event);
 
-        // TODO
+        $item = $this->getSaleItemFromEvent($event);
+
         // If order is in stockable state
-        //   $this->stockAssigner->createAssignments($item);
-        // Else if order is at a deletable state
-        //   $this->stockAssigner->removeAssignments($item);
+        if (OrderStates::isStockableState($item->getSale()->getState())) {
+            $this->stockAssigner->createAssignments($item);
+        } else {
+            $this->stockAssigner->removeAssignments($item);
+        }
     }
 
     /**
@@ -55,13 +59,29 @@ class OrderItemListener extends AbstractSaleItemListener
     {
         parent::onUpdate($event);
 
-        // TODO
-        // If order state has changed from deletable to stockable or from stockable to deletable
-        //   -> abort (stock assignments operation has been made at order level)
+        $item = $this->getSaleItemFromEvent($event);
 
-        // TODO (in a dedicated service : handleSaleItemUpdate ?)
+        $doAssignmentsUpdate = true;
+        $sale = $item->getSale();
+        if ($this->persistenceHelper->isChanged($sale, 'state')) {
+            $stateCs = $this->persistenceHelper->getChangeSet($sale)['state'];
+
+            // If order state has changed from a non stockable to a stockable state
+            if (
+                OrderStates::hasChangedToStockable($stateCs) ||
+                OrderStates::hasChangedFromStockable($stateCs)
+            ) {
+                // Prevent assignments update (handled by the order listener)
+                $doAssignmentsUpdate = false;
+            }
+        }
+
         // If order is in stockable state and order item quantity has changed
-        //   $this->stockAssigner->dispatchQuantityChange($item, $deltaQuantity);
+        if ($doAssignmentsUpdate && OrderStates::isStockableState($sale->getState())) {
+            if ($this->persistenceHelper->isChanged($item, 'quantity')) {
+                $this->updateAssignmentsRecursively($item);
+            }
+        }
     }
 
     /**
@@ -71,9 +91,12 @@ class OrderItemListener extends AbstractSaleItemListener
     {
         parent::onDelete($event);
 
-        // TODO (in a dedicated service : handleSaleItemRemove ?)
+        $item = $this->getSaleItemFromEvent($event);
+
         // If order is in stockable state
-        //   $this->stockAssigner->removeAssignments($item);
+        if (OrderStates::isStockableState($item->getSale()->getState())) {
+            $this->stockAssigner->removeAssignments($item);
+        }
     }
 
     /**
@@ -126,6 +149,28 @@ class OrderItemListener extends AbstractSaleItemListener
         parent::onPreDelete($event);
 
         //$this->throwIllegalOperationIfOrderIsCompleted($event);
+    }
+
+    /**
+     * Updates the item assignments quantities recursively.
+     *
+     * @param Model\SaleItemInterface $item
+     */
+    protected function updateAssignmentsRecursively(Model\SaleItemInterface $item)
+    {
+        $this->stockAssigner->updateAssignments($item);
+
+        foreach ($item->getChildren() as $child) {
+            if (
+                $this->persistenceHelper->isScheduledForInsert($child) ||
+                $this->persistenceHelper->isScheduledForUpdate($child)
+            ) {
+                // Skip this item as the listener will be called on it.
+                continue;
+            }
+
+            $this->updateAssignmentsRecursively($child);
+        }
     }
 
     /**

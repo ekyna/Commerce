@@ -54,9 +54,19 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
      *
      * @return AbstractStockAssignment
      */
-    public function setStockUnit(Stock\StockUnitInterface $stockUnit)
+    public function setStockUnit(Stock\StockUnitInterface $stockUnit = null)
     {
-        $this->stockUnit = $stockUnit;
+        if ($this->stockUnit != $stockUnit) {
+            if ($this->stockUnit) {
+                $this->stockUnit->removeStockAssignment($this);
+            }
+
+            $this->stockUnit = $stockUnit;
+
+            if ($this->stockUnit) {
+                $this->stockUnit->addStockAssignment($this);
+            }
+        }
 
         return $this;
     }

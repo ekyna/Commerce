@@ -231,6 +231,16 @@ abstract class AbstractSaleListener
     }
 
     /**
+     * State change event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onStateChange(ResourceEventInterface $event)
+    {
+
+    }
+
+    /**
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
@@ -461,7 +471,12 @@ abstract class AbstractSaleListener
      */
     protected function updateState(SaleInterface $sale)
     {
-        return $this->stateResolver->resolve($sale);
+        if ($this->stateResolver->resolve($sale)) {
+            $this->scheduleStateChangeEvent($sale);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -478,6 +493,14 @@ abstract class AbstractSaleListener
      * Schedule the address change event handler.
      *
      * @param SaleInterface $sale
+     * @todo remove as never called ?
      */
     abstract protected function scheduleAddressChangeEvent(SaleInterface $sale);
+
+    /**
+     * Schedule the state change event handler.
+     *
+     * @param SaleInterface $sale
+     */
+    abstract protected function scheduleStateChangeEvent(SaleInterface $sale);
 }

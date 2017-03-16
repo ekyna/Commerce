@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Factory;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Stock\Model as Stock;
 
 /**
  * Interface SaleFactoryInterface
@@ -63,6 +64,15 @@ interface SaleFactoryInterface
      * @return Model\AdjustmentInterface
      */
     public function createAdjustmentForItem(Model\SaleItemInterface $item);
+
+    /**
+     * Creates a stock assignment regarding to the sale item type.
+     *
+     * @param Model\SaleItemInterface $item
+     *
+     * @return Stock\StockAssignmentInterface
+     */
+    public function createStockAssignmentForItem(Model\SaleItemInterface $item);
 
     /**
      * Creates an adjustment regarding to the sale type.

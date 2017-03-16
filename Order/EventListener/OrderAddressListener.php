@@ -19,7 +19,7 @@ class OrderAddressListener extends AbstractSaleAddressListener
     /**
      * @inheritdoc
      */
-    protected function scheduleSaleTaxResolutionEvent(Model\AddressInterface $address)
+    protected function scheduleSaleAddressChangeEvent(Model\AddressInterface $address)
     {
         /** @var OrderAddressInterface $address */
         $this->persistenceHelper->scheduleEvent(OrderEvents::ADDRESS_CHANGE, $address->getOrder());

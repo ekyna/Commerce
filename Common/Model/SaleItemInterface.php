@@ -196,6 +196,13 @@ interface SaleItemInterface extends
     public function setConfigurable($configurable);
 
     /**
+     * Returns the parents total quantity.
+     *
+     * @return float
+     */
+    public function getParentsQuantity();
+
+    /**
      * Returns the total quantity (multiplied by all parents quantities).
      *
      * @return float

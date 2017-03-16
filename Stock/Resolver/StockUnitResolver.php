@@ -45,17 +45,25 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
-    public function createBySupplierOrderItem(SupplierOrderItemInterface $item)
+    public function createBySubjectRelative(SubjectRelativeInterface $relative)
     {
         /** @var StockSubjectInterface $subject */
-        $subject = $this->subjectHelper->resolve($item);
+        $subject = $this->subjectHelper->resolve($relative);
 
         $stockUnit = $this
             ->getRepositoryBySubject($subject)
             ->createNew();
 
-        return $stockUnit
-            ->setSubject($subject)
+        return $stockUnit->setSubject($subject);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createBySupplierOrderItem(SupplierOrderItemInterface $item)
+    {
+        return $this
+            ->createBySubjectRelative($item)
             ->setSupplierOrderItem($item)
             ->setNetPrice($item->getNetPrice())
             ->setOrderedQuantity($item->getQuantity())
@@ -79,7 +87,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
-    public function findUnassigned($subjectOrRelative)
+    public function findAssignable($subjectOrRelative)
     {
         /**
          * @var StockSubjectInterface $subject
@@ -87,7 +95,7 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $repository->findUnassignedBySubject($subject);
+        return $repository->findAssignableBySubject($subject);
     }
 
     /**

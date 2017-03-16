@@ -39,19 +39,19 @@ abstract class AbstractSaleAddressListener
         $address = $this->getAddressFromEvent($event);
 
         if ($this->persistenceHelper->isChanged($address, 'country')) {
-            $this->scheduleSaleTaxResolutionEvent($address);
+            $this->scheduleSaleAddressChangeEvent($address);
         }
     }
 
     /**
-     * Schedules the sale tax resolution event.
+     * Schedules the sale address change event.
      *
      * @param Model\AddressInterface $address
      */
-    abstract protected function scheduleSaleTaxResolutionEvent(Model\AddressInterface $address);
+    abstract protected function scheduleSaleAddressChangeEvent(Model\AddressInterface $address);
 
     /**
-     * Returns the sale item from the resource event.
+     * Returns the sale address from the resource event.
      *
      * @param ResourceEventInterface $event
      *

@@ -69,6 +69,27 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
+    public function updateReserved(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    {
+        if ($relative) {
+            $quantity = $stockUnit->getReservedQuantity() + $quantity;
+        } elseif (0 >= $quantity) {
+            throw new InvalidArgumentException("Unexpected reserved quantity.");
+        }
+
+        $stockUnit->setReservedQuantity($quantity);
+
+        // Prevent quantity to be set as lower than shipped quantity
+        /*if ($stockUnit->getReservedQuantity() < $stockUnit->getShippedQuantity()) {
+            throw new InvalidArgumentException("The reserved quantity can't be lower than the delivered quantity.");
+        }*/
+
+        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function updateShipped(StockUnitInterface $stockUnit, $quantity, $relative = true)
     {
         if ($relative) {

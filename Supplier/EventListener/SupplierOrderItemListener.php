@@ -29,7 +29,7 @@ class SupplierOrderItemListener extends AbstractListener
         $changed = $this->syncSubjectDataWithProduct($item);
 
         // If supplier order state is 'ordered', 'partial' or 'completed'
-        if (SupplierOrderStates::isStockState($item->getOrder()->getState())) {
+        if (SupplierOrderStates::isStockableState($item->getOrder()->getState())) {
             // Associated stock unit (if not exists) must be created (absolute ordered quantity).
             $this->createSupplierOrderItemStockUnit($item);
         } else { // Supplier order state is 'new' or 'cancelled'
@@ -74,20 +74,16 @@ class SupplierOrderItemListener extends AbstractListener
             $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
 
             // If order state has changed to a deletable state
-            if (SupplierOrderStates::hasChangedToDeletable($stateCs)) {
-                // Associated stock unit (if exists) must be deleted.
-                // (made by the supplier order listener)
-                return;
-            }
-            // Else if order state has changed to a stockable state
-            elseif (SupplierOrderStates::hasChangedToStock($stateCs)) {
-                // Associated stock unit (if not exists) must be created (absolute ordered quantity).
-                // (made by the supplier order listener)
+            if (
+                SupplierOrderStates::hasChangedToDeletable($stateCs) ||
+                SupplierOrderStates::hasChangedToStock($stateCs)
+            ) {
+                // Abort (handled by the supplier order listener)
                 return;
             }
         }
 
-        if (SupplierOrderStates::isStockState($item->getOrder()->getState())) {
+        if (SupplierOrderStates::isStockableState($order->getState())) {
             $scheduleContentChange = false;
             if ($this->persistenceHelper->isChanged($item, 'quantity')) {
                 // Updates the ordered quantity
