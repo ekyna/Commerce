@@ -66,7 +66,7 @@ class OrderItemListener extends AbstractSaleItemListener
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($sale)['state'];
 
-            // If order state has changed from a non stockable to a stockable state
+            // If order just did a stockable state transition
             if (
                 OrderStates::hasChangedToStockable($stateCs) ||
                 OrderStates::hasChangedFromStockable($stateCs)

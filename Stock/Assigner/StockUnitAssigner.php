@@ -7,9 +7,12 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
+use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -23,6 +26,11 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      * @var PersistenceHelperInterface
      */
     protected $persistenceHelper;
+
+    /**
+     * @var SubjectHelperInterface
+     */
+    protected $subjectHelper;
 
     /**
      * @var StockUnitResolverInterface
@@ -44,17 +52,20 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
+     * @param SubjectHelperInterface     $subjectHelper
      * @param StockUnitResolverInterface $stockUnitResolver
      * @param StockUnitUpdaterInterface  $stockUnitUpdater
      * @param SaleFactoryInterface       $saleFactory
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
+        SubjectHelperInterface $subjectHelper,
         StockUnitResolverInterface $stockUnitResolver,
         StockUnitUpdaterInterface $stockUnitUpdater,
         SaleFactoryInterface $saleFactory
     ) {
         $this->persistenceHelper = $persistenceHelper;
+        $this->subjectHelper = $subjectHelper;
         $this->stockUnitResolver = $stockUnitResolver;
         $this->stockUnitUpdater = $stockUnitUpdater;
         $this->saleFactory = $saleFactory;
@@ -65,7 +76,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function createAssignments(SaleItemInterface $item)
     {
-        if (!$item instanceof StockAssignmentsInterface) {
+        if (!$this->supportsAssignment($item)) {
             return;
         }
 
@@ -77,13 +88,15 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function updateAssignments(SaleItemInterface $item)
     {
-        if (!$item instanceof StockAssignmentsInterface) {
+        if (!$this->supportsAssignment($item)) {
             return;
         }
 
         if (0 == $deltaQuantity = $this->resolveDeltaQuantity($item)) {
             return;
         }
+
+        /** @var StockAssignmentsInterface $item */
 
         // Determine on which stock units the reserved quantity change should be dispatched
         $assignments = $item->getStockAssignments()->toArray();
@@ -104,7 +117,9 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             $stockUnit = $assignment->getStockUnit();
 
             $delta = null;
-            if (0 > $deltaQuantity) { // Debit case
+            // Debit case
+            if (0 > $deltaQuantity) {
+                // If we're about to debit more than the assignment quantity, just remove the assignment
                 if ($assignment->getQuantity() <= abs($deltaQuantity)) {
                     $item->removeStockAssignment($assignment);
                     $this->removeAssignment($assignment);
@@ -112,7 +127,14 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                     $deltaQuantity += $assignment->getQuantity();
                     continue;
                 }
-            } elseif (0 < $deltaQuantity) { // Credit case
+
+                // Reserved quantity can't be lower than shipped
+                if (0 < $stockUnit->getShippedQuantity() && $stockUnit->getShippedQuantity() <= abs($deltaQuantity)) {
+                    $delta = -$stockUnit->getShippedQuantity();
+                }
+            } // Credit case
+            elseif (0 < $deltaQuantity) {
+                // Reserved quantity can't be greater than ordered quantity
                 if (0 < $stockUnit->getOrderedQuantity()) {
                     $assignableQuantity = $stockUnit->getOrderedQuantity() - $stockUnit->getReservedQuantity();
                     if (0 < $assignableQuantity && $assignableQuantity < $deltaQuantity) {
@@ -126,13 +148,14 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                 $delta = $deltaQuantity;
             }
 
+            // Apply delta to stock unit
             $this->stockUnitUpdater->updateReserved($stockUnit, $delta, true);
 
+            // Apply delta to assignment
             $assignment->setQuantity($assignment->getQuantity() + $delta);
             $this->persistenceHelper->persistAndRecompute($assignment);
 
             $deltaQuantity -= $delta;
-
             if (0 == $deltaQuantity) {
                 return;
             }
@@ -156,15 +179,45 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function removeAssignments(SaleItemInterface $item)
     {
-        if (!$item instanceof StockAssignmentsInterface) {
+        if (!$this->supportsAssignment($item)) {
             return;
         }
+
+        /** @var StockAssignmentsInterface $item */
 
         // Remove stock assignments and schedule events
         foreach ($item->getStockAssignments() as $assignment) {
             $item->removeStockAssignment($assignment);
             $this->removeAssignment($assignment);
         }
+    }
+
+    /**
+     * Returns whether or not the given item supports assignments.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return bool
+     */
+    protected function supportsAssignment(SaleItemInterface $item)
+    {
+        if (!$item instanceof StockAssignmentsInterface) {
+            return false;
+        }
+
+        if (null === $subject = $this->subjectHelper->resolve($item)) {
+            return false;
+        }
+
+        if (!$subject instanceof StockSubjectInterface) {
+            return false;
+        }
+
+        if ($subject->getStockMode() != StockSubjectModes::MODE_ENABLED) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -188,6 +241,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     protected function createAssignmentsForQuantity(SaleItemInterface $item, $quantity)
     {
         // Find enough available stock units
+
+        // TODO Stock units created during the flush event are not available for repository methods.
+        // We need to cache them to use them right here.
+
         $stockUnits = $this->stockUnitResolver->findAssignable($item);
         uasort($stockUnits, [$this, 'sortStockUnits']);
 
@@ -282,7 +339,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         /**
          * @return int
          */
-        $sortByPrice = function() use ($u1, $u2) {
+        $sortByPrice = function () use ($u1, $u2) {
             $u1HasPrice = 0 < $u1->getNetPrice();
             $u2HasPrice = 0 < $u2->getNetPrice();
 
@@ -302,7 +359,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         /**
          * @return int
          */
-        $sortByEda = function() use ($u1, $u2) {
+        $sortByEda = function () use ($u1, $u2) {
             $u1HasEda = null !== $u1->getEstimatedDateOfArrival();
             $u2HasEda = null !== $u2->getEstimatedDateOfArrival();
 

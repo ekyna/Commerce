@@ -73,7 +73,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
-    public function findAvailableOrPending($subjectOrRelative)
+    public function findPendingOrReady($subjectOrRelative)
     {
         /**
          * @var StockSubjectInterface $subject
@@ -81,7 +81,21 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $repository->findAvailableOrPendingBySubject($subject);
+        return $repository->findPendingOrReadyBySubject($subject);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findNotClosed($subjectOrRelative)
+    {
+        /**
+         * @var StockSubjectInterface $subject
+         * @var StockUnitRepositoryInterface $repository
+         */
+        list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
+
+        return $repository->findNotClosedBySubject($subject);
     }
 
     /**

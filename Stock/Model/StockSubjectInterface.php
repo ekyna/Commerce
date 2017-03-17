@@ -60,36 +60,20 @@ interface StockSubjectInterface extends ResourceInterface
     public function setInStock($quantity);
 
     /**
-     * Returns the ordered stock quantity.
+     * Returns the virtualStock.
      *
      * @return float
      */
-    public function getOrderedStock();
+    public function getVirtualStock();
 
     /**
-     * Sets the ordered stock quantity.
+     * Sets the virtualStock.
      *
-     * @param float $quantity
+     * @param float $virtualStock
      *
      * @return $this|StockSubjectInterface
      */
-    public function setOrderedStock($quantity);
-
-    /**
-     * Returns the shipped stock quantity.
-     *
-     * @return float
-     */
-    public function getShippedStock();
-
-    /**
-     * Sets the shipped stock quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockSubjectInterface
-     */
-    public function setShippedStock($quantity);
+    public function setVirtualStock($virtualStock);
 
     /**
      * Returns the estimated date of arrival.

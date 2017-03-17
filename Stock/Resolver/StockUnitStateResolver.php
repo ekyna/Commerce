@@ -17,21 +17,31 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
      */
     public function resolve(StockUnitInterface $stockUnit)
     {
+        // TODO use bccomp() with packaging precision to compare quantities
+
+        // Just created
         $resolvedState = StockUnitStates::STATE_NEW;
         $currentState = $stockUnit->getState();
 
-        if (null !== $stockUnit->getSupplierOrderItem()) {
+        if (0 < $stockUnit->getOrderedQuantity() && null !== $stockUnit->getSupplierOrderItem()) {
+            // Assigned to supplier order and pending for delivery
             $resolvedState = StockUnitStates::STATE_PENDING;
-        }
 
-        // If quantity has been delivered (by supplier)
-        if (0 < $stockUnit->getDeliveredQuantity()) {
-            $resolvedState = StockUnitStates::STATE_OPENED;
-
-            // If quantity has been entirely shipped (to customers)
-            // TODO use bccomp() with packaging precision ?
-            if ($stockUnit->getShippedQuantity() == $stockUnit->getDeliveredQuantity()) {
+            // If the whole ordered quantity (to suppliers) has been entirely shipped (to customers)
+            if ($stockUnit->getOrderedQuantity() == $stockUnit->getShippedQuantity()) {
                 $resolvedState = StockUnitStates::STATE_CLOSED;
+            }
+
+            // If quantity has been delivered (by supplier)
+            elseif (0 < $stockUnit->getDeliveredQuantity()) {
+                // If delivered (from supplier) quantity has been entirely shipped (to customers)
+                if ($stockUnit->getDeliveredQuantity() == $stockUnit->getShippedQuantity()) {
+                    // Waiting for another delivery (from suppliers)
+                    $resolvedState = StockUnitStates::STATE_PENDING;
+                } else {
+                    // Ready for shipment (to customers)
+                    $resolvedState = StockUnitStates::STATE_READY;
+                }
             }
         }
 

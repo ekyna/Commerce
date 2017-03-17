@@ -28,7 +28,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     /**
      * @var ArrayCollection|Model\SupplierDeliveryItemInterface[]
      */
-    private $items;
+    protected $items;
 
 
     /**

@@ -15,15 +15,6 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
-     * Finds the subject's available or pending stock units.
-     *
-     * @param Stock\StockSubjectInterface $subject
-     *
-     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
-     */
-    public function findAvailableOrPendingBySubject(Stock\StockSubjectInterface $subject);
-
-    /**
      * Finds the subject's new stock units.
      *
      * @param Stock\StockSubjectInterface $subject
@@ -33,13 +24,22 @@ interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
     public function findNewBySubject(Stock\StockSubjectInterface $subject);
 
     /**
+     * Finds the subject's pending or ready stock units.
+     *
+     * @param Stock\StockSubjectInterface $subject
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    public function findPendingOrReadyBySubject(Stock\StockSubjectInterface $subject);
+
+    /**
      * Finds the subject's not closed stock units.
      *
      * @param Stock\StockSubjectInterface $subject
      *
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findNotClosedSubject(Stock\StockSubjectInterface $subject);
+    public function findNotClosedBySubject(Stock\StockSubjectInterface $subject);
 
     /**
      * Finds the subject's not fully assigned stock units.

@@ -7,7 +7,6 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -48,16 +47,17 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     public function updateInStock(StockSubjectInterface $subject, $quantity = null)
     {
+        // TODO Check usages
+
         $stock = 0;
         if (null !== $quantity) {
             // Relative update
             $stock = $subject->getInStock() + (float)$quantity;
         } else {
             // Resolve the in stock quantity
-            // TODO What about reserved stocks ?
-            $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
+            $stockUnits = $this->stockUnitResolver->findNotClosed($subject);
             foreach ($stockUnits as $stockUnit) {
-                $stock += $stockUnit->getInStockQuantity();
+                $stock += $stockUnit->getInStockQuantity(); // Delivered - Reserved
             }
         }
 
@@ -73,23 +73,22 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateOrderedStock(StockSubjectInterface $subject, $quantity = null)
+    public function updateVirtualStock(StockSubjectInterface $subject, $quantity = null)
     {
-        $ordered = 0;
+        $virtual = 0;
         if (null !== $quantity) {
             //  Relative update
-            $ordered = $subject->getOrderedStock() + (float)$quantity;
+            $virtual = $subject->getVirtualStock() + (float)$quantity;
         } else {
-            // Resolve the ordered stock
-            // TODO What about reserved stocks ?
-            $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
+            // Resolve the virtual stock
+            $stockUnits = $this->stockUnitResolver->findPendingOrReady($subject);
             foreach ($stockUnits as $stockUnit) {
-                $ordered += $stockUnit->getOrderedQuantity();
+                $virtual += $stockUnit->getVirtualStockQuantity(); // Ordered - Reserved
             }
         }
 
-        if ($ordered != $subject->getOrderedStock()) { // TODO use packaging format (bccomp for float)
-            $subject->setOrderedStock($ordered);
+        if ($virtual != $subject->getVirtualStock()) { // TODO use packaging format (bccomp for float)
+            $subject->setVirtualStock($virtual);
 
             return true;
         }
@@ -100,12 +99,12 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject, \DateTime $date = null)
+    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject)
     {
         $currentDate = $subject->getEstimatedDateOfArrival();
 
-        // Abort if subject has in stock greater than zero or a zero ordered stock
-        if ((0 < $subject->getInStock()) || (0 >= $subject->getOrderedStock())) {
+        // Abort if subject's in stock equals his virtual stock
+        if ($subject->getInStock() == $subject->getVirtualStock()) {
             if (null !== $currentDate) {
                 $subject->setEstimatedDateOfArrival(null);
 
@@ -115,20 +114,15 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             return false;
         }
 
-        if (null !== $date) {
-            // Relative update : cancel if the date is greater than current
-            if ($currentDate && $date >= $currentDate) {
-                $date = null;
-            }
-        } else {
-            // Resolve the minimum estimated date of arrival
-            $stockUnits = $this->findAvailableOrPendingStockUnits($subject);
-            foreach ($stockUnits as $stockUnit) {
-                $unitEDA = $stockUnit->getEstimatedDateOfArrival();
+        $date = null;
 
-                if (null === $date || $date > $unitEDA) {
-                    $date = $unitEDA;
-                }
+        // Resolve the minimum estimated date of arrival
+        $stockUnits = $this->stockUnitResolver->findPendingOrReady($subject);
+        foreach ($stockUnits as $stockUnit) {
+            $unitEDA = $stockUnit->getEstimatedDateOfArrival();
+
+            if (null === $date || $date > $unitEDA) {
+                $date = $unitEDA;
             }
         }
 
@@ -179,8 +173,6 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // Current subject stock state
         $currentState = $subject->getStockState();
 
-        // TODO What about reserved stocks ?
-
         // "In stock" resolved state
         if (0 < $subject->getInStock()) {
             if ($currentState != StockSubjectStates::STATE_IN_STOCK) {
@@ -193,7 +185,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         // "Pre order" resolved state
-        if ((0 < $subject->getOrderedStock()) && (null !== $subject->getEstimatedDateOfArrival())) {
+        if (0 < $subject->getVirtualStock() && null !== $subject->getEstimatedDateOfArrival()) {
             if ($currentState != StockSubjectStates::STATE_PRE_ORDER) {
                 $subject->setStockState(StockSubjectStates::STATE_PRE_ORDER);
 
@@ -220,17 +212,12 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     {
         $changed = $this->updateInStock($subject);
 
-        $changed = $this->updateOrderedStock($subject) || $changed;
+        $changed |= $this->updateVirtualStock($subject);
 
-        // TODO reserved ?
-
-        // TODO shipped ?
-
-        $changed = $this->updateEstimatedDateOfArrival($subject) || $changed;
+        $changed |= $this->updateEstimatedDateOfArrival($subject);
 
         return $this->updateStockState($subject) || $changed;
     }
-
 
     /**
      * @inheritdoc
@@ -241,44 +228,47 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         $cs = $this->persistenceHelper->getChangeSet($stockUnit);
 
+        // Abort if none of the tracked properties has changed
+        if (!(
+            isset($cs['reservedQuantity']) ||
+            isset($cs['orderedQuantity']) ||
+            isset($cs['deliveredQuantity']) ||
+            isset($cs['estimatedDateOfArrival'])
+        )) {
+            return false;
+        }
+
         $changed = false;
 
+        $reservedDelta = $orderedDelta = $deliveredDelta = 0;
+
+        // Resolve delta quantities
+        if (isset($cs['reservedQuantity'])) {
+            $reservedDelta = ((float)$cs['reservedQuantity'][1]) - ((float)$cs['reservedQuantity'][0]);
+        }
         if (isset($cs['orderedQuantity'])) {
-            // Resolve ordered quantity change
-            if (0 != $orderedDelta = ((float)$cs['orderedQuantity'][1]) - ((float)$cs['orderedQuantity'][0])) {
-                $changed = $this->updateOrderedStock($subject, $orderedDelta) || $changed;
-            }
+            $orderedDelta = ((float)$cs['orderedQuantity'][1]) - ((float)$cs['orderedQuantity'][0]);
+        }
+        if (isset($cs['deliveredQuantity'])) {
+            $deliveredDelta = ((float)$cs['deliveredQuantity'][1]) - ((float)$cs['deliveredQuantity'][0]);
         }
 
-        if (isset($cs['deliveredQuantity']) || isset($cs['shippedQuantity'])) {
-            // Resolve delivered and shipped quantity changes
-            $deliveredDelta = $deltaShipped = 0;
-            if (isset($cs['deliveredQuantity'])) {
-                if (0 != $deliveredDelta = ((float)$cs['deliveredQuantity'][1]) - ((float)$cs['deliveredQuantity'][0])) {
-                    $changed = $this->updateOrderedStock($subject, -$deliveredDelta) || $changed;
-                }
-            }
-            if (isset($cs['shippedQuantity'])) {
-                $deltaShipped = ((float)$cs['shippedQuantity'][1]) - ((float)$cs['shippedQuantity'][0]);
-            }
-
-            // TODO really need tests T_T
-            if (0 != $inStockDelta = $deliveredDelta - $deltaShipped) {
-                $changed = $this->updateInStock($subject, $inStockDelta);
-            }
+        // In stock change
+        if (0 != $inStockDelta = $deliveredDelta - $reservedDelta) {
+            $changed |= $this->updateInStock($subject, $inStockDelta);
         }
 
-        // TODO Reserved ?
+        // Virtual stock change
+        if (0 != $virtualStockDelta = $orderedDelta - $reservedDelta) {
+            $changed |= $this->updateVirtualStock($subject, $virtualStockDelta);
+        }
 
+        // EDA change
         if ($changed || isset($cs['estimatedDateOfArrival'])) {
-            $date = $stockUnit->getState() !== StockUnitStates::STATE_CLOSED
-                ? $stockUnit->getEstimatedDateOfArrival()
-                : null;
-
-            $changed = $this->updateEstimatedDateOfArrival($subject, $date) || $changed;
+            $changed |= $this->updateEstimatedDateOfArrival($subject);
         }
 
-        return $changed;
+        return $this->updateStockState($subject) || $changed;
     }
 
     /**
@@ -290,41 +280,19 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         $changed = false;
 
-        // We don't care about delivered, reserved and shipped stocks because the
-        // stock unit removal is prevented if those stocks are not null.
+        // This (in stock) should never happen as stock unit removal is prevented when
+        // delivered, reserved or shipped quantities are greater than zero.
+        if (0 < $inStock = $stockUnit->getInStockQuantity()) {
+            $changed |= $this->updateInStock($subject, -$inStock);
+        }
 
-        // Update ordered quantity
-        if (0 < $stockUnit->getOrderedQuantity()) {
-            $changed = $this->updateOrderedStock($subject, -$stockUnit->getOrderedQuantity());
+        if (0 < $virtualStock = $stockUnit->getVirtualStockQuantity()) {
+            $changed |= $this->updateVirtualStock($subject, -$virtualStock);
         }
 
         // Update the estimated date of arrival
-        $changed = $this->updateEstimatedDateOfArrival($subject) || $changed;
+        $changed |= $this->updateEstimatedDateOfArrival($subject);
 
-        return $changed;
-    }
-
-    /**
-     * Finds the available or pending stock units.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
-     *
-     * @deprecated Use the resolver method findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
-     */
-    private function findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
-    {
-        // Get the stock unit repository
-        $repository = $this
-            ->stockUnitResolver
-            ->getRepositoryBySubject($subject);
-
-        if (!$repository) {
-            // Subject does not support stock unit management.
-            return [];
-        }
-
-        return $repository->findAvailableOrPendingBySubject($subject);
+        return $this->updateStockState($subject) || $changed;
     }
 }

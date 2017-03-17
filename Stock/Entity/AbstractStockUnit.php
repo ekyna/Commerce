@@ -38,12 +38,14 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
 
     /**
      * The estimated date of arrival (for ordered quantity).
+     *
      * @var \DateTime
      */
     protected $estimatedDateOfArrival;
 
     /**
      * The quantity ordered to supplier.
+     *
      * @var float
      */
     protected $orderedQuantity = 0;
@@ -57,6 +59,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
 
     /**
      * The quantity reserved from sales.
+     *
      * @var float
      */
     protected $reservedQuantity = 0;
@@ -69,8 +72,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $shippedQuantity = 0;
 
     /**
-     * The quantity shipped through sales.
-     *
      * @var float
      */
     protected $netPrice = 0;
@@ -350,6 +351,14 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getInStockQuantity()
     {
-        return $this->getDeliveredQuantity() - $this->getShippedQuantity(); // TODO - reserved stock ?
+        return $this->getDeliveredQuantity() - $this->getReservedQuantity();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getVirtualStockQuantity()
+    {
+        return $this->getOrderedQuantity() - $this->getReservedQuantity();
     }
 }

@@ -34,5 +34,11 @@ class StockUnitValidator extends ConstraintValidator
                 ->atPath('shippedQuantity')
                 ->addViolation();
         }
+        if ($stockUnit->getShippedQuantity() > $stockUnit->getReservedQuantity()) {
+            $this->context
+                ->buildViolation($constraint->delivered_must_be_lower_than_ordered)
+                ->atPath('deliveredQuantity')
+                ->addViolation();
+        }
     }
 }

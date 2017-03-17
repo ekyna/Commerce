@@ -190,9 +190,16 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, S
     public function setClosedAt(\DateTime $date = null);
 
     /**
-     * Returns the in stock quantity.
+     * Returns the in stock quantity (delivered - reserved).
      *
      * @return float
      */
     public function getInStockQuantity();
+
+    /**
+     * Returns the virtual stock quantity (ordered - reserved).
+     *
+     * @return float
+     */
+    public function getVirtualStockQuantity();
 }

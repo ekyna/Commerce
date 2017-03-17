@@ -11,7 +11,7 @@ final class StockUnitStates
 {
     const STATE_NEW     = 'new';
     const STATE_PENDING = 'pending';
-    const STATE_OPENED  = 'opened';
+    const STATE_READY   = 'ready';
     const STATE_CLOSED  = 'closed';
 
 
@@ -25,7 +25,7 @@ final class StockUnitStates
         return [
             static::STATE_NEW,
             static::STATE_PENDING,
-            static::STATE_OPENED,
+            static::STATE_READY,
             static::STATE_CLOSED,
         ];
     }

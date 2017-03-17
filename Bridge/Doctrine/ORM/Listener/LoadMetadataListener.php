@@ -72,8 +72,6 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        // TODO TaxableInterface => taxGroup field mapping
-
         if (is_subclass_of($class, TaxableInterface::class)) {
             $this->configureTaxableMapping($eventArgs);
         }
@@ -306,7 +304,7 @@ class LoadMetadataListener implements EventSubscriber
     }
 
     /**
-     * Returns the stck subject mappings.
+     * Returns the stock subject mappings.
      *
      * @return array
      */
@@ -334,34 +332,14 @@ class LoadMetadataListener implements EventSubscriber
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => true,
-                /*'options'    => [
-                    'unsigned' => true,
-                    'default'  => 0,
-                ],*/
             ],
             [
-                'fieldName'  => 'orderedStock',
-                'columnName' => 'ordered_stock',
+                'fieldName'  => 'virtualStock',
+                'columnName' => 'virtual_stock',
                 'type'       => 'decimal',
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => true,
-                /*'options'    => [
-                    'unsigned' => true,
-                    'default'  => 0,
-                ],*/
-            ],
-            [
-                'fieldName'  => 'shippedStock',
-                'columnName' => 'shipped_stock',
-                'type'       => 'decimal',
-                'precision'  => 10,
-                'scale'      => 3,
-                'nullable'   => true,
-                /*'options'    => [
-                    'unsigned' => true,
-                    'default'  => 0,
-                ],*/
             ],
             [
                 'fieldName'  => 'estimatedDateOfArrival',

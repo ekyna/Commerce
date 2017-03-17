@@ -27,12 +27,7 @@ trait StockSubjectTrait
     /**
      * @var float
      */
-    protected $orderedStock;
-
-    /**
-     * @var float
-     */
-    protected $shippedStock;
+    protected $virtualStock;
 
     /**
      * @var \DateTime
@@ -48,8 +43,7 @@ trait StockSubjectTrait
         $this->stockMode = StockSubjectModes::MODE_DISABLED;
         $this->stockState = StockSubjectStates::STATE_OUT_OF_STOCK;
         $this->inStock = 0;
-        $this->orderedStock = 0;
-        $this->shippedStock = 0;
+        $this->virtualStock = 0;
     }
 
     /**
@@ -125,49 +119,25 @@ trait StockSubjectTrait
     }
 
     /**
-     * Returns the ordered stock.
+     * Returns the virtualStock.
      *
      * @return float
      */
-    public function getOrderedStock()
+    public function getVirtualStock()
     {
-        return $this->orderedStock;
+        return $this->virtualStock;
     }
 
     /**
-     * Sets the ordered stock.
+     * Sets the virtualStock.
      *
-     * @param float $quantity
+     * @param float $virtualStock
      *
      * @return $this|StockSubjectInterface
      */
-    public function setOrderedStock($quantity)
+    public function setVirtualStock($virtualStock)
     {
-        $this->orderedStock = (float)$quantity;
-
-        return $this;
-    }
-
-    /**
-     * Returns the shipped stock quantity.
-     *
-     * @return float
-     */
-    public function getShippedStock()
-    {
-        return $this->shippedStock;
-    }
-
-    /**
-     * Sets the shipped stock quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockSubjectInterface
-     */
-    public function setShippedStock($quantity)
-    {
-        $this->shippedStock = $quantity;
+        $this->virtualStock = (float)$virtualStock;
 
         return $this;
     }

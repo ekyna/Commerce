@@ -34,13 +34,22 @@ interface StockUnitResolverInterface
     public function createBySupplierOrderItem(SupplierOrderItemInterface $item);
 
     /**
-     * Finds the available or pending stock units.
+     * Finds the pending or ready stock units.
      *
      * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
      *
      * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
-    public function findAvailableOrPending($subjectOrRelative);
+    public function findPendingOrReady($subjectOrRelative);
+
+    /**
+     * Finds the not closed stock units.
+     *
+     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     *
+     * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    public function findNotClosed($subjectOrRelative);
 
     /**
      * Finds the not fully assigned stock units by subject or relative.
