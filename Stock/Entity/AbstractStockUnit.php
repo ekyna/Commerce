@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Stock\Model;
+use Ekyna\Component\Commerce\Stock\Util\StockUtil;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
 /**
@@ -351,7 +352,10 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getInStockQuantity()
     {
-        return $this->getDeliveredQuantity() - $this->getReservedQuantity();
+        return StockUtil::calculateInStock(
+            $this->deliveredQuantity,
+            $this->reservedQuantity
+        );
     }
 
     /**
@@ -359,6 +363,10 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getVirtualStockQuantity()
     {
-        return $this->getOrderedQuantity() - $this->getReservedQuantity();
+        return StockUtil::calculateVirtualStock(
+            $this->orderedQuantity,
+            $this->deliveredQuantity,
+            $this->reservedQuantity
+        );
     }
 }

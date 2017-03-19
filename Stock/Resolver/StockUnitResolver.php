@@ -73,6 +73,20 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
+    public function findPending($subjectOrRelative)
+    {
+        /**
+         * @var StockSubjectInterface $subject
+         * @var StockUnitRepositoryInterface $repository
+         */
+        list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
+
+        return $repository->findPendingBySubject($subject);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function findPendingOrReady($subjectOrRelative)
     {
         /**

@@ -4,8 +4,10 @@ namespace Ekyna\Component\Commerce\Stock\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Stock\Event\SubjectStockUnitEvent;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
+use Ekyna\Component\Commerce\Stock\Util\StockUtil;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -126,11 +128,7 @@ abstract class AbstractStockUnitListener
             }
         }
 
-        if (
-            0 < $stockUnit->getDeliveredQuantity() ||
-            0 < $stockUnit->getReservedQuantity() ||
-            0 < $stockUnit->getShippedQuantity()
-        ) {
+        if (!StockUtil::isDeletableStockUnit($stockUnit)) {
             throw new IllegalOperationException(
                 "The stock unit can't be deleted as it has been delivered, reserved or shipped."
             );
@@ -146,11 +144,10 @@ abstract class AbstractStockUnitListener
      */
     protected function scheduleSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
     {
-        // TODO Create and use a StockUnitChangeEvent class
-        $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
-        $event->addData('stock_unit', $stockUnit);
-
-        $this->persistenceHelper->scheduleEvent($this->getSubjectStockUnitChangeEventName(), $event);
+        $this->persistenceHelper->scheduleEvent(
+            $this->getSubjectStockUnitChangeEventName(),
+            new SubjectStockUnitEvent($stockUnit)
+        );
     }
 
     /**
@@ -160,11 +157,10 @@ abstract class AbstractStockUnitListener
      */
     protected function scheduleSubjectStockUnitRemovalEvent(StockUnitInterface $stockUnit)
     {
-        // TODO Create and use a StockUnitRemoveEvent class
-        $event = $this->dispatcher->createResourceEvent($stockUnit->getSubject());
-        $event->addData('stock_unit', $stockUnit);
-
-        $this->persistenceHelper->scheduleEvent($this->getSubjectStockUnitRemovalEventName(), $event);
+        $this->persistenceHelper->scheduleEvent(
+            $this->getSubjectStockUnitRemovalEventName(),
+            new SubjectStockUnitEvent($stockUnit)
+        );
     }
 
     /**

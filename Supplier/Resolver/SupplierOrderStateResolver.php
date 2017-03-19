@@ -28,6 +28,7 @@ class SupplierOrderStateResolver implements StateResolverInterface
         $currentState = $subject->getState();
 
         // If order state is 'cancelled', do nothing
+        // TODO really ?
         if ($currentState === SupplierOrderStates::STATE_CANCELLED) {
             return false;
         }
@@ -40,16 +41,14 @@ class SupplierOrderStateResolver implements StateResolverInterface
             $resolvedState = SupplierOrderStates::STATE_ORDERED;
         }
 
+        // TODO Use packaging format
+        $orderedQuantity = $deliveredQuantity = 0;
+
         // If the order has deliveries
         if ($subject->hasDeliveries()) {
-            // Assume the order state is 'completed' for now
-            $resolvedState = SupplierOrderStates::STATE_COMPLETED;
-
-            // Compare ordered quantity with delivered quantities for each order items.
+            // Gather ordered quantity and delivered quantities.
             foreach ($subject->getItems() as $orderItem) {
-                $orderedQuantity = $orderItem->getQuantity();
-                $deliveredQuantity = 0;
-
+                $orderedQuantity += $orderItem->getQuantity();
                 // For each deliveries
                 foreach ($subject->getDeliveries() as $delivery) {
                     // For each delivery items
@@ -63,13 +62,14 @@ class SupplierOrderStateResolver implements StateResolverInterface
                         }
                     }
                 }
+            }
+        }
 
-                // Delivered quantity is lower than ordered quantity
-                if ($deliveredQuantity < $orderedQuantity) {
-                    // Order state is 'partial'
-                    $resolvedState = SupplierOrderStates::STATE_PARTIAL;
-                    break;
-                }
+        if (0 < $deliveredQuantity ) {
+            $resolvedState = SupplierOrderStates::STATE_PARTIAL;
+
+            if ($orderedQuantity == $deliveredQuantity) {
+                $resolvedState = SupplierOrderStates::STATE_COMPLETED;
             }
         }
 

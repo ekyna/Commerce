@@ -4,8 +4,6 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -26,7 +24,7 @@ class SupplierOrderItemListener extends AbstractListener
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
-        $changed = $this->syncSubjectDataWithProduct($item);
+        $changed = $this->synchronizeWithProduct($item);
 
         // If supplier order state is 'ordered', 'partial' or 'completed'
         if (SupplierOrderStates::isStockableState($item->getOrder()->getState())) {
@@ -62,7 +60,7 @@ class SupplierOrderItemListener extends AbstractListener
             }
         }
 
-        $changed = $this->syncSubjectDataWithProduct($item);
+        $changed = $this->synchronizeWithProduct($item);
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($item);
         }
@@ -116,6 +114,8 @@ class SupplierOrderItemListener extends AbstractListener
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
+        $this->assertDeletable($item);
+
         $this->deleteSupplierOrderItemStockUnit($item);
 
         // Supplier order has been set to null by the removeItem method.
@@ -126,18 +126,42 @@ class SupplierOrderItemListener extends AbstractListener
                 $order = $changeSet['order'][0];
             }
         }
+
+        // Clear association
+        $item->setOrder(null);
+        /* @see SupplierDeliveryListener::onDelete */
+        //$order->getItems()->removeElement($item);
+
+        // Trigger the supplier order update
         $this->scheduleSupplierOrderContentChangeEvent($order);
     }
 
     /**
-     * Synchronises the subject data with the supplier product.
+     * Pre delete event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onPreDelete(ResourceEventInterface $event)
+    {
+        $item = $this->getSupplierOrderItemFromEvent($event);
+
+        $this->assertDeletable($item);
+
+        // Initializes the supplier order's items collection before item removal.
+        $item->getOrder()->getItems();
+    }
+
+    /**
+     * Synchronises with the supplier product.
      *
      * @param SupplierOrderItemInterface $item
      *
      * @return bool Whether or not the item has been changed.
      */
-    protected function syncSubjectDataWithProduct(SupplierOrderItemInterface $item)
+    protected function synchronizeWithProduct(SupplierOrderItemInterface $item)
     {
+        $changed = false;
+
         // TODO What about stock management if subject change ???
         if (null !== $product = $item->getProduct()) {
             // TODO Create an utility class to do this
@@ -152,30 +176,34 @@ class SupplierOrderItemListener extends AbstractListener
                             'Desynchronizing supplier order item and supplier product subject data is not supported.'
                         );
                     }
-
-                    return false;
+                    $changed = false;
                 } else {
                     $itemSID->copy($productSID);
-
-                    return true;
+                    $changed = true;
                 }
+            } else {
+                throw new InvalidArgumentException(
+                    'Supplier product subject identity is not set.'
+                );
+            }
+
+            if (0 == strlen($item->getDesignation())) {
+                $item->setDesignation($product->getDesignation());
+            }
+            if (0 == strlen($item->getReference())) {
+                $item->setReference($product->getReference());
+            }
+            if (0 == $item->getNetPrice()) {
+                $item->setNetPrice($product->getNetPrice());
             }
         } elseif ($item->getSubjectIdentity()->hasIdentity()) {
             // TODO Specific exception
             throw new InvalidArgumentException(
                 'Desynchronizing supplier order item and supplier product subject data is not supported.'
             );
-
-            /*$item
-                ->setSubjectData([])
-                ->getSubjectIdentity()
-                ->setProvider(null)
-                ->setIdentifier(null);
-
-            return true;*/
         }
 
-        return false;
+        return $changed;
     }
 
     /**
@@ -195,15 +223,5 @@ class SupplierOrderItemListener extends AbstractListener
         }
 
         return $item;
-    }
-
-    /**
-     * Schedules the supplier order content change event.
-     *
-     * @param SupplierOrderInterface $order
-     */
-    protected function scheduleSupplierOrderContentChangeEvent(SupplierOrderInterface $order)
-    {
-        $this->persistenceHelper->scheduleEvent(SupplierOrderEvents::CONTENT_CHANGE, $order);
     }
 }

@@ -74,7 +74,7 @@ abstract class AbstractSaleItemListener
         $change = false;
 
         // Handle taxation update
-        if ($this->persistenceHelper->isChanged($item, 'subjectData')) {
+        if ($this->persistenceHelper->isChanged($item, 'subjectData')) { // TODO check subjectIdentity
             $change = $this->updateTaxation($item);
         }
 

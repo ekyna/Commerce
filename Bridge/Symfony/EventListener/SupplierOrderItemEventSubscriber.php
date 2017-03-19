@@ -22,7 +22,7 @@ class SupplierOrderItemEventSubscriber extends SupplierOrderItemListener impleme
             SupplierOrderItemEvents::INSERT     => ['onInsert', 0],
             SupplierOrderItemEvents::UPDATE     => ['onUpdate', 0],
             SupplierOrderItemEvents::DELETE     => ['onDelete', 0],
-//            SupplierOrderItemEvents::PRE_DELETE => ['onPreDelete', 0],
+            SupplierOrderItemEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }
 }

@@ -26,7 +26,7 @@ interface SupplierDeliveryInterface extends ResourceModel\ResourceInterface , Re
      *
      * @return $this|SupplierDeliveryInterface
      */
-    public function setOrder(SupplierOrderInterface $order);
+    public function setOrder(SupplierOrderInterface $order = null);
 
     /**
      * Returns whether or not the supplier delivery has items.

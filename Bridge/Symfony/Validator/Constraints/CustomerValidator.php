@@ -19,6 +19,10 @@ class CustomerValidator extends ConstraintValidator
      */
     public function validate($customer, Constraint $constraint)
     {
+        if (null === $customer) {
+            return;
+        }
+
         if (!$customer instanceof CustomerInterface) {
             throw new InvalidArgumentException('Expected instance of CustomerInterface');
         }
@@ -33,7 +37,7 @@ class CustomerValidator extends ConstraintValidator
         if ($customer->hasChildren() && $customer->hasParent()) {
             $this
                 ->context
-                ->buildViolation($constraint->hierarchyOverflow)
+                ->buildViolation($constraint->hierarchy_overflow)
                 ->atPath('parent')
                 ->addViolation();
         }
@@ -42,13 +46,13 @@ class CustomerValidator extends ConstraintValidator
         if ($customer->hasParent() && 0 == strlen($customer->getParent()->getCompany())) {
             $this
                 ->context
-                ->buildViolation($constraint->parentCompanyIsMandatory)
+                ->buildViolation($constraint->parent_company_is_mandatory)
                 ->atPath('parent')
                 ->addViolation();
         } elseif ($customer->hasChildren() && 0 == strlen($customer->getCompany())) {
             $this
                 ->context
-                ->buildViolation($constraint->companyIsMandatory)
+                ->buildViolation($constraint->company_is_mandatory)
                 ->atPath('company')
                 ->addViolation();
         }

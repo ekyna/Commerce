@@ -66,7 +66,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     /**
      * @inheritdoc
      */
-    public function setOrder(Model\SupplierOrderInterface $order)
+    public function setOrder(Model\SupplierOrderInterface $order = null)
     {
         if ($order != $this->order) {
             if ($this->order) {

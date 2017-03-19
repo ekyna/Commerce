@@ -2,11 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
-use Ekyna\Component\Commerce\Exception\IllegalOperationException;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
+use Ekyna\Component\Commerce\Supplier\Model;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -65,13 +66,15 @@ abstract class AbstractListener
     /**
      * Creates the stock unit for the given supplier order item.
      *
-     * @param SupplierOrderItemInterface $item
+     * @param Model\SupplierOrderItemInterface $item
+     *
+     * @throws Exception\InvalidArgumentException
      */
-    protected function createSupplierOrderItemStockUnit(SupplierOrderItemInterface $item)
+    protected function createSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
     {
         if (null !== $stockUnit = $item->getStockUnit()) {
             if ($stockUnit->getOrderedQuantity() != $item->getQuantity()) {
-                throw new InvalidArgumentException(
+                throw new Exception\InvalidArgumentException(
                     "Stock unit's ordered quantity does not match the supplier order item quantity."
                 );
             }
@@ -90,18 +93,18 @@ abstract class AbstractListener
     /**
      * Deletes the stock unit from the given supplier order item.
      *
-     * @param SupplierOrderItemInterface $item
+     * @param Model\SupplierOrderItemInterface $item
      *
-     * @throws IllegalOperationException
+     * @throws Exception\IllegalOperationException
      */
-    protected function deleteSupplierOrderItemStockUnit(SupplierOrderItemInterface $item)
+    protected function deleteSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
     {
         if (null === $stockUnit = $item->getStockUnit()) {
             return;
         }
 
         if (0 < $stockUnit->getShippedQuantity()) {
-            throw new IllegalOperationException(
+            throw new Exception\IllegalOperationException(
                 "Stock unit can't be deleted as it has been partially or fully shipped."
             );
         }
@@ -110,5 +113,47 @@ abstract class AbstractListener
 
         $this->persistenceHelper->remove($stockUnit, true);
         $this->persistenceHelper->persistAndRecompute($item);
+    }
+
+    /**
+     * Asserts that the resource can be safely deleted.
+     *
+     * @param ResourceInterface $resource
+     *
+     * @throws Exception\CommerceExceptionInterface
+     */
+    protected function assertDeletable(ResourceInterface $resource)
+    {
+        if ($resource instanceof Model\SupplierOrderItemInterface) {
+            // TODO Check reserved too ?
+            if (0 < $resource->getStockUnit()->getShippedQuantity()) {
+                throw new Exception\IllegalOperationException(
+                    "Supplier delivery can't be removed as at least one ".
+                    "of its items is linked to a shipped stock unit."
+                );
+            }
+        } elseif ($resource instanceof Model\SupplierOrderInterface) {
+            foreach ($resource->getItems() as $item) {
+                $this->assertDeletable($item);
+            }
+        } elseif ($resource instanceof Model\SupplierDeliveryItemInterface) {
+            $this->assertDeletable($resource->getOrderItem());
+        } elseif ($resource instanceof Model\SupplierDeliveryInterface) {
+            foreach ($resource->getItems() as $item) {
+                $this->assertDeletable($item);
+            }
+        } else {
+            throw new Exception\InvalidArgumentException("Unexpected resource.");
+        }
+    }
+
+    /**
+     * Schedules the supplier order content change event.
+     *
+     * @param Model\SupplierOrderInterface $order
+     */
+    protected function scheduleSupplierOrderContentChangeEvent(Model\SupplierOrderInterface $order)
+    {
+        $this->persistenceHelper->scheduleEvent(SupplierOrderEvents::CONTENT_CHANGE, $order);
     }
 }

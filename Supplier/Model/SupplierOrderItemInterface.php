@@ -110,15 +110,6 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
     public function setQuantity($quantity);
 
     /**
-     * Returns the delivery remaining quantity.
-     *
-     * @param SupplierDeliveryInterface $delivery
-     *
-     * @return float
-     */
-    public function getDeliveryRemainingQuantity(SupplierDeliveryInterface $delivery = null);
-
-    /**
      * Returns the net price.
      *
      * @return float

@@ -11,9 +11,10 @@ use Symfony\Component\Validator\Constraint;
  */
 class Customer extends Constraint
 {
-    public $hierarchyOverflow = 'ekyna_commerce.customer.hierarchy_overflow';
-    public $parentCompanyIsMandatory = 'ekyna_commerce.customer.parent_company_is_mandatory';
-    public $companyIsMandatory = 'ekyna_commerce.customer.company_is_mandatory';
+    public $hierarchy_overflow          = 'ekyna_commerce.customer.hierarchy_overflow';
+    public $parent_company_is_mandatory = 'ekyna_commerce.customer.parent_company_is_mandatory';
+    public $company_is_mandatory        = 'ekyna_commerce.customer.company_is_mandatory';
+
 
     /**
      * {@inheritdoc}

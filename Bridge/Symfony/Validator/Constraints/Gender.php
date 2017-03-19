@@ -11,5 +11,5 @@ use Symfony\Component\Validator\Constraint;
  */
 class Gender extends Constraint
 {
-    public $invalidGender = 'ekyna_commerce.gender.invalid';
+    public $invalid_gender = 'ekyna_commerce.gender.invalid';
 }

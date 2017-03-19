@@ -42,17 +42,14 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        /*
-         * TODO this is ugly :s
-         * It should be a loop of operations/behaviors ...
-         */
-
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
-        $changed = $this->handleCompletedState($shipment) || $changed;
+        $changed |= $this->handleCompletedState($shipment);
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $shipment
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
@@ -76,8 +73,6 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        // TODO same shit here ... T_T
-
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
@@ -85,7 +80,9 @@ abstract class AbstractShipmentListener
             $changed = $this->handleCompletedState($shipment) || $changed;
         }
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $shipment->setUpdatedAt(new \DateTime());
 
         if (true || $changed) {

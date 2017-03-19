@@ -81,7 +81,7 @@ class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
     /**
      * @inheritdoc
      */
-    public function setOrderItem(Model\SupplierOrderItemInterface $item)
+    public function setOrderItem(Model\SupplierOrderItemInterface $item = null)
     {
         $this->orderItem = $item;
 

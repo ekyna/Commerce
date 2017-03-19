@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Class SaleValidator
@@ -18,10 +19,16 @@ class SaleValidator extends ConstraintValidator
      */
     public function validate($sale, Constraint $constraint)
     {
-        /**
-         * @var SaleInterface $sale
-         * @var Sale          $constraint
-         */
+        if (null === $sale) {
+            return;
+        }
+
+        if (!$sale instanceof SaleInterface) {
+            throw new UnexpectedTypeException($sale, SaleInterface::class);
+        }
+        if (!$constraint instanceof Sale) {
+            throw new UnexpectedTypeException($constraint, Sale::class);
+        }
 
         $this->validateIdentity($sale, $constraint);
         $this->validateDeliveryAddress($sale, $constraint);

@@ -105,33 +105,30 @@ abstract class AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
-        /*
-         * TODO this is ugly :s
-         * It should be a loop of operations/behaviors ...
-         */
-
         $changed = false;
 
         // Generate number and key
-        $changed = $this->generateNumber($sale) || $changed;
-        $changed = $this->generateKey($sale) || $changed;
+        $changed |= $this->generateNumber($sale);
+        $changed |= $this->generateKey($sale);
 
         // Handle customer information
-        $changed = $this->handleInformation($sale) || $changed;
+        $changed |= $this->handleInformation($sale);
 
         // Update discounts
-        $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
+        $changed |= $this->saleUpdater->updateDiscounts($sale, true);
 
         // Update taxation
-        $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
+        $changed |= $this->saleUpdater->updateTaxation($sale, true);
 
         // Update totals
-        $changed = $this->saleUpdater->updateTotals($sale) || $changed;
+        $changed |= $this->saleUpdater->updateTotals($sale);
 
         // Update state
-        $changed = $this->updateState($sale) || $changed;
+        $changed |= $this->updateState($sale);
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $sale
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
@@ -150,23 +147,22 @@ abstract class AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
-        // TODO same shit here ... T_T
-
         $changed = false;
 
         // Generate number and key
-        $changed = $this->generateNumber($sale) || $changed;
-        $changed = $this->generateKey($sale) || $changed;
+        $changed |= $this->generateNumber($sale);
+        $changed |= $this->generateKey($sale);
 
         // Handle customer information
-        $changed = $this->handleInformation($sale) || $changed;
+        $changed |= $this->handleInformation($sale);
 
-        // TODO Timestampable behavior/listener
-//        $sale->setUpdatedAt(new \DateTime());
-//        $changed = true;
+        /**
+         * TODO Resource behaviors.
+         */
+        $sale->setUpdatedAt(new \DateTime());
 
         // Recompute to get an update-to-date change set.
-        if ($changed) {
+        if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
 
@@ -189,21 +185,21 @@ abstract class AbstractSaleListener
 
         // Update discounts
         if ($this->isDiscountUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
+            $changed |= $this->saleUpdater->updateDiscounts($sale, true);
         }
 
         // Update taxation
         if ($this->isTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
+            $changed |= $this->saleUpdater->updateTaxation($sale, true);
         } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
+            $changed |= $this->saleUpdater->updateShipmentTaxation($sale, true);
         }
 
         // Update totals
-        $changed = $this->saleUpdater->updateTotals($sale) || $changed;
+        $changed |= $this->saleUpdater->updateTotals($sale);
 
         // Update state
-        $changed = $this->updateState($sale) || $changed;
+        $changed |= $this->updateState($sale);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
@@ -223,7 +219,7 @@ abstract class AbstractSaleListener
         $changed = $this->saleUpdater->updateTotals($sale);
 
         // Update state
-        $changed = $this->updateState($sale) || $changed;
+        $changed |= $this->updateState($sale);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
@@ -444,7 +440,7 @@ abstract class AbstractSaleListener
 
             // Invoice address
             if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress()) {
-                $changed = $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address) || $changed;
+                $changed |= $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address);
             }
 
             // Delivery address
@@ -455,7 +451,7 @@ abstract class AbstractSaleListener
                     $this->persistenceHelper->remove($address, true);
                 }
             } else if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
-                $changed = $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address) || $changed;
+                $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address);
             }
         }
 

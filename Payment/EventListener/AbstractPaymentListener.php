@@ -58,16 +58,13 @@ abstract class AbstractPaymentListener
     {
         $payment = $this->getPaymentFromEvent($event);
 
-        /*
-         * TODO this is ugly :s
-         * It should be a loop of operations/behaviors ...
-         */
-
         // Generate number and key
         $changed = $this->generateNumber($payment);
-        $changed = $this->generateKey($payment) || $changed;
+        $changed |= $this->generateKey($payment);
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $payment
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
@@ -91,13 +88,13 @@ abstract class AbstractPaymentListener
     {
         $payment = $this->getPaymentFromEvent($event);
 
-        // TODO same shit here ... T_T
-
         // Generate number and key
         $changed = $this->generateNumber($payment);
-        $changed = $this->generateKey($payment) || $changed;
+        $changed |= $this->generateKey($payment);
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $payment->setUpdatedAt(new \DateTime());
 
         if (true || $changed) {

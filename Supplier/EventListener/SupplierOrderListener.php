@@ -51,17 +51,14 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        /*
-         * TODO this is ugly :s
-         * It should be a loop of operations/behaviors ...
-         */
-
         // Generate number and key
         $changed = $this->generateNumber($order);
 
-        $changed = $this->updateState($order) || $changed;
+        $changed |= $this->updateState($order);
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $order
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
@@ -80,15 +77,15 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        // TODO same shit here ... T_T
-
         // Generate number and key
         $changed = $this->generateNumber($order);
 
         // Update state
-        $changed = $this->updateState($order) || $changed;
+        $changed |= $this->updateState($order);
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $order->setUpdatedAt(new \DateTime());
 
         if (true || $changed) {
@@ -155,9 +152,7 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        if (!in_array($order->getState(), SupplierOrderStates::getDeletableStates())) {
-            throw new IllegalOperationException();
-        }
+        $this->assertDeletable($order);
     }
 
     /**

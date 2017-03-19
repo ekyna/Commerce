@@ -37,19 +37,19 @@ class AddressValidator extends ConstraintValidator
         if ($constraint->identity) {
             if (0 === strlen($address->getGender())) {
                 $this->context
-                    ->buildViolation($constraint->genderIsMandatory)
+                    ->buildViolation($constraint->gender_is_mandatory)
                     ->atPath('gender')
                     ->addViolation();
             }
             if (0 === strlen($address->getFirstName())) {
                 $this->context
-                    ->buildViolation($constraint->firstNameIsMandatory)
+                    ->buildViolation($constraint->first_name_is_mandatory)
                     ->atPath('firstName')
                     ->addViolation();
             }
             if (0 === strlen($address->getLastName())) {
                 $this->context
-                    ->buildViolation($constraint->lastNameIsMandatory)
+                    ->buildViolation($constraint->last_name_is_mandatory)
                     ->atPath('lastName')
                     ->addViolation();
             }
@@ -57,21 +57,21 @@ class AddressValidator extends ConstraintValidator
 
         if (0 === strlen($address->getCompany()) && $constraint->company) {
             $this->context
-                ->buildViolation($constraint->companyIsMandatory)
+                ->buildViolation($constraint->company_is_mandatory)
                 ->atPath('company')
                 ->addViolation();
         }
 
         if (0 === strlen($address->getPhone()) && $constraint->phone) {
             $this->context
-                ->buildViolation($constraint->phoneIsMandatory)
+                ->buildViolation($constraint->phone_is_mandatory)
                 ->atPath('phone')
                 ->addViolation();
         }
 
         if (0 === strlen($address->getMobile()) && $constraint->mobile) {
             $this->context
-                ->buildViolation($constraint->mobileIsMandatory)
+                ->buildViolation($constraint->mobile_is_mandatory)
                 ->atPath('mobile')
                 ->addViolation();
         }

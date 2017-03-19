@@ -35,16 +35,16 @@
         <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem"
                      field="items" mapped-by="order" orphan-removal="true">
             <cascade>
-                <cascade-all/>
+                <cascade-persist/>
+                <cascade-remove/>
             </cascade>
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryInterface"
                      field="deliveries" mapped-by="order" orphan-removal="true">
             <cascade>
-                <cascade-merge/>
+                <cascade-persist/>
                 <cascade-remove/>
-                <cascade-refresh/>
             </cascade>
         </one-to-many>
 

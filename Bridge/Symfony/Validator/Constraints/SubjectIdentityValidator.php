@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity as Entity;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Class SubjectIdentityValidator
@@ -18,23 +19,27 @@ class SubjectIdentityValidator extends ConstraintValidator
      */
     public function validate($identity, Constraint $constraint)
     {
-        /**
-         * @var Entity $identity
-         * @var SubjectIdentity $constraint
-         */
-
-        /*if (!in_array('subject_choice', $constraint->groups)) {
+        if (null === $identity) {
             return;
-        }*/
+        }
 
-        if (!empty($identity->getProvider()) && empty($identity->getIdentifier())) {
+        if (!$identity instanceof Entity) {
+            throw new UnexpectedTypeException($identity, Entity::class);
+        }
+        if (!$constraint instanceof SubjectIdentity) {
+            throw new UnexpectedTypeException($constraint, SubjectIdentity::class);
+        }
+
+        /** @noinspection PhpInternalEntityUsedInspection */
+        $hasProvider = empty($identity->getProvider());
+        /** @noinspection PhpInternalEntityUsedInspection */
+        $hasIdentifier = empty($identity->getIdentifier());
+
+        if (($hasProvider || $hasIdentifier) && !($hasProvider && $hasIdentifier)) {
             $this->context
                 ->buildViolation($constraint->identity_subject_must_be_selected)
                 ->atPath('provider')
                 ->addViolation();
         }
-
-        $stop = true;
-        // TODO test subject resolution
     }
 }

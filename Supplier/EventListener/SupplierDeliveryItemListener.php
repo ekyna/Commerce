@@ -5,9 +5,7 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -30,7 +28,7 @@ class SupplierDeliveryItemListener extends AbstractListener
         }
 
         // Credit stock unit delivered quantity
-        $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $item->getQuantity());
+        $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $item->getQuantity(), true);
 
         // Dispatch supplier order content change event
         $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
@@ -44,21 +42,18 @@ class SupplierDeliveryItemListener extends AbstractListener
     public function onUpdate(ResourceEventInterface $event)
     {
         $item = $this->getSupplierDeliveryItemFromEvent($event);
-        if (null === $orderItem = $item->getOrderItem()) {
-            throw new RuntimeException("OrderItem must be set.");
-        }
 
         if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
-            $changeSet = $this->persistenceHelper->getChangeSet($item);
-
-            // Delta quantity (difference between new and old)
-            if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
-                // Update stock unit delivered quantity
-                $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $deltaQuantity);
-            }
+            $this->handleQuantityChange($item);
 
             // Dispatch supplier order content change event
-            $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
+            $order = $item->getOrderItem()->getOrder();
+            $this->scheduleSupplierOrderContentChangeEvent($order);
+
+            // Remove item with zero quantity without event schedule
+            if (0 == $item->getQuantity()) {
+                $this->persistenceHelper->remove($item, false);
+            }
         }
     }
 
@@ -70,14 +65,47 @@ class SupplierDeliveryItemListener extends AbstractListener
     public function onDelete(ResourceEventInterface $event)
     {
         $item = $this->getSupplierDeliveryItemFromEvent($event);
+
+        $this->assertDeletable($item);
+
+        if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
+            $this->handleQuantityChange($item);
+        } else {
+            if (null === $orderItem = $item->getOrderItem()) {
+                throw new RuntimeException("OrderItem must be set.");
+            }
+
+            // Debit stock unit delivered quantity
+            $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), -$item->getQuantity(), true);
+
+            // Trigger the supplier order update
+            $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
+        }
+
+        // Clear association
+        $item->setDelivery(null);
+    }
+
+    /**
+     * Handle the quantity change.
+     *
+     * @param SupplierDeliveryItemInterface $item
+     */
+    protected function handleQuantityChange(SupplierDeliveryItemInterface $item)
+    {
         if (null === $orderItem = $item->getOrderItem()) {
             throw new RuntimeException("OrderItem must be set.");
         }
 
-        // Debit stock unit delivered quantity
-        $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), -$item->getQuantity());
+        $changeSet = $this->persistenceHelper->getChangeSet($item);
 
-        // Trigger the supplier order item update
+        // Delta quantity (difference between new and old)
+        if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
+            // Update stock unit delivered quantity
+            $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $deltaQuantity, true);
+        }
+
+        // Trigger the supplier order update
         $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
     }
 
@@ -92,10 +120,10 @@ class SupplierDeliveryItemListener extends AbstractListener
     {
         $item = $this->getSupplierDeliveryItemFromEvent($event);
 
-        // Prevent removal if related stock unit shipped quantity is greater than zero
-        if (0 < $item->getOrderItem()->getStockUnit()->getShippedQuantity()) {
-            throw new IllegalOperationException();
-        }
+        $this->assertDeletable($item);
+
+        // Initialize the supplier deliveries's items collection before the item removal.
+        $item->getDelivery()->getItems();
     }
 
     /**
@@ -115,15 +143,5 @@ class SupplierDeliveryItemListener extends AbstractListener
         }
 
         return $item;
-    }
-
-    /**
-     * Schedules the supplier order content change event.
-     *
-     * @param SupplierOrderInterface $order
-     */
-    protected function scheduleSupplierOrderContentChangeEvent(SupplierOrderInterface $order)
-    {
-        $this->persistenceHelper->scheduleEvent(SupplierOrderEvents::CONTENT_CHANGE, $order);
     }
 }

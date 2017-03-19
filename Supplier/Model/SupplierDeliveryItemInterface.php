@@ -41,7 +41,7 @@ interface SupplierDeliveryItemInterface extends ResourceInterface
      *
      * @return $this|SupplierDeliveryItemInterface
      */
-    public function setOrderItem(SupplierOrderItemInterface $item);
+    public function setOrderItem(SupplierOrderItemInterface $item = null);
 
     /**
      * Returns the quantity.

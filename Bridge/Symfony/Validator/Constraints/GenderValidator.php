@@ -44,7 +44,7 @@ class GenderValidator extends ConstraintValidator
 
         if (!call_user_func($this->genderClass.'::isValid', $gender)) {
             $this->context
-                ->buildViolation($constraint->invalidGender)
+                ->buildViolation($constraint->invalid_gender)
                 ->addViolation();
         }
     }

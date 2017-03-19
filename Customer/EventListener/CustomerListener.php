@@ -44,7 +44,9 @@ class CustomerListener
 
         $changed = $this->updateCompanyNameFromParent($customer);
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $customer
             ->setCreatedAt(new \DateTime())
             ->setUpdatedAt(new \DateTime());
@@ -77,7 +79,9 @@ class CustomerListener
             }
         }
 
-        // TODO Timestampable behavior/listener
+        /**
+         * TODO Resource behaviors.
+         */
         $customer->setUpdatedAt(new \DateTime());
 
         if (true || $changed) { // TODO

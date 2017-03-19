@@ -36,16 +36,17 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     {
         if ($relative) {
             $quantity = $stockUnit->getOrderedQuantity() + $quantity;
-        } elseif (0 >= $quantity) {
+        }
+        if (0 > $quantity) {
             throw new InvalidArgumentException("Unexpected ordered quantity.");
         }
 
-        $stockUnit->setOrderedQuantity($quantity);
-
-        // Prevent quantity to be set as lower than delivered quantity
-        if ($stockUnit->getOrderedQuantity() < $stockUnit->getDeliveredQuantity()) {
+        // Prevent ordered quantity to be set as lower than the delivered quantity
+        if ($quantity < $stockUnit->getDeliveredQuantity()) {
             throw new InvalidArgumentException("The ordered quantity can't be lower than the delivered quantity.");
         }
+
+        $stockUnit->setOrderedQuantity($quantity);
 
         $this->persistenceHelper->persistAndRecompute($stockUnit, true);
     }
@@ -57,8 +58,14 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     {
         if ($relative) {
             $quantity = $stockUnit->getDeliveredQuantity() + $quantity;
-        } elseif (0 >= $quantity) {
+        }
+        if (0 > $quantity) {
             throw new InvalidArgumentException("Unexpected delivered quantity.");
+        }
+
+        // Prevent delivered quantity to be set as greater than the ordered quantity
+        if ($quantity > $stockUnit->getOrderedQuantity()) {
+            throw new InvalidArgumentException("The delivered quantity can't be greater than the ordered quantity.");
         }
 
         $stockUnit->setDeliveredQuantity($quantity);
@@ -73,16 +80,17 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     {
         if ($relative) {
             $quantity = $stockUnit->getReservedQuantity() + $quantity;
-        } elseif (0 >= $quantity) {
+        }
+        if (0 > $quantity) {
             throw new InvalidArgumentException("Unexpected reserved quantity.");
         }
 
-        $stockUnit->setReservedQuantity($quantity);
+        // Prevent reserved quantity to be set as lower than the shipped quantity
+        if ($quantity < $stockUnit->getShippedQuantity()) {
+            throw new InvalidArgumentException("The reserved quantity can't be lower than the shipped quantity.");
+        }
 
-        // Prevent quantity to be set as lower than shipped quantity
-        /*if ($stockUnit->getReservedQuantity() < $stockUnit->getShippedQuantity()) {
-            throw new InvalidArgumentException("The reserved quantity can't be lower than the delivered quantity.");
-        }*/
+        $stockUnit->setReservedQuantity($quantity);
 
         $this->persistenceHelper->persistAndRecompute($stockUnit, true);
     }
@@ -94,8 +102,14 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     {
         if ($relative) {
             $quantity = $stockUnit->getShippedQuantity() + $quantity;
-        } elseif (0 >= $quantity) {
+        }
+        if (0 > $quantity) {
             throw new InvalidArgumentException("Unexpected shipped quantity.");
+        }
+
+        // Prevent shipped quantity to be set as greater than the reserved quantity
+        if ($quantity > $stockUnit->getReservedQuantity()) {
+            throw new InvalidArgumentException("The shipped quantity can't be greater than the reserved quantity.");
         }
 
         $stockUnit->setShippedQuantity($quantity);
@@ -108,6 +122,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
      */
     public function updateNetPrice(StockUnitInterface $stockUnit, $netPrice)
     {
+        if (0 > $netPrice) {
+            throw new InvalidArgumentException("Unexpected net price.");
+        }
+
         if ($netPrice != $stockUnit->getNetPrice()) {
             $stockUnit->setNetPrice($netPrice);
 

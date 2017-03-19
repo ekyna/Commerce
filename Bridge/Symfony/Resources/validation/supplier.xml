@@ -67,6 +67,7 @@
             <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
+            <!-- TODO greater than or equal sum of items price*quantity -->
         </property>
         <property name="paymentDate">
             <constraint name="DateTime"/>
@@ -113,6 +114,45 @@
                 <option name="value">0</option>
             </constraint>
         </property>
+        <!-- TODO subject identity -->
+        <!-- TODO unique subject by order -->
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierOrderItem"/>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierDelivery">
+        <property name="order">
+            <constraint name="NotNull" />
+            <!-- TODO Order state must be (at least) 'ordered' -->
+        </property>
+        <property name="items">
+            <constraint name="Valid"/>
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+        <property name="createdAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="updatedAt">
+            <constraint name="DateTime"/>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierDeliveryItem">
+        <property name="delivery">
+            <constraint name="NotNull" />
+        </property>
+        <property name="orderItem">
+            <constraint name="NotNull" />
+            <!-- TODO belongs to develiry's order -->
+        </property>
+        <property name="quantity">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">1</option>
+            </constraint>
+        </property>
+        <!-- TODO unique orderItem by delivery -->
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierDeliveryItem"/>
     </class>
 
 </constraint-mapping>

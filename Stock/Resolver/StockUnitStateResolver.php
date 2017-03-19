@@ -49,7 +49,11 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
             $stockUnit->setState($resolvedState);
 
             if ($resolvedState === StockUnitStates::STATE_CLOSED) {
-                $stockUnit->setClosedAt(new \DateTime());
+                if (null === $stockUnit->getClosedAt()) {
+                    $stockUnit->setClosedAt(new \DateTime());
+                }
+            } elseif (null != $stockUnit->getClosedAt()) {
+                $stockUnit->setClosedAt(null);
             }
 
             return true;
