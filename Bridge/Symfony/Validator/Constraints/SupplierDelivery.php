@@ -5,13 +5,13 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * Class SupplierOrderItem
+ * Class SupplierDelivery
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierOrderItem extends Constraint
+class SupplierDelivery extends Constraint
 {
-    public $quantity_must_be_greater_or_equal_than_delivered = 'ekyna_commerce.supplier_order_item.quantity_must_be_greater_or_equal_than_delivered';
+    public $duplicate_order_item = 'ekyna_commerce.supplier_delivery.duplicate_order_item';
 
 
     /**

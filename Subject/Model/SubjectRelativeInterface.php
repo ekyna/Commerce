@@ -1,6 +1,7 @@
 <?php
 
 namespace Ekyna\Component\Commerce\Subject\Model;
+
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 
 /**
@@ -16,8 +17,6 @@ interface SubjectRelativeInterface
      * Returns the subjectIdentity.
      *
      * @return SubjectIdentity
-     *
-     * @internal
      */
     public function getSubjectIdentity();
 
@@ -62,8 +61,6 @@ interface SubjectRelativeInterface
      * Clears the subject (identity and data).
      *
      * @return $this|SubjectRelativeInterface
-     *
-     * @internal
      */
     public function clearSubject();
 }

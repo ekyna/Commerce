@@ -126,7 +126,6 @@ interface CustomerInterface extends
      * @param CustomerInterface $child
      *
      * @return $this|CustomerInterface
-     * @internal
      */
     public function addChild(CustomerInterface $child);
 
@@ -136,7 +135,6 @@ interface CustomerInterface extends
      * @param CustomerInterface $child
      *
      * @return $this|CustomerInterface
-     * @internal
      */
     public function removeChild(CustomerInterface $child);
 

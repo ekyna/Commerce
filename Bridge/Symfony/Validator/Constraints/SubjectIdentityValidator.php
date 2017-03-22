@@ -30,9 +30,7 @@ class SubjectIdentityValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SubjectIdentity::class);
         }
 
-        /** @noinspection PhpInternalEntityUsedInspection */
         $hasProvider = empty($identity->getProvider());
-        /** @noinspection PhpInternalEntityUsedInspection */
         $hasIdentifier = empty($identity->getIdentifier());
 
         if (($hasProvider || $hasIdentifier) && !($hasProvider && $hasIdentifier)) {

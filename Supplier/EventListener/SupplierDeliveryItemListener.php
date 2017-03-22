@@ -15,6 +15,9 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class SupplierDeliveryItemListener extends AbstractListener
 {
+    // TODO refactor assertions : if (null === ...
+    // TODO assert that order is at least at ordered state (in delivery listener too ...)
+
     /**
      * Insert event handler.
      *
@@ -23,15 +26,21 @@ class SupplierDeliveryItemListener extends AbstractListener
     public function onInsert(ResourceEventInterface $event)
     {
         $item = $this->getSupplierDeliveryItemFromEvent($event);
+
+        // Credit stock unit delivered quantity
         if (null === $orderItem = $item->getOrderItem()) {
             throw new RuntimeException("OrderItem must be set.");
         }
-
-        // Credit stock unit delivered quantity
-        $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $item->getQuantity(), true);
+        if (null === $stockUnit = $orderItem->getStockUnit()) {
+            throw new RuntimeException("StockUnit must be set.");
+        }
+        $this->stockUnitUpdater->updateDelivered($stockUnit, $item->getQuantity(), true);
 
         // Dispatch supplier order content change event
-        $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
+        if (null === $order = $orderItem->getOrder()) {
+            throw new RuntimeException("Order must be set.");
+        }
+        $this->scheduleSupplierOrderContentChangeEvent($order);
     }
 
     /**
@@ -47,7 +56,12 @@ class SupplierDeliveryItemListener extends AbstractListener
             $this->handleQuantityChange($item);
 
             // Dispatch supplier order content change event
-            $order = $item->getOrderItem()->getOrder();
+            if (null === $orderItem = $item->getOrderItem()) {
+                throw new RuntimeException("OrderItem must be set.");
+            }
+            if (null === $order = $orderItem->getOrder()) {
+                throw new RuntimeException("Order must be set.");
+            }
             $this->scheduleSupplierOrderContentChangeEvent($order);
 
             // Remove item with zero quantity without event schedule
@@ -71,15 +85,20 @@ class SupplierDeliveryItemListener extends AbstractListener
         if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
             $this->handleQuantityChange($item);
         } else {
+            // Debit stock unit delivered quantity
             if (null === $orderItem = $item->getOrderItem()) {
                 throw new RuntimeException("OrderItem must be set.");
             }
-
-            // Debit stock unit delivered quantity
-            $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), -$item->getQuantity(), true);
+            if (null === $stockUnit = $orderItem->getStockUnit()) {
+                throw new RuntimeException("StockUnit must be set.");
+            }
+            $this->stockUnitUpdater->updateDelivered($stockUnit, -$item->getQuantity(), true);
 
             // Trigger the supplier order update
-            $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
+            if (null === $order = $orderItem->getOrder()) {
+                throw new RuntimeException("Order must be set.");
+            }
+            $this->scheduleSupplierOrderContentChangeEvent($order);
         }
 
         // Clear association
@@ -93,20 +112,25 @@ class SupplierDeliveryItemListener extends AbstractListener
      */
     protected function handleQuantityChange(SupplierDeliveryItemInterface $item)
     {
-        if (null === $orderItem = $item->getOrderItem()) {
-            throw new RuntimeException("OrderItem must be set.");
-        }
-
         $changeSet = $this->persistenceHelper->getChangeSet($item);
 
         // Delta quantity (difference between new and old)
+        if (null === $orderItem = $item->getOrderItem()) {
+            throw new RuntimeException("OrderItem must be set.");
+        }
+        if (null === $stockUnit = $orderItem->getStockUnit()) {
+            throw new RuntimeException("StockUnit must be set.");
+        }
         if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
             // Update stock unit delivered quantity
-            $this->stockUnitUpdater->updateDelivered($orderItem->getStockUnit(), $deltaQuantity, true);
+            $this->stockUnitUpdater->updateDelivered($stockUnit, $deltaQuantity, true);
         }
 
         // Trigger the supplier order update
-        $this->scheduleSupplierOrderContentChangeEvent($orderItem->getOrder());
+        if (null === $order = $orderItem->getOrder()) {
+            throw new RuntimeException("Order must be set.");
+        }
+        $this->scheduleSupplierOrderContentChangeEvent($order);
     }
 
     /**
@@ -123,7 +147,9 @@ class SupplierDeliveryItemListener extends AbstractListener
         $this->assertDeletable($item);
 
         // Initialize the supplier deliveries's items collection before the item removal.
-        $item->getDelivery()->getItems();
+        if (null !== $delivery = $item->getDelivery()) {
+            $delivery->getItems();
+        }
     }
 
     /**

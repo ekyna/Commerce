@@ -56,6 +56,7 @@ class SupplierOrderItemListener extends AbstractListener
         if ($this->persistenceHelper->isChanged($item, 'product')) {
             $cs = $this->persistenceHelper->getChangeSet($item);
             if ($cs['product'][1] != $cs['product'][0]) {
+                // TODO message as translation id
                 throw new IllegalOperationException("Changing supplier order item product is not supported yet.");
             }
         }

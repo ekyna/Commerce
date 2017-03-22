@@ -190,6 +190,13 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, S
     public function setClosedAt(\DateTime $date = null);
 
     /**
+     * Returns whether the stock unit is empty (regarding to the ordered and reserved quantities).
+     *
+     * @return bool
+     */
+    public function isEmpty();
+
+    /**
      * Returns the in stock quantity (delivered - reserved, 0 or greater).
      *
      * @return float

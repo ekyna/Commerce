@@ -157,7 +157,7 @@ abstract class AbstractShipmentItemListener
         $shipment = $shipmentItem->getShipment();
 
         if (!in_array($shipment->getState(), Model\ShipmentStates::getDeletableStates())) {
-            throw new Exception\IllegalOperationException();
+            throw new Exception\IllegalOperationException(); // TODO reason message
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
+use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -22,6 +23,11 @@ abstract class AbstractShipmentListener
      */
     protected $persistenceHelper;
 
+    /**
+     * @var NumberGeneratorInterface
+     */
+    protected $numberGenerator;
+
 
     /**
      * Sets the persistence helper.
@@ -31,6 +37,16 @@ abstract class AbstractShipmentListener
     public function setPersistenceHelper(PersistenceHelperInterface $helper)
     {
         $this->persistenceHelper = $helper;
+    }
+
+    /**
+     * Sets the number generator.
+     *
+     * @param NumberGeneratorInterface $numberGenerator
+     */
+    public function setNumberGenerator(NumberGeneratorInterface $numberGenerator)
+    {
+        $this->numberGenerator = $numberGenerator;
     }
 
     /**
@@ -144,7 +160,7 @@ abstract class AbstractShipmentListener
         // TODO look for returns ?
 
         if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
-            throw new IllegalOperationException();
+            throw new IllegalOperationException(); // TODO reason message
         }
     }
 
@@ -157,24 +173,8 @@ abstract class AbstractShipmentListener
      */
     protected function generateNumber(ShipmentInterface $shipment)
     {
-        // TODO Use a number generator
-
         if (0 == strlen($shipment->getNumber())) {
-            if (null === $sale = $shipment->getSale()) {
-                return false;
-            }
-
-            $number = 1;
-            foreach ($sale->getShipments() as $s) {
-                if (preg_match('~\d+-(\d+)~', $s->getNumber(), $matches)) {
-                    $n = intval($matches[1]);
-                    if ($number <= $n) {
-                        $number = $n + 1;
-                    }
-                }
-            }
-
-            $shipment->setNumber(sprintf('%s-%s', $sale->getNumber(), $number));
+            $this->numberGenerator->generate($shipment);
 
             return true;
         }

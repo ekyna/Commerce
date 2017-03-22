@@ -206,11 +206,9 @@ class Customer implements CustomerInterface
     {
         if ($parent !== $this->parent) {
             if (null !== $this->parent) {
-                /** @noinspection PhpInternalEntityUsedInspection */
                 $this->parent->removeChild($this);
             }
             if (null !== $parent) {
-                /** @noinspection PhpInternalEntityUsedInspection */
                 $parent->addChild($this);
             }
             $this->parent = $parent;

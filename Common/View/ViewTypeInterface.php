@@ -15,38 +15,38 @@ interface ViewTypeInterface
      * Builds the sale view.
      *
      * @param Model\SaleInterface $sale
-     * @param AbstractView        $view
+     * @param SaleView            $view
      * @param Model\SaleInterface $sale
      * @param array               $options
      */
-    public function buildSaleView(Model\SaleInterface $sale, AbstractView $view, array $options);
+    public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options);
 
     /**
      * Builds the sale item view.
      *
      * @param Model\SaleItemInterface $item
-     * @param AbstractView            $view
+     * @param LineView                $view
      * @param array                   $options
      */
-    public function buildItemView(Model\SaleItemInterface $item, AbstractView $view, array $options);
+    public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options);
 
     /**
      * Builds the adjustment view.
      *
      * @param Model\AdjustmentInterface $adjustment
-     * @param AbstractView              $view
+     * @param LineView                  $view
      * @param array                     $options
      */
-    public function buildAdjustmentView(Model\AdjustmentInterface $adjustment, AbstractView $view, array $options);
+    public function buildAdjustmentView(Model\AdjustmentInterface $adjustment, LineView $view, array $options);
 
     /**
      * Builds the shipment view.
      *
      * @param Model\SaleInterface $sale
-     * @param AbstractView        $view
+     * @param LineView            $view
      * @param array               $options
      */
-    public function buildShipmentView(Model\SaleInterface $sale, AbstractView $view, array $options);
+    public function buildShipmentView(Model\SaleInterface $sale, LineView $view, array $options);
 
     /**
      * Returns whether the vars builder supports the given sale.

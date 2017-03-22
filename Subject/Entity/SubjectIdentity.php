@@ -73,8 +73,6 @@ final class SubjectIdentity
      * Returns the provider.
      *
      * @return string
-     *
-     * @internal
      */
     public function getProvider()
     {
@@ -87,8 +85,6 @@ final class SubjectIdentity
      * @param string $provider
      *
      * @return SubjectIdentity
-     *
-     * @internal
      */
     public function setProvider($provider)
     {
@@ -101,8 +97,6 @@ final class SubjectIdentity
      * Returns the identifier.
      *
      * @return string
-     *
-     * @internal
      */
     public function getIdentifier()
     {
@@ -115,8 +109,6 @@ final class SubjectIdentity
      * @param string $identifier
      *
      * @return SubjectIdentity
-     *
-     * @internal
      */
     public function setIdentifier($identifier)
     {
@@ -129,8 +121,6 @@ final class SubjectIdentity
      * Returns the subject.
      *
      * @return mixed
-     *
-     * @internal
      */
     public function getSubject()
     {
@@ -143,8 +133,6 @@ final class SubjectIdentity
      * @param mixed $subject
      *
      * @return SubjectIdentity
-     *
-     * @internal
      */
     public function setSubject($subject = null)
     {

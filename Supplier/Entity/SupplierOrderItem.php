@@ -132,11 +132,12 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     public function setStockUnit(StockUnitInterface $stockUnit = null)
     {
         if ($this->stockUnit != $stockUnit) {
-            if ($this->stockUnit) {
-                $this->stockUnit->setSupplierOrderItem(null);
-            }
-
+            $previous = $this->stockUnit;
             $this->stockUnit = $stockUnit;
+
+            if ($previous) {
+                $previous->setSupplierOrderItem(null);
+            }
 
             if ($this->stockUnit) {
                 $this->stockUnit->setSupplierOrderItem($this);

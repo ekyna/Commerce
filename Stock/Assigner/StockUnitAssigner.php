@@ -254,10 +254,11 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             $delta = null;
             if (0 < $stockUnit->getOrderedQuantity()) {
                 $assignableQuantity = $stockUnit->getOrderedQuantity() - $stockUnit->getReservedQuantity();
-                if (0 < $assignableQuantity && $assignableQuantity < $quantity) {
-                    $delta = $assignableQuantity;
-                } else {
+                if (0 == $assignableQuantity) {
                     continue;
+                }
+                if ($assignableQuantity < $quantity) {
+                    $delta = $assignableQuantity;
                 }
             }
             if (null === $delta) {

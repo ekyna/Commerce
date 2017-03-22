@@ -110,8 +110,12 @@ abstract class AbstractListener
         }
 
         $stockUnit->setSupplierOrderItem(null);
+        if (0 < $stockUnit->getReservedQuantity()) {
+            $this->persistenceHelper->persistAndRecompute($stockUnit);
+        } else {
+            $this->persistenceHelper->remove($stockUnit, true);
+        }
 
-        $this->persistenceHelper->remove($stockUnit, true);
         $this->persistenceHelper->persistAndRecompute($item);
     }
 
@@ -125,12 +129,12 @@ abstract class AbstractListener
     protected function assertDeletable(ResourceInterface $resource)
     {
         if ($resource instanceof Model\SupplierOrderItemInterface) {
-            // TODO Check reserved too ?
-            if (0 < $resource->getStockUnit()->getShippedQuantity()) {
+            $stockUnit = $resource->getStockUnit();
+            if (0 < $stockUnit->getShippedQuantity() || 0 < $stockUnit->getReservedQuantity()) {
                 throw new Exception\IllegalOperationException(
                     "Supplier delivery can't be removed as at least one ".
-                    "of its items is linked to a shipped stock unit."
-                );
+                    "of its items is linked to a shipped stock unit or reserved order."
+                ); // TODO message as translation id
             }
         } elseif ($resource instanceof Model\SupplierOrderInterface) {
             foreach ($resource->getItems() as $item) {
@@ -143,7 +147,7 @@ abstract class AbstractListener
                 $this->assertDeletable($item);
             }
         } else {
-            throw new Exception\InvalidArgumentException("Unexpected resource.");
+            throw new Exception\InvalidArgumentException("Unexpected resource."); // TODO message as translation id
         }
     }
 

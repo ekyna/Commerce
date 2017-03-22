@@ -31,6 +31,25 @@ class SupplierDeliveryItemValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SupplierDeliveryItem::class);
         }
 
+        // Assert that the delivery item's order item belongs to the delivery's order.
+        $found = false;
+        $orderItems = $item->getDelivery()->getOrder()->getItems();
+        foreach ($orderItems as $orderItem) {
+            if ($item->getOrderItem()->getId() == $orderItem->getId()) {
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            $this
+                ->context
+                ->buildViolation($constraint->order_item_miss_match)
+                ->addViolation();
+
+            return;
+        }
+
+        // Delivery item's quantity must be lower than or equals the order item's remaining delivery quantity
         if ($item->getQuantity() > $max = SupplierUtil::calculateDeliveryRemainingQuantity($item)) {
             $this
                 ->context

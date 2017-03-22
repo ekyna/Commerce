@@ -59,7 +59,6 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
      */
     public function getProviderByRelative(SubjectRelativeInterface $relative)
     {
-        /** @noinspection PhpInternalEntityUsedInspection */
         if (!empty($name = $relative->getSubjectIdentity()->getProvider())) {
             return $this->getProviderByName($name);
         }

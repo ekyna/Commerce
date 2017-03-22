@@ -155,11 +155,12 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null)
     {
         if ($this->supplierOrderItem != $item) {
-            if ($this->supplierOrderItem) {
-                $this->supplierOrderItem->setStockUnit(null);
-            }
-
+            $previous = $this->supplierOrderItem;
             $this->supplierOrderItem = $item;
+
+            if ($previous) {
+                $previous->setStockUnit(null);
+            }
 
             if ($this->supplierOrderItem) {
                 $this->supplierOrderItem->setStockUnit($this);
@@ -345,6 +346,14 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         $this->closedAt = $date;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isEmpty()
+    {
+        return 0 == $this->orderedQuantity && 0 == $this->reservedQuantity;
     }
 
     /**

@@ -12,6 +12,8 @@ use Symfony\Component\Validator\Constraint;
 class SupplierDeliveryItem extends Constraint
 {
     public $quantity_must_be_lower_or_equal_than_ordered = 'ekyna_commerce.supplier_delivery_item.quantity_must_be_lower_or_equal_than_ordered';
+    public $order_item_miss_match = 'ekyna_commerce.supplier_delivery_item.order_item_miss_match';
+
 
     /**
      * @inheritDoc

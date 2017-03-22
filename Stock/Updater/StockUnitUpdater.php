@@ -48,7 +48,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setOrderedQuantity($quantity);
 
-        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+        $this->persistOrRemove($stockUnit);
     }
 
     /**
@@ -70,7 +70,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setDeliveredQuantity($quantity);
 
-        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+        $this->persistOrRemove($stockUnit);
     }
 
     /**
@@ -92,7 +92,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setReservedQuantity($quantity);
 
-        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+        $this->persistOrRemove($stockUnit);
     }
 
     /**
@@ -114,7 +114,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setShippedQuantity($quantity);
 
-        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+        $this->persistOrRemove($stockUnit);
     }
 
     /**
@@ -151,5 +151,21 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         }
 
         return false;
+    }
+
+    /**
+     * Persists the stock unit, or removes it if empty.
+     *
+     * @param StockUnitInterface $stockUnit
+     */
+    protected function persistOrRemove(StockUnitInterface $stockUnit)
+    {
+        // TODO refactor stock unit validation here ?
+
+        if ($stockUnit->isEmpty()) {
+            $this->persistenceHelper->remove($stockUnit, true);
+        } else {
+            $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+        }
     }
 }

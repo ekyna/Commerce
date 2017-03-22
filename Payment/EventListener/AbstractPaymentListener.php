@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Payment\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -24,6 +25,11 @@ abstract class AbstractPaymentListener
     protected $persistenceHelper;
 
     /**
+     * @var NumberGeneratorInterface
+     */
+    protected $numberGenerator;
+
+    /**
      * @var KeyGeneratorInterface
      */
     protected $keyGenerator;
@@ -37,6 +43,16 @@ abstract class AbstractPaymentListener
     public function setPersistenceHelper(PersistenceHelperInterface $helper)
     {
         $this->persistenceHelper = $helper;
+    }
+
+    /**
+     * Sets the number generator.
+     *
+     * @param NumberGeneratorInterface $numberGenerator
+     */
+    public function setNumberGenerator(NumberGeneratorInterface $numberGenerator)
+    {
+        $this->numberGenerator = $numberGenerator;
     }
 
     /**
@@ -147,7 +163,7 @@ abstract class AbstractPaymentListener
         $payment = $this->getPaymentFromEvent($event);
 
         if (!in_array($payment->getState(), PaymentStates::getDeletableStates())) {
-            throw new IllegalOperationException();
+            throw new IllegalOperationException(); // TODO reason message
         }
     }
 
@@ -160,24 +176,8 @@ abstract class AbstractPaymentListener
      */
     protected function generateNumber(PaymentInterface $payment)
     {
-        // TODO Use a number generator
-
         if (0 == strlen($payment->getNumber())) {
-            if (null === $sale = $payment->getSale()) {
-                return false;
-            }
-
-            $number = 1;
-            foreach ($sale->getPayments() as $p) {
-                if (preg_match('~\d+-(\d+)~', $p->getNumber(), $matches)) {
-                    $n = intval($matches[1]);
-                    if ($number <= $n) {
-                        $number = $n + 1;
-                    }
-                }
-            }
-
-            $payment->setNumber(sprintf('%s-%s', $sale->getNumber(), $number));
+            $this->numberGenerator->generate($payment);
 
             return true;
         }

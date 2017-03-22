@@ -67,7 +67,6 @@
             <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
-            <!-- TODO greater than or equal sum of items price*quantity -->
         </property>
         <property name="paymentDate">
             <constraint name="DateTime"/>
@@ -87,9 +86,13 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
         </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierOrder"/>
     </class>
 
     <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem">
+        <property name="order">
+            <constraint name="NotNull" />
+        </property>
         <property name="designation">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -114,8 +117,6 @@
                 <option name="value">0</option>
             </constraint>
         </property>
-        <!-- TODO subject identity -->
-        <!-- TODO unique subject by order -->
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierOrderItem"/>
     </class>
 
@@ -136,6 +137,7 @@
         <property name="updatedAt">
             <constraint name="DateTime"/>
         </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierDelivery"/>
     </class>
 
     <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierDeliveryItem">
@@ -144,7 +146,6 @@
         </property>
         <property name="orderItem">
             <constraint name="NotNull" />
-            <!-- TODO belongs to develiry's order -->
         </property>
         <property name="quantity">
             <constraint name="GreaterThanOrEqual">
