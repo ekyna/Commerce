@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
@@ -22,7 +23,8 @@ interface SaleInterface extends
     NumberSubjectInterface,
     KeySubjectInterface,
     StateSubjectInterface,
-    CurrencySubjectInterface
+    CurrencySubjectInterface,
+    PaymentTermSubjectInterface
 {
     /**
      * Returns the customer.

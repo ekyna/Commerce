@@ -59,6 +59,9 @@
     </class>
 
     <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethod">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
     </class>
 
     <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethodMessage">
@@ -69,6 +72,40 @@
                     <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
                     <value>getStates</value>
                 </option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentTerm">
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">3</option>
+                <option name="max">128</option>
+            </constraint>
+        </property>
+        <property name="days">
+            <constraint name="NotNull"/>
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">
+                <value>days</value>
+                <value>endOfMonth</value>
+            </option>
+        </constraint>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentTermTranslation">
+        <property name="title">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">255</option>
             </constraint>
         </property>
     </class>

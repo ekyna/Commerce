@@ -52,6 +52,7 @@ class DoctrineBundleMapping
             Order\Model\OrderAddressInterface::class         => Order\Entity\OrderAddress::class,
 
             Payment\Model\PaymentMethodInterface::class      => Payment\Entity\PaymentMethod::class,
+            Payment\Model\PaymentTermInterface::class        => Payment\Entity\PaymentTerm::class,
 
             Pricing\Model\TaxGroupInterface::class           => Pricing\Entity\TaxGroup::class,
 

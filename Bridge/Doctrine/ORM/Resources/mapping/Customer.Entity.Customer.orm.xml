@@ -9,10 +9,6 @@
             name="Ekyna\Component\Commerce\Customer\Entity\Customer"
             table="commerce_customer">
 
-        <!--<entity-listeners>
-            <entity-listener class="Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener\CustomerListener"/>
-        </entity-listeners>-->
-
         <indexes>
             <index columns="email" name="idx_commerce_customer_email"/>
         </indexes>
@@ -32,6 +28,7 @@
         <field name="lastName" column="last_name" type="string" length="64"/>
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
+        <field name="creditLimit" column="credit_limit" type="decimal" precision="9" scale="2"/>
 
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
@@ -53,7 +50,7 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
                      inversed-by="children" field="parent">
-            <join-column name="parent_id" referenced-column-name="id" nullable="true" on-delete="CASCADE"/>
+            <join-column name="parent_id" referenced-column-name="id" nullable="true" on-delete="RESTRICT"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Entity\CustomerGroup" field="customerGroup">

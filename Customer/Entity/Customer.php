@@ -8,7 +8,7 @@ use Ekyna\Component\Commerce\Common\Model\IdentityTrait;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
-use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -19,6 +19,7 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
 class Customer implements CustomerInterface
 {
     use IdentityTrait,
+        PaymentTermSubjectTrait,
         TimestampableTrait;
 
     /**
@@ -67,9 +68,9 @@ class Customer implements CustomerInterface
     protected $addresses;
 
     /**
-     * @var ArrayCollection|PriceListInterface[]
+     * @var float
      */
-    protected $priceLists;
+    protected $creditLimit;
 
 
     /**
@@ -77,9 +78,10 @@ class Customer implements CustomerInterface
      */
     public function __construct()
     {
+        $this->creditLimit = 0;
+
         $this->children = new ArrayCollection();
         $this->addresses = new ArrayCollection();
-        $this->priceLists = new ArrayCollection();
     }
 
     /**
@@ -366,39 +368,17 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getPriceLists()
+    public function getCreditLimit()
     {
-        return $this->priceLists;
+        return $this->creditLimit;
     }
 
     /**
      * @inheritdoc
      */
-    public function hasPriceList(PriceListInterface $priceList)
+    public function setCreditLimit($limit)
     {
-        return $this->priceLists->contains($priceList);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function addPriceList(PriceListInterface $priceList)
-    {
-        if (!$this->hasPriceList($priceList)) {
-            $this->priceLists->add($priceList);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removePriceList(PriceListInterface $priceList)
-    {
-        if ($this->hasPriceList($priceList)) {
-            $this->priceLists->removeElement($priceList);
-        }
+        $this->creditLimit = (float) $limit;
 
         return $this;
     }

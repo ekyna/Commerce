@@ -409,8 +409,14 @@ abstract class AbstractSaleListener
         $changed = false;
 
         if (null !== $customer = $sale->getCustomer()) {
+            // Payment term
+            if (null === $sale->getPaymentTerm() && null !== $customer->getPaymentTerm()) {
+                $sale->setPaymentTerm($customer->getPaymentTerm());
+                $changed = true;
+            }
+
             // Customer group
-            if (null === $sale->getCustomerGroup()) {
+            if (null === $sale->getCustomerGroup() && null !== $customer->getCustomerGroup()) {
                 $sale->setCustomerGroup($customer->getCustomerGroup());
                 $changed = true;
             }

@@ -7,11 +7,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Commerce\Pricing\Model as Tax;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Mapping\DiscriminatorMapper;
@@ -33,6 +32,11 @@ class LoadMetadataListener implements EventSubscriber
      * @var EmbeddableMapper
      */
     private $subjectIdentityMapper;
+
+    /**
+     * @var array
+     */
+    private $paymentTermSubjectClassCache = [];
 
     /**
      * @var array
@@ -72,11 +76,15 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        if (is_subclass_of($class, TaxableInterface::class)) {
+        if (is_subclass_of($class, Tax\TaxableInterface::class)) {
             $this->configureTaxableMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, StockSubjectInterface::class)) {
+        if (is_subclass_of($class, Payment\PaymentTermSubjectInterface::class)) {
+            $this->configurePaymentTermSubjectMapping($eventArgs);
+        }
+
+        if (is_subclass_of($class, Stock\StockSubjectInterface::class)) {
             $this->configureStockSubjectMapping($eventArgs);
         }
 
@@ -84,7 +92,7 @@ class LoadMetadataListener implements EventSubscriber
             $this->configureSubjectRelativeMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, StockUnitInterface::class)) {
+        if (is_subclass_of($class, Stock\StockUnitInterface::class)) {
             $this->configureStockUnitDiscriminatorMap($eventArgs);
         }
     }
@@ -101,7 +109,7 @@ class LoadMetadataListener implements EventSubscriber
         $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, TaxableInterface::class)) {
+        if (!is_subclass_of($class, Tax\TaxableInterface::class)) {
             return;
         }
 
@@ -118,8 +126,7 @@ class LoadMetadataListener implements EventSubscriber
         if (!$metadata->hasAssociation('taxGroup')) {
             $metadata->mapManyToOne([
                 'fieldName'    => 'taxGroup',
-                'targetEntity' => TaxGroupInterface::class,
-                //'cascade'       => [],
+                'targetEntity' => Tax\TaxGroupInterface::class,
                 'joinColumns'  => [
                     [
                         'name'                 => 'tax_group_id',
@@ -133,6 +140,51 @@ class LoadMetadataListener implements EventSubscriber
 
         // Cache class
         $this->taxableClassCache[] = $class;
+    }
+
+    /**
+     * Configures the payment term subject mapping.
+     *
+     * @param LoadClassMetadataEventArgs $eventArgs
+     */
+    private function configurePaymentTermSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
+    {
+        /** @var ClassMetadata $metadata */
+        $metadata = $eventArgs->getClassMetadata();
+        $class = $metadata->getName();
+
+        // Check class
+        if (!is_subclass_of($class, Payment\PaymentTermSubjectInterface::class)) {
+            return;
+        }
+
+        // Skip abstract classes.
+        if ((new \ReflectionClass($class))->isAbstract()) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->paymentTermSubjectClassCache)) {
+            return;
+        }
+
+        if (!$metadata->hasAssociation('paymentTerm')) {
+            $metadata->mapManyToOne([
+                'fieldName'    => 'paymentTerm',
+                'targetEntity' => Payment\PaymentTermInterface::class,
+                'joinColumns'  => [
+                    [
+                        'name'                 => 'payment_term_id',
+                        'referencedColumnName' => 'id',
+                        'onDelete'             => 'RESTRICT',
+                        'nullable'             => true,
+                    ],
+                ],
+            ]);
+        }
+
+        // Cache class
+        $this->paymentTermSubjectClassCache[] = $class;
     }
 
     /**
@@ -185,7 +237,7 @@ class LoadMetadataListener implements EventSubscriber
         $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, StockSubjectInterface::class)) {
+        if (!is_subclass_of($class, Stock\StockSubjectInterface::class)) {
             return;
         }
 
@@ -216,7 +268,7 @@ class LoadMetadataListener implements EventSubscriber
         /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
 
-        if (!is_subclass_of($metadata->name, StockUnitInterface::class)) {
+        if (!is_subclass_of($metadata->name, Stock\StockUnitInterface::class)) {
             return;
         }
 
@@ -349,5 +401,4 @@ class LoadMetadataListener implements EventSubscriber
             ],
         ];
     }
-
 }

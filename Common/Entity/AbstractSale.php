@@ -23,6 +23,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
         Common\NumberSubjectTrait,
         Common\StateSubjectTrait,
         Common\CurrencySubjectTrait,
+        Payment\PaymentTermSubjectTrait,
         TimestampableTrait;
 
     /**

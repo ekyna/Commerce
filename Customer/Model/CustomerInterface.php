@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
-use Ekyna\Component\Commerce\Pricing\Model\PriceListInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -15,7 +15,8 @@ use Ekyna\Component\Resource\Model as ResourceModel;
 interface CustomerInterface extends
     ResourceModel\ResourceInterface,
     ResourceModel\TimestampableInterface,
-    IdentityInterface
+    IdentityInterface,
+    PaymentTermSubjectInterface
 {
     /**
      * Returns the company.
@@ -210,36 +211,18 @@ interface CustomerInterface extends
     public function getDefaultDeliveryAddress();
 
     /**
-     * Returns the price lists.
+     * Returns the credit limit.
      *
-     * @return ArrayCollection|PriceListInterface[]
+     * @return float
      */
-    public function getPriceLists();
+    public function getCreditLimit();
 
     /**
-     * Returns whether the customer has the price list or not.
+     * Sets the credit limit.
      *
-     * @param PriceListInterface $priceList
-     *
-     * @return bool
-     */
-    public function hasPriceList(PriceListInterface $priceList);
-
-    /**
-     * Adds the price list.
-     *
-     * @param PriceListInterface $priceList
+     * @param float $limit
      *
      * @return $this|CustomerInterface
      */
-    public function addPriceList(PriceListInterface $priceList);
-
-    /**
-     * Removes the price list.
-     *
-     * @param PriceListInterface $priceList
-     *
-     * @return $this|CustomerInterface
-     */
-    public function removePriceList(PriceListInterface $priceList);
+    public function setCreditLimit($limit);
 }
