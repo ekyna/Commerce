@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -28,6 +29,11 @@ abstract class AbstractShipmentListener
      */
     protected $numberGenerator;
 
+    /**
+     * @var StockUnitAssignerInterface
+     */
+    protected $stockUnitAssigner;
+
 
     /**
      * Sets the persistence helper.
@@ -47,6 +53,16 @@ abstract class AbstractShipmentListener
     public function setNumberGenerator(NumberGeneratorInterface $numberGenerator)
     {
         $this->numberGenerator = $numberGenerator;
+    }
+
+    /**
+     * Sets the stock assigner.
+     *
+     * @param StockUnitAssignerInterface $stockUnitAssigner
+     */
+    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner)
+    {
+        $this->stockUnitAssigner = $stockUnitAssigner;
     }
 
     /**
@@ -103,6 +119,25 @@ abstract class AbstractShipmentListener
 
         if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($shipment);
+        }
+
+        if ($this->persistenceHelper->isChanged($shipment, 'state')) {
+            $stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state');
+            // If shipment state has changed from non stockable to stockable
+            if (ShipmentStates::hasChangedToStockable($stateCs)) {
+                // For each shipment item
+                foreach ($shipment->getItems() as $item) {
+                    // Credit sale item stock units shipped quantity through assignments
+                    $this->stockUnitAssigner->assignShipmentItem($item);
+                }
+            } // Else if shipment state has changed from stockable to non stockable
+            elseif (ShipmentStates::hasChangedFromStockable($stateCs)) {
+                // For each shipment item
+                foreach ($shipment->getItems() as $item) {
+                    // Debit sale item stock units shipped quantity through assignments
+                    $this->stockUnitAssigner->detachShipmentItem($item);
+                }
+            }
         }
     }
 

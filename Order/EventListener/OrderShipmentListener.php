@@ -83,7 +83,7 @@ class OrderShipmentListener extends AbstractShipmentListener
         /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
         $order = $shipment->getSale();
 
-        // Stop sale is completed.
+        // Stop if sale is completed.
         if ($order->getState() === OrderStates::STATE_COMPLETED) {
             throw new IllegalOperationException(); // TODO reason message
         }

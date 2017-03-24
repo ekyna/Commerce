@@ -28,6 +28,12 @@
                 <option name="max">255</option>
             </constraint>
         </property>
+        <property name="items">
+            <constraint name="Valid"/>
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
         <property name="createdAt">
             <constraint name="DateTime"/>
         </property>
@@ -37,6 +43,24 @@
         <property name="completedAt">
             <constraint name="DateTime"/>
         </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+        </constraint>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentItem">
+        <property name="shipment">
+            <constraint name="NotNull"/>
+        </property>
+        <getter property="saleItem">
+            <constraint name="NotNull"/>
+        </getter>
+        <property name="quantity">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\ShipmentItem"/>
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod">
@@ -58,20 +82,20 @@
         <property name="weight">
             <constraint name="NotBlank"/>
             <constraint name="GreaterThan">
-                <value>0</value>
+                <option name="value">0</option>
             </constraint>
-            <constraint name="LessThan">
-                <value>10000</value>
-            </constraint>
+            <!-- TODO <constraint name="LessThan">
+                <option name="value">10000</option>
+            </constraint>-->
         </property>
         <property name="netPrice">
             <constraint name="NotBlank"/>
             <constraint name="GreaterThan">
-                <value>0</value>
+                <option name="value">0</option>
             </constraint>
-            <constraint name="LessThan">
-                <value>1000</value>
-            </constraint>
+            <!-- TODO <constraint name="LessThan">
+                <option name="value">10000</option>
+            </constraint>-->
         </property>
     </class>
 

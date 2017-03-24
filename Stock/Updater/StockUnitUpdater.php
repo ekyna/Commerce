@@ -107,9 +107,12 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             throw new InvalidArgumentException("Unexpected shipped quantity.");
         }
 
-        // Prevent shipped quantity to be set as greater than the reserved quantity
+        // Prevent shipped quantity to be set as greater than the reserved or delivered quantity
         if ($quantity > $stockUnit->getReservedQuantity()) {
             throw new InvalidArgumentException("The shipped quantity can't be greater than the reserved quantity.");
+        }
+        if ($quantity > $stockUnit->getDeliveredQuantity()) {
+            throw new InvalidArgumentException("The shipped quantity can't be greater than the delivered quantity.");
         }
 
         $stockUnit->setShippedQuantity($quantity);
@@ -163,6 +166,8 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         // TODO refactor stock unit validation here ?
 
         if ($stockUnit->isEmpty()) {
+            // TODO Check if removal is safe
+            // TODO Clear association
             $this->persistenceHelper->remove($stockUnit, true);
         } else {
             $this->persistenceHelper->persistAndRecompute($stockUnit, true);

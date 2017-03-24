@@ -3,8 +3,6 @@
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
-use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
@@ -68,15 +66,4 @@ interface StockUnitResolverInterface
      * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
     public function findAssignable($subjectOrRelative);
-
-    /**
-     * Returns the stock unit repository by subject.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return StockUnitRepositoryInterface
-     *
-     * @deprecated Use findAvailableOrPendingStockUnits(StockSubjectInterface $subject)
-     */
-    public function getRepositoryBySubject(StockSubjectInterface $subject);
 }

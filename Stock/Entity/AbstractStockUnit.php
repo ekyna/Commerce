@@ -378,4 +378,27 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
             $this->reservedQuantity
         );
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReservableQuantity()
+    {
+        return StockUtil::calculateReservable(
+            $this->orderedQuantity,
+            $this->reservedQuantity
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShippableQuantity()
+    {
+        return StockUtil::calculateShippable(
+            $this->deliveredQuantity,
+            $this->reservedQuantity,
+            $this->shippedQuantity
+        );
+    }
 }

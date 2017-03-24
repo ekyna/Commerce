@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\AddressUtil;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 
 /**
  * Class SaleUpdater
@@ -153,6 +154,28 @@ class SaleUpdater implements SaleUpdaterInterface
     /**
      * @inheritdoc
      */
+    public function updatePaidTotal(SaleInterface $sale)
+    {
+        $total = 0;
+
+        foreach ($sale->getPayments() as $payment) {
+            if (PaymentStates::isPaidState($payment->getState())) {
+                $total += $payment->getAmount();
+            }
+        }
+
+        if ($total != $sale->getPaidTotal()) {
+            $sale->setPaidTotal($total);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function updateTotalAmounts(SaleInterface $sale)
     {
         $changed = false;
@@ -179,6 +202,10 @@ class SaleUpdater implements SaleUpdaterInterface
     {
         $changed = $this->updateTotalAmounts($sale);
 
-        return $this->updateTotalWeight($sale) || $changed;
+        $changed |= $this->updateTotalWeight($sale);
+
+        $changed |= $this->updatePaidTotal($sale);
+
+        return $changed;
     }
 }

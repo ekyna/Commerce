@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Util\StockUtil;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -197,16 +198,38 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, S
     public function isEmpty();
 
     /**
-     * Returns the in stock quantity (delivered - reserved, 0 or greater).
+     * Returns the in stock quantity.
+     *
+     * @see StockUtil::calculateInStock()
      *
      * @return float
      */
     public function getInStockQuantity();
 
     /**
-     * Returns the virtual stock quantity (ordered - max(delivered or reserved), 0 or greater).
+     * Returns the virtual stock quantity.
+     *
+     * @see StockUtil::calculateVirtualStock()
      *
      * @return float
      */
     public function getVirtualStockQuantity();
+
+    /**
+     * Returns the reservable stock quantity.
+     *
+     * @see StockUtil::calculateReservable()
+     *
+     * @return float
+     */
+    public function getReservableQuantity();
+
+    /**
+     * Returns the shippable stock quantity.
+     *
+     * @see StockUtil::calculateShippable()
+     *
+     * @return float
+     */
+    public function getShippableQuantity();
 }

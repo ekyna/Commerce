@@ -34,7 +34,7 @@ class SupplierOrderItemValidator extends ConstraintValidator
         if ($item->getId() && ($item->getQuantity() < $min = SupplierUtil::calculateDeliveredQuantity($item))) {
             $this
                 ->context
-                ->buildViolation($constraint->quantity_must_be_greater_or_equal_than_delivered, [
+                ->buildViolation($constraint->quantity_must_be_greater_than_or_equal_delivered, [
                     '%min%' => $min
                 ])
                 ->atPath('quantity')

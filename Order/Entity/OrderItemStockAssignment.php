@@ -34,7 +34,18 @@ class OrderItemStockAssignment extends AbstractStockAssignment implements OrderI
      */
     public function setOrderItem(OrderItemInterface $orderItem = null)
     {
-        $this->orderItem = $orderItem;
+        if ($orderItem != $this->orderItem) {
+            $previous = $this->orderItem;
+            $this->orderItem = $orderItem;
+
+            if ($previous) {
+                $previous->removeStockAssignment($this);
+            }
+
+            if ($this->orderItem) {
+                $this->orderItem->addStockAssignment($this);
+            }
+        }
 
         return $this;
     }

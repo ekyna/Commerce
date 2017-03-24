@@ -47,7 +47,7 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
      */
     public function setSale(SaleInterface $sale = null)
     {
-        if (null !== $sale && !$sale instanceof CartInterface) {
+        if ($sale && !$sale instanceof CartInterface) {
             throw new InvalidArgumentException('Expected instance of CartInterface');
         }
 
@@ -69,11 +69,18 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
      */
     public function setCart(CartInterface $cart = null)
     {
-        if (null !== $this->cart && $this->cart != $cart) {
-            $this->cart->removeItem($this);
-        }
+        if ($cart != $this->cart) {
+            $previous = $this->cart;
+            $this->cart = $cart;
 
-        $this->cart = $cart;
+            if ($previous) {
+                $previous->removeItem($this);
+            }
+
+            if ($this->cart) {
+                $this->cart->addItem($this);
+            }
+        }
 
         return $this;
     }
@@ -83,15 +90,22 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
      */
     public function setParent(SaleItemInterface $parent = null)
     {
-        if (!$parent instanceof CartItemInterface) {
+        if ($parent && !$parent instanceof CartItemInterface) {
             throw new InvalidArgumentException("Expected instance of CartItemInterface.");
         }
 
-        if (null !== $this->parent && $this->parent != $parent) {
-            $this->parent->removeChild($this);
-        }
+        if ($parent != $this->parent) {
+            $previous = $this->parent;
+            $this->parent = $parent;
 
-        $this->parent = $parent;
+            if ($previous) {
+                $previous->removeChild($this);
+            }
+
+            if ($this->parent) {
+                $this->parent->addChild($this);
+            }
+        }
 
         return $this;
     }
@@ -124,7 +138,7 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
 
         if ($this->children->contains($child)) {
             $this->children->removeElement($child);
-            //$child->setParent(null);
+            $child->setParent(null);
         }
 
         return $this;
@@ -170,7 +184,7 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
 
         if ($this->adjustments->contains($adjustment)) {
             $this->adjustments->removeElement($adjustment);
-            //$adjustment->setItem(null);
+            $adjustment->setItem(null);
         }
 
         return $this;

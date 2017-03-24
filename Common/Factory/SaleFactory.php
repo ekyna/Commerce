@@ -157,7 +157,7 @@ class SaleFactory implements SaleFactoryInterface
         $payment = $this->resolveClassAndCreateObject('payment', $sale);
 
         $payment
-            ->setCurrency($this->getDefaultCurrency())
+            ->setCurrency($sale->getCurrency())
             ->setAmount($sale->getGrandTotal() - $sale->getPaidTotal());
 
         return $payment;

@@ -19,7 +19,8 @@
             <generator strategy="AUTO" />
         </id>
 
-        <field name="quantity" column="quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="reservedQuantity" column="reserved_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit"
                      field="stockUnit" inversed-by="stockAssignments">

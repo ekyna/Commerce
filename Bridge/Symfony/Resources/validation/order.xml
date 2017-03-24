@@ -6,8 +6,11 @@
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
     <class name="Ekyna\Component\Commerce\Order\Entity\Order">
-        <property name="shipments">
-            <constraint name="Valid" />
+        <property name="invoiceAddress">
+            <constraint name="NotNull" />
+        </property>
+        <property name="preferredShipmentMethod">
+            <constraint name="NotNull" />
         </property>
         <property name="state">
             <constraint name="Choice">
@@ -52,12 +55,18 @@
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment">
 
-    </class>
+    </class>-->
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderPayment">
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">number</option>
-        </constraint>
-    </class>-->
+        <property name="order">
+            <constraint name="NotNull"/>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderShipment">
+        <property name="order">
+            <constraint name="NotNull"/>
+        </property>
+    </class>
 
 </constraint-mapping>

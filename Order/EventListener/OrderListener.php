@@ -74,8 +74,8 @@ class OrderListener extends AbstractSaleListener
         // Stop if order has valid shipments
         if (null !== $shipments = $order->getShipments()) {
             foreach ($shipments as $shipment) {
-                if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
-                    throw new IllegalOperationException();
+                if (!ShipmentStates::isDeletableState($shipment->getState())) {
+                    throw new IllegalOperationException(); // TODO reason message
                 }
             }
         }
@@ -91,18 +91,18 @@ class OrderListener extends AbstractSaleListener
         $sale = $this->getSaleFromEvent($event);
 
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
-            $stateCs = $this->persistenceHelper->getChangeSet($sale)['state'];
+            $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
 
             // If order state has changed from non stockable to stockable
             if (OrderStates::hasChangedToStockable($stateCs)) {
                 foreach ($sale->getItems() as $item) {
-                    $this->createAssignmentsRecursively($item);
+                    $this->assignSaleItemRecursively($item);
                 }
             }
             // If order state has changed from stockable to non stockable
             elseif(OrderStates::hasChangedFromStockable($stateCs)) {
                 foreach ($sale->getItems() as $item) {
-                    $this->removeAssignmentsRecursively($item);
+                    $this->detachSaleItemRecursively($item);
                 }
             }
         }
@@ -128,30 +128,30 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
-     * Creates the sale item's stock assignments recursively.
+     * Assigns the sale item to stock units recursively.
      *
      * @param SaleItemInterface $item
      */
-    protected function createAssignmentsRecursively(SaleItemInterface $item)
+    protected function assignSaleItemRecursively(SaleItemInterface $item)
     {
-        $this->stockAssigner->createAssignments($item);
+        $this->stockAssigner->assignSaleItem($item);
 
         foreach ($item->getChildren() as $child) {
-            $this->createAssignmentsRecursively($child);
+            $this->assignSaleItemRecursively($child);
         }
     }
 
     /**
-     * Removes the sale item's stock assignments recursively.
+     * Detaches the sale item from stock units recursively.
      *
      * @param SaleItemInterface $item
      */
-    protected function removeAssignmentsRecursively(SaleItemInterface $item)
+    protected function detachSaleItemRecursively(SaleItemInterface $item)
     {
-        $this->stockAssigner->removeAssignments($item);
+        $this->stockAssigner->detachSaleItem($item);
 
         foreach ($item->getChildren() as $child) {
-            $this->removeAssignmentsRecursively($child);
+            $this->detachSaleItemRecursively($child);
         }
     }
 

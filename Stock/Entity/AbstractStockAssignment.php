@@ -24,13 +24,16 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @var float
      */
-    protected $quantity;
+    protected $reservedQuantity = 0;
+
+    /**
+     * @var float
+     */
+    protected $shippedQuantity = 0;
 
 
     /**
-     * Returns the id.
-     *
-     * @return int
+     * @inheritdoc
      */
     public function getId()
     {
@@ -38,9 +41,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     }
 
     /**
-     * Returns the stock unit.
-     *
-     * @return Stock\StockUnitInterface
+     * @inheritdoc
      */
     public function getStockUnit()
     {
@@ -48,20 +49,17 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     }
 
     /**
-     * Sets the stock unit.
-     *
-     * @param Stock\StockUnitInterface $stockUnit
-     *
-     * @return AbstractStockAssignment
+     * @inheritdoc
      */
     public function setStockUnit(Stock\StockUnitInterface $stockUnit = null)
     {
         if ($this->stockUnit != $stockUnit) {
-            if ($this->stockUnit) {
-                $this->stockUnit->removeStockAssignment($this);
-            }
-
+            $previous = $this->stockUnit;
             $this->stockUnit = $stockUnit;
+
+            if ($previous) {
+                $previous->removeStockAssignment($this);
+            }
 
             if ($this->stockUnit) {
                 $this->stockUnit->addStockAssignment($this);
@@ -72,26 +70,53 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     }
 
     /**
-     * Returns the quantity.
-     *
-     * @return float
+     * @inheritdoc
      */
-    public function getQuantity()
+    public function getReservedQuantity()
     {
-        return $this->quantity;
+        return $this->reservedQuantity;
     }
 
     /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return AbstractStockAssignment
+     * @inheritdoc
      */
-    public function setQuantity($quantity)
+    public function setReservedQuantity($quantity)
     {
-        $this->quantity = (float)$quantity;
+        $this->reservedQuantity = (float)$quantity;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShippedQuantity()
+    {
+        return $this->shippedQuantity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setShippedQuantity($quantity)
+    {
+        $this->shippedQuantity = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShippableQuantity()
+    {
+        if (!$this->stockUnit) {
+            return 0;
+        }
+
+        $quantity = $this->reservedQuantity - $this->shippedQuantity;
+        if (0 > $quantity) $quantity = 0;
+
+        return min($quantity, $this->stockUnit->getShippableQuantity());
     }
 }

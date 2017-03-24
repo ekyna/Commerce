@@ -5,20 +5,21 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * Class SupplierOrderItem
+ * Class SaleItem
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierOrderItem extends Constraint
+class SaleItem extends Constraint
 {
-    public $quantity_must_be_greater_than_or_equal_delivered = 'ekyna_commerce.supplier_order_item.quantity_must_be_greater_than_or_equal_delivered';
+    public $tax_group_must_not_be_null = 'ekyna_commerce.sale_item.tax_group_must_not_be_null';
+    public $shipment_integrity         = 'ekyna_commerce.sale_item.shipment_integrity';
 
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getTargets()
     {
-        return static::CLASS_CONSTRAINT;
+        return self::CLASS_CONSTRAINT;
     }
 }

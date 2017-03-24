@@ -53,7 +53,7 @@ class SupplierDeliveryItemValidator extends ConstraintValidator
         if ($item->getQuantity() > $max = SupplierUtil::calculateDeliveryRemainingQuantity($item)) {
             $this
                 ->context
-                ->buildViolation($constraint->quantity_must_be_lower_or_equal_than_ordered, [
+                ->buildViolation($constraint->quantity_must_be_lower_than_or_equal_ordered, [
                     '%max%' => $max
                 ])
                 ->atPath('quantity')

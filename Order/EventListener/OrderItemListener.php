@@ -46,9 +46,9 @@ class OrderItemListener extends AbstractSaleItemListener
 
         // If order is in stockable state
         if (OrderStates::isStockableState($item->getSale()->getState())) {
-            $this->stockAssigner->createAssignments($item);
+            $this->stockAssigner->assignSaleItem($item);
         } else {
-            $this->stockAssigner->removeAssignments($item);
+            $this->stockAssigner->detachSaleItem($item);
         }
     }
 
@@ -61,10 +61,10 @@ class OrderItemListener extends AbstractSaleItemListener
 
         $item = $this->getSaleItemFromEvent($event);
 
-        $doAssignmentsUpdate = true;
+        $doApply = true;
         $sale = $item->getSale();
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
-            $stateCs = $this->persistenceHelper->getChangeSet($sale)['state'];
+            $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
 
             // If order just did a stockable state transition
             if (
@@ -72,14 +72,14 @@ class OrderItemListener extends AbstractSaleItemListener
                 OrderStates::hasChangedFromStockable($stateCs)
             ) {
                 // Prevent assignments update (handled by the order listener)
-                $doAssignmentsUpdate = false;
+                $doApply = false;
             }
         }
 
         // If order is in stockable state and order item quantity has changed
-        if ($doAssignmentsUpdate && OrderStates::isStockableState($sale->getState())) {
+        if ($doApply && OrderStates::isStockableState($sale->getState())) {
             if ($this->persistenceHelper->isChanged($item, 'quantity')) {
-                $this->updateAssignmentsRecursively($item);
+                $this->applySaleItemRecursively($item);
             }
         }
     }
@@ -94,8 +94,9 @@ class OrderItemListener extends AbstractSaleItemListener
         $item = $this->getSaleItemFromEvent($event);
 
         // If order is in stockable state
+        // TODO Or order was in stockable state (watch state change set) ?
         if (OrderStates::isStockableState($item->getSale()->getState())) {
-            $this->stockAssigner->removeAssignments($item);
+            $this->stockAssigner->detachSaleItem($item);
         }
     }
 
@@ -152,13 +153,13 @@ class OrderItemListener extends AbstractSaleItemListener
     }
 
     /**
-     * Updates the item assignments quantities recursively.
+     * Applies the sale item to stock units recursively.
      *
      * @param Model\SaleItemInterface $item
      */
-    protected function updateAssignmentsRecursively(Model\SaleItemInterface $item)
+    protected function applySaleItemRecursively(Model\SaleItemInterface $item)
     {
-        $this->stockAssigner->updateAssignments($item);
+        $this->stockAssigner->applySaleItem($item);
 
         foreach ($item->getChildren() as $child) {
             if (
@@ -169,7 +170,7 @@ class OrderItemListener extends AbstractSaleItemListener
                 continue;
             }
 
-            $this->updateAssignmentsRecursively($child);
+            $this->applySaleItemRecursively($child);
         }
     }
 

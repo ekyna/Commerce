@@ -32,12 +32,6 @@ class SaleValidator extends ConstraintValidator
 
         $this->validateIdentity($sale, $constraint);
         $this->validateDeliveryAddress($sale, $constraint);
-
-        if ($sale->requiresShipment()) {
-            if (null === $sale->getPreferredShipmentMethod()) {
-                // TODO
-            }
-        }
     }
 
     /**

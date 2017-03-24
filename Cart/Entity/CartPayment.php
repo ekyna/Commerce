@@ -41,11 +41,18 @@ class CartPayment extends AbstractPayment implements Model\CartPaymentInterface
      */
     public function setCart(Model\CartInterface $cart = null)
     {
-        if (null !== $this->cart && $this->cart != $cart) {
-            $this->cart->removePayment($this);
-        }
+        if ($cart != $this->cart) {
+            $previous = $this->cart;
+            $this->cart = $cart;
 
-        $this->cart = $cart;
+            if ($previous) {
+                $previous->removePayment($this);
+            }
+
+            if ($this->cart) {
+                $this->cart->addPayment($this);
+            }
+        }
 
         return $this;
     }

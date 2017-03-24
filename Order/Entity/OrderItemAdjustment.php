@@ -32,11 +32,18 @@ class OrderItemAdjustment extends AbstractAdjustment implements OrderItemAdjustm
      */
     public function setItem(OrderItemInterface $item = null)
     {
-        if (null !== $this->item && $this->item != $item) {
-            $this->item->removeAdjustment($this);
-        }
+        if ($item != $this->item) {
+            $previous = $this->item;
+            $this->item = $item;
 
-        $this->item = $item;
+            if ($previous) {
+                $previous->removeAdjustment($this);
+            }
+
+            if ($this->item) {
+                $this->item->addAdjustment($this);
+            }
+        }
 
         return $this;
     }

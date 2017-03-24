@@ -5,6 +5,7 @@
         xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
+    <!-- TODO Is this constraint triggered ? -->
     <class name="Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface">
         <getter property="subjectIdentity">
             <constraint name="NotNull"/>

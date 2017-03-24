@@ -56,11 +56,18 @@ class CartAttachment extends AbstractAttachment implements CartAttachmentInterfa
      */
     public function setCart(CartInterface $cart = null)
     {
-        if (null !== $this->cart && $this->cart != $cart) {
-            $this->cart->removeAttachment($this);
-        }
+        if ($cart != $this->cart) {
+            $previous = $this->cart;
+            $this->cart = $cart;
 
-        $this->cart = $cart;
+            if ($previous) {
+                $previous->removeAttachment($this);
+            }
+
+            if ($this->cart) {
+                $this->cart->addAttachment($this);
+            }
+        }
 
         return $this;
     }

@@ -26,4 +26,20 @@ interface OrderItemStockAssignmentInterface extends StockAssignmentInterface
      * @return OrderItemStockAssignmentInterface
      */
     public function setOrderItem(OrderItemInterface $orderItem = null);
+
+    /**
+     * Returns the shipped quantity.
+     *
+     * @return float
+     */
+    public function getShippedQuantity();
+
+    /**
+     * Sets the shipped quantity.
+     *
+     * @param float $shippedQuantity
+     *
+     * @return OrderItemStockAssignmentInterface
+     */
+    public function setShippedQuantity($shippedQuantity);
 }

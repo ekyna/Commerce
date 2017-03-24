@@ -41,11 +41,18 @@ class OrderPayment extends AbstractPayment implements Model\OrderPaymentInterfac
      */
     public function setOrder(Model\OrderInterface $order = null)
     {
-        if (null !== $this->order && $this->order != $order) {
-            $this->order->removePayment($this);
-        }
+        if ($order != $this->order) {
+            $previous = $this->order;
+            $this->order = $order;
 
-        $this->order = $order;
+            if ($previous) {
+                $previous->removePayment($this);
+            }
+
+            if ($this->order) {
+                $this->order->addPayment($this);
+            }
+        }
 
         return $this;
     }

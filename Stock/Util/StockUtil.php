@@ -14,6 +14,8 @@ final class StockUtil
     /**
      * Calculates the "in" stock quantity.
      *
+     * (delivered - reserved, 0 or greater)
+     *
      * @param float $deliveredQty
      * @param float $reservedQty
      *
@@ -29,6 +31,8 @@ final class StockUtil
     /**
      * Calculates the "virtual" stock quantity.
      *
+     * (ordered - max(delivered or reserved), 0 or greater)
+     *
      * @param float $orderedQty
      * @param float $deliveredQty
      * @param float $reservedQty
@@ -38,6 +42,45 @@ final class StockUtil
     static public function calculateVirtualStock($orderedQty, $deliveredQty, $reservedQty)
     {
         $result = $orderedQty - max($deliveredQty, $reservedQty);
+
+        return 0 < $result ? $result : 0;
+    }
+
+    /**
+     * Calculates the "reservable" stock quantity.
+     *
+     * (ordered - reserved, 0 or greater)
+     *
+     * @param float $orderedQty
+     * @param float $reservedQty
+     *
+     * @return float
+     */
+    static public function calculateReservable($orderedQty, $reservedQty)
+    {
+        if (0 == $orderedQty) {
+            return INF;
+        }
+
+        $result = $orderedQty - $reservedQty;
+
+        return 0 < $result ? $result : 0;
+    }
+
+    /**
+     * Calculates the "shippable" stock quantity.
+     *
+     *  (min(delivered or reserved) - shipped, 0 or greater)
+     *
+     * @param float $deliveredQty
+     * @param float $reservedQty
+     * @param float $shippedQty
+     *
+     * @return float
+     */
+    static public function calculateShippable($deliveredQty, $reservedQty, $shippedQty)
+    {
+        $result = min($deliveredQty, $reservedQty) - $shippedQty;
 
         return 0 < $result ? $result : 0;
     }

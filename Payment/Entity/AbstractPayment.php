@@ -109,7 +109,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      */
     public function setAmount($amount)
     {
-        $this->amount = $amount;
+        $this->amount = (float)$amount;
 
         return $this;
     }

@@ -254,8 +254,9 @@ abstract class AbstractSaleListener
         // Stop if sale has valid payments
         if (null !== $payments = $sale->getPayments()) {
             foreach ($payments as $payment) {
+                // TODO use isDeletableState method
                 if (!in_array($payment->getState(), PaymentStates::getDeletableStates())) {
-                    throw new IllegalOperationException();
+                    throw new IllegalOperationException(); // TODO reason message
                 }
             }
         }

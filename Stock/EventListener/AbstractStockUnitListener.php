@@ -124,14 +124,14 @@ abstract class AbstractStockUnitListener
             if (SupplierOrderStates::isStockableState($orderItem->getOrder()->getState())) {
                 throw new IllegalOperationException(
                     "The stock unit can't be deleted as it is linked to a supplier order with a stockable state."
-                );
+                ); // TODO message as translation id
             }
         }
 
         if (!StockUtil::isDeletableStockUnit($stockUnit)) {
             throw new IllegalOperationException(
                 "The stock unit can't be deleted as it has been delivered, reserved or shipped."
-            );
+            ); // TODO message as translation id
         }
 
         $this->scheduleSubjectStockUnitRemovalEvent($stockUnit);

@@ -4,8 +4,7 @@ namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Shipment\Model;
-use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
-use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
+use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -22,14 +21,9 @@ abstract class AbstractShipmentItemListener
     protected $persistenceHelper;
 
     /**
-     * @var StockUnitResolverInterface
+     * @var StockUnitAssignerInterface
      */
-    protected $stockUnitResolver;
-
-    /**
-     * @var StockUnitUpdaterInterface
-     */
-    protected $stockUnitUpdater;
+    protected $stockUnitAssigner;
 
 
     /**
@@ -43,23 +37,13 @@ abstract class AbstractShipmentItemListener
     }
 
     /**
-     * Sets the stock unit resolver.
+     * Sets the stock assigner.
      *
-     * @param StockUnitResolverInterface $resolver
+     * @param StockUnitAssignerInterface $stockUnitAssigner
      */
-    public function setStockUnitResolver(StockUnitResolverInterface $resolver)
+    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner)
     {
-        $this->stockUnitResolver = $resolver;
-    }
-
-    /**
-     * Sets the stock unit updater.
-     *
-     * @param StockUnitUpdaterInterface $updater
-     */
-    public function setStockUnitUpdater(StockUnitUpdaterInterface $updater)
-    {
-        $this->stockUnitUpdater = $updater;
+        $this->stockUnitAssigner = $stockUnitAssigner;
     }
 
     /**
@@ -70,21 +54,15 @@ abstract class AbstractShipmentItemListener
     public function onInsert(ResourceEventInterface $event)
     {
         $item = $this->getShipmentItemFromEvent($event);
+        $shipment = $item->getShipment();
 
-        // If supplier order state is 'ordered', 'partial' or 'completed'
-        if (Model\ShipmentStates::isStockState($item->getShipment()->getState())) {
-            // Associated stock unit (if not exists) must be created (absolute ordered quantity).
-            $this->createSupplierOrderItemStockUnit($item);
-        } else { // Supplier order state is 'new' or 'cancelled'
-            // Associated stock unit (if exists) must be deleted.
-            $this->deleteSupplierOrderItemStockUnit($item);
+        // If shipment state is stockable (TODO take care of returned state)
+        if (Model\ShipmentStates::isStockableState($shipment->getState())) {
+            // Assign shipment item to stock units
+            $this->stockUnitAssigner->assignShipmentItem($item);
         }
 
-        if ($this->isShipmentInDebitStockState($item->getShipment())) {
-            $this->updateShipped($item, $item->getQuantity());
-        }
-
-        $this->scheduleShipmentContentChangeEvent($item->getShipment());
+        $this->scheduleShipmentContentChangeEvent($shipment);
     }
 
     /**
@@ -94,17 +72,34 @@ abstract class AbstractShipmentItemListener
      */
     public function onUpdate(ResourceEventInterface $event)
     {
-        $shipmentItem = $this->getShipmentItemFromEvent($event);
+        $item = $this->getShipmentItemFromEvent($event);
+        $shipment = $item->getShipment();
 
-        // TODO Abort on shipment state transition (deletable <=> stockable)
+        $this->preventSaleItemChange($item);
 
-        $changeSet = $this->persistenceHelper->getChangeSet($shipmentItem);
-        if (isset($changeSet['quantity'])) {
-            if ($this->isShipmentInDebitStockState($shipmentItem->getShipment())) {
-                $this->updateShipped($shipmentItem, $changeSet['quantity'][1] - $changeSet['quantity'][0]);
+        // Check whether or not the stock impact has been made by the shipment listener
+        if ($this->persistenceHelper->isChanged($shipment, 'state')) {
+            $stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state');
+
+            // If shipment just did a stockable state transition
+            if (
+                Model\ShipmentStates::hasChangedFromStockable($stateCs) ||
+                Model\ShipmentStates::hasChangedToStockable($stateCs)
+            ) {
+                // Abort (done by the shipment listener)
+                return;
             }
+        }
 
-            $this->scheduleShipmentContentChangeEvent($shipmentItem->getShipment());
+        // If shipment is in a stockable state and quantity has changed
+        if (
+            Model\ShipmentStates::isStockableState($shipment->getState()) &&
+            $this->persistenceHelper->isChanged($item, 'quantity')
+        ) {
+            // Apply shipment item to stock units
+            $this->stockUnitAssigner->applyShipmentItem($item);
+
+            $this->scheduleShipmentContentChangeEvent($shipment);
         }
     }
 
@@ -115,32 +110,19 @@ abstract class AbstractShipmentItemListener
      */
     public function onDelete(ResourceEventInterface $event)
     {
-        $shipmentItem = $this->getShipmentItemFromEvent($event);
+        $item = $this->getShipmentItemFromEvent($event);
+        $shipment = $item->getShipment();
 
-        // TODO test this
-        if ($this->isShipmentInDebitStockState($shipmentItem->getShipment())) {
-            $this->updateShipped($shipmentItem, -$shipmentItem->getQuantity());
+        //$this->preventOrderItemChange($item);
+
+        // If shipment is in a stockable state and quantity has changed
+        // TODO Or shipment was in stockable state (watch state change set) ?
+        if (Model\ShipmentStates::isStockableState($shipment->getState())) {
+            // Detach shipment item to stock units
+            $this->stockUnitAssigner->detachShipmentItem($item);
         }
 
-        $this->scheduleShipmentContentChangeEvent($shipmentItem->getShipment());
-    }
-
-    /**
-     * Pre update event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws Exception\IllegalOperationException
-     */
-    public function onPreUpdate(ResourceEventInterface $event)
-    {
-        /*$shipmentItem = $this->getShipmentItemFromEvent($event);
-
-        $shipment = $shipmentItem->getShipment();
-        // TODO assert updatable state
-        if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
-            throw new IllegalOperationException();
-        }*/
+        $this->scheduleShipmentContentChangeEvent($shipment);
     }
 
     /**
@@ -162,116 +144,11 @@ abstract class AbstractShipmentItemListener
     }
 
     /**
-     * Returns whether the shipment is in debit state.
-     *
-     * @param Model\ShipmentInterface $shipment
-     *
-     * @return bool
-     */
-    protected function isShipmentInDebitStockState(Model\ShipmentInterface $shipment)
-    {
-        $shipmentCS = $this->persistenceHelper->getChangeSet($shipment);
-        $shipmentState = isset($shipmentCS['state']) ? $shipmentCS['state'][0] : $shipment->getState();
-
-        // TODO Use constant method
-        return in_array($shipmentState, Model\ShipmentStates::getStockStates());
-    }
-
-    /**
-     * Updates the related stock and persist it if needed.
-     *
      * @param Model\ShipmentItemInterface $item
-     * @param float                 $quantity
+     *
+     * @return mixed
      */
-    protected function updateShipped(Model\ShipmentItemInterface $item, $quantity)
-    {
-        throw new \Exception('BROKEN CODE');
-
-        $saleItem = $item->getSaleItem();
-
-        // TODO
-        // - retrieve stock units through order item stock assignments
-
-        // Get subject provider
-        $provider = $this->stockUnitResolver->getProviderByRelative($saleItem);
-        if (null === $provider) {
-            return;
-        }
-
-        // Get the stock unit repository
-        $subject = $provider->resolve($item->getSaleItem());
-        $repository = $provider->getStockUnitRepository();
-
-        // Abort if no subject or no repository
-        if (null === $subject || null === $repository) {
-            return;
-        }
-
-        // Handle opened or pending stock units
-        $stockUnits = $repository->findAvailableOrPendingBySubject($subject);
-        foreach ($stockUnits as $stockUnit) {
-            // Negative quantity case
-            if (0 > $quantity) {
-                // We can't debit more than the stock unit's current shipped quantity
-                if (0 > $stockUnit->getShippedQuantity() + $quantity) {
-                    $quantity = $quantity + $stockUnit->getShippedQuantity();
-                    $this->stockUnitUpdater->updateShipped($stockUnit, -$stockUnit->getShippedQuantity(), true);
-                    if (0 == $quantity) {
-                        return;
-                    }
-                    continue;
-                }
-                // Else we are done
-                $this->stockUnitUpdater->updateShipped($stockUnit, $quantity, true);
-                return;
-            }
-
-            // Positive quantity case
-            // We can't credit more than the stock unit's delivered quantity
-            if ($quantity > $stockUnit->getDeliveredQuantity()) {
-                $quantity -= $stockUnit->getDeliveredQuantity();
-                $this->stockUnitUpdater->updateShipped($stockUnit, $quantity, true);
-                continue;
-            }
-            // Else we are done
-            $this->stockUnitUpdater->updateShipped($stockUnit, $quantity, true);
-            return;
-        }
-
-        // Negative quantity case
-        if (0 > $quantity) {
-            $stockUnits = $repository->findNewBySubject($subject);
-            foreach ($stockUnits as $stockUnit) {
-                // We can't debit more than the stock unit's current shipped quantity
-                if (0 > $stockUnit->getShippedQuantity() + $quantity) {
-                    $quantity = $quantity + $stockUnit->getShippedQuantity();
-                    $this->stockUnitUpdater->updateShipped($stockUnit, -$stockUnit->getShippedQuantity(), true);
-                    if (0 == $quantity) {
-                        return;
-                    }
-                    continue;
-                }
-                // Remove the stock unit
-                $this->persistenceHelper->remove($stockUnit, true);
-                return;
-            }
-
-            // Quantity should not be negative here, as we should have managed
-            // enough new stock units in the previous loop
-            if (0 > $quantity) {
-                throw new Exception\RuntimeException("Failed to debit shipped quantity.");
-            }
-        }
-
-        // Positive quantity case
-        // Create a new stock unit for the remaining shipped quantity
-        $stockUnit = $repository->createNew();
-        $stockUnit
-            ->setSubject($subject)
-            ->setShippedQuantity($quantity);
-
-        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
-    }
+    abstract protected function preventSaleItemChange(Model\ShipmentItemInterface $item);
 
     /**
      * Schedules the shipment content change event.

@@ -26,6 +26,12 @@ class SupplierOrderItemListener extends AbstractListener
 
         $changed = $this->synchronizeWithProduct($item);
 
+        if ($changed) {
+            $this->persistenceHelper->persistAndRecompute($item);
+
+            $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
+        }
+
         // If supplier order state is 'ordered', 'partial' or 'completed'
         if (SupplierOrderStates::isStockableState($item->getOrder()->getState())) {
             // Associated stock unit (if not exists) must be created (absolute ordered quantity).
@@ -33,12 +39,6 @@ class SupplierOrderItemListener extends AbstractListener
         } else { // Supplier order state is 'new' or 'cancelled'
             // Associated stock unit (if exists) must be deleted.
             $this->deleteSupplierOrderItemStockUnit($item);
-        }
-
-        if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($item);
-
-            $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
         }
     }
 
@@ -54,8 +54,8 @@ class SupplierOrderItemListener extends AbstractListener
 
         // Disallow product change
         if ($this->persistenceHelper->isChanged($item, 'product')) {
-            $cs = $this->persistenceHelper->getChangeSet($item);
-            if ($cs['product'][1] != $cs['product'][0]) {
+            $productCs = $this->persistenceHelper->getChangeSet($item, 'product');
+            if ($productCs[0] != $productCs[1]) {
                 // TODO message as translation id
                 throw new IllegalOperationException("Changing supplier order item product is not supported yet.");
             }
@@ -68,9 +68,8 @@ class SupplierOrderItemListener extends AbstractListener
 
         // TODO These tests are made in the supplier order listener and should not be done twice...
         $order = $item->getOrder();
-        $stateCs = null;
         if ($this->persistenceHelper->isChanged($order, 'state')) {
-            $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
+            $stateCs = $this->persistenceHelper->getChangeSet($order, 'state');
 
             // If order just did a stockable state transition
             if (
@@ -117,6 +116,8 @@ class SupplierOrderItemListener extends AbstractListener
 
         $this->assertDeletable($item);
 
+
+        // TODO If not made by the supplierOrderListener ?
         $this->deleteSupplierOrderItemStockUnit($item);
 
         // Supplier order has been set to null by the removeItem method.

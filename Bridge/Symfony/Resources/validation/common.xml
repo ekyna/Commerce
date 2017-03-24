@@ -280,9 +280,9 @@
         <property name="items">
             <constraint name="Valid" />
         </property>
-        <property name="payments">
+        <!--<property name="payments">
             <constraint name="Valid" />
-        </property>
+        </property>-->
         <property name="paymentState">
             <constraint name="Choice">
                 <option name="callback">
@@ -343,19 +343,16 @@
                 <option name="value">0</option>
             </constraint>
         </property>
-        <!--<property name="subjectData">
-
-        </property>-->
+        <getter property="subjectIdentity">
+            <constraint name="Valid"/>
+        </getter>
         <property name="children">
             <constraint name="Valid" />
         </property>
-        <!-- TODO Must have a parent or a sale -->
-        <!--<property name="taxGroup">
-            TODO Not null if item has no children
-        </property>-->
         <!--<property name="adjustments">
             TODO Not with mode == FLAT
         </property>-->
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SaleItem"/>
     </class>
 
     <!-- Country -->

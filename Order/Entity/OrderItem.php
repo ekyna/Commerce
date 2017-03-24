@@ -64,7 +64,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function setSale(SaleInterface $sale = null)
     {
-        if (null !== $sale && !$sale instanceof OrderInterface) {
+        if ($sale && !$sale instanceof OrderInterface) {
             throw new InvalidArgumentException('Expected instance of OrderInterface');
         }
 
@@ -86,11 +86,18 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function setOrder(OrderInterface $order = null)
     {
-        if (null !== $this->order && $this->order != $order) {
-            $this->order->removeItem($this);
-        }
+        if ($order != $this->order) {
+            $previous = $this->order;
+            $this->order = $order;
 
-        $this->order = $order;
+            if ($previous) {
+                $previous->removeItem($this);
+            }
+
+            if ($this->order) {
+                $this->order->addItem($this);
+            }
+        }
 
         return $this;
     }
@@ -134,11 +141,22 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function setParent(SaleItemInterface $parent = null)
     {
-        if (!$parent instanceof OrderItemInterface) {
+        if ($parent && !$parent instanceof OrderItemInterface) {
             throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
         }
 
-        $this->parent = $parent;
+        if ($parent != $this->parent) {
+            $previous = $this->parent;
+            $this->parent = $parent;
+
+            if ($previous) {
+                $previous->removeChild($this);
+            }
+
+            if ($this->parent) {
+                $this->parent->addChild($this);
+            }
+        }
 
         return $this;
     }
@@ -171,7 +189,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
 
         if ($this->children->contains($child)) {
             $this->children->removeElement($child);
-            //$child->setParent(null);
+            $child->setParent(null);
         }
 
         return $this;
@@ -217,7 +235,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
 
         if ($this->adjustments->contains($adjustment)) {
             $this->adjustments->removeElement($adjustment);
-            //$adjustment->setItem(null);
+            $adjustment->setItem(null);
         }
 
         return $this;

@@ -27,6 +27,16 @@ class StockUnitResolver implements StockUnitResolverInterface
      */
     protected $entityManager;
 
+    /**
+     * @var array (class => $repository)
+     */
+    protected $repositoryCache;
+
+    /**
+     * @var array (identity => $stockUnit)
+     */
+    protected $newStockUnitCache;
+
 
     /**
      * Constructor.
@@ -43,6 +53,15 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
+     * Clears the cache.
+     */
+    public function clear()
+    {
+        $this->repositoryCache = [];
+        $this->newStockUnitCache = [];
+    }
+
+    /**
      * @inheritdoc
      */
     public function createBySubjectRelative(SubjectRelativeInterface $relative)
@@ -54,7 +73,17 @@ class StockUnitResolver implements StockUnitResolverInterface
             ->getRepositoryBySubject($subject)
             ->createNew();
 
-        return $stockUnit->setSubject($subject);
+        $stockUnit->setSubject($subject);
+
+        $oid = spl_object_hash($subject);
+
+        if (!isset($this->newStockUnitCache[$oid])) {
+            $this->newStockUnitCache[$oid] = [];
+        }
+
+        $this->newStockUnitCache[$oid][] = $stockUnit;
+
+        return $stockUnit;
     }
 
     /**
@@ -76,7 +105,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     public function findPending($subjectOrRelative)
     {
         /**
-         * @var StockSubjectInterface $subject
+         * @var StockSubjectInterface        $subject
          * @var StockUnitRepositoryInterface $repository
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
@@ -90,7 +119,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     public function findPendingOrReady($subjectOrRelative)
     {
         /**
-         * @var StockSubjectInterface $subject
+         * @var StockSubjectInterface        $subject
          * @var StockUnitRepositoryInterface $repository
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
@@ -104,12 +133,15 @@ class StockUnitResolver implements StockUnitResolverInterface
     public function findNotClosed($subjectOrRelative)
     {
         /**
-         * @var StockSubjectInterface $subject
+         * @var StockSubjectInterface        $subject
          * @var StockUnitRepositoryInterface $repository
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $repository->findNotClosedBySubject($subject);
+        return array_merge(
+            $repository->findNotClosedBySubject($subject),
+            $this->getCachedStockUnits($subject)
+        );
     }
 
     /**
@@ -118,12 +150,33 @@ class StockUnitResolver implements StockUnitResolverInterface
     public function findAssignable($subjectOrRelative)
     {
         /**
-         * @var StockSubjectInterface $subject
+         * @var StockSubjectInterface        $subject
          * @var StockUnitRepositoryInterface $repository
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $repository->findAssignableBySubject($subject);
+        return array_merge(
+            $repository->findAssignableBySubject($subject),
+            $this->getCachedStockUnits($subject)
+        );
+    }
+
+    /**
+     * Returns the cached new stock units by subject.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return array|mixed
+     */
+    protected function getCachedStockUnits(StockSubjectInterface $subject)
+    {
+        $oid = spl_object_hash($subject);
+
+        if (isset($this->newStockUnitCache[$oid])) {
+            return $this->newStockUnitCache[$oid];
+        }
+
+        return [];
     }
 
     /**
@@ -137,7 +190,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     {
         if ($subjectOrRelative instanceof SubjectRelativeInterface) {
             $subject = $this->subjectHelper->resolve($subjectOrRelative);
-        } elseif($subjectOrRelative instanceof StockSubjectInterface) {
+        } elseif ($subjectOrRelative instanceof StockSubjectInterface) {
             $subject = $subjectOrRelative;
         } else {
             throw new InvalidArgumentException(sprintf(
@@ -153,16 +206,20 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
-    public function getRepositoryBySubject(StockSubjectInterface $subject)
+    protected function getRepositoryBySubject(StockSubjectInterface $subject)
     {
-        // TODO repository cache map
+        $class = $subject::getStockUnitClass();
 
-        $repository = $this->entityManager->getRepository($subject::getStockUnitClass());
+        if (isset($this->repositoryCache[$class])) {
+            return $this->repositoryCache[$class];
+        }
+
+        $repository = $this->entityManager->getRepository($class);
 
         if (!$repository instanceof StockUnitRepositoryInterface) {
             throw new InvalidArgumentException('Expected instance of ' . StockUnitRepositoryInterface::class);
         }
 
-        return $repository;
+        return $this->repositoryCache[$class] = $repository;
     }
 }

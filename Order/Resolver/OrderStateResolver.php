@@ -36,8 +36,9 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         $shipmentState = $this->resolveShipmentsState($order);
 
         if ($order->hasItems()) {
-            if ($paymentState === Pay::STATE_CAPTURED && in_array($shipmentState, Ship::getStockStates())) {
+            if ($paymentState === Pay::STATE_CAPTURED && Ship::isShippedState($shipmentState)) {
                 $newState = OrderStates::STATE_COMPLETED;
+                // TODO Pending / Payment terms
             } elseif (in_array($paymentState, [Pay::STATE_PENDING, Pay::STATE_AUTHORIZED, Pay::STATE_CAPTURED])) {
                 $newState = OrderStates::STATE_ACCEPTED;
             } elseif ($paymentState == Pay::STATE_FAILED) {
@@ -99,7 +100,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         // Build shipped quantities.
         foreach ($shipments as $shipment) {
             // Ignore if shipment is not shipped or completed
-            if (!in_array($shipment->getState(), Ship::getStockStates(), true)) {
+            if (!Ship::isStockableState($shipment->getState())) {
                 continue;
             }
 
@@ -113,17 +114,12 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
         }
 
-        $doneCount = $partialCount = 0;
+        $doneCount = 0;
 
         foreach ($quantities as $q) {
             // If shipped quantity equals ordered quantity : increment done count
             if ($q['shipped'] == $q['ordered']) {
                 $doneCount++;
-                continue;
-            }
-            // If shipped quantity is greater than zero : increment partial count
-            if (0 < $q['shipped']) {
-                $partialCount++;
                 continue;
             }
         }
@@ -138,7 +134,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
             // All clear !
             return Ship::STATE_COMPLETED;
-        } elseif (0 < $partialCount) {
+        } elseif (0 < $doneCount) {
             return Ship::STATE_PARTIAL;
         }
 

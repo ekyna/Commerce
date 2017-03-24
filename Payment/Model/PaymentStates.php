@@ -43,7 +43,7 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether the given state is valid or not.
+     * Returns whether or not the given state is valid.
      *
      * @param string $state
      *
@@ -70,6 +70,18 @@ final class PaymentStates
     }
 
     /**
+     * Returns whether or not the given state is a notifiable state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isNotifiableState($state)
+    {
+        return in_array($state, static::getNotifiableStates(), true);
+    }
+
+    /**
      * Returns the deletable states.
      *
      * @return array
@@ -80,5 +92,42 @@ final class PaymentStates
             static::STATE_NEW,
             static::STATE_CANCELLED,
         ];
+    }
+
+    /**
+     * Returns whether or not the given state is a deletable state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isDeletableState($state)
+    {
+        return null === $state || in_array($state, static::getDeletableStates(), true);
+    }
+
+    /**
+     * Returns the paid states.
+     *
+     * @return array
+     */
+    static public function getPaidStates()
+    {
+        return [
+            static::STATE_CAPTURED,
+            static::STATE_AUTHORIZED,
+        ];
+    }
+
+    /**
+     * Returns whether or not the given state is a paid state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isPaidState($state)
+    {
+        return null !== $state && in_array($state, static::getPaidStates(), true);
     }
 }

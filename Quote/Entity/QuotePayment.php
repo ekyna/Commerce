@@ -41,11 +41,18 @@ class QuotePayment extends AbstractPayment implements Model\QuotePaymentInterfac
      */
     public function setQuote(Model\QuoteInterface $quote = null)
     {
-        if (null !== $this->quote && $this->quote != $quote) {
-            $this->quote->removePayment($this);
-        }
+        if ($quote != $this->quote) {
+            $previous = $this->quote;
+            $this->quote = $quote;
 
-        $this->quote = $quote;
+            if ($previous) {
+                $previous->removePayment($this);
+            }
+
+            if ($this->quote) {
+                $this->quote->addPayment($this);
+            }
+        }
 
         return $this;
     }

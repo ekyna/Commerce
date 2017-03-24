@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\Util\ShipmentUtil;
 
 /**
  * Class ShipmentBuilder
@@ -63,49 +64,14 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         }
 
         $item = $this->factory->createItemForShipment($shipment);
-        $item
-            ->setSaleItem($saleItem)
-            ->setQuantity(
-                $this->calculateRemainingQuantity($saleItem)
-            );
-
+        $item->setSaleItem($saleItem);
         $shipment->addItem($item);
-    }
 
-    /**
-     * Calculates the sale item remaining shipment quantity.
-     *
-     * @param SaleItemInterface $saleItem
-     *
-     * @return float
-     */
-    protected function calculateRemainingQuantity(SaleItemInterface $saleItem)
-    {
-        $quantity = $saleItem->getTotalQuantity();
-
-        /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface $sale */
-        $sale = $saleItem->getSale();
-        foreach ($sale->getShipments() as $shipment) {
-            // Skip if shipment is new (it could be the one we are building)
-            if (null === $shipment->getId()) {
-                continue;
-            }
-
-            // Skip if shipment is cancelled
-            if ($shipment->getState() === ShipmentStates::STATE_CANCELLED) {
-                continue;
-            }
-
-            // Find matching sale item
-            foreach ($shipment->getItems() as $shipmentItem) {
-                if ($shipmentItem->getSaleItem() == $saleItem) {
-                    $quantity -= $shipmentItem->getQuantity();
-                }
-            }
-
-            // TODO watch for returned Shipments
+        if (0 >= $expected = ShipmentUtil::calculateExpectedQuantity($item)) {
+            $shipment->removeItem($item);
+            return;
         }
 
-        return $quantity;
+        $item->setQuantity(min($expected, ShipmentUtil::calculateAvailableQuantity($item)));
     }
 }

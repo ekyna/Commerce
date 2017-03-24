@@ -2,13 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
-use Ekyna\Component\Commerce\Exception\IllegalOperationException;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Order\Event\OrderShipmentEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentItemInterface;
-//use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\EventListener\AbstractShipmentItemListener;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -19,80 +18,26 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class OrderShipmentItemListener extends AbstractShipmentItemListener
 {
     /**
-     * Pre create event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
+     * @inheritDoc
      */
-    public function onPreCreate(ResourceEventInterface $event)
+    protected function preventSaleItemChange(Shipment\ShipmentItemInterface $item)
     {
-        if ($event->getHard()) {
-            return;
+        if (!$item instanceof OrderShipmentItemInterface) {
+            throw new Exception\InvalidArgumentException("Expected instance of OrderShipmentItemInterface");
         }
 
-        //$this->throwIllegalOperationIfOrderIsCompleted($event);
-    }
-
-    /**
-     * Pre update event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
-     */
-    public function onPreUpdate(ResourceEventInterface $event)
-    {
-        if ($event->getHard()) {
-            return;
+        if ($this->persistenceHelper->isChanged($item, 'orderItem')) {
+            list($old, $new) = $this->persistenceHelper->getChangeSet($item, 'orderItem');
+            if ($old != $new) {
+                throw new Exception\RuntimeException("Changing the shipment item's sale item is not yet supported.");
+            }
         }
-
-        parent::onPreUpdate($event);
-
-        //$this->throwIllegalOperationIfOrderIsCompleted($event);
     }
-
-    /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
-     */
-    public function onPreDelete(ResourceEventInterface $event)
-    {
-        if ($event->getHard()) {
-            return;
-        }
-
-        parent::onPreDelete($event);
-
-        //$this->throwIllegalOperationIfOrderIsCompleted($event);
-    }
-
-    /**
-     * Throws an illegal operation exception if the order is completed.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
-     */
-//    private function throwIllegalOperationIfOrderIsCompleted(ResourceEventInterface $event)
-//    {
-//        $item = $this->getShipmentItemFromEvent($event);
-//        /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
-//        $order = $item->getShipment()->getSale();
-//
-//        // Stop sale is completed.
-//        if ($order->getState() === OrderStates::STATE_COMPLETED) {
-//            throw new IllegalOperationException(); // TODO reason message
-//        }
-//    }
 
     /**
      * @inheritdoc
      */
-    protected function scheduleShipmentContentChangeEvent(ShipmentInterface $shipment)
+    protected function scheduleShipmentContentChangeEvent(Shipment\ShipmentInterface $shipment)
     {
         $this->persistenceHelper->scheduleEvent(OrderShipmentEvents::CONTENT_CHANGE, $shipment);
     }
@@ -105,10 +50,9 @@ class OrderShipmentItemListener extends AbstractShipmentItemListener
         $resource = $event->getResource();
 
         if (!$resource instanceof OrderShipmentItemInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderShipmentItemInterface");
+            throw new Exception\InvalidArgumentException("Expected instance of OrderShipmentItemInterface");
         }
 
         return $resource;
     }
-
 }

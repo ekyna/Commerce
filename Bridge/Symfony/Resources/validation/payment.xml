@@ -53,6 +53,9 @@
         <property name="completedAt">
             <constraint name="DateTime"/>
         </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+        </constraint>
     </class>
 
     <class name="Ekyna\Component\Commerce\Payment\Entity\PaymentMethod">

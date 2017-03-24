@@ -69,11 +69,18 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
      */
     public function setQuote(QuoteInterface $quote = null)
     {
-        if (null !== $this->quote && $this->quote != $quote) {
-            $this->quote->removeItem($this);
-        }
+        if ($quote != $this->quote) {
+            $previous = $this->quote;
+            $this->quote = $quote;
 
-        $this->quote = $quote;
+            if ($previous) {
+                $previous->removeItem($this);
+            }
+
+            if ($this->quote) {
+                $this->quote->addItem($this);
+            }
+        }
 
         return $this;
     }
@@ -83,15 +90,22 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
      */
     public function setParent(SaleItemInterface $parent = null)
     {
-        if (!$parent instanceof QuoteItemInterface) {
+        if ($parent && !$parent instanceof QuoteItemInterface) {
             throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
         }
 
-        if (null !== $this->parent && $this->parent != $parent) {
-            $this->parent->removeChild($this);
-        }
+        if ($parent != $this->parent) {
+            $previous = $this->parent;
+            $this->parent = $parent;
 
-        $this->parent = $parent;
+            if ($previous) {
+                $previous->removeChild($this);
+            }
+
+            if ($this->parent) {
+                $this->parent->addChild($this);
+            }
+        }
 
         return $this;
     }
@@ -124,7 +138,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
 
         if ($this->children->contains($child)) {
             $this->children->removeElement($child);
-            //$child->setParent(null);
+            $child->setParent(null);
         }
 
         return $this;
@@ -170,7 +184,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
 
         if ($this->adjustments->contains($adjustment)) {
             $this->adjustments->removeElement($adjustment);
-            //$adjustment->setItem(null);
+            $adjustment->setItem(null);
         }
 
         return $this;

@@ -51,11 +51,12 @@ abstract class AbstractShipmentItem implements ShipmentItemInterface
     public function setShipment(ShipmentInterface $shipment = null)
     {
         if ($this->shipment != $shipment) {
-            if ($this->shipment) {
-                $this->shipment->removeItem($this);
-            }
-
+            $previous = $this->shipment;
             $this->shipment = $shipment;
+
+            if ($previous) {
+                $previous->removeItem($this);
+            }
 
             if ($this->shipment) {
                 $this->shipment->addItem($this);

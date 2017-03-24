@@ -1,6 +1,7 @@
 <?php
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**
  * Class ShipmentStates
@@ -85,6 +86,31 @@ final class ShipmentStates
     }
 
     /**
+     * Returns the shipped states.
+     *
+     * @return array
+     */
+    static public function getShippedStates()
+    {
+        return [
+            static::STATE_SHIPPED,
+            static::STATE_COMPLETED,
+        ];
+    }
+
+    /**
+     * Returns whether the given state is a shipped state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isShippedState($state)
+    {
+        return in_array($state, static::getShippedStates(), true);
+    }
+
+    /**
      * Returns the deletable states.
      *
      * @return array
@@ -107,7 +133,37 @@ final class ShipmentStates
      */
     static public function isDeletableState($state)
     {
-        return in_array($state, static::getDeletableStates(), true);
+        return is_null($state) || in_array($state, static::getDeletableStates(), true);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a non deletable state to a deletable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedToDeletable(array $cs)
+    {
+        return static::assertValidChangeSet($cs)
+            && !static::isDeletableState($cs[0])
+            && static::isDeletableState($cs[1]);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a deletable state to a non deletable state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedFromDeletable(array $cs)
+    {
+        return static::assertValidChangeSet($cs)
+            && static::isDeletableState($cs[0])
+            && !static::isDeletableState($cs[1]);
     }
 
     /**
@@ -115,10 +171,11 @@ final class ShipmentStates
      *
      * @return array
      */
-    static public function getStockStates()
+    static public function getStockableStates()
     {
         return [
             static::STATE_SHIPPED,
+            static::STATE_PARTIAL,
             static::STATE_COMPLETED,
             static::STATE_RETURNED,
         ];
@@ -131,36 +188,61 @@ final class ShipmentStates
      *
      * @return bool
      */
-    static public function isStockState($state)
+    static public function isStockableState($state)
     {
-        return in_array($state, static::getStockStates(), true);
+        return in_array($state, static::getStockableStates(), true);
     }
 
     /**
-     * Returns whether the state has changed from a stockable state to a deletable state.
+     * Returns whether or not the state has changed
+     * from a non stockable state to a stockable state.
      *
      * @param array $cs The persistence change set
      *
      * @return bool
      */
-    static public function hasChangedToDeletable(array $cs)
+    static public function hasChangedToStockable(array $cs)
     {
-        return (isset($cs[0]) && isset($cs[1]))
-            && static::isStockState($cs[0])
-            && static::isDeletableState($cs[1]);
+        return static::assertValidChangeSet($cs)
+            && !static::isStockableState($cs[0])
+            && static::isStockableState($cs[1]);
     }
 
     /**
-     * Returns whether the state has changed from a deletable state to a stockable state.
+     * Returns whether or not the state has changed
+     * from a stockable state to a non stockable state.
      *
      * @param array $cs The persistence change set
      *
      * @return bool
      */
-    static public function hasChangedToStock(array $cs)
+    static public function hasChangedFromStockable(array $cs)
     {
-        return (isset($cs[0]) && isset($cs[1]))
-            && static::isDeletableState($cs[0])
-            && static::isStockState($cs[1]);
+        return static::assertValidChangeSet($cs)
+            && static::isStockableState($cs[0])
+            && !static::isStockableState($cs[1]);
+    }
+
+    /**
+     * Returns whether or not the change set is valid.
+     *
+     * @param array $cs
+     *
+     * @return bool
+     *
+     * @throws InvalidArgumentException
+     */
+    static private function assertValidChangeSet(array $cs)
+    {
+        if (
+            array_key_exists(0, $cs) &&
+            array_key_exists(1, $cs) &&
+            (is_null($cs[0]) || static::isValidState($cs[0])) &&
+            (is_null($cs[1]) || static::isValidState($cs[1]))
+        ) {
+            return true;
+        }
+
+        throw new InvalidArgumentException("Unexpected order state change set.");
     }
 }

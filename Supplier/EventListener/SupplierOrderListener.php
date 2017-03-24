@@ -94,7 +94,7 @@ class SupplierOrderListener extends AbstractListener
 
         // Deletable <=> Stockable state change case.
         if ($this->persistenceHelper->isChanged($order, 'state')) {
-            $stateCs = $this->persistenceHelper->getChangeSet($order)['state'];
+            $stateCs = $this->persistenceHelper->getChangeSet($order, 'state');
 
             // If order's state has changed to a non stockable state
             if (SupplierOrderStates::hasChangedFromStockable($stateCs)) {

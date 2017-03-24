@@ -45,18 +45,41 @@ interface StockAssignmentInterface extends ResourceInterface
     public function setSaleItem(SaleItemInterface $saleItem = null);
 
     /**
-     * Returns the quantity.
+     * Returns the reserved quantity.
      *
      * @return float
      */
-    public function getQuantity();
+    public function getReservedQuantity();
 
     /**
-     * Sets the quantity.
+     * Sets the reserved quantity.
      *
      * @param float $quantity
      *
      * @return $this|StockAssignmentInterface
      */
-    public function setQuantity($quantity);
+    public function setReservedQuantity($quantity);
+
+    /**
+     * Returns the shipped quantity.
+     *
+     * @return float
+     */
+    public function getShippedQuantity();
+
+    /**
+     * Sets the shipped quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockAssignmentInterface
+     */
+    public function setShippedQuantity($quantity);
+
+    /**
+     * Returns the shippable quantity.
+     *
+     * @return float
+     */
+    public function getShippableQuantity();
 }
