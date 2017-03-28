@@ -27,6 +27,14 @@ class CartItemListener extends AbstractSaleItemListener
     /**
      * @inheritdoc
      */
+    protected function getSalePropertyPath()
+    {
+        return 'cart';
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function getSaleItemFromEvent(ResourceEventInterface $event)
     {
         $item = $event->getResource();

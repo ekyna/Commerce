@@ -93,6 +93,7 @@ final class ShipmentStates
     static public function getShippedStates()
     {
         return [
+            static::STATE_NONE,
             static::STATE_SHIPPED,
             static::STATE_COMPLETED,
         ];

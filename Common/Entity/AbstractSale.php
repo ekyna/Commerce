@@ -108,9 +108,34 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     protected $paidTotal;
 
     /**
+     * @var float
+     */
+    protected $outstandingAmount;
+
+    /**
+     * @var \DateTime
+     */
+    protected $outstandingDate;
+
+    /**
      * @var string
      */
     protected $paymentState;
+
+    /**
+     * @var string
+     */
+    protected $voucherNumber;
+
+    /**
+     * @var string
+     */
+    protected $originNumber;
+
+    /**
+     * @var string
+     */
+    protected $description;
 
     /**
      * @var ArrayCollection|Common\SaleAttachmentInterface[]
@@ -126,7 +151,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
      * @var ArrayCollection|Payment\PaymentInterface[]
      */
     protected $payments;
-
 
     /**
      * Constructor.
@@ -147,8 +171,11 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
         $this->adjustmentTotal = 0;
         $this->grandTotal = 0;
         $this->paidTotal = 0;
+        $this->outstandingAmount = 0;
 
         $this->paymentState = Payment\PaymentStates::STATE_NEW;
+
+        $this->createdAt = new \DateTime();
 
         $this->attachments = new ArrayCollection();
         $this->items = new ArrayCollection();
@@ -414,7 +441,43 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
+     */
+    public function getOutstandingAmount()
+    {
+        return $this->outstandingAmount;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOutstandingAmount($amount)
+    {
+        $this->outstandingAmount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutstandingDate()
+    {
+        return $this->outstandingDate;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOutstandingDate(\DateTime $date = null)
+    {
+        $this->outstandingDate = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function setPaymentState($state)
     {
@@ -424,11 +487,65 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getPaymentState()
     {
         return $this->paymentState;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getVoucherNumber()
+    {
+        return $this->voucherNumber;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setVoucherNumber($number)
+    {
+        $this->voucherNumber = $number;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOriginNumber()
+    {
+        return $this->originNumber;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOriginNumber($number)
+    {
+        $this->originNumber = $number;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+
+        return $this;
     }
 
     /**

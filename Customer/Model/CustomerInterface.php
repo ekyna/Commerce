@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
@@ -15,7 +15,8 @@ use Ekyna\Component\Resource\Model as ResourceModel;
 interface CustomerInterface extends
     ResourceModel\ResourceInterface,
     ResourceModel\TimestampableInterface,
-    IdentityInterface,
+    Common\IdentityInterface,
+    Common\NumberSubjectInterface,
     PaymentTermSubjectInterface
 {
     /**
@@ -211,18 +212,34 @@ interface CustomerInterface extends
     public function getDefaultDeliveryAddress();
 
     /**
-     * Returns the credit limit.
+     * Returns the outstanding limit.
      *
      * @return float
      */
-    public function getCreditLimit();
+    public function getOutstandingLimit();
 
     /**
-     * Sets the credit limit.
+     * Sets the outstanding limit.
      *
      * @param float $limit
      *
      * @return $this|CustomerInterface
      */
-    public function setCreditLimit($limit);
+    public function setOutstandingLimit($limit);
+
+    /**
+     * Returns the outstanding balance.
+     *
+     * @return float
+     */
+    public function getOutstandingBalance();
+
+    /**
+     * Sets the outstanding balance.
+     *
+     * @param float $amount
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setOutstandingBalance($amount);
 }

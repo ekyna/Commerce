@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\EventListener;
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -74,7 +75,7 @@ abstract class AbstractSaleItemListener
         $change = false;
 
         // Handle taxation update
-        if ($this->persistenceHelper->isChanged($item, 'subjectData')) { // TODO check subjectIdentity
+        if ($this->persistenceHelper->isChanged($item, ['subjectIdentity.provider', 'subjectIdentity.identifier'])) {
             $change = $this->updateTaxation($item);
         }
 
@@ -124,9 +125,11 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
-        $this->scheduleSaleContentChangeEvent($item->getSale());
+        if (null === $sale = $this->getSaleFromItem($item)) {
+            throw new RuntimeException('Failed to retrieve the sale.');
+        }
 
-        // TODO Set sale and parent to null ?
+        $this->scheduleSaleContentChangeEvent($sale);
     }
 
     /**
@@ -169,6 +172,34 @@ abstract class AbstractSaleItemListener
             throw new IllegalOperationException(); // TODO reason message
         }
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSaleFromItem(Model\SaleItemInterface $item)
+    {
+        if (null !== $sale = $item->getSale()) {
+            return $sale;
+        }
+
+        $path = $this->getSalePropertyPath();
+        $changeSet = $this->persistenceHelper->getChangeSet($item);
+
+        if (isset($changeSet[$path])) {
+            return $changeSet[$path][0];
+        } elseif (isset($changeSet['parent'])) {
+            return $this->getSaleFromItem($changeSet['parent'][0]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the sale item property path.
+     *
+     * @return string
+     */
+    abstract protected function getSalePropertyPath();
 
     /**
      * Schedules the sale content change event.

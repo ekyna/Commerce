@@ -11,13 +11,14 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class OrderStates
 {
-    const STATE_NEW       = 'new';
-    const STATE_PENDING   = 'pending';
-    const STATE_REFUSED   = 'refused';
-    const STATE_ACCEPTED  = 'accepted';
-    const STATE_COMPLETED = 'completed';
-    const STATE_REFUNDED  = 'refunded';
-    const STATE_CANCELLED = 'cancelled';
+    const STATE_NEW         = 'new';
+    const STATE_PENDING     = 'pending';
+    const STATE_REFUSED     = 'refused';
+    const STATE_OUTSTANDING = 'outstanding';
+    const STATE_ACCEPTED    = 'accepted';
+    const STATE_COMPLETED   = 'completed';
+    const STATE_REFUNDED    = 'refunded';
+    const STATE_CANCELLED   = 'cancelled';
 
 
     /**
@@ -31,6 +32,7 @@ final class OrderStates
             static::STATE_NEW,
             static::STATE_PENDING,
             static::STATE_REFUSED,
+            static::STATE_OUTSTANDING,
             static::STATE_ACCEPTED,
             static::STATE_COMPLETED,
             static::STATE_REFUNDED,
@@ -115,7 +117,9 @@ final class OrderStates
     {
         return [
             static::STATE_ACCEPTED,
-            static::STATE_COMPLETED
+            static::STATE_OUTSTANDING,
+            //static::STATE_REFUNDED, TODO ?
+            static::STATE_COMPLETED,
         ];
     }
 

@@ -31,11 +31,15 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
 
         $paymentState = $this->resolvePaymentsState($quote);
 
+        $outstanding = $this->resolveOutstanding($quote, $paymentState);
+
         if ($quote->hasItems()) {
-            if ($paymentState === PaymentStates::STATE_CAPTURED) {
-                $newState = QuoteStates::STATE_COMPLETED;
-            } elseif (in_array($paymentState, [PaymentStates::STATE_PENDING, PaymentStates::STATE_AUTHORIZED, PaymentStates::STATE_CAPTURED])) {
+            if (PaymentStates::isPaidState($paymentState) || ($outstanding && $outstanding->isValid())) {
                 $newState = QuoteStates::STATE_ACCEPTED;
+            } elseif ($outstanding && !$outstanding->isExpired()) {
+                $newState = QuoteStates::STATE_PENDING;
+            } elseif ($paymentState == PaymentStates::STATE_PENDING) {
+                $newState = QuoteStates::STATE_PENDING;
             } elseif ($paymentState == PaymentStates::STATE_FAILED) {
                 $newState = QuoteStates::STATE_REFUSED;
             } elseif ($paymentState == PaymentStates::STATE_REFUNDED) {

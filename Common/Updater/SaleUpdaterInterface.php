@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Updater;
 
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
 /**
  * Interface SaleUpdaterInterface
@@ -89,6 +90,25 @@ interface SaleUpdaterInterface
      * @return bool Whether the sale has been changed or not.
      */
     public function updateTotalWeight(Model\SaleInterface $sale);
+
+    /**
+     * Clears the outstanding date and amount.
+     *
+     * @param Model\SaleInterface    $sale
+     * @param CustomerInterface|null $customer
+     *
+     * @return bool Whether or not the sale has been updated.
+     */
+    public function clearOutstanding(Model\SaleInterface $sale, CustomerInterface $customer = null);
+
+    /**
+     * Updates the outstanding date and amount.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return bool Whether or not the sale has been updated.
+     */
+    public function updateOutstanding(Model\SaleInterface $sale);
 
     /**
      * Updates the paid total.

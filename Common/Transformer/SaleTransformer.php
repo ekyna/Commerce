@@ -45,7 +45,9 @@ class SaleTransformer implements SaleTransformerInterface
         $this->copy($source, $target, [
             'currency', 'customer', 'customerGroup',
             'email', 'company', 'gender', 'firstName', 'lastName',
-            'sameAddress', 'preferredShipmentMethod', 'shipmentAmount'
+            'sameAddress', 'preferredShipmentMethod', 'shipmentAmount',
+            'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingAmount',
+            'voucherNumber', 'description',
         ]);
 
         // Invoice address
@@ -70,7 +72,7 @@ class SaleTransformer implements SaleTransformerInterface
         // Items
         foreach ($source->getItems() as $sourceItem) {
             $targetItem = $this->saleFactory->createItemForSale($target);
-            $target->addItem($targetItem); // So that the sale is available for listeners
+            $target->addItem($targetItem);
             $this->copyItem($sourceItem, $targetItem);
         }
 
@@ -94,6 +96,9 @@ class SaleTransformer implements SaleTransformerInterface
             $target->addShipment($targetShipment);
             $this->copyShipment($sourceShipment, $targetShipment);
         }*/
+
+        // Origin number
+        $target->setOriginNumber($source->getNumber());
     }
 
     /**
@@ -114,7 +119,7 @@ class SaleTransformer implements SaleTransformerInterface
     public function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target)
     {
         $this->copy($source, $target, [
-            'path', 'size', 'internal'
+            'path', 'size', 'internal', 'createdAt', 'updatedAt',
         ]);
     }
 
@@ -124,7 +129,7 @@ class SaleTransformer implements SaleTransformerInterface
     public function copyAdjustment(Model\AdjustmentInterface $source, Model\AdjustmentInterface $target)
     {
         $this->copy($source, $target, [
-            'designation', 'type', 'mode', 'amount', 'immutable'
+            'designation', 'type', 'mode', 'amount', 'immutable',
         ]);
     }
 
@@ -134,9 +139,8 @@ class SaleTransformer implements SaleTransformerInterface
     public function copyPayment(PaymentInterface $source, PaymentInterface $target)
     {
         $this->copy($source, $target, [
-            //'number', // TODO This is a problem
-            'currency', 'method', 'amount', 'state',
-            'details', 'description', 'completedAt'
+            'currency', 'method', 'number', 'amount', 'state', 'details',
+            'description', 'createdAt', 'updatedAt', 'completedAt',
         ]);
     }
 
@@ -146,9 +150,13 @@ class SaleTransformer implements SaleTransformerInterface
     public function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target)
     {
         $this->copy($source, $target, [
-            'designation', 'reference', 'netPrice', 'weight',
-            'quantity', 'position', 'immutable', 'configurable',
-            'subjectData',
+            'designation', 'reference', 'netPrice', 'weight', 'quantity',
+            'position', 'immutable', 'configurable', 'taxGroup', 'subjectData',
+        ]);
+
+        // SubjectIdentity
+        $this->copy($source->getSubjectIdentity(), $target->getSubjectIdentity(), [
+            'provider', 'identifier'
         ]);
 
         // Adjustments
@@ -161,7 +169,7 @@ class SaleTransformer implements SaleTransformerInterface
         // Children
         foreach ($source->getChildren() as $sourceChild) {
             $targetChild = $this->saleFactory->createItemForSale($target->getSale());
-            $target->addChild($targetChild); // So that the sale is accessible
+            $target->addChild($targetChild);
             $this->copyItem($sourceChild, $targetChild);
         }
     }

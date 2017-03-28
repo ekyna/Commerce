@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\EventListener;
 
+use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -20,15 +21,24 @@ class CustomerListener
      */
     protected $persistenceHelper;
 
+    /**
+     * @var NumberGeneratorInterface
+     */
+    protected $numberGenerator;
+
 
     /**
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
+     * @param NumberGeneratorInterface   $numberGenerator
      */
-    public function __construct(PersistenceHelperInterface $persistenceHelper)
-    {
+    public function __construct(
+        PersistenceHelperInterface $persistenceHelper,
+        NumberGeneratorInterface $numberGenerator
+    ) {
         $this->persistenceHelper = $persistenceHelper;
+        $this->numberGenerator = $numberGenerator;
     }
 
     /**
@@ -42,16 +52,23 @@ class CustomerListener
 
         $this->updateChildrenCompanyName($customer);
 
-        $changed = $this->updateCompanyNameFromParent($customer);
+        $changed = $this->generateNumber($customer);
+
+        $changed |= $this->updateCompanyNameFromParent($customer);
 
         /**
          * TODO Resource behaviors.
          */
-        $customer
-            ->setCreatedAt(new \DateTime())
-            ->setUpdatedAt(new \DateTime());
+        if (null === $customer->getCreatedAt()) {
+            $customer->setCreatedAt(new \DateTime());
+            $changed = true;
+        }
+        if (null === $customer->getUpdatedAt()) {
+            $customer->setUpdatedAt(new \DateTime());
+            $changed = true;
+        }
 
-        if (true || $changed) { // TODO
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer);
         }
     }
@@ -65,11 +82,12 @@ class CustomerListener
     {
         $customer = $this->getCustomerFromEvent($event);
 
-        $changed = false;
+        $changed = $this->generateNumber($customer);
+
         $changeSet = $this->persistenceHelper->getChangeSet($customer);
 
         if (array_key_exists('parent', $changeSet)) {
-            $changed = $this->updateCompanyNameFromParent($customer) || $changed;
+            $changed |= $this->updateCompanyNameFromParent($customer);
         }
 
         if (array_key_exists('company', $changeSet)) {
@@ -83,8 +101,9 @@ class CustomerListener
          * TODO Resource behaviors.
          */
         $customer->setUpdatedAt(new \DateTime());
+        $changed = true;
 
-        if (true || $changed) { // TODO
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer);
         }
     }
@@ -97,6 +116,24 @@ class CustomerListener
     public function onDelete(ResourceEventInterface $event)
     {
         //$customer = $this->getCustomerFromEvent($event);
+    }
+
+    /**
+     * Generates the number.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return bool Whether the customer number has been generated or not.
+     */
+    protected function generateNumber(CustomerInterface $customer)
+    {
+        if (0 == strlen($customer->getNumber())) {
+            $this->numberGenerator->generate($customer);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

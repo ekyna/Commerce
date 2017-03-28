@@ -79,11 +79,6 @@ class LineView extends AbstractView
      */
     private $node = false;
 
-    /**
-     * @var bool
-     */
-    private $immutable = false;
-
 
     /**
      * Constructor.
@@ -102,7 +97,6 @@ class LineView extends AbstractView
      * @param float  $total
      * @param array  $lines
      * @param bool   $node
-     * @param bool   $immutable
      */
     public function __construct(
         $id,
@@ -118,8 +112,7 @@ class LineView extends AbstractView
         $taxAmount,
         $total,
         array $lines = [],
-        $node = false,
-        $immutable = false
+        $node = false
     ) {
         $this->id = $id;
         $this->formId = $formId;
@@ -135,7 +128,6 @@ class LineView extends AbstractView
         $this->total = $total;
         $this->lines = $lines;
         $this->node = $node;
-        $this->immutable = $immutable;
     }
 
     /**
@@ -276,15 +268,5 @@ class LineView extends AbstractView
     public function isNode()
     {
         return $this->node;
-    }
-
-    /**
-     * Returns whether the line is immutable or not.
-     *
-     * @return boolean
-     */
-    public function isImmutable()
-    {
-        return $this->immutable;
     }
 }

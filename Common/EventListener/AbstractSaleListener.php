@@ -114,6 +114,9 @@ abstract class AbstractSaleListener
         // Handle customer information
         $changed |= $this->handleInformation($sale);
 
+        // Handle payment term
+        $changed |= $this->handlePaymentTerm($sale);
+
         // Update discounts
         $changed |= $this->saleUpdater->updateDiscounts($sale, true);
 
@@ -123,17 +126,21 @@ abstract class AbstractSaleListener
         // Update totals
         $changed |= $this->saleUpdater->updateTotals($sale);
 
+        // Update outstanding
+        $changed |= $this->saleUpdater->updateOutstanding($sale);
+
         // Update state
         $changed |= $this->updateState($sale);
 
         /**
          * TODO Resource behaviors.
          */
-        $sale
-            ->setCreatedAt(new \DateTime())
-            ->setUpdatedAt(new \DateTime());
+        if (null === $sale->getUpdatedAt()) {
+            $sale->setUpdatedAt(new \DateTime());
+            $changed = true;
+        }
 
-        if (true || $changed) { // TODO
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
     }
@@ -156,6 +163,20 @@ abstract class AbstractSaleListener
         // Handle customer information
         $changed |= $this->handleInformation($sale);
 
+        // If customer has changed
+        if ($this->persistenceHelper->isChanged($sale, 'customer')) {
+            /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerInterface $oldCustomer */
+            list($oldCustomer) = $this->persistenceHelper->getChangeSet($sale, 'customer');
+
+            // Restore customer outstanding amount
+            if (null !== $oldCustomer) {
+                $changed |= $this->saleUpdater->clearOutstanding($sale, $oldCustomer);
+            }
+        }
+
+        // Handle payment term
+        $changed |= $this->handlePaymentTerm($sale);
+
         /**
          * TODO Resource behaviors.
          */
@@ -166,8 +187,13 @@ abstract class AbstractSaleListener
             $this->persistenceHelper->persistAndRecompute($sale);
         }
 
+        // Schedule content change
+        if ($this->persistenceHelper->isChanged($sale, 'paymentTerm')) {
+            $this->scheduleContentChangeEvent($sale);
+        }
+
         // Handle addresses changes
-        /*if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
+        /* TODO ? if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
             $this->scheduleAddressChangeEvent($sale);
         }*/
     }
@@ -195,14 +221,10 @@ abstract class AbstractSaleListener
             $changed |= $this->saleUpdater->updateShipmentTaxation($sale, true);
         }
 
-        // Update totals
-        $changed |= $this->saleUpdater->updateTotals($sale);
-
-        // Update state
-        $changed |= $this->updateState($sale);
-
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
+
+            $this->scheduleContentChangeEvent($sale);
         }
     }
 
@@ -217,6 +239,9 @@ abstract class AbstractSaleListener
 
         // Update totals
         $changed = $this->saleUpdater->updateTotals($sale);
+
+        // Update outstanding
+        $changed |= $this->saleUpdater->updateOutstanding($sale);
 
         // Update state
         $changed |= $this->updateState($sale);
@@ -254,8 +279,7 @@ abstract class AbstractSaleListener
         // Stop if sale has valid payments
         if (null !== $payments = $sale->getPayments()) {
             foreach ($payments as $payment) {
-                // TODO use isDeletableState method
-                if (!in_array($payment->getState(), PaymentStates::getDeletableStates())) {
+                if (!PaymentStates::isDeletableState($payment->getState())) {
                     throw new IllegalOperationException(); // TODO reason message
                 }
             }
@@ -356,9 +380,7 @@ abstract class AbstractSaleListener
      */
     protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale)
     {
-        $saleCs = $this->persistenceHelper->getChangeSet($sale);
-
-        return isset($saleCs['preferredShipmentMethod']);
+        return $this->persistenceHelper->isChanged($sale, 'preferredShipmentMethod');
     }
 
     /**
@@ -409,12 +431,6 @@ abstract class AbstractSaleListener
         $changed = false;
 
         if (null !== $customer = $sale->getCustomer()) {
-            // Payment term
-            if (null === $sale->getPaymentTerm() && null !== $customer->getPaymentTerm()) {
-                $sale->setPaymentTerm($customer->getPaymentTerm());
-                $changed = true;
-            }
-
             // Customer group
             if (null === $sale->getCustomerGroup() && null !== $customer->getCustomerGroup()) {
                 $sale->setCustomerGroup($customer->getCustomerGroup());
@@ -466,6 +482,31 @@ abstract class AbstractSaleListener
     }
 
     /**
+     * Handles the customer / payment term.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function handlePaymentTerm(SaleInterface $sale)
+    {
+        $changed = false;
+
+        // New customer's payment term
+        if (null !== $customer = $sale->getCustomer()) {
+            if ($sale->getPaymentTerm() != $term = $customer->getPaymentTerm()) {
+                $sale->setPaymentTerm($term);
+                $changed = true;
+            }
+        } elseif ($sale->getPaymentTerm()) {
+            $sale->setPaymentTerm(null);
+            $changed = true;
+        }
+
+        return $changed;
+    }
+
+    /**
      * Updates the state.
      *
      * @param SaleInterface $sale
@@ -476,6 +517,7 @@ abstract class AbstractSaleListener
     {
         if ($this->stateResolver->resolve($sale)) {
             $this->scheduleStateChangeEvent($sale);
+
             return true;
         }
 
@@ -493,12 +535,11 @@ abstract class AbstractSaleListener
     abstract protected function getSaleFromEvent(ResourceEventInterface $event);
 
     /**
-     * Schedule the address change event handler.
+     * Schedule the content change event handler.
      *
      * @param SaleInterface $sale
-     * @todo remove as never called ?
      */
-    abstract protected function scheduleAddressChangeEvent(SaleInterface $sale);
+    abstract protected function scheduleContentChangeEvent(SaleInterface $sale);
 
     /**
      * Schedule the state change event handler.

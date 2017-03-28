@@ -217,8 +217,7 @@ class ViewBuilder
             $amounts->getTaxTotal(),
             $amounts->getTotal(),
             $lines,
-            $item->hasChildren(),
-            $item->isImmutable()
+            $item->hasChildren()
         );
 
         foreach ($this->types as $type) {
@@ -260,7 +259,6 @@ class ViewBuilder
             $amounts->getTotal()
             // lines
             // node
-            // immutable
         );
 
         foreach ($this->types as $type) {
@@ -310,7 +308,6 @@ class ViewBuilder
             $amounts->getTotal()
             // lines
             // node
-            // immutable
         );
 
         foreach ($this->types as $type) {

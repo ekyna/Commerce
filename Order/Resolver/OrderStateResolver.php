@@ -29,18 +29,43 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             throw new InvalidArgumentException("Expected instance of OrderInterface.");
         }
 
+        $changed = false;
         $oldState = $order->getState();
         $newState = OrderStates::STATE_NEW;
 
+        // Payments state
         $paymentState = $this->resolvePaymentsState($order);
-        $shipmentState = $this->resolveShipmentsState($order);
+        if ($paymentState != $order->getPaymentState()) {
+            $order->setPaymentState($paymentState);
+            $changed = true;
+        }
 
+        // Shipments state
+        $shipmentState = $this->resolveShipmentsState($order);
+        if ($shipmentState != $order->getShipmentState()) {
+            $order->setShipmentState($shipmentState);
+            $changed = true;
+        }
+
+        $outstanding = $this->resolveOutstanding($order, $paymentState);
+
+        // Order states
         if ($order->hasItems()) {
-            if ($paymentState === Pay::STATE_CAPTURED && Ship::isShippedState($shipmentState)) {
-                $newState = OrderStates::STATE_COMPLETED;
-                // TODO Pending / Payment terms
-            } elseif (in_array($paymentState, [Pay::STATE_PENDING, Pay::STATE_AUTHORIZED, Pay::STATE_CAPTURED])) {
-                $newState = OrderStates::STATE_ACCEPTED;
+            if (Pay::isPaidState($paymentState)) {
+                if (Ship::isShippedState($shipmentState)) {
+                    $newState = OrderStates::STATE_COMPLETED;
+                } else {
+                    $newState = OrderStates::STATE_ACCEPTED;
+                }
+            } elseif ($outstanding) {
+                $newState = OrderStates::STATE_PENDING; // TODO ?
+                if ($outstanding->isValid()) {
+                    $newState = OrderStates::STATE_ACCEPTED;
+                } elseif ($outstanding->isExpired()) {
+                    $newState = OrderStates::STATE_OUTSTANDING;
+                }
+            } elseif ($paymentState == Pay::STATE_PENDING) {
+                $newState = OrderStates::STATE_PENDING;
             } elseif ($paymentState == Pay::STATE_FAILED) {
                 $newState = OrderStates::STATE_REFUSED;
             } elseif ($paymentState == Pay::STATE_REFUNDED) {
@@ -50,18 +75,6 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             } else {
                 $newState = OrderStates::STATE_NEW;
             }
-        }
-
-        $changed = false;
-
-        if ($paymentState != $order->getPaymentState()) {
-            $order->setPaymentState($paymentState);
-            $changed = true;
-        }
-
-        if ($shipmentState != $order->getShipmentState()) {
-            $order->setShipmentState($shipmentState);
-            $changed = true;
         }
 
         if ($oldState != $newState) {

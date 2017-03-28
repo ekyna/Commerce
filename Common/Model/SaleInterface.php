@@ -267,6 +267,38 @@ interface SaleInterface extends
     public function setPaidTotal($total);
 
     /**
+     * Returns the outstanding amount.
+     *
+     * @return float
+     */
+    public function getOutstandingAmount();
+
+    /**
+     * Sets the outstanding amount.
+     *
+     * @param float $amount
+     *
+     * @return $this|SaleInterface
+     */
+    public function setOutstandingAmount($amount);
+
+    /**
+     * Returns the outstanding date.
+     *
+     * @return \DateTime
+     */
+    public function getOutstandingDate();
+
+    /**
+     * Sets the outstanding date.
+     *
+     * @param \DateTime $date
+     *
+     * @return $this|SaleInterface
+     */
+    public function setOutstandingDate(\DateTime $date = null);
+
+    /**
      * Returns the payment state.
      *
      * @return string
@@ -281,6 +313,55 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setPaymentState($state);
+
+
+    /**
+     * Returns the voucher number.
+     *
+     * @return string
+     */
+    public function getVoucherNumber();
+
+    /**
+     * Sets the voucher number.
+     *
+     * @param string $number
+     *
+     * @return $this|SaleInterface
+     */
+    public function setVoucherNumber($number);
+
+    /**
+     * Returns the origin number.
+     *
+     * @return string
+     */
+    public function getOriginNumber();
+
+    /**
+     * Sets the origin number.
+     *
+     * @param string $number
+     *
+     * @return $this|SaleInterface
+     */
+    public function setOriginNumber($number);
+
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return $this|SaleInterface
+     */
+    public function setDescription($description);
 
     /**
      * Returns whether the order has attachments or not.

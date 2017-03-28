@@ -277,12 +277,6 @@
         <property name="state">
             <constraint name="NotBlank"/>
         </property>
-        <property name="items">
-            <constraint name="Valid" />
-        </property>
-        <!--<property name="payments">
-            <constraint name="Valid" />
-        </property>-->
         <property name="paymentState">
             <constraint name="Choice">
                 <option name="callback">
@@ -291,6 +285,22 @@
                 </option>
             </constraint>
         </property>
+        <property name="voucherNumber">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="originNumber">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="items">
+            <constraint name="Valid" />
+        </property>
+        <!--<property name="payments">
+            <constraint name="Valid" />
+        </property>-->
         <property name="createdAt">
             <constraint name="DateTime"/>
         </property>

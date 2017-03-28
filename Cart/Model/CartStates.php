@@ -9,8 +9,8 @@ namespace Ekyna\Component\Commerce\Cart\Model;
  */
 final class CartStates
 {
-    const STATE_NEW       = 'new';
-    const STATE_COMPLETED = 'completed';
+    const STATE_NEW      = 'new';
+    const STATE_ACCEPTED = 'accepted';
 
 
     /**
@@ -22,7 +22,7 @@ final class CartStates
     {
         return [
             static::STATE_NEW,
-            static::STATE_COMPLETED,
+            static::STATE_ACCEPTED,
         ];
     }
 

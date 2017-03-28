@@ -48,7 +48,6 @@
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
-                <cascade-refresh/>
             </cascade>
         </one-to-many>
 
@@ -75,7 +74,8 @@
         <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartPayment"
                      field="payments" mapped-by="cart" orphan-removal="true">
             <cascade>
-                <cascade-all/>
+                <cascade-persist/>
+                <cascade-remove/>
             </cascade>
             <order-by>
                 <order-by-field name="createdAt" direction="ASC"/>

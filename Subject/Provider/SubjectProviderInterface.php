@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
 use Ekyna\Component\Commerce\Exception\SubjectException;
-use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject;
 
 /**

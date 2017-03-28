@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
+use Ekyna\Component\Commerce\Payment\Util\PaymentUtil;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -42,11 +43,9 @@ class OrderListener extends AbstractSaleListener
      */
     /*public function onInsert(ResourceEventInterface $event)
     {
-        //$sale = $this->getSaleFromEvent($event);
-
-        // TODO shipments state (move on content change event handler) ...
-
         parent::onInsert($event);
+
+        $sale = $this->getSaleFromEvent($event);
     }*/
 
     /**
@@ -54,9 +53,9 @@ class OrderListener extends AbstractSaleListener
      */
     /*public function onUpdate(ResourceEventInterface $event)
     {
-        //$sale = $this->getSaleFromEvent($event);
+        $sale = $this->getSaleFromEvent($event);
 
-        // TODO shipments state (move on content change event handler) ...
+        // TODO prevent customer change if completed
 
         parent::onUpdate($event);
     }*/
@@ -172,13 +171,13 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function scheduleAddressChangeEvent(SaleInterface $sale)
+    protected function scheduleContentChangeEvent(SaleInterface $sale)
     {
         if (!$sale instanceof OrderInterface) {
             throw new InvalidArgumentException("Expected instance of OrderInterface");
         }
 
-        $this->persistenceHelper->scheduleEvent(OrderEvents::ADDRESS_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $sale);
     }
 
     /**

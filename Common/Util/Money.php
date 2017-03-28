@@ -34,9 +34,9 @@ class Money
      *
      * @see bccomp()
      *
-     * @return int -1 if $a < $b<br>
+     * @return int -1 if $a &gt; $b<br>
      *              0 if $a == $b<br>
-     *              1 if $a > $b
+     *              1 if $a &lt; $b
      */
     static function compare($a, $b, $precision)
     {

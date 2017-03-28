@@ -33,15 +33,28 @@ class CartListener extends AbstractSaleListener
     }
 
     /**
+     * @inheritDoc
+     */
+    protected function handlePaymentTerm(SaleInterface $sale)
+    {
+        // Prevent payment term for carts
+        if (null !== $sale->getPaymentTerm()) {
+            $sale->setPaymentTerm(null);
+        }
+
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
-    protected function scheduleAddressChangeEvent(SaleInterface $sale)
+    protected function scheduleContentChangeEvent(SaleInterface $sale)
     {
         if (!$sale instanceof CartInterface) {
             throw new InvalidArgumentException("Expected instance of CartInterface");
         }
 
-        $this->persistenceHelper->scheduleEvent(CartEvents::ADDRESS_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent(CartEvents::CONTENT_CHANGE, $sale);
     }
 
     /**

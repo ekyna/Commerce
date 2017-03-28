@@ -4,10 +4,8 @@ namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Ekyna\Component\Commerce\Common\Model\IdentityTrait;
-use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
-use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Customer\Model as Model;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -16,9 +14,10 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Customer\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Customer implements CustomerInterface
+class Customer implements Model\CustomerInterface
 {
-    use IdentityTrait,
+    use Common\IdentityTrait,
+        Common\NumberSubjectTrait,
         PaymentTermSubjectTrait,
         TimestampableTrait;
 
@@ -48,29 +47,34 @@ class Customer implements CustomerInterface
     protected $mobile;
 
     /**
-     * @var CustomerInterface
+     * @var Model\CustomerInterface
      */
     protected $parent;
 
     /**
-     * @var ArrayCollection|CustomerInterface[]
+     * @var ArrayCollection|Model\CustomerInterface[]
      */
     protected $children;
 
     /**
-     * @var CustomerGroupInterface
+     * @var Model\CustomerGroupInterface
      */
     protected $customerGroup;
 
     /**
-     * @var ArrayCollection|CustomerAddressInterface[]
+     * @var ArrayCollection|Model\CustomerAddressInterface[]
      */
     protected $addresses;
 
     /**
      * @var float
      */
-    protected $creditLimit;
+    protected $outstandingLimit;
+
+    /**
+     * @var float
+     */
+    protected $outstandingBalance;
 
 
     /**
@@ -78,10 +82,13 @@ class Customer implements CustomerInterface
      */
     public function __construct()
     {
-        $this->creditLimit = 0;
+        $this->outstandingLimit = 0;
+        $this->outstandingBalance = 0;
 
         $this->children = new ArrayCollection();
         $this->addresses = new ArrayCollection();
+
+        $this->createdAt = new \DateTime();
     }
 
     /**
@@ -165,6 +172,7 @@ class Customer implements CustomerInterface
     public function setPhone($phone)
     {
         $this->phone = $phone;
+
         return $this;
     }
 
@@ -182,6 +190,7 @@ class Customer implements CustomerInterface
     public function setMobile($mobile)
     {
         $this->mobile = $mobile;
+
         return $this;
     }
 
@@ -194,7 +203,7 @@ class Customer implements CustomerInterface
     }
 
     /**
-     *  @inheritdoc
+     * @inheritdoc
      */
     public function getParent()
     {
@@ -202,9 +211,9 @@ class Customer implements CustomerInterface
     }
 
     /**
-     *  @inheritdoc
+     * @inheritdoc
      */
-    public function setParent(CustomerInterface $parent = null)
+    public function setParent(Model\CustomerInterface $parent = null)
     {
         if ($parent !== $this->parent) {
             if (null !== $this->parent) {
@@ -230,7 +239,7 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function hasChild(CustomerInterface $child)
+    public function hasChild(Model\CustomerInterface $child)
     {
         return $this->children->contains($child);
     }
@@ -238,7 +247,7 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function addChild(CustomerInterface $child)
+    public function addChild(Model\CustomerInterface $child)
     {
         if (!$this->hasChild($child)) {
             $this->children->add($child);
@@ -250,7 +259,7 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function removeChild(CustomerInterface $child)
+    public function removeChild(Model\CustomerInterface $child)
     {
         if ($this->hasChild($child)) {
             $this->children->removeElement($child);
@@ -278,7 +287,7 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setCustomerGroup(CustomerGroupInterface $customerGroup)
+    public function setCustomerGroup(Model\CustomerGroupInterface $customerGroup)
     {
         $this->customerGroup = $customerGroup;
 
@@ -296,7 +305,7 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function hasAddress(CustomerAddressInterface $address)
+    public function hasAddress(Model\CustomerAddressInterface $address)
     {
         return $this->addresses->contains($address);
     }
@@ -304,7 +313,7 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function addAddress(CustomerAddressInterface $address)
+    public function addAddress(Model\CustomerAddressInterface $address)
     {
         if (!$this->hasAddress($address)) {
             $address->setCustomer($this);
@@ -317,7 +326,7 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function removeAddress(CustomerAddressInterface $address)
+    public function removeAddress(Model\CustomerAddressInterface $address)
     {
         if ($this->hasAddress($address)) {
             $address->setCustomer(null);
@@ -368,17 +377,35 @@ class Customer implements CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getCreditLimit()
+    public function getOutstandingLimit()
     {
-        return $this->creditLimit;
+        return $this->outstandingLimit;
     }
 
     /**
      * @inheritdoc
      */
-    public function setCreditLimit($limit)
+    public function setOutstandingLimit($limit)
     {
-        $this->creditLimit = (float) $limit;
+        $this->outstandingLimit = (float)$limit;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutstandingBalance()
+    {
+        return $this->outstandingBalance;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOutstandingBalance($amount)
+    {
+        $this->outstandingBalance = $amount;
 
         return $this;
     }

@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleItemListener;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
@@ -93,9 +94,13 @@ class OrderItemListener extends AbstractSaleItemListener
 
         $item = $this->getSaleItemFromEvent($event);
 
+        if (null === $sale = $this->getSaleFromItem($item)) {
+            throw new RuntimeException('Failed to retrieve the sale.');
+        }
+
         // If order is in stockable state
         // TODO Or order was in stockable state (watch state change set) ?
-        if (OrderStates::isStockableState($item->getSale()->getState())) {
+        if (OrderStates::isStockableState($sale->getState())) {
             $this->stockAssigner->detachSaleItem($item);
         }
     }
@@ -192,6 +197,14 @@ class OrderItemListener extends AbstractSaleItemListener
 //            throw new IllegalOperationException(); // TODO reason message
 //        }
 //    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSalePropertyPath()
+    {
+        return 'order';
+    }
 
     /**
      * @inheritdoc

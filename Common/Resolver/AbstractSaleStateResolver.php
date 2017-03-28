@@ -66,4 +66,86 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
 
         return PaymentStates::STATE_NEW;
     }
+
+    /**
+     * Returns the outstanding state vars.
+     *
+     * @param Model\SaleInterface $sale         The sale
+     * @param string              $paymentState The resolved sale payment state
+     *
+     * @return Outstanding|null
+     */
+    protected function resolveOutstanding(Model\SaleInterface $sale, $paymentState)
+    {
+        // Not paid but with at least one payment
+        // TODO : check that those payments are manual ?
+        if (!PaymentStates::isPaidState($paymentState)) { // && $paymentState != PaymentStates::STATE_NEW
+            $date = $sale->getOutstandingDate();
+            $amount = $sale->getOutstandingAmount();
+
+            if (null !== $date && 0 < $amount) {
+                $expired = true;
+                $valid = false;
+
+                if ($date > new \DateTime()) {
+                    $expired = false;
+
+                    if ($sale->getGrandTotal() <= $sale->getPaidTotal() + $amount) {
+                        $valid = true;
+                    }
+                }
+
+                return new Outstanding($expired, $valid);
+            }
+        }
+
+        return null;
+    }
+}
+
+/**
+ * Class Outstanding
+ * @package Ekyna\Component\Commerce\Common\Resolver
+ * @author  Etienne Dauvergne <contact@ekyna.com>
+ */
+class Outstanding
+{
+    /**
+     * @var bool
+     */
+    private $expired = true;
+
+    /**
+     * @var bool
+     */
+    private $valid = false;
+
+
+    /**
+     * Constructor.
+     *
+     * @param bool $expired
+     * @param bool $valid
+     */
+    public function __construct($expired, $valid)
+    {
+        $this->expired = $expired;
+        $this->valid = $valid;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isExpired()
+    {
+        return $this->expired;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid()
+    {
+        return $this->valid;
+    }
 }

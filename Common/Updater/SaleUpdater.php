@@ -9,8 +9,11 @@ use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Util\AddressUtil;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Util\PaymentUtil;
 
 /**
  * Class SaleUpdater
@@ -40,6 +43,11 @@ class SaleUpdater implements SaleUpdaterInterface
     protected $weightCalculator;
 
     /**
+     * @var CustomerUpdaterInterface
+     */
+    protected $customerUpdater;
+
+    /**
      * @var SaleFactoryInterface
      */
     protected $saleFactory;
@@ -52,6 +60,7 @@ class SaleUpdater implements SaleUpdaterInterface
      * @param AdjustmentBuilderInterface $adjustmentBuilder
      * @param AmountsCalculatorInterface $amountCalculator
      * @param WeightCalculatorInterface  $weightCalculator
+     * @param CustomerUpdaterInterface $customerUpdater
      * @param SaleFactoryInterface       $saleFactory
      */
     public function __construct(
@@ -59,12 +68,14 @@ class SaleUpdater implements SaleUpdaterInterface
         AdjustmentBuilderInterface $adjustmentBuilder,
         AmountsCalculatorInterface $amountCalculator,
         WeightCalculatorInterface $weightCalculator,
+        CustomerUpdaterInterface $customerUpdater,
         SaleFactoryInterface $saleFactory
     ) {
         $this->addressBuilder = $addressBuilder;
         $this->adjustmentBuilder = $adjustmentBuilder;
         $this->amountCalculator = $amountCalculator;
         $this->weightCalculator = $weightCalculator;
+        $this->customerUpdater = $customerUpdater;
         $this->saleFactory = $saleFactory;
     }
 
@@ -73,16 +84,19 @@ class SaleUpdater implements SaleUpdaterInterface
      */
     public function recalculate(SaleInterface $sale, $force = false)
     {
-        // TODO
+        // TODO Test
         // 1. discounts
+        $changed = $this->updateDiscounts($sale);
         // 2. weight total
+        $changed |= $this->updateTotalWeight($sale);
         // 3. shipment amount (based on 2.)
+        //TODO$changed |= $this->updateTotalWeight($sale);
         // 4. taxation (items and shipment)
+        $changed |= $this->updateTaxation($sale);
         // 5. gross and gran totals
+        $changed |= $this->updateTotals($sale);
 
-        $changed = $this->updateTaxation($sale);
-
-        return $this->updateTotals($sale) || $changed;
+        return $changed;
     }
 
     /**
@@ -149,6 +163,64 @@ class SaleUpdater implements SaleUpdaterInterface
         }
 
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearOutstanding(SaleInterface $sale, CustomerInterface $customer = null)
+    {
+        if (0 < $amount = $sale->getOutstandingAmount()) {
+            if (!$customer && null === $customer = $sale->getCustomer()) {
+                throw new RuntimeException("Customer must be set.");
+            }
+
+            // Restore customer outstanding amount
+            $this->customerUpdater->updateOutstandingBalance($customer, -$sale->getOutstandingAmount(), true);
+            $sale
+                ->setPaymentTerm(null)
+                ->setOutstandingDate(null)
+                ->setOutstandingAmount(0);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateOutstanding(SaleInterface $sale)
+    {
+        if (null === $term = $sale->getPaymentTerm()) {
+            return $this->clearOutstanding($sale);
+        }
+
+        if (null === $customer = $sale->getCustomer()) {
+            throw new RuntimeException("Customer must be set.");
+        }
+
+        $changed = false;
+
+        // Outstanding date
+        $date = PaymentUtil::calculateOutstandingDate($term, $sale->getCreatedAt());
+        if ($date !== $sale->getOutstandingDate()) {
+            $sale->setOutstandingDate($date);
+            $changed = true;
+        }
+
+        // Use customer outstanding amount
+        $oldAmount = $sale->getOutstandingAmount();
+        $newAmount = $sale->getGrandTotal() - $sale->getPaidTotal();
+        if ($newAmount != $oldAmount) {
+            $delta = $this->customerUpdater->updateOutstandingBalance($customer, $newAmount - $oldAmount, true);
+
+            $sale->setOutstandingAmount($oldAmount + $delta);
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     /**

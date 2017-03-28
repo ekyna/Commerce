@@ -27,6 +27,14 @@ class QuoteItemListener extends AbstractSaleItemListener
     /**
      * @inheritdoc
      */
+    protected function getSalePropertyPath()
+    {
+        return 'quote';
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function getSaleItemFromEvent(ResourceEventInterface $event)
     {
         $item = $event->getResource();
