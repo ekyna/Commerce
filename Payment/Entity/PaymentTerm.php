@@ -39,7 +39,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     /**
      * Returns the string representation.
      *
-     * @string
+     * @return string
      */
     public function __toString()
     {
