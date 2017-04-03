@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
 /**
  * Interface SaleRepositoryInterface
@@ -28,4 +29,23 @@ interface SaleRepositoryInterface
      * @return SaleInterface|null
      */
     public function findOneByKey($key);
+
+    /**
+     * Finds the sales by customer.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return array|SaleInterface[]
+     */
+    public function findByCustomer(CustomerInterface $customer);
+
+    /**
+     * Finds the sale by customer and number.
+     *
+     * @param CustomerInterface $customer
+     * @param string            $number
+     *
+     * @return SaleInterface|null
+     */
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number);
 }

@@ -398,6 +398,13 @@ interface SaleInterface extends
     public function removeAttachment(SaleAttachmentInterface $attachment);
 
     /**
+     * Returns the customer attachments.
+     *
+     * @return Collection|SaleAttachmentInterface[]
+     */
+    public function getCustomerAttachments();
+
+    /**
      * Returns the attachments.
      *
      * @return Collection|SaleAttachmentInterface[]

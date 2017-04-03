@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
 /**
@@ -24,7 +25,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
             ->andWhere($qb->expr()->eq('o.id', ':id'))
             ->getQuery()
             ->useQueryCache(true)
-            ->setParameter('id' , $id)
+            ->setParameter('id', $id)
             ->getOneOrNullResult();
 
         if (null !== $sale) {
@@ -47,7 +48,48 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
             ->andWhere($qb->expr()->eq('o.key', ':key'))
             ->getQuery()
             ->useQueryCache(true)
-            ->setParameter('key' , $key)
+            ->setParameter('key', $key)
+            ->getOneOrNullResult();
+
+        if (null !== $sale) {
+            $this
+                ->loadLines($sale)
+                ->loadPayments($sale);
+        }
+
+        return $sale;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findByCustomer(CustomerInterface $customer)
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->addOrderBy('o.createdAt', 'DESC')
+            ->getQuery()
+            ->setParameter('customer', $customer)
+            ->getResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number)
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        $sale = $qb
+            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->andWhere($qb->expr()->eq('o.number', ':number'))
+            ->getQuery()
+            ->setParameters([
+                'customer' => $customer,
+                'number'   => $number,
+            ])
             ->getOneOrNullResult();
 
         if (null !== $sale) {
@@ -80,12 +122,12 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
                 'shipment_method',
                 'currency'
             )
-            ->leftJoin($alias.'.customer', 'customer')
-            ->leftJoin($alias.'.customerGroup', 'customer_group')
-            ->leftJoin($alias.'.invoiceAddress', 'invoice_address')
-            ->leftJoin($alias.'.deliveryAddress', 'delivery_address')
-            ->leftJoin($alias.'.preferredShipmentMethod', 'shipment_method')
-            ->leftJoin($alias.'.currency', 'currency')
+            ->leftJoin($alias . '.customer', 'customer')
+            ->leftJoin($alias . '.customerGroup', 'customer_group')
+            ->leftJoin($alias . '.invoiceAddress', 'invoice_address')
+            ->leftJoin($alias . '.deliveryAddress', 'delivery_address')
+            ->leftJoin($alias . '.preferredShipmentMethod', 'shipment_method')
+            ->leftJoin($alias . '.currency', 'currency')
             ->setMaxResults(1);
     }
 
