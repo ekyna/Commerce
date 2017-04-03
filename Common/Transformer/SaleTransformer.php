@@ -47,7 +47,7 @@ class SaleTransformer implements SaleTransformerInterface
             'email', 'company', 'gender', 'firstName', 'lastName',
             'sameAddress', 'preferredShipmentMethod', 'shipmentAmount',
             'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingAmount',
-            'voucherNumber', 'description',
+            'voucherNumber', 'description', 'comment',
         ]);
 
         // Invoice address

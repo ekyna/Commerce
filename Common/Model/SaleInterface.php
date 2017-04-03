@@ -364,6 +364,22 @@ interface SaleInterface extends
     public function setDescription($description);
 
     /**
+     * Returns the comment.
+     *
+     * @return string
+     */
+    public function getComment();
+
+    /**
+     * Sets the comment.
+     *
+     * @param string $comment
+     *
+     * @return $this|SaleInterface
+     */
+    public function setComment($comment);
+
+    /**
      * Returns whether the order has attachments or not.
      *
      * @return bool

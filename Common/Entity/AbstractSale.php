@@ -139,6 +139,11 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     protected $description;
 
     /**
+     * @var string
+     */
+    protected $comment;
+
+    /**
      * @var ArrayCollection|Common\SaleAttachmentInterface[]
      */
     protected $attachments;
@@ -545,6 +550,24 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     public function setDescription($description)
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setComment($comment)
+    {
+        $this->comment = $comment;
 
         return $this;
     }

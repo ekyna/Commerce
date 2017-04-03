@@ -37,6 +37,7 @@
         <field name="voucherNumber" column="voucher_number" type="string" length="16" nullable="true"/>
         <field name="originNumber" column="origin_number" type="string" length="16" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
+        <field name="comment" column="comment" type="text" nullable="true"/>
 
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
