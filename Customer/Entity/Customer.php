@@ -76,6 +76,11 @@ class Customer implements Model\CustomerInterface
      */
     protected $outstandingBalance;
 
+    /**
+     * @var string
+     */
+    protected $description;
+
 
     /**
      * Constructor.
@@ -406,6 +411,24 @@ class Customer implements Model\CustomerInterface
     public function setOutstandingBalance($amount)
     {
         $this->outstandingBalance = $amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
 
         return $this;
     }

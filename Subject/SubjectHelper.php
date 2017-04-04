@@ -34,6 +34,10 @@ class SubjectHelper implements SubjectHelperInterface
      */
     public function resolve(SubjectRelativeInterface $relative, $throw = true)
     {
+        if (!$relative->getSubjectIdentity()->hasIdentity()) {
+            return null;
+        }
+
         try {
             return $this->getProvider($relative)->resolve($relative);
         } catch (SubjectException $e) {

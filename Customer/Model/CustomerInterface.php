@@ -242,4 +242,20 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function setOutstandingBalance($amount);
+
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setDescription($description);
 }

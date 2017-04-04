@@ -322,10 +322,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return null;
         }
 
-        if (!$item instanceof StockAssignmentsInterface) {
-            return null;
-        }
-
         return $item->getStockAssignments()->toArray();
     }
 

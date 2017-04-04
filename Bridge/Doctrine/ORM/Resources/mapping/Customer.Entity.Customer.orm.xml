@@ -34,6 +34,8 @@
         <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="3"/>
         <field name="outstandingBalance" column="outstanding_balance" type="decimal" precision="12" scale="3"/>
 
+        <field name="description" column="description" type="text" nullable="true"/>
+
         <field name="createdAt" column="created_at" type="datetime" />
         <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
 
