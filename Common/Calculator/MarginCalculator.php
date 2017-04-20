@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 use Ekyna\Component\Commerce\Common\Model\Margin;
@@ -28,79 +31,23 @@ use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
  */
 class MarginCalculator implements MarginCalculatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $currency;
-
-    /**
-     * @var bool
-     */
-    protected $profit;
-
-    /**
-     * @var StatFilter
-     */
-    protected $filter;
-
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $calculatorFactory;
-
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    protected $invoiceCalculator;
-
-    /**
-     * @var WeightCalculatorInterface
-     */
-    protected $weightCalculator;
-
-    /**
-     * @var ShipmentPriceResolverInterface
-     */
-    protected $shipmentPriceResolver;
-
-    /**
-     * @var ShipmentAddressResolverInterface
-     */
-    protected $shipmentAddressResolver;
-
-    /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var PurchaseCostGuesserInterface
-     */
-    protected $purchaseCostGuesser;
-
-    /**
-     * @var AmountCalculatorInterface
-     */
-    protected $amountCalculator;
-
-    /**
-     * @var Margin[]
-     */
-    private $cache;
+    protected string                            $currency;
+    protected bool                              $profit;
+    protected ?StatFilter                       $filter;
+    protected AmountCalculatorFactory           $calculatorFactory;
+    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    protected WeightCalculatorInterface         $weightCalculator;
+    protected ShipmentPriceResolverInterface    $shipmentPriceResolver;
+    protected ShipmentAddressResolverInterface  $shipmentAddressResolver;
+    protected SubjectHelperInterface            $subjectHelper;
+    protected CurrencyConverterInterface        $currencyConverter;
+    protected PurchaseCostGuesserInterface      $purchaseCostGuesser;
+    protected ?AmountCalculatorInterface        $amountCalculator = null;
+    /** @var Margin[] */
+    private array $cache;
 
 
     /**
-     * Constructor.
-     *
-     * @param string          $currency
-     * @param bool            $profit
-     * @param StatFilter|null $filter
-     *
      * @internal Use Calculator factory
      */
     public function __construct(string $currency, bool $profit, StatFilter $filter = null)
@@ -111,89 +58,46 @@ class MarginCalculator implements MarginCalculatorInterface
         $this->cache = [];
     }
 
-    /**
-     * Sets the amount calculator factory.
-     *
-     * @param AmountCalculatorFactory $calculatorFactory
-     */
     public function setCalculatorFactory(AmountCalculatorFactory $calculatorFactory): void
     {
         $this->calculatorFactory = $calculatorFactory;
     }
 
-    /**
-     * Sets the invoice calculator.
-     *
-     * @param InvoiceSubjectCalculatorInterface $invoiceCalculator
-     */
     public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $invoiceCalculator): void
     {
         $this->invoiceCalculator = $invoiceCalculator;
     }
 
-    /**
-     * Sets the weight calculator.
-     *
-     * @param WeightCalculatorInterface $weightCalculator
-     */
     public function setWeightCalculator(WeightCalculatorInterface $weightCalculator): void
     {
         $this->weightCalculator = $weightCalculator;
     }
 
-    /**
-     * Sets the shipment price resolver.
-     *
-     * @param ShipmentPriceResolverInterface $shipmentPriceResolver
-     */
     public function setShipmentPriceResolver(ShipmentPriceResolverInterface $shipmentPriceResolver): void
     {
         $this->shipmentPriceResolver = $shipmentPriceResolver;
     }
 
-    /**
-     * Sets the shipment address resolver.
-     *
-     * @param ShipmentAddressResolverInterface $shipmentAddressResolver
-     */
     public function setShipmentAddressResolver(ShipmentAddressResolverInterface $shipmentAddressResolver): void
     {
         $this->shipmentAddressResolver = $shipmentAddressResolver;
     }
 
-    /**
-     * Sets the subject helper.
-     *
-     * @param SubjectHelperInterface $subjectHelper
-     */
     public function setSubjectHelper(SubjectHelperInterface $subjectHelper): void
     {
         $this->subjectHelper = $subjectHelper;
     }
 
-    /**
-     * Sets the currency converter.
-     *
-     * @param CurrencyConverterInterface $currencyConverter
-     */
     public function setCurrencyConverter(CurrencyConverterInterface $currencyConverter): void
     {
         $this->currencyConverter = $currencyConverter;
     }
 
-    /**
-     * Sets the purchase cost guesser.
-     *
-     * @param PurchaseCostGuesserInterface $purchaseCostGuesser
-     */
     public function setPurchaseCostGuesser(PurchaseCostGuesserInterface $purchaseCostGuesser): void
     {
         $this->purchaseCostGuesser = $purchaseCostGuesser;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function calculateSale(Sale $sale): ?Margin
     {
         $key = spl_object_hash($sale);
@@ -228,7 +132,7 @@ class MarginCalculator implements MarginCalculatorInterface
 
         foreach ($sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
             $result = $this->getAmountCalculator()->calculateSaleDiscount($adjustment);
-            $margin->addSellingPrice(-$result->getBase());
+            $margin->addSellingPrice($result->getBase()->negate());
         }
 
         if ($result = $this->calculateSaleShipment($sale)) {
@@ -238,9 +142,6 @@ class MarginCalculator implements MarginCalculatorInterface
         return $margin;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function calculateSaleItem(Item $item): ?Margin
     {
         $key = spl_object_hash($item);
@@ -254,14 +155,14 @@ class MarginCalculator implements MarginCalculatorInterface
         if (!$item->isCompound()) {
             if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
                 foreach ($item->getStockAssignments() as $assignment) {
-                    if (null !== $cost = $this->getAssignmentCost($assignment)) {
-                        $margin->addPurchaseCost($cost * $assignment->getSoldQuantity());
+                    if ($cost = $this->getAssignmentCost($assignment)) {
+                        $margin->addPurchaseCost($cost->mul($assignment->getSoldQuantity()));
 
                         continue;
                     }
 
-                    if (null !== $cost = $this->getPurchaseCost($item)) {
-                        $margin->addPurchaseCost($cost * $assignment->getSoldQuantity());
+                    if ($cost = $this->getPurchaseCost($item)) {
+                        $margin->addPurchaseCost($cost->mul($assignment->getSoldQuantity()));
                     }
 
                     $margin->setAverage(true);
@@ -274,11 +175,12 @@ class MarginCalculator implements MarginCalculatorInterface
                     $sold = $item->getTotalQuantity();
                 }
 
-                if (null !== $cost = $this->getPurchaseCost($item)) {
+                if ($cost = $this->getPurchaseCost($item)) {
                     $margin
-                        ->addPurchaseCost($cost * $sold)
-                        ->setAverage(true);
+                        ->addPurchaseCost($sold->mul($cost));
                 }
+
+                $margin->setAverage(true);
             }
         }
 
@@ -290,9 +192,9 @@ class MarginCalculator implements MarginCalculatorInterface
                 continue;
             }
 
-            if (null !== $result = $this->calculateSaleItem($child)) {
+            if ($result = $this->calculateSaleItem($child)) {
                 if ($child->isPrivate()) {
-                    if (1 === bccomp($cost = $result->getPurchaseCost(), 0, 5)) {
+                    if (0 < $cost = $result->getPurchaseCost()) {
                         $margin->addPurchaseCost($cost);
                     }
                     if ($result->isAverage()) {
@@ -307,9 +209,6 @@ class MarginCalculator implements MarginCalculatorInterface
         return $margin;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function calculateSaleShipment(Sale $sale): ?Margin
     {
         if (!$this->profit) {
@@ -324,10 +223,10 @@ class MarginCalculator implements MarginCalculatorInterface
         if ($sale instanceof InvoiceSubjectInterface) {
             $sold = $this->invoiceCalculator->calculateSoldQuantity($sale);
         } else {
-            $sold = 1;
+            $sold = new Decimal(1);
         }
 
-        $price = 0;
+        $price = new Decimal(0);
         if (0 < $sold) {
             $price = $this
                 ->currencyConverter
@@ -336,7 +235,7 @@ class MarginCalculator implements MarginCalculatorInterface
 
         $base = $this->currencyConverter->getDefaultCurrency();
 
-        $margin = new Margin($this->currency, 0., $price);
+        $margin = new Margin($this->currency, new Decimal(0), $price);
         $this->set($key, $margin);
 
         if ($sale instanceof ShipmentSubjectInterface && 0 < $sale->getShipments()->count()) {
@@ -397,11 +296,6 @@ class MarginCalculator implements MarginCalculatorInterface
         return $margin;
     }
 
-    /**
-     * Returns the amount calculator.
-     *
-     * @return AmountCalculatorInterface
-     */
     protected function getAmountCalculator(): AmountCalculatorInterface
     {
         if ($this->amountCalculator) {
@@ -413,12 +307,8 @@ class MarginCalculator implements MarginCalculatorInterface
 
     /**
      * Returns the stock assignment purchase cost.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return float|null
      */
-    protected function getAssignmentCost(StockAssignmentInterface $assignment): ?float
+    protected function getAssignmentCost(StockAssignmentInterface $assignment): ?Decimal
     {
         $unit = $assignment->getStockUnit();
 
@@ -438,10 +328,6 @@ class MarginCalculator implements MarginCalculatorInterface
 
     /**
      * Returns whether the given item should be skipped regarding to the configured filter.
-     *
-     * @param Item $item
-     *
-     * @return bool
      */
     protected function isItemSkipped(Item $item): bool
     {
@@ -458,18 +344,14 @@ class MarginCalculator implements MarginCalculatorInterface
 
     /**
      * Returns the sale item purchase cost.
-     *
-     * @param Item $item
-     *
-     * @return float|null
      */
-    protected function getPurchaseCost(Item $item): ?float
+    protected function getPurchaseCost(Item $item): ?Decimal
     {
         if (null === $subject = $this->subjectHelper->resolve($item)) {
             return null;
         }
 
-        if (null !== $cost = $this->purchaseCostGuesser->guess($subject, $this->currency, $this->profit)) {
+        if ($cost = $this->purchaseCostGuesser->guess($subject, $this->currency, $this->profit)) {
             return $cost;
         }
 
@@ -478,10 +360,6 @@ class MarginCalculator implements MarginCalculatorInterface
 
     /**
      * Returns the cached margin if any.
-     *
-     * @param string $key
-     *
-     * @return Margin|null
      */
     protected function get(string $key): ?Margin
     {
@@ -494,9 +372,6 @@ class MarginCalculator implements MarginCalculatorInterface
 
     /**
      * Sets the cached margin.
-     *
-     * @param string $key
-     * @param Margin $amount
      */
     protected function set(string $key, Margin $amount): void
     {

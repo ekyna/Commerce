@@ -1,8 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce;
 
 use Ekyna\Component\Commerce\Exception\LogicException;
+
+use function array_replace_recursive;
+use function array_shift;
+use function count;
+use function explode;
 
 /**
  * Class Features
@@ -77,10 +84,7 @@ class Features
         ],
     ];
 
-    /**
-     * @var array
-     */
-    private $config;
+    private array $config;
 
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
@@ -18,59 +20,16 @@ use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
  */
 class MarginCalculatorFactory
 {
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $calculatorFactory;
-
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    protected $invoiceCalculator;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
-
-    /**
-     * @var PurchaseCostGuesserInterface
-     */
-    protected $purchaseCostGuesser;
-
-    /**
-     * @var ShipmentAddressResolverInterface
-     */
-    protected $shipmentAddressResolver;
-
-    /**
-     * @var WeightCalculatorInterface
-     */
-    protected $weightCalculator;
-
-    /**
-     * @var ShipmentPriceResolverInterface
-     */
-    protected $shipmentPriceResolver;
+    protected AmountCalculatorFactory           $calculatorFactory;
+    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    protected CurrencyConverterInterface        $currencyConverter;
+    protected SubjectHelperInterface            $subjectHelper;
+    protected PurchaseCostGuesserInterface      $purchaseCostGuesser;
+    protected ShipmentAddressResolverInterface  $shipmentAddressResolver;
+    protected WeightCalculatorInterface         $weightCalculator;
+    protected ShipmentPriceResolverInterface    $shipmentPriceResolver;
 
 
-    /**
-     * Constructor.
-     *
-     * @param AmountCalculatorFactory           $calculatorFactory
-     * @param InvoiceSubjectCalculatorInterface $invoiceCalculator
-     * @param CurrencyConverterInterface        $currencyConverter
-     * @param SubjectHelperInterface            $subjectHelper
-     * @param PurchaseCostGuesserInterface      $purchaseCostGuesser
-     * @param ShipmentAddressResolverInterface  $shipmentAddressResolver
-     * @param WeightCalculatorInterface         $weightCalculator
-     * @param ShipmentPriceResolverInterface    $shipmentPriceResolver
-     */
     public function __construct(
         AmountCalculatorFactory $calculatorFactory,
         InvoiceSubjectCalculatorInterface $invoiceCalculator,
@@ -94,12 +53,10 @@ class MarginCalculatorFactory
     /**
      * Returns a new margin calculator.
      *
-     * @param string          $currency The currency
+     * @param string|null     $currency The currency
      * @param bool            $profit   Whether to calculate profit margin (taking transport in account)
      *                                  or commercial margin.
      * @param StatFilter|null $filter   The item filter
-     *
-     * @return MarginCalculatorInterface
      */
     public function create(
         string $currency = null,

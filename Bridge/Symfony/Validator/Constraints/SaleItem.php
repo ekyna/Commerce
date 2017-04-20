@@ -19,7 +19,7 @@ class SaleItem extends Constraint
 
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTargets()
     {

@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
 use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model\CurrencySubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Exception\LogicException;
@@ -22,123 +27,51 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
 {
     use StateSubjectTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int                        $id                = null;
+    protected ?Model\WarehouseInterface   $warehouse         = null;
+    protected ?SupplierOrderItemInterface $supplierOrderItem = null;
+    protected array                       $geocodes          = [];
+    /** The estimated date of arrival (for ordered quantity). */
+    protected ?DateTimeInterface $estimatedDateOfArrival = null;
 
-    /**
-     * @var Model\WarehouseInterface
-     */
-    protected $warehouse;
+    /** (default currency) */
+    protected Decimal $netPrice;
+    /** (default currency) */
+    protected Decimal $shippingPrice;
 
-    /**
-     * @var SupplierOrderItemInterface
-     */
-    protected $supplierOrderItem;
+    /** The quantity ordered to supplier. */
+    protected Decimal $orderedQuantity;
+    /** The quantity received by supplier. */
+    protected Decimal $receivedQuantity;
+    /** The quantity adjusted by administrators. */
+    protected Decimal $adjustedQuantity;
+    /** The quantity sold from sales. */
+    protected Decimal $soldQuantity;
+    /** The quantity shipped through sales. */
+    protected Decimal $shippedQuantity;
+    /** The quantity locked through preparations. */
+    protected Decimal $lockedQuantity;
 
-    /**
-     * @var array
-     */
-    protected $geocodes;
+    protected DateTimeInterface  $createdAt;
+    protected ?DateTimeInterface $closedAt = null;
 
-    /**
-     * The estimated date of arrival (for ordered quantity).
-     *
-     * @var DateTime
-     */
-    protected $estimatedDateOfArrival;
-
-    /**
-     *  (default currency)
-     * @var float
-     */
-    protected $netPrice;
-
-    /**
-     *  (default currency)
-     * @var float
-     */
-    protected $shippingPrice;
-
-    /**
-     * The quantity ordered to supplier.
-     *
-     * @var float
-     */
-    protected $orderedQuantity;
-
-    /**
-     * The quantity received by supplier.
-     *
-     * @var float
-     */
-    protected $receivedQuantity;
-
-    /**
-     * The quantity adjusted by administrators.
-     *
-     * @var float
-     */
-    protected $adjustedQuantity;
-
-    /**
-     * The quantity sold from sales.
-     *
-     * @var float
-     */
-    protected $soldQuantity;
-
-    /**
-     * The quantity shipped through sales.
-     *
-     * @var float
-     */
-    protected $shippedQuantity;
-
-    /**
-     * The quantity locked through preparations.
-     *
-     * @var float
-     */
-    protected $lockedQuantity;
-
-    /**
-     * @var DateTime
-     */
-    protected $createdAt;
-
-    /**
-     * @var DateTime
-     */
-    protected $closedAt;
-
-    /**
-     * @var ArrayCollection|Model\StockAssignmentInterface[]
-     */
+    /** @var Collection|Model\StockAssignmentInterface[] */
     protected $stockAssignments;
-
-    /**
-     * @var ArrayCollection|Model\StockAdjustmentInterface[]
-     */
+    /** @var Collection|Model\StockAdjustmentInterface[] */
     protected $stockAdjustments;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->state = Model\StockUnitStates::STATE_NEW;
-        $this->geocodes = [];
-        $this->netPrice = 0.;
-        $this->shippingPrice = 0.;
-        $this->orderedQuantity = 0.;
-        $this->receivedQuantity = 0.;
-        $this->adjustedQuantity = 0.;
-        $this->soldQuantity = 0.;
-        $this->shippedQuantity = 0.;
-        $this->lockedQuantity = 0.;
+        $this->netPrice = new Decimal(0);
+        $this->shippingPrice = new Decimal(0);
+        $this->orderedQuantity = new Decimal(0);
+        $this->receivedQuantity = new Decimal(0);
+        $this->adjustedQuantity = new Decimal(0);
+        $this->soldQuantity = new Decimal(0);
+        $this->shippedQuantity = new Decimal(0);
+        $this->lockedQuantity = new Decimal(0);
         $this->createdAt = new DateTime();
         $this->stockAssignments = new ArrayCollection();
         $this->stockAdjustments = new ArrayCollection();
@@ -146,8 +79,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
@@ -160,70 +91,51 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return 'New stock unit';
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getWarehouse(): ?Model\WarehouseInterface
     {
         return $this->warehouse;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setWarehouse(Model\WarehouseInterface $warehouse = null): Model\StockUnitInterface
+    public function setWarehouse(?Model\WarehouseInterface $warehouse): Model\StockUnitInterface
     {
         $this->warehouse = $warehouse;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSupplierOrderItem(): ?SupplierOrderItemInterface
     {
         return $this->supplierOrderItem;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null): Model\StockUnitInterface
+    public function setSupplierOrderItem(?SupplierOrderItemInterface $item): Model\StockUnitInterface
     {
-        if ($item !== $this->supplierOrderItem) {
-            if ($previous = $this->supplierOrderItem) {
-                $this->supplierOrderItem = null;
-                $previous->setStockUnit(null);
-            }
+        if ($item === $this->supplierOrderItem) {
+            return $this;
+        }
 
-            if ($this->supplierOrderItem = $item) {
-                $this->supplierOrderItem->setStockUnit($this);
-            }
+        if ($previous = $this->supplierOrderItem) {
+            $this->supplierOrderItem = null;
+            $previous->setStockUnit(null);
+        }
+
+        if ($this->supplierOrderItem = $item) {
+            $this->supplierOrderItem->setStockUnit($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getGeocodes(): array
     {
         return $this->geocodes;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function hasGeocode(string $geocode): bool
     {
         $geocode = strtoupper($geocode);
@@ -231,329 +143,243 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return in_array($geocode, $this->geocodes, true);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function addGeocode(string $geocode): Model\StockUnitInterface
     {
         $geocode = strtoupper($geocode);
 
-        if (!in_array($geocode, $this->geocodes, true)) {
-            $this->geocodes[] = $geocode;
+        if (in_array($geocode, $this->geocodes, true)) {
+            return $this;
         }
+
+        $this->geocodes[] = $geocode;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function removeGeocode(string $geocode): Model\StockUnitInterface
     {
         $geocode = strtoupper($geocode);
 
-        if (false !== $index = array_search($geocode, $this->geocodes, true)) {
-            unset($this->geocodes[$index]);
+        if (false === $index = array_search($geocode, $this->geocodes, true)) {
+            return $this;
+        }
+
+        unset($this->geocodes[$index]);
+
+        return $this;
+    }
+
+    public function setGeocodes(array $codes): Model\StockUnitInterface
+    {
+        $this->geocodes = [];
+
+        foreach ($codes as $code) {
+            $this->addGeocode($code);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setGeocodes(array $codes): Model\StockUnitInterface
-    {
-        $this->geocodes = $codes;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getEstimatedDateOfArrival(): ?DateTime
+    public function getEstimatedDateOfArrival(): ?DateTimeInterface
     {
         return $this->estimatedDateOfArrival;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setEstimatedDateOfArrival(DateTime $date = null): Model\StockUnitInterface
+    public function setEstimatedDateOfArrival(?DateTimeInterface $date): Model\StockUnitInterface
     {
         $this->estimatedDateOfArrival = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getNetPrice(): float
+    public function getNetPrice(): Decimal
     {
         return $this->netPrice;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setNetPrice(float $price): Model\StockUnitInterface
+    public function setNetPrice(Decimal $price): Model\StockUnitInterface
     {
         $this->netPrice = $price;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getShippingPrice(): float
+    public function getShippingPrice(): Decimal
     {
         return $this->shippingPrice;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setShippingPrice(float $price): Model\StockUnitInterface
+    public function setShippingPrice(Decimal $price): Model\StockUnitInterface
     {
         $this->shippingPrice = $price;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getOrderedQuantity(): float
+    public function getOrderedQuantity(): Decimal
     {
         return $this->orderedQuantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setOrderedQuantity(float $quantity): Model\StockUnitInterface
+    public function setOrderedQuantity(Decimal $quantity): Model\StockUnitInterface
     {
         $this->orderedQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getReceivedQuantity(): float
+    public function getReceivedQuantity(): Decimal
     {
         return $this->receivedQuantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setReceivedQuantity(float $quantity): Model\StockUnitInterface
+    public function setReceivedQuantity(Decimal $quantity): Model\StockUnitInterface
     {
         $this->receivedQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getAdjustedQuantity(): float
+    public function getAdjustedQuantity(): Decimal
     {
         return $this->adjustedQuantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setAdjustedQuantity(float $quantity): Model\StockUnitInterface
+    public function setAdjustedQuantity(Decimal $quantity): Model\StockUnitInterface
     {
         $this->adjustedQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSoldQuantity(): float
+    public function getSoldQuantity(): Decimal
     {
         return $this->soldQuantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setSoldQuantity(float $quantity): Model\StockUnitInterface
+    public function setSoldQuantity(Decimal $quantity): Model\StockUnitInterface
     {
         $this->soldQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getShippedQuantity(): float
+    public function getShippedQuantity(): Decimal
     {
         return $this->shippedQuantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setShippedQuantity(float $quantity): Model\StockUnitInterface
+    public function setShippedQuantity(Decimal $quantity): Model\StockUnitInterface
     {
         $this->shippedQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getLockedQuantity(): float
+    public function getLockedQuantity(): Decimal
     {
         return $this->lockedQuantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setLockedQuantity(float $quantity): Model\StockUnitInterface
+    public function setLockedQuantity(Decimal $quantity): Model\StockUnitInterface
     {
         $this->lockedQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCreatedAt(): DateTime
+    public function getCreatedAt(): DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setCreatedAt(DateTime $date): Model\StockUnitInterface
+    public function setCreatedAt(DateTimeInterface $date): Model\StockUnitInterface
     {
         $this->createdAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getClosedAt(): ?DateTime
+    public function getClosedAt(): ?DateTimeInterface
     {
         return $this->closedAt;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setClosedAt(DateTime $date = null): Model\StockUnitInterface
+    public function setClosedAt(?DateTimeInterface $date): Model\StockUnitInterface
     {
         $this->closedAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function hasStockAssignment(Model\StockAssignmentInterface $assignment): bool
     {
         return $this->stockAssignments->contains($assignment);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function addStockAssignment(Model\StockAssignmentInterface $assignment): Model\StockUnitInterface
     {
-        if (!$this->hasStockAssignment($assignment)) {
-            $this->stockAssignments->add($assignment);
-            $assignment->setStockUnit($this);
+        if ($this->hasStockAssignment($assignment)) {
+            return $this;
         }
+
+        $this->stockAssignments->add($assignment);
+        $assignment->setStockUnit($this);
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function removeStockAssignment(Model\StockAssignmentInterface $assignment): Model\StockUnitInterface
     {
-        if ($this->hasStockAssignment($assignment)) {
-            $this->stockAssignments->removeElement($assignment);
-            $assignment->setStockUnit(null);
+        if (!$this->hasStockAssignment($assignment)) {
+            return $this;
         }
+
+        $this->stockAssignments->removeElement($assignment);
+        $assignment->setStockUnit(null);
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getStockAssignments(): Collection
     {
         return $this->stockAssignments;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function hasStockAdjustment(Model\StockAdjustmentInterface $adjustment): bool
     {
         return $this->stockAdjustments->contains($adjustment);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function addStockAdjustment(Model\StockAdjustmentInterface $adjustment): Model\StockUnitInterface
     {
-        if (!$this->hasStockAdjustment($adjustment)) {
-            $this->stockAdjustments->add($adjustment);
-            $adjustment->setStockUnit($this);
+        if ($this->hasStockAdjustment($adjustment)) {
+            return $this;
         }
+
+        $this->stockAdjustments->add($adjustment);
+        $adjustment->setStockUnit($this);
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function removeStockAdjustment(Model\StockAdjustmentInterface $adjustment): Model\StockUnitInterface
     {
-        if ($this->hasStockAdjustment($adjustment)) {
-            $this->stockAdjustments->removeElement($adjustment);
-            $adjustment->setStockUnit(null);
+        if (!$this->hasStockAdjustment($adjustment)) {
+            return $this;
         }
+
+        $this->stockAdjustments->removeElement($adjustment);
+        $adjustment->setStockUnit(null);
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getStockAdjustments(): Collection
     {
         return $this->stockAdjustments;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function isEmpty(): bool
     {
         return null === $this->supplierOrderItem
@@ -563,45 +389,31 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
             && 0 == $this->soldQuantity;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function isClosed(): bool
     {
         return $this->state === Model\StockUnitStates::STATE_CLOSED;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getReservableQuantity(): float
+    public function getReservableQuantity(): Decimal
     {
         if (0 == $this->orderedQuantity + $this->adjustedQuantity) {
             return INF;
         }
 
-        return max($this->orderedQuantity + $this->adjustedQuantity - $this->soldQuantity, 0);
+        return max($this->orderedQuantity + $this->adjustedQuantity - $this->soldQuantity, new Decimal(0));
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getReleasableQuantity(): float
+    public function getReleasableQuantity(): Decimal
     {
-        return max($this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity, 0);
+        return max($this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity, new Decimal(0));
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getShippableQuantity(): float
+    public function getShippableQuantity(): Decimal
     {
-        return max($this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity - $this->lockedQuantity, 0);
+        return max($this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity
+            - $this->lockedQuantity, new Decimal(0));
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSupplierOrder(): ?SupplierOrderInterface
     {
         if ($this->supplierOrderItem) {
@@ -611,9 +423,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrency(): ?CurrencyInterface
     {
         if ($this->supplierOrderItem) {
@@ -623,10 +432,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getExchangeRate(): ?float
+    public function getExchangeRate(): ?Decimal
     {
         if ($this->supplierOrderItem) {
             return $this->supplierOrderItem->getOrder()->getExchangeRate();
@@ -635,10 +441,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getExchangeDate(): ?DateTime
+    public function getExchangeDate(): ?DateTimeInterface
     {
         if ($this->supplierOrderItem) {
             return $this->supplierOrderItem->getOrder()->getExchangeDate();
@@ -647,36 +450,24 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getBaseCurrency(): ?string
     {
         // Stock unit price are in default currency
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setCurrency(CurrencyInterface $currency)
+    public function setCurrency(?CurrencyInterface $currency): CurrencySubjectInterface
     {
-        throw new LogicException("Set currency on associated supplier order.");
+        throw new LogicException('Set currency on associated supplier order.');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setExchangeRate(float $rate = null): ExchangeSubjectInterface
+    public function setExchangeRate(?Decimal $rate): ExchangeSubjectInterface
     {
-        throw new LogicException("Set exchange rate on associated supplier order.");
+        throw new LogicException('Set exchange rate on associated supplier order.');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setExchangeDate(DateTime $date = null): ExchangeSubjectInterface
+    public function setExchangeDate(?DateTimeInterface $date): ExchangeSubjectInterface
     {
-        throw new LogicException("Set exchange rate on associated supplier order.");
+        throw new LogicException('Set exchange rate on associated supplier order.');
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
  */
 interface OrderAdjustmentInterface extends SaleAdjustmentInterface
 {
-    /**
-     * Returns the order.
-     *
-     * @return OrderInterface
-     */
     public function getOrder(): ?OrderInterface;
 
-    /**
-     * Sets the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|OrderAdjustmentInterface
-     */
-    public function setOrder(OrderInterface $order = null): OrderAdjustmentInterface;
+    public function setOrder(?OrderInterface $order): OrderAdjustmentInterface;
 }

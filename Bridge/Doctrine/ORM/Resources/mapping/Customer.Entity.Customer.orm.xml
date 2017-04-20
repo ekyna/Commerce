@@ -34,9 +34,9 @@
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
 
         <field name="loyaltyPoints" column="loyalty_points" type="integer"/>
-        <field name="creditBalance" column="credit_balance" type="decimal" precision="13" scale="3"/>
-        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="13" scale="3"/>
-        <field name="outstandingBalance" column="outstanding_balance" type="decimal" precision="13" scale="3"/>
+        <field name="creditBalance" column="credit_balance" type="php_decimal" precision="13" scale="3"/>
+        <field name="outstandingLimit" column="outstanding_limit" type="php_decimal" precision="13" scale="3"/>
+        <field name="outstandingBalance" column="outstanding_balance" type="php_decimal" precision="13" scale="3"/>
         <field name="outstandingOverflow" column="outstanding_overflow" type="boolean">
             <options>
                 <option name="default">1</option>

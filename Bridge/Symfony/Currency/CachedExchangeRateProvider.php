@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Currency;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\AbstractExchangeRateProvider;
 use Ekyna\Component\Commerce\Common\Currency\ExchangeRateProviderInterface;
-use Psr\Cache\InvalidArgumentException;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * Class CachedExchangeRateProvider
@@ -14,62 +17,39 @@ use Symfony\Component\Cache\Adapter\AdapterInterface;
  */
 class CachedExchangeRateProvider extends AbstractExchangeRateProvider
 {
-    const KEY_PREFIX = 'ecr'; // TODO
-
-    /**
-     * @var AdapterInterface
-     */
-    private $cache;
+    private CacheItemPoolInterface $cache;
 
 
-    /**
-     * Constructor.
-     *
-     * @param AdapterInterface $cache
-     * @param ExchangeRateProviderInterface|null $fallback
-     */
-    public function __construct(AdapterInterface $cache, ExchangeRateProviderInterface $fallback = null)
+    public function __construct(CacheItemPoolInterface $cache, ExchangeRateProviderInterface $fallback = null)
     {
         parent::__construct($fallback);
 
         $this->cache = $cache;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function fetch(string $base, string $quote, \DateTime $date): ?float
+    protected function fetch(string $base, string $quote, DateTimeInterface $date): ?Decimal
     {
         $key = $this->buildKey($base, $quote, $date);
-
-        if ($this->cache->hasItem($key)) {
-            try {
-                return $this->cache->getItem($key)->get();
-            } catch (InvalidArgumentException $e) {
-            }
+        $item = $this->cache->getItem($key);
+        if ($item->isHit()) {
+            return new Decimal($item->get());
         }
 
         $key = $this->buildKey($quote, $base, $date);
-
-        if ($this->cache->hasItem($key)) {
-            try {
-                return 1 / $this->cache->getItem($key)->get();
-            } catch (InvalidArgumentException $e) {
-            }
+        $item = $this->cache->getItem($key);
+        if ($item->isHit()) {
+            return (new Decimal(1))->div(new Decimal($item->get()));
         }
 
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function persist(string $base, string $quote, \DateTime $date, float $rate): void
+    protected function persist(string $base, string $quote, DateTimeInterface $date, Decimal $rate): void
     {
         $key = $this->buildKey($base, $quote, $date);
 
         $item = $this->cache->getItem($key);
-        $item->set($rate);
+        $item->set($rate->toString());
 
         $this->cache->save($item);
     }

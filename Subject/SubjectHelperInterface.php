@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface as SubjectProvider;
@@ -17,20 +19,11 @@ interface SubjectHelperInterface
 {
     /**
      * Returns whether or the subject reference has subject.
-     *
-     * @param SubjectReferenceInterface $reference
-     *
-     * @return bool
      */
     public function hasSubject(SubjectReferenceInterface $reference): bool;
 
     /**
      * Resolves the subject from the reference.
-     *
-     * @param SubjectReferenceInterface $reference
-     * @param bool                     $throw
-     *
-     * @return SubjectInterface
      *
      * @throws SubjectException
      */
@@ -38,28 +31,16 @@ interface SubjectHelperInterface
 
     /**
      * Assigns the subject to the reference.
-     *
-     * @param SubjectReferenceInterface $reference
-     * @param SubjectInterface         $subject
-     *
-     * @return SubjectProvider
      */
     public function assign(SubjectReferenceInterface $reference, SubjectInterface $subject): SubjectProvider;
 
     /**
      * Finds the subject by its provider and identifier.
-     *
-     * @param string $provider
-     * @param string $identifier
-     *
-     * @return Model\SubjectInterface|null
      */
-    public function find(string $provider, string $identifier): ?SubjectInterface;
+    public function find(string $provider, int $identifier): ?SubjectInterface;
 
     /**
-     * Syncs the relative with it's subject data.
-     *
-     * @param SubjectRelativeInterface $relative
+     * Syncs the relative with its subject data.
      *
      * @return bool Whether the relative has been changed.
      */

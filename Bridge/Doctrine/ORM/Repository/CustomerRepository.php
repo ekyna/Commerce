@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class CustomerRepository
@@ -18,7 +20,6 @@ class CustomerRepository extends ResourceRepository implements CustomerRepositor
      */
     public function findOneByKey(string $key): ?CustomerInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->findOneBy(['key' => $key]);
     }
 
@@ -27,7 +28,6 @@ class CustomerRepository extends ResourceRepository implements CustomerRepositor
      */
     public function findOneByNumber(string $number): ?CustomerInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->findOneBy(['number' => $number]);
     }
 
@@ -36,7 +36,6 @@ class CustomerRepository extends ResourceRepository implements CustomerRepositor
      */
     public function findOneByEmail(string $email): ?CustomerInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->findOneBy(['email' => $email]);
     }
 

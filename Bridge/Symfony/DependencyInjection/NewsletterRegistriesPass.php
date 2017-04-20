@@ -1,18 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Ekyna\Component\Commerce\Newsletter\Gateway\GatewayInterface;
-use Ekyna\Component\Commerce\Newsletter\Gateway\GatewayRegistry;
 use Ekyna\Component\Commerce\Newsletter\Synchronizer\SynchronizerInterface;
-use Ekyna\Component\Commerce\Newsletter\Synchronizer\SynchronizerRegistry;
 use Ekyna\Component\Commerce\Newsletter\Webhook\HandlerInterface;
-use Ekyna\Component\Commerce\Newsletter\Webhook\HandlerRegistry;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Reference;
+
+use function array_keys;
+use function call_user_func;
+use function is_subclass_of;
 
 /**
  * Class NewsletterRegistriesPass
@@ -29,15 +32,15 @@ class NewsletterRegistriesPass implements CompilerPassInterface
     /**
      * @inheritDoc
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasDefinition(GatewayRegistry::class)) {
+        if (!$container->hasDefinition('ekyna_commerce.newsletter.registry.gateway')) {
             return;
         }
 
-        $this->register($container, self::GATEWAY_TAG, GatewayInterface::class, GatewayRegistry::class);
-        $this->register($container, self::SYNCHRONIZER_TAG, SynchronizerInterface::class, SynchronizerRegistry::class);
-        $this->register($container, self::HANDLER_TAG, HandlerInterface::class, HandlerRegistry::class);
+        $this->register($container, self::GATEWAY_TAG, GatewayInterface::class, 'ekyna_commerce.newsletter.registry.gateway');
+        $this->register($container, self::SYNCHRONIZER_TAG, SynchronizerInterface::class, 'ekyna_commerce.newsletter.registry.synchronizer');
+        $this->register($container, self::HANDLER_TAG, HandlerInterface::class, 'ekyna_commerce.newsletter.registry.webhook');
     }
 
     /**
@@ -55,7 +58,7 @@ class NewsletterRegistriesPass implements CompilerPassInterface
             $class = $container->getDefinition($id)->getClass();
 
             if (!is_subclass_of($class, $serviceClass)) {
-                throw new LogicException("Class $class must implements " . $serviceClass);
+                throw new LogicException("Class $class must implements $serviceClass");
             }
 
             $name = call_user_func([$class, 'getName']);
@@ -69,7 +72,7 @@ class NewsletterRegistriesPass implements CompilerPassInterface
 
         $container
             ->getDefinition($registryId)
-            ->addArgument(ServiceLocatorTagPass::register($container, $map))
-            ->addArgument(array_keys($map));
+            ->replaceArgument(0, ServiceLocatorTagPass::register($container, $map, 'commerce_newsletter_gateways'))
+            ->replaceArgument(1, array_keys($map));
     }
 }

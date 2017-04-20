@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject\Entity;
 
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
@@ -11,28 +13,15 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
  */
 final class SubjectIdentity
 {
-    /**
-     * @var string
-     */
-    private $provider;
-
-    /**
-     * @var string
-     */
-    private $identifier;
-
-    /**
-     * @var SubjectInterface
-     */
-    private $subject;
+    private ?string $provider = null;
+    private ?int $identifier = null;
+    private ?SubjectInterface $subject = null;
 
 
     /**
-     * Returns whether or not the subject identity is set.
-     *
-     * @return bool
+     * Returns whether the subject identity is set.
      */
-    public function hasIdentity()
+    public function hasIdentity(): bool
     {
         return !empty($this->provider) && !empty($this->identifier);
     }
@@ -40,7 +29,7 @@ final class SubjectIdentity
     /**
      * Clears the subject identity.
      */
-    public function clear()
+    public function clear(): void
     {
         $this->provider = null;
         $this->identifier = null;
@@ -48,13 +37,9 @@ final class SubjectIdentity
     }
 
     /**
-     * Returns whether or not this subject identity equals the given one.
-     *
-     * @param SubjectIdentity $identity
-     *
-     * @return bool
+     * Returns whether this subject identity equals the given one.
      */
-    public function equals(SubjectIdentity $identity)
+    public function equals(SubjectIdentity $identity): bool
     {
         return $this->provider === $identity->getProvider()
             && $this->identifier === $identity->getIdentifier();
@@ -62,81 +47,43 @@ final class SubjectIdentity
 
     /**
      * Copy the given subject identity.
-     *
-     * @param SubjectIdentity $identity
      */
-    public function copy(SubjectIdentity $identity)
+    public function copy(SubjectIdentity $identity): void
     {
         $this->provider = $identity->getProvider();
         $this->identifier = $identity->getIdentifier();
     }
 
-    /**
-     * Returns the provider.
-     *
-     * @return string
-     */
     public function getProvider(): ?string
     {
         return $this->provider;
     }
 
-    /**
-     * Sets the provider.
-     *
-     * @param string $provider
-     *
-     * @return SubjectIdentity
-     */
-    public function setProvider(string $provider = null): SubjectIdentity
+    public function setProvider(?string $provider): SubjectIdentity
     {
         $this->provider = $provider;
 
         return $this;
     }
 
-    /**
-     * Returns the identifier.
-     *
-     * @return string
-     */
-    public function getIdentifier(): ?string
+    public function getIdentifier(): ?int
     {
         return $this->identifier;
     }
 
-    /**
-     * Sets the identifier.
-     *
-     * @param string $identifier
-     *
-     * @return SubjectIdentity
-     */
-    public function setIdentifier(string $identifier = null): SubjectIdentity
+    public function setIdentifier(?int $identifier): SubjectIdentity
     {
         $this->identifier = $identifier;
 
         return $this;
     }
 
-    /**
-     * Returns the subject.
-     *
-     * @return SubjectInterface
-     */
     public function getSubject(): ?SubjectInterface
     {
         return $this->subject;
     }
 
-    /**
-     * Sets the subject.
-     *
-     * @param SubjectInterface $subject
-     *
-     * @return SubjectIdentity
-     */
-    public function setSubject(SubjectInterface $subject = null): SubjectIdentity
+    public function setSubject(?SubjectInterface $subject): SubjectIdentity
     {
         $this->subject = $subject;
 

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Trait ShipmentDataTrait
@@ -11,25 +15,11 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 trait ShipmentDataTrait
 {
-    /**
-     * @var float
-     */
-    protected $weight;
-
-    /**
-     * @var float
-     */
-    protected $valorization;
-
-    /**
-     * @var string
-     */
-    protected $trackingNumber;
-
-    /**
-     * @var ArrayCollection|ShipmentLabelInterface[]
-     */
-    protected $labels;
+    protected ?Decimal $weight         = null;
+    protected ?Decimal $valorization   = null;
+    protected ?string  $trackingNumber = null;
+    /** @var Collection<ShipmentLabelInterface> */
+    protected Collection $labels;
 
 
     /**
@@ -40,114 +30,61 @@ trait ShipmentDataTrait
         $this->labels = new ArrayCollection();
     }
 
-    /**
-     * Returns the weight.
-     *
-     * @return float
-     */
-    public function getWeight()
+    public function getWeight(): ?Decimal
     {
         return $this->weight;
     }
 
-    /**
-     * Sets the weight.
-     *
-     * @param float $weight
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function setWeight($weight)
+    public function setWeight(?Decimal $weight): ShipmentDataInterface
     {
-        $this->weight = (float)$weight;
+        $this->weight = $weight;
 
         return $this;
     }
 
-    /**
-     * Returns the valorization.
-     *
-     * @return float
-     */
-    public function getValorization()
+    public function getValorization(): ?Decimal
     {
         return $this->valorization;
     }
 
-    /**
-     * Sets the valorization.
-     *
-     * @param float $valorization
-     */
-    public function setValorization($valorization)
+    public function setValorization(?Decimal $valorization): ShipmentDataInterface
     {
-        $this->valorization = (float)$valorization;
+        $this->valorization = $valorization;
+
+        return $this;
     }
 
-    /**
-     * Returns the tracking number.
-     *
-     * @return string
-     */
-    public function getTrackingNumber()
+    public function getTrackingNumber(): ?string
     {
         return $this->trackingNumber;
     }
 
-    /**
-     * Sets the tracking number.
-     *
-     * @param string $number
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function setTrackingNumber($number)
+    public function setTrackingNumber(?string $number): ShipmentDataInterface
     {
         $this->trackingNumber = $number;
 
         return $this;
     }
 
-    /**
-     * Returns whether the shipment/parcel has labels.
-     *
-     * @return bool
-     */
-    public function hasLabels()
+    public function hasLabels(): bool
     {
         return 0 < $this->labels->count();
     }
 
     /**
-     * Returns the labels.
-     *
-     * @return ArrayCollection|ShipmentLabelInterface[]
+     * @return Collection<ShipmentLabelInterface>
      */
-    public function getLabels()
+    public function getLabels(): Collection
     {
         return $this->labels;
     }
 
-    /**
-     * Returns whether the shipment/parcel has the given label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return bool
-     */
-    public function hasLabel(ShipmentLabelInterface $label)
+    public function hasLabel(ShipmentLabelInterface $label): bool
     {
         return $this->labels->contains($label);
     }
 
-    /**
-     * Adds the label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function addLabel(ShipmentLabelInterface $label)
+    public function addLabel(ShipmentLabelInterface $label): ShipmentDataInterface
     {
         if (!$this->hasLabel($label)) {
             $this->labels->add($label);
@@ -162,14 +99,7 @@ trait ShipmentDataTrait
         return $this;
     }
 
-    /**
-     * Removes the label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function removeLabel(ShipmentLabelInterface $label)
+    public function removeLabel(ShipmentLabelInterface $label): ShipmentDataInterface
     {
         if ($this->hasLabel($label)) {
             $this->labels->removeElement($label);

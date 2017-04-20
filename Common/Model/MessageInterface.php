@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\TranslatableInterface;
@@ -13,51 +15,21 @@ use Ekyna\Component\Resource\Model\TranslatableInterface;
  */
 interface MessageInterface extends TranslatableInterface
 {
-    /**
-     * Returns the state.
-     *
-     * @return string
-     */
-    public function getState();
+    public function getState(): ?string;
 
-    /**
-     * Sets the state.
-     *
-     * @param string $state
-     *
-     * @return $this|MessageInterface
-     */
-    public function setState($state);
+    public function setState(?string $state): MessageInterface;
 
-    /**
-     * Returns the method.
-     *
-     * @return MethodInterface
-     */
-    public function getMethod();
+    public function getMethod(): ?MethodInterface;
 
-    /**
-     * Sets the method.
-     *
-     * @param MethodInterface $method
-     *
-     * @return $this|MessageInterface
-     */
-    public function setMethod(MethodInterface $method);
+    public function setMethod(?MethodInterface $method): MessageInterface;
 
     /**
      * Returns the content (translation alias).
-     *
-     * @return string
      */
-    public function getContent();
+    public function getContent(): ?string;
 
     /**
      * Sets the content (translation alias).
-     *
-     * @param string $content
-     *
-     * @return $this|MessageInterface
      */
-    public function setContent($content);
+    public function setContent(?string $content): MessageInterface;
 }

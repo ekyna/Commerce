@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
@@ -11,35 +13,11 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
  */
 interface OrderInvoiceLineInterface extends InvoiceLineInterface
 {
-    /**
-     * Set the order item.
-     *
-     * @param OrderItemInterface $item
-     *
-     * @return $this|OrderInvoiceLineInterface
-     */
-    public function setOrderItem(OrderItemInterface $item = null);
+    public function setOrderItem(?OrderItemInterface $item): OrderInvoiceLineInterface;
 
-    /**
-     * Returns the order item.
-     *
-     * @return OrderItemInterface
-     */
-    public function getOrderItem();
+    public function getOrderItem(): ?OrderItemInterface;
 
-    /**
-     * Set the order adjustment.
-     *
-     * @param OrderAdjustmentInterface $adjustment
-     *
-     * @return $this|OrderInvoiceLineInterface
-     */
-    public function setOrderAdjustment(OrderAdjustmentInterface $adjustment = null);
+    public function setOrderAdjustment(?OrderAdjustmentInterface $adjustment): OrderInvoiceLineInterface;
 
-    /**
-     * Returns the order adjustment.
-     *
-     * @return OrderAdjustmentInterface
-     */
-    public function getOrderAdjustment();
+    public function getOrderAdjustment(): ?OrderAdjustmentInterface;
 }

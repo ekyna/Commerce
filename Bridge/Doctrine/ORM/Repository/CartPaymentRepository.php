@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Cart\Model\CartPaymentInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartPaymentRepositoryInterface;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
 
 /**
  * Class CartPaymentRepository
@@ -15,11 +16,5 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
  */
 class CartPaymentRepository extends AbstractPaymentRepository implements CartPaymentRepositoryInterface
 {
-    /**
-     * @return void
-     */
-    public function createNew()
-    {
-        throw new RuntimeException("Disabled: use payment factory.");
-    }
+
 }

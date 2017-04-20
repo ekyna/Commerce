@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Trait NotifiableTrait
@@ -11,76 +14,44 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 trait NotifiableTrait
 {
-    /**
-     * @var bool
-     */
-    protected $autoNotify;
-
-    /**
-     * @var ArrayCollection|NotificationInterface[]
-     */
+    protected bool $autoNotify;
+    /** @var Collection|NotificationInterface[] */
     protected $notifications;
 
 
-    /**
-     * Initializes the notifications.
-     */
-    protected function initializeNotifications()
+    protected function initializeNotifications(): void
     {
         $this->autoNotify = true;
         $this->notifications = new ArrayCollection();
     }
 
-    /**
-     * Returns whether notify is enabled.
-     *
-     * @return bool
-     */
-    public function isAutoNotify()
+    public function isAutoNotify(): bool
     {
         return $this->autoNotify;
     }
 
     /**
-     * Sets whether notify is enabled.
-     *
-     * @param bool $enabled
-     *
-     * @return $this|NotificationInterface
+     * @return $this|NotifiableInterface
      */
-    public function setAutoNotify($enabled)
+    public function setAutoNotify(bool $enabled): NotifiableInterface
     {
         $this->autoNotify = $enabled;
 
         return $this;
     }
 
-    /**
-     * Returns whether the notifiable has notifications or not, optionally filtered by type.
-     *
-     * @param string $type
-     *
-     * @return bool
-     */
-    public function hasNotifications($type = null)
+    public function hasNotifications(string $type = null): bool
     {
-        if (null !== $type) {
+        if ($type) {
             NotificationTypes::isValid($type);
 
-            return $this->getNotifications($type)->count();
+            return 0 < $this->getNotifications($type)->count();
         }
 
         return 0 < $this->notifications->count();
     }
 
-    /**
-     * Returns the notifications, optionally filtered by type.
-     *
-     * @param string $type
-     *
-     * @return ArrayCollection|NotificationInterface[]
-     */
-    public function getNotifications($type = null)
+    public function getNotifications(string $type = null): Collection
     {
         if (null !== $type) {
             NotificationTypes::isValid($type);

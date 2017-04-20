@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Model;
 
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
@@ -11,19 +14,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
  */
 interface CartInterface extends SaleInterface
 {
-    /**
-     * Returns the "expires at" datetime.
-     *
-     * @return \DateTime
-     */
-    public function getExpiresAt();
+    public function getExpiresAt(): ?DateTimeInterface;
 
-    /**
-     * Sets the "expires at" datetime.
-     *
-     * @param \DateTime $expiresAt
-     *
-     * @return $this|CartInterface
-     */
-    public function setExpiresAt(\DateTime $expiresAt = null);
+    public function setExpiresAt(?DateTimeInterface $expiresAt): CartInterface;
 }

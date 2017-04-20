@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Resolver;
 
 use DateTime;
@@ -14,17 +16,12 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 class InvoiceLockResolver implements LockResolverInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function support(ResourceInterface $resource): bool
     {
         return $resource instanceof InvoiceInterface;
     }
 
     /**
-     * @inheritDoc
-     *
      * @param InvoiceInterface $resource
      */
     public function resolve(ResourceInterface $resource): ?DateTime

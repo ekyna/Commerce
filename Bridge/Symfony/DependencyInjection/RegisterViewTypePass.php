@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -13,22 +15,17 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class RegisterViewTypePass implements CompilerPassInterface
 {
+    public const VIEW_TYPE_TAG = 'ekyna_commerce.view_type';
+
     /**
      * @inheritDoc
      */
     public function process(ContainerBuilder $container)
     {
-        if (!$container->hasDefinition('ekyna_commerce.common.view_type_registry')) {
-            return;
-        }
+        $definition = $container->getDefinition('ekyna_commerce.registry.view_type');
 
-        $registryDefinition = $container->getDefinition('ekyna_commerce.common.view_type_registry');
-
-        $builders = $container->findTaggedServiceIds('ekyna_commerce.view_type');
-
-        foreach ($builders as $id => $attributes) {
-            // Register the view type
-            $registryDefinition->addMethodCall('addType', [new Reference($id)]);
+        foreach ($container->findTaggedServiceIds(self::VIEW_TYPE_TAG) as $serviceId => $attributes) {
+            $definition->addMethodCall('addType', [new Reference($serviceId)]);
         }
     }
 }

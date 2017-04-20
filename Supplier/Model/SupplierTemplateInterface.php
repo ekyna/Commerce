@@ -17,13 +17,6 @@ use Ekyna\Component\Resource\Model\TranslatableInterface;
 interface SupplierTemplateInterface extends TranslatableInterface
 {
     /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId(): ?int;
-
-    /**
      * Returns the title.
      *
      * @return string

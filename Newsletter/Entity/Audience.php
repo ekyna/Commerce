@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\Entity;
 
 use DateTime;
@@ -20,62 +22,23 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class Audience extends AbstractTranslatable implements AudienceInterface
 {
-    use TimestampableTrait,
-        KeySubjectTrait;
+    use KeySubjectTrait;
+    use TimestampableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int $id = null;
+    protected ?string $gateway = null;
+    protected ?string $identifier = null;
+    protected ?string $name = null;
+    protected bool $public = false;
+    protected bool $default = false;
 
-    /**
-     * @var string
-     */
-    protected $key;
-
-    /**
-     * @var string
-     */
-    protected $gateway;
-
-    /**
-     * @var string
-     */
-    protected $identifier;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var bool
-     */
-    protected $public;
-
-    /**
-     * @var bool
-     */
-    protected $default;
-
-
-    /**
-     * @inheritDoc
-     */
     public function __construct()
     {
         parent::__construct();
 
-        $this->public    = false;
-        $this->default   = false;
         $this->createdAt = new DateTime();
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         if ($this->gateway && $this->name) {
@@ -85,25 +48,16 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         return 'New audience';
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getGateway(): ?string
     {
         return $this->gateway;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setGateway(string $gateway): AudienceInterface
     {
         $this->gateway = $gateway;
@@ -111,17 +65,11 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getIdentifier(): ?string
     {
         return $this->identifier;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setIdentifier(string $identifier): AudienceInterface
     {
         $this->identifier = $identifier;
@@ -129,17 +77,11 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setName(string $name): AudienceInterface
     {
         $this->name = $name;
@@ -147,17 +89,11 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function isPublic(): bool
     {
         return $this->public;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setPublic(bool $public): AudienceInterface
     {
         $this->public = $public;
@@ -165,17 +101,11 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function isDefault(): bool
     {
         return $this->default;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setDefault(bool $default): AudienceInterface
     {
         $this->default = $default;
@@ -183,9 +113,6 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setTitle(string $title): AudienceInterface
     {
         $this->translate()->setTitle($title);
@@ -193,9 +120,6 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getTitle(): ?string
     {
         return $this->translate()->getTitle();

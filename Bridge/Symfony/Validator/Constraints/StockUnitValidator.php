@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class StockUnitValidator extends ConstraintValidator
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function validate($stockUnit, Constraint $constraint)
     {

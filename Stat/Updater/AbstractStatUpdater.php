@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stat\Updater;
 
+use DateTime;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stat\Calculator\StatCalculatorInterface;
 use Ekyna\Component\Commerce\Stat\Entity;
 use Ekyna\Component\Commerce\Stat\Repository;
@@ -13,30 +17,18 @@ use Ekyna\Component\Commerce\Stat\Repository;
  */
 abstract class AbstractStatUpdater implements StatUpdaterInterface
 {
-    /**
-     * @var StatCalculatorInterface
-     */
-    private $calculator;
+    private StatCalculatorInterface $calculator;
 
-
-    /**
-     * Constructor.
-     *
-     * @param StatCalculatorInterface $calculator
-     */
     public function __construct(StatCalculatorInterface $calculator)
     {
         $this->calculator = $calculator;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function updateStockStat(): bool
     {
-        $date = new \DateTime();
+        $date = new DateTime();
 
-        if (null !== $stat = $this->getStockStatRepository()->findOneByDay($date)) {
+        if (null !== $this->getStockStatRepository()->findOneByDay($date)) {
             return false;
         }
 
@@ -44,8 +36,8 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
 
         $stat = $this->createStockStat();
         $stat
-            ->setInValue($result['in_value'])
-            ->setSoldValue($result['sold_value'])
+            ->setInValue(new Decimal($result['in_value'] ?? 0))
+            ->setSoldValue(new Decimal($result['sold_value'] ?? 0))
             ->setDate($date->format('Y-m-d'));
 
         $this->persist($stat);
@@ -53,10 +45,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateDayOrderStat(\DateTime $date, bool $force = false): bool
+    public function updateDayOrderStat(DateTime $date, bool $force = false): bool
     {
         if (null === $stat = $this->getOrderStatRepository()->findOneByDay($date)) {
             $stat = $this->createOrderStat();
@@ -68,7 +57,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
         $result = $this->calculator->calculateDayOrderStats($date);
 
         if ($stat->loadResult($result) || $force) {
-            $stat->setUpdatedAt(new \DateTime());
+            $stat->setUpdatedAt(new DateTime());
 
             $this->persist($stat);
 
@@ -78,10 +67,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateMonthOrderStat(\DateTime $date, bool $force = false): bool
+    public function updateMonthOrderStat(DateTime $date, bool $force = false): bool
     {
         if (null === $stat = $this->getOrderStatRepository()->findOneByMonth($date)) {
             $stat = $this->createOrderStat();
@@ -93,7 +79,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
         $result = $this->calculator->calculateMonthOrderStats($date);
 
         if ($stat->loadResult($result) || $force) {
-            $stat->setUpdatedAt(new \DateTime());
+            $stat->setUpdatedAt(new DateTime());
 
             $this->persist($stat);
 
@@ -103,10 +89,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateYearOrderStat(\DateTime $date, bool $force = false): bool
+    public function updateYearOrderStat(DateTime $date, bool $force = false): bool
     {
         if (null === $stat = $this->getOrderStatRepository()->findOneByYear($date)) {
             $stat = $this->createOrderStat();
@@ -118,7 +101,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
         $result = $this->calculator->calculateYearOrderStats($date);
 
         if ($stat->loadResult($result) || $force) {
-            $stat->setUpdatedAt(new \DateTime());
+            $stat->setUpdatedAt(new DateTime());
 
             $this->persist($stat);
 
@@ -130,29 +113,21 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
 
     /**
      * Persists the given object.
-     *
-     * @param object $object
      */
-    abstract protected function persist($object): void;
+    abstract protected function persist(object $object): void;
 
     /**
      * Returns the stock stat repository.
-     *
-     * @return Repository\StockStatRepositoryInterface
      */
     abstract protected function getStockStatRepository(): Repository\StockStatRepositoryInterface;
 
     /**
      * Returns the order stat repository.
-     *
-     * @return Repository\OrderStatRepositoryInterface
      */
     abstract protected function getOrderStatRepository(): Repository\OrderStatRepositoryInterface;
 
     /**
      * Returns a new stock stat entity.
-     *
-     * @return Entity\StockStat
      */
     protected function createStockStat(): Entity\StockStat
     {
@@ -161,8 +136,6 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
 
     /**
      * Returns a new order stat entity.
-     *
-     * @return Entity\OrderStat
      */
     protected function createOrderStat(): Entity\OrderStat
     {

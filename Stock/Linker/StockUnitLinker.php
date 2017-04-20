@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Linker;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
@@ -16,47 +19,18 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockUnitLinker implements StockUnitLinkerInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface       $persistenceHelper;
+    protected SupplierOrderCalculatorInterface $calculator;
+    protected StockUnitUpdaterInterface        $stockUnitUpdater;
+    protected StockUnitResolverInterface       $unitResolver;
+    protected CurrencyConverterInterface       $currencyConverter;
 
-    /**
-     * @var SupplierOrderCalculatorInterface
-     */
-    protected $calculator;
-
-    /**
-     * @var StockUnitUpdaterInterface
-     */
-    protected $stockUnitUpdater;
-
-    /**
-     * @var StockUnitResolverInterface
-     */
-    protected $unitResolver;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface       $persistenceHelper
-     * @param SupplierOrderCalculatorInterface $calculator
-     * @param StockUnitUpdaterInterface        $stockUnitUpdater
-     * @param StockUnitResolverInterface       $unitResolver
-     * @param CurrencyConverterInterface       $currencyConverter
-     */
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
+        PersistenceHelperInterface       $persistenceHelper,
         SupplierOrderCalculatorInterface $calculator,
-        StockUnitUpdaterInterface $stockUnitUpdater,
-        StockUnitResolverInterface $unitResolver,
-        CurrencyConverterInterface $currencyConverter
+        StockUnitUpdaterInterface        $stockUnitUpdater,
+        StockUnitResolverInterface       $unitResolver,
+        CurrencyConverterInterface       $currencyConverter
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->calculator = $calculator;
@@ -65,9 +39,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
         $this->currencyConverter = $currencyConverter;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function linkItem(SupplierOrderItemInterface $item): void
     {
         if (!$item->hasSubjectIdentity()) {
@@ -89,9 +60,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
         $this->updateData($item);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function applyItem(SupplierOrderItemInterface $item): bool
     {
         if (!$item->hasSubjectIdentity()) {
@@ -106,7 +74,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
         // Update ordered quantity if needed
         if ($this->persistenceHelper->isChanged($item, 'quantity')) {
             $cs = $this->persistenceHelper->getChangeSet($item, 'quantity');
-            if (0 != $cs[1] - $cs[0]) { // TODO Use packaging format
+            if (!($cs[1] ?? new Decimal(0))->equals($cs[0] ?? new Decimal(0))) {
                 $this->stockUnitUpdater->updateOrdered($unit, $item->getQuantity(), false);
                 $changed = true;
             }
@@ -115,9 +83,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
         return $changed;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function unlinkItem(SupplierOrderItemInterface $item): void
     {
         if (!$item->hasSubjectIdentity()) {
@@ -133,17 +98,14 @@ class StockUnitLinker implements StockUnitLinkerInterface
             ->setSupplierOrderItem(null)
             ->setWarehouse(null)
             // Clear calculated data from supplier order item
-            ->setNetPrice(0)
-            ->setShippingPrice(0)
+            ->setNetPrice(new Decimal(0))
+            ->setShippingPrice(new Decimal(0))
             ->setEstimatedDateOfArrival(null);
 
         // Set ordered quantity to zero
-        $this->stockUnitUpdater->updateOrdered($unit, 0, false);
+        $this->stockUnitUpdater->updateOrdered($unit, new Decimal(0), false);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function updateData(SupplierOrderItemInterface $item): void
     {
         if (!$item->hasSubjectIdentity()) {

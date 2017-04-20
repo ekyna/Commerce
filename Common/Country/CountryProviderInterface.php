@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Country;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
@@ -14,22 +16,16 @@ interface CountryProviderInterface
 {
     /**
      * Returns the available countries.
-     *
-     * @return array
      */
     public function getAvailableCountries(): array;
 
     /**
      * Returns the fallback country.
-     *
-     * @return string
      */
     public function getFallbackCountry(): string;
 
     /**
      * Returns the current country.
-     *
-     * @return string
      */
     public function getCurrentCountry(): string;
 
@@ -37,31 +33,21 @@ interface CountryProviderInterface
      * Sets the current country.
      *
      * @param string|CountryInterface $country
-     *
-     * @return CountryProviderInterface
      */
     public function setCountry($country): self;
 
     /**
      * Returns the country (entity) by its code, or the current one if no code is provided.
-     *
-     * @param string $code
-     *
-     * @return CountryInterface
      */
     public function getCountry(string $code = null): CountryInterface;
 
     /**
      * Returns the default country.
-     *
-     * @return CountryInterface
      */
     public function getDefault(): CountryInterface;
 
     /**
      * Returns the country repository.
-     *
-     * @return CountryRepositoryInterface
      */
     public function getCountryRepository(): CountryRepositoryInterface;
 }

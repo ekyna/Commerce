@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway\Noop;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\AbstractPlatform;
+use Ekyna\Component\Commerce\Shipment\Gateway\GatewayInterface;
 
 /**
  * Class NullPlatform
@@ -11,29 +14,20 @@ use Ekyna\Component\Commerce\Shipment\Gateway\AbstractPlatform;
  */
 class NoopPlatform extends AbstractPlatform
 {
-    const NAME = 'noop';
+    public const NAME = 'noop';
 
 
-    /**
-     * @inheritDoc
-     */
-    public function getName()
+    public function getName(): string
     {
         return static::NAME;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function createGateway($name, array $config = [])
+    public function createGateway(string $name, array $config = []): GatewayInterface
     {
         return new NoopGateway($this, $name, $this->processGatewayConfig($config));
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getActions()
+    public function getActions(): array
     {
         return [];
     }

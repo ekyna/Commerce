@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class StockAdjustmentValidator extends ConstraintValidator
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function validate($adjustment, Constraint $constraint)
     {
@@ -62,7 +62,7 @@ class StockAdjustmentValidator extends ConstraintValidator
         if ($max < $adjustment->getQuantity()) {
             $this->context
                 ->buildViolation($constraint->stock_unit_shipped_quantity_overflow, [
-                    '%max%' => $max,
+                    '%max%' => $max->toFixed(3),
                 ])
                 ->setInvalidValue($adjustment->getQuantity())
                 ->atPath('quantity')

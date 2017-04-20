@@ -1,83 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class InvoiceNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceNormalizer extends AbstractResourceNormalizer
+class InvoiceNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param InvoiceInterface $invoice
+     * @param InvoiceInterface $object
      */
-    public function normalize($invoice, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
-        $data = parent::normalize($invoice, $format, $context);
+        $data = parent::normalize($object, $format, $context);
 
         if ($this->contextHasGroup(['Default', 'OrderInvoice', 'Search'], $context)) {
-            $sale = $invoice->getSale();
+            $sale = $object->getSale();
 
             $data = array_replace($data, [
-                'number'      => $invoice->getNumber(),
+                'number'      => $object->getNumber(),
                 'company'     => $sale->getCompany(),
                 'email'       => $sale->getEmail(),
                 'first_name'  => $sale->getFirstName(),
                 'last_name'   => $sale->getLastName(),
-                'type'        => $invoice->getType(),
-                'description' => $invoice->getDescription(),
-                'comment'     => $invoice->getComment(),
+                'type'        => $object->getType(),
+                'description' => $object->getDescription(),
+                'comment'     => $object->getComment(),
             ]);
         } elseif ($this->contextHasGroup(['Summary'], $context)) {
             $lines = [];
-            foreach ($invoice->getLines() as $line) {
+            foreach ($object->getLines() as $line) {
                 $lines[] = $this->normalizeObject($line, $format, $context);
             }
             $items = [];
-            foreach ($invoice->getItems() as $item) {
+            foreach ($object->getItems() as $item) {
                 $items[] = $this->normalizeObject($item, $format, $context);
             }
 
             $data = array_replace($data, [
                 'lines'       => $lines,
                 'items'       => $items,
-                'description' => $invoice->getDescription(),
-                'comment'     => $invoice->getComment(),
+                'description' => $object->getDescription(),
+                'comment'     => $object->getComment(),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof InvoiceInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, InvoiceInterface::class);
     }
 }

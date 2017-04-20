@@ -79,7 +79,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -87,7 +87,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getName()
     {
@@ -95,7 +95,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setName($name)
     {
@@ -105,7 +105,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getEmail()
     {
@@ -113,7 +113,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setEmail($email)
     {
@@ -123,7 +123,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCustomerCode()
     {
@@ -131,7 +131,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setCustomerCode($code)
     {
@@ -141,7 +141,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getAddress()
     {
@@ -149,7 +149,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setAddress(SupplierAddressInterface $address = null)
     {
@@ -167,7 +167,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCurrency()
     {
@@ -175,7 +175,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setCurrency(CurrencyInterface $currency)
     {
@@ -185,7 +185,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTax()
     {
@@ -193,7 +193,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setTax(TaxInterface $tax = null)
     {
@@ -203,7 +203,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCarrier()
     {
@@ -211,7 +211,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setCarrier(SupplierCarrierInterface $carrier = null)
     {
@@ -221,7 +221,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDescription()
     {
@@ -229,7 +229,7 @@ class Supplier implements SupplierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDescription($description)
     {

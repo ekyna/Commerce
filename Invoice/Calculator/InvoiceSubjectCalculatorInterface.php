@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface as Adjustment;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as Item;
@@ -19,8 +22,6 @@ interface InvoiceSubjectCalculatorInterface
      * Returns whether the sale item or adjustment is invoiced.
      *
      * @param Item|Adjustment $itemOrAdjustment
-     *
-     * @return bool
      */
     public function isInvoiced($itemOrAdjustment): bool;
 
@@ -28,86 +29,63 @@ interface InvoiceSubjectCalculatorInterface
      * Calculates the given subject's invoiceable quantity.
      *
      * @param Sale|Item|Adjustment $subject
-     * @param Invoice|null         $ignore
-     *
-     * @return float
      */
-    public function calculateInvoiceableQuantity($subject, Invoice $ignore = null): float;
+    public function calculateInvoiceableQuantity($subject, Invoice $ignore = null): Decimal;
 
     /**
      * Calculates the given subject's creditable quantity.
      *
      * @param Sale|Item|Adjustment $subject
-     * @param Invoice|null         $ignore
-     *
-     * @return float
      */
-    public function calculateCreditableQuantity($subject, Invoice $ignore = null): float;
+    public function calculateCreditableQuantity($subject, Invoice $ignore = null): Decimal;
 
     /**
      * Calculates the given subject's invoiced quantity.
      *
      * @param Sale|Item|Adjustment $subject
-     * @param Invoice|null         $ignore
-     *
-     * @return float
      */
-    public function calculateInvoicedQuantity($subject, Invoice $ignore = null): float;
+    public function calculateInvoicedQuantity($subject, Invoice $ignore = null): Decimal;
 
     /**
      * Calculates the given subject's credited quantity.
      *
      * @param Sale|Item|Adjustment $subject
      * @param Invoice|null         $ignore
-     * @param bool                 $adjustment TRUE: only adjustments, FALSE: exclude adjustments and NULL: all credits
-     *
-     * @return float
+     * @param bool                 $adjustment TRUE: only adjustments, FALSE: exclude adjustments and NULL: all credit
      */
-    public function calculateCreditedQuantity($subject, Invoice $ignore = null, bool $adjustment = null): float;
+    public function calculateCreditedQuantity($subject, Invoice $ignore = null, bool $adjustment = null): Decimal;
 
     /**
      * Calculates the given subject's sold quantity.
      *
      * @param Sale|Item|Adjustment $subject
-     *
-     * @return float
      */
-    public function calculateSoldQuantity($subject): float;
+    public function calculateSoldQuantity($subject): Decimal;
 
     /**
      * Builds the invoice quantity map.
      *
      * [
      *     (int) sale item id => [
-     *         'sold'     => (float) quantity,
-     *         'invoiced' => (float) quantity,
-     *         'credited' => (float) quantity,
+     *         'sold'     => (Decimal) quantity,
+     *         'invoiced' => (Decimal) quantity,
+     *         'credited' => (Decimal) quantity,
      *     ]
      * ]
      *
      * @param Subject $subject
      *
-     * @return array
+     * @return array<int, array<string, Decimal>>
      */
     public function buildInvoiceQuantityMap(Subject $subject): array;
 
     /**
      * Calculates the total of all subject's invoices.
-     *
-     * @param Subject     $subject
-     * @param string|null $currency
-     *
-     * @return float
      */
-    public function calculateInvoiceTotal(Subject $subject, string $currency = null): float;
+    public function calculateInvoiceTotal(Subject $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the total of all subject's credits.
-     *
-     * @param Subject     $subject
-     * @param string|null $currency
-     *
-     * @return float
      */
-    public function calculateCreditTotal(Subject $subject, string $currency = null): float;
+    public function calculateCreditTotal(Subject $subject, string $currency = null): Decimal;
 }

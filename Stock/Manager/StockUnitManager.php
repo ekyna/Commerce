@@ -48,7 +48,7 @@ class StockUnitManager implements StockUnitManagerInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function persistOrRemove(StockUnitInterface $stockUnit): void
     {

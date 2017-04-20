@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Model;
 
+use ArrayAccess;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Resource\Model as ResourceModel;
+use IteratorAggregate;
 use Payum\Core\Model as Payum;
 
 /**
@@ -21,126 +27,65 @@ interface PaymentInterface extends
     Common\StateSubjectInterface,
     Payum\DetailsAggregateInterface,
     Payum\DetailsAwareInterface,
-    \ArrayAccess,
-    \IteratorAggregate
+    ArrayAccess,
+    IteratorAggregate
 {
-    /**
-     * Returns the sale.
-     *
-     * @return Common\SaleInterface
-     */
-    public function getSale();
+    public function getSale(): ?Common\SaleInterface;
 
     /**
-     * Returns whether this a refund payment.
-     *
-     * @return bool
+     * Returns whether this is a refund payment.
      */
     public function isRefund(): bool;
 
     /**
-     * Sets whether this a refund payment.
-     *
-     * @param bool $refund
-     *
-     * @return $this|PaymentInterface
+     * Sets whether this is a refund payment.
      */
     public function setRefund(bool $refund): PaymentInterface;
 
-    /**
-     * Returns the method.
-     *
-     * @return PaymentMethodInterface
-     */
-    public function getMethod();
+    public function getMethod(): ?PaymentMethodInterface;
 
-    /**
-     * Sets the method.
-     *
-     * @param PaymentMethodInterface $method
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setMethod(PaymentMethodInterface $method);
+    public function setMethod(?PaymentMethodInterface $method): PaymentInterface;
 
     /**
      * Returns the amount (payment currency).
      *
-     * @return float
+     * @return Decimal
      */
-    public function getAmount(): ?float;
+    public function getAmount(): ?Decimal;
 
     /**
      * Sets the amount (payment currency).
-     *
-     * @param float $amount
-     *
-     * @return $this|PaymentInterface
      *
      * @internal Use payment updater
      *
      * @see \Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface::updateAmount()
      */
-    public function setAmount(float $amount);
+    public function setAmount(Decimal $amount): PaymentInterface;
 
     /**
      * Returns the real amount (default currency).
-     *
-     * @return float
      */
-    public function getRealAmount(): ?float;
+    public function getRealAmount(): ?Decimal;
 
     /**
      * Sets the real amount (default currency).
-     *
-     * @param float $amount
-     *
-     * @return $this|PaymentInterface
      *
      * @internal Use payment updater
      *
      * @see \Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface::updateRealAmount()
      */
-    public function setRealAmount(float $amount);
+    public function setRealAmount(Decimal $amount): PaymentInterface;
 
     /**
-     * Sets the details.
-     *
-     * @param object $details
-     *
-     * @return $this|PaymentInterface
+     * @inheritDoc
      */
-    public function setDetails($details);
+    public function setDetails($details): void;
 
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
-    public function getDescription();
+    public function getDescription(): ?string;
 
-    /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setDescription($description);
+    public function setDescription(?string $description): PaymentInterface;
 
-    /**
-     * Returns the "completed at" datetime.
-     *
-     * @return \DateTime
-     */
-    public function getCompletedAt();
+    public function getCompletedAt(): ?DateTimeInterface;
 
-    /**
-     * Sets the "completed at" datetime.
-     *
-     * @param \DateTime $completedAt
-     *
-     * @return $this|PaymentInterface
-     */
-    public function setCompletedAt(\DateTime $completedAt = null);
+    public function setCompletedAt(?DateTimeInterface $date): PaymentInterface;
 }

@@ -1,10 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
+use ArrayIterator;
+use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
+use Traversable;
 
 /**
  * Class AbstractPayment
@@ -19,76 +26,30 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     use Common\StateSubjectTrait;
     use TimestampableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var bool
-     */
-    protected $refund;
-
-    /**
-     * @var Payment\PaymentMethodInterface
-     */
-    protected $method;
-
-    /**
-     * The amount in payment currency
-     *
-     * @var float
-     */
-    protected $amount;
-
-    /**
-     * The amount in default currency
-     *
-     * @var float
-     */
-    protected $realAmount;
-
-    /**
-     * @var array
-     */
-    protected $details;
-
-    /**
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * @var \DateTime
-     */
-    protected $completedAt;
+    protected ?int                            $id          = null;
+    protected bool                            $refund;
+    protected ?Payment\PaymentMethodInterface $method      = null;
+    protected Decimal                         $amount;              // payment currency
+    protected Decimal                         $realAmount;          // default currency
+    protected array                           $details;
+    protected ?string                         $description = null;
+    protected ?DateTimeInterface              $completedAt = null;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->refund = false;
-        $this->amount = 0;
-        $this->realAmount = 0;
+        $this->amount = new Decimal(0);
+        $this->realAmount = new Decimal(0);
 
         $this->clear();
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->number ?: 'New payment';
     }
 
-    /**
-     * Clones the payment.
-     */
     public function __clone()
     {
         $this->clear();
@@ -106,29 +67,20 @@ abstract class AbstractPayment implements Payment\PaymentInterface
         $this->number = null;
         $this->description = null;
         $this->completedAt = null;
-        $this->createdAt = null;
+        $this->createdAt = new DateTime();
         $this->updatedAt = null;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function isRefund(): bool
     {
         return $this->refund;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setRefund(bool $refund): Payment\PaymentInterface
     {
         $this->refund = $refund;
@@ -136,54 +88,36 @@ abstract class AbstractPayment implements Payment\PaymentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMethod()
+    public function getMethod(): ?Payment\PaymentMethodInterface
     {
         return $this->method;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setMethod(Payment\PaymentMethodInterface $method)
+    public function setMethod(?Payment\PaymentMethodInterface $method): Payment\PaymentInterface
     {
         $this->method = $method;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAmount(): ?float
+    public function getAmount(): ?Decimal
     {
         return $this->amount;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAmount(float $amount)
+    public function setAmount(Decimal $amount): Payment\PaymentInterface
     {
         $this->amount = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getRealAmount(): ?float
+    public function getRealAmount(): ?Decimal
     {
         return $this->realAmount;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setRealAmount(float $amount)
+    public function setRealAmount(Decimal $amount): Payment\PaymentInterface
     {
         $this->realAmount = $amount;
 
@@ -191,7 +125,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDetails()
     {
@@ -199,51 +133,37 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function setDetails($details)
+    public function setDetails($details): void
     {
-        if ($details instanceof \Traversable) {
+        if ($details instanceof Traversable) {
             $details = iterator_to_array($details);
         }
 
         $this->details = $details;
-
-        return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): Payment\PaymentInterface
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCompletedAt()
+    public function getCompletedAt(): ?DateTimeInterface
     {
         return $this->completedAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCompletedAt(\DateTime $completedAt = null)
+    public function setCompletedAt(?DateTimeInterface $date): Payment\PaymentInterface
     {
-        $this->completedAt = $completedAt;
+        $this->completedAt = $date;
 
         return $this;
     }
@@ -253,13 +173,13 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->details);
+        return new ArrayIterator($this->details);
     }
 
     /**
      * @inheritDoc
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->details[$offset]);
     }

@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class SalePaymentStepValidator extends ConstraintValidator
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function validate($sale, Constraint $constraint)
     {

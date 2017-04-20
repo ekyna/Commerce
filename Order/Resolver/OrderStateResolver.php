@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -136,7 +137,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
     protected function postStateResolution(SaleInterface $sale): void
     {
         if (!$sale instanceof OrderInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderInterface::class);
+            throw new UnexpectedTypeException($sale, OrderInterface::class);
         }
 
         if (!in_array($sale->getState(), [

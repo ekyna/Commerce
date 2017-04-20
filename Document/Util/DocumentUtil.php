@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Util;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
@@ -15,22 +17,22 @@ final class DocumentUtil
     /**
      * Returns the types of the sale editable documents.
      *
-     * @param Common\SaleInterface $sale
-     *
-     * @return array
+     * @return array<string>
      */
-    public static function getSaleEditableDocumentTypes(Common\SaleInterface $sale): array
+    public static function getSaleEditableDocumentTypes(Common\SaleInterface $sale, bool $noDuplicate = true): array
     {
         $types = [];
 
         foreach (Document\DocumentTypes::getSaleTypes() as $type) {
-            if (!static::isSaleSupportsDocumentType($sale, $type)) {
+            if (!DocumentUtil::isSaleSupportsDocumentType($sale, $type)) {
                 continue;
             }
 
-            foreach ($sale->getAttachments() as $attachment) {
-                if ($attachment->getType() === $type) {
-                    continue 2;
+            if ($noDuplicate) {
+                foreach ($sale->getAttachments() as $attachment) {
+                    if ($attachment->getType() === $type) {
+                        continue 2;
+                    }
                 }
             }
 
@@ -44,7 +46,7 @@ final class DocumentUtil
      * Returns whether the sale supports the given document type.
      *
      * @param Common\SaleInterface $sale
-     * @param string        $type
+     * @param string               $type
      *
      * @return bool
      */
@@ -68,7 +70,6 @@ final class DocumentUtil
     }
 
 
-
     /**
      * Finds the document good line for the given sale item.
      *
@@ -79,7 +80,7 @@ final class DocumentUtil
      */
     public static function findGoodLine(
         Document\DocumentInterface $document,
-        Common\SaleItemInterface $item
+        Common\SaleItemInterface   $item
     ): ?Document\DocumentLineInterface {
         foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $line) {
             if ($line->getSaleItem() === $item) {
@@ -100,7 +101,7 @@ final class DocumentUtil
      */
     public static function hasPublicParent(
         Document\DocumentInterface $document,
-        Common\SaleItemInterface $item
+        Common\SaleItemInterface   $item
     ): bool {
         if (!$item->isPrivate()) {
             return true;

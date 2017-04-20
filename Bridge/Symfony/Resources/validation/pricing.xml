@@ -15,10 +15,8 @@
         </property>
         <property name="rate">
             <constraint name="NotBlank"/>
-            <constraint name="Range">
-                <option name="min">0</option>
-                <option name="max">100</option>
-            </constraint>
+            <constraint name="GreaterThanOrEqual">0</constraint>
+            <constraint name="LessThanOrEqual">100</constraint>
         </property>
         <property name="country">
             <constraint name="NotNull"/>
@@ -60,18 +58,6 @@
         </property>
         <property name="mentions">
             <constraint name="Valid"/>
-        </property>
-        <property name="notices">
-            <constraint name="All">
-                <constraint name="NotBlank"/>
-                <constraint name="Type">
-                    <option name="type">string</option>
-                </constraint>
-                <constraint name="Length">
-                    <option name="min">2</option>
-                    <option name="max">256</option>
-                </constraint>
-            </constraint>
         </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\TaxRule"/>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">

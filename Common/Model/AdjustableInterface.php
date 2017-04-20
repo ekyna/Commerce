@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
@@ -13,46 +15,32 @@ interface AdjustableInterface
 {
     /**
      * Returns whether the adjustable has adjustments or not, optionally filtered by type.
-     *
-     * @param string $type
-     *
-     * @return bool
      */
-    public function hasAdjustments($type = null);
+    public function hasAdjustments(string $type = null): bool;
 
     /**
      * Returns whether the adjustable has the adjustment or not.
-     *
-     * @param AdjustmentInterface $adjustment
-     *
-     * @return bool
      */
-    public function hasAdjustment(AdjustmentInterface $adjustment);
+    public function hasAdjustment(AdjustmentInterface $adjustment): bool;
 
     /**
      * Adds the adjustment.
      *
-     * @param AdjustmentInterface $adjustment
-     *
      * @return $this|AdjustableInterface
      */
-    public function addAdjustment(AdjustmentInterface $adjustment);
+    public function addAdjustment(AdjustmentInterface $adjustment): AdjustableInterface;
 
     /**
      * Removes the adjustment.
      *
-     * @param AdjustmentInterface $adjustment
-     *
      * @return $this|AdjustableInterface
      */
-    public function removeAdjustment(AdjustmentInterface $adjustment);
+    public function removeAdjustment(AdjustmentInterface $adjustment): AdjustableInterface;
 
     /**
      * Returns the adjustments, optionally filtered by type.
      *
-     * @param string $type
-     *
      * @return Collection|AdjustmentInterface[]
      */
-    public function getAdjustments($type = null);
+    public function getAdjustments(string $type = null): Collection;
 }

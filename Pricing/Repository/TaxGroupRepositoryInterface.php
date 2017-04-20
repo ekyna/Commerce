@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Repository;
 
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface TaxGroupRepositoryInterface

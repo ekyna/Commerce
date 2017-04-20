@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Trait AdjustableTrait
@@ -11,57 +14,49 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 trait AdjustableTrait
 {
-    /**
-     * @var ArrayCollection|AdjustmentInterface[]
-     */
-    protected $adjustments;
+    /** @var Collection<AdjustmentInterface> */
+    protected Collection $adjustments;
 
 
     /**
      * Initializes the adjustments.
      */
-    protected function initializeAdjustments()
+    protected function initializeAdjustments(): void
     {
         $this->adjustments = new ArrayCollection();
     }
 
     /**
      * Returns whether the adjustable has adjustments or not, optionally filtered by type.
-     *
-     * @param string $type
-     *
-     * @return bool
      */
-    public function hasAdjustments($type = null)
+    public function hasAdjustments(string $type = null): bool
     {
-        if (null !== $type) {
-            AdjustmentTypes::isValidType($type);
-
-            return $this->getAdjustments($type)->count();
+        if (null === $type) {
+            return 0 < $this->adjustments->count();
         }
 
-        return 0 < $this->adjustments->count();
+        AdjustmentTypes::isValidType($type);
+
+        return 0 < $this->getAdjustments($type)->count();
     }
 
     /**
      * Returns the adjustments, optionally filtered by type.
      *
-     * @param string $type
-     *
-     * @return ArrayCollection|AdjustmentInterface[]
+     * @return Collection<AdjustmentInterface>
      */
-    public function getAdjustments($type = null)
+    public function getAdjustments(string $type = null): Collection
     {
-        if (null !== $type) {
-            AdjustmentTypes::isValidType($type);
-
-            return $this
-                ->adjustments
-                ->filter(function (AdjustmentInterface $a) use ($type) {
-                    return $a->getType() === $type;
-                });
+        if (null === $type) {
+            return $this->adjustments;
         }
 
-        return $this->adjustments;
+        AdjustmentTypes::isValidType($type);
+
+        return $this
+            ->adjustments
+            ->filter(function (AdjustmentInterface $a) use ($type) {
+                return $a->getType() === $type;
+            });
     }
 }

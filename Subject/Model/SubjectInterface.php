@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -14,63 +17,32 @@ interface SubjectInterface extends ResourceInterface, TaxableInterface
 {
     /**
      * Returns the subject provider name.
-     *
-     * @return string
      */
     public static function getProviderName(): string;
 
     /**
      * Returns the subject identifier.
-     *
-     * @return int|string
      */
-    public function getIdentifier();
+    public function getIdentifier(): int;
 
-    /**
-     * Returns the designation.
-     *
-     * @return string
-     */
     public function getDesignation(): ?string;
 
     /**
-     * Sets the designation.
-     *
-     * @param string $designation
-     *
      * @return $this|SubjectInterface
      */
-    public function setDesignation(string $designation = null): SubjectInterface;
+    public function setDesignation(?string $designation): SubjectInterface;
 
-    /**
-     * Returns the reference.
-     *
-     * @return string
-     */
     public function getReference(): ?string;
 
     /**
-     * Sets the reference.
-     *
-     * @param string $reference
-     *
      * @return $this|SubjectInterface
      */
-    public function setReference(string $reference = null): SubjectInterface;
+    public function setReference(?string $reference): SubjectInterface;
+
+    public function getNetPrice(): Decimal;
 
     /**
-     * Returns the net price.
-     *
-     * @return float
-     */
-    public function getNetPrice(): ?float;
-
-    /**
-     * Sets the net price.
-     *
-     * @param float $netPrice
-     *
      * @return $this|SubjectInterface
      */
-    public function setNetPrice(float $netPrice = null): SubjectInterface;
+    public function setNetPrice(Decimal $netPrice): SubjectInterface;
 }

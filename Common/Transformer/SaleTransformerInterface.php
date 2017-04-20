@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
  * Class SaleTransformerInterface
@@ -17,16 +21,16 @@ interface SaleTransformerInterface
      * @param SaleInterface $source The source sale.
      * @param SaleInterface $target The target sale.
      *
-     * @return \Ekyna\Component\Resource\Event\ResourceEventInterface The target initialize event.
+     * @return ResourceEventInterface The target initialize event.
      */
-    public function initialize(SaleInterface $source, SaleInterface $target);
+    public function initialize(SaleInterface $source, SaleInterface $target): ResourceEventInterface;
 
     /**
      * Transforms the given source sale to the given target sale.
      *
-     * @return \Ekyna\Component\Resource\Event\ResourceEventInterface|null The event that stopped transformation if any.
+     * @return ResourceEventInterface|null The event that stopped transformation if any.
      *
-     * @throws \Ekyna\Component\Commerce\Exception\LogicException If initialize has not been called first.
+     * @throws LogicException If initialize has not been called first.
      */
-    public function transform();
+    public function transform(): ?ResourceEventInterface;
 }

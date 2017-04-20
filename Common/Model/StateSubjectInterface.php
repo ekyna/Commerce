@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,19 +11,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 interface StateSubjectInterface
 {
-    /**
-     * Sets the state.
-     *
-     * @param string $state
-     *
-     * @return $this|StateSubjectInterface
-     */
-    public function setState(string $state);
+    public function setState(string $state): StateSubjectInterface;
 
-    /**
-     * Returns the state.
-     *
-     * @return string
-     */
-    public function getState(): ?string;
+    public function getState(): string;
 }

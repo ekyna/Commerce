@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway\InStore;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\AbstractGateway;
@@ -13,10 +15,7 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
  */
 class InStoreGateway extends AbstractGateway
 {
-    /**
-     * @inheritDoc
-     */
-    public function can(Shipment\ShipmentInterface $shipment, $action)
+    public function can(Shipment\ShipmentInterface $shipment, string $action): bool
     {
         if ($shipment->isReturn()) {
             return parent::can($shipment, $action);
@@ -43,10 +42,7 @@ class InStoreGateway extends AbstractGateway
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function ship(Shipment\ShipmentInterface $shipment)
+    public function ship(Shipment\ShipmentInterface $shipment): bool
     {
         if ($shipment->isReturn()) {
             return parent::ship($shipment);
@@ -67,10 +63,7 @@ class InStoreGateway extends AbstractGateway
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function complete(Shipment\ShipmentInterface $shipment)
+    public function complete(Shipment\ShipmentInterface $shipment): bool
     {
         if ($shipment->isReturn()) {
             return parent::complete($shipment);
@@ -89,11 +82,8 @@ class InStoreGateway extends AbstractGateway
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCapabilities()
+    public function getCapabilities(): int
     {
-        return static::CAPABILITY_SHIPMENT || static::CAPABILITY_RETURN;
+        return static::CAPABILITY_SHIPMENT | static::CAPABILITY_RETURN;
     }
 }

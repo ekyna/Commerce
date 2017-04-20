@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Repository;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\CouponInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -19,29 +22,14 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 interface OrderRepositoryInterface extends SaleRepositoryInterface
 {
     /**
-     * Creates a new order instance.
-     *
-     * @return OrderInterface
-     */
-    public function createNew();
-
-    /**
      * Returns whether an order exists for the given customer.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return bool
      */
-    public function existsForCustomer(CustomerInterface $customer);
+    public function existsForCustomer(CustomerInterface $customer): bool;
 
     /**
      * Returns whether an order exists for the given email.
-     *
-     * @param string $email
-     *
-     * @return bool
      */
-    public function existsForEmail(string $email);
+    public function existsForEmail(string $email): bool;
 
     /**
      * Finds the sales by origin customer, optionally filtered by states.
@@ -49,23 +37,23 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      * @param CustomerInterface $customer
      * @param array             $states
      *
-     * @return array|OrderInterface[]
+     * @return array<OrderInterface>
      */
-    public function findByOriginCustomer(CustomerInterface $customer, array $states = []);
+    public function findByOriginCustomer(CustomerInterface $customer, array $states = []): array;
 
     /**
      * Finds orders completed yesterday.
      *
-     * @return array|OrderInterface[]
+     * @return array<OrderInterface>
      */
     public function findCompletedYesterday(): array;
 
     /**
      * Returns the dues orders.
      *
-     * @return OrderInterface[]
+     * @return array<OrderInterface>
      */
-    public function findDueOrders();
+    public function findDueOrders(): array;
 
     /**
      * Finds orders having revenue total or margin total set to null.
@@ -76,89 +64,73 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
 
     /**
      * Returns the regular (payment term less) due.
-     *
-     * @return float
      */
-    public function getRegularDue();
+    public function getRegularDue(): Decimal;
 
     /**
      * Returns the regular (payment term less) due orders.
      *
-     * @return OrderInterface[]
+     * @return array<OrderInterface>
      */
-    public function getRegularDueOrders();
+    public function getRegularDueOrders(): array;
 
     /**
      * Returns the customers expired due.
-     *
-     * @return float
      */
-    public function getOutstandingExpiredDue();
+    public function getOutstandingExpiredDue(): Decimal;
 
     /**
      * Returns the customers expired due orders.
      *
-     * @return OrderInterface[]
+     * @return array<OrderInterface>
      */
-    public function getOutstandingExpiredDueOrders();
+    public function getOutstandingExpiredDueOrders(): array;
 
     /**
      * Returns the customers fall due.
-     *
-     * @return float
      */
-    public function getOutstandingFallDue();
+    public function getOutstandingFallDue(): Decimal;
 
     /**
      * Returns the customers fall due orders.
      *
-     * @return OrderInterface[]
+     * @return array<OrderInterface>
      */
-    public function getOutstandingFallDueOrders();
+    public function getOutstandingFallDueOrders(): array;
 
     /**
      * Returns the customers pending due.
-     *
-     * @return float
      */
-    public function getOutstandingPendingDue();
+    public function getOutstandingPendingDue(): Decimal;
 
     /**
      * Returns the customers pending due orders.
      *
-     * @return OrderInterface[]
+     * @return array<OrderInterface>
      */
-    public function getOutstandingPendingDueOrders();
+    public function getOutstandingPendingDueOrders(): array;
 
     /**
      * Returns the remaining (that needs to be invoiced) total.
-     *
-     * @return float
      */
-    public function getRemainingTotal();
+    public function getRemainingTotal(): Decimal;
 
     /**
      * Returns the remaining (that needs to be invoiced) orders.
      *
-     * @return OrderInterface[]
+     * @return array<OrderInterface>
      */
-    public function getRemainingOrders();
+    public function getRemainingOrders(): array;
 
     /**
      * Returns the currencies used by the customer.
      *
-     * @param CustomerInterface $customer
-     *
-     * @return string[] The currencies codes.
+     * @return array<string> The currencies codes.
      */
-    public function getCustomerCurrencies(CustomerInterface $customer);
+    public function getCustomerCurrencies(CustomerInterface $customer): array;
 
     /**
      * Returns the coupon code usage.
-     *
-     * @param CouponInterface $coupon
-     *
-     * @return int
      */
     public function getCouponUsage(CouponInterface $coupon): int;
 }

@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class CartItemAdjustmentEventSubscriber extends CartItemAdjustmentListener implements EventSubscriberInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public static function getSubscribedEvents()
     {

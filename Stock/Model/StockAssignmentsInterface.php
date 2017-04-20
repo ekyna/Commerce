@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Model;
+
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Interface StockAssignmentsInterface
@@ -9,44 +13,16 @@ namespace Ekyna\Component\Commerce\Stock\Model;
  */
 interface StockAssignmentsInterface
 {
-    /**
-     * Returns whether the current object has the given assignment.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return bool
-     */
-    public function hasStockAssignment(StockAssignmentInterface $assignment);
+    public function hasStockAssignment(StockAssignmentInterface $assignment): bool;
+
+    public function addStockAssignment(StockAssignmentInterface $assignment): StockAssignmentsInterface;
+
+    public function removeStockAssignment(StockAssignmentInterface $assignment): StockAssignmentsInterface;
+
+    public function hasStockAssignments(): bool;
 
     /**
-     * Adds the stock assignment.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return $this|StockAssignmentsInterface
+     * @return Collection|array<StockAssignmentInterface>
      */
-    public function addStockAssignment(StockAssignmentInterface $assignment);
-
-    /**
-     * Removes the stock assignment.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return $this|StockAssignmentsInterface
-     */
-    public function removeStockAssignment(StockAssignmentInterface $assignment);
-
-    /**
-     * Returns whether there is stock assignment.
-     *
-     * @return bool
-     */
-    public function hasStockAssignments();
-
-    /**
-     * Returns the the stock assignment.
-     *
-     * @return \Doctrine\Common\Collections\Collection|StockAssignmentInterface[]
-     */
-    public function getStockAssignments();
+    public function getStockAssignments(): Collection;
 }

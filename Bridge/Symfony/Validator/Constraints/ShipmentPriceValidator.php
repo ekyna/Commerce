@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
-use Ekyna\Component\Commerce\Shipment\Gateway\RegistryInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\GatewayRegistryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Exception\InvalidArgumentException;
 class ShipmentPriceValidator extends ConstraintValidator
 {
     /**
-     * @var RegistryInterface
+     * @var GatewayRegistryInterface
      */
     private $gatewayRegistry;
 
@@ -24,9 +24,9 @@ class ShipmentPriceValidator extends ConstraintValidator
     /**
      * Constructor.
      *
-     * @param RegistryInterface $gatewayRegistry
+     * @param GatewayRegistryInterface $gatewayRegistry
      */
-    public function __construct(RegistryInterface $gatewayRegistry)
+    public function __construct(GatewayRegistryInterface $gatewayRegistry)
     {
         $this->gatewayRegistry = $gatewayRegistry;
     }

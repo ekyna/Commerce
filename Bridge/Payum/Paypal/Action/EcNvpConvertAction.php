@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model;
@@ -23,39 +26,14 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
 {
     use GatewayAwareTrait;
 
-    /**
-     * @var AmountCalculatorFactory
-     */
-    private $calculatorFactory;
+    private AmountCalculatorFactory $calculatorFactory;
+    private ?string                 $brandName;
 
-    /**
-     * @var string
-     */
-    private $brandName;
+    private ?string                    $currency   = null;
+    private int                        $line;
+    private ?AmountCalculatorInterface $calculator = null;
 
-    /**
-     * @var string
-     */
-    private $currency;
-
-    /**
-     * @var int
-     */
-    private $line;
-
-    /**
-     * @var AmountCalculatorInterface
-     */
-    private $calculator;
-
-
-    /**
-     * Constructor.
-     *
-     * @param AmountCalculatorFactory $calculatorFactory
-     * @param string                  $brandName
-     */
-    public function __construct(AmountCalculatorFactory $calculatorFactory, $brandName = null)
+    public function __construct(AmountCalculatorFactory $calculatorFactory, string $brandName = null)
     {
         $this->calculatorFactory = $calculatorFactory;
         $this->brandName = $brandName;
@@ -104,7 +82,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
             return;
         }
 
-        if (0 !== Money::compare($sale->getGrandTotal(), $details['PAYMENTREQUEST_0_AMT'], $this->currency)) {
+        if (!$sale->getGrandTotal()->equals($details['PAYMENTREQUEST_0_AMT'])) {
             return;
         }
 
@@ -136,15 +114,10 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
 
     /**
      * Builds the item details.
-     *
-     * @param array                   $details
-     * @param Model\SaleItemInterface $item
-     *
-     * @return float
      */
-    private function addItemDetails(array &$details, Model\SaleItemInterface $item)
+    private function addItemDetails(array &$details, Model\SaleItemInterface $item): Decimal
     {
-        $total = 0;
+        $total = new Decimal(0);
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $itemResult = $this->getCalculator()->calculateSaleItem($item);
@@ -173,13 +146,8 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
 
     /**
      * Adds the discount details.
-     *
-     * @param array                         $details
-     * @param Model\SaleAdjustmentInterface $discount
-     *
-     * @return float
      */
-    private function addDiscountDetails(array &$details, Model\SaleAdjustmentInterface $discount)
+    private function addDiscountDetails(array &$details, Model\SaleAdjustmentInterface $discount): Decimal
     {
         $discountResult = $this->getCalculator()->calculateSaleDiscount($discount);
 
@@ -189,26 +157,21 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
 
         $this->line++;
 
-        return -$discountResult->getTotal();
+        return $discountResult->getTotal()->negate();
     }
 
     /**
      * Formats the given amount.
      *
-     * @param float $amount
+     * @param Decimal $amount
      *
      * @return string
      */
-    private function format($amount)
+    private function format(Decimal $amount): string
     {
-        return (string)Money::round($amount, $this->currency);
+        return Money::fixed($amount, $this->currency);
     }
 
-    /**
-     * Returns the amount calculator.
-     *
-     * @return AmountCalculatorInterface
-     */
     private function getCalculator(): AmountCalculatorInterface
     {
         if ($this->calculator) {
@@ -219,9 +182,9 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
-    public function supports($request)
+    public function supports($request): bool
     {
         return $request instanceof Convert
             && $request->getSource() instanceof PaymentInterface

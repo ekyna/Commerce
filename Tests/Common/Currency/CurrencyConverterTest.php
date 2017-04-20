@@ -76,7 +76,7 @@ class CurrencyConverterTest extends TestCase
      */
     public function testConvertWithRate(float $expected, array $args): void
     {
-        $actual = call_user_func_array([$this->converter, 'convertWithRate'], $args);
+        $actual = $this->converter->convertWithRate(...$args);
 
         $this->assertEquals($expected, $actual);
     }
@@ -98,7 +98,7 @@ class CurrencyConverterTest extends TestCase
      */
     public function testConvert(float $expected, array $args): void
     {
-        $actual = call_user_func_array([$this->converter, 'convert'], $args);
+        $actual = $this->converter->convert(...$args);
 
         $this->assertEquals($expected, $actual);
     }
@@ -126,7 +126,7 @@ class CurrencyConverterTest extends TestCase
      */
     public function testGetSubjectExchangeRate(float $expected, array $args): void
     {
-        $actual = call_user_func_array([$this->converter, 'getSubjectExchangeRate'], $args);
+        $actual = $this->converter->getSubjectExchangeRate(...$args);
 
         $this->assertEquals($expected, $actual);
     }
@@ -159,7 +159,7 @@ class CurrencyConverterTest extends TestCase
      */
     public function testConvertWithSubject(float $expected, array $args): void
     {
-        $actual = call_user_func_array([$this->converter, 'convertWithSubject'], $args);
+        $actual = $this->converter->convertWithSubject(...$args);
 
         $this->assertEquals($expected, $actual);
     }

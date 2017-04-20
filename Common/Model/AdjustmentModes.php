@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -11,34 +13,21 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class AdjustmentModes
 {
-    const MODE_FLAT    = 'flat';
-    const MODE_PERCENT = 'percent';
+    public const MODE_FLAT = 'flat';
+    public const MODE_PERCENT = 'percent';
 
 
-    /**
-     * Returns all the modes.
-     *
-     * @return array
-     */
-    static public function getModes()
+    public static function getModes(): array
     {
         return [
-            static::MODE_FLAT,
-            static::MODE_PERCENT,
+            AdjustmentModes::MODE_FLAT,
+            AdjustmentModes::MODE_PERCENT,
         ];
     }
 
-    /**
-     * Returns whether the given mode is valid or not.
-     *
-     * @param string $mode
-     * @param bool   $throw
-     *
-     * @return bool
-     */
-    static public function isValidMode($mode, $throw = true)
+    public static function isValidMode(string $mode, bool $throw = true): bool
     {
-        if (in_array($mode, static::getModes(), true)) {
+        if (in_array($mode, AdjustmentModes::getModes(), true)) {
             return true;
         }
 
@@ -47,5 +36,9 @@ final class AdjustmentModes
         }
 
         return false;
+    }
+
+    private function __construct()
+    {
     }
 }

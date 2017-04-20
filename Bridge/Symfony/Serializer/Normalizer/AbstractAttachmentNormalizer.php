@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Model\AttachmentInterface;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class AbstractAttachmentNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAttachmentNormalizer extends AbstractResourceNormalizer
+abstract class AbstractAttachmentNormalizer extends ResourceNormalizer
 {
     use FormatterAwareTrait;
 
@@ -23,7 +25,7 @@ abstract class AbstractAttachmentNormalizer extends AbstractResourceNormalizer
      *
      * @return array
      */
-    protected function normalizeAttachment(AttachmentInterface $attachment)
+    protected function normalizeAttachment(AttachmentInterface $attachment): array
     {
         $formatter = $this->getFormatter();
 

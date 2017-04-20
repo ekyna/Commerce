@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Notify;
 
 use Ekyna\Component\Commerce\Common\Event\NotifyEvent;
 use Ekyna\Component\Commerce\Common\Event\NotifyEvents;
 use Ekyna\Component\Commerce\Common\Model\Notify;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -14,31 +17,15 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 class NotifyBuilder
 {
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
+    protected EventDispatcherInterface $eventDispatcher;
 
 
-    /**
-     * Constructor.
-     *
-     * @param EventDispatcherInterface $eventDispatcher
-     */
     public function __construct(EventDispatcherInterface $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * Creates a notify.
-     *
-     * @param string $type
-     * @param mixed  $source
-     *
-     * @return Notify
-     */
-    public function create($type, $source = null)
+    public function create(string $type, ?ResourceInterface $source): Notify
     {
         $notify = new Notify();
         $notify
@@ -49,17 +36,13 @@ class NotifyBuilder
     }
 
     /**
-     * Builds the notify.
-     *
-     * @param Notify $notify
-     *
-     * @return bool Whether the notify has been successfully built.
+     * @return bool Whether the notification has been successfully built.
      */
     public function build(Notify $notify): bool
     {
         $event = new NotifyEvent($notify);
 
-        $this->eventDispatcher->dispatch(NotifyEvents::BUILD, $event);
+        $this->eventDispatcher->dispatch($event, NotifyEvents::BUILD);
 
         if ($notify->getRecipients()->isEmpty()) {
             return false;

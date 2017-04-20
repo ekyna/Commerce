@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 /**
@@ -9,17 +11,7 @@ namespace Ekyna\Component\Commerce\Shipment\Gateway;
  */
 interface PersisterAwareInterface
 {
-    /**
-     * Sets the persister.
-     *
-     * @param PersisterInterface $persister
-     */
-    public function setPersister(PersisterInterface $persister);
+    public function setPersister(PersisterInterface $persister): void;
 
-    /**
-     * Returns the shipment persister.
-     *
-     * @return PersisterInterface
-     */
-    public function getPersister();
+    public function getPersister(): PersisterInterface;
 }

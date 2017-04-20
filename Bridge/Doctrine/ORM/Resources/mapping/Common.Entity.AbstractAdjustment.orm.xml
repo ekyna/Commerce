@@ -10,7 +10,7 @@
         <field name="designation" column="designation" type="string" length="255" nullable="true"/>
         <field name="type" column="type" type="string" length="16"/>
         <field name="mode" column="mode" type="string" length="16"/>
-        <field name="amount" column="amount" type="decimal" precision="15" scale="5"/>
+        <field name="amount" column="amount" type="php_decimal" precision="15" scale="5"/>
         <field name="immutable" column="immutable" type="boolean"/>
         <field name="source" column="source" type="string" length="64" nullable="true"/>
 

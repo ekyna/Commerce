@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -15,24 +17,15 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class SaleValidator extends ConstraintValidator
 {
-    /**
-     * @var Gateway\RegistryInterface
-     */
-    private $gatewayRegistry;
+    private Gateway\GatewayRegistryInterface $gatewayRegistry;
 
-
-    /**
-     * Constructor.
-     *
-     * @param Gateway\RegistryInterface $gatewayRegistry
-     */
-    public function __construct(Gateway\RegistryInterface $gatewayRegistry)
+    public function __construct(Gateway\GatewayRegistryInterface $gatewayRegistry)
     {
         $this->gatewayRegistry = $gatewayRegistry;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function validate($sale, Constraint $constraint)
     {
@@ -62,11 +55,8 @@ class SaleValidator extends ConstraintValidator
 
     /**
      * Validates the shipment method requirements.
-     *
-     * @param SaleInterface $sale
-     * @param Constraint    $constraint
      */
-    protected function validateShipmentMethodRequirements(SaleInterface $sale, Constraint $constraint)
+    protected function validateShipmentMethodRequirements(SaleInterface $sale, Constraint $constraint): void
     {
         if (null === $method = $sale->getShipmentMethod()) {
             return;
@@ -98,11 +88,8 @@ class SaleValidator extends ConstraintValidator
 
     /**
      * Validates the delivery address.
-     *
-     * @param SaleInterface $sale
-     * @param Constraint    $constraint
      */
-    protected function validateDeliveryAddress(SaleInterface $sale, Constraint $constraint)
+    protected function validateDeliveryAddress(SaleInterface $sale, Constraint $constraint): void
     {
         /** @var Sale $constraint */
         if (!$sale->isSameAddress() && null === $sale->getDeliveryAddress()) {
@@ -121,11 +108,8 @@ class SaleValidator extends ConstraintValidator
 
     /**
      * Validates the sale identity.
-     *
-     * @param SaleInterface $sale
-     * @param Constraint    $constraint
      */
-    protected function validateIdentity(SaleInterface $sale, Constraint $constraint)
+    protected function validateIdentity(SaleInterface $sale, Constraint $constraint): void
     {
         /** @var Sale $constraint */
         if (null === $sale->getCustomer()) {
@@ -135,7 +119,7 @@ class SaleValidator extends ConstraintValidator
                     ->atPath('customerGroup')
                     ->addViolation();
             }
-            if (0 == strlen($sale->getEmail())) {
+            if (empty($sale->getEmail())) {
                 $this->context
                     ->buildViolation($constraint->email_is_required_if_no_customer)
                     ->atPath('email')
@@ -148,11 +132,8 @@ class SaleValidator extends ConstraintValidator
 
     /**
      * Validates the sale payment term and outstanding limit.
-     *
-     * @param SaleInterface $sale
-     * @param Constraint    $constraint
      */
-    protected function validatePaymentTermAndOutstandingLimit(SaleInterface $sale, Constraint $constraint)
+    protected function validatePaymentTermAndOutstandingLimit(SaleInterface $sale, Constraint $constraint): void
     {
         if (0 >= $sale->getOutstandingLimit()) {
             return;

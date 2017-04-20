@@ -64,7 +64,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -72,7 +72,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getName()
     {
@@ -80,7 +80,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setName($name)
     {
@@ -90,7 +90,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDays()
     {
@@ -98,7 +98,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDays($days)
     {
@@ -108,7 +108,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getEndOfMonth()
     {
@@ -116,7 +116,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setEndOfMonth($endOfMonth)
     {
@@ -126,7 +126,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTrigger()
     {
@@ -134,7 +134,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setTrigger($trigger)
     {
@@ -144,7 +144,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTitle()
     {
@@ -152,7 +152,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setTitle($title)
     {
@@ -162,7 +162,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDescription()
     {
@@ -170,7 +170,7 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDescription($description)
     {

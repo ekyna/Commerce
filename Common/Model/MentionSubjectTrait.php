@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -12,24 +14,16 @@ use Doctrine\Common\Collections\Collection;
  */
 trait MentionSubjectTrait
 {
-    /**
-     * @var Collection|MentionInterface[]
-     */
-    protected $mentions;
+    /** @var Collection<MentionInterface> */
+    protected Collection $mentions;
 
-
-    /**
-     * Initializes the mentions.
-     */
     protected function initializeMentions(): void
     {
         $this->mentions = new ArrayCollection();
     }
 
     /**
-     * Returns the mentions.
-     *
-     * @return Collection|MentionInterface[]
+     * @return Collection<MentionInterface>
      */
     public function getMentions(): Collection
     {

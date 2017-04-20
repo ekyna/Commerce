@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -12,18 +14,9 @@ use Ekyna\Component\Resource\Event\ResourceEvent;
  */
 class SaleTransformEvent extends ResourceEvent
 {
-    /**
-     * @var SaleInterface
-     */
-    private $source;
+    private SaleInterface $source;
 
 
-    /**
-     * Constructor.
-     *
-     * @param SaleInterface $source
-     * @param SaleInterface $target
-     */
     public function __construct(SaleInterface $source, SaleInterface $target)
     {
         $this->setResource($target);
@@ -31,23 +24,14 @@ class SaleTransformEvent extends ResourceEvent
         $this->source = $source;
     }
 
-    /**
-     * Returns the source.
-     *
-     * @return SaleInterface
-     */
-    public function getSource()
+    public function getSource(): SaleInterface
     {
         return $this->source;
     }
 
-    /**
-     * Returns the target.
-     *
-     * @return SaleInterface
-     */
-    public function getTarget()
+    public function getTarget(): SaleInterface
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getResource();
     }
 }

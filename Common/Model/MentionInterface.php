@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\SortableInterface;
@@ -15,34 +17,19 @@ use Ekyna\Component\Resource\Model\TranslatableInterface;
 interface MentionInterface extends TranslatableInterface, SortableInterface
 {
     /**
-     * Returns the document types.
-     *
      * @return string[]
      */
     public function getDocumentTypes(): array;
 
-    /**
-     * Adds the document type.
-     *
-     * @param string $type
-     *
-     * @return MentionInterface
-     */
     public function addDocumentType(string $type): MentionInterface;
 
     /**
-     * Sets the document types.
-     *
      * @param string[] $types
-     *
-     * @return MentionInterface
      */
     public function setDocumentTypes(array $types): MentionInterface;
 
     /**
      * Returns the (translated) content.
-     *
-     * @return string
      */
-    public function getContent();
+    public function getContent(): ?string;
 }

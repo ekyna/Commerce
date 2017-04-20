@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class OrderItemAdjustmentEventSubscriber extends OrderItemAdjustmentListener implements EventSubscriberInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public static function getSubscribedEvents()
     {

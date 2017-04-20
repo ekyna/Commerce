@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Context;
 
 use Ekyna\Component\Commerce\Cart\Provider\CartProviderInterface;
@@ -23,82 +25,26 @@ use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Class ContextProvider
+ * Class ContextLoader
  * @package Ekyna\Component\Commerce\Common\Context
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class ContextProvider implements ContextProviderInterface
 {
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
+    protected EventDispatcherInterface         $eventDispatcher;
+    protected CustomerProviderInterface        $customerProvider;
+    protected CartProviderInterface            $cartProvider;
+    protected LocaleProviderInterface          $localProvider;
+    protected CurrencyProviderInterface        $currencyProvider;
+    protected CountryProviderInterface         $countryProvider;
+    protected WarehouseProviderInterface       $warehouseProvider;
+    protected CustomerGroupRepositoryInterface $customerGroupRepository;
+    protected string                           $defaultVatDisplayMode;
+    protected string                           $contextClass;
 
-    /**
-     * @var CustomerProviderInterface
-     */
-    protected $customerProvider;
-
-    /**
-     * @var CartProviderInterface
-     */
-    protected $cartProvider;
-
-    /**
-     * @var LocaleProviderInterface
-     */
-    protected $localProvider;
-
-    /**
-     * @var CurrencyProviderInterface
-     */
-    protected $currencyProvider;
-
-    /**
-     * @var CountryProviderInterface
-     */
-    protected $countryProvider;
-
-    /**
-     * @var WarehouseProviderInterface
-     */
-    protected $warehouseProvider;
-
-    /**
-     * @var CustomerGroupRepositoryInterface
-     */
-    protected $customerGroupRepository;
-
-    /**
-     * @var string
-     */
-    protected $defaultVatDisplayMode;
-
-    /**
-     * @var string
-     */
-    protected $contextClass;
-
-    /**
-     * @var ContextInterface
-     */
-    protected $context;
+    protected ?ContextInterface $context = null;
 
 
-    /**
-     * Constructor.
-     *
-     * @param EventDispatcherInterface         $eventDispatcher
-     * @param CartProviderInterface            $cartProvider
-     * @param CustomerProviderInterface        $customerProvider
-     * @param LocaleProviderInterface          $localProvider
-     * @param CurrencyProviderInterface        $currencyProvider
-     * @param CountryProviderInterface         $countryProvider
-     * @param WarehouseProviderInterface       $warehouseProvider
-     * @param CustomerGroupRepositoryInterface $customerGroupRepository
-     * @param string                           $defaultVatDisplayMode
-     * @param string                           $contextClass
-     */
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
         CartProviderInterface $cartProvider,
@@ -108,8 +54,8 @@ class ContextProvider implements ContextProviderInterface
         CountryProviderInterface $countryProvider,
         WarehouseProviderInterface $warehouseProvider,
         CustomerGroupRepositoryInterface $customerGroupRepository,
-        $defaultVatDisplayMode = VatDisplayModes::MODE_ATI,
-        $contextClass = Context::class
+        string $defaultVatDisplayMode = VatDisplayModes::MODE_ATI,
+        string $contextClass = Context::class
     ) {
         $this->eventDispatcher = $eventDispatcher;
         $this->customerProvider = $customerProvider;
@@ -123,49 +69,31 @@ class ContextProvider implements ContextProviderInterface
         $this->contextClass = $contextClass;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCustomerProvider(): CustomerProviderInterface
     {
         return $this->customerProvider;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCartProvider(): CartProviderInterface
     {
         return $this->cartProvider;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLocalProvider(): LocaleProviderInterface
     {
         return $this->localProvider;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrencyProvider(): CurrencyProviderInterface
     {
         return $this->currencyProvider;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCountryProvider(): CountryProviderInterface
     {
         return $this->countryProvider;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getContext(SaleInterface $sale = null): ContextInterface
     {
         if ($sale) {
@@ -199,7 +127,7 @@ class ContextProvider implements ContextProviderInterface
             $this->context = $this->createSaleContext($contextOrSale);
         } else {
             throw new InvalidArgumentException(
-                "Expected instance of " . ContextInterface::class . " or " . SaleInterface::class
+                'Expected instance of ' . ContextInterface::class . ' or ' . SaleInterface::class
             );
         }
 
@@ -219,7 +147,7 @@ class ContextProvider implements ContextProviderInterface
                 $currency = $this->currencyProvider->getCurrency($currency);
             }
             if (!$currency instanceof CurrencyInterface) {
-                throw new UnexpectedValueException("Expected string or instance of " . CurrencyInterface::class);
+                throw new UnexpectedValueException('Expected string or instance of ' . CurrencyInterface::class);
             }
             if ($currency === $this->currencyProvider->getCurrency()) {
                 $currency = null;
@@ -231,7 +159,7 @@ class ContextProvider implements ContextProviderInterface
                 $country = $this->countryProvider->getCountry($country);
             }
             if (!$country instanceof CountryInterface) {
-                throw new UnexpectedValueException("Expected string or instance of " . CountryInterface::class);
+                throw new UnexpectedValueException('Expected string or instance of ' . CountryInterface::class);
             }
             if ($country === $this->countryProvider->getCountry()) {
                 $country = null;
@@ -256,17 +184,14 @@ class ContextProvider implements ContextProviderInterface
             }
 
             $this->eventDispatcher->dispatch(
-                ContextEvents::CHANGE,
-                new ContextChangeEvent($currency, $country, $locale)
+                new ContextChangeEvent($currency, $country, $locale),
+                ContextEvents::CHANGE
             );
         }
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function onClear(): void
     {
         $this->context = null;
@@ -274,10 +199,6 @@ class ContextProvider implements ContextProviderInterface
 
     /**
      * Creates and sets the sale context.
-     *
-     * @param SaleInterface $sale The sale
-     *
-     * @return ContextInterface
      */
     protected function createSaleContext(SaleInterface $sale): ContextInterface
     {
@@ -322,8 +243,6 @@ class ContextProvider implements ContextProviderInterface
 
     /**
      * Creates a default context.
-     *
-     * @return ContextInterface
      */
     protected function createDefaultContext(): ContextInterface
     {
@@ -340,9 +259,6 @@ class ContextProvider implements ContextProviderInterface
 
     /**
      * Fills the context from the given customer.
-     *
-     * @param ContextInterface  $context
-     * @param CustomerInterface $customer
      */
     protected function fillFromCustomer(ContextInterface $context, CustomerInterface $customer): void
     {
@@ -369,10 +285,6 @@ class ContextProvider implements ContextProviderInterface
 
     /**
      * Fills the context's empty properties with default values.
-     *
-     * @param ContextInterface $context
-     *
-     * @return ContextInterface
      */
     protected function finalize(ContextInterface $context): ContextInterface
     {
@@ -384,7 +296,7 @@ class ContextProvider implements ContextProviderInterface
             $context->setInvoiceCountry($this->countryProvider->getCountry());
         }
 
-        if (null === $delivery = $context->getDeliveryCountry()) {
+        if (null === $context->getDeliveryCountry()) {
             $context->setDeliveryCountry($this->countryProvider->getCountry());
         }
 
@@ -410,18 +322,13 @@ class ContextProvider implements ContextProviderInterface
             }
         }
 
-        $this->eventDispatcher->dispatch(ContextEvents::BUILD, new ContextEvent($context));
+        $this->eventDispatcher->dispatch(new ContextEvent($context), ContextEvents::BUILD);
 
         return $context;
     }
 
-    /**
-     * Creates a new context.
-     *
-     * @return ContextInterface
-     */
     protected function createContext(): ContextInterface
     {
-        return new $this->contextClass;
+        return new $this->contextClass();
     }
 }

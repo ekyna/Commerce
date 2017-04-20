@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -7,24 +9,26 @@ namespace Ekyna\Component\Commerce\Common\Model;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SaleSources
+final class SaleSources
 {
-    const SOURCE_WEBSITE     = 'website';
-    const SOURCE_MARKETPLACE = 'marketplace';
-    const SOURCE_COMMERCIAL  = 'commercial';
+    public const SOURCE_WEBSITE     = 'website';
+    public const SOURCE_MARKETPLACE = 'marketplace';
+    public const SOURCE_COMMERCIAL  = 'commercial';
 
 
-    /**
-     * Returns the sources.
-     *
-     * @return array
-     */
-    static public function getSources()
+    public static function getSources(): array
     {
         return [
-            static::SOURCE_WEBSITE,
-            static::SOURCE_MARKETPLACE,
-            static::SOURCE_COMMERCIAL,
+            SaleSources::SOURCE_WEBSITE,
+            SaleSources::SOURCE_MARKETPLACE,
+            SaleSources::SOURCE_COMMERCIAL,
         ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    private function __construct()
+    {
     }
 }

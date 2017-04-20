@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,40 +11,26 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 final class Genders
 {
-    const GENDER_MR = 'mr';
-    const GENDER_MRS = 'mrs';
-    const GENDER_MISS = 'miss';
+    public const GENDER_MR   = 'mr';
+    public const GENDER_MRS  = 'mrs';
+    public const GENDER_MISS = 'miss';
 
 
-    /**
-     * Returns all the states.
-     *
-     * @return array
-     */
-    static public function getGenders()
+    public static function getGenders(): array
     {
         return [
-            static::GENDER_MR,
-            static::GENDER_MRS,
-            static::GENDER_MISS,
+            Genders::GENDER_MR,
+            Genders::GENDER_MRS,
+            Genders::GENDER_MISS,
         ];
     }
 
-    /**
-     * Returns whether the given gender is valid or not.
-     *
-     * @param string $gender
-     *
-     * @return bool
-     */
-    static public function isValidGender($gender)
+    public static function isValidGender(string $gender): bool
     {
-        return in_array($gender, static::getGenders(), true);
+        return in_array($gender, Genders::getGenders(), true);
     }
 
     /**
-     * Disabled constructor.
-     *
      * @codeCoverageIgnore
      */
     final private function __construct()

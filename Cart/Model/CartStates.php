@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Model;
 
 /**
@@ -9,38 +11,24 @@ namespace Ekyna\Component\Commerce\Cart\Model;
  */
 final class CartStates
 {
-    const STATE_NEW      = 'new';
-    const STATE_ACCEPTED = 'accepted';
+    public const STATE_NEW = 'new';
+    public const STATE_ACCEPTED = 'accepted';
 
 
-    /**
-     * Returns all the states.
-     *
-     * @return array
-     */
-    static public function getStates()
+    public static function getStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_ACCEPTED,
+            CartStates::STATE_NEW,
+            CartStates::STATE_ACCEPTED,
         ];
     }
 
-    /**
-     * Returns whether the given state is valid or not.
-     *
-     * @param string $state
-     *
-     * @return bool
-     */
-    static public function isValidState($state)
+    public static function isValidState(string $state): bool
     {
-        return in_array($state, static::getStates(), true);
+        return in_array($state, CartStates::getStates(), true);
     }
 
     /**
-     * Disabled constructor.
-     *
      * @codeCoverageIgnore
      */
     final private function __construct()

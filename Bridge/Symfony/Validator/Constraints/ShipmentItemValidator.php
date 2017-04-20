@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
@@ -16,17 +18,8 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class ShipmentItemValidator extends ConstraintValidator
 {
-    /**
-     * @var ShipmentSubjectCalculatorInterface
-     */
-    private $shipmentCalculator;
+    private ShipmentSubjectCalculatorInterface $shipmentCalculator;
 
-
-    /**
-     * Constructor.
-     *
-     * @param ShipmentSubjectCalculatorInterface $calculator
-     */
     public function __construct(ShipmentSubjectCalculatorInterface $calculator)
     {
         $this->shipmentCalculator = $calculator;
@@ -52,22 +45,17 @@ class ShipmentItemValidator extends ConstraintValidator
         $saleItem = $item->getSaleItem();
         $shipment = $item->getShipment();
 
-        if ($saleItem->isPrivate()) {
-            // TODO Rework / Use packaging format
-            $iQty = round(100000 * (float)$item->getQuantity());
-            $siQty = round(100000 * (float)$saleItem->getQuantity());
-            if (0 !== $mod = $iQty % $siQty) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->parent_quantity_integrity, [
-                        '%multiple%' => $saleItem->getQuantity()
-                    ])
-                    ->setInvalidValue($item->getQuantity())
-                    ->atPath('quantity')
-                    ->addViolation();
+        if ($saleItem->isPrivate() && !$item->getQuantity()->rem($saleItem->getQuantity())->isZero()) {
+            $this
+                ->context
+                ->buildViolation($constraint->parent_quantity_integrity, [
+                    '%multiple%' => $saleItem->getQuantity()
+                ])
+                ->setInvalidValue($item->getQuantity())
+                ->atPath('quantity')
+                ->addViolation();
 
-                return;
-            }
+            return;
         }
 
         // Return shipment case
@@ -104,8 +92,6 @@ class ShipmentItemValidator extends ConstraintValidator
                 ->setInvalidValue($item->getQuantity())
                 ->atPath('quantity')
                 ->addViolation();
-
-            return;
         }
     }
 }

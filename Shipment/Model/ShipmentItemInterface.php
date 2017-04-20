@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Decimal\Decimal;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -13,106 +16,35 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface ShipmentItemInterface extends ResourceInterface
 {
-    /**
-     * Returns the shipment.
-     *
-     * @return ShipmentInterface
-     */
-    public function getShipment();
+    public function getShipment(): ?ShipmentInterface;
+
+    public function setShipment(?ShipmentInterface $shipment): ShipmentItemInterface;
+
+    public function getSaleItem(): ?SaleItemInterface;
+
+    public function setSaleItem(SaleItemInterface $saleItem): ShipmentItemInterface;
+
+    public function getQuantity(): Decimal;
+
+    public function setQuantity(Decimal $quantity): ShipmentItemInterface;
 
     /**
-     * Sets the shipment.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return $this|ShipmentItemInterface
+     * @param array<static> $children
      */
-    public function setShipment(ShipmentInterface $shipment = null);
+    public function setChildren(array $children): ShipmentItemInterface;
 
     /**
-     * Returns the sale item.
-     *
-     * @return SaleItemInterface
-     */
-    public function getSaleItem();
-
-    /**
-     * Sets the sale item.
-     *
-     * @param SaleItemInterface $saleItem
-     *
-     * @return $this|ShipmentItemInterface
-     */
-    public function setSaleItem(SaleItemInterface $saleItem);
-
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity();
-
-    /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|ShipmentItemInterface
-     */
-    public function setQuantity($quantity);
-
-    /**
-     * Sets the children.
-     *
-     * @param array $children
-     *
-     * @return $this|ShipmentItemInterface
-     */
-    public function setChildren(array $children);
-
-    /**
-     * Returns the children shipment items.
-     *
-     * @return \Doctrine\Common\Collections\Collection|ShipmentItemInterface[]
+     * @return Collection|array<static>
      */
     public function getChildren();
 
-    /**
-     * Clears the children.
-     *
-     * @return $this|ShipmentItemInterface
-     */
-    public function clearChildren();
+    public function clearChildren(): ShipmentItemInterface;
 
-    /**
-     * Returns the expected.
-     *
-     * @return float
-     */
-    public function getExpected();
+    public function getExpected(): ?Decimal;
 
-    /**
-     * Sets the expected.
-     *
-     * @param float $expected
-     *
-     * @return $this|ShipmentItemInterface
-     */
-    public function setExpected($expected);
+    public function setExpected(?Decimal $expected): ShipmentItemInterface;
 
-    /**
-     * Returns the available.
-     *
-     * @return float
-     */
-    public function getAvailable();
+    public function getAvailable(): ?Decimal;
 
-    /**
-     * Sets the available.
-     *
-     * @param float $available
-     *
-     * @return $this|ShipmentItemInterface
-     */
-    public function setAvailable($available);
+    public function setAvailable(?Decimal $available): ShipmentItemInterface;
 }

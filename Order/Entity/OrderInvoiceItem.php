@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoiceItem;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Order\Model as Order;
@@ -14,13 +16,10 @@ use Ekyna\Component\Commerce\Order\Model as Order;
  */
 class OrderInvoiceItem extends AbstractInvoiceItem implements Order\OrderInvoiceItemInterface
 {
-    /**
-     * @inheritDoc
-     */
-    public function setInvoice(Invoice\InvoiceInterface $invoice = null): Invoice\InvoiceItemInterface
+    public function setInvoice(?Invoice\InvoiceInterface $invoice): Invoice\InvoiceItemInterface
     {
-        if (null !== $invoice && !$invoice instanceof Order\OrderInvoiceInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderInvoiceInterface.");
+        if ($invoice && !$invoice instanceof Order\OrderInvoiceInterface) {
+            throw new UnexpectedTypeException($invoice, Order\OrderInvoiceInterface::class);
         }
 
         return parent::setInvoice($invoice);

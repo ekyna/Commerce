@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -13,19 +16,11 @@ interface WeightCalculatorInterface
 {
     /**
      * Calculate the sale total weight.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return float
      */
-    public function calculateSale(Model\SaleInterface $sale);
+    public function calculateSale(Model\SaleInterface $sale): Decimal;
 
     /**
      * Calculate the sale item total weight.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return float
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item);
+    public function calculateSaleItem(Model\SaleItemInterface $item): Decimal;
 }

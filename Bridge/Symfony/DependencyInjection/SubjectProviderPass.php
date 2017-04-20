@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -13,22 +15,15 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class SubjectProviderPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    public const TAG = 'ekyna_commerce.subject_provider';
+
     public function process(ContainerBuilder $container)
     {
-        if (!$container->hasDefinition('ekyna_commerce.subject.provider_registry')) {
-            return;
-        }
+        $definition = $container->getDefinition('ekyna_commerce.registry.subject_provider');
 
-        $registryDefinition = $container->getDefinition('ekyna_commerce.subject.provider_registry');
-
-        $providers = $container->findTaggedServiceIds('ekyna_commerce.subject_provider');
-
-        foreach ($providers as $id => $attributes) {
+        foreach ($container->findTaggedServiceIds(self::TAG) as $id => $tags) {
             // Register the provider
-            $registryDefinition->addMethodCall('addProvider', [new Reference($id)]);
+            $definition->addMethodCall('addProvider', [new Reference($id)]);
         }
     }
 }

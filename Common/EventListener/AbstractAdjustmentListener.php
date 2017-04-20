@@ -12,6 +12,8 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  * Class AbstractAdjustmentListener
  * @package Ekyna\Component\Commerce\Common\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO Rename to AbstractSaleAdjustmentListener
  */
 abstract class AbstractAdjustmentListener
 {
@@ -125,7 +127,7 @@ abstract class AbstractAdjustmentListener
 
         // Stop if adjustment is immutable.
         if ($adjustment->isImmutable()) {
-            throw new IllegalOperationException('ekyna_commerce.sale.message.immutable_element');
+            throw new IllegalOperationException('sale.message.immutable_element');
         }
     }
 
@@ -159,7 +161,7 @@ abstract class AbstractAdjustmentListener
             throw new InvalidArgumentException("Unexpected adjustment type.");
         }
 
-        $this->persistenceHelper->scheduleEvent($this->getSaleChangeEvent(), $sale);
+        $this->persistenceHelper->scheduleEvent($sale, $this->getSaleChangeEvent());
     }
 
     /**

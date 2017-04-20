@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentDataInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Util\Money;
@@ -14,40 +17,18 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 class Price
 {
-    /**
-     * @var float
-     */
-    private $base;
+    private Decimal $base;
+    private string $currency;
+    private string $mode;
 
-    /**
-     * @var string
-     */
-    private $currency;
+    /** @var AdjustmentDataInterface[] */
+    private array $discounts;
 
-    /**
-     * @var string
-     */
-    private $mode;
-
-    /**
-     * @var AdjustmentDataInterface[]
-     */
-    private $discounts;
-
-    /**
-     * @var AdjustmentDataInterface[]
-     */
-    private $taxes;
+    /** @var AdjustmentDataInterface[] */
+    private array $taxes;
 
 
-    /**
-     * Constructor.
-     *
-     * @param float  $amount
-     * @param string $currency
-     * @param string $mode
-     */
-    public function __construct(float $amount, string $currency, string $mode)
+    public function __construct(Decimal $amount, string $currency, string $mode)
     {
         $this->base = $amount;
         $this->currency = $currency;
@@ -59,70 +40,56 @@ class Price
 
     /**
      * Returns the amount.
-     *
-     * @return float
      */
-    public function getBase()
+    public function getBase(): Decimal
     {
         return $this->base;
     }
 
     /**
      * Returns the currency.
-     *
-     * @return string
      */
-    public function getCurrency()
+    public function getCurrency(): string
     {
         return $this->currency;
     }
 
     /**
      * Returns the mode.
-     *
-     * @return string
      */
-    public function getMode()
+    public function getMode(): string
     {
         return $this->mode;
     }
 
     /**
      * Returns whether this price has taxes.
-     *
-     * @return bool
      */
-    public function hasTaxes()
+    public function hasTaxes(): bool
     {
         return !empty($this->taxes);
     }
 
     /**
      * Adds the taxation adjustment.
-     *
-     * @param AdjustmentDataInterface $tax
      */
-    public function addTax(AdjustmentDataInterface $tax)
+    public function addTax(AdjustmentDataInterface $tax): void
     {
         $this->taxes[] = $tax;
     }
 
     /**
      * Returns whether this price has discounts.
-     *
-     * @return bool
      */
-    public function hasDiscounts()
+    public function hasDiscounts(): bool
     {
         return !empty($this->discounts);
     }
 
     /**
      * Adds the discount adjustment.
-     *
-     * @param AdjustmentDataInterface $discount
      */
-    public function addDiscount(AdjustmentDataInterface $discount)
+    public function addDiscount(AdjustmentDataInterface $discount): void
     {
         $this->discounts[] = $discount;
     }
@@ -131,10 +98,8 @@ class Price
      * Returns the total.
      *
      * @param bool $discounted Whether to return the discounted price.
-     *
-     * @return float
      */
-    public function getTotal($discounted = true)
+    public function getTotal(bool $discounted = true): Decimal
     {
         $base = $this->base;
 
@@ -157,13 +122,8 @@ class Price
 
     /**
      * Calculates the adjustment amount.
-     *
-     * @param AdjustmentDataInterface $adjustment
-     * @param                         $base
-     *
-     * @return float
      */
-    private function calculateAdjustment(AdjustmentDataInterface $adjustment, $base)
+    private function calculateAdjustment(AdjustmentDataInterface $adjustment, Decimal $base): Decimal
     {
         if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
             return Money::round($base * $adjustment->getAmount() / 100, $this->currency);
@@ -173,6 +133,6 @@ class Price
             return $adjustment->getAmount();
         }
 
-        throw new InvalidArgumentException("Unexpected adjustment mode.");
+        throw new InvalidArgumentException('Unexpected adjustment mode.');
     }
 }

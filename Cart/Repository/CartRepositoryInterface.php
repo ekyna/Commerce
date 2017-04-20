@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Repository;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
@@ -18,25 +20,18 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 interface CartRepositoryInterface extends SaleRepositoryInterface
 {
     /**
-     * Creates a new cart instance.
-     *
-     * @return CartInterface
-     */
-    public function createNew();
-
-    /**
      * Finds the latest non expired customer cart.
      *
      * @param CustomerInterface $customer
      *
      * @return CartInterface|null
      */
-    public function findLatestByCustomer(CustomerInterface $customer);
+    public function findLatestByCustomer(CustomerInterface $customer): ?CartInterface;
 
     /**
      * Finds the expired carts.
      *
      * @return CartInterface[]
      */
-    public function findExpired();
+    public function findExpired(): array;
 }

@@ -17,15 +17,15 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class CartItemListener extends AbstractSaleItemListener
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale)
     {
-        $this->persistenceHelper->scheduleEvent(CartEvents::CONTENT_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, CartEvents::CONTENT_CHANGE);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSalePropertyPath()
     {
@@ -33,7 +33,7 @@ class CartItemListener extends AbstractSaleItemListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSaleItemFromEvent(ResourceEventInterface $event)
     {

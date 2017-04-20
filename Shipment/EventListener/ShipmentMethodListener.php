@@ -40,7 +40,7 @@ class ShipmentMethodListener
     {
         $method = $this->getShipmentMethodFromEvent($event);
 
-        if (0 == strlen($method->getGatewayName())) {
+        if (empty($method->getGatewayName())) {
             $method->setGatewayName(sprintf(
                 '%s-%s',
                 Transliterator::transliterate($method->getPlatformName()),

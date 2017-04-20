@@ -6,7 +6,6 @@
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
     <entity name="Acme\Product\Entity\Product"
-            repository-class="Acme\Product\Repository\ProductRepository"
             table="acme_product">
 
         <indexes>

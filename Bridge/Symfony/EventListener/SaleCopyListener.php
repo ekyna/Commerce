@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvent;
@@ -14,34 +16,30 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @package Ekyna\Component\Commerce\Bridge\Symfony\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SaleTransformSubscriber implements EventSubscriberInterface
+class SaleCopyListener implements EventSubscriberInterface
 {
-    /**
-     * Pre copy event handler.
-     *
-     * @param SaleTransformEvent $event
-     */
-    public function onPreCopy(SaleTransformEvent $event)
+    public function onPreCopy(SaleTransformEvent $event): void
     {
         $source = $event->getSource();
 
-        if ($source instanceof OrderInterface) {
-            // Prevent if order is not 'new'
-            if ($source->getState() !== OrderStates::STATE_NEW) {
-                $event->addMessage(new ResourceMessage(
-                    'ekyna_commerce.sale.message.transform_prevented',
-                    ResourceMessage::TYPE_ERROR
-                ));
-            }
+        if (!$source instanceof OrderInterface) {
+            return;
         }
+
+        if ($source->getState() === OrderStates::STATE_NEW) {
+            return;
+        }
+
+        // Prevent if order is not 'new'
+        $message = ResourceMessage::create(
+            'sale.message.transform_prevented',
+            ResourceMessage::TYPE_ERROR
+        )->setDomain('EkynaCommerce');
+
+        $event->addMessage($message);
     }
 
-    /**
-     * Post copy event handler.
-     *
-     * @param SaleTransformEvent $event
-     */
-    public function onPostCopy(SaleTransformEvent $event)
+    public function onPostCopy(SaleTransformEvent $event): void
     {
         $source = $event->getSource();
         $target = $event->getTarget();
@@ -59,7 +57,7 @@ class SaleTransformSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // If target sale is order and source customer has parent
+        // If target sale is order and source customer has a parent
         if ($target instanceof OrderInterface && $customer->hasParent()) {
             // TODO Duplicate code
             /** @see \Ekyna\Component\Commerce\Order\EventListener\OrderListener::fixCustomers() */
@@ -74,10 +72,7 @@ class SaleTransformSubscriber implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @inheritDoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             SaleTransformEvents::PRE_COPY  => ['onPreCopy', 2048],

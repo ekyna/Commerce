@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Ekyna\Component\Commerce\Customer\Entity\LoyaltyLog;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Repository\LoyaltyLogRepositoryInterface;
@@ -28,7 +30,6 @@ class LoyaltyLogRepository extends ServiceEntityRepository implements LoyaltyLog
      */
     public function findByCustomerAndOrigin(CustomerInterface $customer, string $origin): ?LoyaltyLog
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->findOneBy([
             'customer' => $customer,
             'origin'   => $origin,

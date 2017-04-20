@@ -1,6 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stat\Entity;
+
+use DateTimeInterface;
+use Decimal\Decimal;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 
 /**
  * Class OrderStat
@@ -9,324 +15,174 @@ namespace Ekyna\Component\Commerce\Stat\Entity;
  */
 class OrderStat
 {
-    const TYPE_YEAR  = 0;
-    const TYPE_MONTH = 1;
-    const TYPE_DAY   = 2;
+    public const TYPE_YEAR  = 0;
+    public const TYPE_MONTH = 1;
+    public const TYPE_DAY   = 2;
 
-    /**
-     * @var int
-     */
-    private $id;
+    private ?int               $id        = null;
+    private ?int               $type      = null;
+    private ?string            $date      = null;
+    private Decimal            $revenue;
+    private Decimal            $shipping;
+    private Decimal            $margin;
+    private int                $orders    = 0;
+    private int                $items     = 0;
+    private Decimal            $average;
+    private array              $details   = [];
+    private ?DateTimeInterface $updatedAt = null;
 
-    /**
-     * @var int
-     */
-    private $type;
+    public function __construct()
+    {
+        $this->revenue = new Decimal(0);
+        $this->shipping = new Decimal(0);
+        $this->margin = new Decimal(0);
+        $this->average = new Decimal(0);
+    }
 
-    /**
-     * @var string
-     */
-    private $date;
-
-    /**
-     * @var float
-     */
-    private $revenue = 0;
-
-    /**
-     * @var float
-     */
-    private $shipping = 0;
-
-    /**
-     * @var float
-     */
-    private $margin = 0;
-
-    /**
-     * @var int
-     */
-    private $orders = 0;
-
-    /**
-     * @var int
-     */
-    private $items = 0;
-
-    /**
-     * @var float
-     */
-    private $average = 0;
-
-    /**
-     * @var array
-     */
-    private $details = [];
-
-    /**
-     * @var \DateTime
-     */
-    private $updatedAt;
-
-
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Sets the id.
-     *
-     * @param int $id
-     *
-     * @return OrderStat
-     */
-    public function setId($id)
+    public function setId(?int $id): self
     {
         $this->id = $id;
 
         return $this;
     }
 
-    /**
-     * Returns the type.
-     *
-     * @return int
-     */
-    public function getType()
+    public function getType(): ?int
     {
         return $this->type;
     }
 
-    /**
-     * Sets the type.
-     *
-     * @param int $type
-     *
-     * @return OrderStat
-     */
-    public function setType($type)
+    public function setType(?int $type): self
     {
         $this->type = $type;
 
         return $this;
     }
 
-    /**
-     * Returns the date.
-     *
-     * @return string
-     */
-    public function getDate()
+    public function getDate(): ?string
     {
         return $this->date;
     }
 
-    /**
-     * Sets the date.
-     *
-     * @param string $date
-     *
-     * @return OrderStat
-     */
-    public function setDate($date)
+    public function setDate(?string $date): self
     {
         $this->date = $date;
 
         return $this;
     }
 
-    /**
-     * Returns the revenue.
-     *
-     * @return float
-     */
-    public function getRevenue()
+    public function getRevenue(): Decimal
     {
         return $this->revenue;
     }
 
-    /**
-     * Sets the revenue.
-     *
-     * @param float $revenue
-     *
-     * @return OrderStat
-     */
-    public function setRevenue($revenue)
+    public function setRevenue(Decimal $revenue): self
     {
-        $this->revenue = (float)$revenue;
+        $this->revenue = $revenue;
 
         return $this;
     }
 
-    /**
-     * Returns the shipping.
-     *
-     * @return float
-     */
-    public function getShipping()
+    public function getShipping(): Decimal
     {
         return $this->shipping;
     }
 
-    /**
-     * Sets the shipping.
-     *
-     * @param float $shipping
-     *
-     * @return OrderStat
-     */
-    public function setShipping($shipping)
+    public function setShipping(Decimal $shipping): self
     {
-        $this->shipping = (float)$shipping;
+        $this->shipping = $shipping;
 
         return $this;
     }
 
-    /**
-     * Returns the margin.
-     *
-     * @return float
-     */
-    public function getMargin()
+    public function getMargin(): Decimal
     {
         return $this->margin;
     }
 
-    /**
-     * Sets the margin.
-     *
-     * @param float $margin
-     *
-     * @return OrderStat
-     */
-    public function setMargin($margin)
+    public function setMargin(Decimal $margin): self
     {
-        $this->margin = (float)$margin;
+        $this->margin = $margin;
 
         return $this;
     }
 
     /**
      * Returns the orders count.
-     *
-     * @return int
      */
-    public function getOrders()
+    public function getOrders(): int
     {
         return $this->orders;
     }
 
     /**
      * Sets the orders count.
-     *
-     * @param int $orders
-     *
-     * @return OrderStat
      */
-    public function setOrders($orders)
+    public function setOrders(int $orders): self
     {
-        $this->orders = (int)$orders;
+        $this->orders = $orders;
 
         return $this;
     }
 
     /**
      * Returns the items count.
-     *
-     * @return int
      */
-    public function getItems()
+    public function getItems(): int
     {
         return $this->items;
     }
 
     /**
      * Sets the items count.
-     *
-     * @param int $items
-     *
-     * @return OrderStat
      */
-    public function setItems($items)
+    public function setItems(int $items): self
     {
-        $this->items = (int)$items;
+        $this->items = $items;
 
         return $this;
     }
 
     /**
-     * Returns the averageTotal.
-     *
-     * @return float
+     * Returns the average total.
      */
-    public function getAverage()
+    public function getAverage(): Decimal
     {
         return $this->average;
     }
 
     /**
-     * Sets the averageTotal.
-     *
-     * @param float $average
-     *
-     * @return OrderStat
+     * Sets the average total.
      */
-    public function setAverage($average)
+    public function setAverage(Decimal $average): self
     {
-        $this->average = (float)$average;
+        $this->average = $average;
 
         return $this;
     }
 
-    /**
-     * Returns the details.
-     *
-     * @return array
-     */
-    public function getDetails()
+    public function getDetails(): array
     {
         return $this->details;
     }
 
-    /**
-     * Sets the details.
-     *
-     * @param array $details
-     *
-     * @return OrderStat
-     */
-    public function setDetails(array $details)
+    public function setDetails(array $details): self
     {
         $this->details = $details;
 
         return $this;
     }
 
-    /**
-     * Returns the updated at datetime.
-     *
-     * @return \DateTime
-     */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Sets the updated at datetime.
-     *
-     * @param \DateTime $updatedAt
-     *
-     * @return OrderStat
-     */
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUpdatedAt(?DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 
@@ -335,16 +191,14 @@ class OrderStat
 
     /**
      * Returns the margin in percentage.
-     *
-     * @return float|int
      */
-    public function getMarginPercent()
+    public function getMarginPercent(): Decimal
     {
         if (0 < $this->margin && 0 < $this->revenue) {
-            return round($this->margin * 100 / $this->revenue, 1);
+            return $this->margin->mul(100)->div($this->revenue)->round(1);
         }
 
-        return 0;
+        return new Decimal(0);
     }
 
     /**
@@ -354,17 +208,46 @@ class OrderStat
      *
      * @return bool Whether a property has changed.
      */
-    public function loadResult(array $result)
+    public function loadResult(array $result): bool
     {
         $changed = false;
 
-        foreach (['revenue', 'shipping', 'margin', 'orders', 'items', 'average', 'details'] as $property) {
+        $map = [
+            'revenue'  => 'decimal',
+            'shipping' => 'decimal',
+            'margin'   => 'decimal',
+            'orders'   => 'int',
+            'items'    => 'int',
+            'average'  => 'decimal',
+            'details'  => 'array',
+        ];
+
+        foreach ($map as $property => $type) {
             if (!isset($result[$property])) {
                 continue;
             }
 
-            if ($this->{$property} != $result[$property]) {
-                $this->{$property} = $result[$property];
+            if ($type === 'decimal') {
+                $value = new Decimal($result[$property]);
+
+                if (!$value->equals($this->{$property})) {
+                    $this->{$property} = $value;
+                    $changed = true;
+                }
+
+                continue;
+            }
+
+            if ($type === 'int') {
+                $value = (int)$result[$property];
+            } elseif ($type === 'array') {
+                $value = (array)$result[$property];
+            } else {
+                throw new RuntimeException();
+            }
+
+            if ($value !== $this->{$property}) {
+                $this->{$property} = $value;
                 $changed = true;
             }
         }

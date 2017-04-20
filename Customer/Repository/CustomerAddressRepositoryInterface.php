@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Repository;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface CustomerAddressRepositoryInterface
@@ -25,8 +27,8 @@ interface CustomerAddressRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Returns the customer addresses.
      *
-     * @param CustomerInterface        $customer
-     * @param CustomerAddressInterface $exclude
+     * @param CustomerInterface             $customer
+     * @param CustomerAddressInterface|null $exclude
      *
      * @return CustomerAddressInterface[]
      */

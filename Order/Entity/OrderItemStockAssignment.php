@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemStockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 
 /**
  * Class OrderItemStockAssignment
@@ -15,54 +18,40 @@ use Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment;
  */
 class OrderItemStockAssignment extends AbstractStockAssignment implements OrderItemStockAssignmentInterface
 {
-    /**
-     * @var OrderItemInterface
-     */
-    protected $orderItem;
+    protected ?OrderItemInterface $orderItem = null;
 
-
-    /**
-     * @inheritdoc
-     */
-    public function getOrderItem()
+    public function getOrderItem(): ?OrderItemInterface
     {
         return $this->orderItem;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrderItem(OrderItemInterface $orderItem = null)
+    public function setOrderItem(?OrderItemInterface $orderItem): OrderItemStockAssignmentInterface
     {
-        if ($orderItem !== $this->orderItem) {
-            if ($previous = $this->orderItem) {
-                $this->orderItem = null;
-                $previous->removeStockAssignment($this);
-            }
+        if ($orderItem === $this->orderItem) {
+            return $this;
+        }
 
-            if ($this->orderItem = $orderItem) {
-                $this->orderItem->addStockAssignment($this);
-            }
+        if ($previous = $this->orderItem) {
+            $this->orderItem = null;
+            $previous->removeStockAssignment($this);
+        }
+
+        if ($this->orderItem = $orderItem) {
+            $this->orderItem->addStockAssignment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSaleItem()
+    public function getSaleItem(): ?SaleItemInterface
     {
         return $this->getOrderItem();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSaleItem(SaleItemInterface $saleItem = null)
+    public function setSaleItem(?SaleItemInterface $saleItem): StockAssignmentInterface
     {
         if ($saleItem && !$saleItem instanceof OrderItemInterface) {
-            throw new InvalidArgumentException(sprintf("Expected instance of '%s'.", OrderItemInterface::class));
+            throw new UnexpectedTypeException($saleItem, OrderItemInterface::class);
         }
 
         return $this->setOrderItem($saleItem);

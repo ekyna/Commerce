@@ -12,7 +12,7 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="quantity" column="quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="quantity" column="quantity" type="php_decimal" precision="10" scale="3" nullable="false"/>
         <field name="geocode" column="geocode" type="string" length="16" nullable="false"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryInterface"

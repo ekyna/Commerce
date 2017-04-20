@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 
 /**
@@ -11,274 +14,69 @@ use Ekyna\Component\Commerce\Common\Model as Common;
  */
 interface DocumentLineInterface
 {
-    /**
-     * Returns the document.
-     *
-     * @return DocumentInterface
-     */
-    public function getDocument();
+    public function getDocument(): ?DocumentInterface;
 
-    /**
-     * Sets the document.
-     *
-     * @param DocumentInterface $document
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setDocument(DocumentInterface $document = null);
+    public function setDocument(?DocumentInterface $document): DocumentLineInterface;
 
-    /**
-     * Returns the sale.
-     *
-     * @return Common\SaleInterface
-     */
-    public function getSale();
+    public function getSale(): ?Common\SaleInterface;
 
-    /**
-     * Returns the sale item.
-     *
-     * @return Common\SaleItemInterface|null
-     */
-    public function getSaleItem();
+    public function getSaleItem(): ?Common\SaleItemInterface;
 
-    /**
-     * Sets the sale item.
-     *
-     * @param Common\SaleItemInterface $item
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setSaleItem(Common\SaleItemInterface $item = null);
+    public function setSaleItem(?Common\SaleItemInterface $item): DocumentLineInterface;
 
-    /**
-     * Returns the sale adjustment.
-     *
-     * @return Common\AdjustmentInterface|null
-     */
-    public function getSaleAdjustment();
+    public function getSaleAdjustment(): ?Common\AdjustmentInterface;
 
-    /**
-     * Sets the sale adjustment.
-     *
-     * @param Common\AdjustmentInterface $adjustment
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setSaleAdjustment(Common\AdjustmentInterface $adjustment = null);
+    public function setSaleAdjustment(?Common\AdjustmentInterface $adjustment): DocumentLineInterface;
 
-    /**
-     * Returns the type.
-     *
-     * @return string
-     */
-    public function getType();
+    public function getType(): ?string;
 
-    /**
-     * Sets the type.
-     *
-     * @param string $type
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setType($type);
+    public function setType(?string $type): DocumentLineInterface;
 
-    /**
-     * Returns the designation.
-     *
-     * @return string
-     */
-    public function getDesignation();
+    public function getDesignation(): ?string;
 
-    /**
-     * Sets the designation.
-     *
-     * @param string $designation
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setDesignation($designation);
+    public function setDesignation(?string $designation): DocumentLineInterface;
 
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
-    public function getDescription();
+    public function getDescription(): ?string;
 
-    /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setDescription($description);
+    public function setDescription(?string $description): DocumentLineInterface;
 
-    /**
-     * Returns the reference.
-     *
-     * @return string
-     */
-    public function getReference();
+    public function getReference(): ?string;
 
-    /**
-     * Sets the reference.
-     *
-     * @param string $reference
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setReference($reference);
+    public function setReference(?string $reference): DocumentLineInterface;
 
-    /**
-     * Returns the unit net price.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getUnit(bool $ati = false);
+    public function getUnit(bool $ati = false): Decimal;
 
-    /**
-     * Sets the unit net price.
-     *
-     * @param float $price
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setUnit($price);
+    public function setUnit(Decimal $price): DocumentLineInterface;
 
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity();
+    public function getQuantity(): Decimal;
 
-    /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setQuantity($quantity);
+    public function setQuantity(Decimal $quantity): DocumentLineInterface;
 
-    /**
-     * Returns the base total.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getGross(bool $ati = false);
+    public function getGross(bool $ati = false): Decimal;
 
-    /**
-     * Sets the base total.
-     *
-     * @param float $baseTotal
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setGross($baseTotal);
+    public function setGross(Decimal $total): DocumentLineInterface;
 
-    /**
-     * Returns the discount total.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getDiscount(bool $ati = false);
+    public function getDiscount(bool $ati = false): Decimal;
 
-    /**
-     * Sets the discount total.
-     *
-     * @param float $total
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setDiscount($total);
+    public function setDiscount(Decimal $total): DocumentLineInterface;
 
-    /**
-     * Returns the discount rates.
-     *
-     * @return array
-     */
-    public function getDiscountRates();
+    public function getDiscountRates(): array;
 
-    /**
-     * Sets the discount rates.
-     *
-     * @param array $rates
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setDiscountRates(array $rates);
+    public function setDiscountRates(array $rates): DocumentLineInterface;
 
-    /**
-     * Returns the net total.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getBase(bool $ati = false);
+    public function getBase(bool $ati = false): Decimal;
 
-    /**
-     * Sets the net total.
-     *
-     * @param float $total
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setBase($total);
+    public function setBase(Decimal $total): DocumentLineInterface;
 
-    /**
-     * Returns the tax.
-     *
-     * @return float
-     */
-    public function getTax();
+    public function getTax(): Decimal;
 
-    /**
-     * Sets the tax.
-     *
-     * @param float $tax
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setTax($tax);
+    public function setTax(Decimal $tax): DocumentLineInterface;
 
-    /**
-     * Returns the tax rates.
-     *
-     * @return array
-     */
-    public function getTaxRates();
+    public function getTaxRates(): array;
 
-    /**
-     * Sets the tax rates.
-     *
-     * @param array $rates
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setTaxRates(array $rates);
+    public function setTaxRates(array $rates): DocumentLineInterface;
 
-    /**
-     * Returns the total.
-     *
-     * @return float
-     */
-    public function getTotal();
+    public function getTotal(): Decimal;
 
-    /**
-     * Sets the total.
-     *
-     * @param float $total
-     *
-     * @return $this|DocumentLineInterface
-     */
-    public function setTotal($total);
+    public function setTotal(Decimal $total): DocumentLineInterface;
 }

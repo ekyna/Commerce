@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentLabelInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Class Notify
@@ -14,135 +17,48 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentLabelInterface;
  */
 class Notify
 {
-    // (Used in twig template)
-    const VIEW_NONE   = 'none';
-    const VIEW_BEFORE = 'before';
-    const VIEW_AFTER  = 'after';
+    // (Used in templates)
+    public const VIEW_NONE   = 'none';
+    public const VIEW_BEFORE = 'before';
+    public const VIEW_AFTER  = 'after';
 
-    /**
-     * @var string
-     */
-    private $type;
+    private string             $type   = NotificationTypes::MANUAL;
+    private ?ResourceInterface $source = null;
+    private ?Recipient         $from   = null;
 
-    /**
-     * @var mixed
-     */
-    private $source;
+    /** @var ArrayCollection|Recipient[] */
+    private ArrayCollection $recipients;
+    /** @var ArrayCollection|Recipient[] */
+    private ArrayCollection $extraRecipients;
+    /** @var ArrayCollection|Recipient[] */
+    private ArrayCollection $copies;
+    /** @var ArrayCollection|Recipient[] */
+    private ArrayCollection $extraCopies;
+    /** @var ArrayCollection|InvoiceInterface[] */
+    private ArrayCollection $invoices;
+    /** @var ArrayCollection|ShipmentInterface[] */
+    private ArrayCollection $shipments;
+    /** @var ArrayCollection|ShipmentLabelInterface[] */
+    private ArrayCollection $labels;
+    /** @var ArrayCollection|AttachmentInterface[] */
+    private ArrayCollection $attachments;
 
-    /**
-     * @var Recipient
-     */
-    private $from;
-
-    /**
-     * @var ArrayCollection|Recipient[]
-     */
-    private $recipients;
-
-    /**
-     * @var ArrayCollection|Recipient[]
-     */
-    private $extraRecipients;
-
-    /**
-     * @var ArrayCollection|Recipient[]
-     */
-    private $copies;
-
-    /**
-     * @var ArrayCollection|Recipient[]
-     */
-    private $extraCopies;
-
-    /**
-     * @var ArrayCollection|InvoiceInterface[]
-     */
-    private $invoices;
-
-    /**
-     * @var ArrayCollection|ShipmentInterface[]
-     */
-    private $shipments;
-
-    /**
-     * @var ArrayCollection|ShipmentLabelInterface[]
-     */
-    private $labels;
-
-    /**
-     * @var ArrayCollection|AttachmentInterface[]
-     */
-    private $attachments;
-
-    /**
-     * @var string
-     */
-    private $subject;
-
-    /**
-     * @var string
-     */
-    private $paymentMessage;
-
-    /**
-     * @var string
-     */
-    private $shipmentMessage;
-
-    /**
-     * @var string
-     */
-    private $customMessage;
-
-    /**
-     * @var string
-     */
-    private $includeView;
-
-    /**
-     * (For supplier order)
-     * @var bool
-     */
-    private $includeForm;
-
-    /**
-     * @var string
-     */
-    private $buttonLabel;
-
-    /**
-     * @var string
-     */
-    private $buttonUrl;
-
-    /**
-     * @var bool
-     */
-    private $unsafe;
-
-    /**
-     * @var bool
-     */
-    private $error;
-
-    /**
-     * @var string
-     */
-    private $report;
-
-    /**
-     * @var boolean
-     */
-    private $test;
+    private ?string $subject         = null;
+    private ?string $paymentMessage  = null;
+    private ?string $shipmentMessage = null;
+    private ?string $customMessage   = null;
+    private string  $includeView     = Notify::VIEW_NONE;
+    private bool    $includeForm     = false; // (For supplier order)
+    private ?string $buttonLabel     = null;
+    private ?string $buttonUrl       = null;
+    private bool    $unsafe          = false;
+    private bool    $error           = false;
+    private string  $report          = '';
+    private bool    $test            = false;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->type = NotificationTypes::MANUAL;
-
         $this->recipients = new ArrayCollection();
         $this->extraRecipients = new ArrayCollection();
         $this->copies = new ArrayCollection();
@@ -151,57 +67,26 @@ class Notify
         $this->shipments = new ArrayCollection();
         $this->labels = new ArrayCollection();
         $this->attachments = new ArrayCollection();
-
-        $this->includeView = static::VIEW_NONE;
-        $this->includeForm = false;
-        $this->unsafe = false;
-        $this->error = false;
-        $this->report = '';
-        $this->test = false;
     }
 
-    /**
-     * Returns the source.
-     *
-     * @return mixed
-     */
-    public function getSource()
+    public function getSource(): ?ResourceInterface
     {
         return $this->source;
     }
 
-    /**
-     * Sets the source.
-     *
-     * @param mixed $source
-     *
-     * @return Notify
-     */
-    public function setSource($source)
+    public function setSource(ResourceInterface $source): Notify
     {
         $this->source = $source;
 
         return $this;
     }
 
-    /**
-     * Returns the type.
-     *
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * Sets the type.
-     *
-     * @param string $type
-     *
-     * @return Notify
-     */
-    public function setType(string $type): self
+    public function setType(string $type): Notify
     {
         NotificationTypes::isValid($type);
 
@@ -210,24 +95,12 @@ class Notify
         return $this;
     }
 
-    /**
-     * Returns the from.
-     *
-     * @return Recipient
-     */
     public function getFrom(): ?Recipient
     {
         return $this->from;
     }
 
-    /**
-     * Sets the from.
-     *
-     * @param Recipient $from
-     *
-     * @return Notify
-     */
-    public function setFrom(Recipient $from): self
+    public function setFrom(Recipient $from): Notify
     {
         $this->from = $from;
 
@@ -235,8 +108,6 @@ class Notify
     }
 
     /**
-     * Returns the recipients.
-     *
      * @return ArrayCollection|Recipient[]
      */
     public function getRecipients(): ArrayCollection
@@ -244,14 +115,7 @@ class Notify
         return $this->recipients;
     }
 
-    /**
-     * Adds the recipient.
-     *
-     * @param Recipient $recipient
-     *
-     * @return Notify
-     */
-    public function addRecipient(Recipient $recipient): self
+    public function addRecipient(Recipient $recipient): Notify
     {
         if (!$this->recipients->contains($recipient)) {
             $this->recipients->add($recipient);
@@ -260,14 +124,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the recipient.
-     *
-     * @param Recipient $recipient
-     *
-     * @return Notify
-     */
-    public function removeRecipient(Recipient $recipient): self
+    public function removeRecipient(Recipient $recipient): Notify
     {
         if ($this->recipients->contains($recipient)) {
             $this->recipients->removeElement($recipient);
@@ -276,12 +133,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Clears the recipients.
-     *
-     * @return Notify
-     */
-    public function clearRecipients(): self
+    public function clearRecipients(): Notify
     {
         $this->recipients = new ArrayCollection();
 
@@ -289,8 +141,6 @@ class Notify
     }
 
     /**
-     * Returns the extra recipients.
-     *
      * @return ArrayCollection|Recipient[]
      */
     public function getExtraRecipients(): ArrayCollection
@@ -298,14 +148,7 @@ class Notify
         return $this->extraRecipients;
     }
 
-    /**
-     * Adds the extra recipient.
-     *
-     * @param Recipient $recipient
-     *
-     * @return Notify
-     */
-    public function addExtraRecipient(Recipient $recipient): self
+    public function addExtraRecipient(Recipient $recipient): Notify
     {
         if (!$this->extraRecipients->contains($recipient)) {
             $this->extraRecipients->add($recipient);
@@ -314,14 +157,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the extra recipient.
-     *
-     * @param Recipient $recipient
-     *
-     * @return Notify
-     */
-    public function removeExtraRecipient(Recipient $recipient): self
+    public function removeExtraRecipient(Recipient $recipient): Notify
     {
         if ($this->extraRecipients->contains($recipient)) {
             $this->extraRecipients->removeElement($recipient);
@@ -330,12 +166,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Clears the extra recipients.
-     *
-     * @return Notify
-     */
-    public function clearExtraRecipients(): self
+    public function clearExtraRecipients(): Notify
     {
         $this->extraRecipients = new ArrayCollection();
 
@@ -343,8 +174,6 @@ class Notify
     }
 
     /**
-     * Returns the copies.
-     *
      * @return ArrayCollection|Recipient[]
      */
     public function getCopies(): ArrayCollection
@@ -352,14 +181,7 @@ class Notify
         return $this->copies;
     }
 
-    /**
-     * Adds the copy.
-     *
-     * @param Recipient $copy
-     *
-     * @return Notify
-     */
-    public function addCopy(Recipient $copy): self
+    public function addCopy(Recipient $copy): Notify
     {
         if (!$this->copies->contains($copy)) {
             $this->copies->add($copy);
@@ -368,14 +190,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the copy.
-     *
-     * @param Recipient $copy
-     *
-     * @return Notify
-     */
-    public function removeCopy(Recipient $copy): self
+    public function removeCopy(Recipient $copy): Notify
     {
         if ($this->copies->contains($copy)) {
             $this->copies->removeElement($copy);
@@ -384,12 +199,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Clears the copies.
-     *
-     * @return Notify
-     */
-    public function clearCopies(): self
+    public function clearCopies(): Notify
     {
         $this->copies = new ArrayCollection();
 
@@ -397,8 +207,6 @@ class Notify
     }
 
     /**
-     * Returns the extra copies.
-     *
      * @return ArrayCollection|Recipient[]
      */
     public function getExtraCopies(): ArrayCollection
@@ -406,14 +214,7 @@ class Notify
         return $this->extraCopies;
     }
 
-    /**
-     * Adds the extra copy.
-     *
-     * @param Recipient $copy
-     *
-     * @return Notify
-     */
-    public function addExtraCopy(Recipient $copy): self
+    public function addExtraCopy(Recipient $copy): Notify
     {
         if (!$this->extraCopies->contains($copy)) {
             $this->extraCopies->add($copy);
@@ -422,14 +223,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the extra copy.
-     *
-     * @param Recipient $copy
-     *
-     * @return Notify
-     */
-    public function removeExtraCopy(Recipient $copy): self
+    public function removeExtraCopy(Recipient $copy): Notify
     {
         if ($this->extraCopies->contains($copy)) {
             $this->extraCopies->removeElement($copy);
@@ -438,12 +232,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Clears the extra copies.
-     *
-     * @return Notify
-     */
-    public function clearExtraCopies(): self
+    public function clearExtraCopies(): Notify
     {
         $this->extraCopies = new ArrayCollection();
 
@@ -451,8 +240,6 @@ class Notify
     }
 
     /**
-     * Returns the invoices.
-     *
      * @return ArrayCollection|InvoiceInterface[]
      */
     public function getInvoices(): ArrayCollection
@@ -460,14 +247,7 @@ class Notify
         return $this->invoices;
     }
 
-    /**
-     * Adds the invoice.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return Notify
-     */
-    public function addInvoice(InvoiceInterface $invoice): self
+    public function addInvoice(InvoiceInterface $invoice): Notify
     {
         if (!$this->invoices->contains($invoice)) {
             $this->invoices->add($invoice);
@@ -476,14 +256,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the invoice.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return Notify
-     */
-    public function removeInvoice(InvoiceInterface $invoice): self
+    public function removeInvoice(InvoiceInterface $invoice): Notify
     {
         if ($this->invoices->contains($invoice)) {
             $this->invoices->removeElement($invoice);
@@ -493,8 +266,6 @@ class Notify
     }
 
     /**
-     * Returns the shipments.
-     *
      * @return ArrayCollection|ShipmentInterface[]
      */
     public function getShipments(): ArrayCollection
@@ -502,14 +273,7 @@ class Notify
         return $this->shipments;
     }
 
-    /**
-     * Adds the shipment.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return Notify
-     */
-    public function addShipment(ShipmentInterface $shipment): self
+    public function addShipment(ShipmentInterface $shipment): Notify
     {
         if (!$this->shipments->contains($shipment)) {
             $this->shipments->add($shipment);
@@ -518,14 +282,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the shipment.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return Notify
-     */
-    public function removeShipment(ShipmentInterface $shipment): self
+    public function removeShipment(ShipmentInterface $shipment): Notify
     {
         if ($this->shipments->contains($shipment)) {
             $this->shipments->removeElement($shipment);
@@ -535,8 +292,6 @@ class Notify
     }
 
     /**
-     * Returns the labels.
-     *
      * @return ArrayCollection|ShipmentLabelInterface[]
      */
     public function getLabels(): ArrayCollection
@@ -544,14 +299,7 @@ class Notify
         return $this->labels;
     }
 
-    /**
-     * Adds the label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return Notify
-     */
-    public function addLabel(ShipmentLabelInterface $label): self
+    public function addLabel(ShipmentLabelInterface $label): Notify
     {
         if (!$this->labels->contains($label)) {
             $this->labels->add($label);
@@ -560,14 +308,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return Notify
-     */
-    public function removeLabel(ShipmentLabelInterface $label): self
+    public function removeLabel(ShipmentLabelInterface $label): Notify
     {
         if ($this->labels->contains($label)) {
             $this->labels->removeElement($label);
@@ -577,8 +318,6 @@ class Notify
     }
 
     /**
-     * Returns the attachments.
-     *
      * @return ArrayCollection|AttachmentInterface[]
      */
     public function getAttachments(): ArrayCollection
@@ -586,14 +325,7 @@ class Notify
         return $this->attachments;
     }
 
-    /**
-     * Adds the attachment.
-     *
-     * @param AttachmentInterface $attachment
-     *
-     * @return Notify
-     */
-    public function addAttachment(AttachmentInterface $attachment): self
+    public function addAttachment(AttachmentInterface $attachment): Notify
     {
         if (!$this->attachments->contains($attachment)) {
             $this->attachments->add($attachment);
@@ -602,14 +334,7 @@ class Notify
         return $this;
     }
 
-    /**
-     * Removes the attachment.
-     *
-     * @param AttachmentInterface $attachment
-     *
-     * @return Notify
-     */
-    public function removeAttachment(AttachmentInterface $attachment): self
+    public function removeAttachment(AttachmentInterface $attachment): Notify
     {
         if ($this->attachments->contains($attachment)) {
             $this->attachments->removeElement($attachment);
@@ -618,215 +343,107 @@ class Notify
         return $this;
     }
 
-    /**
-     * Returns the subject.
-     *
-     * @return string|null
-     */
     public function getSubject(): ?string
     {
         return $this->subject;
     }
 
-    /**
-     * Sets the subject.
-     *
-     * @param string $subject
-     *
-     * @return Notify
-     */
-    public function setSubject(string $subject): self
+    public function setSubject(string $subject): Notify
     {
         $this->subject = $subject;
 
         return $this;
     }
 
-    /**
-     * Returns the payment message.
-     *
-     * @return string|null
-     */
     public function getPaymentMessage(): ?string
     {
         return $this->paymentMessage;
     }
 
-    /**
-     * Sets the payment message.
-     *
-     * @param string $message
-     *
-     * @return Notify
-     */
-    public function setPaymentMessage(string $message = null): self
+    public function setPaymentMessage(?string $message): Notify
     {
         $this->paymentMessage = $message;
 
         return $this;
     }
 
-    /**
-     * Returns the shipment message.
-     *
-     * @return string
-     */
     public function getShipmentMessage(): ?string
     {
         return $this->shipmentMessage;
     }
 
-    /**
-     * Sets the shipment message.
-     *
-     * @param string $message
-     *
-     * @return Notify
-     */
-    public function setShipmentMessage(string $message = null): self
+    public function setShipmentMessage(?string $message): Notify
     {
         $this->shipmentMessage = $message;
 
         return $this;
     }
 
-    /**
-     * Returns the custom message.
-     *
-     * @return string
-     */
     public function getCustomMessage(): ?string
     {
         return $this->customMessage;
     }
 
-    /**
-     * Sets the custom message.
-     *
-     * @param string $message
-     *
-     * @return Notify
-     */
-    public function setCustomMessage(string $message = null): self
+    public function setCustomMessage(?string $message): Notify
     {
         $this->customMessage = $message;
 
         return $this;
     }
 
-    /**
-     * Returns the included view.
-     *
-     * @return string
-     */
     public function getIncludeView(): string
     {
         return $this->includeView;
     }
 
-    /**
-     * Sets the included view.
-     *
-     * @param string $include
-     *
-     * @return Notify
-     */
-    public function setIncludeView(string $include): self
+    public function setIncludeView(string $include): Notify
     {
         $this->includeView = $include;
 
         return $this;
     }
 
-    /**
-     * Returns whether to include form.
-     *
-     * @return bool
-     */
     public function isIncludeForm(): bool
     {
         return $this->includeForm;
     }
 
-    /**
-     * Sets whether to include form.
-     *
-     * @param bool $include
-     *
-     * @return Notify
-     */
-    public function setIncludeForm(bool $include): self
+    public function setIncludeForm(bool $include): Notify
     {
         $this->includeForm = $include;
 
         return $this;
     }
 
-    /**
-     * Returns the button label.
-     *
-     * @return string
-     */
     public function getButtonLabel(): ?string
     {
         return $this->buttonLabel;
     }
 
-    /**
-     * Sets the button label.
-     *
-     * @param string $label
-     *
-     * @return Notify
-     */
-    public function setButtonLabel(string $label = null): Notify
+    public function setButtonLabel(?string $label): Notify
     {
         $this->buttonLabel = $label;
 
         return $this;
     }
 
-    /**
-     * Returns the button url.
-     *
-     * @return string
-     */
     public function getButtonUrl(): ?string
     {
         return $this->buttonUrl;
     }
 
-    /**
-     * Sets the button url.
-     *
-     * @param string $url
-     *
-     * @return Notify
-     */
-    public function setButtonUrl(string $url = null): Notify
+    public function setButtonUrl(?string $url): Notify
     {
         $this->buttonUrl = $url;
 
         return $this;
     }
 
-    /**
-     * Returns the unsafe.
-     *
-     * @return bool
-     */
     public function isUnsafe(): bool
     {
         return $this->unsafe;
     }
 
-    /**
-     * Sets the unsafe.
-     *
-     * @param bool $unsafe
-     *
-     * @return Notify
-     */
     public function setUnsafe(bool $unsafe): Notify
     {
         $this->unsafe = $unsafe;
@@ -834,23 +451,11 @@ class Notify
         return $this;
     }
 
-    /**
-     * Returns the error.
-     *
-     * @return bool
-     */
     public function isError(): bool
     {
         return $this->error;
     }
 
-    /**
-     * Sets the error.
-     *
-     * @param bool $error
-     *
-     * @return Notify
-     */
     public function setError(bool $error): Notify
     {
         $this->error = $error;
@@ -858,48 +463,24 @@ class Notify
         return $this;
     }
 
-    /**
-     * Returns the report.
-     *
-     * @return string
-     */
     public function getReport(): string
     {
         return $this->report;
     }
 
-    /**
-     * Sets the report.
-     *
-     * @param string $report
-     *
-     * @return Notify
-     */
-    public function setReport(string $report): self
+    public function setReport(string $report): Notify
     {
         $this->report = $report;
 
         return $this;
     }
 
-    /**
-     * Returns whether this is a test.
-     *
-     * @return bool
-     */
     public function isTest(): bool
     {
         return $this->test;
     }
 
-    /**
-     * Sets whether this is a test.
-     *
-     * @param bool $test
-     *
-     * @return Notify
-     */
-    public function setTest(bool $test): self
+    public function setTest(bool $test): Notify
     {
         $this->test = $test;
 
@@ -908,15 +489,14 @@ class Notify
 
     /**
      * Returns whether there is no defined message.
-     *
-     * @return bool
      */
     public function isEmpty(): bool
     {
-        return empty($this->subject) || (
-            empty($this->customMessage) &&
-            empty($this->paymentMessage) &&
-            empty($this->shipmentMessage)
-        );
+        return empty($this->subject)
+            || (
+                empty($this->customMessage)
+                && empty($this->paymentMessage)
+                && empty($this->shipmentMessage)
+            );
     }
 }

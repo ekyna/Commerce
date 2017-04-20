@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
@@ -11,16 +13,12 @@ use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
  */
 trait NotificationsTrait
 {
-    /**
-     * @var string[]
-     */
-    protected $notifications;
+    /** @var array<string> */
+    protected array $notifications = [];
 
 
     /**
-     * Returns the notifications.
-     *
-     * @return string[]
+     * @return array<string>
      */
     public function getNotifications(): array
     {
@@ -28,9 +26,7 @@ trait NotificationsTrait
     }
 
     /**
-     * Sets the notifications.
-     *
-     * @param string[] $notifications
+     * @param array<string> $notifications
      *
      * @return $this|NotificationsInterface
      */

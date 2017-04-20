@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Resolver;
 
+use DateTime;
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
@@ -14,9 +18,6 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
  */
 class DueDateResolver implements DueDateResolverInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function isInvoiceDue(Invoice\InvoiceInterface $invoice): bool
     {
         // Not due if no due date.
@@ -35,7 +36,7 @@ class DueDateResolver implements DueDateResolverInterface
         }
 
         // Due if due date is past
-        $diff = $date->diff((new \DateTime())->setTime(0, 0, 0, 0));
+        $diff = $date->diff((new DateTime())->setTime(0, 0));
         if (0 < $diff->days && !$diff->invert) {
             return true;
         }
@@ -43,10 +44,7 @@ class DueDateResolver implements DueDateResolverInterface
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function resolveInvoiceDueDate(Invoice\InvoiceInterface $invoice): ?\DateTime
+    public function resolveInvoiceDueDate(Invoice\InvoiceInterface $invoice): ?DateTimeInterface
     {
         if (null === $sale = $invoice->getSale()) {
             return null;
@@ -114,10 +112,7 @@ class DueDateResolver implements DueDateResolverInterface
         return $this->applyTermToDate($term, $from);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function resolveSaleDueDate(SaleInterface $sale): ?\DateTime
+    public function resolveSaleDueDate(SaleInterface $sale): ?DateTimeInterface
     {
         if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
             return null;
@@ -160,15 +155,7 @@ class DueDateResolver implements DueDateResolverInterface
         return $this->applyTermToDate($term, $from);
     }
 
-    /**
-     * Apply the payment term's delay to the given date
-     *
-     * @param Payment\PaymentTermInterface $term
-     * @param \DateTime            $date
-     *
-     * @return \DateTime
-     */
-    protected function applyTermToDate(Payment\PaymentTermInterface $term, \DateTime $date): \DateTime
+    protected function applyTermToDate(Payment\PaymentTermInterface $term, DateTimeInterface $date): DateTimeInterface
     {
         $date = clone $date;
         $date->setTime(23, 59, 59, 999999);

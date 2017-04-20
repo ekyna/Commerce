@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,65 +11,25 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 interface IdentityInterface
 {
-    /**
-     * Set gender
-     *
-     * @param string $gender
-     *
-     * @return IdentityInterface|$this
-     */
-    public function setGender($gender);
+    public function setGender(?string $gender): IdentityInterface;
 
-    /**
-     * Get gender
-     *
-     * @return string
-     */
-    public function getGender();
+    public function getGender(): ?string;
 
-    /**
-     * Set firstName
-     *
-     * @param string $firstName
-     *
-     * @return IdentityInterface|$this
-     */
-    public function setFirstName($firstName);
+    public function setFirstName(?string $firstName): IdentityInterface;
 
-    /**
-     * Get firstName
-     *
-     * @return string
-     */
-    public function getFirstName();
+    public function getFirstName(): ?string;
 
-    /**
-     * Set lastName
-     *
-     * @param string $lastName
-     *
-     * @return IdentityInterface|$this
-     */
-    public function setLastName($lastName);
+    public function setLastName(?string $lastName): IdentityInterface;
 
-    /**
-     * Get lastName
-     *
-     * @return string
-     */
-    public function getLastName();
+    public function getLastName(): ?string;
 
     /**
      * Returns whether or not the identity is empty.
-     *
-     * @return bool
      */
-    public function isIdentityEmpty();
+    public function isIdentityEmpty(): bool;
 
     /**
      * Clears the identity.
-     *
-     * @return IdentityInterface|$this
      */
-    public function clearIdentity();
+    public function clearIdentity(): IdentityInterface;
 }

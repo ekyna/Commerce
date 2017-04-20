@@ -8,7 +8,7 @@
     <embeddable name="Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity">
 
         <field name="provider" column="provider" type="string" length="16" nullable="true"/>
-        <field name="identifier" column="identifier" type="string" length="16" nullable="true"/>
+        <field name="identifier" column="identifier" type="integer" nullable="true"/>
 
     </embeddable>
 

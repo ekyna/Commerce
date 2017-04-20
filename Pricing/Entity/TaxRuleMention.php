@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractMention;
@@ -12,40 +14,27 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
  */
 class TaxRuleMention extends AbstractMention
 {
-    /**
-     * @var TaxRuleInterface|null
-     */
-    protected $taxRule;
+    protected ?TaxRuleInterface $taxRule = null;
 
 
-    /**
-     * Returns the tax rule.
-     *
-     * @return TaxRuleInterface|null
-     */
     public function getTaxRule(): ?TaxRuleInterface
     {
         return $this->taxRule;
     }
 
-    /**
-     * Sets the tax rule.
-     *
-     * @param TaxRuleInterface|null $taxRule
-     *
-     * @return TaxRuleMention
-     */
-    public function setTaxRule(TaxRuleInterface $taxRule = null): TaxRuleMention
+    public function setTaxRule(?TaxRuleInterface $taxRule): TaxRuleMention
     {
-        if ($this->taxRule !== $taxRule) {
-            if ($previous = $this->taxRule) {
-                $this->taxRule = null;
-                $previous->removeMention($this);
-            }
+        if ($this->taxRule === $taxRule) {
+            return $this;
+        }
 
-            if ($this->taxRule = $taxRule) {
-                $this->taxRule->addMention($this);
-            }
+        if ($previous = $this->taxRule) {
+            $this->taxRule = null;
+            $previous->removeMention($this);
+        }
+
+        if ($this->taxRule = $taxRule) {
+            $this->taxRule->addMention($this);
         }
 
         return $this;

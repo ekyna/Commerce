@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Repository;
 
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
@@ -16,10 +18,5 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
  */
 interface QuoteRepositoryInterface extends SaleRepositoryInterface
 {
-    /**
-     * Creates a new quote instance.
-     *
-     * @return QuoteInterface
-     */
-    public function createNew();
+
 }

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
-use Ekyna\Bundle\CoreBundle\Model\UploadableTrait;
 use Ekyna\Component\Commerce\Common\Model\AttachmentInterface;
+use Ekyna\Component\Resource\Model\UploadableTrait;
 
 /**
  * Class AbstractAttachment
@@ -14,95 +16,57 @@ abstract class AbstractAttachment implements AttachmentInterface
 {
     use UploadableTrait;
 
-    /**
-     * @var integer
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $title;
-
-    /**
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * @var boolean
-     */
-    protected $internal = false;
+    protected ?int    $id       = null;
+    protected ?string $title    = null;
+    protected ?string $type     = null;
+    protected bool    $internal = false;
 
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->getFilename() ?: 'New attachment';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTitle($title)
+    public function setTitle(?string $title): AttachmentInterface
     {
         $this->title = $title;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setType($type)
+    public function setType(?string $type): AttachmentInterface
     {
         $this->type = $type;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isInternal()
+    public function isInternal(): bool
     {
         return $this->internal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInternal($internal)
+    public function setInternal(bool $internal): AttachmentInterface
     {
-        $this->internal = (bool)$internal;
+        $this->internal = $internal;
 
         return $this;
     }

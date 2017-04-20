@@ -1,7 +1,8 @@
-<?php
+<?php /** @noinspection PhpMethodNamingConventionInspection */
 
 namespace Ekyna\Component\Commerce\Tests\Payment\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Order\Entity\Order;
@@ -24,7 +25,7 @@ class PaymentSubjectTraitTest extends TestCase
      */
     public function test_isPaid(SaleInterface $sale, bool $expected): void
     {
-        $this->assertEquals($expected, $sale->isPaid());
+        self::assertEquals($expected, $sale->isPaid());
     }
 
     public function provide_isPaid(): array
@@ -65,10 +66,10 @@ class PaymentSubjectTraitTest extends TestCase
 
         return (new Order())
             ->setCurrency($currency)
-            ->setGrandTotal($grand)
-            ->setDepositTotal($deposit)
-            ->setPendingTotal($pending)
-            ->setOutstandingAccepted($outstanding)
-            ->setPaidTotal($paid);
+            ->setGrandTotal(new Decimal($grand))
+            ->setDepositTotal(new Decimal($deposit))
+            ->setPendingTotal(new Decimal($pending))
+            ->setOutstandingAccepted(new Decimal($outstanding))
+            ->setPaidTotal(new Decimal($paid));
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Event\OnClearEventArgs;
@@ -8,34 +10,23 @@ use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Repository\AudienceRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Cache\ResultCacheAwareTrait;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\TranslatableRepository;
 
 /**
  * Class AudienceRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class AudienceRepository extends TranslatableResourceRepository implements AudienceRepositoryInterface
+class AudienceRepository extends TranslatableRepository implements AudienceRepositoryInterface
 {
-    /**
-     * @var AudienceInterface
-     */
-    private $defaultAudience;
+    use ResultCacheAwareTrait;
 
-    /**
-     * @var Query
-     */
-    private $findOneByKeyQuery;
-
-    /**
-     * @var Query
-     */
-    private $findOneByGatewayAndIdentifier;
+    private ?AudienceInterface $defaultAudience               = null;
+    private ?Query             $findOneByKeyQuery             = null;
+    private ?Query             $findOneByGatewayAndIdentifier = null;
 
 
-    /**
-     * @inheritDoc
-     */
     public function findDefault(): AudienceInterface
     {
         if (null !== $this->defaultAudience) {
@@ -47,7 +38,7 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             ->andWhere($qb->expr()->eq('a.default', true))
             ->getQuery()
             ->useQueryCache(true)
-            ->enableResultCache(60*60*24, self::DEFAULT_CACHE_KEY)
+            ->enableResultCache(60 * 60 * 24, self::DEFAULT_CACHE_KEY)
             ->getOneOrNullResult();
 
         if (null !== $this->defaultAudience = $this->findOneBy(['default' => true])) {
@@ -64,17 +55,11 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
     {
         $this->defaultAudience = null;
 
-        $this
-            ->getEntityManager()
-            ->getConfiguration()
-            ->getResultCacheImpl()
-            ->delete(self::DEFAULT_CACHE_KEY);
+        $this->getResultCache()->delete(self::DEFAULT_CACHE_KEY);
     }
 
     /**
      * Returns the "find public" query builder.
-     *
-     * @return QueryBuilder
      */
     public function getFindPublicQueryBuilder(): QueryBuilder
     {
@@ -85,9 +70,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             ->addOrderBy('translation.title', 'ASC');
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findPublic(): array
     {
         return $this
@@ -97,9 +79,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findOneByKey(string $key): ?AudienceInterface
     {
         return $this
@@ -108,9 +87,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             ->getOneOrNullResult();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findByGateway(string $gateway): array
     {
         $qb = $this->createQueryBuilder('a');
@@ -125,9 +101,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findOneByGatewayAndIdentifier(string $gateway, string $identifier): ?AudienceInterface
     {
         return $this
@@ -139,9 +112,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             ->getOneOrNullResult();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findByGatewayExcludingIds(string $gateway, array $identifiers): array
     {
         if (empty($identifiers)) {
@@ -163,8 +133,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
 
     /**
      * On clear event handler.
-     *
-     * @param OnClearEventArgs $event
      */
     public function onClear(OnClearEventArgs $event)
     {
@@ -173,9 +141,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
         }
     }
 
-    /**
-     * @return Query
-     */
     private function getFindOneByKeyQuery(): Query
     {
         if ($this->findOneByKeyQuery) {
@@ -190,9 +155,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             ->useQueryCache(true);
     }
 
-    /**
-     * @return Query
-     */
     private function getFindOneByGatewayAndIdentifierQuery(): Query
     {
         if ($this->findOneByGatewayAndIdentifier) {

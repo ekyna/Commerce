@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 /**
@@ -9,11 +11,10 @@ namespace Ekyna\Component\Commerce\Common\Event;
  */
 final class SaleTransformEvents
 {
-    const PRE_COPY       = 'ekyna_commerce.sale.pre_copy';
-    const POST_COPY      = 'ekyna_commerce.sale.post_copy';
-    const PRE_TRANSFORM  = 'ekyna_commerce.sale.pre_transform';
-    const POST_TRANSFORM = 'ekyna_commerce.sale.post_transform';
-
+    public const PRE_COPY       = 'ekyna_commerce.sale.pre_copy';
+    public const POST_COPY      = 'ekyna_commerce.sale.post_copy';
+    public const PRE_TRANSFORM  = 'ekyna_commerce.sale.pre_transform';
+    public const POST_TRANSFORM = 'ekyna_commerce.sale.post_transform';
 
     /**
      * Constructor.

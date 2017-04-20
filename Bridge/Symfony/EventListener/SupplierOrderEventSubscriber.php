@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
@@ -13,17 +15,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class SupplierOrderEventSubscriber extends SupplierOrderListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             SupplierOrderEvents::INSERT         => ['onInsert', 0],
             SupplierOrderEvents::UPDATE         => ['onUpdate', 0],
 //            SupplierOrderEvents::DELETE     => ['onDelete', 0],
             SupplierOrderEvents::CONTENT_CHANGE => ['onContentChange', 0],
-            SupplierOrderEvents::INITIALIZE     => ['onInitialize', 0],
             SupplierOrderEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }

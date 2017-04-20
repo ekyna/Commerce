@@ -35,44 +35,21 @@ use function tempnam;
  */
 class CostExporter
 {
-    /**
-     * @var InvoiceRepositoryInterface
-     */
-    protected $invoiceRepository;
-
-    /**
-     * @var StockAdjustmentRepositoryInterface
-     */
-    protected $adjustmentRepository;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var DocumentCalculatorInterface
-     */
-    protected $invoiceCalculator;
-
-    /**
-     * @var InvoiceCostCalculator
-     */
-    protected $costCalculator;
-
-    /**
-     * @var bool
-     */
-    protected $debug;
+    protected InvoiceRepositoryInterface         $invoiceRepository;
+    protected StockAdjustmentRepositoryInterface $adjustmentRepository;
+    protected CurrencyConverterInterface         $currencyConverter;
+    protected DocumentCalculatorInterface        $invoiceCalculator;
+    protected InvoiceCostCalculator              $costCalculator;
+    protected bool                               $debug;
 
 
     public function __construct(
-        InvoiceRepositoryInterface $invoiceRepository,
+        InvoiceRepositoryInterface         $invoiceRepository,
         StockAdjustmentRepositoryInterface $adjustmentRepository,
-        CurrencyConverterInterface $currencyConverter,
-        DocumentCalculatorInterface $invoiceCalculator,
-        InvoiceCostCalculator $costCalculator,
-        bool $debug
+        CurrencyConverterInterface         $currencyConverter,
+        DocumentCalculatorInterface        $invoiceCalculator,
+        InvoiceCostCalculator              $costCalculator,
+        bool                               $debug
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->adjustmentRepository = $adjustmentRepository;
@@ -91,7 +68,7 @@ class CostExporter
             try {
                 $start = new DateTime("$year-01-01");
             } catch (Exception $e) {
-                throw new InvalidArgumentException("Failed to create date.");
+                throw new InvalidArgumentException('Failed to create date.');
             }
             $months = iterator_to_array(new DatePeriod(
                 $start,
@@ -102,7 +79,7 @@ class CostExporter
             try {
                 $months[] = new DateTime("$year-$month-01");
             } catch (Exception $e) {
-                throw new InvalidArgumentException("Failed to create date.");
+                throw new InvalidArgumentException('Failed to create date.');
             }
         }
 
@@ -129,7 +106,7 @@ class CostExporter
     {
         $path = tempnam(sys_get_temp_dir(), 'invoices_costs');
 
-        if (false === $handle = fopen($path, "w")) {
+        if (false === $handle = fopen($path, 'w')) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
@@ -145,7 +122,7 @@ class CostExporter
         }
 
         if (false === fputcsv($handle, $data, ';')) {
-            throw new RuntimeException("Failed to write line.");
+            throw new RuntimeException('Failed to write line.');
         }
 
         $currency = $this->currencyConverter->getDefaultCurrency();
@@ -185,7 +162,7 @@ class CostExporter
             }
 
             if (false === fputcsv($handle, $data, ';')) {
-                throw new RuntimeException("Failed to write line.");
+                throw new RuntimeException('Failed to write line.');
             }
         }
 
@@ -198,7 +175,7 @@ class CostExporter
     {
         $path = tempnam(sys_get_temp_dir(), 'adjustments_costs');
 
-        if (false === $handle = fopen($path, "w")) {
+        if (false === $handle = fopen($path, 'w')) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
@@ -213,7 +190,7 @@ class CostExporter
         }
 
         if (false === fputcsv($handle, $data, ';')) {
-            throw new RuntimeException("Failed to write line.");
+            throw new RuntimeException('Failed to write line.');
         }
 
         $adjustments = $this->adjustmentRepository->findByMonth($month);
@@ -240,7 +217,7 @@ class CostExporter
             }
 
             if (false === fputcsv($handle, $data, ';')) {
-                throw new RuntimeException("Failed to write line.");
+                throw new RuntimeException('Failed to write line.');
             }
         }
 

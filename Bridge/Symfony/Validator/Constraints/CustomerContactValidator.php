@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Exception\InvalidArgumentException;
 class CustomerContactValidator extends ConstraintValidator
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function validate($contact, Constraint $constraint)
     {

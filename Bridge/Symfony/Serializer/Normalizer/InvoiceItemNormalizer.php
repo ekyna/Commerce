@@ -1,60 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceItemInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class InvoiceItemNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceItemNormalizer extends AbstractResourceNormalizer
+class InvoiceItemNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param InvoiceItemInterface $item
+     * @param InvoiceItemInterface $object
      */
-    public function normalize($item, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         $data = [];
 
         if ($this->contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
-                'designation' => $item->getDesignation(),
-                'reference'   => $item->getReference(),
-                'quantity'    => $item->getQuantity(),
+                'designation' => $object->getDesignation(),
+                'reference'   => $object->getReference(),
+                'quantity'    => $object->getQuantity(),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof InvoiceItemInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, InvoiceItemInterface::class);
     }
 }

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Tests;
 
 use Acme\Product\Entity as Acme;
 use DateTime;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Context\Context;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Common\Entity as CommonE;
@@ -29,9 +32,12 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Supplier\Entity as SupplierE;
 use InvalidArgumentException;
 use LogicException;
+use ReflectionClass;
 use RuntimeException;
-use Symfony\Component\Intl\Intl;
+use Symfony\Component\Intl\Countries;
+use Symfony\Component\Intl\Currencies;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
 
 /**
  * Class Fixture
@@ -104,36 +110,15 @@ class Fixture
 
     private const DATA_DIR = __DIR__ . '/../Install/data';
 
-    /**
-     * @var StockUnitStateResolverInterface
-     */
-    private static $stockUnitStateResolver;
-
-    /**
-     * @var bool
-     */
-    private static $taxesLoaded = false;
-
-    /**
-     * @var bool
-     */
-    private static $shippingLoaded = false;
-
-    /**
-     * @var array
-     */
-    private static $ids = [];
-
-    /**
-     * @var array
-     */
-    private static $references = [];
+    private static ?StockUnitStateResolverInterface $stockUnitStateResolver = null;
+    private static bool                             $taxesLoaded    = false;
+    private static bool                             $shippingLoaded = false;
+    private static array                            $ids            = [];
+    private static array                            $references     = [];
 
 
     /**
      * Resolves the stock unit state.
-     *
-     * @param StockM\StockUnitInterface $stockUnit
      */
     public static function resolveStockUnitState(StockM\StockUnitInterface $stockUnit): void
     {
@@ -176,13 +161,13 @@ class Fixture
         ], $data);
 
         if (!(is_numeric($data['rate']) && 0 < $data['rate'] && 100 > $data['rate'])) {
-            throw new LogicException("Invalid tax rate : " . $data['rate']);
+            throw new LogicException('Invalid tax rate : ' . $data['rate']);
         }
 
         $tax
             ->setCode($data['code'])
             ->setName($data['name'])
-            ->setRate($data['rate']);
+            ->setRate(new Decimal((string)$data['rate']));
 
         if (null !== $datum = $data['country']) {
             $tax->setCountry(self::country($datum));
@@ -341,13 +326,13 @@ class Fixture
         ], $data);
 
         if (!isset($data['code']) || empty($data['code'])) {
-            throw new LogicException("Country code is required.");
+            throw new LogicException('Country code is required.');
         }
 
         $data['code'] = strtoupper($data['code']);
 
         if (empty($data['name'])) {
-            if (null === $name = Intl::getCurrencyBundle()->getCurrencyName($data['code'])) {
+            if (null === $name = Currencies::getName($data['code'])) {
                 throw new LogicException("Invalid currency code '{$data['code']}'.");
             }
             $data['name'] = $name;
@@ -482,13 +467,13 @@ class Fixture
         ], $data);
 
         if (!isset($data['code']) || empty($data['code'])) {
-            throw new LogicException("Country code is required.");
+            throw new LogicException('Country code is required.');
         }
 
         $data['code'] = strtoupper($data['code']);
 
         if (empty($data['name'])) {
-            if (null === $name = Intl::getRegionBundle()->getCountryName($data['code'])) {
+            if (null === $name = Countries::getName($data['code'])) {
                 throw new LogicException("Invalid currency code '{$data['code']}'.");
             }
             $data['name'] = $name;
@@ -649,7 +634,6 @@ class Fixture
             $subject = self::subject($datum);
         }
 
-        $item = null;
         if (null !== $datum = $data['item']) {
             $unit->setSupplierOrderItem($item = self::supplierOrderItem($datum));
 
@@ -657,7 +641,7 @@ class Fixture
                 $s = $item->getSubjectIdentity()->getSubject();
                 if ($subject) {
                     if ($s !== $subject) {
-                        throw new LogicException("Subject miss match");
+                        throw new LogicException('Subject miss match');
                     }
                 } else {
                     $subject = $s;
@@ -672,14 +656,14 @@ class Fixture
         }
 
         $unit
-            ->setNetPrice($data['net_price'])
-            ->setShippingPrice($data['shipping_price'])
-            ->setOrderedQuantity($data['ordered'])
-            ->setReceivedQuantity($data['received'])
-            ->setAdjustedQuantity($data['adjusted'])
-            ->setSoldQuantity($data['sold'])
-            ->setShippedQuantity($data['shipped'])
-            ->setLockedQuantity($data['locked']);
+            ->setNetPrice(new Decimal((string)$data['net_price']))
+            ->setShippingPrice(new Decimal((string)$data['shipping_price']))
+            ->setOrderedQuantity(new Decimal((string)$data['ordered']))
+            ->setReceivedQuantity(new Decimal((string)$data['received']))
+            ->setAdjustedQuantity(new Decimal((string)$data['adjusted']))
+            ->setSoldQuantity(new Decimal((string)$data['sold']))
+            ->setShippedQuantity(new Decimal((string)$data['shipped']))
+            ->setLockedQuantity(new Decimal((string)$data['locked']));
 
         if (null !== $datum = $data['eda']) {
             $unit->setEstimatedDateOfArrival(self::date($datum));
@@ -739,9 +723,9 @@ class Fixture
         }
 
         $assignment
-            ->setSoldQuantity($data['sold'])
-            ->setShippedQuantity($data['shipped'])
-            ->setLockedQuantity($data['locked']);
+            ->setSoldQuantity(new Decimal((string)$data['sold']))
+            ->setShippedQuantity(new Decimal((string)$data['shipped']))
+            ->setLockedQuantity(new Decimal((string)$data['locked']));
 
         return $assignment;
     }
@@ -779,7 +763,7 @@ class Fixture
         }
 
         $adjustment
-            ->setQuantity($data['quantity'])
+            ->setQuantity(new Decimal((string)$data['quantity']))
             ->setReason($data['debit']
                 ? StockM\StockAdjustmentReasons::REASON_DEBIT
                 : StockM\StockAdjustmentReasons::REASON_CREDIT
@@ -822,8 +806,8 @@ class Fixture
         $subject
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice($data['price'])
-            ->setWeight($data['weight']);
+            ->setNetPrice(new Decimal((string)$data['price']))
+            ->setWeight(new Decimal((string)$data['weight']));
 
         if (null !== $datum = $data['tax_group']) {
             $subject->setTaxGroup(self::taxGroup($datum));
@@ -949,10 +933,10 @@ class Fixture
      *     'tax_group'   => self::TAX_GROUP_NORMAL,
      *     'designation' => 'Apple iPhone',
      *     'reference'   => 'APPL-IPHO',
-     *     'price'       => 190.,
-     *     'weight'      => .8,
-     *     'available'   => 0.,
-     *     'ordered'     => 0.,
+     *     'price'       => 190.0,
+     *     'weight'      => 0.8,
+     *     'available'   => 0,
+     *     'ordered'     => 0,
      *     'eda'         => null,
      * ]
      *
@@ -975,18 +959,18 @@ class Fixture
             'tax_group'   => self::TAX_GROUP_NORMAL,
             'designation' => '',
             'reference'   => '',
-            'price'       => 0.,
-            'weight'      => 0.,
-            'available'   => 0.,
-            'ordered'     => 0.,
+            'price'       => 0,
+            'weight'      => 0,
+            'available'   => 0,
+            'ordered'     => 0,
             'eda'         => null,
         ], $data);
 
         $product
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice($data['price'])
-            ->setWeight($data['weight'])
+            ->setNetPrice(new Decimal((string)$data['price']))
+            ->setWeight(new Decimal((string)$data['weight']))
             ->setAvailableStock($data['available'])
             ->setOrderedStock($data['ordered']);
 
@@ -1014,14 +998,14 @@ class Fixture
      *
      * Defaults : [
      *     'currency'        => self::CURRENCY_EUR,
-     *     'shipping_cost'   => .0,
-     *     'discount_total'  => .0,
-     *     'tax_total'       => .0,
-     *     'payment_total'   => .0,
-     *     'customs_tax'     => .0,
-     *     'customs_vat'     => .0,
-     *     'forwarder_fee'   => .0,
-     *     'forwarder_total' => .0,
+     *     'shipping_cost'   => 0,
+     *     'discount_total'  => 0,
+     *     'tax_total'       => 0,
+     *     'payment_total'   => 0,
+     *     'customs_tax'     => 0,
+     *     'customs_vat'     => 0,
+     *     'forwarder_fee'   => 0,
+     *     'forwarder_total' => 0,
      *     'created_at'      => 'now',
      *     'ordered_at'      => null,
      *     'supplier'        => null,
@@ -1045,15 +1029,15 @@ class Fixture
 
         $data = array_replace([
             'currency'        => self::CURRENCY_EUR,
-            'shipping_cost'   => .0,
-            'discount_total'  => .0,
-            'tax_total'       => .0,
-            'payment_total'   => .0,
-            'customs_tax'     => .0,
-            'customs_vat'     => .0,
-            'forwarder_fee'   => .0,
-            'forwarder_total' => .0,
-            'exchange_rate'   => null,
+            'shipping_cost'   => 0,
+            'discount_total'  => 0,
+            'tax_total'       => 0,
+            'payment_total'   => 0,
+            'customs_tax'     => 0,
+            'customs_vat'     => 0,
+            'forwarder_fee'   => 0,
+            'forwarder_total' => 0,
+            'exchange_rate'   => 1,
             'exchange_date'   => null,
             'created_at'      => 'now',
             'ordered_at'      => null,
@@ -1065,15 +1049,15 @@ class Fixture
 
         $order
             ->setCurrency(self::currency($data['currency']))
-            ->setShippingCost($data['shipping_cost'])
-            ->setDiscountTotal($data['discount_total'])
-            ->setTaxTotal($data['tax_total'])
-            ->setPaymentTotal($data['payment_total'])
-            ->setCustomsTax($data['customs_tax'])
-            ->setCustomsVat($data['customs_vat'])
-            ->setForwarderFee($data['forwarder_fee'])
-            ->setForwarderTotal($data['forwarder_total'])
-            ->setExchangeRate($data['exchange_rate']);
+            ->setShippingCost(new Decimal((string)$data['shipping_cost']))
+            ->setDiscountTotal(new Decimal((string)$data['discount_total']))
+            ->setTaxTotal(new Decimal((string)$data['tax_total']))
+            ->setPaymentTotal(new Decimal((string)$data['payment_total']))
+            ->setCustomsTax(new Decimal((string)$data['customs_tax']))
+            ->setCustomsVat(new Decimal((string)$data['customs_vat']))
+            ->setForwarderFee(new Decimal((string)$data['forwarder_fee']))
+            ->setForwarderTotal(new Decimal((string)$data['forwarder_total']))
+            ->setExchangeRate(new Decimal((string)$data['exchange_rate']));
 
         if (null !== $datum = $data['exchange_date']) {
             $order->setExchangeDate(self::date($datum));
@@ -1174,23 +1158,23 @@ class Fixture
             if (!$subject) {
                 $subject = $s;
             } elseif ($subject !== $s) {
-                throw new LogicException("Subject miss match");
+                throw new LogicException('Subject miss match');
             }
         }
         if ($unit && $s = $unit->getProduct()) {
             if (!$subject) {
                 $subject = $s;
             } elseif ($subject !== $s) {
-                throw new LogicException("Subject miss match");
+                throw new LogicException('Subject miss match');
             }
         }
 
         $item
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice($data['price'])
-            ->setWeight($data['weight'])
-            ->setQuantity($data['quantity']);
+            ->setNetPrice(new Decimal((string)$data['price']))
+            ->setWeight(new Decimal((string)$data['weight']))
+            ->setQuantity(new Decimal((string)$data['quantity']));
 
         if ($subject) {
             self::assignSubject($item, $subject);
@@ -1397,18 +1381,18 @@ class Fixture
             ->setInvoiceState($data['invoice_state'])
             ->setVatValid($data['vat_valid'])
             ->setVatNumber($data['vat_number'])
-            ->setWeightTotal($data['weight_total'])
-            ->setShipmentWeight($data['shipment_weight'])
-            ->setShipmentAmount($data['shipment_amount'])
-            ->setGrandTotal($data['grand_total'])
-            ->setDepositTotal($data['deposit_total'])
-            ->setPendingTotal($data['pending_total'])
-            ->setPaidTotal($data['paid_total'])
-            ->setOutstandingAccepted($data['outstanding_accepted'])
-            ->setOutstandingExpired($data['outstanding_expired'])
-            ->setExchangeRate($data['exchange_rate'])
-            ->setInvoiceTotal($data['invoice_total'])
-            ->setCreditTotal($data['credit_total']);
+            ->setWeightTotal(new Decimal((string)$data['weight_total']))
+            ->setShipmentWeight($data['shipment_weight'] ? new Decimal((string)$data['shipment_weight']) : null)
+            ->setShipmentAmount(new Decimal((string)$data['shipment_amount']))
+            ->setGrandTotal(new Decimal((string)$data['grand_total']))
+            ->setDepositTotal(new Decimal((string)$data['deposit_total']))
+            ->setPendingTotal(new Decimal((string)$data['pending_total']))
+            ->setPaidTotal(new Decimal((string)$data['paid_total']))
+            ->setOutstandingAccepted(new Decimal((string)$data['outstanding_accepted']))
+            ->setOutstandingExpired(new Decimal((string)$data['outstanding_expired']))
+            ->setExchangeRate($data['exchange_rate'] ? new Decimal((string)$data['exchange_rate']) : null)
+            ->setInvoiceTotal(new Decimal((string)$data['invoice_total']))
+            ->setCreditTotal(new Decimal((string)$data['credit_total']));
 
         if (null !== $datum = $data['shipment_method']) {
             $order->setShipmentMethod(self::shipmentMethod($datum));
@@ -1562,9 +1546,9 @@ class Fixture
         $item
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice($data['price'])
-            ->setWeight($data['weight'])
-            ->setQuantity($data['quantity'])
+            ->setNetPrice(new Decimal((string)$data['price']))
+            ->setWeight(new Decimal((string)$data['weight']))
+            ->setQuantity(new Decimal((string)$data['quantity']))
             ->setPrivate($data['private'])
             ->setCompound($data['compound'])
             ->setImmutable($data['immutable']);
@@ -1650,7 +1634,7 @@ class Fixture
             ->setType($data['type'])
             ->setMode($data['mode'])
             ->setDesignation(self::adjustmentDesignation($data))
-            ->setAmount($data['amount'])
+            ->setAmount(new Decimal((string)$data['amount']))
             ->setSource($data['source']);
 
         return $adjustment;
@@ -1688,7 +1672,7 @@ class Fixture
             ->setType($data['type'])
             ->setMode($data['mode'])
             ->setDesignation(self::adjustmentDesignation($data))
-            ->setAmount($data['amount'])
+            ->setAmount(new Decimal((string)$data['amount']))
             ->setSource($data['source']);
 
         return $adjustment;
@@ -1697,14 +1681,14 @@ class Fixture
     /**
      * Creates a new order taxation adjustment (for shipment).
      *
-     * @param float $amount
+     * @param Decimal $amount
      *
      * @return OrderE\OrderAdjustment
      *
      * @deprecated Use Fixture::orderAdjustment
      * @TODO       Remove
      */
-    public static function orderTaxationAdjustment(float $amount): OrderE\OrderAdjustment
+    public static function orderTaxationAdjustment(Decimal $amount): OrderE\OrderAdjustment
     {
         $adjustment = new OrderE\OrderAdjustment();
         $adjustment
@@ -1719,21 +1703,21 @@ class Fixture
     /**
      * Creates a new order discount adjustment.
      *
-     * @param float $amount
-     * @param bool  $flat
+     * @param Decimal $amount
+     * @param bool    $flat
      *
      * @return OrderE\OrderAdjustment
      *
      * @deprecated Use Fixture::orderAdjustment
      * @TODO       Remove
      */
-    public static function orderDiscountAdjustment(float $amount, bool $flat = false): OrderE\OrderAdjustment
+    public static function orderDiscountAdjustment(Decimal $amount, bool $flat = false): OrderE\OrderAdjustment
     {
         $adjustment = new OrderE\OrderAdjustment();
         $adjustment
             ->setType(CommonM\AdjustmentTypes::TYPE_DISCOUNT)
             ->setMode($flat ? CommonM\AdjustmentModes::MODE_FLAT : CommonM\AdjustmentModes::MODE_PERCENT)
-            ->setDesignation($flat ? "Discount" : "Discount $amount%")
+            ->setDesignation($flat ? 'Discount' : "Discount $amount%")
             ->setAmount($amount);
 
         return $adjustment;
@@ -1926,8 +1910,8 @@ class Fixture
         ], $data);
 
         $price
-            ->setWeight($data['weight'])
-            ->setNetPrice($data['price']);
+            ->setWeight(new Decimal((string)$data['weight']))
+            ->setNetPrice(new Decimal((string)$data['price']));
 
         if (null !== $datum = $data['method']) {
             $price->setMethod(self::shipmentMethod($datum));
@@ -2147,7 +2131,7 @@ class Fixture
                 $data['target'] = self::orderAdjustment($data['adjustment']);
                 unset($data['adjustment']);
             } else {
-                throw new InvalidArgumentException("Undefined invoice line target.");
+                throw new InvalidArgumentException('Undefined invoice line target.');
             }
         }
 
@@ -2229,7 +2213,7 @@ class Fixture
 
         $load = function ($path, $factory): void {
             if (!(file_exists($path) && is_readable($path))) {
-                return;
+                throw new RuntimeException("File $path not found.");
             }
 
             $data = Yaml::parse(file_get_contents($path));
@@ -2251,7 +2235,7 @@ class Fixture
             'tax_rules'  => 'taxRule',
         ];
         foreach ($map as $filename => $method) {
-            $load(self::DATA_DIR . "/{$filename}.yml", [__CLASS__, $method]);
+            $load(self::DATA_DIR . "/$filename.yaml", [__CLASS__, $method]);
         }
     }
 
@@ -2297,7 +2281,7 @@ class Fixture
      * @param SubjectRelativeInterface          $relative
      * @param SubjectInterface|array|string|int $subject
      *
-     * @return SubjectInterface;
+     * @return SubjectInterface
      */
     private static function assignSubject(SubjectRelativeInterface $relative, $subject): SubjectInterface
     {
@@ -2317,15 +2301,15 @@ class Fixture
         if (empty($relative->getReference())) {
             $relative->setReference($subject->getReference());
         }
-        if (0. === $relative->getNetPrice()) {
-            $relative->setNetPrice($subject->getNetPrice());
+        if ($relative->getNetPrice()->isZero()) {
+            $relative->setNetPrice(clone $subject->getNetPrice());
         }
-        if (0. === $relative->getWeight()) {
-            $relative->setWeight($subject->getWeight());
+        if ($relative->getWeight()->isZero()) {
+            $relative->setWeight(clone $subject->getWeight());
         }
         if ($taxGroup = $relative->getTaxGroup()) {
             if ($taxGroup !== $subject->getTaxGroup()) {
-                throw new LogicException("Tax group miss match.");
+                throw new LogicException('Tax group miss match.');
             }
         } else {
             $relative->setTaxGroup($subject->getTaxGroup());
@@ -2348,7 +2332,7 @@ class Fixture
                 return "VAT {$data['amount']}%";
             }
 
-            throw new InvalidArgumentException("Unexpected adjustment mode.");
+            throw new InvalidArgumentException('Unexpected adjustment mode.');
         }
 
         if ($data['type'] === CommonM\AdjustmentTypes::TYPE_DISCOUNT) {
@@ -2360,10 +2344,10 @@ class Fixture
                 return "Discount -{$data['amount']}";
             }
 
-            throw new InvalidArgumentException("Unexpected adjustment mode.");
+            throw new InvalidArgumentException('Unexpected adjustment mode.');
         }
 
-        throw new InvalidArgumentException("Unexpected adjustment type.");
+        throw new InvalidArgumentException('Unexpected adjustment type.');
     }
 
     /**
@@ -2440,7 +2424,7 @@ class Fixture
         }
 
         if (!is_array($data)) {
-            throw new InvalidArgumentException("Expected object, array, int or string");
+            throw new InvalidArgumentException('Expected object, array, int or string');
         }
 
         if (isset($data['_reference']) && self::has($data['_reference'])) {
@@ -2497,7 +2481,7 @@ class Fixture
             $class = get_class($object);
 
             if (!isset(self::$ids[$class])) {
-                $r = new \ReflectionClass($class);
+                $r = new ReflectionClass($class);
                 $p = $r->getProperty('id');
                 $p->setAccessible(true);
 
@@ -2541,8 +2525,8 @@ class Fixture
     /**
      * Returns the registered fixture entity by its id and class, of reference.
      *
-     * @param int|string $id    The id or the reference
-     * @param string     $class The class if searching by id
+     * @param int|string  $id    The id or the reference
+     * @param string|null $class The class if searching by id
      *
      * @return object
      */
@@ -2550,7 +2534,7 @@ class Fixture
     {
         if (is_int($id)) {
             if (empty($class)) {
-                throw new LogicException("You must provide a class to find a fixture by its id.");
+                throw new LogicException('You must provide a class to find a fixture by its id.');
             }
 
             if (!isset(self::$ids[$class])) {
@@ -2573,7 +2557,7 @@ class Fixture
                 self::load($id);
 
                 return self::$references[$id];
-            } catch (\Throwable $t) {
+            } catch (Throwable $t) {
             }
 
             throw new RuntimeException("No fixtures found for reference '$id'.");

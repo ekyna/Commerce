@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Newsletter\Event\MemberEvents;
@@ -13,9 +15,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class MemberEventSubscriber extends MemberListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritDoc
-     */
     public static function getSubscribedEvents(): array
     {
         return [

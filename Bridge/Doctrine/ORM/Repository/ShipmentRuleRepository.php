@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Types;
@@ -11,7 +13,7 @@ use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentRuleInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentRuleRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class ShipmentRuleRepository
@@ -20,20 +22,9 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleRepositoryInterface
 {
-    /**
-     * @var ContextProviderInterface
-     */
-    protected $contextProvider;
-
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $calculatorFactory;
-
-    /**
-     * @var Query
-     */
-    protected $findOneBySaleQuery;
+    protected ContextProviderInterface $contextProvider;
+    protected AmountCalculatorFactory  $calculatorFactory;
+    protected ?Query                   $findOneBySaleQuery = null;
 
 
     /**
@@ -57,7 +48,7 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findOneBySale(SaleInterface $sale, ShipmentMethodInterface $method = null): ?ShipmentRuleInterface
     {
@@ -102,7 +93,7 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
         }
 
         $qb = $this->createQueryBuilder('r');
-        $e  = $qb->expr();
+        $e = $qb->expr();
 
         return $this->findOneBySaleQuery = $qb
             ->andWhere($e->orX(

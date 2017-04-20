@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\Event;
 
 /**
@@ -10,24 +12,21 @@ namespace Ekyna\Component\Commerce\Newsletter\Event;
 final class MemberEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.member.insert';
-    const UPDATE      = 'ekyna_commerce.member.update';
-    const DELETE      = 'ekyna_commerce.member.delete';
+    public const INSERT      = 'ekyna_commerce.member.insert';
+    public const UPDATE      = 'ekyna_commerce.member.update';
+    public const DELETE      = 'ekyna_commerce.member.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.member.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.member.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.member.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.member.pre_create';
-    const POST_CREATE = 'ekyna_commerce.member.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.member.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.member.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.member.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.member.post_update';
+    public const PRE_DELETE  = 'ekyna_commerce.member.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.member.post_delete';
 
-    const PRE_DELETE  = 'ekyna_commerce.member.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.member.post_delete';
-
-    const SUBSCRIPTION_CHANGE = 'ekyna_commerce.member.subscription_change';
-
+    public const SUBSCRIPTION_CHANGE = 'ekyna_commerce.member.subscription_change';
 
     /**
      * Disabled constructor.

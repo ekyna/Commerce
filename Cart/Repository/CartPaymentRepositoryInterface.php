@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Repository;
 
 use Ekyna\Component\Commerce\Cart\Model\CartPaymentInterface;
@@ -14,10 +16,5 @@ use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
  */
 interface CartPaymentRepositoryInterface extends PaymentRepositoryInterface
 {
-    /**
-     * Creates a new cart payment instance.
-     *
-     * @return CartPaymentInterface
-     */
-    public function createNew();
+
 }

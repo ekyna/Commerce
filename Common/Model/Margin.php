@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Util\Money;
 
 /**
@@ -11,112 +14,55 @@ use Ekyna\Component\Commerce\Common\Util\Money;
  */
 class Margin
 {
-    /**
-     * @var string
-     */
-    private $currency;
-
-    /**
-     * @var float
-     */
-    private $purchaseCost;
-
-    /**
-     * @var float
-     */
-    private $sellingPrice;
-
-    /**
-     * @var bool
-     */
-    private $average;
+    private string $currency;
+    private Decimal $purchaseCost;
+    private Decimal $sellingPrice;
+    private bool $average;
 
 
-    /**
-     * Constructor.
-     *
-     * @param string $currency
-     * @param float  $cost
-     * @param float  $price
-     * @param bool   $average
-     */
-    public function __construct(string $currency, float $cost = 0., float $price = 0., bool $average = false)
+    public function __construct(string $currency, Decimal $cost = null, Decimal $price = null, bool $average = false)
     {
         $this->currency = $currency;
-        $this->purchaseCost = $cost;
-        $this->sellingPrice = $price;
+        $this->purchaseCost = $cost ?: new Decimal(0);
+        $this->sellingPrice = $price ?: new Decimal(0);
         $this->average = $average;
     }
 
-    /**
-     * Returns the currency.
-     *
-     * @return string
-     */
     public function getCurrency(): string
     {
         return $this->currency;
     }
 
-    /**
-     * Adds the purchase cost.
-     *
-     * @param float $cost
-     *
-     * @return Margin
-     */
-    public function addPurchaseCost(float $cost): Margin
+    public function addPurchaseCost(Decimal $cost): Margin
     {
         $this->purchaseCost += $cost;
 
         return $this;
     }
 
-    /**
-     * Adds the selling price
-     *
-     * @param float $price
-     *
-     * @return Margin
-     */
-    public function addSellingPrice(float $price): Margin
+    public function addSellingPrice(Decimal $price): Margin
     {
         $this->sellingPrice += $price;
 
         return $this;
     }
 
-    /**
-     * Returns the percentage.
-     *
-     * @return float
-     */
-    public function getPercent(): float
+    public function getPercent(): Decimal
     {
         $amount = $this->getAmount();
 
         if (0 < $this->sellingPrice) {
-            return round($amount * 100 / $this->sellingPrice, 2);
+            return $amount->mul(100)->div($this->sellingPrice)->round(2);
         }
 
-        return 0;
+        return new Decimal(0);
     }
 
-    /**
-     * Returns the amount.
-     *
-     * @return float
-     */
-    public function getAmount(): float
+    public function getAmount(): Decimal
     {
         return Money::round($this->sellingPrice - $this->purchaseCost, $this->currency);
     }
 
-    /**
-     * Merges the given margin.
-     *
-     * @param Margin $margin
-     */
     public function merge(Margin $margin): void
     {
         $this->purchaseCost += $margin->getPurchaseCost();
@@ -124,43 +70,21 @@ class Margin
         $this->average = $this->average || $margin->isAverage();
     }
 
-    /**
-     * Returns the purchase cost.
-     *
-     * @return float
-     */
-    public function getPurchaseCost(): float
+    public function getPurchaseCost(): Decimal
     {
         return $this->purchaseCost;
     }
 
-    /**
-     * Returns the selling price.
-     *
-     * @return float
-     */
-    public function getSellingPrice(): float
+    public function getSellingPrice(): Decimal
     {
         return $this->sellingPrice;
     }
 
-    /**
-     * Returns whether this is an average margin.
-     *
-     * @return bool
-     */
     public function isAverage(): bool
     {
         return $this->average;
     }
 
-    /**
-     * Sets whether this is an average margin.
-     *
-     * @param bool $average
-     *
-     * @return Margin
-     */
     public function setAverage(bool $average): Margin
     {
         $this->average = $average;

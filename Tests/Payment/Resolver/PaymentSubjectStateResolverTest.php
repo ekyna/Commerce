@@ -1,16 +1,22 @@
 <?php
+/** @noinspection PhpTooManyParametersInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Tests\Payment\Resolver;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Resolver\PaymentSubjectStateResolver;
 use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+
+use function array_map;
 
 /**
  * Class PaymentSubjectStateResolverTest
@@ -29,10 +35,6 @@ class PaymentSubjectStateResolverTest extends TestCase
      */
     private $resolver;
 
-
-    /**
-     * @inheritDoc
-     */
     protected function setUp(): void
     {
         $this->paymentCalculator = $this->createMock(PaymentCalculatorInterface::class);
@@ -52,16 +54,12 @@ class PaymentSubjectStateResolverTest extends TestCase
     }
 
     /**
-     * @param string        $state
-     * @param SaleInterface $subject
-     * @param array         $calculator
-     *
-     * @dataProvider provide_resolveState
+     * @dataProvider provideResolveState
      */
-    public function test_resolveState(
-        string $state,
+    public function testResolveState(
+        string        $state,
         SaleInterface $subject,
-        array $calculator
+        array         $calculator
     ): void {
         call_user_func_array([$this, 'configurePaymentCalculator'], $calculator);
 
@@ -72,7 +70,7 @@ class PaymentSubjectStateResolverTest extends TestCase
         $this->assertEquals($state, $method->invokeArgs($this->resolver, [$subject]));
     }
 
-    public function provide_resolveState(): \Generator
+    public function provideResolveState(): \Generator
     {
         // Subject [Currency, Accepted, Expired, HasPayments, InvoiceState]
         // Calculator [Amounts [Total, Paid, Refunded, Deposit, Pending], Accepted, Expired, Failed, Canceled]
@@ -128,7 +126,7 @@ class PaymentSubjectStateResolverTest extends TestCase
         yield 'Paid = Refunded = Grand (fully invoiced)' => [PaymentStates::STATE_REFUNDED, $subject, $calculator];
 
         // 10) Not paid, fully credited
-        $subject = $this->createSubject(Fixture::CURRENCY_EUR, 0, 0, true, InvoiceStates::STATE_CREDITED);
+        $subject = $this->createSubject(Fixture::CURRENCY_EUR, 0, 0, false, InvoiceStates::STATE_CREDITED, true);
         $calculator = [[0, 0, 0, 0, 0], 0, 0, 0, 0];
         yield 'Not paid, fully credited' => [PaymentStates::STATE_CANCELED, $subject, $calculator];
 
@@ -154,24 +152,20 @@ class PaymentSubjectStateResolverTest extends TestCase
     }
 
     /**
-     * @param string $currency
-     * @param float  $accepted
-     * @param float  $expired
-     * @param bool   $hasPayments
-     * @param string $invoiceState
-     * @param bool   $fullyInvoiced
-     *
      * @return SaleInterface|MockObject
      */
     private function createSubject(
         string $currency,
-        float $accepted = 0,
-        float $expired = 0,
-        bool $hasPayments = true,
+        float  $accepted = 0,
+        float  $expired = 0,
+        bool   $hasPayments = true,
         string $invoiceState = InvoiceStates::STATE_NEW,
-        bool $fullyInvoiced = false
+        bool   $fullyInvoiced = false
     ): SaleInterface {
-        $subject = $this->createMock([SaleInterface::class, InvoiceSubjectInterface::class]);
+        $subject = $this->createMock(OrderInterface::class); // SaleInterface + InvoiceSubjectInterface
+
+        $accepted = new Decimal((string)$accepted);
+        $expired = new Decimal((string)$expired);
 
         $subject->method('getCurrency')->willReturn(Fixture::currency($currency));
         $subject->method('getOutstandingAccepted')->willReturn($accepted);
@@ -184,13 +178,6 @@ class PaymentSubjectStateResolverTest extends TestCase
         return $subject;
     }
 
-    /**
-     * @param array $amounts
-     * @param float $accepted
-     * @param float $expired
-     * @param float $failed
-     * @param float $canceled
-     */
     private function configurePaymentCalculator(
         array $amounts,
         float $accepted = 0,
@@ -198,7 +185,17 @@ class PaymentSubjectStateResolverTest extends TestCase
         float $failed = 0,
         float $canceled = 0
     ): void {
-        $this->paymentCalculator->method('getPaymentAmounts')->willReturn(array_replace([0, 0, 0, 0, 0], $amounts));
+        $map = fn($v) => new Decimal((string)$v);
+
+        $defaults = array_map($map, [0, 0, 0, 0, 0]);
+        $amounts = array_map($map, $amounts);
+
+        $accepted = new Decimal((string)$accepted);
+        $expired = new Decimal((string)$expired);
+        $failed = new Decimal((string)$failed);
+        $canceled = new Decimal((string)$canceled);
+
+        $this->paymentCalculator->method('getPaymentAmounts')->willReturn(array_replace($defaults, $amounts));
         $this->paymentCalculator->method('calculateOutstandingAcceptedTotal')->willReturn($accepted);
         $this->paymentCalculator->method('calculateOutstandingExpiredTotal')->willReturn($expired);
         $this->paymentCalculator->method('calculateFailedTotal')->willReturn($failed);

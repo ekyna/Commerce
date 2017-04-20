@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Entity;
 
+use DateTimeInterface;
+use Ekyna\Component\Commerce\Cart\Model;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Cart\Model;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 
 /**
@@ -15,112 +18,91 @@ use Ekyna\Component\Commerce\Payment\Model as Payment;
  */
 class Cart extends AbstractSale implements Model\CartInterface
 {
-    /**
-     * @var \DateTime
-     */
-    protected $expiresAt;
+    protected ?DateTimeInterface $expiresAt = null;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
 
         $this->state = Model\CartStates::STATE_NEW;
-        $this->source = Common\SaleSources::SOURCE_WEBSITE;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @return Model\CartAddressInterface
+     * @return Model\CartAddressInterface|null
      */
-    public function getInvoiceAddress()
+    public function getInvoiceAddress(): ?Common\SaleAddressInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->invoiceAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceAddress(Common\SaleAddressInterface $address = null)
+    public function setInvoiceAddress(?Common\SaleAddressInterface $address): Common\SaleInterface
     {
         if ($address && !$address instanceof Model\CartAddressInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAddressInterface::class);
+            throw new UnexpectedTypeException($address, Model\CartAddressInterface::class);
         }
 
-        if ($address !== $current = $this->getInvoiceAddress()) {
-            if (null !== $current) {
-                $current->setInvoiceCart(null);
-            }
+        if ($address === $this->invoiceAddress) {
+            return $this;
+        }
 
-            $this->invoiceAddress = $address;
+        if ($previous = $this->invoiceAddress) {
+            $this->invoiceAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setInvoiceCart(null);
+        }
 
-            if (null !== $address) {
-                $address->setInvoiceCart($this);
-            }
+        if ($this->invoiceAddress = $address) {
+            $address->setInvoiceCart($this);
         }
 
         return $this;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @return Model\CartAddressInterface
+     * @return Model\CartAddressInterface|null
      */
-    public function getDeliveryAddress()
+    public function getDeliveryAddress(): ?Common\SaleAddressInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->deliveryAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryAddress(Common\SaleAddressInterface $address = null)
+    public function setDeliveryAddress(?Common\SaleAddressInterface $address): Common\SaleInterface
     {
         if ($address && !$address instanceof Model\CartAddressInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAddressInterface::class);
+            throw new UnexpectedTypeException($address, Model\CartAddressInterface::class);
         }
 
-        if ($address !== $current = $this->getDeliveryAddress()) {
-            if (null !== $current) {
-                $current->setDeliveryCart(null);
-            }
+        if ($address === $this->deliveryAddress) {
+            return $this;
+        }
 
-            $this->deliveryAddress = $address;
+        if ($previous = $this->deliveryAddress) {
+            $this->deliveryAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setDeliveryCart(null);
+        }
 
-            if (null !== $address) {
-                $address->setDeliveryCart($this);
-            }
+        if ($this->deliveryAddress = $address) {
+            $address->setDeliveryCart($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAttachment(Common\SaleAttachmentInterface $attachment)
+    public function hasAttachment(Common\SaleAttachmentInterface $attachment): bool
     {
         if (!$attachment instanceof Model\CartAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\CartAttachmentInterface::class);
         }
 
         return $this->attachments->contains($attachment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAttachment(Common\SaleAttachmentInterface $attachment)
+    public function addAttachment(Common\SaleAttachmentInterface $attachment): Common\SaleInterface
     {
         if (!$attachment instanceof Model\CartAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\CartAttachmentInterface::class);
         }
 
         if (!$this->hasAttachment($attachment)) {
@@ -131,13 +113,10 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAttachment(Common\SaleAttachmentInterface $attachment)
+    public function removeAttachment(Common\SaleAttachmentInterface $attachment): Common\SaleInterface
     {
         if (!$attachment instanceof Model\CartAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\CartAttachmentInterface::class);
         }
 
         if ($this->hasAttachment($attachment)) {
@@ -148,25 +127,19 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasItem(Common\SaleItemInterface $item)
+    public function hasItem(Common\SaleItemInterface $item): bool
     {
         if (!$item instanceof Model\CartItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\CartItemInterface::class);
         }
 
         return $this->items->contains($item);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addItem(Common\SaleItemInterface $item)
+    public function addItem(Common\SaleItemInterface $item): Common\SaleInterface
     {
         if (!$item instanceof Model\CartItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\CartItemInterface::class);
         }
 
         if (!$this->hasItem($item)) {
@@ -177,13 +150,10 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeItem(Common\SaleItemInterface $item)
+    public function removeItem(Common\SaleItemInterface $item): Common\SaleInterface
     {
         if (!$item instanceof Model\CartItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\CartItemInterface::class);
         }
 
         if ($this->hasItem($item)) {
@@ -194,25 +164,19 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAdjustment(Common\AdjustmentInterface $adjustment)
+    public function hasAdjustment(Common\AdjustmentInterface $adjustment): bool
     {
         if (!$adjustment instanceof Model\CartAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\CartAdjustmentInterface::class);
         }
 
         return $this->adjustments->contains($adjustment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAdjustment(Common\AdjustmentInterface $adjustment)
+    public function addAdjustment(Common\AdjustmentInterface $adjustment): Common\AdjustableInterface
     {
         if (!$adjustment instanceof Model\CartAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\CartAdjustmentInterface::class);
         }
 
         if (!$this->hasAdjustment($adjustment)) {
@@ -223,13 +187,10 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAdjustment(Common\AdjustmentInterface $adjustment)
+    public function removeAdjustment(Common\AdjustmentInterface $adjustment): Common\AdjustableInterface
     {
         if (!$adjustment instanceof Model\CartAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\CartAdjustmentInterface::class);
         }
 
         if ($this->hasAdjustment($adjustment)) {
@@ -240,25 +201,19 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasNotification(Common\NotificationInterface $notification)
+    public function hasNotification(Common\NotificationInterface $notification): bool
     {
         if (!$notification instanceof Model\CartNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\CartNotificationInterface::class);
         }
 
         return $this->notifications->contains($notification);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addNotification(Common\NotificationInterface $notification)
+    public function addNotification(Common\NotificationInterface $notification): Common\NotifiableInterface
     {
         if (!$notification instanceof Model\CartNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\CartNotificationInterface::class);
         }
 
         if (!$this->hasNotification($notification)) {
@@ -269,13 +224,10 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeNotification(Common\NotificationInterface $notification)
+    public function removeNotification(Common\NotificationInterface $notification): Common\NotifiableInterface
     {
         if (!$notification instanceof Model\CartNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\CartNotificationInterface::class);
         }
 
         if ($this->hasNotification($notification)) {
@@ -286,25 +238,19 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasPayment(Payment\PaymentInterface $payment): bool
     {
         if (!$payment instanceof Model\CartPaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartPaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\CartPaymentInterface::class);
         }
 
         return $this->payments->contains($payment);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addPayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\CartPaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartPaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\CartPaymentInterface::class);
         }
 
         if (!$this->hasPayment($payment)) {
@@ -315,13 +261,10 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removePayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\CartPaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\CartPaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\CartPaymentInterface::class);
         }
 
         if ($this->hasPayment($payment)) {
@@ -332,18 +275,12 @@ class Cart extends AbstractSale implements Model\CartInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getExpiresAt()
+    public function getExpiresAt(): ?DateTimeInterface
     {
         return $this->expiresAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setExpiresAt(\DateTime $expiresAt = null)
+    public function setExpiresAt(?DateTimeInterface $expiresAt): Model\CartInterface
     {
         $this->expiresAt = $expiresAt;
 

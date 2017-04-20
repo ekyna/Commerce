@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Util;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Decimal\Decimal;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
@@ -15,19 +18,16 @@ final class SupplierUtil
 {
     /**
      * Calculate the given supplier order item's received quantity.
-     *
-     * @param SupplierOrderItemInterface $item
-     *
-     * @return float
      */
-    static public function calculateReceivedQuantity(SupplierOrderItemInterface $item)
+    public static function calculateReceivedQuantity(SupplierOrderItemInterface $item): Decimal
     {
-        $quantity = 0;
+        $quantity = new Decimal(0);
 
         foreach ($item->getOrder()->getDeliveries() as $delivery) {
             foreach ($delivery->getItems() as $deliveryItem) {
                 if ($item === $deliveryItem->getOrderItem()) {
                     $quantity += $deliveryItem->getQuantity();
+
                     continue 2;
                 }
             }
@@ -40,26 +40,23 @@ final class SupplierUtil
      * Calculate the given supplier order item's delivery remaining quantity.
      *
      * @param SupplierOrderItemInterface|SupplierDeliveryItemInterface $item
-     *
-     * @return float
      */
-    static public function calculateDeliveryRemainingQuantity($item)
+    public static function calculateDeliveryRemainingQuantity($item): Decimal
     {
         if ($item instanceof SupplierOrderItemInterface) {
-            return $item->getQuantity() - self::calculateReceivedQuantity($item);
+            return $item->getQuantity()->sub(self::calculateReceivedQuantity($item));
         }
 
         if (!$item instanceof SupplierDeliveryItemInterface) {
-            throw new InvalidArgumentException(
-                "Expected instance of " .
-                SupplierOrderItemInterface::class . " or " .
-                SupplierDeliveryItemInterface::class
-            );
+            throw new UnexpectedTypeException($item, [
+                SupplierOrderItemInterface::class,
+                SupplierDeliveryItemInterface::class,
+            ]);
         }
 
         $orderItem = $item->getOrderItem();
 
-        $result = $orderItem->getQuantity() - self::calculateReceivedQuantity($orderItem);
+        $result = $orderItem->getQuantity()->sub(self::calculateReceivedQuantity($orderItem));
 
         if (0 < $item->getQuantity()) {
             $result += $item->getQuantity();

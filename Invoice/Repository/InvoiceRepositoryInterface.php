@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Repository;
 
+use DateTime;
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface InvoiceRepositoryInterface
@@ -17,40 +21,35 @@ interface InvoiceRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Finds invoices by customer.
      *
-     * @param CustomerInterface $customer
-     * @param int               $limit
-     *
-     * @return InvoiceInterface[]
+     * @return array<InvoiceInterface>
      */
-    public function findByCustomer(CustomerInterface $customer, $limit = null): array;
+    public function findByCustomer(CustomerInterface $customer, int $limit = null): array;
 
     /**
      * Finds invoices by customer.
      *
-     * @param CustomerInterface $customer
-     * @param string            $number
-     *
      * @return InvoiceInterface|null
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): ?OrderInvoiceInterface;
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number): ?OrderInvoiceInterface;
 
     /**
      * Finds invoices (and credits) by month.
      *
-     * @param \DateTime $date
-     *
-     * @return InvoiceInterface[]
+     * @return array<InvoiceInterface>
      */
-    public function findByMonth(\DateTime $date): array;
+    public function findByMonth(DateTimeInterface $date): array;
 
     /**
      * Returns invoices  by months and countries codes.
      *
-     * @param \DateTime $date
-     * @param array     $codes
-     * @param bool      $exclude
-     *
      * @return array The invoice list as scalar results
      */
-    public function findByMonthAndCountries(\DateTime $date, array $codes, bool $exclude = false): array;
+    public function findByMonthAndCountries(DateTimeInterface $date, array $codes, bool $exclude = false): array;
+
+    /**
+     * Finds invoices by order id.
+     *
+     * @return array<InvoiceInterface>
+     */
+    public function findByOrderId(int $id): array;
 }

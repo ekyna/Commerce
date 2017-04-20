@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleNotificationInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleNotificationInterface;
  */
 interface CartNotificationInterface extends SaleNotificationInterface
 {
-    /**
-     * Returns the cart.
-     *
-     * @return CartInterface
-     */
-    public function getCart();
+    public function getCart(): ?CartInterface;
 
-    /**
-     * Sets the cart.
-     *
-     * @param CartInterface|null $cart
-     *
-     * @return $this|CartNotificationInterface
-     */
-    public function setCart(CartInterface $cart = null);
+    public function setCart(?CartInterface $cart): CartNotificationInterface;
 }

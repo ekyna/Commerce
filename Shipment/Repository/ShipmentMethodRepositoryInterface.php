@@ -1,41 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Repository;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
 
 /**
  * Interface ShipmentMethodRepositoryInterface
  * @package Ekyna\Component\Commerce\Shipment\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentMethodRepositoryInterface extends TranslatableResourceRepositoryInterface
+interface ShipmentMethodRepositoryInterface extends TranslatableRepositoryInterface
 {
-    /**
-     * Create a new shipment method with pre-populated messages (one by notifiable state).
-     *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface
-     */
-    public function createNew();
-
     /**
      * Returns the shipment methods having shipment prices, optionally filtered by zone.
      *
-     * @param ShipmentZoneInterface $zone
-     *
-     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface[]
+     * @return array<ShipmentMethodInterface>
      */
-    public function findHavingPrices(ShipmentZoneInterface $zone = null);
+    public function findHavingPrices(ShipmentZoneInterface $zone = null): array;
 
     /**
      * Returns the available methods by country and weight.
      *
-     * @param CountryInterface $country
-     * @param float            $weight
-     *
-     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface[]
+     * @return array<ShipmentMethodInterface>
      */
-    public function findAvailableByCountryAndWeight(CountryInterface $country, $weight);
+    public function findAvailableByCountryAndWeight(CountryInterface $country, Decimal $weight): array;
 }

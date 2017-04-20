@@ -25,7 +25,7 @@
 
         <field name="platformName" column="platform_name" type="string" length="64" nullable="false"/>
         <field name="gatewayName" column="gateway_name" type="string" length="64" nullable="false"/>
-        <field name="gatewayConfig" column="gateway_config" type="json_array" nullable="true"/>
+        <field name="gatewayConfig" column="gateway_config" type="json"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage"
                      field="messages" mapped-by="method" orphan-removal="true" fetch="EXTRA_LAZY">

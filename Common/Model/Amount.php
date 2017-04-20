@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 
@@ -12,145 +15,72 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
  */
 class Amount
 {
-    /**
-     * @var string
-     */
-    private $currency;
-
-    /**
-     * @var float
-     */
-    private $unit;
-
-    /**
-     * @var float
-     */
-    private $gross;
-
-    /**
-     * @var float
-     */
-    private $discount;
-
-    /**
-     * @var float
-     */
-    private $base;
-
-    /**
-     * @var float
-     */
-    private $tax;
-
-    /**
-     * @var float
-     */
-    private $total;
-
-    /**
-     * @var Adjustment[]
-     */
-    private $discounts;
-
-    /**
-     * @var Adjustment[]
-     */
-    private $taxes;
+    private string $currency;
+    private Decimal $unit;
+    private Decimal $gross;
+    private Decimal $discount;
+    private Decimal $base;
+    private Decimal $tax;
+    private Decimal $total;
+    /** @var array<Adjustment> */
+    private array $discounts;
+    /** @var array<Adjustment> */
+    private array $taxes;
 
 
     /**
-     * Constructor.
-     *
-     * @param string       $currency
-     * @param float        $unit
-     * @param float        $gross
-     * @param float        $discount
-     * @param float        $base
-     * @param float        $tax
-     * @param float        $total
-     * @param Adjustment[] $discounts
-     * @param Adjustment[] $taxes
+     * @param array<Adjustment> $discounts
+     * @param array<Adjustment> $taxes
      */
     public function __construct(
-        string $currency = 'USD',
-        float $unit = .0,
-        float $gross = .0,
-        float $discount = .0,
-        float $base = .0,
-        float $tax = .0,
-        float $total = .0,
+        string $currency,
+        Decimal $unit = null,
+        Decimal $gross = null,
+        Decimal $discount = null,
+        Decimal $base = null,
+        Decimal $tax = null,
+        Decimal $total = null,
         array $discounts = [],
         array $taxes = []
     ) {
         $this->currency = $currency;
-        $this->unit = $unit;
-        $this->gross = $gross;
-        $this->discount = $discount;
-        $this->base = $base;
-        $this->tax = $tax;
-        $this->total = $total;
+        $this->unit = $unit ?: new Decimal(0);
+        $this->gross = $gross ?: new Decimal(0);
+        $this->discount = $discount ?: new Decimal(0);
+        $this->base = $base ?: new Decimal(0);
+        $this->tax = $tax ?: new Decimal(0);
+        $this->total = $total ?: new Decimal(0);
 
         $this->taxes = $taxes;
         $this->discounts = $discounts;
     }
 
-    /**
-     * Returns the currency.
-     *
-     * @return string
-     */
-    public function getCurrency()
+    public function getCurrency(): string
     {
         return $this->currency;
     }
 
-    /**
-     * Returns the unit.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getUnit(bool $ati = false): float
+    public function getUnit(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->unit) : $this->unit;
     }
 
-    /**
-     * Adds the unit amount.
-     *
-     * @param float $amount
-     */
-    public function addUnit(float $amount): void
+    public function addUnit(Decimal $amount): void
     {
         $this->unit += $amount;
     }
 
-    /**
-     * Returns the gross.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getGross(bool $ati = false): float
+    public function getGross(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->gross) : $this->gross;
     }
 
-    /**
-     * Adds the gross amount.
-     *
-     * @param float $amount
-     */
-    public function addGross(float $amount): void
+    public function addGross(Decimal $amount): void
     {
         $this->gross += $amount;
     }
 
     /**
-     * Returns the discount adjustments.
-     *
      * @return Adjustment[]
      */
     public function getDiscountAdjustments(): array
@@ -158,11 +88,6 @@ class Amount
         return $this->discounts;
     }
 
-    /**
-     * Adds the discount adjustment.
-     *
-     * @param Adjustment $discount
-     */
     public function addDiscountAdjustment(Adjustment $discount): void
     {
         foreach ($this->discounts as $d) {
@@ -176,53 +101,27 @@ class Amount
         $this->discounts[] = clone $discount;
     }
 
-    /**
-     * Returns the discount.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getDiscount(bool $ati = false): float
+    public function getDiscount(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->discount) : $this->discount;
     }
 
-    /**
-     * Adds the discount amount.
-     *
-     * @param float $amount
-     */
-    public function addDiscount(float $amount): void
+    public function addDiscount(Decimal $amount): void
     {
         $this->discount += $amount;
     }
 
-    /**
-     * Returns the base.
-     *
-     * @param bool $ati
-     *
-     * @return float
-     */
-    public function getBase(bool $ati = false): float
+    public function getBase(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->base) : $this->base;
     }
 
-    /**
-     * Adds the base amount.
-     *
-     * @param float $amount
-     */
-    public function addBase(float $amount): void
+    public function addBase(Decimal $amount): void
     {
         $this->base += $amount;
     }
 
     /**
-     * Returns the tax adjustments.
-     *
      * @return Adjustment[]
      */
     public function getTaxAdjustments(): array
@@ -230,11 +129,6 @@ class Amount
         return $this->taxes;
     }
 
-    /**
-     * Adds the tax adjustment.
-     *
-     * @param Adjustment $tax
-     */
     public function addTaxAdjustment(Adjustment $tax): void
     {
         foreach ($this->taxes as $t) {
@@ -248,54 +142,30 @@ class Amount
         $this->taxes[] = clone $tax;
     }
 
-    /**
-     * Returns the tax.
-     *
-     * @return float
-     */
-    public function getTax(): float
+    public function getTax(): Decimal
     {
         return $this->tax;
     }
 
-    /**
-     * Adds the tax amount.
-     *
-     * @param float $amount
-     */
-    public function addTax(float $amount): void
+    public function addTax(Decimal $amount): void
     {
         $this->tax += $amount;
     }
 
-    /**
-     * Returns the total.
-     *
-     * @return float
-     */
-    public function getTotal(): float
+    public function getTotal(): Decimal
     {
         return $this->total;
     }
 
-    /**
-     * Adds the total amount.
-     *
-     * @param float $amount
-     */
-    public function addTotal(float $amount): void
+    public function addTotal(Decimal $amount): void
     {
         $this->total += $amount;
     }
 
     /**
      * Adds the taxes to the given amount.
-     *
-     * @param float $amount
-     *
-     * @return float
      */
-    private function ati(float $amount): float
+    private function ati(Decimal $amount): Decimal
     {
         $result = $amount;
 
@@ -308,15 +178,14 @@ class Amount
 
     /**
      * Merges the given amounts (by sum).
-     *
-     * @param Amount[] $amounts
      */
     public function merge(Amount ...$amounts): void
     {
         foreach ($amounts as $amount) {
             if ($amount->getCurrency() !== $this->currency) {
-                throw new RuntimeException("Currencies miss match.");
+                throw new RuntimeException('Currencies miss match.');
             }
+
             $this->unit += $amount->getUnit();
             $this->gross += $amount->getGross();
             $this->discount += $amount->getDiscount();
@@ -353,11 +222,7 @@ class Amount
 
         // Sort by amount
         usort($old, function (Adjustment $a, Adjustment $b): int {
-            if ($a->getAmount() == $b->getAmount()) {
-                return 0;
-            }
-
-            return $a->getAmount() > $b->getAmount() ? 1 : -1;
+            return $a->getAmount()->compareTo($b->getAmount());
         });
 
         $new = [];
@@ -397,10 +262,6 @@ class Amount
 
     /**
      * Creates the final result from the given gross result.
-     *
-     * @param Amount $gross
-     *
-     * @return Amount
      */
     public static function createFinalFromGross(Amount $gross): Amount
     {
@@ -408,7 +269,7 @@ class Amount
             $gross->getCurrency(),
             $gross->getBase(),
             $gross->getBase(),
-            0,
+            new Decimal(0),
             $gross->getBase(),
             $gross->getTax(),
             $gross->getTotal()

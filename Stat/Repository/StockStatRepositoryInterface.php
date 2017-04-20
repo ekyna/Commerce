@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stat\Repository;
+
+use DateTime;
+use Ekyna\Component\Commerce\Stat\Entity\StockStat;
 
 /**
  * Interface StockStatRepositoryInterface
@@ -12,18 +17,18 @@ interface StockStatRepositoryInterface
     /**
      * Finds the stock stat by day.
      *
-     * @param \DateTime $date
+     * @param DateTime|null $date
      *
-     * @return \Ekyna\Component\Commerce\Stat\Entity\StockStat|null
+     * @return StockStat|null
      */
-    public function findOneByDay(\DateTime $date = null);
+    public function findOneByDay(DateTime $date = null): ?StockStat;
 
     /**
      * Returns the latest stock stats.
      *
      * @param int $limit
      *
-     * @return \Ekyna\Component\Commerce\Stat\Entity\StockStat[]
+     * @return StockStat[]
      */
-    public function findLatest($limit = 30);
+    public function findLatest(int $limit = 30): array;
 }

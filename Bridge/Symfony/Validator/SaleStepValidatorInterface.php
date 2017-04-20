@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-
+use Symfony\Component\Validator\ConstraintViolationInterface;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 /**
  * Interface SaleStepValidatorInterface
@@ -12,25 +15,19 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
  */
 interface SaleStepValidatorInterface
 {
-    const CHECKOUT_STEP = 'checkout';
-    const SHIPMENT_STEP = 'shipment';
-    const PAYMENT_STEP  = 'payment';
-
+    public const CHECKOUT_STEP = 'checkout';
+    public const SHIPMENT_STEP = 'shipment';
+    public const PAYMENT_STEP  = 'payment';
 
     /**
      * Returns whether the cart is valid for the given step.
-     *
-     * @param SaleInterface $sale
-     * @param string        $step
-     *
-     * @return bool
      */
-    public function validate(SaleInterface $sale, $step);
+    public function validate(SaleInterface $sale, string $step): bool;
 
     /**
      * Returns the violation list.
      *
-     * @return \Symfony\Component\Validator\ConstraintViolationListInterface|null
+     * @return ConstraintViolationListInterface|ConstraintViolationInterface[]|null
      */
     public function getViolationList();
 }

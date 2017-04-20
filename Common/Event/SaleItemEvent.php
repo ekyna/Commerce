@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Class SaleItemEvent
@@ -14,28 +16,15 @@ class SaleItemEvent extends Event
 {
     use AdjustmentDataTrait;
 
-    /**
-     * @var SaleItemInterface
-     */
-    private $item;
+    private SaleItemInterface $item;
 
 
-    /**
-     * Constructor.
-     *
-     * @param SaleItemInterface $item
-     */
     public function __construct(SaleItemInterface $item)
     {
         $this->item = $item;
     }
 
-    /**
-     * Returns the item.
-     *
-     * @return SaleItemInterface
-     */
-    public function getItem()
+    public function getItem(): SaleItemInterface
     {
         return $this->item;
     }

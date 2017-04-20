@@ -13,11 +13,11 @@
         </id>
 
         <field name="name" column="name" type="string" length="255" nullable="false"/>
-        <field name="baseTotal" column="base_total" type="decimal" precision="15" scale="5" nullable="false"/>
+        <field name="baseTotal" column="base_total" type="php_decimal" precision="15" scale="5" nullable="false"/>
         <field name="vatMode" column="vat_mode" type="string" length="4" nullable="false"/>
         <field name="startAt" column="start_at" type="date" nullable="true"/>
         <field name="endAt" column="end_at" type="date" nullable="true"/>
-        <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
+        <field name="netPrice" column="net_price" type="php_decimal" precision="10" scale="5" nullable="false"/>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface" field="methods">
             <join-table name="commerce_shipment_rules_methods">

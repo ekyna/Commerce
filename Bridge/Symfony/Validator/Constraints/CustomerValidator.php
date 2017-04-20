@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Exception\InvalidArgumentException;
 class CustomerValidator extends ConstraintValidator
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function validate($customer, Constraint $constraint)
     {
@@ -41,7 +41,7 @@ class CustomerValidator extends ConstraintValidator
             }
 
             // Prevent setting a parent to a customer who have non zero outstanding|credit balance
-            if (0 != $customer->getOutstandingBalance() || 0 != $customer->getCreditBalance()) {
+            if (!$customer->getOutstandingBalance()->isZero() || !$customer->getCreditBalance()->isZero()) {
                 $this
                     ->context
                     ->buildViolation($constraint->non_zero_balance)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Commerce\Common\Locking\LockChecker;
@@ -11,17 +13,9 @@ use Ekyna\Component\Commerce\Common\Locking\LockChecker;
  */
 trait LockingHelperAwareTrait
 {
-    /**
-     * @var \Ekyna\Component\Commerce\Common\Locking\LockChecker
-     */
-    protected $lockingHelper;
+    protected LockChecker $lockingHelper;
 
 
-    /**
-     * Sets the locking helper.
-     *
-     * @param \Ekyna\Component\Commerce\Common\Locking\LockChecker $lockingHelper
-     */
     public function setLockingHelper(LockChecker $lockingHelper): void
     {
         $this->lockingHelper = $lockingHelper;

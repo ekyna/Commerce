@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,30 +11,18 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 trait NumberSubjectTrait
 {
-    /**
-     * @var string
-     */
-    protected $number;
+    protected ?string $number = null;
 
 
-    /**
-     * Returns the number.
-     *
-     * @return string
-     */
-    public function getNumber()
+    public function getNumber(): ?string
     {
         return $this->number;
     }
 
     /**
-     * Sets the number.
-     *
-     * @param string $number
-     *
      * @return $this|NumberSubjectInterface
      */
-    public function setNumber($number)
+    public function setNumber(string $number): NumberSubjectInterface
     {
         $this->number = $number;
 

@@ -17,7 +17,7 @@ class SaleShipmentStep extends Constraint
     public $delivery_address_must_be_set = 'ekyna_commerce.sale.delivery_address_must_be_set';
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTargets()
     {

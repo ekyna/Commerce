@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Api;
 
 /**
@@ -9,28 +11,16 @@ namespace Ekyna\Component\Commerce\Pricing\Api;
  */
 class PricingApi implements PricingApiInterface
 {
-    const PROVIDER_TAG = 'ekyna_commerce.pricing.api_provider';
+    public const PROVIDER_TAG = 'ekyna_commerce.pricing.api_provider';
 
-    /**
-     * @var array
-     */
-    private $providers;
+    private array $providers;
 
-
-    /**
-     * Constructor.
-     *
-     * @param array $providers
-     */
     public function __construct(array $providers)
     {
         $this->providers = $providers;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function validateVatNumber($vatNumber)
+    public function validateVatNumber(string $vatNumber): ?VatNumberResult
     {
         foreach ($this->providers as $provider) {
             if ($provider instanceof Provider\VatNumberValidatorInterface) {

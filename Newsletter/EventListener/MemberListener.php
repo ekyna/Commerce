@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\EventListener;
 
 use Ekyna\Component\Commerce\Customer\Event\CustomerEvents;
@@ -22,29 +24,10 @@ class MemberListener implements ListenerInterface
 {
     use IsEnabledTrait;
 
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
+    private PersistenceHelperInterface $persistenceHelper;
+    private CustomerRepositoryInterface $customerRepository;
+    private ResourceEventDispatcherInterface $dispatcher;
 
-    /**
-     * @var CustomerRepositoryInterface
-     */
-    private $customerRepository;
-
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    private $dispatcher;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface       $persistenceHelper
-     * @param CustomerRepositoryInterface      $customerRepository
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         CustomerRepositoryInterface $customerRepository,
@@ -53,16 +36,6 @@ class MemberListener implements ListenerInterface
         $this->persistenceHelper  = $persistenceHelper;
         $this->customerRepository = $customerRepository;
         $this->dispatcher         = $dispatcher;
-    }
-
-    /**
-     * Initialize event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInitialize(ResourceEventInterface $event): void
-    {
-        //$member = $this->getMemberFromEvent($event);
     }
 
     /**
@@ -110,7 +83,7 @@ class MemberListener implements ListenerInterface
 
         // Emails has changed -> Schedule subscriptions change events
         foreach ($member->getSubscriptions() as $subscription) {
-            $this->persistenceHelper->scheduleEvent(SubscriptionEvents::UPDATE, $subscription);
+            $this->persistenceHelper->scheduleEvent($subscription, SubscriptionEvents::UPDATE);
         }
     }
 
@@ -167,7 +140,7 @@ class MemberListener implements ListenerInterface
             return;
         }
 
-        $this->persistenceHelper->scheduleEvent(CustomerEvents::NEWSLETTER_SUBSCRIBE, $customer);
+        $this->persistenceHelper->scheduleEvent($customer, CustomerEvents::NEWSLETTER_SUBSCRIBE);
     }
 
     /**

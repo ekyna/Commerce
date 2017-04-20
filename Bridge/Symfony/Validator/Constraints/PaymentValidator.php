@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
@@ -9,7 +12,8 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Validator\Exception\InvalidArgumentException;
+use Symfony\Component\Validator\ConstraintViolationInterface;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Class PaymentValidator
@@ -18,17 +22,8 @@ use Symfony\Component\Validator\Exception\InvalidArgumentException;
  */
 class PaymentValidator extends ConstraintValidator
 {
-    /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
+    private CurrencyConverterInterface $currencyConverter;
 
-
-    /**
-     * Constructor.
-     *
-     * @param CurrencyConverterInterface $currencyConverter
-     */
     public function __construct(CurrencyConverterInterface $currencyConverter)
     {
         $this->currencyConverter = $currencyConverter;
@@ -37,20 +32,20 @@ class PaymentValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($payment, Constraint $constraint)
+    public function validate($value, Constraint $constraint)
     {
-        if (!$payment instanceof PaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . PaymentInterface::class);
+        if (!$value instanceof PaymentInterface) {
+            throw new UnexpectedTypeException($value, PaymentInterface::class);
         }
         if (!$constraint instanceof Payment) {
-            throw new InvalidArgumentException("Expected instance of " . Payment::class);
+            throw new UnexpectedTypeException($constraint, Payment::class);
         }
 
-        if (null === $method = $payment->getMethod()) {
+        if (null === $method = $value->getMethod()) {
             return;
         }
 
-        if ($payment->isRefund()) {
+        if ($value->isRefund()) {
             if ($method->isOutstanding()) {
                 $this
                     ->context
@@ -68,7 +63,7 @@ class PaymentValidator extends ConstraintValidator
             return;
         }
 
-        $this->validateAmount($payment);
+        $this->validateAmount($value);
     }
 
     /**
@@ -87,11 +82,11 @@ class PaymentValidator extends ConstraintValidator
         }
 
         if (null === $sale = $payment->getSale()) {
-            throw new LogicException("Payment sale must be set.");
+            throw new LogicException('Payment sale must be set.');
         }
 
         if (null === $customer = $sale->getCustomer()) {
-            throw new LogicException("Sale customer must be set.");
+            throw new LogicException('Sale customer must be set.');
         }
 
         if ($method->isOutstanding()) {
@@ -112,7 +107,7 @@ class PaymentValidator extends ConstraintValidator
             $available += $payment->getRealAmount();
         }
 
-        $available = max(0, $available);
+        $available = max(new Decimal(0), $available);
 
         $available = $this->currencyConverter->convertWithSubject($available, $payment);
 
@@ -121,7 +116,7 @@ class PaymentValidator extends ConstraintValidator
             ->getValidator()
             ->validate($payment->getAmount(), [new LessThanOrEqual($available)]);
 
-        /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
+        /** @var ConstraintViolationInterface $violation */
         foreach ($violations as $violation) {
             $this->context
                 ->buildViolation($violation->getMessage(), $violation->getParameters())

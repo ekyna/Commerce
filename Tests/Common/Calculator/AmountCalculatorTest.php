@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Tests\Common\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculator;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
@@ -192,14 +193,14 @@ class AmountCalculatorTest extends AbstractAmountTest
             });
 
         $creditMap = [
-            Fixture::get('order1_item1')->getId()     => 0.,
-            Fixture::get('order1_item2')->getId()     => 1.,
-            Fixture::get('order1_item2_1')->getId()   => 5.,
-            Fixture::get('order1_item2_2')->getId()   => 2.,
-            Fixture::get('order1_item2_2_1')->getId() => 4.,
-            Fixture::get('order1_item2_2_2')->getId() => 6.,
-            Fixture::get('order1_item3')->getId()     => 4.,
-            Fixture::get('order1_item3_1')->getId()   => 8.,
+            Fixture::get('order1_item1')->getId()     => new Decimal(0),
+            Fixture::get('order1_item2')->getId()     => new Decimal(1),
+            Fixture::get('order1_item2_1')->getId()   => new Decimal(5),
+            Fixture::get('order1_item2_2')->getId()   => new Decimal(2),
+            Fixture::get('order1_item2_2_1')->getId() => new Decimal(4),
+            Fixture::get('order1_item2_2_2')->getId() => new Decimal(6),
+            Fixture::get('order1_item3')->getId()     => new Decimal(4),
+            Fixture::get('order1_item3_1')->getId()   => new Decimal(8),
         ];
 
         $this
@@ -210,7 +211,7 @@ class AmountCalculatorTest extends AbstractAmountTest
                     return $creditMap[$subject->getId()];
                 }
 
-                return 0;
+                return new Decimal(0);
             });
 
         $this
@@ -221,7 +222,7 @@ class AmountCalculatorTest extends AbstractAmountTest
                     return $subject->getTotalQuantity() - $creditMap[$subject->getId()];
                 }
 
-                return 1;
+                return new Decimal(1);
             });
 
         $calculator = $this->createCalculator(Fixture::CURRENCY_EUR, true);

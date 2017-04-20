@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Releaser;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
@@ -16,29 +19,10 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class OutstandingReleaser implements ReleaserInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
+    private PersistenceHelperInterface $persistenceHelper;
+    private PaymentUpdaterInterface $paymentUpdater;
+    private string $defaultCurrency;
 
-    /**
-     * @var PaymentUpdaterInterface
-     */
-    private $paymentUpdater;
-
-    /**
-     * @var string
-     */
-    private $defaultCurrency;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param PaymentUpdaterInterface    $paymentUpdater
-     * @param string                     $defaultCurrency
-     */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         PaymentUpdaterInterface $paymentUpdater,
@@ -49,10 +33,7 @@ class OutstandingReleaser implements ReleaserInterface
         $this->defaultCurrency = $defaultCurrency;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function releaseFund(SaleInterface $sale)
+    public function releaseFund(SaleInterface $sale): bool
     {
         $overpaidAmount =
             $sale->getPaidTotal()
@@ -92,7 +73,7 @@ class OutstandingReleaser implements ReleaserInterface
 
             // If the payment amount is less than or equal the overpaid amount
             $amount = $payment->getRealAmount();
-            if (-1 !== Money::compare($overpaidAmount, $amount, $this->defaultCurrency)) {
+            if ($overpaidAmount >= $amount) {
                 // Cancel the payment
                 $payment->setState(PaymentStates::STATE_CANCELED);
 
@@ -108,7 +89,7 @@ class OutstandingReleaser implements ReleaserInterface
 
                     $changed = true;
 
-                    $overpaidAmount = 0;
+                    $overpaidAmount = new Decimal(0);
                 }
             }
 

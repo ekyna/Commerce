@@ -13,7 +13,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 class StockUnitStateResolver implements StockUnitStateResolverInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function resolve(StockUnitInterface $stockUnit)
     {
@@ -33,7 +33,7 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
 
             // If the ordered quantity (to suppliers) + adjusted quantity (from administrators)
             // has been entirely shipped (to customers)
-            if ($max == $stockUnit->getShippedQuantity()) {
+            if ($stockUnit->getShippedQuantity()->equals($max)) {
                 $resolvedState = StockUnitStates::STATE_CLOSED;
             }
 
@@ -41,7 +41,7 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
             elseif (0 < $max = $stockUnit->getReceivedQuantity() + $adjusted) {
                 // If received quantity (from supplier) + adjusted quantity (from administrators)
                 // has been entirely shipped (to customers)
-                if ($max == $stockUnit->getShippedQuantity()) {
+                if ($stockUnit->getShippedQuantity()->equals($max)) {
                     // Waiting for another delivery (from suppliers)
                     $resolvedState = StockUnitStates::STATE_PENDING;
                 } else {
@@ -51,9 +51,9 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
             }
         } elseif (0 < $adjusted) {
             // If the whole adjusted quantity (from administrators) has been entirely shipped (to customers)
-            if ($adjusted == $stockUnit->getShippedQuantity()) {
+            if ($stockUnit->getShippedQuantity()->equals($adjusted)) {
                 // Only if no remaining sold quantity
-                if ($adjusted == $stockUnit->getSoldQuantity()) {
+                if ($stockUnit->getSoldQuantity()->equals($adjusted)) {
                     $resolvedState = StockUnitStates::STATE_CLOSED;
                 }
             } else {

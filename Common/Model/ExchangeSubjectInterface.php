@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
+
+use DateTimeInterface;
+use Decimal\Decimal;
 
 /**
  * Interface ExchangeSubjectInterface
@@ -11,40 +16,26 @@ interface ExchangeSubjectInterface extends CurrencySubjectInterface
 {
     /**
      * Returns the subject's base currency.
-     *
-     * @return string|null
      */
     public function getBaseCurrency(): ?string;
 
     /**
      * Returns the exchange rate (DEFAULT/SUBJECT currencies pair).
-     *
-     * @return float|null
      */
-    public function getExchangeRate(): ?float;
+    public function getExchangeRate(): ?Decimal;
 
     /**
      * Sets the exchange rate (DEFAULT/SUBJECT currencies pair).
-     *
-     * @param float $rate
-     *
-     * @return $this|ExchangeSubjectInterface
      */
-    public function setExchangeRate(float $rate = null): ExchangeSubjectInterface;
+    public function setExchangeRate(?Decimal $rate): ExchangeSubjectInterface;
 
     /**
      * Returns the exchange date.
-     *
-     * @return \DateTime|null
      */
-    public function getExchangeDate(): ?\DateTime;
+    public function getExchangeDate(): ?DateTimeInterface;
 
     /**
      * Sets the exchange date.
-     *
-     * @param \DateTime $date
-     *
-     * @return $this|ExchangeSubjectInterface
      */
-    public function setExchangeDate(\DateTime $date = null): ExchangeSubjectInterface;
+    public function setExchangeDate(?DateTimeInterface $date): ExchangeSubjectInterface;
 }

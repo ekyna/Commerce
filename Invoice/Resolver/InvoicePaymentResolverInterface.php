@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Resolver;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Invoice\Model;
 
 /**
@@ -14,28 +17,17 @@ interface InvoicePaymentResolverInterface
     /**
      * Resolves the invoice's payments.
      *
-     * @param Model\InvoiceInterface $invoice
-     * @param bool                   $invoices
-     *
-     * @return Model\InvoicePayment[]
+     * @return array<Model\InvoicePayment>
      */
     public function resolve(Model\InvoiceInterface $invoice, bool $invoices = true): array;
 
     /**
      * Returns the invoice's paid total.
-     *
-     * @param Model\InvoiceInterface $invoice
-     *
-     * @return float
      */
-    public function getPaidTotal(Model\InvoiceInterface $invoice): float;
+    public function getPaidTotal(Model\InvoiceInterface $invoice): Decimal;
 
     /**
      * Returns the invoice's real paid total (default currency).
-     *
-     * @param Model\InvoiceInterface $invoice
-     *
-     * @return float
      */
-    public function getRealPaidTotal(Model\InvoiceInterface $invoice): float;
+    public function getRealPaidTotal(Model\InvoiceInterface $invoice): Decimal;
 }

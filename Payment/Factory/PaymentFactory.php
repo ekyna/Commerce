@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Factory;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
-use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
@@ -20,41 +22,12 @@ use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface;
  */
 class PaymentFactory implements PaymentFactoryInterface
 {
-    /**
-     * @var SaleFactoryInterface
-     */
-    protected $saleFactory;
+    protected SaleFactoryInterface $saleFactory;
+    protected CurrencyRepositoryInterface $currencyRepository;
+    protected PaymentUpdaterInterface $paymentUpdater;
+    protected PaymentCalculatorInterface $paymentCalculator;
+    protected CurrencyConverterInterface $currencyConverter;
 
-    /**
-     * @var CurrencyRepositoryInterface
-     */
-    protected $currencyRepository;
-
-    /**
-     * @var PaymentUpdaterInterface
-     */
-    protected $paymentUpdater;
-
-    /**
-     * @var PaymentCalculatorInterface
-     */
-    protected $paymentCalculator;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-
-    /**
-     * Constructor.
-     *
-     * @param SaleFactoryInterface        $factory
-     * @param PaymentUpdaterInterface     $updater
-     * @param PaymentCalculatorInterface  $calculator
-     * @param CurrencyConverterInterface  $converter
-     * @param CurrencyRepositoryInterface $repository
-     */
     public function __construct(
         SaleFactoryInterface $factory,
         PaymentUpdaterInterface $updater,
@@ -69,9 +42,6 @@ class PaymentFactory implements PaymentFactoryInterface
         $this->currencyRepository = $repository;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function createPayment(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface
     {
         $payment = $this->create($subject, $method)->setRefund(false);
@@ -85,9 +55,6 @@ class PaymentFactory implements PaymentFactoryInterface
         return $payment;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function createRefund(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface
     {
         $payment = $this->create($subject, $method)->setRefund(true);
@@ -101,21 +68,13 @@ class PaymentFactory implements PaymentFactoryInterface
         return $payment;
     }
 
-    /**
-     * Creates a payment.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param PaymentMethodInterface  $method
-     *
-     * @return PaymentInterface
-     */
     protected function create(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface
     {
-        if ($subject instanceof SaleInterface) {
-            $payment = $this->saleFactory->createPaymentForSale($subject);
-        } else {
-            throw new UnexpectedValueException("Expected instance of " . SaleInterface::class);
+        if (!$subject instanceof SaleInterface) {
+            throw new UnexpectedTypeException($subject, SaleInterface::class);
         }
+
+        $payment = $this->saleFactory->createPaymentForSale($subject);
 
         if ($method->isDefaultCurrency()) {
             $currency = $this->currencyRepository->findDefault();
@@ -137,6 +96,8 @@ class PaymentFactory implements PaymentFactoryInterface
             ->currencyConverter
             ->getSubjectExchangeRate($payment, $this->currencyConverter->getDefaultCurrency(), $currency->getCode());
 
-        return $payment->setMethod($method)->setExchangeRate($rate);
+        $payment->setMethod($method)->setExchangeRate($rate);
+
+        return $payment;
     }
 }

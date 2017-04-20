@@ -1,52 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Decimal\Decimal;
+use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
-use Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentMethodRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\TranslatableRepository;
 
 /**
  * Class ShipmentMethodRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentMethodRepository extends TranslatableResourceRepository implements ShipmentMethodRepositoryInterface
+class ShipmentMethodRepository extends TranslatableRepository implements ShipmentMethodRepositoryInterface
 {
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $findAvailableByCountryAndWeightQuery;
+    private ?Query $findAvailableByCountryAndWeightQuery = null;
 
-
-    /**
-     * {@inheritdoc}
-     */
-    public function createNew()
-    {
-        /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface $method */
-        $method = parent::createNew();
-
-        foreach (ShipmentStates::getNotifiableStates() as $state) {
-            $message = new ShipmentMessage();
-            $method->addMessage($message->setState($state));
-        }
-
-        return $method;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function findHavingPrices(ShipmentZoneInterface $zone = null)
+    public function findHavingPrices(ShipmentZoneInterface $zone = null): array
     {
         $qb = $this->getCollectionQueryBuilder();
         $qb
             ->join('o.prices', 'p')
-            ->addGroupBy('o.id')
+            //->addGroupBy('o.id')
             ->addOrderBy('o.position', 'ASC');
 
         $parameters = [];
@@ -62,10 +41,7 @@ class ShipmentMethodRepository extends TranslatableResourceRepository implements
             ->getResult();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function findAvailableByCountryAndWeight(CountryInterface $country, $weight)
+    public function findAvailableByCountryAndWeight(CountryInterface $country, Decimal $weight): array
     {
         return $this
             ->getFindAvailableByCountryAndWeightQuery()
@@ -80,10 +56,8 @@ class ShipmentMethodRepository extends TranslatableResourceRepository implements
 
     /**
      * Returns the "find available by country and weight" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    private function getFindAvailableByCountryAndWeightQuery()
+    private function getFindAvailableByCountryAndWeightQuery(): Query
     {
         if (null === $this->findAvailableByCountryAndWeightQuery) {
             $qb = $this->getCollectionQueryBuilder();

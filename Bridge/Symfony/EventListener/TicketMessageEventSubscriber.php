@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Support\Event\TicketMessageEvents;
@@ -13,15 +15,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class TicketMessageEventSubscriber extends TicketMessageEventListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritDoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
-            TicketMessageEvents::INSERT => ['onInsert', 0],
-            TicketMessageEvents::UPDATE => ['onUpdate', 0],
-            TicketMessageEvents::DELETE => ['onDelete', 0],
+            TicketMessageEvents::INSERT     => ['onInsert', 0],
+            TicketMessageEvents::UPDATE     => ['onUpdate', 0],
+            TicketMessageEvents::DELETE     => ['onDelete', 0],
+            TicketMessageEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }
 }

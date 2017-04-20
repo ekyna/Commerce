@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAddress;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Order\Model;
 
 /**
@@ -12,102 +15,68 @@ use Ekyna\Component\Commerce\Order\Model;
  */
 class OrderAddress extends AbstractSaleAddress implements Model\OrderAddressInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var Model\OrderInterface
-     */
-    protected $invoiceOrder;
-
-    /**
-     * @var Model\OrderInterface
-     */
-    protected $deliveryOrder;
+    protected ?int                  $id            = null;
+    protected ?Model\OrderInterface $invoiceOrder  = null;
+    protected ?Model\OrderInterface $deliveryOrder = null;
 
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getInvoiceOrder()
+    public function getInvoiceOrder(): ?Model\OrderInterface
     {
         return $this->invoiceOrder;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceOrder(Model\OrderInterface $order = null)
+    public function setInvoiceOrder(?Model\OrderInterface $order): Model\OrderAddressInterface
     {
-        if ($order !== $this->invoiceOrder) {
-            if ($previous = $this->invoiceOrder) {
-                $this->invoiceOrder = null;
-                $previous->setInvoiceAddress(null);
-            }
+        if ($order === $this->invoiceOrder) {
+            return $this;
+        }
 
-            if ($this->invoiceOrder = $order) {
-                $this->invoiceOrder->setInvoiceAddress($this);
-            }
+        if ($previous = $this->invoiceOrder) {
+            $this->invoiceOrder = null;
+            $previous->setInvoiceAddress(null);
+        }
+
+        if ($this->invoiceOrder = $order) {
+            $this->invoiceOrder->setInvoiceAddress($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDeliveryOrder()
+    public function getDeliveryOrder(): ?Model\OrderInterface
     {
         return $this->deliveryOrder;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryOrder(Model\OrderInterface $order = null)
+    public function setDeliveryOrder(?Model\OrderInterface $order): Model\OrderAddressInterface
     {
-        if ($order !== $this->deliveryOrder) {
-            if ($previous = $this->deliveryOrder) {
-                $this->deliveryOrder = null;
-                $previous->setDeliveryAddress(null);
-            }
+        if ($order === $this->deliveryOrder) {
+            return $this;
+        }
 
-            if ($this->deliveryOrder = $order) {
-                $this->deliveryOrder->setDeliveryAddress($this);
-            }
+        if ($previous = $this->deliveryOrder) {
+            $this->deliveryOrder = null;
+            $previous->setDeliveryAddress(null);
+        }
+
+        if ($this->deliveryOrder = $order) {
+            $this->deliveryOrder->setDeliveryAddress($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
+    public function getOrder(): ?Model\OrderInterface
     {
-        if (null !== $this->invoiceOrder) {
-            return $this->invoiceOrder;
-        } elseif (null !== $this->deliveryOrder) {
-            return $this->deliveryOrder;
-        }
-
-        return null;
+        return $this->invoiceOrder ?: $this->deliveryOrder;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getOrder();
     }

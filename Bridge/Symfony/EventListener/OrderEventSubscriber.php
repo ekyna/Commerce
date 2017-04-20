@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
@@ -13,10 +15,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class OrderEventSubscriber extends OrderListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             OrderEvents::INSERT         => ['onInsert', 0],
@@ -24,7 +23,6 @@ class OrderEventSubscriber extends OrderListener implements EventSubscriberInter
             OrderEvents::CONTENT_CHANGE => ['onContentChange', 0],
             OrderEvents::ADDRESS_CHANGE => ['onAddressChange', 0],
             OrderEvents::STATE_CHANGE   => ['onStateChange', 0],
-            OrderEvents::INITIALIZE     => ['onInitialize', 0],
             OrderEvents::PREPARE        => ['onPrepare', 0],
             OrderEvents::PRE_CREATE     => ['onPreCreate', 0],
             OrderEvents::PRE_UPDATE     => ['onPreUpdate', 0],

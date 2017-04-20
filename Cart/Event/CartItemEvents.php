@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Event;
 
 /**
@@ -10,19 +12,24 @@ namespace Ekyna\Component\Commerce\Cart\Event;
 final class CartItemEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.cart_item.insert';
-    const UPDATE      = 'ekyna_commerce.cart_item.update';
-    const DELETE      = 'ekyna_commerce.cart_item.delete';
+    public const INSERT      = 'ekyna_commerce.cart_item.insert';
+    public const UPDATE      = 'ekyna_commerce.cart_item.update';
+    public const DELETE      = 'ekyna_commerce.cart_item.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.cart_item.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.cart_item.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.cart_item.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.cart_item.pre_create';
-    const POST_CREATE = 'ekyna_commerce.cart_item.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.cart_item.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.cart_item.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.cart_item.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.cart_item.post_update';
+    public const PRE_DELETE  = 'ekyna_commerce.cart_item.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.cart_item.post_delete';
 
-    const PRE_DELETE  = 'ekyna_commerce.cart_item.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.cart_item.post_delete';
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
+use DateTime;
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Model\NotifiableInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Quote\Model;
 
@@ -16,118 +21,93 @@ use Ekyna\Component\Commerce\Quote\Model;
  */
 class Quote extends AbstractSale implements Model\QuoteInterface
 {
-    /**
-     * @var bool
-     */
-    protected $editable;
-
-    /**
-     * @var \DateTime
-     */
-    protected $expiresAt;
+    protected bool               $editable  = false;
+    protected ?DateTimeInterface $expiresAt = null;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
 
         $this->state = Model\QuoteStates::STATE_NEW;
         $this->source = Common\SaleSources::SOURCE_COMMERCIAL;
-        $this->editable = false;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @return Model\QuoteAddressInterface
+     * @return Model\QuoteAddressInterface|null
      */
-    public function getInvoiceAddress()
+    public function getInvoiceAddress(): ?Common\SaleAddressInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->invoiceAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceAddress(Common\SaleAddressInterface $address = null)
+    public function setInvoiceAddress(?Common\SaleAddressInterface $address): Common\SaleInterface
     {
-        if (null !== $address && !$address instanceof Model\QuoteAddressInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAddressInterface::class);
+        if ($address && !$address instanceof Model\QuoteAddressInterface) {
+            throw new UnexpectedTypeException($address, Model\QuoteAddressInterface::class);
         }
 
-        if ($address !== $current = $this->getInvoiceAddress()) {
-            if (null !== $current) {
-                $current->setInvoiceQuote(null);
-            }
+        if ($address === $this->invoiceAddress) {
+            return $this;
+        }
 
-            $this->invoiceAddress = $address;
+        if ($previous = $this->invoiceAddress) {
+            $this->invoiceAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setInvoiceQuote(null);
+        }
 
-            if (null !== $address) {
-                $address->setInvoiceQuote($this);
-            }
+        if ($this->invoiceAddress = $address) {
+            $address->setInvoiceQuote($this);
         }
 
         return $this;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @return Model\QuoteAddressInterface
+     * @return Model\QuoteAddressInterface|null
      */
-    public function getDeliveryAddress()
+    public function getDeliveryAddress(): ?Common\SaleAddressInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->deliveryAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryAddress(Common\SaleAddressInterface $address = null)
+    public function setDeliveryAddress(Common\SaleAddressInterface $address = null): Common\SaleInterface
     {
-        if (null !== $address && !$address instanceof Model\QuoteAddressInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAddressInterface::class);
+        if ($address && !$address instanceof Model\QuoteAddressInterface) {
+            throw new UnexpectedTypeException($address, Model\QuoteAddressInterface::class);
         }
 
-        if ($address !== $current = $this->getDeliveryAddress()) {
-            if (null !== $current) {
-                $current->setDeliveryQuote(null);
-            }
+        if ($address === $this->deliveryAddress) {
+            return $this;
+        }
 
-            $this->deliveryAddress = $address;
+        if ($previous = $this->deliveryAddress) {
+            $this->deliveryAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setDeliveryQuote(null);
+        }
 
-            if (null !== $address) {
-                $address->setDeliveryQuote($this);
-            }
+        if ($this->deliveryAddress = $address) {
+            $address->setDeliveryQuote($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAttachment(Common\SaleAttachmentInterface $attachment)
+    public function hasAttachment(Common\SaleAttachmentInterface $attachment): bool
     {
         if (!$attachment instanceof Model\QuoteAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\QuoteAttachmentInterface::class);
         }
 
         return $this->attachments->contains($attachment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAttachment(Common\SaleAttachmentInterface $attachment)
+    public function addAttachment(Common\SaleAttachmentInterface $attachment): Common\SaleInterface
     {
         if (!$attachment instanceof Model\QuoteAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\QuoteAttachmentInterface::class);
         }
 
         if (!$this->hasAttachment($attachment)) {
@@ -138,13 +118,10 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAttachment(Common\SaleAttachmentInterface $attachment)
+    public function removeAttachment(Common\SaleAttachmentInterface $attachment): Common\SaleInterface
     {
         if (!$attachment instanceof Model\QuoteAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\QuoteAttachmentInterface::class);
         }
 
         if ($this->hasAttachment($attachment)) {
@@ -155,25 +132,19 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasItem(Common\SaleItemInterface $item)
+    public function hasItem(Common\SaleItemInterface $item): bool
     {
         if (!$item instanceof Model\QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\QuoteItemInterface::class);
         }
 
         return $this->items->contains($item);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addItem(Common\SaleItemInterface $item)
+    public function addItem(Common\SaleItemInterface $item): Common\SaleInterface
     {
         if (!$item instanceof Model\QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\QuoteItemInterface::class);
         }
 
         if (!$this->hasItem($item)) {
@@ -184,13 +155,10 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeItem(Common\SaleItemInterface $item)
+    public function removeItem(Common\SaleItemInterface $item): Common\SaleInterface
     {
         if (!$item instanceof Model\QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\QuoteItemInterface::class);
         }
 
         if ($this->hasItem($item)) {
@@ -201,25 +169,19 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAdjustment(Common\AdjustmentInterface $adjustment)
+    public function hasAdjustment(Common\AdjustmentInterface $adjustment): bool
     {
         if (!$adjustment instanceof Model\QuoteAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\QuoteAdjustmentInterface::class);
         }
 
         return $this->adjustments->contains($adjustment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAdjustment(Common\AdjustmentInterface $adjustment)
+    public function addAdjustment(Common\AdjustmentInterface $adjustment): Common\AdjustableInterface
     {
         if (!$adjustment instanceof Model\QuoteAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\QuoteAdjustmentInterface::class);
         }
 
         if (!$this->hasAdjustment($adjustment)) {
@@ -230,13 +192,10 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAdjustment(Common\AdjustmentInterface $adjustment)
+    public function removeAdjustment(Common\AdjustmentInterface $adjustment): Common\AdjustableInterface
     {
         if (!$adjustment instanceof Model\QuoteAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\QuoteAdjustmentInterface::class);
         }
 
         if ($this->hasAdjustment($adjustment)) {
@@ -247,25 +206,19 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasNotification(Common\NotificationInterface $notification)
+    public function hasNotification(Common\NotificationInterface $notification): bool
     {
         if (!$notification instanceof Model\QuoteNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\QuoteNotificationInterface::class);
         }
 
         return $this->notifications->contains($notification);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addNotification(Common\NotificationInterface $notification)
+    public function addNotification(Common\NotificationInterface $notification): NotifiableInterface
     {
         if (!$notification instanceof Model\QuoteNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\QuoteNotificationInterface::class);
         }
 
         if (!$this->hasNotification($notification)) {
@@ -276,13 +229,10 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeNotification(Common\NotificationInterface $notification)
+    public function removeNotification(Common\NotificationInterface $notification): NotifiableInterface
     {
         if (!$notification instanceof Model\QuoteNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\QuoteNotificationInterface::class);
         }
 
         if ($this->hasNotification($notification)) {
@@ -293,25 +243,19 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasPayment(Payment\PaymentInterface $payment): bool
     {
         if (!$payment instanceof Model\QuotePaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuotePaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\QuotePaymentInterface::class);
         }
 
         return $this->payments->contains($payment);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addPayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\QuotePaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuotePaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\QuotePaymentInterface::class);
         }
 
         if (!$this->hasPayment($payment)) {
@@ -322,13 +266,10 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removePayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\QuotePaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuotePaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\QuotePaymentInterface::class);
         }
 
         if ($this->hasPayment($payment)) {
@@ -339,17 +280,11 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isEditable(): bool
     {
         return $this->editable;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setEditable(bool $editable): Model\QuoteInterface
     {
         $this->editable = $editable;
@@ -357,41 +292,29 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getExpiresAt()
+    public function getExpiresAt(): ?DateTimeInterface
     {
         return $this->expiresAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setExpiresAt(\DateTime $expiresAt = null)
+    public function setExpiresAt(?DateTimeInterface $expiresAt): Model\QuoteInterface
     {
         $this->expiresAt = $expiresAt;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isExpired()
+    public function isExpired(): bool
     {
         if (null === $this->expiresAt) {
             return false;
         }
 
-        $diff = $this->expiresAt->diff((new \DateTime())->setTime(0, 0, 0, 0));
+        $diff = $this->expiresAt->diff((new DateTime())->setTime(0, 0));
 
         return 0 < $diff->days && !$diff->invert;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function requiresVoucher(): bool
     {
         if (!$this->customer) {
@@ -401,18 +324,12 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this->customer->hasParent() || $this->customer->hasChildren();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasVoucher(): bool
     {
         return !empty($this->voucherNumber) && null !== $this->getVoucherAttachment();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getVoucherAttachment()
+    public function getVoucherAttachment(): ?Model\QuoteAttachmentInterface
     {
         foreach ($this->attachments as $attachment) {
             if ($attachment->getType() === DocumentTypes::TYPE_VOUCHER) {

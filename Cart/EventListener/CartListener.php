@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\EventListener;
 
 use Ekyna\Component\Commerce\Cart\Event\CartEvents;
@@ -7,7 +9,7 @@ use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartStates;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -17,18 +19,9 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class CartListener extends AbstractSaleListener
 {
-    /**
-     * @var string
-     */
-    protected $expirationDelay;
+    protected string $expirationDelay;
 
-
-    /**
-     * Sets the expiration delay.
-     *
-     * @param string $delay
-     */
-    public function setExpirationDelay($delay)
+    public function setExpirationDelay(string $delay): void
     {
         $this->expirationDelay = $delay;
     }
@@ -42,9 +35,7 @@ class CartListener extends AbstractSaleListener
     {
         $changed = parent::handleInsert($sale);
 
-        $changed |= $this->updateExpiresAt($sale);
-
-        return $changed;
+        return $this->updateExpiresAt($sale) || $changed;
     }
 
     /**
@@ -56,17 +47,11 @@ class CartListener extends AbstractSaleListener
     {
         $changed = parent::handleUpdate($sale);
 
-        $changed |= $this->updateExpiresAt($sale);
-
-        return $changed;
+        return $this->updateExpiresAt($sale) || $changed;
     }
 
     /**
      * Updates the cart expiration date.
-     *
-     * @param CartInterface $cart
-     *
-     * @return bool
      */
     protected function updateExpiresAt(CartInterface $cart): bool
     {
@@ -77,9 +62,6 @@ class CartListener extends AbstractSaleListener
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function updateState(SaleInterface $sale): bool
     {
         if (parent::updateState($sale)) {
@@ -97,7 +79,7 @@ class CartListener extends AbstractSaleListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
      * @return CartInterface
      */
@@ -106,33 +88,27 @@ class CartListener extends AbstractSaleListener
         $resource = $event->getResource();
 
         if (!$resource instanceof CartInterface) {
-            throw new InvalidArgumentException("Expected instance of CartInterface");
+            throw new UnexpectedTypeException($resource, CartInterface::class);
         }
 
         return $resource;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function scheduleContentChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof CartInterface) {
-            throw new InvalidArgumentException("Expected instance of CartInterface");
+            throw new UnexpectedTypeException($sale, CartInterface::class);
         }
 
-        $this->persistenceHelper->scheduleEvent(CartEvents::CONTENT_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, CartEvents::CONTENT_CHANGE);
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function scheduleStateChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof CartInterface) {
-            throw new InvalidArgumentException("Expected instance of CartInterface");
+            throw new UnexpectedTypeException($sale, CartInterface::class);
         }
 
-        $this->persistenceHelper->scheduleEvent(CartEvents::STATE_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, CartEvents::STATE_CHANGE);
     }
 }

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
-use Ekyna\Component\Commerce\Common\Model\Units;
+use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model\StockComponent;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
@@ -18,33 +22,14 @@ use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterf
  */
 class StockSubjectUpdater implements StockSubjectUpdaterInterface
 {
-    /**
-     * @var StockUnitResolverInterface
-     */
-    protected $stockUnitResolver;
+    protected StockUnitResolverInterface         $stockUnitResolver;
+    protected SupplierProductRepositoryInterface $supplierProductRepository;
+    protected array                              $defaults;
 
-    /**
-     * @var SupplierProductRepositoryInterface
-     */
-    protected $supplierProductRepository;
-
-    /**
-     * @var array
-     */
-    protected $defaults;
-
-
-    /**
-     * Constructor.
-     *
-     * @param StockUnitResolverInterface         $stockUnitResolver
-     * @param SupplierProductRepositoryInterface $supplierProductRepository
-     * @param array                              $defaults
-     */
     public function __construct(
-        StockUnitResolverInterface $stockUnitResolver,
+        StockUnitResolverInterface         $stockUnitResolver,
         SupplierProductRepositoryInterface $supplierProductRepository,
-        array $defaults = []
+        array                              $defaults = []
     ) {
         $this->stockUnitResolver = $stockUnitResolver;
         $this->supplierProductRepository = $supplierProductRepository;
@@ -58,35 +43,36 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         ], $defaults);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function reset(StockSubjectInterface $subject): void
     {
         $map = [
-            'stock_mode'             => 'setStockMode',
-            'stock_floor'            => 'setStockFloor',
-            'replenishment_time'     => 'setReplenishmentTime',
-            'minimum_order_quantity' => 'setMinimumOrderQuantity',
-            'quote_only'             => 'setQuoteOnly',
-            'end_of_life'            => 'setEndOfLife',
+            'stock_mode'             => ['setStockMode', false],
+            'stock_floor'            => ['setStockFloor', true],
+            'replenishment_time'     => ['setReplenishmentTime', false],
+            'minimum_order_quantity' => ['setMinimumOrderQuantity', true],
+            'quote_only'             => ['setQuoteOnly', false],
+            'end_of_life'            => ['setEndOfLife', false],
         ];
 
-        foreach ($map as $key => $method) {
-            if (isset($this->defaults[$key])) {
-                $subject->{$method}($this->defaults[$key]);
+        foreach ($map as $key => [$method, $decimal]) {
+            if (!isset($this->defaults[$key])) {
+                continue;
             }
+
+            $value = $decimal ? new Decimal($this->defaults[$key]) : $this->defaults[$key];
+
+            $subject->{$method}($value);
         }
 
         $subject
-            ->setInStock(0)
-            ->setAvailableStock(0)
-            ->setVirtualStock(0)
-            ->setEstimatedDateOfArrival();
+            ->setInStock(new Decimal(0))
+            ->setAvailableStock(new Decimal(0))
+            ->setVirtualStock(new Decimal(0))
+            ->setEstimatedDateOfArrival(null);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function update(StockSubjectInterface $subject): bool
     {
@@ -98,12 +84,15 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // If subject stock mode is "disabled", reset to zero and set state to "In stock".
         if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
             $changed = $this->setSubjectData($subject);
-            $changed |= $this->setSubjectState($subject, StockSubjectStates::STATE_IN_STOCK);
 
-            return $changed;
+            return $this->setSubjectState($subject, StockSubjectStates::STATE_IN_STOCK) || $changed;
         }
 
-        $ordered = $received = $adjusted = $sold = $shipped = 0;
+        $ordered = new Decimal(0);
+        $received = new Decimal(0);
+        $adjusted = new Decimal(0);
+        $sold = new Decimal(0);
+        $shipped = new Decimal(0);
         $eda = null;
 
         // Loop over the 'not closed' stock units.
@@ -146,13 +135,13 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // In stock
         $inStock = $received + $adjusted - $shipped;
         if (0 > $inStock) {
-            $inStock = 0;
+            $inStock = new Decimal(0);
         }
 
         // Available stock
         $availableStock = $received + $adjusted - $sold;
         if (0 > $availableStock) {
-            $availableStock = 0;
+            $availableStock = new Decimal(0);
         }
 
         // Virtual stock
@@ -175,9 +164,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         // TODO Resolve components
 
-        $changed |= $this->updateStockState($subject);
-
-        return $changed;
+        return $this->updateStockState($subject) || $changed;
     }
 
     /**
@@ -189,7 +176,6 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     protected function updateCompound(StockSubjectInterface $subject): bool
     {
-        $unit = $subject->getUnit();
         $justInTime = $disabled = $resupply = true;
         $inStock = $virtualStock = $availableStock = $eda = null;
 
@@ -216,19 +202,19 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             }
 
             // In stock
-            $childInStock = Units::round($child->getInStock() / $quantity, $unit);
+            $childInStock = $child->getInStock()->div($quantity);
             if (null === $inStock || $childInStock < $inStock) {
                 $inStock = $childInStock;
             }
 
             // Available stock
-            $childAvailableStock = Units::round($child->getAvailableStock() / $quantity, $unit);
+            $childAvailableStock = $child->getAvailableStock()->div($quantity);
             if (null === $availableStock || $childAvailableStock < $availableStock) {
                 $availableStock = $childAvailableStock;
             }
 
             // Virtual stock
-            $childVirtualStock = Units::round($child->getVirtualStock() / $quantity, $unit);
+            $childVirtualStock = $child->getVirtualStock()->div($quantity);
             if (null === $virtualStock || $childVirtualStock <= $virtualStock) {
                 $virtualStock = $childVirtualStock;
             }
@@ -245,13 +231,13 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         if (null === $inStock) {
-            $inStock = 0;
+            $inStock = new Decimal(0);
         }
         if (null === $availableStock) {
-            $availableStock = 0;
+            $availableStock = new Decimal(0);
         }
         if (null === $virtualStock) {
-            $virtualStock = 0;
+            $virtualStock = new Decimal(0);
         }
 
         if ($disabled) {
@@ -271,21 +257,21 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             if ($mode === StockSubjectModes::MODE_JUST_IN_TIME) {
                 // If "out of stock" state
                 if ($state === StockSubjectStates::STATE_OUT_OF_STOCK) {
-                    // Fallback to "Pre order" state
+                    // Fallback to "pre-order" state
                     $state = StockSubjectStates::STATE_PRE_ORDER;
-                } // Else if "pre order" state
+                } // Else if "pre-order" state
                 elseif ($state === StockSubjectStates::STATE_PRE_ORDER) {
-                    // Fallback to "In stock" state
+                    // Fallback to "in stock" state
                     $state = StockSubjectStates::STATE_IN_STOCK;
                 }
             }
         }
 
         $changed = $this->setSubjectData($subject, $inStock, $availableStock, $virtualStock, $eda);
-        $changed |= $this->setSubjectMode($subject, $mode);
-        $changed |= $this->setSubjectState($subject, $state);
 
-        return $changed;
+        $changed = $this->setSubjectMode($subject, $mode) || $changed;
+
+        return $this->setSubjectState($subject, $state) || $changed;
     }
 
     /**
@@ -332,7 +318,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             if ($state === StockSubjectStates::STATE_OUT_OF_STOCK) {
                 // Fallback to "Pre order" state
                 $state = StockSubjectStates::STATE_PRE_ORDER;
-            } // Else if "pre order" state
+            } // Else if "pre-order" state
             elseif ($state === StockSubjectStates::STATE_PRE_ORDER) {
                 // Fallback to "In stock" state
                 $state = StockSubjectStates::STATE_IN_STOCK;
@@ -386,20 +372,20 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         // Available stock
-        if (0 < $aAvailable = $subjectA->getAvailableStock() / $a->getQuantity()) {
-            $bAvailable = $subjectB->getAvailableStock() / $b->getQuantity();
+        if (0 < $aAvailable = $subjectA->getAvailableStock()->div($a->getQuantity())) {
+            $bAvailable = $subjectB->getAvailableStock()->div($b->getQuantity());
             if ($bAvailable < $aAvailable) {
                 return true;
             }
         }
 
         // Virtual stock
-        if (0 < $aVirtual = $subjectA->getVirtualStock() / $a->getQuantity()) {
+        if (0 < $aVirtual = $subjectA->getVirtualStock()->div($a->getQuantity())) {
             $aEda = $subjectA->getEstimatedDateOfArrival();
             $bEda = $subjectB->getEstimatedDateOfArrival();
 
             if (is_null($bEda) && is_null($aEda)) {
-                $bVirtual = $subjectB->getVirtualStock() / $b->getQuantity();
+                $bVirtual = $subjectB->getVirtualStock()->div($b->getQuantity());
                 if ($bVirtual < $aVirtual) {
                     return true;
                 }
@@ -415,18 +401,14 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
     /**
      * Returns the given date or null if it's lower than today.
-     *
-     * @param \DateTime|null $eda
-     *
-     * @return \DateTime|null
      */
-    private function nullDateIfLowerThanToday(\DateTime $eda = null): ?\DateTime
+    private function nullDateIfLowerThanToday(?DateTimeInterface $eda): ?DateTimeInterface
     {
         if (null === $eda) {
             return null;
         }
 
-        $today = new \DateTime();
+        $today = new DateTime();
         $today->setTime(0, 0);
 
         if ($eda < $today) {
@@ -439,34 +421,32 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     /**
      * Sets the subject stock data.
      *
-     * @param StockSubjectInterface $subject
-     * @param float                 $inStock
-     * @param float                 $availableStock
-     * @param float                 $virtualStock
-     * @param \DateTime|null        $eda
-     *
      * @return bool Whether the data has been changed.
      */
     private function setSubjectData(
         StockSubjectInterface $subject,
-        $inStock = .0,
-        $availableStock = .0,
-        $virtualStock = .0,
-        \DateTime $eda = null
+        Decimal               $inStock = null,
+        Decimal               $availableStock = null,
+        Decimal               $virtualStock = null,
+        DateTimeInterface     $eda = null
     ): bool {
         $changed = false;
 
-        if ($inStock != $subject->getInStock()) { // TODO use packaging format (bccomp for float)
+        $inStock = $inStock ?: new Decimal(0);
+        $availableStock = $availableStock ?: new Decimal(0);
+        $virtualStock = $virtualStock ?: new Decimal(0);
+
+        if (!$subject->getInStock()->equals($inStock)) {
             $subject->setInStock($inStock);
             $changed = true;
         }
 
-        if ($availableStock != $subject->getAvailableStock()) { // TODO use packaging format (bccomp for float)
+        if (!$subject->getAvailableStock()->equals($availableStock)) {
             $subject->setAvailableStock($availableStock);
             $changed = true;
         }
 
-        if ($virtualStock != $subject->getVirtualStock()) { // TODO use packaging format (bccomp for float)
+        if (!$subject->getVirtualStock()->equals($virtualStock)) {
             $subject->setVirtualStock($virtualStock);
             $changed = true;
         }
@@ -481,9 +461,6 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
     /**
      * Sets the subject's stock mode.
-     *
-     * @param StockSubjectInterface $subject
-     * @param string                $mode
      *
      * @return bool Whether the mode has been changed.
      */
@@ -500,9 +477,6 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
     /**
      * Sets the subject's stock state.
-     *
-     * @param StockSubjectInterface $subject
-     * @param string                $state
      *
      * @return bool Whether the state has been changed.
      */

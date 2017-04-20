@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Event;
 
 /**
@@ -10,29 +12,27 @@ namespace Ekyna\Component\Commerce\Order\Event;
 final class OrderEvents
 {
     // Persistence
-    const INSERT         = 'ekyna_commerce.order.insert';
-    const UPDATE         = 'ekyna_commerce.order.update';
-    const DELETE         = 'ekyna_commerce.order.delete';
+    public const INSERT         = 'ekyna_commerce.order.insert';
+    public const UPDATE         = 'ekyna_commerce.order.update';
+    public const DELETE         = 'ekyna_commerce.order.delete';
 
     // Domain
-    const STATE_CHANGE   = 'ekyna_commerce.order.state_change';
-    const CONTENT_CHANGE = 'ekyna_commerce.order.content_change';
-    const ADDRESS_CHANGE = 'ekyna_commerce.order.address_change';
+    public const STATE_CHANGE   = 'ekyna_commerce.order.state_change';
+    public const CONTENT_CHANGE = 'ekyna_commerce.order.content_change';
+    public const ADDRESS_CHANGE = 'ekyna_commerce.order.address_change';
 
-    const INITIALIZE     = 'ekyna_commerce.order.initialize';
-    const PREPARE        = 'ekyna_commerce.order.prepare';
+    public const PREPARE        = 'ekyna_commerce.order.prepare';
 
-    const PRE_CREATE     = 'ekyna_commerce.order.pre_create';
-    const POST_CREATE    = 'ekyna_commerce.order.post_create';
+    public const PRE_CREATE     = 'ekyna_commerce.order.pre_create';
+    public const POST_CREATE    = 'ekyna_commerce.order.post_create';
 
-    const PRE_UPDATE     = 'ekyna_commerce.order.pre_update';
-    const POST_UPDATE    = 'ekyna_commerce.order.post_update';
+    public const PRE_UPDATE     = 'ekyna_commerce.order.pre_update';
+    public const POST_UPDATE    = 'ekyna_commerce.order.post_update';
 
-    const PRE_DELETE     = 'ekyna_commerce.order.pre_delete';
-    const POST_DELETE    = 'ekyna_commerce.order.post_delete';
+    public const PRE_DELETE     = 'ekyna_commerce.order.pre_delete';
+    public const POST_DELETE    = 'ekyna_commerce.order.post_delete';
 
-    const COMPLETED      = 'ekyna_commerce.order.completed';
-
+    public const COMPLETED      = 'ekyna_commerce.order.completed';
 
     /**
      * Disabled constructor.

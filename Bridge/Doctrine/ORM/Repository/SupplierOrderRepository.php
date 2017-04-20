@@ -1,11 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateTime;
+use Decimal\Decimal;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Supplier\Model;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class SupplierOrderRepository
@@ -14,16 +20,9 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class SupplierOrderRepository extends ResourceRepository implements SupplierOrderRepositoryInterface
 {
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $findNewBySupplierQuery;
+    private ?Query $findNewBySupplierQuery = null;
 
-
-    /**
-     * @inheritDoc
-     */
-    public function findNewBySupplier(Model\SupplierInterface $supplier)
+    public function findNewBySupplier(Model\SupplierInterface $supplier): array
     {
         return $this
             ->getFindNewBySupplierQuery()
@@ -31,76 +30,50 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findSuppliersExpiredDue()
+    public function findSuppliersExpiredDue(): array
     {
         return $this->findExpiredDue('payment');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findSuppliersFallDue()
+    public function findSuppliersFallDue(): array
     {
         return $this->findFallDue('payment');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findForwardersExpiredDue()
+    public function findForwardersExpiredDue(): array
     {
         return $this->findExpiredDue('forwarder');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findForwardersFallDue()
+    public function findForwardersFallDue(): array
     {
         return $this->findFallDue('forwarder');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSuppliersExpiredDue()
+    public function getSuppliersExpiredDue(): Decimal
     {
         return $this->getExpiredDue('payment');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSuppliersFallDue()
+    public function getSuppliersFallDue(): Decimal
     {
         return $this->getFallDue('payment');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getForwardersExpiredDue()
+    public function getForwardersExpiredDue(): Decimal
     {
         return $this->getExpiredDue('forwarder');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getForwardersFallDue()
+    public function getForwardersFallDue(): Decimal
     {
         return $this->getFallDue('forwarder');
     }
 
     /**
      * Returns the "find new by supplier" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    private function getFindNewBySupplierQuery()
+    private function getFindNewBySupplierQuery(): ?Query
     {
         if (null !== $this->findNewBySupplierQuery) {
             return $this->findNewBySupplierQuery;
@@ -120,11 +93,9 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
     /**
      * Returns the expired due orders.
      *
-     * @param string $prefix
-     *
-     * @return Model\SupplierOrderInterface[]
+     * @return array<Model\SupplierOrderInterface>
      */
-    private function findExpiredDue($prefix)
+    private function findExpiredDue(string $prefix): array
     {
         return $this
             ->getExpiredDueQueryBuilder($prefix)
@@ -135,11 +106,9 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
     /**
      * Returns the fall due orders.
      *
-     * @param string $prefix
-     *
-     * @return Model\SupplierOrderInterface[]
+     * @return array<Model\SupplierOrderInterface>
      */
-    private function findFallDue($prefix)
+    private function findFallDue(string $prefix): array
     {
         return $this
             ->getFallDueQueryBuilder($prefix)
@@ -149,44 +118,36 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
 
     /**
      * Returns the expired due total.
-     *
-     * @param string $prefix
-     *
-     * @return float
      */
-    private function getExpiredDue($prefix)
+    private function getExpiredDue(string $prefix): Decimal
     {
-        return $this
+        $total = $this
             ->getExpiredDueQueryBuilder($prefix)
             ->select('SUM(' . $this->getAlias() . '.' . $prefix . 'Total)')
             ->getQuery()
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
     /**
      * Returns the fall due total.
-     *
-     * @param string $prefix
-     *
-     * @return float
      */
-    private function getFallDue($prefix)
+    private function getFallDue(string $prefix): Decimal
     {
-        return $this
+        $total = $this
             ->getFallDueQueryBuilder($prefix)
             ->select('SUM(' . $this->getAlias() . '.' . $prefix . 'Total)')
             ->getQuery()
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
     /**
      * Returns the expired due total.
-     *
-     * @param string $prefix
-     *
-     * @return \Doctrine\ORM\QueryBuilder
      */
-    private function getExpiredDueQueryBuilder($prefix)
+    private function getExpiredDueQueryBuilder(string $prefix): QueryBuilder
     {
         $qb = $this->createQueryBuilder();
         $as = $this->getAlias();
@@ -198,19 +159,15 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
             ->andWhere($ex->isNotNull($as . '.' . $prefix . 'DueDate'))
             ->andWhere($ex->lt($as . '.' . $prefix . 'DueDate', ':today'))
             ->andWhere($ex->neq($as . '.state', ':state'))
-            ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Types::DATETIME_MUTABLE)
+            ->setParameter('today', (new DateTime())->setTime(0, 0), Types::DATETIME_MUTABLE)
             ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }
 
     /**
      * Returns the fall due total.
-     *
-     * @param string $prefix
-     *
-     * @return \Doctrine\ORM\QueryBuilder
      */
-    private function getFallDueQueryBuilder($prefix)
+    private function getFallDueQueryBuilder(string $prefix): QueryBuilder
     {
         $qb = $this->createQueryBuilder();
         $as = $this->getAlias();
@@ -224,15 +181,12 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
                 $ex->gte($as . '.' . $prefix . 'DueDate', ':today')
             ))
             ->andWhere($ex->neq($as . '.state', ':state'))
-            ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Types::DATETIME_MUTABLE)
+            ->setParameter('today', (new DateTime())->setTime(0, 0), Types::DATETIME_MUTABLE)
             ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'so';
     }

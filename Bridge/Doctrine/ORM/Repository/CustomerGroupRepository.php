@@ -1,30 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\TranslatableRepository;
 
 /**
  * Class CustomerGroupRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerGroupRepository extends TranslatableResourceRepository implements CustomerGroupRepositoryInterface
+class CustomerGroupRepository extends TranslatableRepository implements CustomerGroupRepositoryInterface
 {
-    /**
-     * @var CustomerGroupInterface
-     */
-    private $defaultGroup;
+    private ?CustomerGroupInterface $defaultGroup = null;
 
 
     /**
      * @inheritDoc
      */
-    public function findDefault()
+    public function findDefault(): CustomerGroupInterface
     {
         if (null !== $this->defaultGroup) {
             return $this->defaultGroup;
@@ -40,7 +39,7 @@ class CustomerGroupRepository extends TranslatableResourceRepository implements 
     /**
      * @inheritDoc
      */
-    public function getIdentifiers()
+    public function getIdentifiers(): array
     {
         $qb = $this->createQueryBuilder('g');
 
@@ -58,7 +57,7 @@ class CustomerGroupRepository extends TranslatableResourceRepository implements 
      *
      * @param OnClearEventArgs $event
      */
-    public function onClear(OnClearEventArgs $event)
+    public function onClear(OnClearEventArgs $event): void
     {
         if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
             $this->defaultGroup = null;

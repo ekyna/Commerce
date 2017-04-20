@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -10,7 +13,9 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
-use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use Ekyna\Component\Resource\Factory\FactoryFactoryInterface;
+use Ekyna\Component\Resource\Factory\ResourceFactoryInterface;
+use Ekyna\Component\Resource\Repository\RepositoryFactoryInterface;
 
 /**
  * Class StockUnitResolver
@@ -19,49 +24,23 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockUnitResolver implements StockUnitResolverInterface
 {
-    /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
+    protected SubjectHelperInterface $subjectHelper;
+    protected StockUnitCacheInterface $unitCache;
+    protected RepositoryFactoryInterface $repositoryFactory;
+    protected FactoryFactoryInterface $factoryFactory;
 
-    /**
-     * @var StockUnitCacheInterface
-     */
-    protected $unitCache;
-
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
-
-    /**
-     * @var array [class => $repository]
-     */
-    protected $repositoryCache;
-
-
-    /**
-     * Constructor.
-     *
-     * @param SubjectHelperInterface     $subjectHelper
-     * @param StockUnitCacheInterface    $unitCache
-     * @param PersistenceHelperInterface $persistenceHelper
-     */
     public function __construct(
         SubjectHelperInterface $subjectHelper,
         StockUnitCacheInterface $unitCache,
-        PersistenceHelperInterface $persistenceHelper
+        RepositoryFactoryInterface $repositoryFactory,
+        FactoryFactoryInterface $factoryFactory
     ) {
         $this->subjectHelper     = $subjectHelper;
         $this->unitCache         = $unitCache;
-        $this->persistenceHelper = $persistenceHelper;
-
-        $this->repositoryCache = [];
+        $this->repositoryFactory = $repositoryFactory;
+        $this->factoryFactory = $factoryFactory;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function createBySubject(
         StockSubjectInterface $subject,
         StockUnitInterface $exceptStockUnit = null
@@ -87,8 +66,8 @@ class StockUnitResolver implements StockUnitResolverInterface
 
         /** @var StockUnitInterface $stockUnit */
         $stockUnit = $this
-            ->getRepositoryBySubject($subject)
-            ->createNew();
+            ->getFactoryBySubject($subject)
+            ->create();
 
         $stockUnit->setSubject($subject);
 
@@ -97,9 +76,6 @@ class StockUnitResolver implements StockUnitResolverInterface
         return $stockUnit;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function createBySubjectRelative(SubjectRelativeInterface $relative): StockUnitInterface
     {
         /** @var StockSubjectInterface $subject */
@@ -109,7 +85,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findPending($subjectOrRelative): array
     {
@@ -125,7 +101,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findReady($subjectOrRelative): array
     {
@@ -141,7 +117,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findPendingOrReady($subjectOrRelative): array
     {
@@ -160,7 +136,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findNotClosed($subjectOrRelative): array
     {
@@ -180,7 +156,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findAssignable($subjectOrRelative): array
     {
@@ -210,7 +186,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findLinkable($subjectOrRelative): ?StockUnitInterface
     {
@@ -247,11 +223,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * Replaces fetched units by their cached version, and filters the result.
      *
-     * @param StockUnitInterface[]  $fetchedUnits
-     * @param StockSubjectInterface $subject
-     * @param FilterInterface       $filter
-     *
-     * @return array
+     * @param array<StockUnitInterface>  $fetchedUnits
      */
     protected function replaceAndFilter(
         array $fetchedUnits,
@@ -302,7 +274,7 @@ class StockUnitResolver implements StockUnitResolverInterface
      *
      * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
      *
-     * @return array(StockSubjectInterface, StockUnitRepositoryInterface)
+     * @return array [StockSubjectInterface, StockUnitRepositoryInterface]
      */
     protected function getSubjectAndRepository($subjectOrRelative): array
     {
@@ -323,25 +295,27 @@ class StockUnitResolver implements StockUnitResolverInterface
 
     /**
      * Returns the subject and his stock unit repository.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return StockUnitRepositoryInterface
      */
     protected function getRepositoryBySubject(StockSubjectInterface $subject): StockUnitRepositoryInterface
     {
         $class = $subject::getStockUnitClass();
 
-        if (isset($this->repositoryCache[$class])) {
-            return $this->repositoryCache[$class];
-        }
-
-        $repository = $this->persistenceHelper->getManager()->getRepository($class);
+        $repository = $this->repositoryFactory->getRepository($class);
 
         if (!$repository instanceof StockUnitRepositoryInterface) {
-            throw new InvalidArgumentException('Expected instance of ' . StockUnitRepositoryInterface::class);
+            throw new UnexpectedTypeException($repository, StockUnitRepositoryInterface::class);
         }
 
-        return $this->repositoryCache[$class] = $repository;
+        return $repository;
+    }
+
+    /**
+     * Returns the subject and his stock unit repository.
+     */
+    protected function getFactoryBySubject(StockSubjectInterface $subject): ResourceFactoryInterface
+    {
+        $class = $subject::getStockUnitClass();
+
+        return $this->factoryFactory->getFactory($class);
     }
 }

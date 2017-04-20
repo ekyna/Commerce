@@ -3,7 +3,7 @@
 namespace Acme\Product\Repository;
 
 use Ekyna\Component\Commerce\Subject\Repository\SubjectRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class ProductRepository

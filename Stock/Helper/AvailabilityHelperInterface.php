@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Helper;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model\Availability;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 
@@ -14,12 +17,6 @@ interface AvailabilityHelperInterface
 {
     /**
      * Returns the subject availability.
-     *
-     * @param StockSubjectInterface $subject
-     * @param bool                  $root
-     * @param bool                  $short
-     *
-     * @return Availability
      */
     public function getAvailability(
         StockSubjectInterface $subject,
@@ -29,17 +26,10 @@ interface AvailabilityHelperInterface
 
     /**
      * Returns the subject's availability message.
-     *
-     * @param StockSubjectInterface $subject
-     * @param float|null            $quantity
-     * @param bool                  $root
-     * @param bool                  $short
-     *
-     * @return string
      */
     public function getAvailabilityMessage(
         StockSubjectInterface $subject,
-        float $quantity = null,
+        Decimal $quantity = null,
         bool $root = true,
         bool $short = false
     ): string;

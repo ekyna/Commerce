@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Event;
 
 /**
@@ -10,19 +12,24 @@ namespace Ekyna\Component\Commerce\Payment\Event;
 final class PaymentMethodEvents
 {
     // Persistence
-    const INSERT = 'ekyna_commerce.payment_method.insert';
-    const UPDATE = 'ekyna_commerce.payment_method.update';
-    const DELETE = 'ekyna_commerce.payment_method.delete';
+    public const INSERT = 'ekyna_commerce.payment_method.insert';
+    public const UPDATE = 'ekyna_commerce.payment_method.update';
+    public const DELETE = 'ekyna_commerce.payment_method.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.payment_method.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.payment_method.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.payment_method.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.payment_method.pre_create';
-    const POST_CREATE = 'ekyna_commerce.payment_method.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.payment_method.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.payment_method.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.payment_method.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.payment_method.post_update';
+    public const PRE_DELETE  = 'ekyna_commerce.payment_method.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.payment_method.post_delete';
 
-    const PRE_DELETE  = 'ekyna_commerce.payment_method.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.payment_method.post_delete';
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

@@ -56,8 +56,8 @@ class SupplierProductListener
             return;
         }
 
-        if (empty($product->getWeight())) {
-            $product->setWeight($subject->getPackageWeight());
+        if ($product->getWeight()->isZero()) {
+            $product->setWeight(clone $subject->getPackageWeight());
         }
         /* TODO if (empty($product->getUnit())) {
             $product->setUnit($subject->getUnit());

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Bundle\AdminBundle\Model\UserInterface;
+use Ekyna\Component\User\Model\UserInterface;
 
 /**
  * Class Recipient
@@ -11,23 +13,18 @@ use Ekyna\Bundle\AdminBundle\Model\UserInterface;
  */
 class Recipient
 {
-    const TYPE_WEBSITE       = 'website';
-    const TYPE_USER          = 'user';
-    const TYPE_ADMINISTRATOR = 'administrator';
-    const TYPE_IN_CHARGE     = 'in_charge';
-    const TYPE_CUSTOMER      = 'customer';
-    const TYPE_CONTACT       = 'contact';
-    const TYPE_SALESMAN      = 'salesman';
-    const TYPE_ACCOUNTABLE   = 'accountable';
-    const TYPE_SUPPLIER      = 'supplier';
+    public const TYPE_WEBSITE       = 'website';
+    public const TYPE_USER          = 'user';
+    public const TYPE_ADMINISTRATOR = 'administrator';
+    public const TYPE_IN_CHARGE     = 'in_charge';
+    public const TYPE_CUSTOMER      = 'customer';
+    public const TYPE_CONTACT       = 'contact';
+    public const TYPE_SALESMAN      = 'salesman';
+    public const TYPE_ACCOUNTABLE   = 'accountable';
+    public const TYPE_SUPPLIER      = 'supplier';
 
 
-    /**
-     * Returns the valid types.
-     *
-     * @return array
-     */
-    public static function getTypes()
+    public static function getTypes(): array
     {
         return [
             self::TYPE_WEBSITE,
@@ -42,35 +39,12 @@ class Recipient
         ];
     }
 
-    /**
-     * @var string
-     */
-    private $email;
-
-    /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @var string
-     */
-    private $type;
-
-    /**
-     * @var UserInterface
-     */
-    private $user;
+    private ?string        $email;
+    private ?string        $name;
+    private ?string        $type;
+    private ?UserInterface $user;
 
 
-    /**
-     * Constructor.
-     *
-     * @param string        $email
-     * @param string        $name
-     * @param string        $type
-     * @param UserInterface $user
-     */
     public function __construct(
         string $email = null,
         string $name = null,
@@ -78,100 +52,52 @@ class Recipient
         UserInterface $user = null
     ) {
         $this->email = $email;
-        $this->name  = $name;
-        $this->type  = $type;
-        $this->user  = $user;
+        $this->name = $name;
+        $this->type = $type;
+        $this->user = $user;
     }
 
-    /**
-     * Sets the email.
-     *
-     * @param string $email
-     *
-     * @return Recipient
-     */
-    public function setEmail(string $email = null): Recipient
+    public function setEmail(?string $email): Recipient
     {
         $this->email = $email;
 
         return $this;
     }
 
-    /**
-     * Returns the email.
-     *
-     * @return string|null
-     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    /**
-     * Sets the name.
-     *
-     * @param string $name
-     *
-     * @return Recipient
-     */
-    public function setName(string $name = null): Recipient
+    public function setName(?string $name): Recipient
     {
         $this->name = $name;
 
         return $this;
     }
 
-    /**
-     * Returns the name.
-     *
-     * @return string|null
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Sets the type.
-     *
-     * @param string $type
-     *
-     * @return Recipient
-     */
-    public function setType(string $type = null): Recipient
+    public function setType(?string $type): Recipient
     {
         $this->type = $type;
 
         return $this;
     }
 
-    /**
-     * Returns the role.
-     *
-     * @return string|null
-     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * Returns the user.
-     *
-     * @return UserInterface|null
-     */
     public function getUser(): ?UserInterface
     {
         return $this->user;
     }
 
-    /**
-     * Sets the user.
-     *
-     * @param UserInterface $user
-     *
-     * @return Recipient
-     */
     public function setUser(UserInterface $user = null): Recipient
     {
         $this->user = $user;

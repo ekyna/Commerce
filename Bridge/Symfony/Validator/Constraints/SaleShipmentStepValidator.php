@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class SaleShipmentStepValidator extends ConstraintValidator
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function validate($sale, Constraint $constraint)
     {
@@ -65,9 +65,9 @@ class SaleShipmentStepValidator extends ConstraintValidator
      */
     private function isIdentityValid(SaleInterface $cart)
     {
-        return 0 < strlen($cart->getEmail())
-            && 0 < strlen($cart->getGender())
-            && 0 < strlen($cart->getFirstName())
-            && 0 < strlen($cart->getLastName());
+        return !empty($cart->getEmail())
+            && !empty($cart->getGender())
+            && !empty($cart->getFirstName())
+            && !empty($cart->getLastName());
     }
 }

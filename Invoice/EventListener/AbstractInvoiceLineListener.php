@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
@@ -18,43 +20,20 @@ abstract class AbstractInvoiceLineListener
 {
     use LockingHelperAwareTrait;
 
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected StockUnitAssignerInterface $stockUnitAssigner;
 
-    /**
-     * @var StockUnitAssignerInterface
-     */
-    protected $stockUnitAssigner;
-
-
-    /**
-     * Sets the persistence helper.
-     *
-     * @param PersistenceHelperInterface $helper
-     */
-    public function setPersistenceHelper(PersistenceHelperInterface $helper)
+    public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
         $this->persistenceHelper = $helper;
     }
 
-    /**
-     * Sets the stock assigner.
-     *
-     * @param StockUnitAssignerInterface $stockUnitAssigner
-     */
-    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner)
+    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner): void
     {
         $this->stockUnitAssigner = $stockUnitAssigner;
     }
 
-    /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $line = $this->getInvoiceLineFromEvent($event);
 
@@ -63,12 +42,7 @@ abstract class AbstractInvoiceLineListener
         $this->scheduleInvoiceContentChangeEvent($line->getInvoice());
     }
 
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $line = $this->getInvoiceLineFromEvent($event);
 
@@ -82,12 +56,7 @@ abstract class AbstractInvoiceLineListener
         }
     }
 
-    /**
-     * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         $line = $this->getInvoiceLineFromEvent($event);
 
@@ -98,7 +67,7 @@ abstract class AbstractInvoiceLineListener
 
         if ($this->lockingHelper->isLocked($invoice)) {
             throw new Exception\IllegalOperationException(
-                "This invoice is locked."
+                'This invoice is locked.'
             );
         }
 
@@ -108,43 +77,39 @@ abstract class AbstractInvoiceLineListener
     }
 
     /**
-     * Prevents some of the invoice line fields from changing.
-     *
-     * @param Model\InvoiceLineInterface $line
+     * Prevents some invoice line fields from changing.
      */
-    protected function preventForbiddenChange(Model\InvoiceLineInterface $line)
+    protected function preventForbiddenChange(Model\InvoiceLineInterface $line): void
     {
-        $cs = $this->persistenceHelper->getChangeSet($line);
-        if (!empty($cs) && $this->lockingHelper->isLocked($line->getInvoice())) {
+        if (empty($cs = $this->persistenceHelper->getChangeSet($line))) {
+            return;
+        }
+
+        if ($this->lockingHelper->isLocked($line->getInvoice())) {
             throw new Exception\IllegalOperationException(
-                "This invoice is locked."
+                'This invoice is locked.'
             );
         }
 
-        if ($this->persistenceHelper->isChanged($line, 'type')) {
-            [$old, $new] = $this->persistenceHelper->getChangeSet($line, 'type');
-            if ($old !== $new) {
-                throw new Exception\IllegalOperationException(
-                    "Changing the invoice line's type is not supported."
-                );
-            }
+        if (!isset($cs['type'])) {
+            return;
+        }
+
+        [$old, $new] = $cs['type'];
+        if ($old !== $new) {
+            throw new Exception\IllegalOperationException(
+                'Changing the invoice line\'s type is not supported.'
+            );
         }
     }
 
     /**
      * Schedules the invoice content change event.
-     *
-     * @param Model\InvoiceInterface $invoice
      */
-    abstract protected function scheduleInvoiceContentChangeEvent(Model\InvoiceInterface $invoice);
+    abstract protected function scheduleInvoiceContentChangeEvent(Model\InvoiceInterface $invoice): void;
 
     /**
      * Returns the invoice line from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return Model\InvoiceLineInterface
-     * @throws Exception\InvalidArgumentException
      */
-    abstract protected function getInvoiceLineFromEvent(ResourceEventInterface $event);
+    abstract protected function getInvoiceLineFromEvent(ResourceEventInterface $event): Model\InvoiceLineInterface;
 }

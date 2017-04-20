@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class SupplierDeliveryItemEventSubscriber extends SupplierDeliveryItemListener implements EventSubscriberInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public static function getSubscribedEvents()
     {

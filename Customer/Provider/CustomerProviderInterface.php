@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Provider;
 
 use Ekyna\Component\Commerce\Customer\Model;
@@ -16,29 +18,29 @@ interface CustomerProviderInterface
      *
      * @return bool
      */
-    public function hasCustomer();
+    public function hasCustomer(): bool;
 
     /**
      * Returns the customer if available.
      *
      * @return Model\CustomerInterface|null
      */
-    public function getCustomer();
+    public function getCustomer(): ?Model\CustomerInterface;
 
     /**
      * Returns the customer's group.
      *
      * @return Model\CustomerGroupInterface
      */
-    public function getCustomerGroup();
+    public function getCustomerGroup(): Model\CustomerGroupInterface;
 
     /**
      * Resets the customer provider.
      */
-    public function reset();
+    public function reset(): void;
 
     /**
      * Clears the customer provider.
      */
-    public function clear();
+    public function clear(): void;
 }

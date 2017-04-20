@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
+
+use Decimal\Decimal;
 
 /**
  * Class AssignmentCombination
@@ -12,43 +16,34 @@ class AssignmentCombination
     /**
      * [assignment id => releasable quantity]
      *
-     * @var []
+     * @var array<int, Decimal>
      */
-    public $map;
+    public array $map;
 
     /**
      * The difference between sum and aimed quantity.
-     *
-     * @var float
      */
-    public $diff;
+    public Decimal $diff;
 
     /**
      * The sum of releasable quantity.
-     *
-     * @var float
      */
-    public $sum;
+    public Decimal $sum;
 
     /**
      * The size of the map.
-     *
-     * @var int
      */
-    public $size;
+    public int $size;
 
 
     /**
-     * Constructor.
-     *
-     * @param int[] $map
-     * @param float $diff
+     * @param array<int, Decimal> $map
      */
-    public function __construct(array $map, $diff)
+    public function __construct(array $map, Decimal $diff)
     {
         $this->map = $map;
         $this->diff = $diff;
-        $this->sum = array_sum($map);
+        $this->sum = Decimal::sum($map);
         $this->size = count($map);
     }
 }

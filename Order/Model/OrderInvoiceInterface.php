@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
  */
 interface OrderInvoiceInterface extends InvoiceInterface
 {
-    /**
-     * Returns the order.
-     *
-     * @return OrderInterface
-     */
     public function getOrder(): ?OrderInterface;
 
-    /**
-     * Sets the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|OrderInvoiceInterface
-     */
-    public function setOrder(OrderInterface $order = null): OrderInvoiceInterface;
+    public function setOrder(?OrderInterface $order): OrderInvoiceInterface;
 }

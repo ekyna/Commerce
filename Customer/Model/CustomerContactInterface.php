@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
@@ -13,85 +15,43 @@ use libphonenumber\PhoneNumber;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 interface CustomerContactInterface
-    extends ResourceInterface, IdentityInterface, NotificationsInterface, TimestampableInterface
+    extends ResourceInterface,
+            IdentityInterface,
+            NotificationsInterface,
+            TimestampableInterface
 {
-    /**
-     * Returns the customer.
-     *
-     * @return CustomerInterface|null
-     */
     public function getCustomer(): ?CustomerInterface;
 
     /**
-     * Sets the customer.
-     *
-     * @param CustomerInterface|null $customer
-     *
-     * @return CustomerContactInterface
+     * @return $this|CustomerContactInterface
      */
-    public function setCustomer(CustomerInterface $customer = null): CustomerContactInterface;
+    public function setCustomer(?CustomerInterface $customer): CustomerContactInterface;
 
-    /**
-     * Returns the email.
-     *
-     * @return string|null
-     */
     public function getEmail(): ?string;
 
     /**
-     * Sets the email.
-     *
-     * @param string $email
-     *
-     * @return CustomerContactInterface
+     * @return $this|CustomerContactInterface
      */
     public function setEmail(string $email): CustomerContactInterface;
 
-    /**
-     * Returns the title.
-     *
-     * @return string|null
-     */
     public function getTitle(): ?string;
 
     /**
-     * Sets the title.
-     *
-     * @param string $title
-     *
-     * @return CustomerContactInterface
+     * @return $this|CustomerContactInterface
      */
-    public function setTitle(string $title = null): CustomerContactInterface;
+    public function setTitle(?string $title): CustomerContactInterface;
 
-    /**
-     * Returns the phone.
-     *
-     * @return PhoneNumber|null
-     */
     public function getPhone(): ?PhoneNumber;
 
     /**
-     * Sets the phone.
-     *
-     * @param PhoneNumber $phone
-     *
-     * @return CustomerContactInterface
+     * @return $this|CustomerContactInterface
      */
-    public function setPhone(PhoneNumber $phone = null): CustomerContactInterface;
+    public function setPhone(?PhoneNumber $phone): CustomerContactInterface;
 
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
     public function getDescription(): ?string;
 
     /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return CustomerContactInterface
+     * @return $this|CustomerContactInterface
      */
-    public function setDescription(string $description = null): CustomerContactInterface;
+    public function setDescription(?string $description): CustomerContactInterface;
 }

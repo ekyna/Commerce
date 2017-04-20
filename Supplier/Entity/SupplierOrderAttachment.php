@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractAttachment;
@@ -13,34 +15,27 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
  */
 class SupplierOrderAttachment extends AbstractAttachment implements SupplierOrderAttachmentInterface
 {
-    /**
-     * @var SupplierOrderInterface
-     */
-    protected $supplierOrder;
+    protected ?SupplierOrderInterface $supplierOrder = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function getSupplierOrder()
+    public function getSupplierOrder(): ?SupplierOrderInterface
     {
         return $this->supplierOrder;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSupplierOrder(SupplierOrderInterface $order = null)
+    public function setSupplierOrder(SupplierOrderInterface $order = null): SupplierOrderAttachmentInterface
     {
-        if ($order !== $this->supplierOrder) {
-            if ($previous = $this->supplierOrder) {
-                $this->supplierOrder = null;
-                $previous->removeAttachment($this);
-            }
+        if ($order === $this->supplierOrder) {
+            return $this;
+        }
 
-            if ($this->supplierOrder = $order) {
-                $this->supplierOrder->addAttachment($this);
-            }
+        if ($previous = $this->supplierOrder) {
+            $this->supplierOrder = null;
+            $previous->removeAttachment($this);
+        }
+
+        if ($this->supplierOrder = $order) {
+            $this->supplierOrder->addAttachment($this);
         }
 
         return $this;

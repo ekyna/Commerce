@@ -15,7 +15,7 @@ class CustomerContact extends Constraint
 
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTargets()
     {

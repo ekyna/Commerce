@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
  */
 interface QuoteAdjustmentInterface extends SaleAdjustmentInterface
 {
-    /**
-     * Returns the quote.
-     *
-     * @return QuoteInterface
-     */
     public function getQuote(): ?QuoteInterface;
 
-    /**
-     * Sets the quote.
-     *
-     * @param QuoteInterface $quote
-     *
-     * @return $this|QuoteAdjustmentInterface
-     */
-    public function setQuote(QuoteInterface $quote = null): QuoteAdjustmentInterface;
+    public function setQuote(?QuoteInterface $quote): QuoteAdjustmentInterface;
 }

@@ -13,7 +13,7 @@ use Payum\Core\Request\BaseGetStatus;
 class GetHumanStatus extends BaseGetStatus
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markNew()
     {
@@ -21,7 +21,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isNew()
     {
@@ -29,7 +29,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markPending()
     {
@@ -37,7 +37,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isPending()
     {
@@ -45,7 +45,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markSuspended()
     {
@@ -53,7 +53,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isSuspended()
     {
@@ -61,7 +61,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markExpired()
     {
@@ -69,7 +69,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isExpired()
     {
@@ -77,7 +77,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markCanceled()
     {
@@ -85,7 +85,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isCanceled()
     {
@@ -93,7 +93,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markFailed()
     {
@@ -101,7 +101,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isFailed()
     {
@@ -109,7 +109,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markCaptured()
     {
@@ -117,7 +117,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isCaptured()
     {
@@ -125,7 +125,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isAuthorized()
     {
@@ -133,7 +133,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markAuthorized()
     {
@@ -157,7 +157,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isRefunded()
     {
@@ -165,7 +165,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markRefunded()
     {
@@ -173,7 +173,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function markUnknown()
     {
@@ -181,7 +181,7 @@ class GetHumanStatus extends BaseGetStatus
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isUnknown()
     {

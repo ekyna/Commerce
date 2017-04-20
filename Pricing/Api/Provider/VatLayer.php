@@ -12,7 +12,7 @@ use Ekyna\Component\Commerce\Pricing\Api\VatNumberResult;
  */
 class VatLayer implements VatNumberValidatorInterface
 {
-    const SERVICE_ID = 'ekyna_commerce.pricing.api.provider.vat_layer';
+    const SERVICE_ID = 'ekyna_commerce.provider.pricing_api.vat_layer';
 
     const ENDPOINT = 'http://apilayer.net/api';
 

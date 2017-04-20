@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 /**
@@ -11,56 +13,44 @@ interface VatNumberSubjectInterface
 {
     /**
      * Returns the vat number.
-     *
-     * @return string
      */
-    public function getVatNumber();
+    public function getVatNumber(): ?string;
 
     /**
      * Sets the vat number.
      *
-     * @param string $vatNumber
-     *
      * @return $this|VatNumberSubjectInterface
      */
-    public function setVatNumber($vatNumber);
+    public function setVatNumber(?string $vatNumber): VatNumberSubjectInterface;
 
     /**
      * Returns the vat details.
-     *
-     * @return array
      */
-    public function getVatDetails();
+    public function getVatDetails(): array;
 
     /**
      * Sets the vat details.
      *
-     * @param array $details
-     *
      * @return $this|VatNumberSubjectInterface
      */
-    public function setVatDetails(array $details);
+    public function setVatDetails(array $details): VatNumberSubjectInterface;
 
     /**
      * Returns the vat valid.
-     *
-     * @return bool
      */
-    public function isVatValid();
+    public function isVatValid(): bool;
 
     /**
      * Sets whether the vat number is valid.
      *
-     * @param bool $valid
-     *
      * @return $this|VatNumberSubjectInterface
      */
-    public function setVatValid($valid);
+    public function setVatValid(bool $valid): VatNumberSubjectInterface;
 
     /**
      * Returns whether the customer is a business one.
      *
      * @return bool
      */
-    public function isBusiness();
+    public function isBusiness(): bool;
 }

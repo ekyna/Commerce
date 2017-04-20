@@ -1,54 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class CustomerGroupNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerGroupNormalizer extends AbstractResourceNormalizer
+class CustomerGroupNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param CustomerGroupInterface $group
+     * @param CustomerGroupInterface $object
      */
-    public function normalize($group, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         if ($format === 'csv' && $this->contextHasGroup('TableExport', $context)) {
-            return (string)$group;
+            return (string)$object;
         }
 
-        return parent::normalize($group, $format, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof CustomerGroupInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, CustomerGroupInterface::class);
+        return parent::normalize($object, $format, $context);
     }
 }

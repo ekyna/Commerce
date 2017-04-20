@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
@@ -16,10 +18,7 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class OrderInvoiceLineListener extends AbstractInvoiceLineListener
 {
-    /**
-     * @inheritDoc
-     */
-    protected function preventForbiddenChange(Invoice\InvoiceLineInterface $line)
+    protected function preventForbiddenChange(Invoice\InvoiceLineInterface $line): void
     {
         parent::preventForbiddenChange($line);
 
@@ -28,25 +27,19 @@ class OrderInvoiceLineListener extends AbstractInvoiceLineListener
         }
 
         if ($this->persistenceHelper->isChanged($line, 'orderItem')) {
-            list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'orderItem');
+            [$old, $new] = $this->persistenceHelper->getChangeSet($line, 'orderItem');
             if ($old !== $new) {
                 throw new Exception\RuntimeException("Changing the invoice line's sale item is not yet supported.");
             }
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function scheduleInvoiceContentChangeEvent(Invoice\InvoiceInterface $invoice)
+    protected function scheduleInvoiceContentChangeEvent(Invoice\InvoiceInterface $invoice): void
     {
-        $this->persistenceHelper->scheduleEvent(OrderInvoiceEvents::CONTENT_CHANGE, $invoice);
+        $this->persistenceHelper->scheduleEvent($invoice, OrderInvoiceEvents::CONTENT_CHANGE);
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function getInvoiceLineFromEvent(ResourceEventInterface $event)
+    protected function getInvoiceLineFromEvent(ResourceEventInterface $event): Invoice\InvoiceLineInterface
     {
         $resource = $event->getResource();
 

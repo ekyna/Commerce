@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface CurrencyRepositoryInterface
@@ -13,32 +15,39 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface CurrencyRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
+     * Sets the default code.
+     *
+     * @param string $code
+     */
+    public function setDefaultCode(string $code): void;
+
+    /**
      * Returns the default currency.
      *
      * @return CurrencyInterface
      */
-    public function findDefault();
+    public function findDefault(): CurrencyInterface;
 
     /**
      * Finds a currency by its code.
      *
      * @param string $code
      *
-     * @return CurrencyInterface
+     * @return CurrencyInterface|null
      */
-    public function findOneByCode($code);
+    public function findOneByCode(string $code): ?CurrencyInterface;
 
     /**
      * Finds the codes of the enabled currencies.
      *
      * @return array|string[]
      */
-    public function findEnabledCodes();
+    public function findEnabledCodes(): array;
 
     /**
      * Finds all the currencies codes.
      *
      * @return array|string[]
      */
-    public function findAllCodes();
+    public function findAllCodes(): array;
 }

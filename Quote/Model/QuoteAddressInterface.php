@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
@@ -13,40 +15,26 @@ interface QuoteAddressInterface extends SaleAddressInterface
 {
     /**
      * Returns the quote this address is the invoice one.
-     *
-     * @return QuoteInterface|null
      */
-    public function getInvoiceQuote();
+    public function getInvoiceQuote(): ?QuoteInterface;
 
     /**
      * Sets the quote this address is the invoice one.
-     *
-     * @param QuoteInterface $quote
-     *
-     * @return $this|QuoteAddressInterface
      */
-    public function setInvoiceQuote(QuoteInterface $quote = null);
+    public function setInvoiceQuote(?QuoteInterface $quote): QuoteAddressInterface;
 
     /**
      * Returns the quote this address is the delivery one.
-     *
-     * @return QuoteInterface|null
      */
-    public function getDeliveryQuote();
+    public function getDeliveryQuote(): ?QuoteInterface;
 
     /**
      * Sets the quote this address is the delivery one.
-     *
-     * @param QuoteInterface $quote
-     *
-     * @return $this|QuoteAddressInterface
      */
-    public function setDeliveryQuote(QuoteInterface $quote = null);
+    public function setDeliveryQuote(?QuoteInterface $quote): QuoteAddressInterface;
 
     /**
      * Returns the related quote.
-     *
-     * @return QuoteInterface|null
      */
-    public function getQuote();
+    public function getQuote(): ?QuoteInterface;
 }

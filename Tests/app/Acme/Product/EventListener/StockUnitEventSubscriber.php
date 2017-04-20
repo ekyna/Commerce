@@ -16,7 +16,7 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class StockUnitEventSubscriber extends AbstractStockUnitListener
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getStockUnitFromEvent(ResourceEventInterface $event)
     {
@@ -30,7 +30,7 @@ class StockUnitEventSubscriber extends AbstractStockUnitListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSubjectStockUnitChangeEventName()
     {
@@ -38,7 +38,7 @@ class StockUnitEventSubscriber extends AbstractStockUnitListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSubjectStockUnitRemoveEventName()
     {

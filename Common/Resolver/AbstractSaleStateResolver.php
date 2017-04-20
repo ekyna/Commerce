@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -17,48 +19,21 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
  */
 abstract class AbstractSaleStateResolver extends AbstractStateResolver
 {
-    /**
-     * @var StateResolverInterface
-     */
-    protected $paymentStateResolver;
+    protected StateResolverInterface $paymentStateResolver;
+    protected StateResolverInterface $shipmentStateResolver;
+    protected StateResolverInterface $invoiceStateResolver;
 
-    /**
-     * @var StateResolverInterface
-     */
-    protected $shipmentStateResolver;
-
-    /**
-     * @var StateResolverInterface
-     */
-    protected $invoiceStateResolver;
-
-
-    /**
-     * Sets the payment state resolver.
-     *
-     * @param StateResolverInterface $resolver
-     */
-    public function setPaymentStateResolver(StateResolverInterface $resolver)
+    public function setPaymentStateResolver(StateResolverInterface $resolver): void
     {
         $this->paymentStateResolver = $resolver;
     }
 
-    /**
-     * Sets the shipment state resolver.
-     *
-     * @param StateResolverInterface $resolver
-     */
-    public function setShipmentStateResolver(StateResolverInterface $resolver)
+    public function setShipmentStateResolver(StateResolverInterface $resolver): void
     {
         $this->shipmentStateResolver = $resolver;
     }
 
-    /**
-     * Sets the invoice state resolver.
-     *
-     * @param StateResolverInterface $resolver
-     */
-    public function setInvoiceStateResolver(StateResolverInterface $resolver)
+    public function setInvoiceStateResolver(StateResolverInterface $resolver): void
     {
         $this->invoiceStateResolver = $resolver;
     }
@@ -82,12 +57,12 @@ abstract class AbstractSaleStateResolver extends AbstractStateResolver
                     $changed = true;
                 }
             } else {
-                $changed |= $this->paymentStateResolver->resolve($subject);
+                $changed = $this->paymentStateResolver->resolve($subject) || $changed;
             }
         }
 
         if ($subject instanceof ShipmentSubjectInterface) {
-            $changed |= $this->shipmentStateResolver->resolve($subject);
+            $changed = $this->shipmentStateResolver->resolve($subject) || $changed;
         }
 
         if ($subject instanceof InvoiceSubjectInterface) {
@@ -98,7 +73,7 @@ abstract class AbstractSaleStateResolver extends AbstractStateResolver
                     $changed = true;
                 }
             } else {
-                $changed |= $this->invoiceStateResolver->resolve($subject);
+                $changed = $this->invoiceStateResolver->resolve($subject) || $changed;
             }
         }
 
@@ -117,8 +92,6 @@ abstract class AbstractSaleStateResolver extends AbstractStateResolver
 
     /**
      * Post state resolution (called if state changed).
-     *
-     * @param SaleInterface $sale
      */
     protected function postStateResolution(SaleInterface $sale): void
     {

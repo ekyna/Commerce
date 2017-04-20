@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway\Model;
 use Ekyna\Component\Commerce\Shipment\Entity\RelayPoint;
 
@@ -10,30 +12,14 @@ use Ekyna\Component\Commerce\Shipment\Entity\RelayPoint;
  */
 class GetRelayPointResponse
 {
-    /**
-     * @var \Ekyna\Component\Commerce\Shipment\Entity\RelayPoint
-     */
-    private $relayPoint;
+    private ?RelayPoint $relayPoint = null;
 
-
-    /**
-     * Returns the relayPoint.
-     *
-     * @return \Ekyna\Component\Commerce\Shipment\Entity\RelayPoint
-     */
-    public function getRelayPoint()
+    public function getRelayPoint(): ?RelayPoint
     {
         return $this->relayPoint;
     }
 
-    /**
-     * Sets the relayPoint.
-     *
-     * @param \Ekyna\Component\Commerce\Shipment\Entity\RelayPoint $relayPoint
-     *
-     * @return GetRelayPointResponse
-     */
-    public function setRelayPoint(RelayPoint $relayPoint)
+    public function setRelayPoint(?RelayPoint $relayPoint): GetRelayPointResponse
     {
         $this->relayPoint = $relayPoint;
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Event;
 
 /**
@@ -10,22 +12,19 @@ namespace Ekyna\Component\Commerce\Order\Event;
 final class OrderAddressEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.order_address.insert';
-    const UPDATE      = 'ekyna_commerce.order_address.update';
-    const DELETE      = 'ekyna_commerce.order_address.delete';
+    public const INSERT      = 'ekyna_commerce.order_address.insert';
+    public const UPDATE      = 'ekyna_commerce.order_address.update';
+    public const DELETE      = 'ekyna_commerce.order_address.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.order_address.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.order_address.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.order_address.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.order_address.pre_create';
-    const POST_CREATE = 'ekyna_commerce.order_address.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.order_address.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.order_address.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.order_address.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.order_address.post_update';
-
-    const PRE_DELETE  = 'ekyna_commerce.order_address.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.order_address.post_delete';
-
+    public const PRE_DELETE  = 'ekyna_commerce.order_address.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.order_address.post_delete';
 
     /**
      * Disabled constructor.

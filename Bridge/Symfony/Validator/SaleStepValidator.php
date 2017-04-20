@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Valid;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -14,31 +18,15 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class SaleStepValidator implements SaleStepValidatorInterface
 {
-    /**
-     * @var ValidatorInterface
-     */
-    protected $validator;
+    protected ValidatorInterface $validator;
+    protected ?ConstraintViolationListInterface $violationList = null;
 
-    /**
-     * @var \Symfony\Component\Validator\ConstraintViolationListInterface
-     */
-    protected $violationList;
-
-
-    /**
-     * Constructor.
-     *
-     * @param ValidatorInterface $validator
-     */
     public function __construct(ValidatorInterface $validator)
     {
         $this->validator = $validator;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function validate(SaleInterface $sale, $step)
+    public function validate(SaleInterface $sale, string $step): bool
     {
         $this->validateStep($step);
 
@@ -48,11 +36,11 @@ class SaleStepValidator implements SaleStepValidatorInterface
             $this->getGroupsForStep($step)
         );
 
-        return 0 == $this->violationList->count();
+        return 0 === $this->violationList->count();
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getViolationList()
     {
@@ -62,11 +50,9 @@ class SaleStepValidator implements SaleStepValidatorInterface
     /**
      * Returns the validation constraints for the given step.
      *
-     * @param string $step
-     *
-     * @return array|\Symfony\Component\Validator\Constraint[]
+     * @return Constraint[]
      */
-    protected function getConstraintsForStep($step)
+    protected function getConstraintsForStep(string $step): array
     {
         $constraints = [new Valid()];
 
@@ -85,12 +71,8 @@ class SaleStepValidator implements SaleStepValidatorInterface
 
     /**
      * Returns the validation groups for the given step.
-     *
-     * @param string $step
-     *
-     * @return array
      */
-    protected function getGroupsForStep($step)
+    protected function getGroupsForStep(string $step): array
     {
         $groups = ['Default'];
 
@@ -107,13 +89,13 @@ class SaleStepValidator implements SaleStepValidatorInterface
 
     /**
      * Validates the step.
-     *
-     * @param string $step
      */
-    protected function validateStep($step)
+    protected function validateStep(string $step): void
     {
-        if (!in_array($step, [static::CHECKOUT_STEP, static::SHIPMENT_STEP, static::PAYMENT_STEP])) {
-            throw new InvalidArgumentException("Unexpected step name");
+        if (in_array($step, [self::CHECKOUT_STEP, self::SHIPMENT_STEP, self::PAYMENT_STEP], true)) {
+            return;
         }
+
+        throw new InvalidArgumentException('Unexpected step name');
     }
 }

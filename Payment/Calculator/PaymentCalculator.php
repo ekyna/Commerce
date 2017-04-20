@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -20,28 +23,10 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
  */
 class PaymentCalculator implements PaymentCalculatorInterface
 {
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $calculatorFactory;
+    protected AmountCalculatorFactory $calculatorFactory;
+    protected CurrencyConverterInterface $currencyConverter;
+    protected string $currency;
 
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var string
-     */
-    protected $currency;
-
-
-    /**
-     * Constructor.
-     *
-     * @param AmountCalculatorFactory    $calculatorFactory
-     * @param CurrencyConverterInterface $currencyConverter
-     */
     public function __construct(
         AmountCalculatorFactory $calculatorFactory,
         CurrencyConverterInterface $currencyConverter
@@ -51,9 +36,6 @@ class PaymentCalculator implements PaymentCalculatorInterface
         $this->currency = $currencyConverter->getDefaultCurrency();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPaymentAmounts(PaymentSubjectInterface $subject, string $currency = null): array
     {
         $currency = $currency ?? $subject->getCurrency()->getCode();
@@ -88,14 +70,11 @@ class PaymentCalculator implements PaymentCalculatorInterface
         return [$total, $paid, $refunded, $deposit, $pending];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculatePaidTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculatePaidTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currency;
 
-        $total = 0;
+        $total = new Decimal(0);
 
         // Sum of payments with ACCEPTED states, excluding outstanding method.
         foreach ($subject->getPayments(true) as $payment) {
@@ -113,14 +92,11 @@ class PaymentCalculator implements PaymentCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateRefundedTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateRefundedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currency;
 
-        $total = 0;
+        $total = new Decimal(0);
 
         // Sum of payments with REFUND state, excluding outstanding method.
         foreach ($subject->getPayments(true) as $payment) {
@@ -151,14 +127,11 @@ class PaymentCalculator implements PaymentCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currency;
 
-        $total = 0;
+        $total = new Decimal(0);
 
         foreach ($subject->getPayments() as $payment) {
             if (!$payment->getMethod()->isOutstanding()) {
@@ -166,7 +139,7 @@ class PaymentCalculator implements PaymentCalculatorInterface
             }
 
             if ($payment->isRefund()) {
-                throw new RuntimeException("Outstanding payment should not be refunded");
+                throw new RuntimeException('Outstanding payment should not be refunded');
             }
 
             if (!PaymentStates::isPaidState($payment)) {
@@ -179,14 +152,11 @@ class PaymentCalculator implements PaymentCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currency;
 
-        $total = 0;
+        $total = new Decimal(0);
 
         foreach ($subject->getPayments() as $payment) {
             if (!$payment->getMethod()->isOutstanding()) {
@@ -194,7 +164,7 @@ class PaymentCalculator implements PaymentCalculatorInterface
             }
 
             if ($payment->isRefund()) {
-                throw new RuntimeException("Outstanding payment should not be refunded");
+                throw new RuntimeException('Outstanding payment should not be refunded');
             }
 
             if ($payment->getState() !== PaymentStates::STATE_EXPIRED) {
@@ -207,34 +177,25 @@ class PaymentCalculator implements PaymentCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateFailedTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateFailedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currency;
 
         return $this->calculateTotalByState($subject, PaymentStates::STATE_FAILED, $currency);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateCanceledTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateCanceledTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currency;
 
         return $this->calculateTotalByState($subject, PaymentStates::STATE_CANCELED, $currency);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currency;
 
-        $total = 0;
+        $total = new Decimal(0);
 
         foreach ($subject->getPayments(true) as $payment) {
             if (!$payment->getMethod()->isManual()) {
@@ -251,10 +212,7 @@ class PaymentCalculator implements PaymentCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateExpectedPaymentAmount(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateExpectedPaymentAmount(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         [$total, $paid, $refunded, $deposit, $pending] = $this->getPaymentAmounts($subject, $currency);
 
@@ -271,12 +229,13 @@ class PaymentCalculator implements PaymentCalculatorInterface
         }
 
         // If subject has deposit
-        if (1 === Money::compare($deposit, 0, $currency)) {
-            if (0 <= Money::compare($paid, $deposit, $currency)) {
+        if (0 < $deposit) {
+            //if (0 <= Money::compare($paid, $deposit, $currency)) {
+            if ($paid >= $deposit) {
                 // If paid greater than or equal deposit
                 $total -= $deposit;
                 $paid -= $deposit;
-            } elseif (0 <= Money::compare($pending, $deposit, $currency)) {
+            } elseif ($pending >= $deposit) {
                 // If pending greater than or equal deposit
                 $total -= $deposit;
                 $pending -= $deposit;
@@ -286,8 +245,8 @@ class PaymentCalculator implements PaymentCalculatorInterface
             }
         }
 
-        $amount = 0;
-        $p = Money::compare($total, $paid + $pending + $outstanding, $currency);
+        $amount = new Decimal(0);
+        $p = $total->compareTo($paid + $pending + $outstanding);
 
         // If (paid total + pending total + accepted outstanding) is lower than total
         if (1 === $p) {
@@ -304,13 +263,10 @@ class PaymentCalculator implements PaymentCalculatorInterface
             return Money::round($amount, $currency);
         }
 
-        return 0;
+        return new Decimal(0);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function calculateExpectedRefundAmount(PaymentSubjectInterface $subject, string $currency = null): float
+    public function calculateExpectedRefundAmount(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
         [$total, $paid, $refunded] = $this->getPaymentAmounts($subject, $currency);
 
@@ -318,32 +274,25 @@ class PaymentCalculator implements PaymentCalculatorInterface
 
         $currency = $currency ?? $subject->getCurrency()->getCode();
 
-        if (1 === Money::compare($paid, $total, $currency)) {
+        if ($paid > $total) {
             return Money::round($paid - $total, $currency);
         }
 
-        return 0;
+        return new Decimal(0);
     }
 
     /**
      * Calculates the payments total by state.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string                  $state
-     * @param string                  $currency
-     * @param bool                    $refund
-     *
-     * @return float
      */
     protected function calculateTotalByState(
         PaymentSubjectInterface $subject,
         string $state,
         string $currency,
         bool $refund = false
-    ): float {
+    ): Decimal {
         PaymentStates::isValidState($state, true);
 
-        $total = 0;
+        $total = new Decimal(0);
 
         foreach ($subject->getPayments(!$refund) as $payment) {
             // Skip outstanding payments
@@ -362,13 +311,8 @@ class PaymentCalculator implements PaymentCalculatorInterface
 
     /**
      * Returns the payment amount in the given currency.
-     *
-     * @param PaymentInterface $payment
-     * @param string           $currency
-     *
-     * @return float
      */
-    protected function getAmount(PaymentInterface $payment, string $currency): float
+    protected function getAmount(PaymentInterface $payment, string $currency): Decimal
     {
         $pc = $payment->getCurrency()->getCode();
 

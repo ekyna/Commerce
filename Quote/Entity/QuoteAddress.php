@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAddress;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Quote\Model;
 
 /**
@@ -12,102 +15,68 @@ use Ekyna\Component\Commerce\Quote\Model;
  */
 class QuoteAddress extends AbstractSaleAddress implements Model\QuoteAddressInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var Model\QuoteInterface
-     */
-    protected $invoiceQuote;
-
-    /**
-     * @var Model\QuoteInterface
-     */
-    protected $deliveryQuote;
+    protected ?int                  $id            = null;
+    protected ?Model\QuoteInterface $invoiceQuote  = null;
+    protected ?Model\QuoteInterface $deliveryQuote = null;
 
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getInvoiceQuote()
+    public function getInvoiceQuote(): ?Model\QuoteInterface
     {
         return $this->invoiceQuote;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceQuote(Model\QuoteInterface $quote = null)
+    public function setInvoiceQuote(?Model\QuoteInterface $quote): Model\QuoteAddressInterface
     {
-        if ($quote !== $this->invoiceQuote) {
-            if ($previous = $this->invoiceQuote) {
-                $this->invoiceQuote = null;
-                $previous->setInvoiceAddress(null);
-            }
+        if ($quote === $this->invoiceQuote) {
+            return $this;
+        }
 
-            if ($this->invoiceQuote = $quote) {
-                $this->invoiceQuote->setInvoiceAddress($this);
-            }
+        if ($previous = $this->invoiceQuote) {
+            $this->invoiceQuote = null;
+            $previous->setInvoiceAddress(null);
+        }
+
+        if ($this->invoiceQuote = $quote) {
+            $this->invoiceQuote->setInvoiceAddress($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDeliveryQuote()
+    public function getDeliveryQuote(): ?Model\QuoteInterface
     {
         return $this->deliveryQuote;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryQuote(Model\QuoteInterface $quote = null)
+    public function setDeliveryQuote(?Model\QuoteInterface $quote): Model\QuoteAddressInterface
     {
-        if ($quote !== $this->deliveryQuote) {
-            if ($previous = $this->deliveryQuote) {
-                $this->deliveryQuote = null;
-                $previous->setDeliveryAddress(null);
-            }
+        if ($quote === $this->deliveryQuote) {
+            return $this;
+        }
 
-            if ($this->deliveryQuote = $quote) {
-                $this->deliveryQuote->setDeliveryAddress($this);
-            }
+        if ($previous = $this->deliveryQuote) {
+            $this->deliveryQuote = null;
+            $previous->setDeliveryAddress(null);
+        }
+
+        if ($this->deliveryQuote = $quote) {
+            $this->deliveryQuote->setDeliveryAddress($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuote()
+    public function getQuote(): ?Model\QuoteInterface
     {
-        if (null !== $this->invoiceQuote) {
-            return $this->invoiceQuote;
-        } elseif (null !== $this->deliveryQuote) {
-            return $this->deliveryQuote;
-        }
-
-        return null;
+        return $this->invoiceQuote ?: $this->deliveryQuote;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getQuote();
     }

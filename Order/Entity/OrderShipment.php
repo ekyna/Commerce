@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
@@ -19,160 +22,119 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentLabelInterface;
  */
 class OrderShipment extends AbstractShipment implements OrderShipmentInterface
 {
-    /**
-     * @var OrderInterface
-     */
-    protected $order;
-
-    /**
-     * @var OrderInvoiceInterface
-     */
-    protected $invoice;
+    protected ?OrderInterface        $order   = null;
+    protected ?OrderInvoiceInterface $invoice = null;
 
 
-    /**
-     * @inheritDoc
-     *
-     * @return OrderInterface
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getOrder();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
+    public function getOrder(): ?OrderInterface
     {
         return $this->order;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrder(OrderInterface $order = null)
+    public function setOrder(?OrderInterface $order): OrderShipmentInterface
     {
-        if ($order !== $this->order) {
-            if ($previous = $this->order) {
-                $this->order = null;
-                $previous->removeShipment($this);
-            }
+        if ($order === $this->order) {
+            return $this;
+        }
 
-            if ($this->order = $order) {
-                $this->order->addShipment($this);
-            }
+        if ($previous = $this->order) {
+            $this->order = null;
+            $previous->removeShipment($this);
+        }
+
+        if ($this->order = $order) {
+            $this->order->addShipment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getInvoice()
+    public function getInvoice(): ?InvoiceInterface
     {
         return $this->invoice;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setInvoice(InvoiceInterface $invoice = null)
+    public function setInvoice(?InvoiceInterface $invoice): Shipment\ShipmentInterface
     {
         if ($invoice && !$invoice instanceof OrderInvoiceInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderInvoiceInterface::class);
+            throw new UnexpectedTypeException($invoice, OrderInvoiceInterface::class);
         }
 
-        if ($invoice !== $this->invoice) {
-            if ($previous = $this->invoice) {
-                $this->invoice = null;
-                $previous->setShipment(null);
-            }
+        if ($invoice === $this->invoice) {
+            return $this;
+        }
 
-            if ($this->invoice = $invoice) {
-                $this->invoice->setShipment($this);
-            }
+        if ($previous = $this->invoice) {
+            $this->invoice = null;
+            $previous->setShipment(null);
+        }
+
+        if ($this->invoice = $invoice) {
+            $this->invoice->setShipment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function addItem(Shipment\ShipmentItemInterface $item)
+    public function addItem(Shipment\ShipmentItemInterface $item): Shipment\ShipmentInterface
     {
         if (!$item instanceof OrderShipmentItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentItemInterface::class);
+            throw new UnexpectedTypeException($item, OrderShipmentItemInterface::class);
         }
 
         return parent::addItem($item);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function removeItem(Shipment\ShipmentItemInterface $item)
+    public function removeItem(Shipment\ShipmentItemInterface $item): Shipment\ShipmentInterface
     {
         if (!$item instanceof OrderShipmentItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentItemInterface::class);
+            throw new UnexpectedTypeException($item, OrderShipmentItemInterface::class);
         }
 
         return parent::removeItem($item);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function addParcel(Shipment\ShipmentParcelInterface $parcel)
+    public function addParcel(Shipment\ShipmentParcelInterface $parcel): Shipment\ShipmentInterface
     {
         if (!$parcel instanceof OrderShipmentParcel) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentParcel::class);
+            throw new UnexpectedTypeException($parcel, OrderShipmentParcel::class);
         }
 
         return parent::addParcel($parcel);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function removeParcel(Shipment\ShipmentParcelInterface $parcel)
+    public function removeParcel(Shipment\ShipmentParcelInterface $parcel): Shipment\ShipmentInterface
     {
         if (!$parcel instanceof OrderShipmentParcel) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentParcel::class);
+            throw new UnexpectedTypeException($parcel, OrderShipmentParcel::class);
         }
 
         return parent::removeParcel($parcel);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function addLabel(ShipmentLabelInterface $label)
+    public function addLabel(ShipmentLabelInterface $label): Shipment\ShipmentDataInterface
     {
         if (!$label instanceof OrderShipmentLabel) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentLabel::class);
+            throw new UnexpectedTypeException($label, OrderShipmentLabel::class);
         }
 
         return parent::addLabel($label);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function removeLabel(ShipmentLabelInterface $label)
+    public function removeLabel(ShipmentLabelInterface $label): Shipment\ShipmentDataInterface
     {
         if (!$label instanceof OrderShipmentLabel) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentLabel::class);
+            throw new UnexpectedTypeException($label, OrderShipmentLabel::class);
         }
 
         return parent::removeLabel($label);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLocale(): ?string
     {
         if ($this->order) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
@@ -11,17 +13,7 @@ use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
  */
 interface AddressResolverAwareInterface
 {
-    /**
-     * Sets the shipment address resolver.
-     *
-     * @param ShipmentAddressResolverInterface $resolver
-     */
-    public function setAddressResolver(ShipmentAddressResolverInterface $resolver);
+    public function setAddressResolver(ShipmentAddressResolverInterface $resolver): void;
 
-    /**
-     * Returns the addressResolver.
-     *
-     * @return ShipmentAddressResolverInterface
-     */
-    public function getAddressResolver();
+    public function getAddressResolver(): ShipmentAddressResolverInterface;
 }

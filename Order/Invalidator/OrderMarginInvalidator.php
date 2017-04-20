@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Invalidator;
 
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -11,15 +13,10 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
  */
 abstract class OrderMarginInvalidator
 {
-    /**
-     * @var int[]
-     */
-    protected $unitIds;
+    /** @var int[] */
+    protected array $unitIds;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->clear();
@@ -44,7 +41,7 @@ abstract class OrderMarginInvalidator
             return;
         }
 
-        if (in_array($id, $this->unitIds)) {
+        if (in_array($id, $this->unitIds, true)) {
             return;
         }
 
@@ -54,5 +51,5 @@ abstract class OrderMarginInvalidator
     /**
      * Invalidates orders margin total based on stored stock unit identifiers.
      */
-    abstract protected function invalidate(): void;
+    abstract public function invalidate(): void;
 }

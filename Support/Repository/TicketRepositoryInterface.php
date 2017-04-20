@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\Repository;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface TicketRepositoryInterface
@@ -20,7 +22,7 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      *
      * @param int $limit
      *
-     * @return TicketInterface[]
+     * @return array<TicketInterface>
      */
     public function findOpened(int $limit = 10): array;
 
@@ -29,7 +31,7 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      *
      * @param int $limit
      *
-     * @return TicketInterface[]
+     * @return array<TicketInterface>
      */
     public function findNotClosed(int $limit = 10): array;
 
@@ -39,7 +41,7 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      * @param CustomerInterface $customer
      * @param bool              $admin
      *
-     * @return TicketInterface[]
+     * @return array<TicketInterface>
      */
     public function findByCustomer(CustomerInterface $customer, bool $admin): array;
 
@@ -49,7 +51,7 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      * @param OrderInterface $order
      * @param bool           $admin
      *
-     * @return TicketInterface[]
+     * @return array<TicketInterface>
      */
     public function findByOrder(OrderInterface $order, bool $admin): array;
 
@@ -59,7 +61,7 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      * @param QuoteInterface $quote
      * @param bool           $admin
      *
-     * @return TicketInterface[]
+     * @return array<TicketInterface>
      */
     public function findByQuote(QuoteInterface $quote, bool $admin): array;
 }

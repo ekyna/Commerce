@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractNotification;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleNotificationInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderNotificationInterface;
 
@@ -14,52 +18,43 @@ use Ekyna\Component\Commerce\Order\Model\OrderNotificationInterface;
  */
 class OrderNotification extends AbstractNotification implements OrderNotificationInterface
 {
-    /**
-     * @var OrderInterface
-     */
-    protected $order;
+    protected ?OrderInterface $order = null;
 
 
-    /**
-     * @inheritDoc
-     */
-    public function getOrder()
-    {
-        return $this->order;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setOrder(OrderInterface $order = null)
-    {
-        if ($order !== $this->order) {
-            if ($previous = $this->order) {
-                $this->order = null;
-                $previous->removeNotification($this);
-            }
-
-            if ($this->order = $order) {
-                $this->order->addNotification($this);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getOrder();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setSale(SaleInterface $sale = null)
+    public function setSale(SaleInterface $sale = null): SaleNotificationInterface
     {
+        if ($sale && !$sale instanceof OrderInterface) {
+            throw new UnexpectedTypeException($sale, OrderInterface::class);
+        }
+
         return $this->setOrder($sale);
+    }
+
+    public function getOrder(): ?OrderInterface
+    {
+        return $this->order;
+    }
+
+    public function setOrder(OrderInterface $order = null): OrderNotificationInterface
+    {
+        if ($order === $this->order) {
+            return $this;
+        }
+
+        if ($previous = $this->order) {
+            $this->order = null;
+            $previous->removeNotification($this);
+        }
+
+        if ($this->order = $order) {
+            $this->order->addNotification($this);
+        }
+
+        return $this;
     }
 }

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface SaleRepositoryInterface
@@ -16,59 +18,35 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the sale by its id.
-     *
-     * @param int $id
-     *
-     * @return SaleInterface|null
      */
-    public function findOneById(int $id);
+    public function findOneById(int $id): ?SaleInterface;
 
     /**
      * Finds the sale by its key.
-     *
-     * @param string $key
-     *
-     * @return SaleInterface|null
      */
-    public function findOneByKey(string $key);
+    public function findOneByKey(string $key): ?SaleInterface;
 
     /**
      * Finds the sale by its number.
-     *
-     * @param string $number
-     *
-     * @return SaleInterface|null
      */
-    public function findOneByNumber(string $number);
+    public function findOneByNumber(string $number): ?SaleInterface;
 
     /**
      * Finds the sales by customer, optionally filtered by states.
      *
-     * @param CustomerInterface $customer
-     * @param array             $states
-     * @param bool              $withChildren
-     *
-     * @return array|SaleInterface[]
+     * @return array<SaleInterface>
      */
-    public function findByCustomer(CustomerInterface $customer, array $states = [], $withChildren = false);
+    public function findByCustomer(CustomerInterface $customer, array $states = [], bool $withChildren = false): array;
 
     /**
      * Finds the sale by customer and number.
-     *
-     * @param CustomerInterface $customer
-     * @param string            $number
-     *
-     * @return SaleInterface|null
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number);
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number): ?SaleInterface;
 
     /**
      * Finds the sales by subject, optionally filtered by states.
      *
-     * @param SubjectInterface $subject
-     * @param array            $states
-     *
-     * @return array|SaleInterface[]
+     * @return array<SaleInterface>
      */
-    public function findBySubject(SubjectInterface $subject, array $states = []);
+    public function findBySubject(SubjectInterface $subject, array $states = []): array;
 }

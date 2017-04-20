@@ -36,7 +36,7 @@ class PricingUpdater implements PricingUpdaterInterface
         $changed = false;
         $valid = $subject->isVatValid();
 
-        if (0 < strlen($number = $subject->getVatNumber())) {
+        if (!empty($number = $subject->getVatNumber())) {
             if (!$valid || empty($subject->getVatDetails())) {
                 if (null !== $result = $this->pricingApi->validateVatNumber($number)) {
                     if ($valid = $result->isValid()) {

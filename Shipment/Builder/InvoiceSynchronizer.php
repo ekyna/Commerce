@@ -54,7 +54,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function synchronize(Shipment\ShipmentInterface $shipment, bool $force = false): void
     {
@@ -102,7 +102,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         $changed = $this->purgeShipmentInvoice($invoice);
 
-        $changed |= $this->feedShipmentInvoice($invoice);
+        $changed = $this->feedShipmentInvoice($invoice) || $changed;
 
         // Remove (and don't persist) empty invoices
         if (0 == count($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD))) {

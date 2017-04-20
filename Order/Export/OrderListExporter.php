@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Export;
 
 use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
+use ZipArchive;
 
 /**
  * Class OrderListExporter
@@ -15,17 +19,8 @@ use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
  */
 class OrderListExporter extends AbstractExporter
 {
-    /**
-     * @var OrderRepositoryInterface
-     */
-    protected $repository;
+    protected OrderRepositoryInterface $repository;
 
-
-    /**
-     * Constructor.
-     *
-     * @param OrderRepositoryInterface $repository
-     */
     public function __construct(OrderRepositoryInterface $repository)
     {
         parent::__construct();
@@ -56,7 +51,7 @@ class OrderListExporter extends AbstractExporter
     {
         $path = tempnam(sys_get_temp_dir(), 'acc');
 
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
 
         if (false === $zip->open($path)) {
             throw new RuntimeException("Failed to open '$path' for writing.");
@@ -157,24 +152,31 @@ class OrderListExporter extends AbstractExporter
             'shipment_state'      => 'shipmentState',
             'invoice_state'       => 'invoiceState',
             'payment_term'        => function (OrderInterface $order) {
-                if (null !== $term = $order->getPaymentTerm()) {
+                if ($term = $order->getPaymentTerm()) {
                     return $term->getName();
                 }
 
                 return null;
             },
             'due_amount'          => function (OrderInterface $order): string {
+                $currency = $order->getCurrency()->getCode();
+
                 if ($order->hasInvoices()) {
-                    return (string)
+                    return Money::fixed(
                         $order->getInvoiceTotal() - $order->getCreditTotal()
-                        - $order->getPaidTotal() + $order->getRefundedTotal();
+                        - $order->getPaidTotal() + $order->getRefundedTotal(),
+                        $currency
+                    );
                 }
 
-                return (string)($order->getGrandTotal() - $order->getPaidTotal());
+                return Money::fixed(
+                    $order->getGrandTotal() - $order->getPaidTotal(),
+                    $currency
+                );
             },
             'outstanding_expired' => 'outstandingExpired',
             'outstanding_date'    => function (OrderInterface $order): ?string {
-                if (null !== $date = $order->getOutstandingDate()) {
+                if ($date = $order->getOutstandingDate()) {
                     return $date->format(DateUtil::DATE_FORMAT);
                 }
 

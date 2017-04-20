@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Calculator;
 
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
@@ -14,9 +16,7 @@ interface DocumentCalculatorInterface
     /**
      * Calculates the document.
      *
-     * @param DocumentInterface $document
-     *
-     * @return bool Whether or not the document has been updated.
+     * @return bool Whether the document has been updated.
      */
     public function calculate(DocumentInterface $document): bool;
 }

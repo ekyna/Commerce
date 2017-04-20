@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Order;
 
 use Doctrine\DBAL\Exception\ConnectionException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Order\Invalidator\OrderMarginInvalidator as BaseInvalidator;
+use Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -16,29 +19,11 @@ use Symfony\Component\HttpKernel\KernelEvents;
  */
 class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var string
-     */
-    private $assignmentClass;
-
-    /**
-     * @var string
-     */
-    private $orderClass;
+    private EntityManagerInterface $entityManager;
+    private string $assignmentClass;
+    private string $orderClass;
 
 
-    /**
-     * Constructor.
-     *
-     * @param EntityManagerInterface $entityManager
-     * @param string                 $assignmentClass
-     * @param string                 $orderClass
-     */
     public function __construct(
         EntityManagerInterface $entityManager,
         string $assignmentClass,
@@ -56,6 +41,10 @@ class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberI
      */
     public function invalidate(): void
     {
+        if (empty($this->unitIds)) {
+            return;
+        }
+
         $qb = $this->entityManager->createQueryBuilder();
         $ex = $qb->expr();
 
@@ -93,7 +82,7 @@ class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberI
             $result = $query
                 ->setParameter('unitIds', $this->unitIds)
                 ->getScalarResult();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Fail silently if connection failed or table is not found.
             if ($e instanceof ConnectionException || $e instanceof TableNotFoundException) {
                 return;
@@ -121,10 +110,7 @@ class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberI
             ->execute();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         $listeners = [
             KernelEvents::TERMINATE => ['invalidate', 1024], // Before Symfony EmailSenderListener

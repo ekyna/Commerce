@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Accounting\Repository;
 
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Commerce\Accounting\Model\AccountingInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Class AccountingRepositoryInterface
@@ -16,7 +19,7 @@ interface AccountingRepositoryInterface extends ResourceRepositoryInterface
      *
      * @param array $types
      *
-     * @return mixed
+     * @return AccountingInterface[]
      */
-    public function findByTypes(array $types);
+    public function findByTypes(array $types): array;
 }

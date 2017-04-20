@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,19 +11,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 interface CurrencySubjectInterface
 {
-    /**
-     * Returns the currency.
-     *
-     * @return CurrencyInterface|null
-     */
     public function getCurrency(): ?CurrencyInterface;
 
-    /**
-     * Sets the currency.
-     *
-     * @param CurrencyInterface $currency
-     *
-     * @return $this|CurrencySubjectInterface
-     */
-    public function setCurrency(CurrencyInterface $currency);
+    public function setCurrency(?CurrencyInterface $currency): CurrencySubjectInterface;
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Loyalty;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -12,23 +14,9 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class LoyaltyUpdater
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
+    private PersistenceHelperInterface $persistenceHelper;
+    private LoyaltyLogger $logger;
 
-    /**
-     * @var LoyaltyLogger
-     */
-    private $logger;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface    $persistenceHelper
-     * @param LoyaltyLogger $logger
-     */
     public function __construct(PersistenceHelperInterface $persistenceHelper, LoyaltyLogger $logger)
     {
         $this->persistenceHelper = $persistenceHelper;

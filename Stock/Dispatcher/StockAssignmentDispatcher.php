@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Dispatcher;
 
+use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
@@ -16,64 +20,42 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
  */
 class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
 {
-    /**
-     * @var StockAssignmentManagerInterface
-     */
-    protected $assignmentManager;
+    protected StockAssignmentManagerInterface $assignmentManager;
+    protected StockUnitManagerInterface       $unitManager;
+    protected StockLoggerInterface            $logger;
 
-    /**
-     * @var StockUnitManagerInterface
-     */
-    protected $unitManager;
-
-    /**
-     * @var StockLoggerInterface
-     */
-    protected $logger;
-
-
-    /**
-     * Constructor.
-     *
-     * @param StockAssignmentManagerInterface $assignmentManager
-     * @param StockUnitManagerInterface       $unitManager
-     * @param StockLoggerInterface            $logger
-     */
     public function __construct(
         StockAssignmentManagerInterface $assignmentManager,
-        StockUnitManagerInterface $unitManager,
-        StockLoggerInterface $logger
+        StockUnitManagerInterface       $unitManager,
+        StockLoggerInterface            $logger
     ) {
         $this->assignmentManager = $assignmentManager;
         $this->unitManager = $unitManager;
         $this->logger = $logger;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function moveAssignments(
-        Unit $sourceUnit,
-        Unit $targetUnit,
-        float $quantity,
-        int $direction = SORT_DESC
-    ): float {
+        Unit    $sourceUnit,
+        Unit    $targetUnit,
+        Decimal $quantity,
+        int     $direction = SORT_DESC
+    ): Decimal {
         if (0 >= $quantity) {
-            throw new StockLogicException("Quantity must be greater than zero.");
+            throw new StockLogicException('Quantity must be greater than zero.');
         }
 
         if ($sourceUnit === $targetUnit) {
-            throw new StockLogicException("Source and target units are the same.");
+            throw new StockLogicException('Source and target units are the same.');
         }
 
         // Don't move more than reservable (don't create overflow on target unit)
         $quantity = min($quantity, $targetUnit->getReservableQuantity());
         if (0 >= $quantity) {
             // Abort because sold quantity would become greater than ordered
-            return 0;
+            return new Decimal(0);
         }
 
-        $moved = 0;
+        $moved = new Decimal(0);
 
         $sourceAssignments = $this->sortAssignments($sourceUnit->getStockAssignments()->toArray(), $direction);
 
@@ -84,7 +66,8 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
 
             $moved += $delta;
             $quantity -= $delta;
-            if (0 == $quantity) {
+
+            if ($quantity->isZero()) {
                 break;
             }
         }
@@ -95,28 +78,19 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
         return $moved;
     }
 
-    /**
-     * Move the given assignment to the given unit for the given sold quantity.
-     *
-     * @param Assignment $assignment
-     * @param Unit       $targetUnit
-     * @param float                          $quantity
-     *
-     * @return float The quantity moved
-     */
-    public function moveAssignment(Assignment $assignment, Unit $targetUnit, float $quantity): float
+    public function moveAssignment(Assignment $assignment, Unit $targetUnit, Decimal $quantity): Decimal
     {
         // Don't move shipped/locked quantity
         $quantity = min($quantity, $assignment->getReleasableQuantity());
         if (0 >= $quantity) { // TODO Packaging format
-            return 0;
+            return new Decimal(0);
         }
 
         $sourceUnit = $assignment->getStockUnit();
         $saleItem = $assignment->getSaleItem();
 
         // Debit source unit's sold quantity
-        $this->logger->unitSold($sourceUnit, -$quantity);
+        $this->logger->unitSold($sourceUnit, $quantity->negate());
         $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $quantity);
 
         // Credit target unit's sold quantity
@@ -140,8 +114,8 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
                 $this->assignmentManager->persist($merge);
 
                 // Debit quantity from source assignment
-                $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
-                $assignment->setSoldQuantity(0);
+                $this->logger->assignmentSold($assignment, new Decimal(0), false); // TODO log removal ?
+                $assignment->setSoldQuantity(new Decimal(0));
                 $this->assignmentManager->remove($assignment, true);
             } else {
                 // Move source assignment to target unit
@@ -151,7 +125,7 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
             }
         } else {
             // Debit quantity from source assignment
-            $this->logger->assignmentSold($assignment, -$quantity);
+            $this->logger->assignmentSold($assignment, $quantity->negate());
             $assignment->setSoldQuantity($assignment->getSoldQuantity() - $quantity);
             $this->assignmentManager->persist($assignment);
 
@@ -175,18 +149,18 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
     /**
      * Sort assignments from the most recent to the most ancient.
      *
-     * @param Assignment[] $assignments
-     * @param int          $direction
+     * @param array<Assignment> $assignments
+     * @param int               $direction
      *
-     * @return Assignment[]
+     * @return array<Assignment>
      */
-    private function sortAssignments(array $assignments, $direction = SORT_DESC): array
+    private function sortAssignments(array $assignments, int $direction = SORT_DESC): array
     {
         usort($assignments, function (Assignment $a, Assignment $b) use ($direction) {
             $aDate = $a->getSaleItem()->getSale()->getCreatedAt();
             $bDate = $b->getSaleItem()->getSale()->getCreatedAt();
 
-            if ($aDate == $bDate) {
+            if (DateUtil::equals($aDate, $bDate)) {
                 return 0;
             }
 

@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+
+use function realpath;
+use function sprintf;
 
 /**
  * Class ConfigureValidatorPass
@@ -14,15 +18,11 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 class ConfigureValidatorPass implements CompilerPassInterface
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
-        if (!$container->has('validator.builder')) {
-            throw new ServiceNotFoundException('Validation is not enabled.');
-        }
-
-        $validatorBuilder = $container->getDefinition('validator.builder');
+        $definition = $container->getDefinition('validator.builder');
 
         $names = [
             'cart',
@@ -45,6 +45,6 @@ class ConfigureValidatorPass implements CompilerPassInterface
             $paths[] = realpath(__DIR__ . sprintf('/../Resources/validation/%s.xml', $name));
         }
 
-        $validatorBuilder->addMethodCall('addXmlMappings', [$paths]);
+        $definition->addMethodCall('addXmlMappings', [$paths]);
     }
 }

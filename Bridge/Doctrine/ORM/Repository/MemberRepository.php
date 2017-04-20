@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
 use Ekyna\Component\Commerce\Newsletter\Repository\MemberRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class MemberRepository
@@ -14,10 +16,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class MemberRepository extends ResourceRepository implements MemberRepositoryInterface
 {
-    /**
-     * @var Query
-     */
-    private $findOneByEmailQuery;
+    private ?Query $findOneByEmailQuery = null;
 
 
     /**
@@ -25,6 +24,7 @@ class MemberRepository extends ResourceRepository implements MemberRepositoryInt
      */
     public function findOneByEmail(string $email): ?MemberInterface
     {
+        /** @noinspection PhpUnhandledExceptionInspection */
         return $this
             ->getFindOneByEmailQuery()
             ->setParameter('email', $email)
@@ -46,7 +46,7 @@ class MemberRepository extends ResourceRepository implements MemberRepositoryInt
 
         return $this->findOneByEmailQuery = $qb
             ->andWhere($qb->expr()->eq('m.email', ':email'))
-            ->getQuery()
-            ->setMaxResults(1);
+            ->setMaxResults(1)
+            ->getQuery();
     }
 }

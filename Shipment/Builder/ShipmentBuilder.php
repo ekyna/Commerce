@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Builder;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\GatewayInterface;
-use Ekyna\Component\Commerce\Shipment\Gateway\RegistryInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\GatewayRegistryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 
@@ -18,32 +21,13 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
  */
 class ShipmentBuilder implements ShipmentBuilderInterface
 {
-    /**
-     * @var SaleFactoryInterface
-     */
-    private $factory;
+    private SaleFactoryInterface $factory;
+    private GatewayRegistryInterface $registry;
+    private ShipmentSubjectCalculatorInterface $calculator;
 
-    /**
-     * @var RegistryInterface
-     */
-    private $registry;
-
-    /**
-     * @var ShipmentSubjectCalculatorInterface
-     */
-    private $calculator;
-
-
-    /**
-     * Constructor.
-     *
-     * @param SaleFactoryInterface               $factory
-     * @param RegistryInterface                  $registry
-     * @param ShipmentSubjectCalculatorInterface $calculator
-     */
     public function __construct(
         SaleFactoryInterface $factory,
-        RegistryInterface $registry,
+        GatewayRegistryInterface $registry,
         ShipmentSubjectCalculatorInterface $calculator
 
     ) {
@@ -52,13 +36,10 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         $this->calculator = $calculator;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function build(ShipmentInterface $shipment)
+    public function build(ShipmentInterface $shipment): void
     {
         if (null === $sale = $shipment->getSale()) {
-            throw new LogicException("Sale must be set.");
+            throw new LogicException('Sale must be set.');
         }
 
         if (!$shipment->isReturn()) {
@@ -75,10 +56,8 @@ class ShipmentBuilder implements ShipmentBuilderInterface
 
     /**
      * Initializes the shipment's method.
-     *
-     * @param ShipmentInterface $shipment
      */
-    private function initializeMethod(ShipmentInterface $shipment)
+    private function initializeMethod(ShipmentInterface $shipment): void
     {
         // Abort if shipment's method is defined
         if (null !== $shipment->getMethod()) {
@@ -104,17 +83,13 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         // Set return method if supported
         if ($shipment->isReturn() && $gateway->supports(GatewayInterface::CAPABILITY_RETURN)) {
             $shipment->setMethod($method);
-
-            return;
         }
     }
 
     /**
      * Initializes the shipment's relay point.
-     *
-     * @param ShipmentInterface $shipment
      */
-    private function initializeRelayPoint(ShipmentInterface $shipment)
+    private function initializeRelayPoint(ShipmentInterface $shipment): void
     {
         // Abort if shipment method is not defined
         if (null === $method = $shipment->getMethod()) {
@@ -145,14 +120,9 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     }
 
     /**
-     * Builds the shipment item by pre populating quantity.
-     *
-     * @param SaleItemInterface $saleItem
-     * @param ShipmentInterface $shipment
-     *
-     * @return ShipmentItemInterface|null
+     * Builds the shipment item by pre-populating quantity.
      */
-    protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment)
+    protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment): ?ShipmentItemInterface
     {
         // Compound item
         if ($saleItem->isCompound()) {
@@ -162,12 +132,12 @@ class ShipmentBuilder implements ShipmentBuilderInterface
                 if (null !== $child = $this->buildItem($childSaleItem, $shipment)) {
                     $saleItemQty = $childSaleItem->getQuantity();
 
-                    $e = $child->getExpected() / $saleItemQty;
+                    $e = ($child->getExpected() ?: new Decimal(0))->div($saleItemQty);
                     if (null === $expected || $expected > $e) {
                         $expected = $e;
                     }
 
-                    $a = $child->getAvailable() / $saleItemQty;
+                    $a = ($child->getAvailable() ?: new Decimal(0))->div($saleItemQty);
                     if (null === $available || $available > $a) {
                         $available = $a;
                     }
@@ -204,16 +174,13 @@ class ShipmentBuilder implements ShipmentBuilderInterface
 
     /**
      * Finds or create the shipment item.
-     *
-     * @param ShipmentInterface $shipment
-     * @param SaleItemInterface $saleItem
-     * @param float             $expected
-     * @param float             $available
-     *
-     * @return ShipmentItemInterface
      */
-    private function findOrCreateItem(ShipmentInterface $shipment, SaleItemInterface $saleItem, $expected, $available = null)
-    {
+    private function findOrCreateItem(
+        ShipmentInterface $shipment,
+        SaleItemInterface $saleItem,
+        Decimal $expected,
+        Decimal $available = null
+    ): ?ShipmentItemInterface {
         if (0 >= $expected) {
             return null;
         }
@@ -249,7 +216,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
             // Set available quantity
             $item->setAvailable($available);
 
-            // Set default quantity for new non return shipment items
+            // Set default quantity for new non-return shipment items
             if (null === $shipment->getId()) {
                 $item->setQuantity(min($expected, $available));
             }

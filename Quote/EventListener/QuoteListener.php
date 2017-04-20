@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\EventListener;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Quote\Event\QuoteEvents;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteStates;
@@ -17,70 +20,22 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class QuoteListener extends AbstractSaleListener
 {
-    /**
-     * @var string
-     */
-    protected $expirationDelay;
-
-
-    /**
-     * Sets the expiration delay.
-     *
-     * @param string $delay
-     */
-    public function setExpirationDelay($delay)
-    {
-        $this->expirationDelay = $delay;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function onInitialize(ResourceEventInterface $event): void
-    {
-        parent::onInitialize($event);
-
-        $quote = $this->getSaleFromEvent($event);
-
-        // Set the default 'expires at' date time
-        $date = new \DateTime();
-        $date->modify($this->expirationDelay)->setTime(0, 0, 0, 0);
-        $quote->setExpiresAt($date);
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @param QuoteInterface $sale
-     */
     protected function handleInsert(SaleInterface $sale): bool
     {
         $changed = parent::handleInsert($sale);
 
-        $changed |= $this->handleEditable($sale);
-
-        return $changed;
+        /** @var QuoteInterface $sale */
+        return $this->handleEditable($sale) || $changed;
     }
 
-    /**
-     * @inheritDoc
-     *
-     * @param QuoteInterface $sale
-     */
     protected function handleUpdate(SaleInterface $sale): bool
     {
         $changed = parent::handleUpdate($sale);
 
-        $changed |= $this->handleEditable($sale);
-
-        return $changed;
+        /** @var QuoteInterface $sale */
+        return $this->handleEditable($sale) || $changed;
     }
 
-    /**
-     * @param QuoteInterface $quote
-     *
-     * @return bool
-     */
     protected function handleEditable(QuoteInterface $quote): bool
     {
         if (!$quote->isEditable()) {
@@ -107,15 +62,12 @@ class QuoteListener extends AbstractSaleListener
         return $changed;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function updateState(SaleInterface $sale): bool
     {
         if (parent::updateState($sale)) {
             /** @var QuoteInterface $sale */
             if (($sale->getState() === QuoteStates::STATE_ACCEPTED) && (null === $sale->getAcceptedAt())) {
-                $sale->setAcceptedAt(new \DateTime());
+                $sale->setAcceptedAt(new DateTime());
             } elseif (($sale->getState() !== QuoteStates::STATE_ACCEPTED) && (null !== $sale->getAcceptedAt())) {
                 $sale->setAcceptedAt(null);
             }
@@ -126,43 +78,32 @@ class QuoteListener extends AbstractSaleListener
         return false;
     }
 
-    /**
-     * @inheritdoc
-     *
-     * @return QuoteInterface
-     */
     protected function getSaleFromEvent(ResourceEventInterface $event): SaleInterface
     {
         $resource = $event->getResource();
 
         if (!$resource instanceof QuoteInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteInterface");
+            throw new UnexpectedTypeException($resource, QuoteInterface::class);
         }
 
         return $resource;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function scheduleContentChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof QuoteInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteInterface");
+            throw new UnexpectedTypeException($sale, QuoteInterface::class);
         }
 
-        $this->persistenceHelper->scheduleEvent(QuoteEvents::CONTENT_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, QuoteEvents::CONTENT_CHANGE);
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function scheduleStateChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof QuoteInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteInterface");
+            throw new UnexpectedTypeException($sale, QuoteInterface::class);
         }
 
-        $this->persistenceHelper->scheduleEvent(QuoteEvents::STATE_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, QuoteEvents::STATE_CHANGE);
     }
 }

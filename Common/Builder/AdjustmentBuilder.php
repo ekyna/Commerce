@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Builder;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -16,35 +18,12 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class AdjustmentBuilder implements AdjustmentBuilderInterface
 {
-    /**
-     * @var SaleFactoryInterface
-     */
-    protected $saleFactory;
-
-    /**
-     * @var TaxResolverInterface
-     */
-    protected $taxResolver;
-
-    /**
-     * @var DiscountResolverInterface
-     */
-    protected $discountResolver;
-
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected SaleFactoryInterface       $saleFactory;
+    protected TaxResolverInterface       $taxResolver;
+    protected DiscountResolverInterface  $discountResolver;
+    protected PersistenceHelperInterface $persistenceHelper;
 
 
-    /**
-     * Constructor.
-     *
-     * @param SaleFactoryInterface             $saleFactory
-     * @param TaxResolverInterface             $taxResolver
-     * @param DiscountResolverInterface         $discountResolver
-     * @param PersistenceHelperInterface       $persistenceHelper
-     */
     public function __construct(
         SaleFactoryInterface $saleFactory,
         TaxResolverInterface $taxResolver,
@@ -57,9 +36,6 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool
     {
         $data = $sale->isAutoDiscount() && !$sale->isSample() ? $this->discountResolver->resolveSale($sale) : [];
@@ -68,34 +44,31 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function buildDiscountAdjustmentsForSaleItems($parent, bool$persistence = false): bool
+    public function buildDiscountAdjustmentsForSaleItems($parent, bool $persistence = false): bool
     {
         if ($parent instanceof Model\SaleInterface) {
             $children = $parent->getItems();
         } elseif ($parent instanceof Model\SaleItemInterface) {
             $children = $parent->getChildren();
         } else {
-            throw new InvalidArgumentException("Expected instance of SaleInterface or SaleItemInterface.");
+            throw new UnexpectedTypeException($parent, [Model\SaleInterface::class, Model\SaleItemInterface::class]);
         }
 
-        $change = false;
+        $changed = false;
 
         foreach ($children as $child) {
-            $change |= $this->buildDiscountAdjustmentsForSaleItem($child, $persistence);
+            $changed = $this->buildDiscountAdjustmentsForSaleItem($child, $persistence) || $changed;
 
             if ($child->hasChildren()) {
-                $change |= $this->buildDiscountAdjustmentsForSaleItems($child, $persistence);
+                $changed = $this->buildDiscountAdjustmentsForSaleItems($child, $persistence) || $changed;
             }
         }
 
-        return $change;
+        return $changed;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool
     {
         $sale = $item->getSale();
@@ -105,9 +78,6 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool
     {
         $data = [];
@@ -122,7 +92,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function buildTaxationAdjustmentsForSaleItems($parent, bool $persistence = false): bool
     {
@@ -131,7 +101,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         } elseif ($parent instanceof Model\SaleItemInterface) {
             $children = $parent->getChildren();
         } else {
-            throw new InvalidArgumentException("Expected instance of SaleInterface or SaleItemInterface.");
+            throw new UnexpectedTypeException($parent, [Model\SaleInterface::class, Model\SaleItemInterface::class]);
         }
 
         $change = false;
@@ -148,7 +118,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool
     {
@@ -172,8 +142,12 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
      */
-    protected function buildAdjustments($type, Model\AdjustableInterface $adjustable, array $data, $persistence = false)
-    {
+    protected function buildAdjustments(
+        string $type,
+        Model\AdjustableInterface $adjustable,
+        array $data,
+        bool $persistence = false
+    ): bool {
         Model\AdjustmentTypes::isValidType($type);
 
         $change = false;

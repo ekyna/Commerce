@@ -39,7 +39,7 @@ class SupplierCarrier implements SupplierCarrierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -47,7 +47,7 @@ class SupplierCarrier implements SupplierCarrierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getName()
     {
@@ -55,7 +55,7 @@ class SupplierCarrier implements SupplierCarrierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setName($name)
     {
@@ -65,7 +65,7 @@ class SupplierCarrier implements SupplierCarrierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTax()
     {
@@ -73,7 +73,7 @@ class SupplierCarrier implements SupplierCarrierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setTax(TaxInterface $tax = null)
     {

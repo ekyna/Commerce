@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\Model;
 
 use Doctrine\Common\Collections\Collection;
@@ -18,126 +20,48 @@ use Ekyna\Component\Resource\Model\TimestampableInterface;
  */
 interface TicketInterface extends ResourceInterface, StateSubjectInterface, NumberSubjectInterface, TimestampableInterface
 {
-    /**
-     * Returns the subject.
-     *
-     * @return string
-     */
-    public function getSubject();
+    public function getSubject(): ?string;
 
-    /**
-     * Sets the subject.
-     *
-     * @param string $subject
-     *
-     * @return $this|TicketInterface
-     */
-    public function setSubject(string $subject);
+    public function setSubject(?string $subject): TicketInterface;
 
     /**
      * Returns whether this ticket is internal.
-     *
-     * @return bool
      */
     public function isInternal(): bool;
 
     /**
      * Sets whether this ticket is internal.
-     *
-     * @param bool $internal
-     *
-     * @return TicketInterface
      */
     public function setInternal(bool $internal): TicketInterface;
 
-    /**
-     * Returns the customer.
-     *
-     * @return CustomerInterface
-     */
-    public function getCustomer();
+    public function getCustomer(): ?CustomerInterface;
+
+    public function setCustomer(?CustomerInterface $customer): TicketInterface;
 
     /**
-     * Sets the customer.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return $this|TicketInterface
+     * @return Collection<OrderInterface>
      */
-    public function setCustomer(CustomerInterface $customer = null);
+    public function getOrders(): Collection;
+
+    public function addOrder(OrderInterface $order): TicketInterface;
+
+    public function removeOrder(OrderInterface $order): TicketInterface;
 
     /**
-     * Returns the order.
-     *
-     * @return Collection|OrderInterface[]
+     * @return Collection<QuoteInterface>
      */
-    public function getOrders();
+    public function getQuotes(): Collection;
+
+    public function addQuote(QuoteInterface $quote): TicketInterface;
+
+    public function removeQuote(QuoteInterface $quote): TicketInterface;
 
     /**
-     * Adds the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|TicketInterface
+     * @return Collection<TicketMessageInterface>
      */
-    public function addOrder(OrderInterface $order);
+    public function getMessages(): Collection;
 
-    /**
-     * Removes the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|TicketInterface
-     */
-    public function removeOrder(OrderInterface $order);
+    public function addMessage(TicketMessageInterface $message): TicketInterface;
 
-    /**
-     * Returns the quote.
-     *
-     * @return Collection|QuoteInterface[]
-     */
-    public function getQuotes();
-
-    /**
-     * Adds the quote.
-     *
-     * @param QuoteInterface $quote
-     *
-     * @return $this|TicketInterface
-     */
-    public function addQuote(QuoteInterface $quote);
-
-    /**
-     * Removes the quote.
-     *
-     * @param QuoteInterface $quote
-     *
-     * @return $this|TicketInterface
-     */
-    public function removeQuote(QuoteInterface $quote);
-
-    /**
-     * Returns the messages.
-     *
-     * @return Collection|TicketMessageInterface[]
-     */
-    public function getMessages();
-
-    /**
-     * Adds the message.
-     *
-     * @param TicketMessageInterface $message
-     *
-     * @return $this|TicketInterface
-     */
-    public function addMessage(TicketMessageInterface $message);
-
-    /**
-     * Removes the message.
-     *
-     * @param TicketMessageInterface $message
-     *
-     * @return $this|TicketInterface
-     */
-    public function removeMessage(TicketMessageInterface $message);
+    public function removeMessage(TicketMessageInterface $message): TicketInterface;
 }

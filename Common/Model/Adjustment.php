@@ -1,6 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Model;
+
+use Decimal\Decimal;
 
 /**
  * Class Discount
@@ -9,85 +13,44 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 class Adjustment
 {
-    /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @var float
-     */
-    private $amount;
-
-    /**
-     * @var float
-     */
-    private $rate;
+    private string $name;
+    private Decimal $amount;
+    private ?Decimal $rate;
 
 
-    /**
-     * Constructor.
-     *
-     * @param string $name
-     * @param float  $amount
-     * @param float  $rate
-     */
-    public function __construct(string $name, float $amount, float $rate = null)
+    public function __construct(string $name, Decimal $amount, Decimal $rate = null)
     {
         $this->name = $name;
         $this->amount = $amount;
-        $this->rate = $rate;
+        $this->rate = $rate ?: new Decimal(0);
     }
 
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * Returns the amount.
-     *
-     * @return float
-     */
-    public function getAmount(): float
+    public function getAmount(): Decimal
     {
         return $this->amount;
     }
 
-    /**
-     * Returns the rate.
-     *
-     * @return float
-     */
-    public function getRate(): float
+    public function getRate(): Decimal
     {
         return $this->rate;
     }
 
-    /**
-     * Adds the amount.
-     *
-     * @param float $amount
-     */
-    public function addAmount(float $amount): void
+    public function addAmount(Decimal $amount): void
     {
         $this->amount += $amount;
     }
 
     /**
-     * Returns whether or not this adjustment is the same as the given one.
-     *
-     * @param Adjustment $adjustment
-     *
-     * @return bool
+     * Returns whether this adjustment is the same as the given one.
      */
     public function isSameAs(Adjustment $adjustment): bool
     {
-        return $this->name === $adjustment->getName() && $this->rate === $adjustment->getRate();
+        return $this->name === $adjustment->getName()
+            && $adjustment->getRate()->equals($this->rate);
     }
 }

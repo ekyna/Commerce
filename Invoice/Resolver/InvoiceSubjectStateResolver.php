@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Resolver;
 
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
@@ -17,17 +19,8 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
  */
 class InvoiceSubjectStateResolver extends AbstractStateResolver
 {
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    protected $invoiceCalculator;
+    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
 
-
-    /**
-     * Constructor.
-     *
-     * @param InvoiceSubjectCalculatorInterface $invoiceCalculator
-     */
     public function __construct(InvoiceSubjectCalculatorInterface $invoiceCalculator)
     {
         $this->invoiceCalculator = $invoiceCalculator;
@@ -71,23 +64,23 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
             // TODO Use packaging format
             // If invoiced greater than zero
             if (0 < $q['invoiced']) {
-                $invoiced = $q['invoiced'] - $q['adjusted'];
+                $invoiced = $q['invoiced']->sub($q['adjusted']);
                 // If invoiced is greater or equals total
-                if (0 <= bccomp($invoiced, $q['total'], 3)) {
+                if ($invoiced >= $q['total']) {
                     // If invoiced equals credited, item is fully credited
-                    if (0 === bccomp($invoiced, $q['credited'], 3)) {
+                    if ($invoiced->equals($q['credited'])) {
                         $creditedCount++;
                         continue;
                     }
 
                     // If total equals invoiced - credit, item is fully invoiced
-                    if (0 === bccomp($q['total'], $invoiced - $q['credited'], 3)) {
+                    if ($q['total']->equals($invoiced->sub($q['credited']))) {
                         $invoicedCount++;
                         continue;
                     }
 
                     // If shipped and credited, and shipped - returns equals invoiced - credit, item is fully invoiced
-                    if (0 < $q['credited'] && 0 === bccomp($q['shipped'] - $q['returned'], $invoiced - $q['credited'], 3)) {
+                    if (0 < $q['credited'] && $q['shipped']->sub($q['returned'])->equals($invoiced->sub($q['credited']))) {
                         $invoicedCount++;
                         continue;
                     }
@@ -126,9 +119,6 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
         return InvoiceStates::STATE_NEW;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function supports(object $subject): void
     {
         if (!$subject instanceof InvoiceSubjectInterface) {

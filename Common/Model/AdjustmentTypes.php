@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -11,36 +13,23 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class AdjustmentTypes
 {
-    const TYPE_TAXATION = 'taxation';
-    const TYPE_INCLUDED = 'included';
-    const TYPE_DISCOUNT = 'discount';
+    public const TYPE_TAXATION = 'taxation';
+    public const TYPE_INCLUDED = 'included';
+    public const TYPE_DISCOUNT = 'discount';
 
 
-    /**
-     * Returns all the types.
-     *
-     * @return array
-     */
-    static public function getTypes()
+    public static function getTypes(): array
     {
         return [
-            static::TYPE_TAXATION,
-            static::TYPE_INCLUDED,
-            static::TYPE_DISCOUNT,
+            AdjustmentTypes::TYPE_TAXATION,
+            AdjustmentTypes::TYPE_INCLUDED,
+            AdjustmentTypes::TYPE_DISCOUNT,
         ];
     }
 
-    /**
-     * Returns whether the given type is valid or not.
-     *
-     * @param string $type
-     * @param bool   $throw
-     *
-     * @return bool
-     */
-    static public function isValidType($type, $throw = true)
+    public static function isValidType(string $type, bool $throw = true): bool
     {
-        if (in_array($type, static::getTypes(), true)) {
+        if (in_array($type, AdjustmentTypes::getTypes(), true)) {
             return true;
         }
 
@@ -51,9 +40,6 @@ final class AdjustmentTypes
         return false;
     }
 
-    /**
-     * Disabled Constructor.
-     */
     private function __construct()
     {
     }

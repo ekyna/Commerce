@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoiceLine;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Order\Model;
 
 /**
@@ -16,103 +19,66 @@ use Ekyna\Component\Commerce\Order\Model;
  */
 class OrderInvoiceLine extends AbstractInvoiceLine implements Model\OrderInvoiceLineInterface
 {
-    /**
-     * @var Model\OrderItemInterface
-     */
-    protected $orderItem;
+    protected ?Model\OrderItemInterface       $orderItem       = null;
+    protected ?Model\OrderAdjustmentInterface $orderAdjustment = null;
 
-    /**
-     * @var Model\OrderAdjustmentInterface
-     */
-    protected $orderAdjustment;
-
-
-    /**
-     * @inheritDoc
-     */
-    public function setInvoice(InvoiceInterface $invoice = null)
+    public function setInvoice(?InvoiceInterface $invoice): InvoiceLineInterface
     {
-        if (null !== $invoice && !$invoice instanceof Model\OrderInvoiceInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderInvoiceInterface.");
+        if ($invoice && !$invoice instanceof Model\OrderInvoiceInterface) {
+            throw new UnexpectedTypeException($invoice, Model\OrderInvoiceInterface::class);
         }
 
         return parent::setInvoice($invoice);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setOrderItem(Model\OrderItemInterface $item = null)
+    public function setOrderItem(?Model\OrderItemInterface $item): Model\OrderInvoiceLineInterface
     {
         $this->orderItem = $item;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getOrderItem()
+    public function getOrderItem(): ?Model\OrderItemInterface
     {
         return $this->orderItem;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setOrderAdjustment(Model\OrderAdjustmentInterface $adjustment = null)
+    public function setOrderAdjustment(?Model\OrderAdjustmentInterface $adjustment): Model\OrderInvoiceLineInterface
     {
         $this->orderAdjustment = $adjustment;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     *
-     * @return Model\OrderAdjustmentInterface
-     */
-    public function getOrderAdjustment()
+    public function getOrderAdjustment(): ?Model\OrderAdjustmentInterface
     {
         return $this->orderAdjustment;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setSaleItem(SaleItemInterface $item = null)
+    public function setSaleItem(?SaleItemInterface $item): InvoiceLineInterface
     {
-        if (null !== $item && !$item instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
+        if ($item && !$item instanceof Model\OrderItemInterface) {
+            throw new UnexpectedTypeException($item, Model\OrderItemInterface::class);
         }
 
         return $this->setOrderItem($item);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSaleItem()
+    public function getSaleItem(): ?SaleItemInterface
     {
         return $this->getOrderItem();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setSaleAdjustment(AdjustmentInterface $adjustment = null)
+    public function setSaleAdjustment(?AdjustmentInterface $adjustment): InvoiceLineInterface
     {
-        if (null !== $adjustment && !$adjustment instanceof Model\OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderAdjustmentInterface.");
+        if ($adjustment && !$adjustment instanceof Model\OrderAdjustmentInterface) {
+            throw new UnexpectedTypeException($adjustment, Model\OrderAdjustmentInterface::class);
         }
 
         return $this->setOrderAdjustment($adjustment);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSaleAdjustment()
+    public function getSaleAdjustment(): ?AdjustmentInterface
     {
         return $this->getOrderAdjustment();
     }

@@ -1,60 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentParcelInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class ShipmentParcelNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentParcelNormalizer extends AbstractResourceNormalizer
+class ShipmentParcelNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param ShipmentParcelInterface $parcel
+     * @param ShipmentParcelInterface $object
      */
-    public function normalize($parcel, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         $data = [];
 
         if ($this->contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
-                'weight'         => $parcel->getWeight(),
-                'valorization'   => $parcel->getValorization(),
-                'trackingNumber' => $parcel->getTrackingNumber(),
+                'weight'         => $object->getWeight()->toFixed(3),
+                'valorization'   => $object->getValorization(),
+                'trackingNumber' => $object->getTrackingNumber(),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof ShipmentParcelInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, ShipmentParcelInterface::class);
     }
 }

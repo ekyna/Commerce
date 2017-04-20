@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
+
+use DateTimeInterface;
 
 /**
  * Interface ShipmentLabelInterface
@@ -9,138 +13,48 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
  */
 interface ShipmentLabelInterface
 {
-    const TYPE_SHIPMENT = 'shipment';
-    const TYPE_RETURN   = 'return';
-    const TYPE_PROOF    = 'proof';
-    const TYPE_SUMMARY  = 'summary';
-    const TYPE_CUSTOMS  = 'customs';
+    public const TYPE_SHIPMENT = 'shipment';
+    public const TYPE_RETURN   = 'return';
+    public const TYPE_PROOF    = 'proof';
+    public const TYPE_SUMMARY  = 'summary';
+    public const TYPE_CUSTOMS  = 'customs';
 
-    const FORMAT_PNG  = 'image/png';
-    const FORMAT_GIF  = 'image/gif';
-    const FORMAT_JPEG = 'image/jpeg';
-    const FORMAT_PDF  = 'application/pdf';
+    public const FORMAT_PNG  = 'image/png';
+    public const FORMAT_GIF  = 'image/gif';
+    public const FORMAT_JPEG = 'image/jpeg';
+    public const FORMAT_PDF  = 'application/pdf';
 
-    const SIZE_A6 = 'a6';
-    const SIZE_A5 = 'a5';
-    const SIZE_A4 = 'a4';
+    public const SIZE_A6 = 'a6';
+    public const SIZE_A5 = 'a5';
+    public const SIZE_A4 = 'a4';
 
+    public function getId(): ?int;
 
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId();
+    public function getShipment(): ?ShipmentInterface;
 
-    /**
-     * Returns the shipment.
-     *
-     * @return ShipmentInterface
-     */
-    public function getShipment();
+    public function setShipment(?ShipmentInterface $shipment): ShipmentLabelInterface;
 
-    /**
-     * Sets the shipment.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return $this|ShipmentParcelInterface
-     */
-    public function setShipment(ShipmentInterface $shipment = null);
+    public function getParcel(): ?ShipmentParcelInterface;
 
-    /**
-     * Returns the parcel.
-     *
-     * @return ShipmentInterface
-     */
-    public function getParcel();
+    public function setParcel(?ShipmentParcelInterface $parcel);
 
-    /**
-     * Sets the parcel.
-     *
-     * @param ShipmentParcelInterface $parcel
-     *
-     * @return $this|ShipmentParcelInterface
-     */
-    public function setParcel(ShipmentParcelInterface $parcel = null);
+    public function getContent(): ?string;
 
-    /**
-     * Returns the content.
-     *
-     * @return string|resource
-     */
-    public function getContent();
+    public function setContent(string $content): ShipmentLabelInterface;
 
-    /**
-     * Sets the content.
-     *
-     * @param string $content
-     *
-     * @return $this|ShipmentLabelInterface
-     */
-    public function setContent(string $content);
+    public function getType(): ?string;
 
-    /**
-     * Returns the type.
-     *
-     * @return string
-     */
-    public function getType();
+    public function setType(?string $type): ShipmentLabelInterface;
 
-    /**
-     * Sets the type.
-     *
-     * @param string $type
-     *
-     * @return $this|ShipmentLabelInterface
-     */
-    public function setType($type);
+    public function getFormat(): ?string;
 
-    /**
-     * Returns the format.
-     *
-     * @return string
-     */
-    public function getFormat();
+    public function setFormat(?string $format): ShipmentLabelInterface;
 
-    /**
-     * Sets the format.
-     *
-     * @param string $format
-     *
-     * @return $this|ShipmentLabelInterface
-     */
-    public function setFormat(string $format);
+    public function getSize(): ?string;
 
-    /**
-     * Returns the size.
-     *
-     * @return string
-     */
-    public function getSize();
+    public function setSize(?string $size): ShipmentLabelInterface;
 
-    /**
-     * Sets the size.
-     *
-     * @param string $size
-     *
-     * @return $this|ShipmentLabelInterface
-     */
-    public function setSize(string $size);
+    public function getUpdatedAt(): ?DateTimeInterface;
 
-    /**
-     * Returns the "updated at" date time.
-     *
-     * @return \DateTime
-     */
-    public function getUpdatedAt();
-
-    /**
-     * Sets the "updated at" date time.
-     *
-     * @param \DateTime $date
-     *
-     * @return $this|ShipmentLabelInterface
-     */
-    public function setUpdatedAt(\DateTime $date = null);
+    public function setUpdatedAt(?DateTimeInterface $date): ShipmentLabelInterface;
 }

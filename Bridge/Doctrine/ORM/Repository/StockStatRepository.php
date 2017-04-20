@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Ekyna\Component\Commerce\Stat\Entity\StockStat;
 use Ekyna\Component\Commerce\Stat\Repository\StockStatRepositoryInterface;
 
 /**
@@ -15,7 +18,7 @@ class StockStatRepository extends EntityRepository implements StockStatRepositor
     /**
      * @inheritDoc
      */
-    public function findOneByDay(\DateTime $date = null)
+    public function findOneByDay(\DateTime $date = null): ?StockStat
     {
         if (null === $date) {
             $date = new \DateTime();
@@ -27,7 +30,7 @@ class StockStatRepository extends EntityRepository implements StockStatRepositor
     /**
      * @inheritDoc
      */
-    public function findLatest($limit = 30)
+    public function findLatest(int $limit = 30): array
     {
         return $this->findBy([], ['date' => 'DESC'], $limit);
     }

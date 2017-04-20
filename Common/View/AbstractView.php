@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\View;
 
 /**
@@ -9,26 +11,18 @@ namespace Ekyna\Component\Commerce\Common\View;
  */
 abstract class AbstractView
 {
-    /**
-     * @var array
-     */
-    public $vars = [
+    public array $vars = [
         'attr' => [],
     ];
 
-
     /**
      * Adds the css classes to the view.
-     *
-     * @param string $class
-     *
-     * @return self
      */
     public function addClass(string $class): self
     {
         $classes = $this->getClasses();
 
-        if (!in_array($class, $classes)) {
+        if (!in_array($class, $classes, true)) {
             $classes[] = $class;
         }
 
@@ -39,10 +33,6 @@ abstract class AbstractView
 
     /**
      * Removes the css classes from the view.
-     *
-     * @param string $class
-     *
-     * @return self
      */
     public function removeClass(string $class): self
     {
@@ -59,8 +49,6 @@ abstract class AbstractView
 
     /**
      * Returns the css classes.
-     *
-     * @return array
      */
     private function getClasses(): array
     {
@@ -73,19 +61,13 @@ abstract class AbstractView
 
     /**
      * Sets the css classes.
-     *
-     * @param array $classes
-     *
-     * @return self
      */
-    private function setClasses(array $classes): self
+    private function setClasses(array $classes): void
     {
         if (!empty($classes)) {
             $this->vars['attr']['class'] = trim(implode(' ', $classes));
         } else {
             unset($this->vars['attr']['class']);
         }
-
-        return $this;
     }
 }

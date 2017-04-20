@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Balance;
+
+use DateTimeInterface;
+use Decimal\Decimal;
 
 /**
  * Class Line
@@ -9,93 +14,35 @@ namespace Ekyna\Component\Commerce\Customer\Balance;
  */
 class Line
 {
-    const TYPE_FORWARD = 'forward';
-    const TYPE_INVOICE = 'invoice';
-    const TYPE_CREDIT  = 'credit';
-    const TYPE_PAYMENT = 'payment';
-    const TYPE_REFUND  = 'refund';
+    public const TYPE_FORWARD = 'forward';
+    public const TYPE_INVOICE = 'invoice';
+    public const TYPE_CREDIT  = 'credit';
+    public const TYPE_PAYMENT = 'payment';
+    public const TYPE_REFUND  = 'refund';
 
-    /**
-     * @var \DateTime
-     */
-    private $date;
+    private DateTimeInterface  $date;
+    private string             $type;
+    private string             $number;
+    private Decimal            $debit;
+    private Decimal            $credit;
+    private int                $orderId;
+    private string             $orderNumber;
+    private string             $voucherNumber;
+    private DateTimeInterface  $orderDate;
+    private ?DateTimeInterface $dueDate;
+    private bool               $due = false;
 
-    /**
-     * @var string;
-     */
-    private $type;
-
-    /**
-     * @var string
-     */
-    private $number;
-
-    /**
-     * @var float
-     */
-    private $debit;
-
-    /**
-     * @var float
-     */
-    private $credit;
-
-    /**
-     * @var int
-     */
-    private $orderId;
-
-    /**
-     * @var string
-     */
-    private $orderNumber;
-
-    /**
-     * @var string
-     */
-    private $voucherNumber;
-
-    /**
-     * @var \DateTime
-     */
-    private $orderDate;
-
-    /**
-     * @var \DateTime
-     */
-    private $dueDate;
-
-    /**
-     * @var bool;
-     */
-    private $due = false;
-
-
-    /**
-     * Constructor.
-     *
-     * @param \DateTime $date
-     * @param string    $type
-     * @param string    $number
-     * @param float     $debit
-     * @param float     $credit
-     * @param int       $orderId
-     * @param string    $orderNumber
-     * @param string    $voucherNumber
-     * @param \DateTime $orderDate
-     * @param \DateTime $dueDate
-     */
     public function __construct(
-        \DateTime $date,
-        string $type,
-        string $number,
-        float $debit,
-        float $credit,
-        int $orderId,
-        string $orderNumber,
-        string $voucherNumber,
-        \DateTime $orderDate,
-        \DateTime $dueDate = null
+        DateTimeInterface $date,
+        string            $type,
+        string            $number,
+        Decimal           $debit,
+        Decimal           $credit,
+        int               $orderId,
+        string            $orderNumber,
+        string            $voucherNumber,
+        DateTimeInterface $orderDate,
+        DateTimeInterface $dueDate = null
     ) {
         $this->date = $date;
         $this->type = $type;
@@ -109,143 +56,71 @@ class Line
         $this->dueDate = $dueDate;
     }
 
-    /**
-     * Returns the date.
-     *
-     * @return \DateTime
-     */
-    public function getDate(): \DateTime
+    public function getDate(): DateTimeInterface
     {
         return $this->date;
     }
 
-    /**
-     * Returns the identity.
-     *
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * Returns the number.
-     *
-     * @return string
-     */
     public function getNumber(): string
     {
         return $this->number;
     }
 
-    /**
-     * Adds the debit.
-     *
-     * @param float $debit
-     */
-    public function addDebit(float $debit): void
+    public function addDebit(Decimal $debit): void
     {
         $this->debit += $debit;
     }
 
-    /**
-     * Returns the debit.
-     *
-     * @return float
-     */
-    public function getDebit(): float
+    public function getDebit(): Decimal
     {
         return $this->debit;
     }
 
-    /**
-     * Adds the credit.
-     *
-     * @param float $credit
-     */
-    public function addCredit(float $credit): void
+    public function addCredit(Decimal $credit): void
     {
         $this->credit += $credit;
     }
 
-    /**
-     * Returns the credit.
-     *
-     * @return float
-     */
-    public function getCredit(): float
+    public function getCredit(): Decimal
     {
         return $this->credit;
     }
 
-    /**
-     * Returns the order id.
-     *
-     * @return int
-     */
     public function getOrderId(): int
     {
         return $this->orderId;
     }
 
-    /**
-     * Returns the order number.
-     *
-     * @return string
-     */
     public function getOrderNumber(): string
     {
         return $this->orderNumber;
     }
 
-    /**
-     * Returns the voucher number.
-     *
-     * @return string
-     */
     public function getVoucherNumber(): string
     {
         return $this->voucherNumber;
     }
 
-    /**
-     * Returns the order date.
-     *
-     * @return \DateTime
-     */
-    public function getOrderDate(): \DateTime
+    public function getOrderDate(): DateTimeInterface
     {
         return $this->orderDate;
     }
 
-    /**
-     * Returns the due date.
-     *
-     * @return \DateTime
-     */
-    public function getDueDate(): ?\DateTime
+    public function getDueDate(): ?DateTimeInterface
     {
         return $this->dueDate;
     }
 
-    /**
-     * Returns the done.
-     *
-     * @return bool
-     */
     public function isDue(): bool
     {
         return $this->due;
     }
 
-    /**
-     * Sets the done.
-     *
-     * @param bool $due
-     *
-     * @return Line
-     */
     public function setDue(bool $due): self
     {
         $this->due = $due;

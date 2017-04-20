@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\RelayPointRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class RelayPointRepository
@@ -15,7 +18,7 @@ class RelayPointRepository extends ResourceRepository implements RelayPointRepos
     /**
      * @inheritDoc
      */
-    public function findOneByNumberAndPlatform(string $number, string $platform)
+    public function findOneByNumberAndPlatform(string $number, string $platform): ?RelayPointInterface
     {
         $alias = $this->getAlias();
         $qb = $this->getQueryBuilder();
@@ -35,7 +38,7 @@ class RelayPointRepository extends ResourceRepository implements RelayPointRepos
     /**
      * @inheritDoc
      */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'rp';
     }

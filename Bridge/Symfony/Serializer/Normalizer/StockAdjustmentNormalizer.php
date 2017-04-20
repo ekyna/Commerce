@@ -1,26 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class StockAdjustmentNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockAdjustmentNormalizer extends AbstractResourceNormalizer
+class StockAdjustmentNormalizer extends ResourceNormalizer
 {
     use FormatterAwareTrait;
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param StockAdjustmentInterface $adjustment
+     * @param StockAdjustmentInterface $object
      */
-    public function normalize($adjustment, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         $data = [];
 
@@ -28,39 +30,13 @@ class StockAdjustmentNormalizer extends AbstractResourceNormalizer
             $formatter = $this->getFormatter();
 
             $data = array_replace($data, [
-                'quantity'   => $formatter->number($adjustment->getQuantity()),
-                'reason'     => $adjustment->getReason(),
-                'note'       => $adjustment->getNote(),
-                'created_at' => $formatter->date($adjustment->getCreatedAt()),
+                'quantity'   => $formatter->number($object->getQuantity()),
+                'reason'     => $object->getReason(),
+                'note'       => $object->getNote(),
+                'created_at' => $formatter->date($object->getCreatedAt()),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof StockAdjustmentInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, StockAdjustmentInterface::class);
     }
 }

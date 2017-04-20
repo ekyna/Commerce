@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
+use DateTimeInterface;
+use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
@@ -16,35 +21,11 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockUnitUpdater implements StockUnitUpdaterInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected StockUnitResolverInterface $unitResolver;
+    protected StockUnitManagerInterface $unitManager;
+    protected OverflowHandlerInterface $overflowHandler;
 
-    /**
-     * @var StockUnitResolverInterface
-     */
-    protected $unitResolver;
-
-    /**
-     * @var StockUnitManagerInterface
-     */
-    protected $unitManager;
-
-    /**
-     * @var OverflowHandlerInterface
-     */
-    protected $overflowHandler;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockUnitResolverInterface $unitResolver
-     * @param StockUnitManagerInterface  $unitManager
-     * @param OverflowHandlerInterface   $overflowHandler
-     */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         StockUnitResolverInterface $unitResolver,
@@ -57,22 +38,19 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->overflowHandler = $overflowHandler;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateOrdered(Unit $unit, float $quantity, bool $relative = true): void
+    public function updateOrdered(Unit $unit, Decimal $quantity, bool $relative = true): void
     {
         if ($relative) {
             // Turn into absolute quantity
             $quantity = $unit->getOrderedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new StockLogicException("Unexpected ordered quantity.");
+            throw new StockLogicException('Unexpected ordered quantity.');
         }
 
         // Prevent ordered quantity to be set as lower than the received quantity
         if ($quantity < $unit->getReceivedQuantity()) {
-            throw new StockLogicException("The ordered quantity can't be lower than the received quantity.");
+            throw new StockLogicException('The ordered quantity can\'t be lower than the received quantity.');
         }
 
         $unit->setOrderedQuantity($quantity);
@@ -85,28 +63,25 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateReceived(Unit $unit, float $quantity, bool $relative = true): void
+    public function updateReceived(Unit $unit, Decimal $quantity, bool $relative = true): void
     {
         if ($relative) {
             // Turn into absolute quantity
             $quantity = $unit->getReceivedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new StockLogicException("Unexpected received quantity.");
+            throw new StockLogicException('Unexpected received quantity.');
         }
 
         // Prevent received quantity to be set as greater than the ordered quantity
         if ($quantity > $unit->getOrderedQuantity()) {
-            throw new StockLogicException("The received quantity can't be greater than the ordered quantity.");
+            throw new StockLogicException('The received quantity can\'t be greater than the ordered quantity.');
         }
 
         // Prevent received quantity to be set as lower than the shipped + locked - adjusted quantity
         if ($quantity < $unit->getShippedQuantity() + $unit->getLockedQuantity() - $unit->getAdjustedQuantity()) {
             throw new StockLogicException(
-                "The received quantity can't be lower than the sum of shipped and locked quantity minus adjusted quantity."
+                'The received quantity can\'t be lower than the sum of shipped and locked quantity minus adjusted quantity.'
             );
         }
 
@@ -115,10 +90,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateAdjusted(Unit $unit, float $quantity, bool $relative = true): void
+    public function updateAdjusted(Unit $unit, Decimal $quantity, bool $relative = true): void
     {
         if ($relative) {
             // Turn into absolute quantity
@@ -128,7 +100,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         // Prevent adjusted quantity to be set as lower than the shipped + locked - received quantity
         if ($quantity < $unit->getShippedQuantity() + $unit->getLockedQuantity() - $unit->getReceivedQuantity()) {
             throw new StockLogicException(
-                "The adjusted quantity can't be lower than the sum of shipped and locked quantity minus received quantity."
+                'The adjusted quantity can\'t be lower than the sum of shipped and locked quantity minus received quantity.'
             );
         }
 
@@ -142,23 +114,20 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateSold(Unit $unit, float $quantity, bool $relative = true): void
+    public function updateSold(Unit $unit, Decimal $quantity, bool $relative = true): void
     {
         if ($relative) {
             // Turn into absolute quantity
             $quantity = $unit->getSoldQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new StockLogicException("Unexpected sold quantity.");
+            throw new StockLogicException('Unexpected sold quantity.');
         }
 
         // Prevent sold quantity to be set as lower than the shipped + locked quantity
         if ($quantity < $unit->getShippedQuantity() + $unit->getLockedQuantity()) {
             throw new StockLogicException(
-                "The sold quantity can't be lower than the sum of shipped and locked quantity."
+                'The sold quantity can\'t be lower than the sum of shipped and locked quantity.'
             );
         }
 
@@ -169,30 +138,27 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateShipped(Unit $unit, float $quantity, bool $relative = true): void
+    public function updateShipped(Unit $unit, Decimal $quantity, bool $relative = true): void
     {
         if ($relative) {
             // Turn into absolute quantity
             $quantity = $unit->getShippedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new StockLogicException("Unexpected shipped quantity.");
+            throw new StockLogicException('Unexpected shipped quantity.');
         }
 
         // Prevent shipped quantity to be set as greater than the received + adjusted - locked quantity
         if ($quantity > $unit->getReceivedQuantity() + $unit->getAdjustedQuantity() - $unit->getLockedQuantity()) {
             throw new StockLogicException(
-                "The shipped quantity can't be greater than the sum of received and adjusted quantity minus locked quantity."
+                'The shipped quantity can\'t be greater than the sum of received and adjusted quantity minus locked quantity.'
             );
         }
 
         // Prevent shipped quantity to be set as greater than the sold - locked quantity
         if ($quantity > $unit->getSoldQuantity() - $unit->getLockedQuantity()) {
             throw new StockLogicException(
-                "The shipped quantity can't be greater than the sold quantity minus the locked quantity."
+                'The shipped quantity can\'t be greater than the sold quantity minus the locked quantity.'
             );
         }
 
@@ -201,29 +167,26 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateLocked(Unit $unit, float $quantity, bool $relative = true): void
+    public function updateLocked(Unit $unit, Decimal $quantity, bool $relative = true): void
     {
         if ($relative) {
             // Turn into absolute quantity
             $quantity = $unit->getLockedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new StockLogicException("Unexpected locked quantity.");
+            throw new StockLogicException('Unexpected locked quantity.');
         }
 
         // Prevent locked quantity to be set as greater than the received + adjusted - shipped quantity
         if ($quantity > $unit->getReceivedQuantity() + $unit->getAdjustedQuantity() - $unit->getShippedQuantity()) {
             throw new StockLogicException(
-                "The locked quantity can't be greater than the sum of received and adjusted quantity minus the shipped quantity."
+                'The locked quantity can\'t be greater than the sum of received and adjusted quantity minus the shipped quantity.'
             );
         }
         // Prevent locked quantity to be set as greater than the sold - shipped quantity
         if ($quantity > $unit->getSoldQuantity() - $unit->getShippedQuantity()) {
             throw new StockLogicException(
-                "The locked quantity can't be greater than the sold quantity minus the shipped quantity."
+                'The locked quantity can\'t be greater than the sold quantity minus the shipped quantity.'
             );
         }
 
@@ -232,39 +195,36 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateEstimatedDateOfArrival(Unit $unit, \DateTime $date = null): void
+    public function updateEstimatedDateOfArrival(Unit $unit, ?DateTimeInterface $date): void
     {
-        if ($date != $unit->getEstimatedDateOfArrival()) {
-            $unit->setEstimatedDateOfArrival($date);
-
-            $this->persistenceHelper->persistAndRecompute($unit, true);
+        if (DateUtil::equals($date, $unit->getEstimatedDateOfArrival())) {
+            return;
         }
+
+        $unit->setEstimatedDateOfArrival($date);
+
+        $this->persistenceHelper->persistAndRecompute($unit, true);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateNetPrice(Unit $unit, float $price): void
+    public function updateNetPrice(Unit $unit, Decimal $price): void
     {
-        if ($price != $unit->getNetPrice()) {
-            $unit->setNetPrice($price);
-
-            $this->persistenceHelper->persistAndRecompute($unit, true);
+        if ($unit->getNetPrice()->equals($price)) {
+            return;
         }
+
+        $unit->setNetPrice($price);
+
+        $this->persistenceHelper->persistAndRecompute($unit, true);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function updateShippingPrice(Unit $unit, float $price): void
+    public function updateShippingPrice(Unit $unit, Decimal $price): void
     {
-        if ($price != $unit->getShippingPrice()) {
-            $unit->setShippingPrice($price);
-
-            $this->persistenceHelper->persistAndRecompute($unit, true);
+        if ($unit->getShippingPrice()->equals($price)) {
+            return;
         }
+
+        $unit->setShippingPrice($price);
+
+        $this->persistenceHelper->persistAndRecompute($unit, true);
     }
 }

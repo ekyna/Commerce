@@ -2,10 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener;
 
-use Doctrine\Common\EventSubscriber;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
-use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
 use Ekyna\Component\Commerce\Common\Model\Units;
@@ -17,6 +16,7 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
+use Ekyna\Component\Resource\Doctrine\DBAL\Type\PhpDecimalType;
 use Ekyna\Component\Resource\Doctrine\ORM\Mapping\DiscriminatorMapper;
 use Ekyna\Component\Resource\Doctrine\ORM\Mapping\EmbeddableMapper;
 
@@ -25,7 +25,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\Mapping\EmbeddableMapper;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Listener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class LoadMetadataListener implements EventSubscriber
+class LoadMetadataListener
 {
     /**
      * @var DiscriminatorMapper
@@ -79,14 +79,6 @@ class LoadMetadataListener implements EventSubscriber
 
 
     /**
-     * @inheritdoc
-     */
-    public function getSubscribedEvents()
-    {
-        return [Events::loadClassMetadata];
-    }
-
-    /**
      * @param LoadClassMetadataEventArgs $eventArgs
      */
     public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs)
@@ -97,43 +89,44 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        $class = $metadata->getName();
+        $rc = $metadata->getReflectionClass();
+
         // Skip abstract classes.
-        if ((new \ReflectionClass($class))->isAbstract()) {
+        if ($rc->isAbstract()) {
             return;
         }
 
-        if (is_subclass_of($class, IdentityInterface::class)) {
+        if ($rc->implementsInterface(IdentityInterface::class)) {
             $this->configureIdentityMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, Pricing\Model\TaxableInterface::class)) {
+        if ($rc->implementsInterface(Pricing\Model\TaxableInterface::class)) {
             $this->configureTaxableMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, Pricing\Model\VatNumberSubjectInterface::class)) {
+        if ($rc->implementsInterface(Pricing\Model\VatNumberSubjectInterface::class)) {
             $this->configureVatNumberSubjectMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, Payment\PaymentTermSubjectInterface::class)) {
+        if ($rc->implementsInterface(Payment\PaymentTermSubjectInterface::class)) {
             $this->configurePaymentTermSubjectMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, SubjectInterface::class)) {
+        if ($rc->implementsInterface(SubjectInterface::class)) {
             $this->configureSubjectMapping($eventArgs);
-        } elseif (is_subclass_of($class, SubjectReferenceInterface::class)) {
+        } elseif ($rc->implementsInterface(SubjectReferenceInterface::class)) {
             $this->configureSubjectIdentityMapping($eventArgs);
 
-            if (is_subclass_of($class, SubjectRelativeInterface::class)) {
+            if ($rc->implementsInterface(SubjectRelativeInterface::class)) {
                 $this->configureSubjectRelativeMapping($eventArgs);
             }
         }
 
-        if (is_subclass_of($class, Stock\StockSubjectInterface::class)) {
+        if ($rc->implementsInterface(Stock\StockSubjectInterface::class)) {
             $this->configureStockSubjectMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, Stock\StockUnitInterface::class)) {
+        if ($rc->implementsInterface(Stock\StockUnitInterface::class)) {
             $this->configureStockUnitDiscriminatorMap($eventArgs);
         }
     }
@@ -146,15 +139,14 @@ class LoadMetadataListener implements EventSubscriber
     private function configureTaxableMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, Pricing\Model\TaxableInterface::class)) {
+        if (!$metadata->getReflectionClass()->implementsInterface(Pricing\Model\TaxableInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->taxableClassCache)) {
+        if (in_array($metadata->getName(), $this->taxableClassCache)) {
             return;
         }
 
@@ -174,7 +166,7 @@ class LoadMetadataListener implements EventSubscriber
         }
 
         // Cache class
-        $this->taxableClassCache[] = $class;
+        $this->taxableClassCache[] = $metadata->getName();
     }
 
     /**
@@ -185,15 +177,14 @@ class LoadMetadataListener implements EventSubscriber
     private function configureIdentityMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, IdentityInterface::class)) {
+        if (!$metadata->getReflectionClass()->implementsInterface(IdentityInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->identityClassCache)) {
+        if (in_array($metadata->getName(), $this->identityClassCache)) {
             return;
         }
 
@@ -201,7 +192,7 @@ class LoadMetadataListener implements EventSubscriber
         $this->addMappings($metadata, $this->getIdentityMappings());
 
         // Cache class
-        $this->identityClassCache[] = $class;
+        $this->identityClassCache[] = $metadata->getName();
     }
 
     /**
@@ -212,15 +203,14 @@ class LoadMetadataListener implements EventSubscriber
     private function configureVatNumberSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, Pricing\Model\VatNumberSubjectInterface::class)) {
+        if (!$metadata->getReflectionClass()->implementsInterface(Pricing\Model\VatNumberSubjectInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->vatNumberSubjectClassCache)) {
+        if (in_array($metadata->getName(), $this->vatNumberSubjectClassCache)) {
             return;
         }
 
@@ -228,7 +218,7 @@ class LoadMetadataListener implements EventSubscriber
         $this->addMappings($metadata, $this->getVatNumberSubjectMappings());
 
         // Cache class
-        $this->vatNumberSubjectClassCache[] = $class;
+        $this->vatNumberSubjectClassCache[] = $metadata->getName();
     }
 
     /**
@@ -239,15 +229,14 @@ class LoadMetadataListener implements EventSubscriber
     private function configurePaymentTermSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, Payment\PaymentTermSubjectInterface::class)) {
+        if (!$metadata->getReflectionClass()->implementsInterface(Payment\PaymentTermSubjectInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->paymentTermSubjectClassCache)) {
+        if (in_array($metadata->getName(), $this->paymentTermSubjectClassCache)) {
             return;
         }
 
@@ -267,7 +256,7 @@ class LoadMetadataListener implements EventSubscriber
         }
 
         // Cache class
-        $this->paymentTermSubjectClassCache[] = $class;
+        $this->paymentTermSubjectClassCache[] = $metadata->getName();
     }
 
     /**
@@ -278,15 +267,15 @@ class LoadMetadataListener implements EventSubscriber
     private function configureSubjectIdentityMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
+        $rc = $metadata->getReflectionClass();
 
         // Check class
-        if (!is_subclass_of($class, SubjectReferenceInterface::class)) {
+        if (!$rc->implementsInterface(SubjectReferenceInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->subjectIdentityClassCache)) {
+        if (in_array($metadata->getName(), $this->subjectIdentityClassCache)) {
             return;
         }
 
@@ -296,7 +285,7 @@ class LoadMetadataListener implements EventSubscriber
             ->processClassMetadata($metadata, 'subjectIdentity', 'subject_');
 
         // Cache class
-        $this->subjectIdentityClassCache[] = $class;
+        $this->subjectIdentityClassCache[] = $metadata->getName();
     }
 
     /**
@@ -307,15 +296,14 @@ class LoadMetadataListener implements EventSubscriber
     private function configureSubjectRelativeMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, SubjectRelativeInterface::class)) {
+        if (!$metadata->getReflectionClass()->implementsInterface(SubjectRelativeInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->subjectRelativeClassCache)) {
+        if (in_array($metadata->getName(), $this->subjectRelativeClassCache)) {
             return;
         }
 
@@ -323,7 +311,7 @@ class LoadMetadataListener implements EventSubscriber
         $this->addMappings($metadata, $this->getSubjectRelativeMappings());
 
         // Cache class
-        $this->subjectRelativeClassCache[] = $class;
+        $this->subjectRelativeClassCache[] = $metadata->getName();
     }
 
     /**
@@ -334,15 +322,14 @@ class LoadMetadataListener implements EventSubscriber
     private function configureStockSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, Stock\StockSubjectInterface::class)) {
+        if (!$metadata->getReflectionClass()->implementsInterface(Stock\StockSubjectInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->stockSubjectClassCache)) {
+        if (in_array($metadata->getName(), $this->stockSubjectClassCache)) {
             return;
         }
 
@@ -350,7 +337,7 @@ class LoadMetadataListener implements EventSubscriber
         $this->addMappings($metadata, $this->getStockSubjectMappings());
 
         // Cache class
-        $this->stockSubjectClassCache[] = $class;
+        $this->stockSubjectClassCache[] = $metadata->getName();
     }
 
     /**
@@ -361,15 +348,14 @@ class LoadMetadataListener implements EventSubscriber
     private function configureSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, SubjectInterface::class)) {
+        if (!is_subclass_of($metadata->getName(), SubjectInterface::class)) {
             return;
         }
 
         // Don't add twice
-        if (in_array($class, $this->subjectClassCache)) {
+        if (in_array($metadata->getName(), $this->subjectClassCache)) {
             return;
         }
 
@@ -377,7 +363,7 @@ class LoadMetadataListener implements EventSubscriber
         $this->addMappings($metadata, $this->getSubjectMappings());
 
         // Cache class
-        $this->subjectClassCache[] = $class;
+        $this->subjectClassCache[] = $metadata->getName();
     }
 
     /**
@@ -389,7 +375,7 @@ class LoadMetadataListener implements EventSubscriber
     {
         $metadata = $eventArgs->getClassMetadata();
 
-        if (!is_subclass_of($metadata->name, Stock\StockUnitInterface::class)) {
+        if (!$metadata->getReflectionClass()->implementsInterface(Stock\StockUnitInterface::class)) {
             return;
         }
 
@@ -408,7 +394,8 @@ class LoadMetadataListener implements EventSubscriber
     private function getStockUnitMapper(EntityManagerInterface $em)
     {
         if (null === $this->stockUnitMapper) {
-            $this->stockUnitMapper = new DiscriminatorMapper($em, AbstractStockUnit::class);
+            $driver = $em->getConfiguration()->getMetadataDriverImpl();
+            $this->stockUnitMapper = new DiscriminatorMapper($driver, AbstractStockUnit::class);
         }
 
         return $this->stockUnitMapper;
@@ -436,7 +423,7 @@ class LoadMetadataListener implements EventSubscriber
      * @param ClassMetadata $metadata
      * @param array         $mappings
      */
-    private function addMappings(ClassMetadata $metadata, array $mappings)
+    private function addMappings(ClassMetadata $metadata, array $mappings): void
     {
         foreach ($mappings as $mapping) {
             if (!$metadata->hasField($mapping['fieldName'])) {
@@ -447,30 +434,28 @@ class LoadMetadataListener implements EventSubscriber
 
     /**
      * Returns the vat number subject mappings.
-     *
-     * @return array
      */
-    private function getIdentityMappings()
+    private function getIdentityMappings(): array
     {
         return [
             [
                 'fieldName'  => 'gender',
                 'columnName' => 'gender',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 8,
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'firstName',
                 'columnName' => 'first_name',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 64, // TODO length 32
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'lastName',
                 'columnName' => 'last_name',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 64, // TODO length 32
                 'nullable'   => true,
             ],
@@ -479,37 +464,33 @@ class LoadMetadataListener implements EventSubscriber
 
     /**
      * Returns the vat number subject mappings.
-     *
-     * @return array
      */
-    private function getVatNumberSubjectMappings()
+    private function getVatNumberSubjectMappings(): array
     {
         return [
             [
                 'fieldName'  => 'vatNumber',
                 'columnName' => 'vat_number',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 32,
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'vatDetails',
                 'columnName' => 'vat_details',
-                'type'       => 'json_array',
+                'type'       => Types::JSON,
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'vatValid',
                 'columnName' => 'vat_valid',
-                'type'       => 'boolean',
+                'type'       => Types::BOOLEAN,
             ],
         ];
     }
 
     /**
      * Returns the subject relative mappings.
-     *
-     * @return array
      */
     private function getSubjectRelativeMappings(): array
     {
@@ -517,21 +498,21 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'designation',
                 'columnName' => 'designation',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 255,
                 'nullable'   => false,
             ],
             [
                 'fieldName'  => 'reference',
                 'columnName' => 'reference',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 32,
                 'nullable'   => false,
             ],
             [
                 'fieldName'  => 'netPrice',
                 'columnName' => 'net_price',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 15,
                 'scale'      => 5,
                 'nullable'   => false,
@@ -540,27 +521,33 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'weight',
                 'columnName' => 'weight',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 7,
                 'scale'      => 3,
                 'nullable'   => false,
                 'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'unit',
+                'columnName' => 'unit',
+                'type'       => Types::STRING,
+                'length'     => 16,
+                'nullable'   => true,
+                'default'    => Units::PIECE,
             ],
         ];
     }
 
     /**
      * Returns the stock subject mappings.
-     *
-     * @return array
      */
-    private function getStockSubjectMappings()
+    private function getStockSubjectMappings(): array
     {
         return [
             [
                 'fieldName'  => 'stockMode',
                 'columnName' => 'stock_mode',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 16,
                 'nullable'   => false,
                 'default'    => Stock\StockSubjectModes::MODE_AUTO,
@@ -568,7 +555,7 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'stockState',
                 'columnName' => 'stock_state',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 16,
                 'nullable'   => false,
                 'default'    => Stock\StockSubjectStates::STATE_OUT_OF_STOCK,
@@ -576,7 +563,7 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'stockFloor',
                 'columnName' => 'stock_floor',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => true,
@@ -585,7 +572,7 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'inStock',
                 'columnName' => 'in_stock',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => false,
@@ -594,7 +581,7 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'availableStock',
                 'columnName' => 'available_stock',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => false,
@@ -603,7 +590,7 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'virtualStock',
                 'columnName' => 'virtual_stock',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => false,
@@ -612,27 +599,27 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'replenishmentTime',
                 'columnName' => 'replenishment_time',
-                'type'       => 'smallint',
+                'type'       => Types::SMALLINT,
                 'nullable'   => false,
                 'default'    => 7,
             ],
             [
                 'fieldName'  => 'estimatedDateOfArrival',
                 'columnName' => 'estimated_date_of_arrival',
-                'type'       => 'datetime',
+                'type'       => Types::DATETIME_MUTABLE,
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'geocode',
                 'columnName' => 'geocode',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 16,
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'minimumOrderQuantity',
                 'columnName' => 'minimum_order_quantity',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => false,
@@ -641,21 +628,21 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'quoteOnly',
                 'columnName' => 'quote_only',
-                'type'       => 'boolean',
+                'type'       => Types::BOOLEAN,
                 'nullable'   => false,
                 'default'    => false,
             ],
             [
                 'fieldName'  => 'endOfLife',
                 'columnName' => 'end_of_life',
-                'type'       => 'boolean',
+                'type'       => Types::BOOLEAN,
                 'nullable'   => false,
                 'default'    => false,
             ],
             [
                 'fieldName'  => 'unit',
                 'columnName' => 'unit',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 16,
                 'nullable'   => true,
                 'default'    => Units::PIECE,
@@ -663,7 +650,7 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'weight',
                 'columnName' => 'weight',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 7,
                 'scale'      => 3,
                 'nullable'   => false,
@@ -672,28 +659,28 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'width',
                 'columnName' => 'width',
-                'type'       => 'smallint',
+                'type'       => Types::SMALLINT,
                 'nullable'   => false,
                 'default'    => 0,
             ],
             [
                 'fieldName'  => 'height',
                 'columnName' => 'height',
-                'type'       => 'smallint',
+                'type'       => Types::SMALLINT,
                 'nullable'   => false,
                 'default'    => 0,
             ],
             [
                 'fieldName'  => 'depth',
                 'columnName' => 'depth',
-                'type'       => 'smallint',
+                'type'       => Types::SMALLINT,
                 'nullable'   => false,
                 'default'    => 0,
             ],
             [
                 'fieldName'  => 'packageWeight',
                 'columnName' => 'package_weight',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 7,
                 'scale'      => 3,
                 'nullable'   => false,
@@ -702,21 +689,21 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'packageWidth',
                 'columnName' => 'package_width',
-                'type'       => 'smallint',
+                'type'       => Types::SMALLINT,
                 'nullable'   => false,
                 'default'    => 0,
             ],
             [
                 'fieldName'  => 'packageHeight',
                 'columnName' => 'package_height',
-                'type'       => 'smallint',
+                'type'       => Types::SMALLINT,
                 'nullable'   => false,
                 'default'    => 0,
             ],
             [
                 'fieldName'  => 'packageDepth',
                 'columnName' => 'package_depth',
-                'type'       => 'smallint',
+                'type'       => Types::SMALLINT,
                 'nullable'   => false,
                 'default'    => 0,
             ],
@@ -728,20 +715,20 @@ class LoadMetadataListener implements EventSubscriber
      *
      * @return array
      */
-    private function getSubjectMappings()
+    private function getSubjectMappings(): array
     {
         return [
             [
                 'fieldName'  => 'designation',
                 'columnName' => 'designation',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 128,
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'reference',
                 'columnName' => 'reference',
-                'type'       => 'string',
+                'type'       => Types::STRING,
                 'length'     => 32,
                 'unique'     => 'true',
                 'nullable'   => true,
@@ -749,7 +736,7 @@ class LoadMetadataListener implements EventSubscriber
             [
                 'fieldName'  => 'netPrice',
                 'columnName' => 'net_price',
-                'type'       => 'decimal',
+                'type'       => PhpDecimalType::NAME,
                 'precision'  => 10,
                 'scale'      => 5,
                 'nullable'   => true,

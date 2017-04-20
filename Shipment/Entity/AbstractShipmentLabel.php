@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Shipment\Model;
 
 /**
@@ -11,193 +14,121 @@ use Ekyna\Component\Commerce\Shipment\Model;
  */
 abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var Model\ShipmentInterface
-     */
-    protected $shipment;
-
-    /**
-     * @var Model\ShipmentParcelInterface
-     */
-    protected $parcel;
-
-    /**
-     * @var string
-     */
-    protected $content;
-
-    /**
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * @var string
-     */
-    protected $format;
-
-    /**
-     * @var string
-     */
-    protected $size;
-
-    /**
-     * @var \DateTime
-     */
-    protected $updatedAt;
+    protected ?int                           $id        = null;
+    protected ?Model\ShipmentInterface       $shipment  = null;
+    protected ?Model\ShipmentParcelInterface $parcel    = null;
+    protected ?string                        $content   = null;
+    protected ?string                        $type      = null;
+    protected ?string                        $format    = null;
+    protected ?string                        $size      = null;
+    protected ?DateTimeInterface             $updatedAt = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getShipment()
+    public function getShipment(): ?Model\ShipmentInterface
     {
         return $this->shipment;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setShipment(Model\ShipmentInterface $shipment = null)
+    public function setShipment(?Model\ShipmentInterface $shipment): Model\ShipmentLabelInterface
     {
-        if ($this->shipment !== $shipment) {
-            if ($previous = $this->shipment) {
-                $this->shipment = null;
-                $previous->removeLabel($this);
-            }
+        if ($this->shipment === $shipment) {
+            return $this;
+        }
 
-            if ($this->shipment = $shipment) {
-                $this->shipment->addLabel($this);
-            }
+        if ($previous = $this->shipment) {
+            $this->shipment = null;
+            $previous->removeLabel($this);
+        }
+
+        if ($this->shipment = $shipment) {
+            $this->shipment->addLabel($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getParcel()
+    public function getParcel(): ?Model\ShipmentParcelInterface
     {
         return $this->parcel;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setParcel(Model\ShipmentParcelInterface $parcel = null)
+    public function setParcel(?Model\ShipmentParcelInterface $parcel): Model\ShipmentLabelInterface
     {
-        if ($this->parcel !== $parcel) {
-            if ($previous = $this->parcel) {
-                $this->parcel = null;
-                $previous->removeLabel($this);
-            }
+        if ($this->parcel === $parcel) {
+            return $this;
+        }
 
-            if ($this->parcel = $parcel) {
-                $this->parcel->addLabel($this);
-            }
+        if ($previous = $this->parcel) {
+            $this->parcel = null;
+            $previous->removeLabel($this);
+        }
+
+        if ($this->parcel = $parcel) {
+            $this->parcel->addLabel($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->content;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setContent(string $content)
+    public function setContent(?string $content): Model\ShipmentLabelInterface
     {
         $this->content = $content;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setType($type)
+    public function setType(?string $type): Model\ShipmentLabelInterface
     {
         $this->type = $type;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getFormat()
+    public function getFormat(): ?string
     {
         return $this->format;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setFormat(string $format)
+    public function setFormat(?string $format): Model\ShipmentLabelInterface
     {
         $this->format = $format;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSize()
+    public function getSize(): ?string
     {
         return $this->size;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSize(string $size)
+    public function setSize(?string $size): Model\ShipmentLabelInterface
     {
         $this->size = $size;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setUpdatedAt(\DateTime $date = null)
+    public function setUpdatedAt(?DateTimeInterface $date): Model\ShipmentLabelInterface
     {
         $this->updatedAt = $date;
 
@@ -207,9 +138,9 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
     /**
      * Returns the available types.
      *
-     * @return string[]
+     * @return array<string>
      */
-    public static function getTypes()
+    public static function getTypes(): array
     {
         return [
             static::TYPE_SHIPMENT,
@@ -222,9 +153,9 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
     /**
      * Returns the available formats.
      *
-     * @return string[]
+     * @return array<string>
      */
-    public static function getFormats()
+    public static function getFormats(): array
     {
         return [
             static::FORMAT_GIF,
@@ -236,9 +167,9 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
     /**
      * Returns the available sizes.
      *
-     * @return string[]
+     * @return array<string>
      */
-    public static function getSizes()
+    public static function getSizes(): array
     {
         return [
             static::SIZE_A6,

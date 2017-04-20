@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Resolver;
 
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 
@@ -14,28 +17,16 @@ interface DueDateResolverInterface
 {
     /**
      * Returns whether the given invoice is due.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return bool
      */
     public function isInvoiceDue(InvoiceInterface $invoice): bool;
 
     /**
      * Resolves the sale's due (outstanding) date.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return \DateTime|null
      */
-    public function resolveSaleDueDate(SaleInterface $sale): ?\DateTime;
+    public function resolveSaleDueDate(SaleInterface $sale): ?DateTimeInterface;
 
     /**
      * Resolves the invoice due date.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return \DateTime|null
      */
-    public function resolveInvoiceDueDate(InvoiceInterface $invoice): ?\DateTime;
+    public function resolveInvoiceDueDate(InvoiceInterface $invoice): ?DateTimeInterface;
 }

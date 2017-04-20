@@ -15,7 +15,7 @@ class StockAdjustment extends Constraint
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTargets()
     {

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Updater;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 
@@ -15,16 +18,12 @@ interface CustomerUpdaterInterface
     /**
      * Handles the payment insertion.
      *
-     * @param PaymentInterface $payment
-     *
      * @return bool Whether the customer has been changed.
      */
     public function handlePaymentInsert(PaymentInterface $payment): bool;
 
     /**
      * Handles the payment update.
-     *
-     * @param PaymentInterface $payment
      *
      * @return bool Whether the customer has been changed.
      */
@@ -33,8 +32,6 @@ interface CustomerUpdaterInterface
     /**
      * Handles the payment delete.
      *
-     * @param PaymentInterface $payment
-     *
      * @return bool Whether the customer has been changed.
      */
     public function handlePaymentDelete(PaymentInterface $payment): bool;
@@ -42,22 +39,18 @@ interface CustomerUpdaterInterface
     /**
      * Updates the customer's credit balance.
      *
-     * @param CustomerInterface $customer
-     * @param float             $amount
-     * @param bool              $relative
-     *
      * @return bool Whether the customer has been changed.
      */
-    public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false): bool;
+    public function updateCreditBalance(CustomerInterface $customer, Decimal $amount, bool $relative = false): bool;
 
     /**
      * Updates the customer's outstanding balance.
      *
-     * @param CustomerInterface $customer
-     * @param float             $amount
-     * @param bool              $relative
-     *
      * @return bool Whether the customer has been changed.
      */
-    public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false): bool;
+    public function updateOutstandingBalance(
+        CustomerInterface $customer,
+        Decimal           $amount,
+        bool              $relative = false
+    ): bool;
 }

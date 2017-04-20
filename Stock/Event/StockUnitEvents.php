@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Event;
 
 /**
@@ -9,8 +11,7 @@ namespace Ekyna\Component\Commerce\Stock\Event;
  */
 final class StockUnitEvents
 {
-    const COST_CHANGE = 'ekyna_commerce.stock_unit.cost_change';
-
+    public const COST_CHANGE = 'ekyna_commerce.stock_unit.cost_change';
 
     /**
      * Disabled constructor.

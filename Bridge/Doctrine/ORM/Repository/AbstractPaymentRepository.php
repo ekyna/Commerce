@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
+
+use function is_null;
 
 /**
  * Class AbstractPaymentRepository
@@ -16,23 +21,16 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 abstract class AbstractPaymentRepository extends ResourceRepository implements PaymentRepositoryInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function findOneByKey(string $key): ?PaymentInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->findOneBy(['key' => $key]);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findByMethodAndStates(
         PaymentMethodInterface $method,
         array $states,
         bool $filter = null,
-        \DateTime $fromDate = null
+        DateTimeInterface $fromDate = null
     ): array {
         foreach ($states as $state) {
             PaymentStates::isValidState($state);
@@ -61,10 +59,7 @@ abstract class AbstractPaymentRepository extends ResourceRepository implements P
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findByMonth(\DateTime $date, array $states): array
+    public function findByMonth(DateTimeInterface $date, array $states): array
     {
         foreach ($states as $state) {
             PaymentStates::isValidState($state);
@@ -74,7 +69,7 @@ abstract class AbstractPaymentRepository extends ResourceRepository implements P
 
         $start = clone $date;
         $start->modify('first day of this month');
-        $start->setTime(0, 0, 0, 0);
+        $start->setTime(0, 0);
 
         $end = clone $date;
         $end->modify('last day of this month');

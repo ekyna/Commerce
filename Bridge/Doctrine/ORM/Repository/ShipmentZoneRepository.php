@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentZoneRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class ShipmentZoneRepository
@@ -14,9 +16,9 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 class ShipmentZoneRepository extends ResourceRepository implements ShipmentZoneRepositoryInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findHavingPrices(ShipmentMethodInterface $method = null)
+    public function findHavingPrices(ShipmentMethodInterface $method = null): array
     {
         $qb = $this->getCollectionQueryBuilder();
         $qb

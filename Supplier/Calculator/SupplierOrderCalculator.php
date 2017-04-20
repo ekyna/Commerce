@@ -1,13 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Calculator;
 
+use DateTime;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Exception;
+
+use function spl_object_id;
 
 /**
  * Class SupplierOrderCalculator
@@ -16,28 +23,10 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
  */
 class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
 {
-    /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
+    private CurrencyConverterInterface $currencyConverter;
+    private TaxResolverInterface $taxResolver;
+    private array $cache;
 
-    /**
-     * @var TaxResolverInterface
-     */
-    private $taxResolver;
-
-    /**
-     * @var array
-     */
-    private $cache;
-
-
-    /**
-     * Constructor.
-     *
-     * @param CurrencyConverterInterface $currencyConverter
-     * @param TaxResolverInterface       $taxResolver
-     */
     public function __construct(CurrencyConverterInterface $currencyConverter, TaxResolverInterface $taxResolver)
     {
         $this->currencyConverter = $currencyConverter;
@@ -54,10 +43,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         $this->cache = [];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculatePaymentTotal(SupplierOrderInterface $order): float
+    public function calculatePaymentTotal(SupplierOrderInterface $order): Decimal
     {
         $total = $this->calculatePaymentBase($order) + $this->calculatePaymentTax($order);
 
@@ -66,10 +52,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         return Money::round($total, $currency);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculatePaymentTax(SupplierOrderInterface $order): float
+    public function calculatePaymentTax(SupplierOrderInterface $order): Decimal
     {
         $currency = $order->getCurrency()->getCode();
 
@@ -87,8 +70,8 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             $taxes = $this->taxResolver->resolveTaxes($item, $order);
 
             foreach ($taxes as $tax) {
-                if (!isset($bases[$rate = $tax->getRate()])) {
-                    $bases[$rate] = 0;
+                if (!isset($bases[$rate = $tax->getRate()->toFixed(2)])) {
+                    $bases[$rate] = new Decimal(0);
                 }
 
                 $bases[$rate] += $base;
@@ -97,15 +80,15 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
 
         // Shipping
         if (null !== $tax = $order->getSupplier()->getTax()) {
-            if (!isset($bases[$rate = $tax->getRate()])) {
-                $bases[$rate] = 0;
+            if (!isset($bases[$rate = $tax->getRate()->toFixed(2)])) {
+                $bases[$rate] = new Decimal(0);
             }
 
             $bases[$rate] += $order->getShippingCost();
         }
 
         // Calculation
-        $total = 0;
+        $total = new Decimal(0);
         foreach ($bases as $rate => $base) {
             $total += Money::round($base * $rate / 100, $currency);
         }
@@ -113,12 +96,9 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateItemsTotal(SupplierOrderInterface $order): float
+    public function calculateItemsTotal(SupplierOrderInterface $order): Decimal
     {
-        $total = 0;
+        $total = new Decimal(0);
 
         $currency = $order->getCurrency()->getCode();
 
@@ -130,19 +110,19 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateForwarderTotal(SupplierOrderInterface $order): float
+    public function calculateForwarderTotal(SupplierOrderInterface $order): Decimal
     {
         if (null === $carrier = $order->getCarrier()) {
-            return 0.;
+            return new Decimal(0);
         }
 
         $currency = $this->currencyConverter->getDefaultCurrency();
         $base = $order->getForwarderFee();
 
-        $taxAmount = 0;
-        if (null !== $tax = $carrier->getTax()) {
+        $taxAmount = new Decimal(0);
+        if ($tax = $carrier->getTax()) {
             $taxAmount = Money::round($base * $tax->getRate() / 100, $currency);
         }
 
@@ -151,12 +131,9 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         return Money::round($total, $currency);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateWeightTotal(SupplierOrderInterface $order): float
+    public function calculateWeightTotal(SupplierOrderInterface $order): Decimal
     {
-        $total = 0.;
+        $total = new Decimal(0);
 
         foreach ($order->getItems() as $item) {
             $total += $item->getWeight() * $item->getQuantity();
@@ -165,74 +142,54 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateStockUnitNetPrice(SupplierOrderItemInterface $item): float
+    public function calculateStockUnitNetPrice(SupplierOrderItemInterface $item): Decimal
     {
         if (null === $order = $item->getOrder()) {
-            throw new StockLogicException("Supplier order item's order must be set at this point.");
+            throw new StockLogicException('Supplier order item\'s order must be set at this point.');
         }
 
-        $currency = $order->getCurrency()->getCode();
-
-        if (1 !== Money::compare($order->getDiscountTotal(), 0, $currency)) {
-            return round($this->convertPrice($item->getNetPrice(), $order, false), 5);
+        if ($order->getDiscountTotal()->isZero()) {
+            return $this->convertPrice($item->getNetPrice(), $order, false)->round(5);
         }
 
         $discount = $order->getDiscountTotal() * $this->getWeighting($item, false);
 
-        return round($this->convertPrice($item->getNetPrice() - $discount, $order, false), 5);
+        return $this->convertPrice($item->getNetPrice() - $discount, $order, false)->round(5);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateStockUnitShippingPrice(SupplierOrderItemInterface $item): float
+    public function calculateStockUnitShippingPrice(SupplierOrderItemInterface $item): Decimal
     {
         if (null === $order = $item->getOrder()) {
-            throw new StockLogicException("Supplier order item's order must be set at this point.");
+            throw new StockLogicException('Supplier order item\'s order must be set at this point.');
         }
-
-        $currency = $order->getCurrency()->getCode();
 
         $total = $this->convertPrice($order->getShippingCost(), $order)
-            + $order->getForwarderFee() + $order->getCustomsTax();
+            + $order->getForwarderFee()
+            + $order->getCustomsTax();
 
-        if (0 === Money::compare($total, 0, $currency)) {
-            return 0.;
+        if ($total->isZero()) {
+            return $total;
         }
 
-        return round($total * $this->getWeighting($item), 5);
+        return $total->mul($this->getWeighting($item))->round(5);
     }
 
     /**
      * Calculates the supplier order base.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return float
      */
-    private function calculatePaymentBase(SupplierOrderInterface $order): float
+    private function calculatePaymentBase(SupplierOrderInterface $order): Decimal
     {
         $base = $this->calculateItemsTotal($order) + $order->getShippingCost() - $order->getDiscountTotal();
 
-        $currency = $order->getCurrency()->getCode();
-
-        return Money::round($base, $currency);
+        return Money::round($base, $order->getCurrency()->getCode());
     }
 
     /**
      * Converts the given price in default currency.
      *
-     * @param float                  $price
-     * @param SupplierOrderInterface $order
-     * @param bool                   $round
-     *
-     * @return float
-     * @throws \Exception
+     * @throws Exception
      */
-    private function convertPrice(float $price, SupplierOrderInterface $order, bool $round = true): float
+    private function convertPrice(Decimal $price, SupplierOrderInterface $order, bool $round = true): Decimal
     {
         $currency = $order->getCurrency()->getCode();
 
@@ -243,11 +200,11 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         if ($rate = $order->getExchangeRate()) {
             return $this
                 ->currencyConverter
-                ->convertWithRate($price, 1 / $rate, null, $round);
+                ->convertWithRate($price, (new Decimal(1))->div($rate), null, $round);
         }
 
         $date = $order->getPaymentDate();
-        if ($date > new \DateTime()) {
+        if ($date > new DateTime()) {
             $date = null;
         }
 
@@ -259,26 +216,21 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
     /**
      * Returns the item weighting.
      *
-     * @param SupplierOrderItemInterface $item
-     * @param bool                       $byWeight
-     *
-     * @return float
-     *
      * @throws StockLogicException
      */
-    private function getWeighting(SupplierOrderItemInterface $item, bool $byWeight = true): float
+    private function getWeighting(SupplierOrderItemInterface $item, bool $byWeight = true): Decimal
     {
         if (null === $order = $item->getOrder()) {
             throw new StockLogicException("Supplier order item's order must be set at this point.");
         }
 
-        $orderKey = spl_object_hash($order);
+        $orderKey = spl_object_id($order);
         if (!isset($this->cache[$orderKey])) {
             $this->calculateWeighting($order);
         }
 
         $cache = $this->cache[$orderKey];
-        $itemKey = spl_object_hash($item);
+        $itemKey = spl_object_id($item);
 
         if ($byWeight && !$cache['no_weight']) {
             return $cache['items'][$itemKey]['weight'];
@@ -293,30 +245,26 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
 
     /**
      * Calculates order item's weighting.
-     *
-     * @param SupplierOrderInterface $order
      */
     private function calculateWeighting(SupplierOrderInterface $order): void
     {
-        $orderKey = spl_object_hash($order);
+        $orderKey = spl_object_id($order);
 
         if (isset($this->cache[$orderKey])) {
             return;
         }
 
-        $currency = $order->getCurrency()->getCode();
-
         $amount = [];
         $total = [
-            'weight'   => 0,
-            'price'    => 0,
-            'quantity' => 0,
+            'weight'   => new Decimal(0),
+            'price'    => new Decimal(0),
+            'quantity' => new Decimal(0),
         ];
 
         // Gather amounts and totals
         $noWeight = $noPrice = true;
         foreach ($order->getItems() as $item) {
-            $amount[spl_object_hash($item)] = [
+            $amount[spl_object_id($item)] = [
                 'weight'   => $weight = $item->getWeight(),
                 'price'    => $price = $item->getNetPrice(),
                 'quantity' => 1,
@@ -328,11 +276,11 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             $total['price'] += $price * $quantity;
             $total['quantity'] += $quantity;
 
-            if (1 === bccomp($weight, 0, 5)) { // TODO Use packaging format
+            if (0 < $weight) { // TODO Use packaging format
                 $noWeight = false;
             }
 
-            if (1 === Money::compare($price, 0, $currency)) {
+            if (0 < $price) {
                 $noPrice = false;
             }
         }
@@ -345,7 +293,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
                 if (0 < $total[$key]) {
                     $items[$id][$key] = $data[$key] / $total[$key];
                 } else {
-                    $items[$id][$key] = 0;
+                    $items[$id][$key] = new Decimal(0);
                 }
             }
         }

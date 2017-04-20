@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Entity;
 
 use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
-use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Resource\Model\RuntimeUidTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -19,94 +23,50 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
 {
     use NumberSubjectTrait;
     use TimestampableTrait;
+    use RuntimeUidTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var bool
-     */
-    protected $credit;
-
-    /**
-     * The paid total (document currency).
-     *
-     * @var float
-     */
-    protected $paidTotal;
-
-    /**
-     * The paid total (default currency).
-     *
-     * @var float
-     */
-    protected $realPaidTotal;
-
-    /**
-     * @var DateTime
-     */
-    protected $dueDate;
-
-    /**
-     * @var bool
-     */
-    protected $ignoreStock;
+    protected ?int $id = null;
+    protected bool $credit;
+    /** The paid total (document currency).*/
+    protected Decimal $paidTotal;
+    /** The paid total (default currency). */
+    protected Decimal            $realPaidTotal;
+    protected ?DateTimeInterface $dueDate = null;
+    protected bool               $ignoreStock;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
 
-        $this->type          = Document\DocumentTypes::TYPE_INVOICE;
-        $this->credit        = false;
-        $this->paidTotal     = 0;
-        $this->realPaidTotal = 0;
-        $this->ignoreStock   = false;
-        $this->createdAt     = new DateTime();
+        $this->type = Document\DocumentTypes::TYPE_INVOICE;
+        $this->credit = false;
+        $this->paidTotal = new Decimal(0);
+        $this->realPaidTotal = new Decimal(0);
+        $this->ignoreStock = false;
+        $this->createdAt = new DateTime();
     }
 
-    /**
-     * Clones the invoice.
-     */
     public function __clone()
     {
         $this->id = null;
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->number ?: 'New invoice';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isCredit(): bool
     {
         return $this->credit;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setCredit(bool $credit): Invoice\InvoiceInterface
     {
         $this->credit = $credit;
@@ -116,9 +76,6 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setType(string $type): DocumentInterface
     {
         $this->credit = $type === Document\DocumentTypes::TYPE_CREDIT;
@@ -126,71 +83,47 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
         return parent::setType($type);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPaidTotal(): float
+    public function getPaidTotal(): Decimal
     {
         return $this->paidTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setPaidTotal(float $amount): Invoice\InvoiceInterface
+    public function setPaidTotal(Decimal $amount): Invoice\InvoiceInterface
     {
         $this->paidTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getRealPaidTotal(): float
+    public function getRealPaidTotal(): Decimal
     {
         return $this->realPaidTotal;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setRealPaidTotal(float $amount): Invoice\InvoiceInterface
+    public function setRealPaidTotal(Decimal $amount): Invoice\InvoiceInterface
     {
         $this->realPaidTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDueDate(): ?DateTime
+    public function getDueDate(): ?DateTimeInterface
     {
         return $this->dueDate;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDueDate(DateTime $dueDate = null): Invoice\InvoiceInterface
+    public function setDueDate(?DateTimeInterface $dueDate): Invoice\InvoiceInterface
     {
         $this->dueDate = $dueDate;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isIgnoreStock(): bool
     {
         return $this->ignoreStock;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setIgnoreStock(bool $ignoreStock): Invoice\InvoiceInterface
     {
         $this->ignoreStock = $ignoreStock;
@@ -198,13 +131,10 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isPaid(): bool
     {
-        if ($this->grandTotal && $this->paidTotal && $this->currency) {
-            return 1 !== Money::compare($this->grandTotal, $this->paidTotal, $this->currency);
+        if (!$this->grandTotal->isZero() && !$this->paidTotal->isZero()) {
+            return $this->grandTotal <= $this->paidTotal;
         }
 
         return false;

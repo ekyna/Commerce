@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
@@ -13,44 +15,34 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
  */
 abstract class AbstractSaleItemAdjustment extends AbstractAdjustment implements SaleItemAdjustmentInterface
 {
-    /**
-     * @var SaleItemInterface
-     */
-    protected $item;
+    protected ?SaleItemInterface $item = null;
 
 
-    /**
-     * @inheritdoc
-     */
     public function getItem(): ?SaleItemInterface
     {
         return $this->item;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setItem(SaleItemInterface $item = null): SaleItemAdjustmentInterface
+    public function setItem(?SaleItemInterface $item): SaleItemAdjustmentInterface
     {
         $item && $this->assertSaleItemClass($item);
 
-        if ($item !== $this->item) {
-            if ($previous = $this->item) {
-                $this->item = null;
-                $previous->removeAdjustment($this);
-            }
+        if ($item === $this->item) {
+            return $this;
+        }
 
-            if ($this->item = $item) {
-                $this->item->addAdjustment($this);
-            }
+        if ($previous = $this->item) {
+            $this->item = null;
+            $previous->removeAdjustment($this);
+        }
+
+        if ($this->item = $item) {
+            $this->item->addAdjustment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getAdjustable(): ?AdjustableInterface
     {
         return $this->item;
@@ -58,8 +50,6 @@ abstract class AbstractSaleItemAdjustment extends AbstractAdjustment implements 
 
     /**
      * Asserts that the given sale item is an instance of the expected class.
-     *
-     * @param SaleItemInterface $item
      */
     abstract protected function assertSaleItemClass(SaleItemInterface $item): void;
 }

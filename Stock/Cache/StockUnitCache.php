@@ -45,7 +45,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function add(StockUnitInterface $unit): void
     {
@@ -63,7 +63,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isAdded(StockUnitInterface $unit): bool
     {
@@ -75,7 +75,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function remove(StockUnitInterface $unit): void
     {
@@ -93,7 +93,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isRemoved(StockUnitInterface $unit): bool
     {
@@ -105,7 +105,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findAddedBySubject(StockSubjectInterface $subject): array
     {
@@ -119,7 +119,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findRemovedBySubject(StockSubjectInterface $subject): array
     {

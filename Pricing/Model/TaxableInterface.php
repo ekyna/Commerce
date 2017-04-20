@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 /**
@@ -9,19 +11,7 @@ namespace Ekyna\Component\Commerce\Pricing\Model;
  */
 interface TaxableInterface
 {
-    /**
-     * Returns the tax group.
-     *
-     * @return TaxGroupInterface|null
-     */
     public function getTaxGroup(): ?TaxGroupInterface;
 
-    /**
-     * Sets the tax group.
-     *
-     * @param TaxGroupInterface $taxGroup
-     *
-     * @return $this|TaxableInterface
-     */
-    public function setTaxGroup(TaxGroupInterface $taxGroup = null): TaxableInterface;
+    public function setTaxGroup(?TaxGroupInterface $taxGroup): TaxableInterface;
 }

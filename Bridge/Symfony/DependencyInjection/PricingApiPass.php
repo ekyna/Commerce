@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Ekyna\Component\Commerce\Pricing\Api\PricingApi;
@@ -14,24 +16,16 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class PricingApiPass implements CompilerPassInterface
 {
-    /**
-     * @inheritDoc
-     */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasDefinition('ekyna_commerce.pricing.api')) {
-            return;
-        }
-
-        $apiDefinition = $container->getDefinition('ekyna_commerce.pricing.api');
+        $definition = $container->getDefinition('ekyna_commerce.api.pricing');
 
         // Register API providers
         $providers = [];
-        $services = $container->findTaggedServiceIds(PricingApi::PROVIDER_TAG);
-        foreach ($services as $id => $attributes) {
-            $providers[] = new Reference($id);
+        foreach ($container->findTaggedServiceIds(PricingApi::PROVIDER_TAG, true) as $serviceId => $tags) {
+            $providers[] = new Reference($serviceId);
         }
 
-        $apiDefinition->replaceArgument(0, $providers);
+        $definition->replaceArgument(0, $providers);
     }
 }

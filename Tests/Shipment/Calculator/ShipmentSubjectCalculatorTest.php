@@ -27,7 +27,7 @@ class ShipmentSubjectCalculatorTest extends TestCase
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function setUp(): void
     {
@@ -41,7 +41,7 @@ class ShipmentSubjectCalculatorTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function tearDown(): void
     {

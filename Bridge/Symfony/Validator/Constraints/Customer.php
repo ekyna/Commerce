@@ -25,7 +25,7 @@ class Customer extends Constraint
 
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTargets()
     {

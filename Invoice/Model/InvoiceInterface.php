@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
-use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
@@ -19,108 +22,62 @@ interface InvoiceInterface extends
     DocumentInterface,
     Resource\ResourceInterface,
     Resource\TimestampableInterface,
+    Resource\RuntimeUidInterface,
     Common\NumberSubjectInterface
 {
     /**
-     * Returns the credit.
-     *
-     * @return bool
+     * Returns whether this invoice is a credit.
      */
     public function isCredit(): bool;
 
     /**
-     * Sets the credit.
-     *
-     * @param bool $credit
-     *
-     * @return InvoiceInterface
+     * Sets whether this invoice is a credit.
      */
     public function setCredit(bool $credit): InvoiceInterface;
 
     /**
      * Sets the shipment.
-     *
-     * @param ShipmentInterface|null $shipment
-     *
-     * @return $this|InvoiceInterface
      */
-    public function setShipment(ShipmentInterface $shipment = null): InvoiceInterface;
+    public function setShipment(?ShipmentInterface $shipment): InvoiceInterface;
 
     /**
      * Returns the shipment.
-     *
-     * @return ShipmentInterface
      */
     public function getShipment(): ?ShipmentInterface;
 
-    /**
-     * Returns the paid total.
-     *
-     * @return float
-     */
-    public function getPaidTotal(): float;
+    public function getPaidTotal(): Decimal;
+
+    public function setPaidTotal(Decimal $amount): InvoiceInterface;
 
     /**
-     * Sets the paid total.
-     *
-     * @param float $amount
-     *
-     * @return $this|InvoiceInterface
+     * Returns the real paid total (default currency).
      */
-    public function setPaidTotal(float $amount): InvoiceInterface;
+    public function getRealPaidTotal(): Decimal;
 
     /**
-     * Returns the real paid total.
-     *
-     * @return float
+     * Sets the real paid total (default currency).
      */
-    public function getRealPaidTotal(): float;
+    public function setRealPaidTotal(Decimal $amount): InvoiceInterface;
 
-    /**
-     * Sets the real paid total.
-     *
-     * @param float $amount
-     *
-     * @return $this|InvoiceInterface
-     */
-    public function setRealPaidTotal(float $amount): InvoiceInterface;
-
-    /**
-     * Returns the due date.
-     *
-     * @return DateTime
-     */
-    public function getDueDate(): ?DateTime;
+    public function getDueDate(): ?DateTimeInterface;
 
     /**
      * Sets the due date.
-     *
-     * @param DateTime|null $dueDate
-     *
-     * @return $this|InvoiceInterface
      */
-    public function setDueDate(DateTime $dueDate = null): InvoiceInterface;
+    public function setDueDate(?DateTimeInterface $dueDate): InvoiceInterface;
 
     /**
      * Returns whether to ignore stock (credit only, won't impact sold quantities if true).
-     *
-     * @return bool
      */
     public function isIgnoreStock(): bool;
 
     /**
      * Sets whether to ignore stock (credit only, won't impact sold quantities if true).
-     *
-     * @param bool $ignoreStock
-     *
-     * @return InvoiceInterface
      */
     public function setIgnoreStock(bool $ignoreStock): InvoiceInterface;
 
     /**
      * Returns whether this invoice is paid.
-     *
-     * @return bool
      */
     public function isPaid(): bool;
 }

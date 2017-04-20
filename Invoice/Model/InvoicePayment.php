@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 
 /**
@@ -11,44 +14,22 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
  */
 class InvoicePayment
 {
-    /**
-     * @var PaymentInterface
-     */
-    private $payment;
+    private ?PaymentInterface $payment = null;
+    private ?InvoiceInterface $invoice = null;
+    private Decimal           $amount;
+    private Decimal           $realAmount;
 
-    /**
-     * @var InvoiceInterface
-     */
-    private $invoice;
+    public function __construct()
+    {
+        $this->amount = new Decimal(0);
+        $this->realAmount = new Decimal(0);
+    }
 
-    /**
-     * @var float
-     */
-    private $amount;
-
-    /**
-     * @var float
-     */
-    private $realAmount;
-
-
-    /**
-     * Returns the payment.
-     *
-     * @return PaymentInterface|null
-     */
     public function getPayment(): ?PaymentInterface
     {
         return $this->payment;
     }
 
-    /**
-     * Sets the payment.
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return InvoicePayment
-     */
     public function setPayment(PaymentInterface $payment): InvoicePayment
     {
         $this->payment = $payment;
@@ -56,23 +37,11 @@ class InvoicePayment
         return $this;
     }
 
-    /**
-     * Returns the invoice.
-     *
-     * @return InvoiceInterface|null
-     */
     public function getInvoice(): ?InvoiceInterface
     {
         return $this->invoice;
     }
 
-    /**
-     * Sets the invoice.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return InvoicePayment
-     */
     public function setInvoice(InvoiceInterface $invoice): InvoicePayment
     {
         $this->invoice = $invoice;
@@ -80,48 +49,24 @@ class InvoicePayment
         return $this;
     }
 
-    /**
-     * Returns the amount.
-     *
-     * @return float
-     */
-    public function getAmount(): float
+    public function getAmount(): Decimal
     {
         return $this->amount;
     }
 
-    /**
-     * Sets the amount.
-     *
-     * @param float $amount
-     *
-     * @return InvoicePayment
-     */
-    public function setAmount(float $amount): InvoicePayment
+    public function setAmount(Decimal $amount): InvoicePayment
     {
         $this->amount = $amount;
 
         return $this;
     }
 
-    /**
-     * Returns the realAmount.
-     *
-     * @return float
-     */
-    public function getRealAmount(): float
+    public function getRealAmount(): Decimal
     {
         return $this->realAmount;
     }
 
-    /**
-     * Sets the realAmount.
-     *
-     * @param float $amount
-     *
-     * @return InvoicePayment
-     */
-    public function setRealAmount(float $amount): InvoicePayment
+    public function setRealAmount(Decimal $amount): InvoicePayment
     {
         $this->realAmount = $amount;
 

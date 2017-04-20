@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
+use DateTime;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as SaleItem;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
@@ -13,6 +17,8 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface as Subject;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
+use const INF;
+
 /**
  * Class ShipmentSubjectCalculator
  * @package Ekyna\Component\Commerce\Shipment\Calculator
@@ -20,45 +26,24 @@ use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
  */
 class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 {
-    /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
+    protected SubjectHelperInterface $subjectHelper;
+    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
 
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    protected $invoiceCalculator;
-
-
-    /**
-     * Constructor.
-     *
-     * @param SubjectHelperInterface $subjectHelper
-     */
     public function __construct(SubjectHelperInterface $subjectHelper)
     {
         $this->subjectHelper = $subjectHelper;
     }
 
-    /**
-     * Sets the invoice calculator.
-     *
-     * @param InvoiceSubjectCalculatorInterface $calculator
-     */
     public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $calculator): void
     {
         $this->invoiceCalculator = $calculator;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isShipped(SaleItem $saleItem): bool
     {
         // If compound with only public children
         if ($saleItem->isCompound() && !$saleItem->hasPrivateChildren()) {
-            // Shipped if any of it's children is
+            // Shipped if any of its children is
             foreach ($saleItem->getChildren() as $child) {
                 if ($this->isShipped($child)) {
                     return true;
@@ -84,15 +69,15 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateAvailableQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    public function calculateAvailableQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal
     {
         if ($saleItem->isCompound()) {
-            $quantity = INF;
+            $quantity = new Decimal(INF);
             foreach ($saleItem->getChildren() as $child) {
-                $cQty = $this->calculateAvailableQuantity($child, $ignore) / $child->getQuantity();
+                $cQty = $this
+                    ->calculateAvailableQuantity($child, $ignore)
+                    ->div($child->getQuantity());
+
                 $quantity = min($quantity, $cQty);
             }
 
@@ -100,12 +85,12 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         }
 
         if (!$this->hasStockableSubject($saleItem)) {
-            return INF;
+            return new Decimal(INF);
         }
 
         // TODO Packaging format
         /** @var Stock\StockAssignmentsInterface $saleItem */
-        $quantity = 0;
+        $quantity = new Decimal(0);
         foreach ($saleItem->getStockAssignments() as $assignment) {
             $quantity += $assignment->getShippableQuantity();
         }
@@ -125,15 +110,13 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
             }
         }
 
-        return max($quantity, 0);
+        return max($quantity, new Decimal(0));
     }
 
     /**
-     * @inheritdoc
-     *
-     * @todo Add bool $strict parameter : really shipped and not created/prepared
+     * @TODO Add bool $strict parameter : really shipped and not created/prepared
      */
-    public function calculateShippableQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    public function calculateShippableQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal
     {
         // TODO Return zero if not shippable (?)
 
@@ -145,13 +128,10 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         $quantity -= $this->calculateShippedQuantity($saleItem, $ignore);
         $quantity += $this->calculateReturnedQuantity($saleItem);
 
-        return max($quantity, 0);
+        return max($quantity, new Decimal(0));
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateReturnableQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    public function calculateReturnableQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal
     {
         // Quantity = Shipped - Returned (ignoring current)
 
@@ -159,28 +139,19 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         $quantity = $this->calculateShippedQuantity($saleItem)
             - $this->calculateReturnedQuantity($saleItem, $ignore);
 
-        return max($quantity, 0);
+        return max($quantity, new Decimal(0));
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateShippedQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    public function calculateShippedQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal
     {
         return $this->calculateQuantity($saleItem, false, $ignore);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateReturnedQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    public function calculateReturnedQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal
     {
         return $this->calculateQuantity($saleItem, true, $ignore);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildShipmentQuantityMap(Subject $subject): array
     {
         $quantities = [];
@@ -194,9 +165,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         return $quantities;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildRemainingList(Shipment $shipment): RemainingList
     {
         $sale = $shipment->getSale();
@@ -276,7 +244,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
             }
         }
 
-        if ($esd > new \DateTime()) {
+        if ($esd > new DateTime()) {
             $list->setEstimatedShippingDate($esd);
         }
 
@@ -285,25 +253,22 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 
     /**
      * Calculates the shipped or returned quantity.
-     *
-     * @param SaleItem      $saleItem
-     * @param bool          $return
-     * @param Shipment|null $ignore
-     *
-     * @return float
      */
-    private function calculateQuantity(SaleItem $saleItem, bool $return = false, Shipment $ignore = null): float
+    private function calculateQuantity(SaleItem $saleItem, bool $return = false, Shipment $ignore = null): Decimal
     {
         $sale = $saleItem->getSale();
 
         if (!$sale instanceof Subject) {
-            return 0;
+            return new Decimal(0);
         }
 
         if ($saleItem->isCompound()) {
-            $quantity = INF;
+            $quantity = new Decimal(INF);
             foreach ($saleItem->getChildren() as $child) {
-                $cQty = $this->calculateQuantity($child, $return, $ignore) / $child->getQuantity();
+                $cQty = $this
+                    ->calculateQuantity($child, $return, $ignore)
+                    ->div($child->getQuantity());
+
                 $quantity = min($quantity, $cQty);
             }
 
@@ -311,7 +276,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         }
 
         // TODO Packaging format
-        $quantity = 0;
+        $quantity = new Decimal(0);
 
         foreach ($sale->getShipments(!$return) as $shipment) {
             if ($ignore === $shipment) {
@@ -334,9 +299,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 
     /**
      * Builds the sale item quantities recursively.
-     *
-     * @param SaleItem $item
-     * @param array    $quantities
      */
     private function buildSaleItemQuantities(SaleItem $item, array &$quantities): void
     {
@@ -360,9 +322,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * Calculate the sale item remaining quantity.
      *
-     * @param SaleItem      $saleItem
-     * @param RemainingList $list
-     * @param Shipment[]    $shipments
+     * @param array<Shipment>    $shipments
      */
     private function buildSaleItemRemaining(SaleItem $saleItem, RemainingList $list, array $shipments): void
     {
@@ -384,12 +344,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
             }
 
             if (0 < $quantity) {
-                $entry = new RemainingEntry();
-                $entry
-                    ->setSaleItem($saleItem)
-                    ->setQuantity($quantity);
-
-                $list->addEntry($entry);
+                $list->addEntry(new RemainingEntry($saleItem, $quantity));
             }
         }
 
@@ -399,11 +354,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     }
 
     /**
-     * Returns whether or not the sale item has a stockable subject.
-     *
-     * @param SaleItem $saleItem
-     *
-     * @return bool
+     * Returns whether the sale item has a stockable subject.
      */
     private function hasStockableSubject(SaleItem $saleItem): bool
     {

@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\Webhook;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Newsletter\EventListener\ListenerGatewayToggler;
+use Ekyna\Component\Commerce\Newsletter\Factory\MemberFactoryInterface;
+use Ekyna\Component\Commerce\Newsletter\Factory\SubscriptionFactoryInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
 use Ekyna\Component\Commerce\Newsletter\Repository\AudienceRepositoryInterface;
 use Ekyna\Component\Commerce\Newsletter\Repository\MemberRepositoryInterface;
@@ -17,61 +21,33 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractHandler implements HandlerInterface
 {
-    /**
-     * @var AudienceRepositoryInterface
-     */
-    protected $audienceRepository;
+    protected AudienceRepositoryInterface     $audienceRepository;
+    protected MemberFactoryInterface          $memberFactory;
+    protected MemberRepositoryInterface       $memberRepository;
+    protected SubscriptionFactoryInterface    $subscriptionFactory;
+    protected SubscriptionRepositoryInterface $subscriptionRepository;
+    protected ListenerGatewayToggler          $gatewayToggler;
+    protected EntityManagerInterface          $manager;
+    protected LoggerInterface                 $logger;
 
-    /**
-     * @var MemberRepositoryInterface
-     */
-    protected $memberRepository;
-
-    /**
-     * @var SubscriptionRepositoryInterface
-     */
-    protected $subscriptionRepository;
-
-    /**
-     * @var ListenerGatewayToggler
-     */
-    protected $gatewayToggler;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $manager;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-
-    /**
-     * Constructor.
-     *
-     * @param AudienceRepositoryInterface     $audienceRepository
-     * @param MemberRepositoryInterface       $memberRepository
-     * @param SubscriptionRepositoryInterface $subscriptionRepository
-     * @param ListenerGatewayToggler          $gatewayToggler
-     * @param EntityManagerInterface          $manager
-     * @param LoggerInterface                 $logger
-     */
     public function __construct(
-        AudienceRepositoryInterface $audienceRepository,
-        MemberRepositoryInterface $memberRepository,
+        AudienceRepositoryInterface     $audienceRepository,
+        MemberFactoryInterface          $memberFactory,
+        MemberRepositoryInterface       $memberRepository,
+        SubscriptionFactoryInterface    $subscriptionFactory,
         SubscriptionRepositoryInterface $subscriptionRepository,
-        ListenerGatewayToggler $gatewayToggler,
-        EntityManagerInterface $manager,
-        LoggerInterface $logger
+        ListenerGatewayToggler          $gatewayToggler,
+        EntityManagerInterface          $manager,
+        LoggerInterface                 $logger
     ) {
-        $this->audienceRepository     = $audienceRepository;
-        $this->memberRepository       = $memberRepository;
+        $this->audienceRepository = $audienceRepository;
+        $this->memberFactory = $memberFactory;
+        $this->memberRepository = $memberRepository;
+        $this->subscriptionFactory = $subscriptionFactory;
         $this->subscriptionRepository = $subscriptionRepository;
-        $this->gatewayToggler         = $gatewayToggler;
-        $this->manager                = $manager;
-        $this->logger                 = $logger;
+        $this->gatewayToggler = $gatewayToggler;
+        $this->manager = $manager;
+        $this->logger = $logger;
     }
 
     /**

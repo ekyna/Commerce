@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Currency;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**
@@ -11,18 +15,9 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 class ArrayExchangeRateProvider extends AbstractExchangeRateProvider
 {
-    /**
-     * @var array
-     */
-    private $rates;
+    /** @var array<string, Decimal> */
+    private array $rates;
 
-
-    /**
-     * Constructor.
-     *
-     * @param array                         $rates
-     * @param ExchangeRateProviderInterface $fallback
-     */
     public function __construct(array $rates, ExchangeRateProviderInterface $fallback = null)
     {
         parent::__construct($fallback);
@@ -30,29 +25,23 @@ class ArrayExchangeRateProvider extends AbstractExchangeRateProvider
         $this->rates = $rates;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function fetch(string $base, string $quote, \DateTime $date): ?float
+    protected function fetch(string $base, string $quote, DateTimeInterface $date): ?Decimal
     {
         if (isset($this->rates["$base/$quote"])) {
             return $this->rates["$base/$quote"];
         }
 
         if (isset($this->rates["$quote/$base"])) {
-            return 1 / $this->rates["$quote/$base"];
+            return (new Decimal(1))->div($this->rates["$quote/$base"]);
         }
 
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function persist(string $base, string $quote, \DateTime $date, float $rate): void
+    protected function persist(string $base, string $quote, DateTimeInterface $date, Decimal $rate): void
     {
-        if (!(is_float($rate) && 0 < $rate)) {
-            throw new InvalidArgumentException("Unexpected rate '$rate'.");
+        if ($rate->isZero()) {
+            throw new InvalidArgumentException('Unexpected rate.');
         }
 
         $base = strtoupper($base);

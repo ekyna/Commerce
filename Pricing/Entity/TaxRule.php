@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,102 +20,47 @@ class TaxRule implements TaxRuleInterface
 {
     use MentionSubjectTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $code;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var bool
-     */
-    protected $customer;
-
-    /**
-     * @var bool
-     */
-    protected $business;
-
-    /**
-     * @var ArrayCollection|CountryInterface[]
-     */
-    protected $sources;
-
-    /**
-     * @var ArrayCollection|CountryInterface[]
-     */
-    protected $targets;
-
-    /**
-     * @var ArrayCollection|TaxInterface[]
-     */
-    protected $taxes;
-
-    /**
-     * @var array
-     */
-    protected $notices;
-
-    /**
-     * @var int
-     */
-    protected $priority;
+    protected ?int    $id       = null;
+    protected ?string $code     = null;
+    protected ?string $name     = null;
+    protected bool    $customer = false;
+    protected bool    $business = false;
+    /** @var Collection|CountryInterface[] */
+    protected Collection $sources;
+    /** @var Collection|CountryInterface[] */
+    protected Collection $targets;
+    /** @var Collection|TaxInterface[] */
+    protected Collection $taxes;
+    protected int        $priority = 0;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->customer = false;
-        $this->business = false;
-        $this->sources  = new ArrayCollection();
-        $this->targets  = new ArrayCollection();
-        $this->taxes    = new ArrayCollection();
-        $this->notices  = [];
-        $this->priority = 0;
+        $this->sources = new ArrayCollection();
+        $this->targets = new ArrayCollection();
+        $this->taxes = new ArrayCollection();
 
         $this->initializeMentions();
     }
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->name ?: 'New tax rule';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getCode(): ?string
     {
         return $this->code;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setCode(string $code): TaxRuleInterface
     {
         $this->code = $code;
@@ -121,17 +68,11 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setName(string $name): TaxRuleInterface
     {
         $this->name = $name;
@@ -139,23 +80,11 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * Returns the customer.
-     *
-     * @return bool
-     */
     public function isCustomer(): bool
     {
         return $this->customer;
     }
 
-    /**
-     * Sets the customer.
-     *
-     * @param bool $customer
-     *
-     * @return TaxRule
-     */
     public function setCustomer(bool $customer): TaxRuleInterface
     {
         $this->customer = $customer;
@@ -163,23 +92,11 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * Returns the business.
-     *
-     * @return bool
-     */
     public function isBusiness(): bool
     {
         return $this->business;
     }
 
-    /**
-     * Sets the business.
-     *
-     * @param bool $business
-     *
-     * @return TaxRule
-     */
     public function setBusiness(bool $business): TaxRuleInterface
     {
         $this->business = $business;
@@ -187,33 +104,21 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasSources(): bool
     {
         return 0 < $this->sources->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getSources(): Collection
     {
         return $this->sources;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasSource(CountryInterface $source): bool
     {
         return $this->sources->contains($source);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addSource(CountryInterface $source): TaxRuleInterface
     {
         if (!$this->hasSource($source)) {
@@ -223,9 +128,6 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removeSource(CountryInterface $source): TaxRuleInterface
     {
         if ($this->hasSource($source)) {
@@ -235,9 +137,6 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setSources(array $sources): TaxRuleInterface
     {
         foreach ($this->sources as $source) {
@@ -251,33 +150,21 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasTargets(): bool
     {
         return 0 < $this->targets->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTargets(): Collection
     {
         return $this->targets;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasTarget(CountryInterface $target): bool
     {
         return $this->targets->contains($target);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addTarget(CountryInterface $target): TaxRuleInterface
     {
         if (!$this->hasTarget($target)) {
@@ -287,9 +174,6 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removeTarget(CountryInterface $target): TaxRuleInterface
     {
         if ($this->hasTarget($target)) {
@@ -299,9 +183,6 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setTargets(array $targets): TaxRuleInterface
     {
         foreach ($this->targets as $target) {
@@ -315,33 +196,21 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasTaxes(): bool
     {
         return 0 < $this->taxes->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTaxes(): Collection
     {
         return $this->taxes;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasTax(TaxInterface $tax): bool
     {
         return $this->taxes->contains($tax);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addTax(TaxInterface $tax): TaxRuleInterface
     {
         if (!$this->hasTax($tax)) {
@@ -351,9 +220,6 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removeTax(TaxInterface $tax): TaxRuleInterface
     {
         if ($this->hasTax($tax)) {
@@ -363,9 +229,6 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setTaxes(array $taxes): TaxRuleInterface
     {
         foreach ($this->taxes as $tax) {
@@ -379,17 +242,11 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function hasMention(TaxRuleMention $mention): bool
     {
         return $this->mentions->contains($mention);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function addMention(TaxRuleMention $mention): TaxRuleInterface
     {
         if (!$this->hasMention($mention)) {
@@ -400,9 +257,6 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function removeMention(TaxRuleMention $mention): TaxRuleInterface
     {
         if ($this->hasMention($mention)) {
@@ -413,17 +267,11 @@ class TaxRule implements TaxRuleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getPriority(): int
     {
         return $this->priority;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setPriority(int $priority): TaxRuleInterface
     {
         $this->priority = $priority;

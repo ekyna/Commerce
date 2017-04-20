@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAttachment;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Cart\Model\CartAttachmentInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
+use Ekyna\Component\Commerce\Common\Entity\AbstractAttachment;
+use Ekyna\Component\Commerce\Common\Model\SaleAttachmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 
 /**
  * Class CartAttachment
@@ -15,27 +18,21 @@ use Ekyna\Component\Commerce\Cart\Model\CartInterface;
  */
 class CartAttachment extends AbstractAttachment implements CartAttachmentInterface
 {
-    /**
-     * @var CartInterface
-     */
-    protected $cart;
+    protected ?CartInterface $cart = null;
 
 
     /**
-     * @inheritdoc
+     * @return CartInterface|null
      */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getCart();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSale(SaleInterface $sale = null)
+    public function setSale(?SaleInterface $sale): SaleAttachmentInterface
     {
-        if (null !== $sale && !$sale instanceof CartInterface) {
-            throw new InvalidArgumentException('Expected instance of CartInterface');
+        if ($sale && !$sale instanceof CartInterface) {
+            throw new UnexpectedTypeException($sale, CartInterface::class);
         }
 
         $this->setCart($sale);
@@ -43,28 +40,24 @@ class CartAttachment extends AbstractAttachment implements CartAttachmentInterfa
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCart()
+    public function getCart(): ?CartInterface
     {
         return $this->cart;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCart(CartInterface $cart = null)
+    public function setCart(?CartInterface $cart): CartAttachmentInterface
     {
-        if ($cart !== $this->cart) {
-            if ($previous = $this->cart) {
-                $this->cart = null;
-                $previous->removeAttachment($this);
-            }
+        if ($cart === $this->cart) {
+            return $this;
+        }
 
-            if ($this->cart = $cart) {
-                $this->cart->addAttachment($this);
-            }
+        if ($previous = $this->cart) {
+            $this->cart = null;
+            $previous->removeAttachment($this);
+        }
+
+        if ($this->cart = $cart) {
+            $this->cart->addAttachment($this);
         }
 
         return $this;

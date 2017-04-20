@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model\SortableInterface;
@@ -13,274 +16,104 @@ use Ekyna\Component\Resource\Model\SortableInterface;
  */
 interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface, AdjustableInterface
 {
-    /**
-     * Sets the sale.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setSale(SaleInterface $sale = null);
+    public function setSale(?SaleInterface $sale): SaleItemInterface;
+
+    public function getSale(): ?SaleInterface;
+
+    public function setParent(?SaleItemInterface $parent): SaleItemInterface;
 
     /**
-     * Returns the sale.
-     *
-     * @return SaleInterface|null
-     */
-    public function getSale();
-
-    /**
-     * Sets the parent.
-     *
-     * @param SaleItemInterface $parent
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setParent(SaleItemInterface $parent = null);
-
-    /**
-     * Returns the first public ancestor (if the item itself if it is public).
-     *
-     * @return $this|SaleItemInterface
+     * Returns the first public ancestor (or the item itself if it is public).
      */
     public function getPublicParent(): SaleItemInterface;
 
-    /**
-     * Returns the parent item.
-     *
-     * @return SaleItemInterface|null
-     */
-    public function getParent();
+    public function getParent(): ?SaleItemInterface;
 
-    /**
-     * Returns whether the item has children or not.
-     *
-     * @return bool
-     */
-    public function hasChildren();
+    public function hasChildren(): bool;
 
-    /**
-     * Creates a child item.
-     *
-     * @return SaleItemInterface
-     */
-    public function createChild();
+    public function createChild(): SaleItemInterface;
 
     /**
      * Returns whether the current item has the given child item.
-     *
-     * @param SaleItemInterface $child
-     *
-     * @return $this|SaleItemInterface
      */
-    public function hasChild(SaleItemInterface $child);
+    public function hasChild(SaleItemInterface $child): bool;
+
+    public function addChild(SaleItemInterface $child): SaleItemInterface;
+
+    public function removeChild(SaleItemInterface $child): SaleItemInterface;
 
     /**
-     * Adds the child item.
-     *
-     * @param SaleItemInterface $child
-     *
-     * @return $this|SaleItemInterface
+     * @return array<SaleItemInterface>|Collection
      */
-    public function addChild(SaleItemInterface $child);
+    public function getChildren(): Collection;
+
+    public function getDescription(): ?string;
+
+    public function setDescription(?string $description): SaleItemInterface;
+
+    public function getQuantity(): Decimal;
+
+    public function setQuantity(Decimal $quantity): SaleItemInterface;
 
     /**
-     * Removes the child item.
-     *
-     * @param SaleItemInterface $child
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function removeChild(SaleItemInterface $child);
-
-    /**
-     * Returns the children items.
-     *
-     * @return Collection|SaleItemInterface[]
-     */
-    public function getChildren();
-
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
-    public function getDescription();
-
-    /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setDescription($description);
-
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity();
-
-    /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setQuantity($quantity);
-
-    /**
-     * Returns whether the item is compound.
-     *
      * A compound item price/stock is determined by composition (children item).
-     *
-     * @return bool
      */
-    public function isCompound();
+    public function isCompound(): bool;
+
+    public function setCompound(bool $compound): SaleItemInterface;
+
+    public function isImmutable(): bool;
+
+    public function setImmutable(bool $immutable): SaleItemInterface;
+
+    public function isConfigurable(): bool;
+
+    public function setConfigurable(bool $configurable): SaleItemInterface;
+
+    public function isPrivate(): bool;
+
+    public function setPrivate(bool $private): SaleItemInterface;
+
+    public function hasPrivateChildren(): bool;
+
+    public function hasPublicChildren(): bool;
+
+    public function hasData(?string $key): bool;
 
     /**
-     * Sets whether the item is compound.
-     *
-     * @param bool $compound
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setCompound($compound);
-
-    /**
-     * Returns whether the item is immutable.
-     *
-     * @return boolean
-     */
-    public function isImmutable();
-
-    /**
-     * Sets whether the item is immutable.
-     *
-     * @param boolean $immutable
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setImmutable($immutable);
-
-    /**
-     * Returns whether the item is configurable.
-     *
-     * @return boolean
-     */
-    public function isConfigurable();
-
-    /**
-     * Sets whether the item is configurable.
-     *
-     * @param boolean $configurable
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setConfigurable($configurable);
-
-    /**
-     * Returns the private.
-     *
-     * @return bool
-     */
-    public function isPrivate();
-
-    /**
-     * Sets the private.
-     *
-     * @param bool $private
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setPrivate($private);
-
-    /**
-     * Returns whether or not the item has at least one private child.
-     *
-     * @return bool
-     */
-    public function hasPrivateChildren();
-
-    /**
-     * Returns whether or not the item has at least one public child.
-     *
-     * @return bool
-     */
-    public function hasPublicChildren();
-
-    /**
-     * Returns whether the item has data (optionally for the given key).
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function hasData($key = null);
-
-    /**
-     * Returns the data, optionally filtered by key.
-     *
-     * @param string $key
-     *
      * @return mixed
+     * @TODO PHP8 Union types
      */
-    public function getData($key = null);
+    public function getData(?string $key);
 
     /**
-     * Sets the data.
-     *
      * @param array|string $keyOrData The key of the data or the whole data as array.
      * @param mixed        $data      The data assigned to the key (must be null if $keyOrData is the whole data).
-     *
-     * @return $this|SaleItemInterface
+     * @TODO PHP8 Union types
      */
-    public function setData($keyOrData, $data = null);
+    public function setData($keyOrData, $data = null): SaleItemInterface;
 
-    /**
-     * Unset the data by key.
-     *
-     * @param string $key
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function unsetData($key);
+    public function unsetData(string $key): SaleItemInterface;
 
     /**
      * Returns the item level in the sale hierarchy.
-     *
-     * @return float
      */
-    public function getLevel();
+    public function getLevel(): int;
 
-    /**
-     * Returns the root item.
-     *
-     * @return SaleItemInterface|null
-     */
     public function getRoot(): ?SaleItemInterface;
 
     /**
      * Returns the parents total quantity.
-     *
-     * @return float
      */
-    public function getParentsQuantity();
+    public function getParentsQuantity(): Decimal;
 
     /**
      * Returns the total quantity (multiplied by all parents quantities).
-     *
-     * @return float
      */
-    public function getTotalQuantity();
+    public function getTotalQuantity(): Decimal;
 
     /**
      * Returns whether the item is the last one (by position).
-     *
-     * @return bool
      */
     public function isLast(): bool;
 
@@ -290,6 +123,7 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
      * @param bool $encode Whether to return the plain array data or the encoded string.
      *
      * @return array|string
+     * @TODO PHP8 Union types
      */
     public function getHash(bool $encode = true);
 }

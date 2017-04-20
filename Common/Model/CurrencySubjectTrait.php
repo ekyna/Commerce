@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,30 +11,18 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 trait CurrencySubjectTrait
 {
-    /**
-     * @var CurrencyInterface
-     */
-    protected $currency;
+    protected ?CurrencyInterface $currency = null;
 
 
-    /**
-     * Returns the currency.
-     *
-     * @return CurrencyInterface|null
-     */
     public function getCurrency(): ?CurrencyInterface
     {
         return $this->currency;
     }
 
     /**
-     * Sets the currency.
-     *
-     * @param CurrencyInterface $currency
-     *
      * @return $this|CurrencySubjectInterface
      */
-    public function setCurrency(CurrencyInterface $currency)
+    public function setCurrency(?CurrencyInterface $currency): CurrencySubjectInterface
     {
         $this->currency = $currency;
 

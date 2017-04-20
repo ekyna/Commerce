@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stat\Entity;
+
+use Decimal\Decimal;
 
 /**
  * Class StockStat
@@ -9,103 +13,53 @@ namespace Ekyna\Component\Commerce\Stat\Entity;
  */
 class StockStat
 {
-    /**
-     * @var int
-     */
-    private $id;
-
-    /**
-     * @var float
-     */
-    private $inValue = 0;
-
-    /**
-     * @var float
-     */
-    private $soldValue = 0;
-
-    /**
-     * @var string
-     */
-    private $date;
+    private ?int    $id   = null;
+    private Decimal $inValue;
+    private Decimal $soldValue;
+    private ?string $date = null;
 
 
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId()
+    public function __construct()
+    {
+        $this->inValue = new Decimal(0);
+        $this->soldValue = new Decimal(0);
+    }
+
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Returns the inValue.
-     *
-     * @return float
-     */
-    public function getInValue()
+    public function getInValue(): Decimal
     {
         return $this->inValue;
     }
 
-    /**
-     * Sets the inValue.
-     *
-     * @param float $inValue
-     *
-     * @return StockStat
-     */
-    public function setInValue($inValue)
+    public function setInValue(Decimal $inValue): self
     {
-        $this->inValue = (float)$inValue;
+        $this->inValue = $inValue;
 
         return $this;
     }
 
-    /**
-     * Returns the soldValue.
-     *
-     * @return float
-     */
-    public function getSoldValue()
+    public function getSoldValue(): Decimal
     {
         return $this->soldValue;
     }
 
-    /**
-     * Sets the soldValue.
-     *
-     * @param float $soldValue
-     *
-     * @return StockStat
-     */
-    public function setSoldValue($soldValue)
+    public function setSoldValue(Decimal $soldValue): self
     {
-        $this->soldValue = (float)$soldValue;
+        $this->soldValue = $soldValue;
 
         return $this;
     }
 
-    /**
-     * Returns the date.
-     *
-     * @return string
-     */
-    public function getDate()
+    public function getDate(): ?string
     {
         return $this->date;
     }
 
-    /**
-     * Sets the date.
-     *
-     * @param string $date
-     *
-     * @return StockStat
-     */
-    public function setDate($date)
+    public function setDate(?string $date): self
     {
         $this->date = $date;
 

@@ -55,11 +55,11 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
-        $change = $this->updateTaxation($item);
+        $changed = $this->updateTaxation($item);
 
-        $change |= $this->updateDiscount($item);
+        $changed = $this->updateDiscount($item) || $changed;
 
-        if ($change) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($item);
         }
 
@@ -190,7 +190,7 @@ abstract class AbstractSaleItemListener
 
         // Stop if item is immutable.
         if ($item->isImmutable()) {
-            throw new IllegalOperationException('ekyna_commerce.sale.message.immutable_element');
+            throw new IllegalOperationException('sale.message.immutable_element');
         }
     }
 

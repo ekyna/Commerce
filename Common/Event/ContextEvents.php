@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 /**
@@ -9,8 +11,8 @@ namespace Ekyna\Component\Commerce\Common\Event;
  */
 final class ContextEvents
 {
-    const BUILD  = 'ekyna_commerce.context.build';
-    const CHANGE = 'ekyna_commerce.context.change';
+    public const BUILD  = 'ekyna_commerce.context.build';
+    public const CHANGE = 'ekyna_commerce.context.change';
 
 
     /**

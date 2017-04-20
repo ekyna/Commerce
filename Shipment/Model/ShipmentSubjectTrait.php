@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 
 /**
@@ -12,62 +16,44 @@ use Doctrine\Common\Collections\Criteria;
  */
 trait ShipmentSubjectTrait
 {
-    /**
-     * @var string
-     */
-    protected $shipmentState;
+    protected string $shipmentState;
 
-    /**
-     * @var \Doctrine\Common\Collections\Collection|ShipmentInterface[]
-     */
-    protected $shipments;
+    /** @var Collection|ShipmentInterface[] */
+    protected Collection $shipments;
 
 
-    /**
-     * Initializes the shipments.
-     */
-    protected function initializeShipmentSubject()
+    protected function initializeShipmentSubject(): void
     {
         $this->shipmentState = ShipmentStates::STATE_NONE;
         $this->shipments = new ArrayCollection();
     }
 
     /**
-     * @inheritdoc
+     * @return $this|ShipmentSubjectInterface
      */
-    public function setShipmentState($state)
+    public function setShipmentState(string $state): ShipmentSubjectInterface
     {
         $this->shipmentState = $state;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getShipmentState()
+    public function getShipmentState(): string
     {
         return $this->shipmentState;
     }
 
-    /**
-     * Returns whether the order has shipments or not.
-     *
-     * @return bool
-     */
-    public function hasShipments()
+    public function hasShipments(): bool
     {
         return 0 < $this->shipments->count();
     }
 
     /**
-     * Returns the shipments.
-     *
      * @param bool $filter TRUE for shipments, FALSE for returns, NULL for all
      *
-     * @return \Doctrine\Common\Collections\Collection|ShipmentInterface[]
+     * @return Collection|ShipmentInterface[]
      */
-    public function getShipments($filter = null)
+    public function getShipments(bool $filter = null): Collection
     {
         if (null === $filter) {
             return $this->shipments;
@@ -79,13 +65,9 @@ trait ShipmentSubjectTrait
     }
 
     /**
-     * Returns the shipment date.
-     *
      * @param bool $latest Whether to return the last shipment date instead of the first
-     *
-     * @return \DateTime|null
      */
-    public function getShippedAt($latest = false)
+    public function getShippedAt(bool $latest = false): ?DateTimeInterface
     {
         if (0 == $this->shipments->count()) {
             return null;

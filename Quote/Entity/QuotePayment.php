@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
-use Ekyna\Component\Commerce\Quote\Model;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
+use Ekyna\Component\Commerce\Quote\Model;
 
 /**
  * Class QuotePayment
@@ -12,52 +15,37 @@ use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
  */
 class QuotePayment extends AbstractPayment implements Model\QuotePaymentInterface
 {
-    /**
-     * @var Model\QuoteInterface
-     */
-    protected $quote;
+    protected ?Model\QuoteInterface $quote = null;
 
 
-    /**
-     * @inheritdoc
-     *
-     * @return Model\QuoteInterface
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getQuote();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuote()
+    public function getQuote(): ?Model\QuoteInterface
     {
         return $this->quote;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuote(Model\QuoteInterface $quote = null)
+    public function setQuote(Model\QuoteInterface $quote = null): Model\QuotePaymentInterface
     {
-        if ($quote !== $this->quote) {
-            if ($previous = $this->quote) {
-                $this->quote = null;
-                $previous->removePayment($this);
-            }
+        if ($quote === $this->quote) {
+            return $this;
+        }
 
-            if ($this->quote = $quote) {
-                $this->quote->addPayment($this);
-            }
+        if ($previous = $this->quote) {
+            $this->quote = null;
+            $previous->removePayment($this);
+        }
+
+        if ($this->quote = $quote) {
+            $this->quote->addPayment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getLocale(): ?string
     {
         if ($this->quote) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 use Ekyna\Component\Commerce\Common\Model\AdjustmentDataInterface;
@@ -11,10 +13,8 @@ use Ekyna\Component\Commerce\Common\Model\AdjustmentDataInterface;
  */
 trait AdjustmentDataTrait
 {
-    /**
-     * @var AdjustmentDataInterface[]
-     */
-    private $adjustmentsData = [];
+    /** @var AdjustmentDataInterface[] */
+    private array $adjustmentsData = [];
 
 
     /**
@@ -22,7 +22,7 @@ trait AdjustmentDataTrait
      *
      * @return AdjustmentDataInterface[]
      */
-    public function getAdjustmentsData()
+    public function getAdjustmentsData(): array
     {
         return $this->adjustmentsData;
     }
@@ -32,7 +32,7 @@ trait AdjustmentDataTrait
      *
      * @param AdjustmentDataInterface $data
      */
-    public function addAdjustmentData(AdjustmentDataInterface $data)
+    public function addAdjustmentData(AdjustmentDataInterface $data): void
     {
         $this->adjustmentsData[] = $data;
     }

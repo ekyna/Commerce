@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentItem;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 
 /**
  * Class OrderShipmentItem
@@ -17,58 +20,39 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
  */
 class OrderShipmentItem extends AbstractShipmentItem implements OrderShipmentItemInterface
 {
-    /**
-     * @var OrderItemInterface
-     */
-    protected $orderItem;
+    protected ?OrderItemInterface $orderItem;
 
-
-    /**
-     * @inheritdoc
-     */
-    public function setShipment(ShipmentInterface $shipment = null)
+    public function setShipment(?ShipmentInterface $shipment): ShipmentItemInterface
     {
-        if (null !== $shipment && !$shipment instanceof OrderShipmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentInterface::class);
+        if ($shipment && !$shipment instanceof OrderShipmentInterface) {
+            throw new UnexpectedTypeException($shipment, OrderShipmentInterface::class);
         }
 
         return parent::setShipment($shipment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrderItem(OrderItemInterface $orderItem)
+    public function setOrderItem(?OrderItemInterface $orderItem): OrderShipmentItemInterface
     {
         $this->orderItem = $orderItem;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrderItem()
+    public function getOrderItem(): ?OrderItemInterface
     {
         return $this->orderItem;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setSaleItem(SaleItemInterface $saleItem)
+    public function setSaleItem(?SaleItemInterface $saleItem): ShipmentItemInterface
     {
         if (!$saleItem instanceof OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
+            throw new UnexpectedTypeException($saleItem, OrderItemInterface::class);
         }
 
         return $this->setOrderItem($saleItem);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSaleItem()
+    public function getSaleItem(): ?SaleItemInterface
     {
         return $this->getOrderItem();
     }

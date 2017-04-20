@@ -1,12 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Constants as Outstanding;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderPaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
@@ -20,42 +25,24 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
  */
 class OrderPaymentRepository extends AbstractPaymentRepository implements OrderPaymentRepositoryInterface
 {
-    /**
-     * @var Query
-     */
-    private $customerPaymentSumQuery;
+    private ?Query $customerPaymentSumQuery   = null;
+    private ?Query $customerRefundSumQuery    = null;
+    private ?Query $customerPaymentCountQuery = null;
+    private ?Query $customerRefundCountQuery  = null;
 
-    /**
-     * @var Query
-     */
-    private $customerRefundSumQuery;
-
-    /**
-     * @var Query
-     */
-    private $customerPaymentCountQuery;
-
-    /**
-     * @var Query
-     */
-    private $customerRefundCountQuery;
-
-    /**
-     * @return void
-     */
-    public function createNew()
+    public function findOneByOrderAndKey(OrderInterface $quote, string $key): ?OrderPaymentInterface
     {
-        throw new RuntimeException("Disabled: use payment factory.");
+        return $this->findOneBy([
+            'quote' => $quote,
+            'key'   => $key,
+        ]);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
         string $currency = null,
-        \DateTime $from = null,
-        \DateTime $to = null
+        DateTimeInterface $from = null,
+        DateTimeInterface $to = null
     ): array {
         $qb = $this->createQueryBuilder('p');
 
@@ -105,36 +92,31 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
         return $query->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCustomerPaymentSum(CustomerInterface $customer, \DateTime $from, \DateTime $to): float
+    public function getCustomerPaymentSum(CustomerInterface $customer, DateTime $from, DateTime $to): Decimal
     {
-        return (float)$this
+        $total = $this
             ->getCustomerPaymentSumQuery()
             ->setParameter('customer', $customer)
             ->setParameter('from', $from, Types::DATETIME_MUTABLE)
             ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
+
+        return new Decimal($total);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCustomerRefundSum(CustomerInterface $customer, \DateTime $from, \DateTime $to): float
+    public function getCustomerRefundSum(CustomerInterface $customer, DateTime $from, DateTime $to): Decimal
     {
-        return (float)$this
+        $total = $this
             ->getCustomerRefundSumQuery()
             ->setParameter('customer', $customer)
             ->setParameter('from', $from, Types::DATETIME_MUTABLE)
             ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
+
+        return new Decimal($total);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCustomerPaymentCount(CustomerInterface $customer, \DateTime $from, \DateTime $to): int
+    public function getCustomerPaymentCount(CustomerInterface $customer, DateTime $from, DateTime $to): int
     {
         return (int)$this
             ->getCustomerPaymentCountQuery()
@@ -144,10 +126,7 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             ->getSingleScalarResult();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCustomerRefundCount(CustomerInterface $customer, \DateTime $from, \DateTime $to): int
+    public function getCustomerRefundCount(CustomerInterface $customer, DateTime $from, DateTime $to): int
     {
         return (int)$this
             ->getCustomerRefundCountQuery()
@@ -159,8 +138,6 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
 
     /**
      * Returns the "customer payment sum query".
-     *
-     * @return Query
      */
     protected function getCustomerPaymentSumQuery(): Query
     {
@@ -173,8 +150,6 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
 
     /**
      * Returns the "customer refund sum" query.
-     *
-     * @return Query
      */
     protected function getCustomerRefundSumQuery(): Query
     {
@@ -187,10 +162,6 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
 
     /**
      * Creates the customer payment sum query builder.
-     *
-     * @param string $paymentState
-     *
-     * @return Query
      */
     protected function createCustomerSumQuery(string $paymentState): Query
     {
@@ -218,8 +189,6 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
 
     /**
      * Returns the "customer payment count" query.
-     *
-     * @return Query
      */
     protected function getCustomerPaymentCountQuery(): Query
     {
@@ -232,8 +201,6 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
 
     /**
      * Returns the "customer refund count" query.
-     *
-     * @return Query
      */
     protected function getCustomerRefundCountQuery(): Query
     {
@@ -246,10 +213,6 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
 
     /**
      * Creates the customer payment count query.
-     *
-     * @param string $paymentState
-     *
-     * @return Query
      */
     protected function createCustomerCountQuery(string $paymentState): Query
     {

@@ -55,7 +55,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -63,7 +63,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getAudience(): ?AudienceInterface
     {
@@ -71,7 +71,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setAudience(AudienceInterface $audience = null): SubscriptionInterface
     {
@@ -81,7 +81,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getMember(): ?MemberInterface
     {
@@ -89,7 +89,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setMember(MemberInterface $member = null): SubscriptionInterface
     {
@@ -108,7 +108,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getIdentifier(): ?string
     {
@@ -116,7 +116,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setIdentifier(string $identifier = null): SubscriptionInterface
     {
@@ -144,7 +144,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getStatus(): string
     {
@@ -152,7 +152,7 @@ class Subscription implements SubscriptionInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setStatus(string $status): SubscriptionInterface
     {

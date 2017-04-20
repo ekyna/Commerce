@@ -40,15 +40,6 @@
         <property name="labels">
             <constraint name="Valid"/>
         </property>
-        <property name="createdAt">
-            <constraint name="DateTime"/>
-        </property>
-        <property name="updatedAt">
-            <constraint name="DateTime"/>
-        </property>
-        <property name="completedAt">
-            <constraint name="DateTime"/>
-        </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
         </constraint>
@@ -66,9 +57,6 @@
             <constraint name="NotNull"/>
         </getter>
         <property name="quantity">
-            <constraint name="Type">
-                <option name="type">numeric</option>
-            </constraint>
             <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
@@ -82,9 +70,6 @@
         </property>
         <property name="weight">
             <constraint name="NotNull"/>
-            <constraint name="Type">
-                <option name="type">numeric</option>
-            </constraint>
             <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>

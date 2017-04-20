@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethodTranslation;
@@ -11,59 +13,27 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractMethodTranslation;
  */
 class PaymentMethodTranslation extends AbstractMethodTranslation
 {
-    /**
-     * @var string
-     */
-    private $notice;
+    private ?string $notice = null;
+    private ?string $footer = null;
 
-    /**
-     * @var string
-     */
-    private $footer;
-
-
-    /**
-     * Returns the notice.
-     *
-     * @return string
-     */
     public function getNotice(): ?string
     {
         return $this->notice;
     }
 
-    /**
-     * Sets the notice.
-     *
-     * @param string $notice
-     *
-     * @return PaymentMethodTranslation
-     */
-    public function setNotice(string $notice = null): PaymentMethodTranslation
+    public function setNotice(?string $notice): PaymentMethodTranslation
     {
         $this->notice = $notice;
 
         return $this;
     }
 
-    /**
-     * Returns the footer.
-     *
-     * @return string
-     */
     public function getFooter(): ?string
     {
         return $this->footer;
     }
 
-    /**
-     * Sets the footer.
-     *
-     * @param string $footer
-     *
-     * @return PaymentMethodTranslation
-     */
-    public function setFooter(string $footer = null): PaymentMethodTranslation
+    public function setFooter(?string $footer): PaymentMethodTranslation
     {
         $this->footer = $footer;
 

@@ -23,7 +23,7 @@ class Sale extends Constraint
 
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTargets()
     {

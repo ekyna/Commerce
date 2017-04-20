@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class ShipmentValidator extends ConstraintValidator
 {
     /**
-     * @var Gateway\RegistryInterface
+     * @var Gateway\GatewayRegistryInterface
      */
     private $registry;
 
@@ -27,9 +27,9 @@ class ShipmentValidator extends ConstraintValidator
     /**
      * Constructor.
      *
-     * @param Gateway\RegistryInterface $gatewayRegistry
+     * @param Gateway\GatewayRegistryInterface $gatewayRegistry
      */
-    public function __construct(Gateway\RegistryInterface $gatewayRegistry)
+    public function __construct(Gateway\GatewayRegistryInterface $gatewayRegistry)
     {
         $this->registry = $gatewayRegistry;
     }
@@ -118,11 +118,11 @@ class ShipmentValidator extends ConstraintValidator
             }
 
             // Valorization and parcels
-            if (0 < $shipment->getValorization()) {
+            if (0 < $valorization = $shipment->getValorization()) {
                 $this
                     ->context
                     ->buildViolation($constraint->valorization_or_parcels_but_not_both)
-                    ->setInvalidValue($shipment->getWeight())
+                    ->setInvalidValue($valorization)
                     ->atPath('valorization')
                     ->addViolation();
             }

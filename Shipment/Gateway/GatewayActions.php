@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -11,60 +13,54 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class GatewayActions
 {
-    const SHIP              = 'ship';
-    const CANCEL            = 'cancel';
-    const COMPLETE          = 'complete';
-    const TRACK             = 'track';
-    const PROVE             = 'prove';
-    const PRINT_LABEL       = 'print_label';
-    const LIST_RELAY_POINTS = 'list_relay_points';
-    const GET_RELAY_POINT   = 'get_relay_point';
+    public const SHIP              = 'ship';
+    public const CANCEL            = 'cancel';
+    public const COMPLETE          = 'complete';
+    public const TRACK             = 'track';
+    public const PROVE             = 'prove';
+    public const PRINT_LABEL       = 'print_label';
+    public const LIST_RELAY_POINTS = 'list_relay_points';
+    public const GET_RELAY_POINT   = 'get_relay_point';
 
 
     /**
      * Returns the api actions.
-     *
-     * @return array
      */
-    public static function getApiActions()
+    public static function getApiActions(): array
     {
         return [
-            static::LIST_RELAY_POINTS,
-            static::GET_RELAY_POINT,
+            self::LIST_RELAY_POINTS,
+            self::GET_RELAY_POINT,
         ];
     }
 
     /**
      * Returns the shipment actions.
-     *
-     * @return array
      */
-    public static function getShipmentActions()
+    public static function getShipmentActions(): array
     {
         return [
-            static::SHIP,
-            static::CANCEL,
-            static::COMPLETE,
-            static::PRINT_LABEL,
+            self::SHIP,
+            self::CANCEL,
+            self::COMPLETE,
+            self::PRINT_LABEL,
         ];
     }
 
     /**
      * Returns all the actions.
-     *
-     * @return array
      */
-    public static function getActions()
+    public static function getActions(): array
     {
         return [
-            static::SHIP,
-            static::CANCEL,
-            static::COMPLETE,
-            static::TRACK,
-            static::PROVE,
-            static::PRINT_LABEL,
-            static::LIST_RELAY_POINTS,
-            static::GET_RELAY_POINT,
+            self::SHIP,
+            self::CANCEL,
+            self::COMPLETE,
+            self::TRACK,
+            self::PROVE,
+            self::PRINT_LABEL,
+            self::LIST_RELAY_POINTS,
+            self::GET_RELAY_POINT,
         ];
     }
 
@@ -76,9 +72,9 @@ final class GatewayActions
      *
      * @return bool
      */
-    public static function isValid($action, $throw = false)
+    public static function isValid(string $action, bool $throw = false): bool
     {
-        if (in_array($action, static::getActions(), true)) {
+        if (in_array($action, self::getActions(), true)) {
             return true;
         }
 

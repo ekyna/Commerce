@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Mailchimp;
 
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
@@ -16,9 +18,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Handler extends AbstractHandler
 {
-    /**
-     * @inheritDoc
-     */
     public function handle(Request $request): Response
     {
         // Reply to GET requests
@@ -94,21 +93,18 @@ class Handler extends AbstractHandler
 
     /**
      * Subscribe event handler.
-     *
-     * @param AudienceInterface $audience
-     * @param array             $data
      */
     private function onSubscribe(AudienceInterface $audience, array $data): void
     {
         $member = $this->memberRepository->findOneByEmail($data['email']);
 
         if (null === $member) {
-            $member = $this->memberRepository->createNew();
+            $member = $this->memberFactory->create();
             $member->setEmail($data['email']);
         }
 
         if (!$subscription = $member->getSubscription($audience)) {
-            $subscription = $this->subscriptionRepository->createNew();
+            $subscription = $this->subscriptionFactory->create();
             $subscription
                 ->setAudience($audience)
                 ->setMember($member);
@@ -124,9 +120,6 @@ class Handler extends AbstractHandler
 
     /**
      * Unsubscribe event handler.
-     *
-     * @param AudienceInterface $audience
-     * @param array             $data
      */
     private function onUnsubscribe(AudienceInterface $audience, array $data): void
     {
@@ -151,9 +144,6 @@ class Handler extends AbstractHandler
 
     /**
      * Profile update event handler.
-     *
-     * @param AudienceInterface $audience
-     * @param array             $data
      */
     private function onProfileUpdate(AudienceInterface $audience, array $data): void
     {
@@ -176,9 +166,6 @@ class Handler extends AbstractHandler
 
     /**
      * Email update event event handler.
-     *
-     * @param AudienceInterface $audience
-     * @param array             $data
      */
     private function onEmailUpdate(AudienceInterface $audience, array $data): void
     {
@@ -196,12 +183,12 @@ class Handler extends AbstractHandler
         $this->manager->persist($oldMember);
 
         if (!$newMember = $this->memberRepository->findOneByEmail($data['new_email'])) {
-            $newMember = $this->memberRepository->createNew();
+            $newMember = $this->memberFactory->create();
             $newMember->setEmail($data['new_email']);
         }
 
         if (!$newSubscription = $newMember->getSubscription($audience)) {
-            $newSubscription = $this->subscriptionRepository->createNew();
+            $newSubscription = $this->subscriptionFactory->create();
             $newSubscription
                 ->setAudience($audience)
                 ->setMember($newMember);
@@ -216,9 +203,6 @@ class Handler extends AbstractHandler
 
     /**
      * Cleaned email event handler.
-     *
-     * @param AudienceInterface $audience
-     * @param array             $data
      */
     private function onCleaned(AudienceInterface $audience, array $data): void
     {
@@ -239,18 +223,12 @@ class Handler extends AbstractHandler
 
     /**
      * Campaign event handler.
-     *
-     * @param AudienceInterface $audience
-     * @param array             $data
      */
     private function onCampaign(AudienceInterface $audience, array $data): void
     {
 
     }
 
-    /**
-     * @inheritDoc
-     */
     public static function getName(): string
     {
         return Constants::NAME;

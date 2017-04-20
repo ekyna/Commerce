@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Model;
 
-use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
@@ -17,380 +20,130 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, ExchangeSubjectInterface
 {
-    /**
-     * Sets the subject.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setSubject(StockSubjectInterface $subject): StockUnitInterface;
+    public function setSubject(?StockSubjectInterface $subject): StockUnitInterface;
 
-    /**
-     * Returns the subject.
-     *
-     * @return StockSubjectInterface|null
-     */
     public function getSubject(): ?StockSubjectInterface;
 
-    /**
-     * Returns the warehouse.
-     *
-     * @return WarehouseInterface
-     */
     public function getWarehouse(): ?WarehouseInterface;
 
-    /**
-     * Sets the warehouse.
-     *
-     * @param WarehouseInterface|null $warehouse
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setWarehouse(WarehouseInterface $warehouse = null): StockUnitInterface;
+    public function setWarehouse(?WarehouseInterface $warehouse): StockUnitInterface;
 
-    /**
-     * Returns the supplier order item.
-     *
-     * @return SupplierOrderItemInterface
-     */
     public function getSupplierOrderItem(): ?SupplierOrderItemInterface;
 
-    /**
-     * Sets the supplier order item.
-     *
-     * @param SupplierOrderItemInterface|null $item
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null): StockUnitInterface;
+    public function setSupplierOrderItem(?SupplierOrderItemInterface $item): StockUnitInterface;
 
-    /**
-     * Returns the geocodes.
-     *
-     * @return array
-     */
     public function getGeocodes(): array;
 
-    /**
-     * Returns whether the stock unit has the given geocode.
-     *
-     * @param string $geocode
-     *
-     * @return bool
-     */
     public function hasGeocode(string $geocode): bool;
 
-    /**
-     * Adds the geocode.
-     *
-     * @param string $geocode
-     *
-     * @return $this|StockUnitInterface
-     */
     public function addGeocode(string $geocode): StockUnitInterface;
 
-    /**
-     * Removes the geocode.
-     *
-     * @param string $geocode
-     *
-     * @return $this|StockUnitInterface
-     */
     public function removeGeocode(string $geocode): StockUnitInterface;
 
-    /**
-     * Sets the geocodes.
-     *
-     * @param array $codes
-     *
-     * @return $this|StockUnitInterface
-     */
     public function setGeocodes(array $codes): StockUnitInterface;
 
-    /**
-     * Returns the estimated date of arrival.
-     *
-     * @return DateTime|null
-     */
-    public function getEstimatedDateOfArrival(): ?DateTime;
+    public function getEstimatedDateOfArrival(): ?DateTimeInterface;
 
-    /**
-     * Sets the estimated date of arrival.
-     *
-     * @param DateTime|null $date
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setEstimatedDateOfArrival(DateTime $date = null);
+    public function setEstimatedDateOfArrival(?DateTimeInterface $date): StockUnitInterface;
 
     /**
      * Returns the net price (default currency).
-     *
-     * @return float
      */
-    public function getNetPrice(): float;
+    public function getNetPrice(): Decimal;
 
     /**
      * Sets the net price (default currency).
-     *
-     * @param float $price
-     *
-     * @return $this|StockUnitInterface
      */
-    public function setNetPrice(float $price): StockUnitInterface;
+    public function setNetPrice(Decimal $price): StockUnitInterface;
 
     /**
      * Returns the shipping price (default currency).
-     *
-     * @return float
      */
-    public function getShippingPrice(): float;
+    public function getShippingPrice(): Decimal;
 
     /**
      * Sets the shipping price (default currency).
-     *
-     * @param float $price
-     *
-     * @return StockUnitInterface
      */
-    public function setShippingPrice(float $price): StockUnitInterface;
+    public function setShippingPrice(Decimal $price): StockUnitInterface;
+
+    public function getOrderedQuantity(): Decimal;
+
+    public function setOrderedQuantity(Decimal $quantity): StockUnitInterface;
+
+    public function getReceivedQuantity(): Decimal;
+
+    public function setReceivedQuantity(Decimal $quantity): StockUnitInterface;
+
+    public function getAdjustedQuantity(): Decimal;
+
+    public function setAdjustedQuantity(Decimal $quantity): StockUnitInterface;
+
+    public function getSoldQuantity(): Decimal;
+
+    public function setSoldQuantity(Decimal $quantity): StockUnitInterface;
+
+    public function getShippedQuantity(): Decimal;
+
+    public function setShippedQuantity(Decimal $quantity): StockUnitInterface;
+
+    public function getLockedQuantity(): Decimal;
+
+    public function setLockedQuantity(Decimal $quantity): StockUnitInterface;
 
     /**
-     * Returns the ordered quantity.
-     *
-     * @return float
+     * Returns the 'created at' date.
      */
-    public function getOrderedQuantity(): float;
+    public function getCreatedAt(): DateTimeInterface;
 
     /**
-     * Sets the ordered quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockUnitInterface
+     * Sets the 'created at' date.
      */
-    public function setOrderedQuantity(float $quantity): StockUnitInterface;
+    public function setCreatedAt(DateTimeInterface $date): StockUnitInterface;
 
     /**
-     * Returns the received quantity.
-     *
-     * @return float
+     * Returns the 'closed at' date time.
      */
-    public function getReceivedQuantity(): float;
+    public function getClosedAt(): ?DateTimeInterface;
 
     /**
-     * Sets the received quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockUnitInterface
+     * Sets the 'closed at' at date time.
      */
-    public function setReceivedQuantity(float $quantity): StockUnitInterface;
+    public function setClosedAt(?DateTimeInterface $date): StockUnitInterface;
 
-    /**
-     * Returns the adjusted quantity.
-     *
-     * @return float
-     */
-    public function getAdjustedQuantity(): float;
-
-    /**
-     * Sets the adjusted quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setAdjustedQuantity(float $quantity): StockUnitInterface;
-
-    /**
-     * Returns the sold quantity.
-     *
-     * @return float
-     */
-    public function getSoldQuantity(): float;
-
-    /**
-     * Sets the sold quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setSoldQuantity(float $quantity): StockUnitInterface;
-
-    /**
-     * Returns the shipped quantity.
-     *
-     * @return float
-     */
-    public function getShippedQuantity(): float;
-
-    /**
-     * Sets the shipped quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setShippedQuantity(float $quantity): StockUnitInterface;
-
-    /**
-     * Returns the locked quantity.
-     *
-     * @return float
-     */
-    public function getLockedQuantity(): float;
-
-    /**
-     * Sets the locked quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setLockedQuantity(float $quantity): StockUnitInterface;
-
-    /**
-     * Returns the "created at" date.
-     *
-     * @return DateTime
-     */
-    public function getCreatedAt(): DateTime;
-
-    /**
-     * Sets the "created at" date.
-     *
-     * @param DateTime $date
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setCreatedAt(DateTime $date): StockUnitInterface;
-
-    /**
-     * Returns the "closed at" date time.
-     *
-     * @return DateTime|null
-     */
-    public function getClosedAt(): ?DateTime;
-
-    /**
-     * Sets the "closed at" at date time.
-     *
-     * @param DateTime|null $date
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setClosedAt(DateTime $date = null): StockUnitInterface;
-
-    /**
-     * Returns whether the stock unit has the given stock assignment.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return bool
-     */
     public function hasStockAssignment(StockAssignmentInterface $assignment): bool;
 
-    /**
-     * Adds the stock assignments.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return $this|StockUnitInterface
-     */
     public function addStockAssignment(StockAssignmentInterface $assignment): StockUnitInterface;
 
-    /**
-     * Removes the stock assignments.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return $this|StockUnitInterface
-     */
     public function removeStockAssignment(StockAssignmentInterface $assignment): StockUnitInterface;
 
     /**
-     * Returns the stock assignments.
-     *
      * @return Collection|StockAssignmentInterface[]
      */
     public function getStockAssignments(): Collection;
 
-    /**
-     * Returns whether this stock unit has the given stock adjustment.
-     *
-     * @param StockAdjustmentInterface $adjustment
-     *
-     * @return bool
-     */
     public function hasStockAdjustment(StockAdjustmentInterface $adjustment): bool;
 
-    /**
-     * Adds the stock adjustments.
-     *
-     * @param StockAdjustmentInterface $adjustment
-     *
-     * @return $this|StockUnitInterface
-     */
     public function addStockAdjustment(StockAdjustmentInterface $adjustment): StockUnitInterface;
 
-    /**
-     * Removes the stock adjustments.
-     *
-     * @param StockAdjustmentInterface $adjustment
-     *
-     * @return $this|StockUnitInterface
-     */
     public function removeStockAdjustment(StockAdjustmentInterface $adjustment): StockUnitInterface;
 
     /**
-     * Returns the stock adjustments.
-     *
      * @return Collection|StockAdjustmentInterface[]
      */
     public function getStockAdjustments(): Collection;
 
     /**
      * Returns whether this stock unit is empty (regarding to the ordered and sold quantities).
-     *
-     * @return bool
      */
     public function isEmpty(): bool;
 
-    /**
-     * Returns whether this stock unit is closed.
-     *
-     * @return bool
-     */
     public function isClosed(): bool;
 
-    /**
-     * Returns the reservable stock quantity.
-     *
-     * @return float
-     */
-    public function getReservableQuantity(): float;
+    public function getReservableQuantity(): Decimal;
 
-    /**
-     * Returns the releasable stock quantity.
-     *
-     * @return float
-     */
-    public function getReleasableQuantity(): float;
+    public function getReleasableQuantity(): Decimal;
 
-    /**
-     * Returns the shippable stock quantity.
-     *
-     * @return float
-     */
-    public function getShippableQuantity(): float;
+    public function getShippableQuantity(): Decimal;
 
-    /**
-     * Returns the supplier order.
-     *
-     * @return SupplierOrderInterface|null
-     */
     public function getSupplierOrder(): ?SupplierOrderInterface;
 }

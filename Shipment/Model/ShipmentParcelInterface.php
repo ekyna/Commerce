@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface ShipmentParcelInterface extends ResourceInterface, ShipmentDataInterface
 {
-    /**
-     * Returns the shipment.
-     *
-     * @return ShipmentInterface
-     */
-    public function getShipment();
+    public function getShipment(): ?ShipmentInterface;
 
-    /**
-     * Sets the shipment.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return $this|ShipmentParcelInterface
-     */
-    public function setShipment(ShipmentInterface $shipment = null);
+    public function setShipment(?ShipmentInterface $shipment): ShipmentParcelInterface;
 }

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Common\Model\MessageInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Resource\Model as RM;
 
 /**
@@ -18,35 +21,14 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
 {
     use RM\SortableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var ArrayCollection|Model\MessageInterface[]
-     */
-    protected $messages;
-
-    /**
-     * @var bool
-     */
-    protected $enabled;
-
-    /**
-     * @var bool
-     */
-    protected $available;
+    protected ?int $id = null;
+    protected ?string $name = null;
+    /** @var Collection|Model\MessageInterface[] */
+    protected Collection $messages;
+    protected bool $enabled;
+    protected bool $available;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
@@ -56,136 +38,99 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->name ?: 'New method';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setName($name)
+    public function setName(string $name): Model\MethodInterface
     {
         $this->name = $name;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->translate()->getTitle();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTitle($title)
+    public function setTitle(?string $title): Model\MethodInterface
     {
         $this->translate()->setTitle($title);
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->translate()->getDescription();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): Model\MethodInterface
     {
         $this->translate()->setDescription($description);
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasMessages()
+    public function hasMessages(): bool
     {
         return 0 < $this->messages->count();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasMessage(Model\MessageInterface $message)
+    public function hasMessage(Model\MessageInterface $message): bool
     {
         $this->validateMessageClass($message);
 
         return $this->messages->contains($message);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addMessage(Model\MessageInterface $message)
-    {
-        $this->validateMessageClass($message);
-
-        if (!$this->hasMessage($message)) {
-            $message->setMethod($this);
-            $this->messages->add($message);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeMessage(Model\MessageInterface $message)
+    public function addMessage(Model\MessageInterface $message): Model\MethodInterface
     {
         $this->validateMessageClass($message);
 
         if ($this->hasMessage($message)) {
-            $message->setMethod(null);
-            $this->messages->removeElement($message);
+            return $this;
         }
+
+        $message->setMethod($this);
+        $this->messages->add($message);
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMessages()
+    public function removeMessage(Model\MessageInterface $message): Model\MethodInterface
+    {
+        $this->validateMessageClass($message);
+
+        if (!$this->hasMessage($message)) {
+            return $this;
+        }
+
+        $message->setMethod(null);
+        $this->messages->removeElement($message);
+
+        return $this;
+    }
+
+    public function getMessages(): Collection
     {
         return $this->messages;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMessageByState($state)
+    public function getMessageByState(string $state): ?Model\MessageInterface
     {
         foreach ($this->messages as $message) {
             if ($message->getState() === $state) {
@@ -196,48 +141,32 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
         return null;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return $this->enabled;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setEnabled($enabled)
+    public function setEnabled(bool $enabled): Model\MethodInterface
     {
-        $this->enabled = (bool)$enabled;
+        $this->enabled = $enabled;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isAvailable()
+    public function isAvailable(): bool
     {
         return $this->available;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAvailable($available)
+    public function setAvailable(bool $available): Model\MethodInterface
     {
-        $this->available = (bool)$available;
+        $this->available = $available;
 
         return $this;
     }
 
     /**
-     * Validates the message class.
-     *
-     * @param Model\MessageInterface $message
-     *
-     * @throws \Ekyna\Component\Commerce\Exception\InvalidArgumentException
+     * @throws UnexpectedTypeException
      */
-    abstract protected function validateMessageClass(Model\MessageInterface $message);
+    abstract protected function validateMessageClass(Model\MessageInterface $message): void;
 }

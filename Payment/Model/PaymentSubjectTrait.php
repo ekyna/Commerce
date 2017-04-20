@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Model;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectTrait;
@@ -17,223 +21,123 @@ trait PaymentSubjectTrait
 {
     use ExchangeSubjectTrait;
 
-    /**
-     * @var float
-     */
-    protected $depositTotal;
-
-    /**
-     * @var float
-     */
-    protected $grandTotal;
-
-    /**
-     * @var float
-     */
-    protected $paidTotal;
-
-    /**
-     * @var float
-     */
-    protected $refundedTotal;
-
-    /**
-     * @var float
-     */
-    protected $pendingTotal;
-
-    /**
-     * @var float
-     */
-    protected $outstandingAccepted;
-
-    /**
-     * @var float
-     */
-    protected $outstandingExpired;
-
-    /**
-     * @var float
-     */
-    protected $outstandingLimit;
-
-    /**
-     * @var \DateTime
-     */
-    protected $outstandingDate;
-
-    /**
-     * @var string
-     */
-    protected $paymentState;
-
-    /**
-     * @var PaymentMethodInterface|null
-     */
-    protected $paymentMethod;
-
-    /**
-     * @var \Doctrine\Common\Collections\Collection|PaymentInterface[]
-     */
-    protected $payments;
+    protected Decimal $depositTotal;
+    protected Decimal $grandTotal;
+    protected Decimal $paidTotal;
+    protected Decimal $refundedTotal;
+    protected Decimal $pendingTotal;
+    protected Decimal $outstandingAccepted;
+    protected Decimal $outstandingExpired;
+    protected Decimal $outstandingLimit;
+    protected ?DateTimeInterface $outstandingDate = null;
+    protected string $paymentState;
+    protected ?PaymentMethodInterface $paymentMethod = null;
+    /** @var Collection<PaymentInterface> */
+    protected Collection $payments;
 
 
     /**
      * Initializes the payment subject.
      */
-    protected function initializePaymentSubject()
+    protected function initializePaymentSubject(): void
     {
-        $this->depositTotal = 0;
-        $this->grandTotal = 0;
-        $this->paidTotal = 0;
-        $this->refundedTotal = 0;
-        $this->pendingTotal = 0;
-        $this->outstandingAccepted = 0;
-        $this->outstandingExpired = 0;
-        $this->outstandingLimit = 0;
+        $this->depositTotal = new Decimal(0);
+        $this->grandTotal = new Decimal(0);
+        $this->paidTotal = new Decimal(0);
+        $this->refundedTotal = new Decimal(0);
+        $this->pendingTotal = new Decimal(0);
+        $this->outstandingAccepted = new Decimal(0);
+        $this->outstandingExpired = new Decimal(0);
+        $this->outstandingLimit = new Decimal(0);
 
         $this->paymentState = PaymentStates::STATE_NEW;
         $this->payments = new ArrayCollection();
     }
 
-    /**
-     * Returns the deposit total.
-     *
-     * @return float
-     */
-    public function getDepositTotal(): float
+    public function getDepositTotal(): Decimal
     {
         return $this->depositTotal;
     }
 
     /**
-     * Sets the deposit total.
-     *
-     * @param float $total
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setDepositTotal(float $total): PaymentSubjectInterface
+    public function setDepositTotal(Decimal $total): PaymentSubjectInterface
     {
         $this->depositTotal = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the grand total.
-     *
-     * @return float
-     */
-    public function getGrandTotal(): float
+    public function getGrandTotal(): Decimal
     {
         return $this->grandTotal;
     }
 
     /**
-     * Sets the grand total.
-     *
-     * @param float $total
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setGrandTotal(float $total): PaymentSubjectInterface
+    public function setGrandTotal(Decimal $total): PaymentSubjectInterface
     {
         $this->grandTotal = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the paid total.
-     *
-     * @return float
-     */
-    public function getPaidTotal(): float
+    public function getPaidTotal(): Decimal
     {
         return $this->paidTotal;
     }
 
     /**
-     * Sets the paid total.
-     *
-     * @param float $total
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setPaidTotal(float $total): PaymentSubjectInterface
+    public function setPaidTotal(Decimal $total): PaymentSubjectInterface
     {
         $this->paidTotal = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the refunded total.
-     *
-     * @return float
-     */
-    public function getRefundedTotal(): float
+    public function getRefundedTotal(): Decimal
     {
         return $this->refundedTotal;
     }
 
     /**
-     * Sets the refunded total.
-     *
-     * @param float $total
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setRefundedTotal(float $total): PaymentSubjectInterface
+    public function setRefundedTotal(Decimal $total): PaymentSubjectInterface
     {
         $this->refundedTotal = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the pending total.
-     *
-     * @return float
-     */
-    public function getPendingTotal(): float
+    public function getPendingTotal(): Decimal
     {
         return $this->pendingTotal;
     }
 
     /**
-     * Sets the pending total.
-     *
-     * @param float $total
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setPendingTotal(float $total): PaymentSubjectInterface
+    public function setPendingTotal(Decimal $total): PaymentSubjectInterface
     {
         $this->pendingTotal = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the accepted outstanding total.
-     *
-     * @return float
-     */
-    public function getOutstandingAccepted(): float
+    public function getOutstandingAccepted(): Decimal
     {
         return $this->outstandingAccepted;
     }
 
     /**
-     * Sets the accepted outstanding total.
-     *
-     * @param float $total
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingAccepted(float $total): PaymentSubjectInterface
+    public function setOutstandingAccepted(Decimal $total): PaymentSubjectInterface
     {
         $this->outstandingAccepted = $total;
 
@@ -242,10 +146,8 @@ trait PaymentSubjectTrait
 
     /**
      * Returns the expired outstanding total.
-     *
-     * @return float
      */
-    public function getOutstandingExpired(): float
+    public function getOutstandingExpired(): Decimal
     {
         return $this->outstandingExpired;
     }
@@ -253,59 +155,39 @@ trait PaymentSubjectTrait
     /**
      * Sets the expired outstanding total.
      *
-     * @param float $total
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingExpired(float $total): PaymentSubjectInterface
+    public function setOutstandingExpired(Decimal $total): PaymentSubjectInterface
     {
         $this->outstandingExpired = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the outstanding limit.
-     *
-     * @return float
-     */
-    public function getOutstandingLimit(): float
+    public function getOutstandingLimit(): Decimal
     {
         return $this->outstandingLimit;
     }
 
     /**
-     * Sets the outstanding amount.
-     *
-     * @param float $amount
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingLimit(float $amount): PaymentSubjectInterface
+    public function setOutstandingLimit(Decimal $amount): PaymentSubjectInterface
     {
-        $this->outstandingLimit = (float)$amount;
+        $this->outstandingLimit = $amount;
 
         return $this;
     }
 
-    /**
-     * Returns the outstanding date.
-     *
-     * @return \DateTime|null
-     */
-    public function getOutstandingDate(): ?\DateTime
+    public function getOutstandingDate(): ?DateTimeInterface
     {
         return $this->outstandingDate;
     }
 
     /**
-     * Sets the outstanding date.
-     *
-     * @param \DateTime $date
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingDate(\DateTime $date = null): PaymentSubjectInterface
+    public function setOutstandingDate(?DateTimeInterface $date): PaymentSubjectInterface
     {
         $this->outstandingDate = $date;
 
@@ -314,8 +196,6 @@ trait PaymentSubjectTrait
 
     /**
      * Returns the (default) payment method.
-     *
-     * @return PaymentMethodInterface|null
      */
     public function getPaymentMethod(): ?PaymentMethodInterface
     {
@@ -325,32 +205,21 @@ trait PaymentSubjectTrait
     /**
      * Sets the (default) payment method.
      *
-     * @param PaymentMethodInterface|null $method
-     *
      * @return $this|PaymentSubjectInterface
      */
-    public function setPaymentMethod(PaymentMethodInterface $method = null): PaymentSubjectInterface
+    public function setPaymentMethod(?PaymentMethodInterface $method): PaymentSubjectInterface
     {
         $this->paymentMethod = $method;
 
         return $this;
     }
 
-    /**
-     * Returns the payment state.
-     *
-     * @return string
-     */
     public function getPaymentState(): string
     {
         return $this->paymentState;
     }
 
     /**
-     * Sets the payment state.
-     *
-     * @param string $state
-     *
      * @return $this|PaymentSubjectInterface
      */
     public function setPaymentState(string $state): PaymentSubjectInterface
@@ -362,8 +231,6 @@ trait PaymentSubjectTrait
 
     /**
      * Returns whether or not the subject has at least one payment or refund (with any state).
-     *
-     * @return bool
      */
     public function hasPayments(): bool
     {
@@ -372,10 +239,6 @@ trait PaymentSubjectTrait
 
     /**
      * Returns whether the subject has at least one paid (or refunded) payment.
-     *
-     * @param bool $orRefunded
-     *
-     * @return bool
      */
     public function hasPaidPayments(bool $orRefunded = false): bool
     {
@@ -393,7 +256,7 @@ trait PaymentSubjectTrait
      *
      * @param bool $filter TRUE for payments, FALSE for refunds, NULL for all
      *
-     * @return Collection|PaymentInterface[]
+     * @return Collection<PaymentInterface>
      */
     public function getPayments(bool $filter = null): Collection
     {
@@ -407,9 +270,7 @@ trait PaymentSubjectTrait
     }
 
     /**
-     * Returns whether or not the subject is fully paid.
-     *
-     * @return bool
+     * Returns whether the subject is fully paid.
      */
     public function isPaid(): bool
     {
@@ -422,6 +283,6 @@ trait PaymentSubjectTrait
         $paid = $this->paidTotal - $this->refundedTotal;
 
         // TRUE If paid total is greater than or equals grand total
-        return 0 <= Money::compare($paid, $total, $this->getCurrency()->getCode());
+        return $total <= $paid;
     }
 }

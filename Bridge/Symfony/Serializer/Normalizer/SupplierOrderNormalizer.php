@@ -1,81 +1,57 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class SupplierOrderNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierOrderNormalizer extends AbstractResourceNormalizer
+class SupplierOrderNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param SupplierOrderInterface $order
+     * @param SupplierOrderInterface $object
      */
-    public function normalize($order, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
-        $data = parent::normalize($order, $format, $context);
+        $data = parent::normalize($object, $format, $context);
 
         if ($this->contextHasGroup('Search', $context)) {
-            $carrier = $order->getCarrier();
+            $carrier = $object->getCarrier();
 
             $data = array_replace($data, [
-                'number'   => $order->getNumber(),
-                'supplier' => [
-                    'id'   => $order->getSupplier()->getId(),
-                    'name' => $order->getSupplier()->getName(),
+                'number'      => $object->getNumber(),
+                'supplier'    => [
+                    'id'   => $object->getSupplier()->getId(),
+                    'name' => $object->getSupplier()->getName(),
                 ],
-                'carrier'  => $carrier ? [
+                'carrier'     => $carrier ? [
                     'id'   => $carrier->getId(),
                     'name' => $carrier->getName(),
                 ] : null,
-                'description' => $order->getDescription(),
+                'description' => $object->getDescription(),
             ]);
         }
 
         if ($this->contextHasGroup('Summary', $context)) {
             $items = [];
-            foreach ($order->getItems() as $item) {
+            foreach ($object->getItems() as $item) {
                 $items[] = $this->normalizeObject($item, $format, $context);
             }
 
             $data = array_replace($data, [
                 'items'       => $items,
-                'description' => $order->getDescription(),
+                'description' => $object->getDescription(),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof SupplierOrderInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, SupplierOrderInterface::class);
     }
 }

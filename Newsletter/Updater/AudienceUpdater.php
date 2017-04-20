@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\Updater;
 
-use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Repository\AudienceRepositoryInterface;
@@ -15,55 +16,15 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class AudienceUpdater
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
+    private PersistenceHelperInterface $persistenceHelper;
+    private AudienceRepositoryInterface $audienceRepository;
 
-    /**
-     * @var AudienceRepositoryInterface
-     */
-    private $audienceRepository;
-
-    /**
-     * @var GeneratorInterface
-     */
-    private $keyGenerator;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface  $persistenceHelper
-     * @param AudienceRepositoryInterface $audienceRepository
-     * @param GeneratorInterface $keyGenerator
-     */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        AudienceRepositoryInterface $audienceRepository,
-        GeneratorInterface $keyGenerator
+        AudienceRepositoryInterface $audienceRepository
     ) {
         $this->persistenceHelper  = $persistenceHelper;
         $this->audienceRepository = $audienceRepository;
-        $this->keyGenerator = $keyGenerator;
-    }
-
-    /**
-     * Generates the audience key.
-     *
-     * @param AudienceInterface $audience
-     *
-     * @return bool Whether the audience has been changed.
-     */
-    public function generateKey(AudienceInterface $audience): bool
-    {
-        if (!empty($audience->getKey())) {
-            return false;
-        }
-
-        $audience->setKey($this->keyGenerator->generate($audience));
-
-        return true;
     }
 
     /**

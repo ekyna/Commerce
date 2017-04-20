@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
+
+use Decimal\Decimal;
 
 /**
  * Class ResolvedShipmentPrice
@@ -9,92 +13,44 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
  */
 class ResolvedShipmentPrice
 {
-    /**
-     * @var ShipmentMethodInterface
-     */
-    private $method;
+    private ShipmentMethodInterface $method;
+    private Decimal                 $weight;
+    private Decimal                 $price;
+    /** @var array<Decimal> */
+    private array $taxes;
 
-    /**
-     * @var float
-     */
-    private $weight;
-
-    /**
-     * @var float
-     */
-    private $price;
-
-    /**
-     * @var float[]
-     */
-    private $taxes;
-
-
-    /**
-     * Constructor.
-     *
-     * @param ShipmentMethodInterface $method
-     * @param float                   $weight
-     * @param float                   $price
-     */
-    public function __construct(ShipmentMethodInterface $method, float $weight, float $price = 0.)
+    public function __construct(ShipmentMethodInterface $method, Decimal $weight, Decimal $price = null)
     {
         $this->method = $method;
         $this->weight = $weight;
-        $this->price = $price;
+        $this->price = $price ?: new Decimal(0);
         $this->taxes = [];
     }
 
-    /**
-     * Returns the method.
-     *
-     * @return ShipmentMethodInterface
-     */
     public function getMethod(): ShipmentMethodInterface
     {
         return $this->method;
     }
 
-    /**
-     * Returns the weight.
-     *
-     * @return float
-     */
-    public function getWeight(): float
+    public function getWeight(): Decimal
     {
         return $this->weight;
     }
 
-    /**
-     * Sets the price.
-     *
-     * @param float $price
-     *
-     * @return ResolvedShipmentPrice
-     */
-    public function setPrice(float $price): self
+    public function setPrice(Decimal $price): self
     {
         $this->price = $price;
 
         return $this;
     }
 
-    /**
-     * Returns the price.
-     *
-     * @return float
-     */
-    public function getPrice(): float
+    public function getPrice(): Decimal
     {
         return $this->price;
     }
 
     /**
-     * Sets the taxes.
-     *
-     * @param float[] $taxes
-     *
-     * @return ResolvedShipmentPrice
+     * @param array<Decimal> $taxes
      */
     public function setTaxes(array $taxes): self
     {
@@ -104,22 +60,15 @@ class ResolvedShipmentPrice
     }
 
     /**
-     * Returns the taxes.
-     *
-     * @return float[]
+     * @return array<Decimal>
      */
     public function getTaxes(): array
     {
         return $this->taxes;
     }
 
-    /**
-     * Returns the free.
-     *
-     * @return bool
-     */
     public function isFree(): bool
     {
-        return 0 === bccomp($this->price, 0, 3);
+        return $this->price->equals(0);
     }
 }

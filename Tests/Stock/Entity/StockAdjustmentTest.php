@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Tests\Stock\Entity;
 
 use Acme\Product\Entity\StockUnit;
 use DateTime;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Entity\StockAdjustment;
 use PHPUnit\Framework\TestCase;
 
@@ -39,10 +40,10 @@ class StockAdjustmentTest extends TestCase
     public function test_quantity(): void
     {
         $adjustment = new StockAdjustment();
-        $this->assertSame(0., $adjustment->getQuantity());
+        $this->assertTrue($adjustment->getQuantity()->isZero());
 
-        $adjustment->setQuantity(10);
-        $this->assertSame(10., $adjustment->getQuantity());
+        $adjustment->setQuantity(new Decimal(10));
+        $this->assertTrue($adjustment->getQuantity()->equals('10'));
     }
 
     public function test_reason(): void

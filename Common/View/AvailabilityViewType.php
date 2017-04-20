@@ -42,7 +42,7 @@ class AvailabilityViewType extends AbstractViewType
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options): void
     {

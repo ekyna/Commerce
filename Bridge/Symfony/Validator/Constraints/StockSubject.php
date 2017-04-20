@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraint;
 class StockSubject extends Constraint
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTargets()
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,88 +11,50 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 trait IdentityTrait
 {
-    /**
-     * @var string
-     */
-    protected $gender;
-
-    /**
-     * @var string
-     */
-    protected $firstName;
-
-    /**
-     * @var string
-     */
-    protected $lastName;
+    protected ?string $gender    = null;
+    protected ?string $firstName = null;
+    protected ?string $lastName  = null;
 
 
-    /**
-     * Returns the gender.
-     *
-     * @return string
-     */
-    public function getGender()
+    public function getGender(): ?string
     {
         return $this->gender;
     }
 
     /**
-     * Sets the gender.
-     *
-     * @param string $gender
-     *
-     * @return IdentityInterface|$this
+     * @return $this|IdentityInterface
      */
-    public function setGender($gender)
+    public function setGender(?string $gender): IdentityInterface
     {
         $this->gender = $gender;
 
         return $this;
     }
 
-    /**
-     * Returns the firstName.
-     *
-     * @return string
-     */
-    public function getFirstName()
+    public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
     /**
-     * Sets the firstName.
-     *
-     * @param string $firstName
-     *
-     * @return IdentityInterface|$this
+     * @return $this|IdentityInterface
      */
-    public function setFirstName($firstName)
+    public function setFirstName(?string $firstName): IdentityInterface
     {
         $this->firstName = $firstName;
 
         return $this;
     }
 
-    /**
-     * Returns the lastName.
-     *
-     * @return string
-     */
-    public function getLastName()
+    public function getLastName(): ?string
     {
         return $this->lastName;
     }
 
     /**
-     * Sets the lastName.
-     *
-     * @param string $lastName
-     *
-     * @return IdentityInterface|$this
+     * @return $this|IdentityInterface
      */
-    public function setLastName($lastName)
+    public function setLastName(?string $lastName): IdentityInterface
     {
         $this->lastName = $lastName;
 
@@ -99,10 +63,8 @@ trait IdentityTrait
 
     /**
      * Returns whether or not the identity is empty.
-     *
-     * @return bool
      */
-    public function isIdentityEmpty()
+    public function isIdentityEmpty(): bool
     {
         return empty($this->gender) && empty($this->firstName) && empty($this->lastName);
     }
@@ -110,9 +72,9 @@ trait IdentityTrait
     /**
      * Clears the identity.
      *
-     * @return IdentityInterface|$this
+     * @return $this|IdentityInterface
      */
-    public function clearIdentity()
+    public function clearIdentity(): IdentityInterface
     {
         $this->gender = null;
         $this->firstName = null;

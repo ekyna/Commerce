@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentLabel;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentLabelInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentParcelInterface;
 
 /**
@@ -15,25 +19,19 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentParcelInterface;
  */
 class OrderShipmentLabel extends AbstractShipmentLabel
 {
-    /**
-     * @inheritDoc
-     */
-    public function setShipment(ShipmentInterface $shipment = null)
+    public function setShipment(?ShipmentInterface $shipment): ShipmentLabelInterface
     {
         if ($shipment && !$shipment instanceof OrderShipmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentInterface::class);
+            throw new UnexpectedTypeException($shipment, OrderShipmentInterface::class);
         }
 
         return parent::setShipment($shipment);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setParcel(ShipmentParcelInterface $parcel = null)
+    public function setParcel(?ShipmentParcelInterface $parcel): ShipmentLabelInterface
     {
         if ($parcel && !$parcel instanceof OrderShipmentParcel) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentParcel::class);
+            throw new InvalidArgumentException($parcel, OrderShipmentParcel::class);
         }
 
         return parent::setParcel($parcel);

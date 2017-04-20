@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;

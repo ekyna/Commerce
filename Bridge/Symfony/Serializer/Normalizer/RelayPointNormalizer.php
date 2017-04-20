@@ -1,22 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use DateTime;
 use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use IntlDateFormatter;
 
 /**
  * Class RelayPointNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class RelayPointNormalizer extends AbstractResourceNormalizer
+class RelayPointNormalizer extends ResourceNormalizer
 {
-    /**
-     * @var LocaleProviderInterface
-     */
-    private $localeProvider;
+    private LocaleProviderInterface $localeProvider;
 
 
     /**
@@ -32,36 +33,36 @@ class RelayPointNormalizer extends AbstractResourceNormalizer
     /**
      * @inheritDoc
      *
-     * @param RelayPointInterface $relayPoint
+     * @param RelayPointInterface $object
      */
-    public function normalize($relayPoint, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         if ($this->contextHasGroup(['Default', 'RelayPoint'], $context)) {
             $data = [
-                'id'          => $relayPoint->getId(),
-                'number'      => $relayPoint->getNumber(),
-                'platform'    => $relayPoint->getPlatformName(),
-                'company'     => $relayPoint->getCompany(),
+                'id'          => $object->getId(),
+                'number'      => $object->getNumber(),
+                'platform'    => $object->getPlatformName(),
+                'company'     => $object->getCompany(),
                 //'gender'      => $relayPoint->getGender(),
                 //'first_name'  => $relayPoint->getFirstName(),
                 //'last_name'   => $relayPoint->getLastName(),
-                'street'      => $relayPoint->getStreet(),
-                'complement'  => $relayPoint->getComplement(),
-                'supplement'  => $relayPoint->getSupplement(),
-                'postal_code' => $relayPoint->getPostalCode(),
-                'city'        => $relayPoint->getCity(),
-                'country'     => $relayPoint->getCountry()->getName(),
+                'street'      => $object->getStreet(),
+                'complement'  => $object->getComplement(),
+                'supplement'  => $object->getSupplement(),
+                'postal_code' => $object->getPostalCode(),
+                'city'        => $object->getCity(),
+                'country'     => $object->getCountry()->getName(),
                 //'state'        => $address->getCity(),
 
-                'phone'  => $this->normalizeObject($relayPoint->getPhone(), $format, $context),
-                'mobile' => $this->normalizeObject($relayPoint->getMobile(), $format, $context),
+                'phone'  => $this->normalizeObject($object->getPhone(), $format, $context),
+                'mobile' => $this->normalizeObject($object->getMobile(), $format, $context),
 
-                'distance'  => $relayPoint->getDistance(),
-                'longitude' => $relayPoint->getLongitude(),
-                'latitude'  => $relayPoint->getLatitude(),
+                'distance'  => $object->getDistance(),
+                'longitude' => $object->getLongitude(),
+                'latitude'  => $object->getLatitude(),
             ];
 
-            foreach ($relayPoint->getOpeningHours() as $oh) {
+            foreach ($object->getOpeningHours() as $oh) {
                 $data['opening_hours'][] = [
                     'day'    => $oh->getDay(),
                     'label'  => $this->localizedDayOfWeek($oh->getDay()),
@@ -72,7 +73,7 @@ class RelayPointNormalizer extends AbstractResourceNormalizer
             return $data;
         }
 
-        return parent::normalize($relayPoint, $format, $context);
+        return parent::normalize($object, $format, $context);
     }
 
     /**
@@ -82,16 +83,16 @@ class RelayPointNormalizer extends AbstractResourceNormalizer
      *
      * @return string
      */
-    protected function localizedDayOfWeek($dayOfWeek)
+    protected function localizedDayOfWeek(int $dayOfWeek): string
     {
         if (class_exists('\IntlDateFormatter')) {
-            $date = new \DateTime('2017-01-01'); // Starts sunday
+            $date = new DateTime('2017-01-01'); // Starts sunday
             $date->modify('+' . $dayOfWeek . ' days');
 
-            $formatter = \IntlDateFormatter::create(
+            $formatter = IntlDateFormatter::create(
                 $this->localeProvider->getCurrentLocale(),
-                \IntlDateFormatter::NONE,
-                \IntlDateFormatter::NONE,
+                IntlDateFormatter::NONE,
+                IntlDateFormatter::NONE,
                 $date->getTimezone(),
                 null,
                 'eeee'
@@ -101,39 +102,13 @@ class RelayPointNormalizer extends AbstractResourceNormalizer
         }
 
         return [
-                   1 => 'Monday',
-                   2 => 'Tuesday',
-                   3 => 'Wednesday',
-                   4 => 'Thursday',
-                   5 => 'Friday',
-                   6 => 'Saturday',
-                   7 => 'Sunday',
-               ][$dayOfWeek];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof RelayPointInterface;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, RelayPointInterface::class);
+            1 => 'Monday',
+            2 => 'Tuesday',
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday',
+        ][$dayOfWeek];
     }
 }

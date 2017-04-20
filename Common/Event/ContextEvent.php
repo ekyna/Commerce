@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Class ContextEvent
@@ -12,17 +14,9 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class ContextEvent extends Event
 {
-    /**
-     * @var ContextInterface
-     */
-    private $context;
+    private ContextInterface $context;
 
 
-    /**
-     * Constructor.
-     *
-     * @param ContextInterface $context
-     */
     public function __construct(ContextInterface $context)
     {
         $this->context = $context;
@@ -33,7 +27,7 @@ class ContextEvent extends Event
      *
      * @return ContextInterface
      */
-    public function getContext()
+    public function getContext(): ContextInterface
     {
         return $this->context;
     }

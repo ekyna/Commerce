@@ -24,7 +24,7 @@ class IdentityValidator extends ConstraintValidator
 
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function validate($identity, Constraint $constraint)
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\MentionTranslationInterface;
@@ -12,24 +14,15 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
  */
 abstract class AbstractMentionTranslation extends AbstractTranslation implements MentionTranslationInterface
 {
-    /**
-     * @var string
-     */
-    protected $content;
+    protected ?string $content = null;
 
 
-    /**
-     * @inheritDoc
-     */
     public function getContent(): ?string
     {
         return $this->content;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setContent(string $content): MentionTranslationInterface
+    public function setContent(?string $content): MentionTranslationInterface
     {
         $this->content = $content;
 

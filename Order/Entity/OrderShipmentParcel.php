@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentParcel;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentDataInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentLabelInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentParcelInterface;
 
 /**
  * Class OrderShipmentParcel
@@ -15,37 +19,28 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentLabelInterface;
  */
 class OrderShipmentParcel extends AbstractShipmentParcel
 {
-    /**
-     * @inheritdoc
-     */
-    public function setShipment(ShipmentInterface $shipment = null)
+    public function setShipment(?ShipmentInterface $shipment): ShipmentParcelInterface
     {
         if ($shipment && !$shipment instanceof OrderShipmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentInterface::class);
+            throw new UnexpectedTypeException($shipment, OrderShipmentInterface::class);
         }
 
         return parent::setShipment($shipment);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function addLabel(ShipmentLabelInterface $label)
+    public function addLabel(ShipmentLabelInterface $label): ShipmentDataInterface
     {
         if (!$label instanceof OrderShipmentLabel) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentLabel::class);
+            throw new UnexpectedTypeException($label, OrderShipmentLabel::class);
         }
 
         return parent::addLabel($label);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function removeLabel(ShipmentLabelInterface $label)
+    public function removeLabel(ShipmentLabelInterface $label): ShipmentDataInterface
     {
         if (!$label instanceof OrderShipmentLabel) {
-            throw new InvalidArgumentException("Expected instance of " . OrderShipmentLabel::class);
+            throw new UnexpectedTypeException($label, OrderShipmentLabel::class);
         }
 
         return parent::removeLabel($label);

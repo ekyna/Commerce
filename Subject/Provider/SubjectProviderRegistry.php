@@ -28,7 +28,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addProvider(SubjectProviderInterface $provider): void
     {
@@ -40,7 +40,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getProvider($nameOrReferenceOrSubject): ?SubjectProviderInterface
     {
@@ -56,7 +56,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getProviderByReference(Reference $reference): ?SubjectProviderInterface
     {
@@ -74,7 +74,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getProviderBySubject(Subject $subject): ?SubjectProviderInterface
     {
@@ -88,7 +88,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getProviderByName(string $name): ?SubjectProviderInterface
     {
@@ -100,7 +100,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getProviders(): array
     {

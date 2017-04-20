@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 
 /**
  * Class AbstractStockAssignment
@@ -11,184 +15,121 @@ use Ekyna\Component\Commerce\Stock\Model as Stock;
  */
 abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int                      $id        = null;
+    protected ?Stock\StockUnitInterface $stockUnit = null;
+    protected Decimal                   $soldQuantity;
+    protected Decimal                   $shippedQuantity;
+    protected Decimal                   $lockedQuantity;
 
-    /**
-     * @var Stock\StockUnitInterface
-     */
-    protected $stockUnit;
-
-    /**
-     * @var float
-     */
-    protected $soldQuantity;
-
-    /**
-     * @var float
-     */
-    protected $shippedQuantity;
-
-    /**
-     * @var float
-     */
-    protected $lockedQuantity;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->soldQuantity = 0.;
-        $this->shippedQuantity = 0.;
-        $this->lockedQuantity = 0.;
+        $this->soldQuantity = new Decimal(0);
+        $this->shippedQuantity = new Decimal(0);
+        $this->lockedQuantity = new Decimal(0);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getStockUnit()
+    public function getStockUnit(): ?Stock\StockUnitInterface
     {
         return $this->stockUnit;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setStockUnit(Stock\StockUnitInterface $stockUnit = null)
+    public function setStockUnit(?Stock\StockUnitInterface $stockUnit): StockAssignmentInterface
     {
-        if ($stockUnit !== $this->stockUnit) {
-            if ($previous = $this->stockUnit) {
-                $this->stockUnit = null;
-                $previous->removeStockAssignment($this);
-            }
+        if ($stockUnit === $this->stockUnit) {
+            return $this;
+        }
 
-            if ($this->stockUnit = $stockUnit) {
-                $this->stockUnit->addStockAssignment($this);
-            }
+        if ($previous = $this->stockUnit) {
+            $this->stockUnit = null;
+            $previous->removeStockAssignment($this);
+        }
+
+        if ($this->stockUnit = $stockUnit) {
+            $this->stockUnit->addStockAssignment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSoldQuantity(): float
+    public function getSoldQuantity(): Decimal
     {
         return $this->soldQuantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSoldQuantity(float $quantity): Stock\StockAssignmentInterface
+    public function setSoldQuantity(Decimal $quantity): Stock\StockAssignmentInterface
     {
         $this->soldQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getShippedQuantity(): float
+    public function getShippedQuantity(): Decimal
     {
         return $this->shippedQuantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setShippedQuantity(float $quantity): Stock\StockAssignmentInterface
+    public function setShippedQuantity(Decimal $quantity): Stock\StockAssignmentInterface
     {
         $this->shippedQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getLockedQuantity(): float
+    public function getLockedQuantity(): Decimal
     {
         return $this->lockedQuantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setLockedQuantity(float $quantity): Stock\StockAssignmentInterface
+    public function setLockedQuantity(Decimal $quantity): Stock\StockAssignmentInterface
     {
         $this->lockedQuantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getShippableQuantity(): float
+    public function getShippableQuantity(): Decimal
     {
-        if (!$this->stockUnit) {
-            return 0;
+        if (null === $this->stockUnit) {
+            return new Decimal(0);
         }
 
         return min(
-            max(0, $this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity),
+            max(new Decimal(0), $this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity),
             $this->stockUnit->getShippableQuantity()
         );
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getReleasableQuantity(): float
+    public function getReleasableQuantity(): Decimal
     {
-        if (!$unit = $this->stockUnit) {
-            return 0.;
+        if (null === $this->stockUnit) {
+            return new Decimal(0);
         }
 
         // Sold - Shipped - Locked
-        return max(0, $this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity);
+        return max(new Decimal(0), $this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isFullyShipped(): bool
     {
-        // TODO Use packaging format
-        return 0 === bccomp($this->soldQuantity, $this->shippedQuantity, 5);
+        return $this->soldQuantity->equals($this->shippedQuantity);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isFullyShippable(): bool
     {
         // TODO Use packaging format
-        return 0 <= bccomp($this->getShippableQuantity() + $this->lockedQuantity, $this->soldQuantity - $this->shippedQuantity, 5);
+        return $this->getShippableQuantity()->add($this->lockedQuantity)
+            >= $this->soldQuantity->sub($this->shippedQuantity);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isEmpty(): bool
     {
-        return 0 == $this->soldQuantity
-            && 0 == $this->shippedQuantity
-            && 0 == $this->lockedQuantity;
+        return $this->soldQuantity->isZero()
+            && $this->shippedQuantity->isZero()
+            && $this->lockedQuantity->isZero();
     }
 }

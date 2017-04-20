@@ -24,7 +24,7 @@ class PaymentTermTranslation extends AbstractTranslation implements PaymentTermT
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTitle()
     {
@@ -32,7 +32,7 @@ class PaymentTermTranslation extends AbstractTranslation implements PaymentTermT
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setTitle($title)
     {
@@ -42,7 +42,7 @@ class PaymentTermTranslation extends AbstractTranslation implements PaymentTermT
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDescription()
     {
@@ -50,7 +50,7 @@ class PaymentTermTranslation extends AbstractTranslation implements PaymentTermT
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDescription($description)
     {

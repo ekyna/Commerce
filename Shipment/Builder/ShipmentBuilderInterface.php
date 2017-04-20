@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Builder;
 
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
@@ -13,8 +15,6 @@ interface ShipmentBuilderInterface
 {
     /**
      * Builds the shipment.
-     *
-     * @param ShipmentInterface $shipment
      */
-    public function build(ShipmentInterface $shipment);
+    public function build(ShipmentInterface $shipment): void;
 }

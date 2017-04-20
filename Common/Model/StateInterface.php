@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -11,48 +13,15 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface StateInterface extends ResourceInterface
 {
-    /**
-     * Returns the country.
-     *
-     * @return CountryInterface
-     */
-    public function getCountry();
+    public function getCountry(): ?CountryInterface;
 
-    /**
-     * Sets the country.
-     *
-     * @param CountryInterface $country
-     * @return $this|StateInterface
-     */
-    public function setCountry(CountryInterface $country);
+    public function setCountry(CountryInterface $country): StateInterface;
 
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
-    public function getName();
+    public function getName(): ?string;
 
-    /**
-     * Sets the name.
-     *
-     * @param string $name
-     * @return $this|StateInterface
-     */
-    public function setName($name);
+    public function setName(string $name): StateInterface;
 
-    /**
-     * Returns the code.
-     *
-     * @return string
-     */
-    public function getCode();
+    public function getCode(): ?string;
 
-    /**
-     * Sets the code.
-     *
-     * @param string $code
-     * @return $this|StateInterface
-     */
-    public function setCode($code);
+    public function setCode(string $code): StateInterface;
 }

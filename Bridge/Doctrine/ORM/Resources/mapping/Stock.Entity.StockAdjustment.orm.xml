@@ -15,7 +15,7 @@
 
         <field name="reason" column="reason" type="string" length="16" nullable="false"/>
         <field name="note" column="note" type="string" length="255" nullable="true"/>
-        <field name="quantity" column="quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="quantity" column="quantity" type="php_decimal" precision="10" scale="3" nullable="false"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

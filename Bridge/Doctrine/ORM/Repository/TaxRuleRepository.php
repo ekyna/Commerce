@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Query;
@@ -7,7 +9,7 @@ use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class TaxRuleRepository
@@ -16,20 +18,9 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryInterface
 {
-    /**
-     * @var Query
-     */
-    private $byCodeQuery;
-
-    /**
-     * @var Query
-     */
-    private $forCustomerQuery;
-
-    /**
-     * @var Query
-     */
-    private $forBusinessQuery;
+    private ?Query $byCodeQuery      = null;
+    private ?Query $forCustomerQuery = null;
+    private ?Query $forBusinessQuery = null;
 
 
     /**
@@ -44,7 +35,7 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findOneForCustomer(CountryInterface $source, CountryInterface $target): ?TaxRuleInterface
     {
@@ -56,7 +47,7 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findOneForBusiness(CountryInterface $source, CountryInterface $target): ?TaxRuleInterface
     {
@@ -91,20 +82,20 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
      *
      * @return Query
      */
-    private function getForCustomerQuery()
+    private function getForCustomerQuery(): Query
     {
-        if (null === $this->forCustomerQuery) {
-            $qb = $this->getBaseQueryBuilder();
-
-            $this->forCustomerQuery = $qb
-                ->andWhere($qb->expr()->eq('r.customer', ':customer'))
-                ->getQuery()
-                ->useQueryCache(true)
-                ->setParameter('customer', true)
-                ->setMaxResults(1);
+        if (null !== $this->forCustomerQuery) {
+            return $this->forCustomerQuery;
         }
 
-        return $this->forCustomerQuery;
+        $qb = $this->getBaseQueryBuilder();
+
+        return $this->forCustomerQuery = $qb
+            ->andWhere($qb->expr()->eq('r.customer', ':customer'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameter('customer', true)
+            ->setMaxResults(1);
     }
 
     /**
@@ -114,18 +105,18 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
      */
     private function getForBusinessQuery(): Query
     {
-        if (null === $this->forBusinessQuery) {
-            $qb = $this->getBaseQueryBuilder();
-
-            $this->forBusinessQuery = $qb
-                ->andWhere($qb->expr()->eq('r.business', ':business'))
-                ->getQuery()
-                ->useQueryCache(true)
-                ->setParameter('business', true)
-                ->setMaxResults(1);
+        if (null !== $this->forBusinessQuery) {
+            return $this->forBusinessQuery;
         }
 
-        return $this->forBusinessQuery;
+        $qb = $this->getBaseQueryBuilder();
+
+        return $this->forBusinessQuery = $qb
+            ->andWhere($qb->expr()->eq('r.business', ':business'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameter('business', true)
+            ->setMaxResults(1);
     }
 
     /**

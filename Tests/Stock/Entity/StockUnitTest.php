@@ -1,4 +1,6 @@
-<?php
+<?php /** @noinspection PhpMethodNamingConventionInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Tests\Stock\Entity;
 

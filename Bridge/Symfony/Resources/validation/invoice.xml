@@ -63,12 +63,6 @@
                 </option>
             </constraint>
         </property>-->
-        <property name="createdAt">
-            <constraint name="DateTime"/>
-        </property>
-        <property name="updatedAt">
-            <constraint name="DateTime"/>
-        </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
         </constraint>

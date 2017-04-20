@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\Collection;
@@ -17,15 +19,11 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 {
     /**
      * Returns the code.
-     *
-     * @return string
      */
     public function getCode(): ?string;
 
     /**
      * Sets the code.
-     *
-     * @param string $code
      *
      * @return $this|TaxRuleInterface
      */
@@ -33,47 +31,35 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 
     /**
      * Returns the name.
-     *
-     * @return string
      */
     public function getName(): ?string;
 
     /**
      * Sets the name.
      *
-     * @param string $name
-     *
      * @return $this|TaxRuleInterface
      */
     public function setName(string $name): TaxRuleInterface;
 
     /**
-     * Returns the customer.
-     *
-     * @return bool
+     * Returns whether the tax rule applies to regular customer groups.
      */
     public function isCustomer(): bool;
 
     /**
-     * Sets the customer.
-     *
-     * @param bool $customer
+     * Sets whether the tax rule applies to regular customer groups.
      *
      * @return $this|TaxRuleInterface
      */
     public function setCustomer(bool $customer): TaxRuleInterface;
 
     /**
-     * Returns the business.
-     *
-     * @return bool
+     * Returns whether the tax rule applies to business customer groups.
      */
     public function isBusiness(): bool;
 
     /**
-     * Sets the business.
-     *
-     * @param bool $business
+     * Sets whether the tax rule applies to business customer groups.
      *
      * @return $this|TaxRuleInterface
      */
@@ -81,8 +67,6 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 
     /**
      * Returns whether the tax rule has source countries.
-     *
-     * @return bool
      */
     public function hasSources(): bool;
 
@@ -95,17 +79,11 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 
     /**
      * Returns whether the tax rule has the given source country.
-     *
-     * @param CountryInterface $source
-     *
-     * @return bool
      */
     public function hasSource(CountryInterface $source): bool;
 
     /**
      * Adds the source country.
-     *
-     * @param CountryInterface $source
      *
      * @return $this|TaxRuleInterface
      */
@@ -114,8 +92,6 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
     /**
      * Removes the source country.
      *
-     * @param CountryInterface $source
-     *
      * @return $this|TaxRuleInterface
      */
     public function removeSource(CountryInterface $source): TaxRuleInterface;
@@ -123,16 +99,12 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
     /**
      * Sets the countries.
      *
-     * @param CountryInterface[] $countries
-     *
      * @return $this|TaxRuleInterface
      */
-    public function setSources(array $countries): TaxRuleInterface;
+    public function setSources(array $sources): TaxRuleInterface;
 
     /**
      * Returns whether the tax rule has target countries.
-     *
-     * @return bool
      */
     public function hasTargets(): bool;
 
@@ -145,17 +117,11 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 
     /**
      * Returns whether the tax rule has the given target country.
-     *
-     * @param CountryInterface $target
-     *
-     * @return bool
      */
     public function hasTarget(CountryInterface $target): bool;
 
     /**
      * Adds the target country.
-     *
-     * @param CountryInterface $target
      *
      * @return $this|TaxRuleInterface
      */
@@ -164,8 +130,6 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
     /**
      * Removes the target country.
      *
-     * @param CountryInterface $target
-     *
      * @return $this|TaxRuleInterface
      */
     public function removeTarget(CountryInterface $target): TaxRuleInterface;
@@ -173,16 +137,12 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
     /**
      * Sets the countries.
      *
-     * @param CountryInterface[] $countries
-     *
      * @return $this|TaxRuleInterface
      */
-    public function setTargets(array $countries): TaxRuleInterface;
+    public function setTargets(array $targets): TaxRuleInterface;
 
     /**
      * Returns whether the tax rule has taxes.
-     *
-     * @return bool
      */
     public function hasTaxes(): bool;
 
@@ -195,17 +155,11 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 
     /**
      * Returns whether the tax rule has the given tax.
-     *
-     * @param TaxInterface $tax
-     *
-     * @return bool
      */
     public function hasTax(TaxInterface $tax): bool;
 
     /**
      * Adds the tax.
-     *
-     * @param TaxInterface $tax
      *
      * @return $this|TaxRuleInterface
      */
@@ -213,8 +167,6 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 
     /**
      * Removes the tax.
-     *
-     * @param TaxInterface $tax
      *
      * @return $this|TaxRuleInterface
      */
@@ -231,17 +183,11 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 
     /**
      * Returns whether this tax rule has the given mention.
-     *
-     * @param TaxRuleMention $mention
-     *
-     * @return bool
      */
     public function hasMention(TaxRuleMention $mention): bool;
 
     /**
      * Adds the mention.
-     *
-     * @param TaxRuleMention $mention
      *
      * @return $this|TaxRuleInterface
      */
@@ -250,23 +196,17 @@ interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
     /**
      * Removes the mention.
      *
-     * @param TaxRuleMention $mention
-     *
      * @return $this|TaxRuleInterface
      */
     public function removeMention(TaxRuleMention $mention): TaxRuleInterface;
 
     /**
      * Returns the priority.
-     *
-     * @return int
      */
     public function getPriority(): int;
 
     /**
      * Sets the priority.
-     *
-     * @param int $priority
      *
      * @return $this|TaxRuleInterface
      */

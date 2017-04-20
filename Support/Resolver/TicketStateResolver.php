@@ -42,7 +42,7 @@ class TicketStateResolver extends AbstractStateResolver
     }
 
     /**
-     * Returns the latest non internal message.
+     * Returns the latest non-internal message.
      *
      * @param TicketInterface $ticket
      *

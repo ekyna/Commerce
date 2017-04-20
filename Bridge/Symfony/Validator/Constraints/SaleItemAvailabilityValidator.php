@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -19,23 +21,9 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class SaleItemAvailabilityValidator extends ConstraintValidator
 {
-    /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
+    protected SubjectHelperInterface $subjectHelper;
+    protected AvailabilityHelperInterface $availabilityHelper;
 
-    /**
-     * @var AvailabilityHelperInterface
-     */
-    protected $availabilityHelper;
-
-
-    /**
-     * Constructor.
-     *
-     * @param SubjectHelperInterface      $subjectHelper
-     * @param AvailabilityHelperInterface $availabilityHelper
-     */
     public function __construct(
         SubjectHelperInterface $subjectHelper,
         AvailabilityHelperInterface $availabilityHelper
@@ -45,7 +33,7 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function validate($item, Constraint $constraint)
     {

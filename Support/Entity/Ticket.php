@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -20,49 +23,22 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class Ticket implements TicketInterface
 {
-    use StateSubjectTrait,
-        TimestampableTrait,
-        NumberSubjectTrait;
+    use NumberSubjectTrait;
+    use StateSubjectTrait;
+    use TimestampableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $subject;
-
-    /**
-     * @var bool
-     */
-    protected $internal;
-
-    /**
-     * @var CustomerInterface
-     */
-    protected $customer;
-
-    /**
-     * @var ArrayCollection|OrderInterface[]
-     */
-    protected $orders;
-
-    /**
-     * @var ArrayCollection|QuoteInterface[]
-     */
-    protected $quotes;
-
-    /**
-     * @var ArrayCollection|TicketMessageInterface[]
-     */
-    protected $messages;
+    protected ?int               $id       = null;
+    protected ?string            $subject  = null;
+    protected bool               $internal = false;
+    protected ?CustomerInterface $customer = null;
+    /** @var Collection<OrderInterface> */
+    protected Collection $orders;
+    /** @var Collection<QuoteInterface> */
+    protected Collection $quotes;
+    /** @var Collection<TicketMessageInterface> */
+    protected Collection $messages;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->state = TicketStates::STATE_OPENED;
@@ -72,61 +48,45 @@ class Ticket implements TicketInterface
         $this->messages = new ArrayCollection();
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->number ?: 'New ticket';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSubject()
+    public function getSubject(): ?string
     {
         return $this->subject;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSubject(string $subject)
+    public function setSubject(?string $subject): TicketInterface
     {
         $this->subject = $subject;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCustomer()
+    public function getCustomer(): ?CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * @inheritDoc
-     */
+    public function setCustomer(?CustomerInterface $customer = null): TicketInterface
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
     public function isInternal(): bool
     {
         return $this->internal;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setInternal(bool $internal): TicketInterface
     {
         $this->internal = $internal;
@@ -134,28 +94,12 @@ class Ticket implements TicketInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCustomer(CustomerInterface $customer = null)
-    {
-        $this->customer = $customer;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOrders()
+    public function getOrders(): Collection
     {
         return $this->orders;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addOrder(OrderInterface $order)
+    public function addOrder(OrderInterface $order): TicketInterface
     {
         if (!$this->orders->contains($order)) {
             $this->orders->add($order);
@@ -164,10 +108,7 @@ class Ticket implements TicketInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeOrder(OrderInterface $order)
+    public function removeOrder(OrderInterface $order): TicketInterface
     {
         if ($this->orders->contains($order)) {
             $this->orders->removeElement($order);
@@ -176,18 +117,12 @@ class Ticket implements TicketInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuotes()
+    public function getQuotes(): Collection
     {
         return $this->quotes;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addQuote(QuoteInterface $quote)
+    public function addQuote(QuoteInterface $quote): TicketInterface
     {
         if (!$this->quotes->contains($quote)) {
             $this->quotes->add($quote);
@@ -196,10 +131,7 @@ class Ticket implements TicketInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeQuote(QuoteInterface $quote)
+    public function removeQuote(QuoteInterface $quote): TicketInterface
     {
         if ($this->quotes->contains($quote)) {
             $this->quotes->removeElement($quote);
@@ -208,18 +140,12 @@ class Ticket implements TicketInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMessages()
+    public function getMessages(): Collection
     {
         return $this->messages;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addMessage(TicketMessageInterface $message)
+    public function addMessage(TicketMessageInterface $message): TicketInterface
     {
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
@@ -229,10 +155,7 @@ class Ticket implements TicketInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeMessage(TicketMessageInterface $message)
+    public function removeMessage(TicketMessageInterface $message): TicketInterface
     {
         if ($this->messages->contains($message)) {
             $this->messages->removeElement($message);

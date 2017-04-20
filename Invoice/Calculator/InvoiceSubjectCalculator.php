@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface as Adjustment;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
@@ -20,46 +23,28 @@ use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterf
  */
 class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
 {
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
+    protected CurrencyConverterInterface $currencyConverter;
+    protected ShipmentSubjectCalculatorInterface $shipmentCalculator;
 
-    /**
-     * @var ShipmentSubjectCalculatorInterface
-     */
-    protected $shipmentCalculator;
-
-
-    /**
-     * Constructor.
-     *
-     * @param CurrencyConverterInterface $converter
-     */
     public function __construct(CurrencyConverterInterface $converter)
     {
         $this->currencyConverter = $converter;
     }
 
-    /**
-     * Sets the shipment calculator.
-     *
-     * @param ShipmentSubjectCalculatorInterface $shipmentCalculator
-     */
     public function setShipmentCalculator(ShipmentSubjectCalculatorInterface $shipmentCalculator): void
     {
         $this->shipmentCalculator = $shipmentCalculator;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isInvoiced($itemOrAdjustment): bool
     {
         if ($itemOrAdjustment instanceof Item) {
             // If compound with only public children
             if ($itemOrAdjustment->isCompound() && !$itemOrAdjustment->hasPrivateChildren()) {
-                // Invoiced if any of it's children is
+                // Invoiced if any of its children is
                 foreach ($itemOrAdjustment->getChildren() as $child) {
                     if ($this->isInvoiced($child)) {
                         return true;
@@ -109,15 +94,15 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateInvoiceableQuantity($subject, Invoice $ignore = null): float
+    public function calculateInvoiceableQuantity($subject, Invoice $ignore = null): Decimal
     {
         // Good line case
         if ($subject instanceof Item) {
             $sale = $subject->getSale();
             if (!$sale instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
             // Quantity = Total - Invoiced (ignoring current invoice) - Credited
@@ -125,24 +110,24 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                 - $this->calculateInvoicedQuantity($subject, $ignore)
                 + $this->calculateCreditedQuantity($subject);
 
-            return max(0, $quantity);
+            return max(new Decimal(0), $quantity);
         }
 
         // Discount line case
         if ($subject instanceof Adjustment) {
             $sale = $subject->getSale();
             if (!$sale instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
             // Discounts must be dispatched into all invoices
-            return 1;
+            return new Decimal(1);
         }
 
         // Shipment line case
         if ($subject instanceof Sale) {
             if (!$subject instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
             // Quantity = 1 - Invoiced (ignoring current invoice) - Credited
@@ -151,7 +136,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                 + $this->calculateCreditedQuantity($subject);
 
             // Shipment must be invoiced once
-            return min(1, max(0, $quantity));
+            return min(new Decimal(1), max(new Decimal(0), $quantity));
         }
 
         throw new UnexpectedTypeException($subject, [
@@ -162,43 +147,43 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateCreditableQuantity($subject, Invoice $ignore = null): float
+    public function calculateCreditableQuantity($subject, Invoice $ignore = null): Decimal
     {
         // Good line case
         if ($subject instanceof Item) {
             $sale = $subject->getSale();
             if (!$sale instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
             // Quantity = Invoiced - Credited (ignoring current credit)
             $quantity = $this->calculateInvoicedQuantity($subject)
                       - $this->calculateCreditedQuantity($subject, $ignore);
 
-            return max(0, $quantity);
+            return max(new Decimal(0), $quantity);
         }
 
         // Discount line case
         if ($subject instanceof Adjustment) {
             $sale = $subject->getSale();
             if (!$sale instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
             // Discounts must be dispatched into all invoices
-            return 1;
+            return new Decimal(1);
         }
 
         // Shipment line case
         if ($subject instanceof Sale) {
             if (!$subject instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
             // Shipment can be credited once
-            return max(1, $this->calculateInvoicedQuantity($subject));
+            return max(new Decimal(1), $this->calculateInvoicedQuantity($subject));
         }
 
         throw new UnexpectedTypeException($subject, [
@@ -209,25 +194,25 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateInvoicedQuantity($subject, Invoice $ignore = null): float
+    public function calculateInvoicedQuantity($subject, Invoice $ignore = null): Decimal
     {
         return $this->calculateQuantity($subject, false, $ignore);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateCreditedQuantity($subject, Invoice $ignore = null, bool $adjustment = null): float
+    public function calculateCreditedQuantity($subject, Invoice $ignore = null, bool $adjustment = null): Decimal
     {
         return $this->calculateQuantity($subject, true, $ignore, $adjustment);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateSoldQuantity($subject): float
+    public function calculateSoldQuantity($subject): Decimal
     {
         // Good line case
         if ($subject instanceof Item) {
@@ -241,16 +226,16 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         elseif ($subject instanceof Adjustment) {
             $sale = $subject->getSale();
             if (!$sale instanceof Subject) {
-                return 1;
+                return new Decimal(1);
             }
-            $base = 1;
+            $base = new Decimal(1);
         }
         // Shipment line case
         elseif ($subject instanceof Sale) {
             if (!$subject instanceof Subject) {
-                return 1;
+                return new Decimal(1);
             }
-            $base = 1;
+            $base = new Decimal(1);
         } else {
             throw new UnexpectedTypeException($subject, [
                 Sale::class,
@@ -267,9 +252,6 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         return $max - $this->calculateCreditedQuantity($subject, null, false);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildInvoiceQuantityMap(Subject $subject): array
     {
         $quantities = [];
@@ -283,18 +265,12 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         return $quantities;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateInvoiceTotal(Subject $subject, string $currency = null): float
+    public function calculateInvoiceTotal(Subject $subject, string $currency = null): Decimal
     {
         return $this->calculateTotal($subject, false, $currency);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateCreditTotal(Subject $subject, string $currency = null): float
+    public function calculateCreditTotal(Subject $subject, string $currency = null): Decimal
     {
         return $this->calculateTotal($subject, true, $currency);
     }
@@ -307,23 +283,23 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      * @param Invoice|null         $ignore
      * @param bool                 $adjustment TRUE: only adjustments, FALSE: exclude adjustments and NULL: all credits
      *
-     * @return float
+     * @return Decimal
      */
     private function calculateQuantity(
         $subject,
         bool $credit = false,
         Invoice $ignore = null,
         bool $adjustment = null
-    ): float {
+    ): Decimal {
         // Good line case
         if ($subject instanceof Item) {
             $sale = $subject->getSale();
             if (!$sale instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
             if ($subject->isCompound()) {
-                $quantity = INF;
+                $quantity = new Decimal(INF);
                 foreach ($subject->getChildren() as $child) {
                     $cQty = $this->calculateQuantity($child, $credit, $ignore, $adjustment) / $child->getQuantity();
                     $quantity = min($quantity, $cQty);
@@ -332,7 +308,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                 return $quantity;
             }
 
-            $quantity = 0;
+            $quantity = new Decimal(0);
             foreach ($sale->getInvoices(!$credit) as $invoice) {
                 if ($invoice === $ignore) {
                     continue;
@@ -356,10 +332,10 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         if ($subject instanceof Adjustment) {
             $sale = $subject->getSale();
             if (!$sale instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
-            $quantity = 0;
+            $quantity = new Decimal(0);
             foreach ($sale->getInvoices(!$credit) as $invoice) {
                 if ($invoice === $ignore) {
                     continue;
@@ -382,10 +358,10 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         // Shipment line case
         if ($subject instanceof Sale) {
             if (!$subject instanceof Subject) {
-                return 0;
+                return new Decimal(0);
             }
 
-            $quantity = 0;
+            $quantity = new Decimal(0);
             foreach ($subject->getInvoices(!$credit) as $invoice) {
                 if ($invoice === $ignore) {
                     continue;
@@ -412,18 +388,12 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
 
     /**
      * Calculates the total of all subject's invoices or credits.
-     *
-     * @param Subject     $subject
-     * @param bool        $credit
-     * @param string|null $currency
-     *
-     * @return float
      */
-    private function calculateTotal(Subject $subject, bool $credit, string $currency = null): float
+    private function calculateTotal(Subject $subject, bool $credit, string $currency = null): Decimal
     {
         $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();
 
-        $total = .0;
+        $total = new Decimal(0);
 
         foreach ($subject->getInvoices(!$credit) as $invoice) {
             $total += $this->getAmount($invoice, $currency);
@@ -434,9 +404,6 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
 
     /**
      * Builds the sale item quantities recursively.
-     *
-     * @param Item  $item
-     * @param array $quantities
      */
     private function buildSaleItemQuantities(Item $item, array &$quantities): void
     {
@@ -461,13 +428,8 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
 
     /**
      * Returns the payment amount in the given currency.
-     *
-     * @param Invoice $invoice
-     * @param string  $currency
-     *
-     * @return float
      */
-    protected function getAmount(Invoice $invoice, string $currency): float
+    protected function getAmount(Invoice $invoice, string $currency): Decimal
     {
         $ic = $invoice->getCurrency();
 

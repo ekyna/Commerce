@@ -1,81 +1,72 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Repository;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Supplier\Model;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface SupplierOrderRepositoryInterface
  * @package Ekyna\Component\Commerce\Supplier\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
- *
- * @method Model\SupplierOrderInterface createNew()
  */
 interface SupplierOrderRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the supplier orders with state 'new' or 'ordered' by supplier.
      *
-     * @param Model\SupplierInterface $supplier
-     *
-     * @return Model\SupplierOrderInterface[]
+     * @return array<Model\SupplierOrderInterface>
      */
-    public function findNewBySupplier(Model\SupplierInterface $supplier);
+    public function findNewBySupplier(Model\SupplierInterface $supplier): array;
 
     /**
      * Returns the suppliers expired due orders.
      *
-     * @return Model\SupplierOrderInterface[]
+     * @return array<Model\SupplierOrderInterface>
      */
-    public function findSuppliersExpiredDue();
+    public function findSuppliersExpiredDue(): array;
 
     /**
      * Returns the suppliers fall due orders.
      *
-     * @return Model\SupplierOrderInterface[]
+     * @return array<Model\SupplierOrderInterface>
      */
-    public function findSuppliersFallDue();
+    public function findSuppliersFallDue(): array;
 
     /**
      * Returns the forwarders expired due orders.
      *
-     * @return Model\SupplierOrderInterface[]
+     * @return array<Model\SupplierOrderInterface>
      */
-    public function findForwardersExpiredDue();
+    public function findForwardersExpiredDue(): array;
 
     /**
      * Returns the forwarders fall due orders.
      *
-     * @return Model\SupplierOrderInterface[]
+     * @return array<Model\SupplierOrderInterface>
      */
-    public function findForwardersFallDue();
+    public function findForwardersFallDue(): array;
 
     /**
      * Returns the suppliers expired due total.
-     *
-     * @return float
      */
-    public function getSuppliersExpiredDue();
+    public function getSuppliersExpiredDue(): Decimal;
 
     /**
      * Returns the suppliers fall due total.
-     *
-     * @return float
      */
-    public function getSuppliersFallDue();
+    public function getSuppliersFallDue(): Decimal;
 
     /**
      * Returns the forwarders expired due total.
-     *
-     * @return float
      */
-    public function getForwardersExpiredDue();
+    public function getForwardersExpiredDue(): Decimal;
 
     /**
      * Returns the forwarders fall due total.
-     *
-     * @return float
      */
-    public function getForwardersFallDue();
+    public function getForwardersFallDue(): Decimal;
 }

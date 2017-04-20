@@ -4,6 +4,7 @@ namespace Acme\Product\Provider;
 
 use Acme\Product\Entity\Product;
 use Acme\Product\Repository\ProductRepository;
+use Ekyna\Bundle\ApiBundle\Action\SearchAction;
 use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity as Identity;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
@@ -53,7 +54,7 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function transform(Subject $subject, Identity $identity): SubjectProviderInterface
     {
@@ -73,13 +74,13 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function reverseTransform(Identity $identity): Subject
     {
         $this->assertSupportsIdentity($identity);
 
-        $productId = intval($identity->getIdentifier());
+        $productId = $identity->getIdentifier();
 
         if (null !== $product = $identity->getSubject()) {
             if ((!$product instanceof Product) || ($product->getId() != $productId)) {
@@ -102,7 +103,7 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function supportsSubject(Subject $subject): bool
     {
@@ -110,7 +111,7 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function supportsReference(Reference $reference): bool
     {
@@ -118,7 +119,7 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getRepository(): SubjectRepositoryInterface
     {
@@ -126,7 +127,7 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getSubjectClass(): string
     {
@@ -136,16 +137,16 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritDoc
      */
-    public function getSearchRouteAndParameters(string $context): array
+    public function getSearchActionAndParameters(string $context): array
     {
         return [
-            'route'      => 'acme_product_product_admin_search',
+            'action'     => SearchAction::class,
             'parameters' => [],
         ];
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getName(): string
     {
@@ -153,9 +154,9 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getLabel(): string
+    public function getLabel()
     {
         return 'Acme Product';
     }

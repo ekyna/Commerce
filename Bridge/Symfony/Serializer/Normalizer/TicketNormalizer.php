@@ -1,46 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class TicketNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class TicketNormalizer extends AbstractResourceNormalizer
+class TicketNormalizer extends ResourceNormalizer
 {
     use FormatterAwareTrait;
 
     /**
      * @inheritDoc
      *
-     * @param TicketInterface $ticket
+     * @param TicketInterface $object
      */
-    public function normalize($ticket, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         if ($this->contextHasGroup(['Default', 'Ticket'], $context)) {
             $formatter = $this->getFormatter();
 
             $data = [
-                'id'           => $ticket->getId(),
-                'number'       => $ticket->getNumber(),
-                'state'        => $ticket->getState(),
-                'internal'     => $ticket->isInternal(),
-                'subject'      => $ticket->getSubject(),
-                'created_at'   => ($date = $ticket->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_created_at' => ($date = $ticket->getCreatedAt()) ? $formatter->dateTime($date) : null,
-                'updated_at'   => ($date = $ticket->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_updated_at' => ($date = $ticket->getUpdatedAt()) ? $formatter->dateTime($date) : null,
+                'id'           => $object->getId(),
+                'number'       => $object->getNumber(),
+                'state'        => $object->getState(),
+                'internal'     => $object->isInternal(),
+                'subject'      => $object->getSubject(),
+                'created_at'   => ($date = $object->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
+                'f_created_at' => ($date = $object->getCreatedAt()) ? $formatter->dateTime($date) : null,
+                'updated_at'   => ($date = $object->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
+                'f_updated_at' => ($date = $object->getUpdatedAt()) ? $formatter->dateTime($date) : null,
                 'customer'     => null,
                 'orders'       => [],
                 'quotes'       => [],
             ];
 
-            if ($customer = $ticket->getCustomer()) {
+            if ($customer = $object->getCustomer()) {
                 $data['customer'] = [
                     'id'         => $customer->getId(),
                     'first_name' => $customer->getFirstName(),
@@ -49,14 +52,14 @@ class TicketNormalizer extends AbstractResourceNormalizer
                 ];
             }
 
-            foreach ($ticket->getQuotes() as $quote) {
+            foreach ($object->getQuotes() as $quote) {
                 $data['quotes'][] = [
                     'id'     => $quote->getId(),
                     'number' => $quote->getNumber(),
                 ];
             }
 
-            foreach ($ticket->getOrders() as $order) {
+            foreach ($object->getOrders() as $order) {
                 $data['orders'][] = [
                     'id'     => $order->getId(),
                     'number' => $order->getNumber(),
@@ -66,7 +69,7 @@ class TicketNormalizer extends AbstractResourceNormalizer
             if ($this->contextHasGroup('Ticket', $context)) {
                 $data += ['messages' => []];
 
-                foreach ($this->filterMessages($ticket) as $message) {
+                foreach ($this->filterMessages($object) as $message) {
                     $data['messages'][] = $this->normalizeObject($message, $format, $context);
                 }
             }
@@ -74,44 +77,16 @@ class TicketNormalizer extends AbstractResourceNormalizer
             return $data;
         }
 
-        return parent::normalize($ticket, $format, $context);
+        return parent::normalize($object, $format, $context);
     }
 
     /**
      * Filters the ticket messages.
      *
-     * @param TicketInterface $ticket
-     *
-     * @return \Ekyna\Component\Commerce\Support\Model\TicketMessageInterface[]
+     * @return array<TicketMessageInterface>
      */
-    protected function filterMessages(TicketInterface $ticket)
+    protected function filterMessages(TicketInterface $ticket): array
     {
         return $ticket->getMessages()->toArray();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof TicketInterface;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, TicketInterface::class);
     }
 }

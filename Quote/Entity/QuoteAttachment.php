@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractAttachment;
+use Ekyna\Component\Commerce\Common\Model\SaleAttachmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Quote\Model\QuoteAttachmentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 
@@ -15,27 +18,21 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
  */
 class QuoteAttachment extends AbstractAttachment implements QuoteAttachmentInterface
 {
-    /**
-     * @var QuoteInterface
-     */
-    protected $quote;
+    protected ?QuoteInterface $quote = null;
 
 
     /**
-     * @inheritdoc
+     * @return QuoteInterface|null
      */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getQuote();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSale(SaleInterface $sale = null)
+    public function setSale(?SaleInterface $sale): SaleAttachmentInterface
     {
-        if (null !== $sale && !$sale instanceof QuoteInterface) {
-            throw new InvalidArgumentException('Expected instance of QuoteInterface');
+        if ($sale && !$sale instanceof QuoteInterface) {
+            throw new UnexpectedTypeException($sale, QuoteInterface::class);
         }
 
         $this->setQuote($sale);
@@ -43,28 +40,24 @@ class QuoteAttachment extends AbstractAttachment implements QuoteAttachmentInter
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuote()
+    public function getQuote(): ?QuoteInterface
     {
         return $this->quote;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuote(QuoteInterface $quote = null)
+    public function setQuote(?QuoteInterface $quote): QuoteAttachmentInterface
     {
-        if ($quote !== $this->quote) {
-            if ($previous = $this->quote) {
-                $this->quote = null;
-                $previous->removeAttachment($this);
-            }
+        if ($quote === $this->quote) {
+            return $this;
+        }
 
-            if ($this->quote = $quote) {
-                $this->quote->addAttachment($this);
-            }
+        if ($previous = $this->quote) {
+            $this->quote = null;
+            $previous->removeAttachment($this);
+        }
+
+        if ($this->quote = $quote) {
+            $this->quote->addAttachment($this);
         }
 
         return $this;

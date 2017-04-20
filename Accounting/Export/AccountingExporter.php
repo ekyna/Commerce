@@ -1,12 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Accounting\Export;
 
+use DateInterval;
+use DatePeriod;
+use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingInterface;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingTypes;
 use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -26,6 +34,8 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
+use Exception;
+use ZipArchive;
 
 /**
  * Class AccountingExporter
@@ -34,105 +44,35 @@ use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
  */
 class AccountingExporter implements AccountingExporterInterface
 {
-    /**
-     * @var InvoiceRepositoryInterface
-     */
-    protected $invoiceRepository;
+    protected InvoiceRepositoryInterface      $invoiceRepository;
+    protected PaymentRepositoryInterface      $paymentRepository;
+    protected AccountingRepositoryInterface   $accountingRepository;
+    protected CurrencyConverterInterface      $currencyConverter;
+    protected AmountCalculatorFactory         $calculatorFactory;
+    protected DocumentCalculatorInterface     $invoiceCalculator;
+    protected InvoicePaymentResolverInterface $invoicePaymentResolver;
+    protected TaxResolverInterface            $taxResolver;
+    /** @var array<AccountingFilterInterface> */
+    protected array $filters;
+    protected array $config;
 
-    /**
-     * @var PaymentRepositoryInterface
-     */
-    protected $paymentRepository;
+    /** @var array<AccountingInterface> */
+    protected ?array            $accounts = null;
+    protected ?AccountingWriter $writer   = null;
+    protected ?InvoiceInterface $invoice  = null;
+    protected ?string           $currency;
+    protected ?Decimal          $balance;
 
-    /**
-     * @var AccountingRepositoryInterface
-     */
-    protected $accountingRepository;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $calculatorFactory;
-
-    /**
-     * @var DocumentCalculatorInterface
-     */
-    protected $invoiceCalculator;
-
-    /**
-     * @var InvoicePaymentResolverInterface
-     */
-    protected $invoicePaymentResolver;
-
-    /**
-     * @var TaxResolverInterface
-     */
-    protected $taxResolver;
-
-    /**
-     * @var AccountingFilterInterface[]
-     */
-    protected $filters;
-
-    /**
-     * @var array
-     */
-    protected $config;
-
-    /**
-     * @var AccountingInterface[]
-     */
-    protected $accounts;
-
-    /**
-     * @var AccountingWriter
-     */
-    protected $writer;
-
-    /**
-     * @var InvoiceInterface
-     */
-    protected $invoice;
-
-    /**
-     * @var string
-     */
-    protected $currency;
-
-    /**
-     * @var float
-     */
-    protected $balance;
-
-
-    /**
-     * Constructor.
-     *
-     * @param InvoiceRepositoryInterface      $invoiceRepository
-     * @param PaymentRepositoryInterface      $paymentRepository
-     * @param AccountingRepositoryInterface   $accountingRepository
-     * @param CurrencyConverterInterface      $currencyConverter
-     * @param AmountCalculatorFactory         $calculatorFactory
-     * @param DocumentCalculatorInterface     $invoiceCalculator
-     * @param InvoicePaymentResolverInterface $invoicePaymentResolver
-     * @param TaxResolverInterface            $taxResolver
-     * @param array                           $config
-     */
     public function __construct(
-        InvoiceRepositoryInterface $invoiceRepository,
-        PaymentRepositoryInterface $paymentRepository,
-        AccountingRepositoryInterface $accountingRepository,
-        CurrencyConverterInterface $currencyConverter,
-        AmountCalculatorFactory $calculatorFactory,
-        DocumentCalculatorInterface $invoiceCalculator,
+        InvoiceRepositoryInterface      $invoiceRepository,
+        PaymentRepositoryInterface      $paymentRepository,
+        AccountingRepositoryInterface   $accountingRepository,
+        CurrencyConverterInterface      $currencyConverter,
+        AmountCalculatorFactory         $calculatorFactory,
+        DocumentCalculatorInterface     $invoiceCalculator,
         InvoicePaymentResolverInterface $invoicePaymentResolver,
-        TaxResolverInterface $taxResolver,
-        array $config
+        TaxResolverInterface            $taxResolver,
+        array                           $config
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
@@ -152,54 +92,48 @@ class AccountingExporter implements AccountingExporterInterface
         ], $config);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function addFilter(AccountingFilterInterface $filter): void
     {
         if (in_array($filter, $this->filters, true)) {
-            throw new LogicException("Filter is already registered.");
+            throw new LogicException('Filter is already registered.');
         }
 
         $this->filters[] = $filter;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function export(string $year, string $month = null): string
     {
-        ini_set('max_execution_time', 0);
+        ini_set('max_execution_time', '0');
 
         $months = [];
         if (is_null($month)) {
             try {
-                $start = new \DateTime("$year-01-01");
-            } catch (\Exception $e) {
-                throw new InvalidArgumentException("Failed to create date.");
+                $start = new DateTime("$year-01-01");
+            } catch (Exception $e) {
+                throw new InvalidArgumentException('Failed to create date.');
             }
-            $months = iterator_to_array(new \DatePeriod(
+            $months = iterator_to_array(new DatePeriod(
                 $start,
-                new \DateInterval('P1M'),
+                new DateInterval('P1M'),
                 (clone $start)->modify('last day of december')
             ));
         } else {
             try {
-                $months[] = new \DateTime("$year-$month-01");
-            } catch (\Exception $e) {
-                throw new InvalidArgumentException("Failed to create date.");
+                $months[] = new DateTime("$year-$month-01");
+            } catch (Exception $e) {
+                throw new InvalidArgumentException('Failed to create date.');
             }
         }
 
         $path = tempnam(sys_get_temp_dir(), 'accounting');
 
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
 
         if (false === $zip->open($path)) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
-        /** @var \DateTime $month */
+        /** @var DateTime $month */
         foreach ($months as $month) {
             $zip->addFile($this->exportInvoices($month), sprintf('%s_invoices.csv', $month->format('Y-m')));
 
@@ -213,16 +147,13 @@ class AccountingExporter implements AccountingExporterInterface
         return $path;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function exportInvoices(\DateTime $month): string
+    public function exportInvoices(DateTimeInterface $month): string
     {
         $this->accounts = $this->accountingRepository->findBy([
             'enabled' => true,
         ]);
         if (empty($this->accounts)) {
-            throw new LogicException("No account number configured.");
+            throw new LogicException('No account number configured.');
         }
 
         $path = tempnam(sys_get_temp_dir(), 'inv');
@@ -244,7 +175,7 @@ class AccountingExporter implements AccountingExporterInterface
                 $this->invoiceCalculator->calculate($this->invoice);
             }
 
-            $this->balance = 0;
+            $this->balance = new Decimal(0);
 
             $this->writer->configure($this->invoice);
 
@@ -262,10 +193,7 @@ class AccountingExporter implements AccountingExporterInterface
         return $path;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function exportPayments(\DateTime $month): string
+    public function exportPayments(DateTimeInterface $month): string
     {
         $path = tempnam(sys_get_temp_dir(), 'acc');
 
@@ -358,7 +286,7 @@ class AccountingExporter implements AccountingExporterInterface
             }
 
             // Unpaid amount
-            if (1 === $this->compare($unpaid, 0)) {
+            if ($unpaid > 0) {
                 $account = $this->getUnpaidAccountNumber($sale->getCustomerGroup(), $this->invoice->getNumber());
 
                 if ($this->invoice->isCredit()) {
@@ -406,23 +334,23 @@ class AccountingExporter implements AccountingExporterInterface
 
             $rates = $line->getTaxRates();
             if (empty($rates)) {
-                $rate = 0;
+                $rate = new Decimal(0);
             } elseif (1 === count($rates)) {
                 $rate = current($rates);
             } else {
-                throw new LogicException("Multiple tax rates on goods lines are not yet supported."); // TODO
+                throw new LogicException('Multiple tax rates on goods lines are not yet supported.'); // TODO
             }
 
             $amount = $line->getBase();
 
             if (!isset($amounts[(string)$rate])) {
-                $amounts[(string)$rate] = 0;
+                $amounts[(string)$rate] = new Decimal(0);
             }
 
             $amounts[(string)$rate] += $this->round($amount);
         }
 
-        // Writes each tax rates's amount
+        // Writes each tax rate amount
         foreach ($amounts as $rate => $amount) {
             $amount = $this->round($amount);
 
@@ -431,19 +359,19 @@ class AccountingExporter implements AccountingExporterInterface
                 $base = $amount;
                 foreach ($discounts as $adjustment) {
                     if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
-                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
+                        $amount -= $this->round($amount->mul($adjustment->getAmount())->div(100));
                     } else {
                         $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
-                        $amount -= $this->round($base * $adjustment->getAmount() / $gross->getBase());
+                        $amount -= $this->round($base->mul($adjustment->getAmount())->div($gross->getBase()));
                     }
                 }
             }
 
-            if (0 === $this->compare($amount, 0)) {
+            if ($amount->isZero()) {
                 continue; // next tax rate
             }
 
-            $account = $this->getGoodAccountNumber($taxRule, (float)$rate, $this->invoice->getNumber());
+            $account = $this->getGoodAccountNumber($taxRule, new Decimal($rate), $this->invoice->getNumber());
 
             if ($this->invoice->isCredit()) {
                 $this->writer->credit($account, (string)$amount, $date);
@@ -474,7 +402,7 @@ class AccountingExporter implements AccountingExporterInterface
             } elseif (1 === count($rates)) {
                 $rate = current($rates);
             } else {
-                throw new LogicException("Multiple tax rates on goods lines are not yet supported."); // TODO
+                throw new LogicException('Multiple tax rates on goods lines are not yet supported.'); // TODO
             }
 
             $amount = $item->getBase();
@@ -486,7 +414,7 @@ class AccountingExporter implements AccountingExporterInterface
             $amounts[(string)$rate] += $this->round($amount);
         }
 
-        // Writes each tax rates's amount
+        // Writes each tax rate amount
         foreach ($amounts as $rate => $amount) {
             $amount = $this->round($amount);
 
@@ -495,19 +423,19 @@ class AccountingExporter implements AccountingExporterInterface
                 $base = $amount;
                 foreach ($discounts as $adjustment) {
                     if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
-                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
+                        $amount -= $this->round($amount->mul($adjustment->getAmount())->div(100));
                     } else {
                         $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
-                        $amount -= $this->round($base * $adjustment->getAmount() / $gross->getBase());
+                        $amount -= $this->round($base->mul($adjustment->getAmount())->div($gross->getBase()));
                     }
                 }
             }
 
-            if (0 === $this->compare($amount, 0)) {
+            if ($amount->isZero()) {
                 continue; // next tax rate
             }
 
-            $account = $this->getAdjustmentAccountNumber($taxRule, (float)$rate, $this->invoice->getNumber());
+            $account = $this->getAdjustmentAccountNumber($taxRule, new Decimal($rate), $this->invoice->getNumber());
 
             if ($this->invoice->isCredit()) {
                 $this->writer->credit($account, (string)$amount, $date);
@@ -526,7 +454,7 @@ class AccountingExporter implements AccountingExporterInterface
     {
         $amount = $this->invoice->getShipmentBase();
 
-        if (0 === $this->compare($amount, 0)) {
+        if ($amount->isZero()) {
             return;
         }
 
@@ -556,13 +484,13 @@ class AccountingExporter implements AccountingExporterInterface
         $date = $sale->getCreatedAt();
 
         foreach ($this->invoice->getTaxesDetails() as $detail) {
-            $amount = $this->round($detail['amount']);
+            $amount = $this->round(new Decimal($detail['amount']));
 
-            if (0 === $this->compare($amount, 0)) {
+            if ($amount->isZero()) {
                 continue; // next tax details
             }
 
-            $account = $this->getTaxAccountNumber($detail['rate'], $this->invoice->getNumber());
+            $account = $this->getTaxAccountNumber(new Decimal($detail['rate']), $this->invoice->getNumber());
 
             if ($this->invoice->isCredit()) {
                 $this->writer->credit($account, (string)$amount, $date);
@@ -576,12 +504,8 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Writes the payment exchange loss or gain.
-     *
-     * @param PaymentInterface $payment
-     * @param string           $number
-     * @param \DateTime        $date
      */
-    protected function writePaymentExchange(PaymentInterface $payment, string $number, \DateTime $date): void
+    protected function writePaymentExchange(PaymentInterface $payment, string $number, DateTime $date): void
     {
         $sale = $payment->getSale();
         $pc = $payment->getCurrency()->getCode();
@@ -613,17 +537,21 @@ class AccountingExporter implements AccountingExporterInterface
             return;
         }
 
-        $realGrandTotal = $this->calculatorFactory->create($this->currency)->calculateSale($sale)->getTotal();
+        $realGrandTotal = $this
+            ->calculatorFactory
+            ->create($this->currency)
+            ->calculateSale($sale)
+            ->getTotal();
 
         // Diff = Payment amount DC - (Sale total DC * Payment amount FC / Sale total FC)
         // (DC: default currency, FC: foreign currency)
-        $diff = $payment->getRealAmount() - ($realGrandTotal * $amount / $grandTotal);
+        $diff = $payment->getRealAmount()->sub($realGrandTotal->mul($amount)->div($grandTotal));
 
-        if (0 === $c = $this->compare($diff, 0)) {
+        if ($diff->isZero()) {
             return;
         }
 
-        if (1 === $c) {
+        if (0 < $diff) {
             // Gain
             $account = $this->getExchangeAccountNumber(true);
         } else {
@@ -658,29 +586,9 @@ class AccountingExporter implements AccountingExporterInterface
         }
     }
 
-    /**
-     * Rounds the amount.
-     *
-     * @param $amount
-     *
-     * @return float
-     */
-    protected function round(float $amount): float
+    protected function round(Decimal $amount): Decimal
     {
         return Money::round($amount, $this->currency);
-    }
-
-    /**
-     * Compare the amounts.
-     *
-     * @param $a
-     * @param $b
-     *
-     * @return int
-     */
-    protected function compare(float $a, float $b): int
-    {
-        return Money::compare($a, $b, $this->currency);
     }
 
     /**
@@ -700,15 +608,11 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Returns the customer account number.
-     *
-     * @param CustomerInterface|null $customer
-     *
-     * @return string
      */
     protected function getCustomerAccountNumber(CustomerInterface $customer = null): string
     {
         if ($customer) {
-            return '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
+            return '1' . str_pad((string)$customer->getId(), 7, '0', STR_PAD_LEFT);
         }
 
         return $this->config['default_customer'];
@@ -716,14 +620,8 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Return the goods account number for the given tax rule and tax rate.
-     *
-     * @param TaxRuleInterface $rule
-     * @param float            $rate
-     * @param string           $origin
-     *
-     * @return string
      */
-    protected function getGoodAccountNumber(TaxRuleInterface $rule, float $rate, string $origin): string
+    protected function getGoodAccountNumber(TaxRuleInterface $rule, Decimal $rate, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_GOOD) {
@@ -735,14 +633,14 @@ class AccountingExporter implements AccountingExporterInterface
             }
 
             if (is_null($account->getTax())) {
-                if ($rate == 0) {
+                if ($rate->isZero()) {
                     return $account->getNumber();
                 }
 
                 continue;
             }
 
-            if (0 === bccomp($account->getTax()->getRate(), $rate, 5)) {
+            if ($account->getTax()->getRate()->equals($rate)) {
                 return $account->getNumber();
             }
         }
@@ -757,11 +655,6 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Returns the shipment account number for the given tax rule.
-     *
-     * @param TaxRuleInterface $rule
-     * @param string           $origin
-     *
-     * @return string
      */
     protected function getShipmentAccountNumber(TaxRuleInterface $rule, string $origin): string
     {
@@ -786,20 +679,15 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Returns the tax account number for the given tax rate.
-     *
-     * @param float  $rate
-     * @param string $origin
-     *
-     * @return string
      */
-    protected function getTaxAccountNumber(float $rate, string $origin): string
+    protected function getTaxAccountNumber(Decimal $rate, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_TAX) {
                 continue;
             }
 
-            if (0 !== bccomp($account->getTax()->getRate(), $rate, 5)) {
+            if (!$account->getTax()->getRate()->equals($rate)) {
                 continue;
             }
 
@@ -815,11 +703,6 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Returns the payment account number for the given payment method.
-     *
-     * @param PaymentMethodInterface $method
-     * @param string                 $origin
-     *
-     * @return string
      */
     protected function getPaymentAccountNumber(PaymentMethodInterface $method, string $origin): string
     {
@@ -844,11 +727,6 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Returns the unpaid account number for the given customer group.
-     *
-     * @param CustomerGroupInterface $group
-     * @param string                 $origin
-     *
-     * @return string
      */
     protected function getUnpaidAccountNumber(CustomerGroupInterface $group, string $origin): string
     {
@@ -886,10 +764,6 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Returns exchange gain or lose account number.
-     *
-     * @param bool $gain
-     *
-     * @return string|null
      */
     protected function getExchangeAccountNumber(bool $gain = true): ?string
     {
@@ -907,14 +781,8 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Return the adjustment account number for the given tax rule and tax rate.
-     *
-     * @param TaxRuleInterface $rule
-     * @param float            $rate
-     * @param string           $origin
-     *
-     * @return string
      */
-    protected function getAdjustmentAccountNumber(TaxRuleInterface $rule, float $rate, string $origin): string
+    protected function getAdjustmentAccountNumber(TaxRuleInterface $rule, Decimal $rate, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_ADJUSTMENT) {
@@ -933,7 +801,7 @@ class AccountingExporter implements AccountingExporterInterface
                 continue;
             }
 
-            if (0 === bccomp($account->getTax()->getRate(), $rate, 5)) {
+            if ($account->getTax()->getRate()->equals($rate)) {
                 return $account->getNumber();
             }
         }
@@ -948,8 +816,6 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Filters the invoice.
-     *
-     * @param InvoiceInterface $invoice
      *
      * @return bool Whether the invoice should be exported.
      */
@@ -966,8 +832,6 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Filters the payment.
-     *
-     * @param PaymentInterface $payment
      *
      * @return bool Whether the payment should be exported.
      */

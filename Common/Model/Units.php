@@ -1,8 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+
+use function in_array;
+use function pow;
 
 /**
  * Class Unit
@@ -11,72 +17,67 @@ use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
  */
 final class Units
 {
-    const PIECE       = 'piece';
+    public const PIECE = 'piece';
 
     // Length
-    const METER       = 'meter';
-    const CENTIMETER  = 'centimeter';
-    const MILLIMETER  = 'millimeter';
-    const INCH        = 'inch';
-    const FOOT        = 'foot';
+    public const METER      = 'meter';
+    public const CENTIMETER = 'centimeter';
+    public const MILLIMETER = 'millimeter';
+    public const INCH       = 'inch';
+    public const FOOT       = 'foot';
 
     // Weight
-    const KILOGRAM    = 'kilogram';
-    const GRAM        = 'gram';
+    public const KILOGRAM = 'kilogram';
+    public const GRAM     = 'gram';
 
     // Volume
-    const CUBIC_METER = 'cubic_meter';
-    const LITER       = 'liter';
-    const MILLILITER  = 'milliliter';
+    public const CUBIC_METER = 'cubic_meter';
+    public const LITER       = 'liter';
+    public const MILLILITER  = 'milliliter';
 
     // Duration
-    const DAY         = 'day';
-    const HOUR        = 'hour';
-    const MINUTE      = 'minute';
-    const SECOND      = 'second';
+    public const DAY    = 'day';
+    public const HOUR   = 'hour';
+    public const MINUTE = 'minute';
+    public const SECOND = 'second';
 
 
     /**
      * Returns all the units.
      *
-     * @return string[]
+     * @return array<string>
      */
-    static function getUnits(): array
+    public static function getUnits(): array
     {
         return [
-            self::PIECE,
+            Units::PIECE,
             // Length
-            self::METER,
-            self::CENTIMETER,
-            self::MILLIMETER,
-            self::INCH,
-            self::FOOT,
+            Units::METER,
+            Units::CENTIMETER,
+            Units::MILLIMETER,
+            Units::INCH,
+            Units::FOOT,
             // Weight
-            self::KILOGRAM,
-            self::GRAM,
+            Units::KILOGRAM,
+            Units::GRAM,
             // Volume
-            self::CUBIC_METER,
-            self::LITER,
-            self::MILLILITER,
+            Units::CUBIC_METER,
+            Units::LITER,
+            Units::MILLILITER,
             // Duration
-            self::DAY,
-            self::HOUR,
-            self::MINUTE,
-            self::SECOND,
+            Units::DAY,
+            Units::HOUR,
+            Units::MINUTE,
+            Units::SECOND,
         ];
     }
 
     /**
      * Returns whether the given unit is valid.
-     *
-     * @param string $unit
-     * @param bool   $throwException
-     *
-     * @return bool
      */
-    static function isValid(string $unit, bool $throwException = false): bool
+    public static function isValid(string $unit, bool $throwException = false): bool
     {
-        if (in_array($unit, self::getUnits(), true)) {
+        if (in_array($unit, Units::getUnits(), true)) {
             return true;
         }
 
@@ -89,51 +90,47 @@ final class Units
 
     /**
      * Returns the symbol for the given unit.
-     *
-     * @param string $unit
-     *
-     * @return string
      */
-    static function getSymbol(string $unit): string
+    public static function getSymbol(string $unit): string
     {
         switch ($unit) {
-            case self::PIECE:
+            case Units::PIECE:
                 return 'pcs';
 
             // Length
-            case self::METER:
+            case Units::METER:
                 return 'm';
-            case self::CENTIMETER:
+            case Units::CENTIMETER:
                 return 'cm';
-            case self::MILLIMETER:
+            case Units::MILLIMETER:
                 return 'mm';
-            case self::INCH:
+            case Units::INCH:
                 return 'in';
-            case self::FOOT:
+            case Units::FOOT:
                 return 'ft';
 
             // Weight
-            case self::KILOGRAM:
+            case Units::KILOGRAM:
                 return 'kg';
-            case self::GRAM:
+            case Units::GRAM:
                 return 'g';
 
             // Volume
-            case self::CUBIC_METER:
+            case Units::CUBIC_METER:
                 return 'm³';
-            case self::LITER:
+            case Units::LITER:
                 return 'L';
-            case self::MILLILITER:
+            case Units::MILLILITER:
                 return 'mL';
 
             // Duration
-            case self::DAY:
+            case Units::DAY:
                 return 'days';
-            case self::HOUR:
+            case Units::HOUR:
                 return 'hours';
-            case self::MINUTE:
+            case Units::MINUTE:
                 return 'minutes';
-            case self::SECOND:
+            case Units::SECOND:
                 return 's';
 
             default:
@@ -143,32 +140,28 @@ final class Units
 
     /**
      * Returns the rounding precision for the given unit.
-     *
-     * @param string $unit
-     *
-     * @return int
      */
-    static function getPrecision(string $unit): int
+    public static function getPrecision(string $unit): int
     {
         switch ($unit) {
-            case self::PIECE:
-            case self::MILLIMETER:
-            case self::GRAM:
-            case self::MILLILITER:
-            case self::DAY:
-            case self::MINUTE:
-            case self::SECOND:
+            case Units::PIECE:
+            case Units::MILLIMETER:
+            case Units::GRAM:
+            case Units::MILLILITER:
+            case Units::DAY:
+            case Units::MINUTE:
+            case Units::SECOND:
                 return 0;
-            case self::CENTIMETER:
+            case Units::CENTIMETER:
                 return 1;
-            case self::INCH:
-            case self::FOOT:
-            case self::HOUR:
+            case Units::INCH:
+            case Units::FOOT:
+            case Units::HOUR:
                 return 2;
-            case self::METER:
-            case self::KILOGRAM:
-            case self::CUBIC_METER:
-            case self::LITER:
+            case Units::METER:
+            case Units::KILOGRAM:
+            case Units::CUBIC_METER:
+            case Units::LITER:
                 return 3;
             default:
                 throw new UnexpectedValueException("Unknown unit '$unit'.");
@@ -177,26 +170,24 @@ final class Units
 
     /**
      * Rounds the given value for the given unit.
-     *
-     * @param float  $value
-     * @param string $unit
-     *
-     * @return float
      */
-    static function round(float $value, string $unit = self::PIECE): float
+    public static function round(Decimal $value, string $unit = Units::PIECE): Decimal
     {
-        if (0 < $precision = self::getPrecision($unit)) {
+        if (0 < $precision = Units::getPrecision($unit)) {
             $divider = pow(10, $precision);
 
-            return round(floor($value * $divider) / $divider, $precision);
+            return $value->mul($divider)->floor()->div($divider)->round($precision);
         }
 
-        return floor($value);
+        return $value->floor();
+    }
+
+    public static function fixed(Decimal $amount, string $unit = Units::PIECE): string
+    {
+        return $amount->toFixed(self::getPrecision($unit));
     }
 
     /**
-     * Disabled constructor.
-     *
      * @codeCoverageIgnore
      */
     final private function __construct()

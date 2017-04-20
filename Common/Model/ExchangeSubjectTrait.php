@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
+
+use DateTimeInterface;
+use Decimal\Decimal;
 
 /**
  * Trait ExchangeSubjectTrait
@@ -11,21 +16,12 @@ trait ExchangeSubjectTrait
 {
     use CurrencySubjectTrait;
 
-    /**
-     * @var float
-     */
-    protected $exchangeRate;
-
-    /**
-     * @var \DateTime
-     */
-    protected $exchangeDate;
+    protected ?Decimal           $exchangeRate = null;
+    protected ?DateTimeInterface $exchangeDate = null;
 
 
     /**
      * Returns the subject's base currency.
-     *
-     * @return string|null
      */
     public function getBaseCurrency(): ?string
     {
@@ -33,48 +29,30 @@ trait ExchangeSubjectTrait
         return null;
     }
 
-    /**
-     * Returns the exchange rate.
-     *
-     * @return float|null
-     */
-    public function getExchangeRate(): ?float
+    public function getExchangeRate(): ?Decimal
     {
         return $this->exchangeRate;
     }
 
     /**
-     * Sets the exchange rate.
-     *
-     * @param float $rate
-     *
      * @return $this|ExchangeSubjectInterface
      */
-    public function setExchangeRate(float $rate = null): ExchangeSubjectInterface
+    public function setExchangeRate(?Decimal $rate): ExchangeSubjectInterface
     {
         $this->exchangeRate = $rate;
 
         return $this;
     }
 
-    /**
-     * Returns the exchange date.
-     *
-     * @return \DateTime|null
-     */
-    public function getExchangeDate(): ?\DateTime
+    public function getExchangeDate(): ?DateTimeInterface
     {
         return $this->exchangeDate;
     }
 
     /**
-     * Sets the exchange date.
-     *
-     * @param \DateTime $date
-     *
      * @return $this|ExchangeSubjectInterface
      */
-    public function setExchangeDate(\DateTime $date = null): ExchangeSubjectInterface
+    public function setExchangeDate(?DateTimeInterface $date): ExchangeSubjectInterface
     {
         $this->exchangeDate = $date;
 

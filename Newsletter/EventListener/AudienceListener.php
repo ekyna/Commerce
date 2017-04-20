@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
@@ -22,29 +24,10 @@ class AudienceListener implements ListenerInterface
 {
     use IsEnabledTrait;
 
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
+    private PersistenceHelperInterface $persistenceHelper;
+    private GatewayRegistry $gatewayRegistry;
+    private AudienceUpdater $audienceUpdater;
 
-    /**
-     * @var GatewayRegistry
-     */
-    private $gatewayRegistry;
-
-    /**
-     * @var AudienceUpdater
-     */
-    private $audienceUpdater;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param GatewayRegistry            $gatewayRegistry
-     * @param AudienceUpdater            $audienceUpdater
-     */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         GatewayRegistry $gatewayRegistry,
@@ -53,18 +36,6 @@ class AudienceListener implements ListenerInterface
         $this->persistenceHelper = $persistenceHelper;
         $this->gatewayRegistry   = $gatewayRegistry;
         $this->audienceUpdater   = $audienceUpdater;
-    }
-
-    /**
-     * Initialize event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInitialize(ResourceEventInterface $event): void
-    {
-        $audience = $this->getAudienceFromEvent($event);
-
-        $this->audienceUpdater->generateKey($audience);
     }
 
     /**
@@ -141,7 +112,7 @@ class AudienceListener implements ListenerInterface
         $changeSet = $this->persistenceHelper->getChangeSet($audience);
 
         if (isset($changeSet['gateway'])) {
-            throw new IllegalOperationException("Changing audience gateway is not supported.");
+            throw new IllegalOperationException('Changing audience gateway is not supported.');
         }
 
         $this->audienceUpdater->fixDefault($audience);
@@ -185,7 +156,7 @@ class AudienceListener implements ListenerInterface
      *
      * @throws NewsletterException If the action is not supported by this gateway
      */
-    protected function getGateway(string $name, string $action)
+    protected function getGateway(string $name, string $action): GatewayInterface
     {
         $gateway = $this->gatewayRegistry->get($name);
 

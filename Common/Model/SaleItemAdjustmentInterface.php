@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,19 +11,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 interface SaleItemAdjustmentInterface extends AdjustmentInterface
 {
-    /**
-     * Returns the sale item.
-     *
-     * @return SaleItemInterface
-     */
     public function getItem(): ?SaleItemInterface;
 
-    /**
-     * Sets the sale item.
-     *
-     * @param SaleItemInterface|null $item
-     *
-     * @return $this|SaleItemAdjustmentInterface
-     */
-    public function setItem(SaleItemInterface $item = null): SaleItemAdjustmentInterface;
+    public function setItem(?SaleItemInterface $item): SaleItemAdjustmentInterface;
 }

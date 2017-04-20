@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Provider;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
@@ -16,7 +18,7 @@ interface CartProviderInterface
      *
      * @return bool
      */
-    public function hasCart();
+    public function hasCart(): bool;
 
     /**
      * Returns the cart.
@@ -25,40 +27,40 @@ interface CartProviderInterface
      *
      * @return CartInterface|null
      */
-    public function getCart($create = false);
+    public function getCart(bool $create = false): ?CartInterface;
 
     /**
      * Creates and returns the cart.
      *
      * @return CartInterface
      */
-    public function createCart();
+    public function createCart(): CartInterface;
 
     /**
      * Clear the cart.
      *
      * @return CartProviderInterface
      */
-    public function clearCart();
+    public function clearCart(): CartProviderInterface;
 
     /**
      * Clears the cart information (customer/addresses).
      *
      * @return CartProviderInterface
      */
-    public function clearInformation();
+    public function clearInformation(): CartProviderInterface;
 
     /**
      * Updates the cart customer group and currency.
      *
      * @return CartProviderInterface
      */
-    public function updateCustomerGroupAndCurrency();
+    public function updateCustomerGroupAndCurrency(): CartProviderInterface;
 
     /**
      * Saves the cart.
      *
      * @return CartProviderInterface
      */
-    public function saveCart();
+    public function saveCart(): CartProviderInterface;
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Ekyna\Component\Commerce\Common\Model;
@@ -11,13 +13,5 @@ use Ekyna\Component\Commerce\Common\Model;
  */
 interface SaleCopierFactoryInterface
 {
-    /**
-     * Returns a sale copier.
-     *
-     * @param Model\SaleInterface $source
-     * @param Model\SaleInterface $target
-     *
-     * @return SaleCopierInterface
-     */
-    public function create(Model\SaleInterface $source, Model\SaleInterface $target);
+    public function create(Model\SaleInterface $source, Model\SaleInterface $target): SaleCopierInterface;
 }

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItemAdjustment;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Quote\Model\QuoteItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteItemInterface;
 
@@ -15,13 +17,10 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteItemInterface;
  */
 class QuoteItemAdjustment extends AbstractSaleItemAdjustment implements QuoteItemAdjustmentInterface
 {
-    /**
-     * @inheritDoc
-     */
     protected function assertSaleItemClass(SaleItemInterface $item): void
     {
         if (!$item instanceof QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . QuoteItemInterface::class);
+            throw new UnexpectedTypeException($item, QuoteItemInterface::class);
         }
     }
 }

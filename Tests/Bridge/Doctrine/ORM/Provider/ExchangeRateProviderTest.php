@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Tests\Bridge\Doctrine\ORM\Provider;
 
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Statement;
-use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Provider\ExchangeRateProvider;
+use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Provider\DoctrineProvider;
 use Ekyna\Component\Commerce\Common\Currency\ExchangeRateProviderInterface;
 use Ekyna\Component\Commerce\Tests\Fixture;
 use PHPUnit\Framework\TestCase;
@@ -61,7 +61,7 @@ class ExchangeRateProviderTest extends TestCase
             ->withAnyParameters()
             ->willReturn($find);
 
-        $provider = new ExchangeRateProvider($connection);
+        $provider = new DoctrineProvider($connection);
 
         $this->assertEquals(null, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
@@ -95,7 +95,7 @@ class ExchangeRateProviderTest extends TestCase
             ->withAnyParameters()
             ->willReturn($find);
 
-        $provider = new ExchangeRateProvider($connection);
+        $provider = new DoctrineProvider($connection);
 
         $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
@@ -145,7 +145,7 @@ class ExchangeRateProviderTest extends TestCase
             ->withAnyParameters()
             ->willReturn($find);
 
-        $provider = new ExchangeRateProvider($connection);
+        $provider = new DoctrineProvider($connection);
 
         $this->assertEquals(0.8, $provider->get(Fixture::CURRENCY_USD, Fixture::CURRENCY_EUR, $date));
     }
@@ -221,7 +221,7 @@ class ExchangeRateProviderTest extends TestCase
             ->with(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date)
             ->willReturn(1.25);
 
-        $provider = new ExchangeRateProvider($connection, $fallback);
+        $provider = new DoctrineProvider($connection, $fallback);
 
         $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }

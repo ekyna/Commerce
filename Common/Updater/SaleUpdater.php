@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Updater;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Builder\AddressBuilderInterface;
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
@@ -10,7 +13,6 @@ use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
@@ -26,87 +28,29 @@ use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
  */
 class SaleUpdater implements SaleUpdaterInterface
 {
-    /**
-     * @var AddressBuilderInterface
-     */
-    protected $addressBuilder;
+    protected AddressBuilderInterface $addressBuilder;
+    protected AdjustmentBuilderInterface $adjustmentBuilder;
+    protected AmountCalculatorFactory $calculatorFactory;
+    protected CurrencyConverterInterface $currencyConverter;
+    protected WeightCalculatorInterface $weightCalculator;
+    protected ShipmentPriceResolverInterface $shipmentPriceResolver;
+    protected PaymentCalculatorInterface $paymentCalculator;
+    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    protected ReleaserInterface $outstandingReleaser;
+    protected SaleFactoryInterface $saleFactory;
+    protected string $defaultCurrency;
 
-    /**
-     * @var AdjustmentBuilderInterface
-     */
-    protected $adjustmentBuilder;
-
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $calculatorFactory;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var WeightCalculatorInterface
-     */
-    protected $weightCalculator;
-
-    /**
-     * @var ShipmentPriceResolverInterface
-     */
-    protected $shipmentPriceResolver;
-
-    /**
-     * @var PaymentCalculatorInterface
-     */
-    protected $paymentCalculator;
-
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    protected $invoiceCalculator;
-
-    /**
-     * @var ReleaserInterface
-     */
-    protected $outstandingReleaser;
-
-    /**
-     * @var SaleFactoryInterface
-     */
-    protected $saleFactory;
-
-    /**
-     * @var string
-     */
-    protected $defaultCurrency;
-
-
-    /**
-     * Constructor.
-     *
-     * @param AddressBuilderInterface           $addressBuilder
-     * @param AdjustmentBuilderInterface        $adjustmentBuilder
-     * @param AmountCalculatorFactory           $calculatorFactory
-     * @param CurrencyConverterInterface        $currencyConverter
-     * @param WeightCalculatorInterface         $weightCalculator
-     * @param ShipmentPriceResolverInterface    $shipmentPriceResolver
-     * @param PaymentCalculatorInterface        $paymentCalculator
-     * @param InvoiceSubjectCalculatorInterface $invoiceCalculator
-     * @param ReleaserInterface                 $outstandingReleaser
-     * @param SaleFactoryInterface              $saleFactory
-     */
     public function __construct(
-        AddressBuilderInterface $addressBuilder,
-        AdjustmentBuilderInterface $adjustmentBuilder,
-        AmountCalculatorFactory $calculatorFactory,
-        CurrencyConverterInterface $currencyConverter,
-        WeightCalculatorInterface $weightCalculator,
-        ShipmentPriceResolverInterface $shipmentPriceResolver,
-        PaymentCalculatorInterface $paymentCalculator,
+        AddressBuilderInterface           $addressBuilder,
+        AdjustmentBuilderInterface        $adjustmentBuilder,
+        AmountCalculatorFactory           $calculatorFactory,
+        CurrencyConverterInterface        $currencyConverter,
+        WeightCalculatorInterface         $weightCalculator,
+        ShipmentPriceResolverInterface    $shipmentPriceResolver,
+        PaymentCalculatorInterface        $paymentCalculator,
         InvoiceSubjectCalculatorInterface $invoiceCalculator,
-        ReleaserInterface $outstandingReleaser,
-        SaleFactoryInterface $saleFactory
+        ReleaserInterface                 $outstandingReleaser,
+        SaleFactoryInterface              $saleFactory
     ) {
         $this->addressBuilder = $addressBuilder;
         $this->adjustmentBuilder = $adjustmentBuilder;
@@ -120,43 +64,37 @@ class SaleUpdater implements SaleUpdaterInterface
         $this->saleFactory = $saleFactory;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function recalculate(SaleInterface $sale): bool
     {
         $changed = false;
 
         // 1. discounts
-        if (0 == $sale->getPaidTotal()) { // Do not update if paid amount
+        if ($sale->getPaidTotal()->isZero()) { // Do not update if paid amount
             $changed = $this->updateDiscounts($sale);
         }
 
         // 2. weight
-        $changed |= $this->updateWeightTotal($sale);
+        $changed = $this->updateWeightTotal($sale) || $changed;
 
         // 3. shipment amount (based on 2.)
-        $changed |= $this->updateShipmentMethodAndAmount($sale);
+        $changed = $this->updateShipmentMethodAndAmount($sale) || $changed;
 
         // 4. taxation (items and shipment)
-        $changed |= $this->updateTaxation($sale);
+        $changed = $this->updateTaxation($sale) || $changed;
 
         // 5. totals (content, payments and invoices)
-        $changed |= $this->updateTotals($sale);
+        $changed = $this->updateTotals($sale) || $changed;
 
         // TODO item count
 
         return $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateWeightTotal(SaleInterface $sale): bool
     {
         $weightTotal = $this->weightCalculator->calculateSale($sale);
 
-        if ($sale->getWeightTotal() != $weightTotal) {
+        if (!$sale->getWeightTotal()->equals($weightTotal)) {
             $sale->setWeightTotal($weightTotal);
 
             return true;
@@ -165,73 +103,54 @@ class SaleUpdater implements SaleUpdaterInterface
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateTotals(SaleInterface $sale): bool
     {
         $changed = $this->updateAmountTotals($sale);
 
-        $changed |= $this->updatePaymentTotals($sale);
+        $changed = $this->updatePaymentTotals($sale) || $changed;
 
-        $changed |= $this->updateInvoiceTotals($sale);
-
-        return $changed;
+        return $this->updateInvoiceTotals($sale) || $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateInvoiceAddressFromAddress(
-        SaleInterface $sale,
+        SaleInterface    $sale,
         AddressInterface $source,
-        $persistence = false
+        bool                 $persistence = false
     ): bool {
         return $this->addressBuilder->buildSaleInvoiceAddressFromAddress($sale, $source, $persistence);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateDeliveryAddressFromAddress(
-        SaleInterface $sale,
+        SaleInterface    $sale,
         AddressInterface $source,
-        $persistence = false
+        bool                 $persistence = false
     ): bool {
         return $this->addressBuilder->buildSaleDeliveryAddressFromAddress($sale, $source, $persistence);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function updateDiscounts(SaleInterface $sale, $persistence = false): bool
+    public function updateDiscounts(SaleInterface $sale, bool $persistence = false): bool
     {
+        /* TODO (?) if ($sale->getPaidTotal()->isZero()) {
+            return false;
+        }*/
+
         $changed = $this->adjustmentBuilder->buildDiscountAdjustmentsForSaleItems($sale, $persistence);
 
         return $this->adjustmentBuilder->buildDiscountAdjustmentsForSale($sale, $persistence) || $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function updateTaxation(SaleInterface $sale, $persistence = false): bool
+    public function updateTaxation(SaleInterface $sale, bool $persistence = false): bool
     {
         $changed = $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItems($sale, $persistence);
 
         return $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, $persistence) || $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function updateShipmentTaxation(SaleInterface $sale, $persistence = false): bool
+    public function updateShipmentTaxation(SaleInterface $sale, bool $persistence = false): bool
     {
         return $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, $persistence);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateShipmentMethodAndAmount(SaleInterface $sale): bool
     {
         // Abort if sale auto shipping is disabled
@@ -250,7 +169,7 @@ class SaleUpdater implements SaleUpdaterInterface
         $prices = $this->shipmentPriceResolver->getAvailablePricesBySale($sale);
 
         // Assert that the sale's shipment method is still available
-        if (null !== $initialMethod = $sale->getShipmentMethod()) {
+        if ($initialMethod = $sale->getShipmentMethod()) {
             $found = false;
             foreach ($prices as $price) {
                 if ($price->getMethod() === $initialMethod) {
@@ -290,25 +209,23 @@ class SaleUpdater implements SaleUpdaterInterface
         }
 
         // Resolve shipping cost
-        $amount = 0;
-        if (null !== $method) {
-            if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
-                $amount = $price->isFree() ? 0 : $price->getPrice();
-            }
+        $price = null;
+        if ($method && $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
+            $price = $price->getPrice();
+        }
+        if (null === $price) {
+            $price = new Decimal(0);
         }
 
         // Update sale's shipping cost if needed
-        if ($amount != $sale->getShipmentAmount()) {
-            $sale->setShipmentAmount($amount);
+        if (!$price->equals($sale->getShipmentAmount())) {
+            $sale->setShipmentAmount($price);
             $updated = true;
         }
 
         return $updated;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updatePaymentTerm(SaleInterface $sale): bool
     {
         // Don't override payment term if set
@@ -317,7 +234,7 @@ class SaleUpdater implements SaleUpdaterInterface
         }
 
         $term = null;
-        if (null !== $customer = $sale->getCustomer()) {
+        if ($customer = $sale->getCustomer()) {
             // From parent if available
             if ($customer->hasParent()) {
                 $term = $customer->getParent()->getPaymentTerm();
@@ -337,8 +254,6 @@ class SaleUpdater implements SaleUpdaterInterface
 
     /**
      * Updates the payment method.
-     *
-     * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed.
      */
@@ -368,9 +283,6 @@ class SaleUpdater implements SaleUpdaterInterface
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateExchangeRate(SaleInterface $sale, bool $force = false): bool
     {
         // If sale is not accepted
@@ -383,7 +295,7 @@ class SaleUpdater implements SaleUpdaterInterface
         // (Sale is accepted)
 
         // If exchange rate is defined
-        if (null !== $sale->getExchangeRate()) {
+        if ($sale->getExchangeRate()) {
             return false;
         }
 
@@ -412,21 +324,18 @@ class SaleUpdater implements SaleUpdaterInterface
         return $this->currencyConverter->setSubjectExchangeRate($sale);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateAmountTotals(SaleInterface $sale): bool
     {
         $changed = false;
 
         $result = $this->calculatorFactory->create()->calculateSale($sale);
 
-        if (0 !== Money::compare($result->getBase(), $sale->getNetTotal(), 5)) {
+        if (!$sale->getNetTotal()->equals($result->getBase())) {
             $sale->setNetTotal($result->getBase());
             $changed = true;
         }
 
-        if (0 !== Money::compare($result->getTotal(), $sale->getGrandTotal(), 5)) {
+        if (!$sale->getGrandTotal()->equals($result->getTotal())) {
             $sale->setGrandTotal($result->getTotal());
             $changed = true;
         }
@@ -434,42 +343,37 @@ class SaleUpdater implements SaleUpdaterInterface
         return $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updatePaymentTotals(SaleInterface $sale): bool
     {
         $changed = false;
 
-        $currency = $sale->getCurrency()->getCode();
-
         // Update paid total if needed
         $paid = $this->paymentCalculator->calculatePaidTotal($sale);
-        if (0 != Money::compare($paid, $sale->getPaidTotal(), $currency)) {
+        if (!$sale->getPaidTotal()->equals($paid)) {
             $sale->setPaidTotal($paid);
             $changed = true;
         }
         // Update refunded total if needed
         $refunded = $this->paymentCalculator->calculateRefundedTotal($sale);
-        if (0 != Money::compare($refunded, $sale->getRefundedTotal(), $currency)) {
+        if (!$sale->getRefundedTotal()->equals($refunded)) {
             $sale->setRefundedTotal($refunded);
             $changed = true;
         }
         // Update pending total total if needed
         $pending = $this->paymentCalculator->calculateOfflinePendingTotal($sale);
-        if (0 != Money::compare($pending, $sale->getPendingTotal(), $currency)) {
+        if (!$sale->getPendingTotal()->equals($pending)) {
             $sale->setPendingTotal($pending);
             $changed = true;
         }
         // Update accepted outstanding total if needed
         $acceptedOutstanding = $this->paymentCalculator->calculateOutstandingAcceptedTotal($sale);
-        if (0 != Money::compare($acceptedOutstanding, $sale->getOutstandingAccepted(), $currency)) {
+        if (!$sale->getOutstandingAccepted()->equals($acceptedOutstanding)) {
             $sale->setOutstandingAccepted($acceptedOutstanding);
             $changed = true;
         }
         // Update expired outstanding total if needed
         $expiredOutstanding = $this->paymentCalculator->calculateOutstandingExpiredTotal($sale);
-        if (0 != Money::compare($expiredOutstanding, $sale->getOutstandingExpired(), $currency)) {
+        if (!$sale->getOutstandingExpired()->equals($expiredOutstanding)) {
             $sale->setOutstandingExpired($expiredOutstanding);
             $changed = true;
         }
@@ -484,9 +388,6 @@ class SaleUpdater implements SaleUpdaterInterface
         return $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateInvoiceTotals(SaleInterface $sale): bool
     {
         if (!$sale instanceof InvoiceSubjectInterface) {
@@ -496,14 +397,14 @@ class SaleUpdater implements SaleUpdaterInterface
         $changed = false;
 
         $invoice = $this->invoiceCalculator->calculateInvoiceTotal($sale);
-        if (0 != Money::compare($invoice, $sale->getInvoiceTotal(), $sale->getCurrency()->getCode())) {
+        if (!$sale->getInvoiceTotal()->equals($invoice)) {
             $sale->setInvoiceTotal($invoice);
 
             $changed = true;
         }
 
         $credit = $this->invoiceCalculator->calculateCreditTotal($sale);
-        if (0 != Money::compare($credit, $sale->getCreditTotal(), $sale->getCurrency()->getCode())) {
+        if (!$sale->getCreditTotal()->equals($credit)) {
             $sale->setCreditTotal($credit);
 
             $changed = true;

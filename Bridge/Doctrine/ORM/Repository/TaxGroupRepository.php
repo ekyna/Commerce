@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxGroupRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class TaxGroupRepository
@@ -15,19 +17,12 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class TaxGroupRepository extends ResourceRepository implements TaxGroupRepositoryInterface
 {
-    /**
-     * @var TaxGroupInterface
-     */
-    private $defaultTaxGroup;
-
-    /**
-     * @var Query
-     */
-    private $byCodeQuery;
+    private ?TaxGroupInterface $defaultTaxGroup = null;
+    private ?Query             $byCodeQuery     = null;
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findDefault(bool $throwException = true): ?TaxGroupInterface
     {

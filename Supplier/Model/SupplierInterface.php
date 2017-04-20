@@ -153,5 +153,5 @@ interface SupplierInterface extends
      *
      * @return $this|SupplierInterface
      */
-    public function setLocale(string $locale = null): Resource\LocalizedInterface;
+    public function setLocale(?string $locale): Resource\LocalizedInterface;
 }

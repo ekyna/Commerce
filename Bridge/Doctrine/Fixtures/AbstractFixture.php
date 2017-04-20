@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\Fixtures;
 
+use Decimal\Decimal;
 use Doctrine\Common\DataFixtures\AbstractFixture as BaseFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\Mapping\ClassMetadata;
@@ -35,7 +36,7 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
     abstract protected function configure();
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function load(ObjectManager $manager)
     {
@@ -113,6 +114,7 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
     {
         $type = $metadata->getTypeOfField($propertyPath);
 
+        // TODO Use Types:: constants
         switch ($type) {
             case 'smallint':
             case 'integer':
@@ -132,9 +134,9 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
             case 'double':
             case 'decimal':
                 if (!is_numeric($value)) {
-                    throw new \Exception('Expected float.');
+                    throw new \Exception('Expected numeric.');
                 }
-                return floatval($value);
+                return new Decimal((string)$value);
 
             case 'datetime':
                 return new \DateTime($value);

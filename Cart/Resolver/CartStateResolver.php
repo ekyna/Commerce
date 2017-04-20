@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Resolver;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
@@ -43,9 +45,6 @@ class CartStateResolver extends AbstractSaleStateResolver implements StateResolv
         return CartStates::STATE_NEW;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function supports(object $subject): void
     {
         if (!$subject instanceof CartInterface) {

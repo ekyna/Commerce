@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Decimal\Decimal;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Interface ShipmentDataInterface
@@ -11,90 +14,34 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 interface ShipmentDataInterface
 {
-    /**
-     * Returns the weight.
-     *
-     * @return float
-     */
-    public function getWeight();
+    public function getWeight(): ?Decimal;
+
+    public function setWeight(?Decimal $weight): ShipmentDataInterface;
+
+    public function getValorization(): ?Decimal;
+
+    public function setValorization(?Decimal $valorization): ShipmentDataInterface;
+
+    public function getTrackingNumber(): ?string;
+
+    public function setTrackingNumber(?string $number): ShipmentDataInterface;
 
     /**
-     * Sets the weight.
-     *
-     * @param float $weight
-     *
-     * @return $this|ShipmentDataInterface
+     * @return Collection<ShipmentLabelInterface>
      */
-    public function setWeight($weight);
-
-    /**
-     * Returns the valorization.
-     *
-     * @return float
-     */
-    public function getValorization();
-
-    /**
-     * Sets the valorization.
-     *
-     * @param float $valorization
-     */
-    public function setValorization($valorization);
-
-    /**
-     * Returns the tracking number.
-     *
-     * @return string
-     */
-    public function getTrackingNumber();
-
-    /**
-     * Sets the tracking number.
-     *
-     * @param string $number
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function setTrackingNumber($number);
-
-    /**
-     * Returns the labels.
-     *
-     * @return ArrayCollection|ShipmentLabelInterface[]
-     */
-    public function getLabels();
+    public function getLabels(): Collection;
 
     /**
      * Returns whether the shipment/parcel has label(s).
-     *
-     * @return bool
      */
-    public function hasLabels();
+    public function hasLabels(): bool;
 
     /**
      * Returns whether the shipment/parcel has the given label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return bool
      */
-    public function hasLabel(ShipmentLabelInterface $label);
+    public function hasLabel(ShipmentLabelInterface $label): bool;
 
-    /**
-     * Adds the label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function addLabel(ShipmentLabelInterface $label);
+    public function addLabel(ShipmentLabelInterface $label): ShipmentDataInterface;
 
-    /**
-     * Removes the label.
-     *
-     * @param ShipmentLabelInterface $label
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function removeLabel(ShipmentLabelInterface $label);
+    public function removeLabel(ShipmentLabelInterface $label): ShipmentDataInterface;
 }

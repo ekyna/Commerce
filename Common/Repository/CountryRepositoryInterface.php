@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface CountryRepositoryInterface
@@ -52,16 +54,23 @@ interface CountryRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Finds the codes of the enabled countries.
      *
-     * @return array|string[]
+     * @return array<string>
      */
     public function findEnabledCodes(): array;
 
     /**
      * Finds all the country codes.
      *
-     * @return array|string[]
+     * @return array<string>
      */
     public function findAllCodes(): array;
+
+    /**
+     * Returns all the countries names.
+     *
+     * @return array<string, string>
+     */
+    public function getNames(bool $enabled): array;
 
     /**
      * Returns the country identifiers.

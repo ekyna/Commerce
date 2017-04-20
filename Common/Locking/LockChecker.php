@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Locking;
 
 use DateTime;
@@ -14,35 +16,13 @@ use Throwable;
  */
 class LockChecker
 {
-    /**
-     * @var DateTime
-     */
-    private $lockSince;
-
-    /**
-     * @var DateTime
-     */
-    private $lockStart;
-
-    /**
-     * @var DateTime
-     */
-    private $lockEnd;
-
-    /**
-     * @var DateTime
-     */
-    private $today;
-
-    /**
-     * @var LockResolverInterface[]
-     */
-    private $resolvers;
-
-    /**
-     * @var bool
-     */
-    private $enabled = true;
+    private DateTime $lockSince;
+    private DateTime $lockStart;
+    private DateTime $lockEnd;
+    private DateTime $today;
+    /** @var array<LockResolverInterface> */
+    private array $resolvers;
+    private bool  $enabled = true;
 
     /**
      * Creates the date base on the input parts.
@@ -52,10 +32,6 @@ class LockChecker
      * then will apply each subsequent part ('<em>+10 days</em>', etc) using
      * <strong>modify()</strong> method.
      *
-     * @param string $input
-     * @param string $property
-     *
-     * @return DateTime
      * @throws LogicException
      */
     public static function createDate(string $input, string $property): DateTime
@@ -75,12 +51,7 @@ class LockChecker
     }
 
     /**
-     * Constructor.
-     *
-     * @param LockResolverInterface[] $resolvers
-     * @param string                  $start
-     * @param string                  $end
-     * @param string                  $since
+     * @param array<LockResolverInterface> $resolvers
      */
     public function __construct(array $resolvers, string $start, string $end, string $since)
     {
@@ -95,10 +66,6 @@ class LockChecker
     }
 
     /**
-     * Adds the resolver.
-     *
-     * @param LockResolverInterface $resolver
-     *
      * @throws LogicException
      */
     public function addResolver(LockResolverInterface $resolver): void
@@ -121,10 +88,6 @@ class LockChecker
      *   Always  |  Locked if current date  |    Not          date
      *   locked  |  is lower that 'since'   |  locked
      * </code>
-     *
-     * @param ResourceInterface $resource
-     *
-     * @return bool
      */
     public function isLocked(ResourceInterface $resource): bool
     {
@@ -158,10 +121,6 @@ class LockChecker
 
     /**
      * Resolves the resource date to check.
-     *
-     * @param ResourceInterface $resource
-     *
-     * @return DateTime|null
      */
     private function resolveDate(ResourceInterface $resource): ?DateTime
     {

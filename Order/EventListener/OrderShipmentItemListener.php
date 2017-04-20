@@ -34,15 +34,15 @@ class OrderShipmentItemListener extends AbstractShipmentItemListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function scheduleShipmentContentChangeEvent(Shipment\ShipmentInterface $shipment)
     {
-        $this->persistenceHelper->scheduleEvent(OrderShipmentEvents::CONTENT_CHANGE, $shipment);
+        $this->persistenceHelper->scheduleEvent($shipment, OrderShipmentEvents::CONTENT_CHANGE);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getShipmentItemFromEvent(ResourceEventInterface $event)
     {

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Country;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 
 /**
@@ -13,29 +16,11 @@ use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
  */
 class CountryProvider implements CountryProviderInterface
 {
-    /**
-     * @var CountryRepositoryInterface
-     */
-    protected $countryRepository;
-
-    /**
-     * @var string
-     */
-    protected $fallbackCountry;
-
-    /**
-     * @var string
-     */
-    protected $currentCountry;
+    protected CountryRepositoryInterface $countryRepository;
+    protected string $fallbackCountry;
+    protected ?string $currentCountry;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CountryRepositoryInterface $countryRepository
-     * @param string                      $fallbackCountry
-     * @param string                      $currentCountry
-     */
     public function __construct(
         CountryRepositoryInterface $countryRepository,
         string $fallbackCountry,
@@ -46,25 +31,16 @@ class CountryProvider implements CountryProviderInterface
         $this->currentCountry = $currentCountry;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getAvailableCountries(): array
     {
         return $this->countryRepository->findEnabledCodes();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getFallbackCountry(): string
     {
         return $this->fallbackCountry;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrentCountry(): string
     {
         if (!empty($this->currentCountry)) {
@@ -86,7 +62,7 @@ class CountryProvider implements CountryProviderInterface
         $country = $country instanceof CountryInterface ? $country->getCode() : $country;
 
         if (!is_string($country)) {
-            throw new UnexpectedValueException("Expected string or instance of " . CountryInterface::class);
+            throw new UnexpectedTypeException($country, ['string', CountryInterface::class]);
         }
 
         if (!in_array($country, $this->getAvailableCountries(), true)) {
@@ -98,25 +74,16 @@ class CountryProvider implements CountryProviderInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCountry(string $code = null): CountryInterface
     {
         return $this->countryRepository->findOneByCode($code ?? $this->getCurrentCountry());
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getDefault(): CountryInterface
     {
         return $this->countryRepository->findDefault();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCountryRepository(): CountryRepositoryInterface
     {
         return $this->countryRepository;
@@ -124,8 +91,6 @@ class CountryProvider implements CountryProviderInterface
 
     /**
      * Guesses the user country.
-     *
-     * @return string|null
      */
     protected function guessCountry(): ?string
     {

@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Ekyna\Component\Commerce\Stock\Repository\StockAdjustmentRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class StockAdjustmentRepository

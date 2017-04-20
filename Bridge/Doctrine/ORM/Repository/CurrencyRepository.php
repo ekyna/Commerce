@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class CurrencyRepository
@@ -15,46 +17,25 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class CurrencyRepository extends ResourceRepository implements CurrencyRepositoryInterface
 {
-    /**
-     * @var string
-     */
-    private $defaultCode;
-
-    /**
-     * @var string[]
-     */
-    private $enabledCodes;
-
-    /**
-     * @var string[]
-     */
-    private $allCodes;
-
-    /**
-     * @var CurrencyInterface
-     */
-    private $defaultCurrency;
-
-    /**
-     * @var array
-     */
-    private $cache = [];
+    private string $defaultCode;
+    private ?array $enabledCodes = null;
+    private ?array $allCodes = null;
+    private ?CurrencyInterface $defaultCurrency = null;
+    private array $cache = [];
 
 
     /**
-     * Sets the default code.
-     *
-     * @param string $code
+     * @inheritDoc
      */
-    public function setDefaultCode($code)
+    public function setDefaultCode(string $code): void
     {
         $this->defaultCode = strtoupper($code);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findDefault()
+    public function findDefault(): CurrencyInterface
     {
         if (null !== $this->defaultCurrency) {
             return $this->defaultCurrency;
@@ -68,9 +49,9 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findOneByCode($code)
+    public function findOneByCode(string $code): ?CurrencyInterface
     {
         $code = strtoupper($code);
 
@@ -87,9 +68,9 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findEnabledCodes()
+    public function findEnabledCodes(): array
     {
         if (null !== $this->enabledCodes) {
             return $this->enabledCodes;
@@ -109,9 +90,9 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findAllCodes()
+    public function findAllCodes(): array
     {
         if (null !== $this->allCodes) {
             return $this->allCodes;
@@ -133,7 +114,7 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
      *
      * @param OnClearEventArgs $event
      */
-    public function onClear(OnClearEventArgs $event)
+    public function onClear(OnClearEventArgs $event): void
     {
         if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
             $this->defaultCurrency = null;

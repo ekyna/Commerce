@@ -1,13 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Loyalty;
 
+use DateTime;
+use Decimal\Decimal;
 use Doctrine\ORM\EntityManagerInterface;
+use Ekyna\Component\Commerce\Common\Factory\CouponFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\CouponInterface;
 use Ekyna\Component\Commerce\Common\Repository\CouponRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerRepositoryInterface;
 use Ekyna\Component\Commerce\Features;
+use Transliterator;
 
 /**
  * Class CouponGenerator
@@ -16,62 +22,33 @@ use Ekyna\Component\Commerce\Features;
  */
 class CouponGenerator
 {
-    /**
-     * @var Features
-     */
-    private $features;
+    private Features $features;
+    private LoyaltyUpdater $updater;
+    private CustomerRepositoryInterface $customerRepository;
+    private CouponFactoryInterface $couponFactory;
+    private CouponRepositoryInterface $couponRepository;
+    private EntityManagerInterface $manager;
 
-    /**
-     * @var LoyaltyUpdater
-     */
-    private $updater;
+    private array $generated;
 
-    /**
-     * @var CustomerRepositoryInterface
-     */
-    private $customerRepository;
-
-    /**
-     * @var CouponRepositoryInterface
-     */
-    private $couponRepository;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $manager;
-
-    /**
-     * @var array
-     */
-    private $generated;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Features                    $features
-     * @param LoyaltyUpdater              $updater
-     * @param CustomerRepositoryInterface $customerRepository
-     * @param CouponRepositoryInterface   $couponRepository
-     * @param EntityManagerInterface      $manager
-     */
     public function __construct(
         Features $features,
         LoyaltyUpdater $updater,
         CustomerRepositoryInterface $customerRepository,
+        CouponFactoryInterface $couponFactory,
         CouponRepositoryInterface $couponRepository,
         EntityManagerInterface $manager
     ) {
         $this->features = $features;
         $this->updater = $updater;
         $this->customerRepository = $customerRepository;
+        $this->couponFactory = $couponFactory;
         $this->couponRepository = $couponRepository;
         $this->manager = $manager;
     }
 
     /**
-     * Generates coupons regarding to customers loyalty point amounts.
+     * Generates coupons regarding customers loyalty point amounts.
      *
      * @return array The generated coupons.
      */
@@ -96,9 +73,6 @@ class CouponGenerator
 
     /**
      * Generates coupons for customer having minimum loyalty points.
-     *
-     * @param int   $points
-     * @param array $config
      */
     private function generateForPointsWithConfig(int $points, array $config): void
     {
@@ -143,12 +117,12 @@ class CouponGenerator
      */
     private function createCoupon(CustomerInterface $customer, array $config): CouponInterface
     {
-        $start = (new \DateTime())->setTime(0, 0, 0, 0);
-        $end = (new \DateTime($config['period']))->setTime(23, 59, 59, 999999);
+        $start = (new DateTime())->setTime(0, 0);
+        $end = (new DateTime($config['period']))->setTime(23, 59, 59, 999999);
 
-        $t = \Transliterator::createFromRules(
+        $t = Transliterator::createFromRules(
             ':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;',
-            \Transliterator::FORWARD
+            Transliterator::FORWARD
         );
 
         $firstName = preg_replace('~[^A-Za-z]+~', '', $t->transliterate($customer->getFirstName()));
@@ -159,14 +133,13 @@ class CouponGenerator
             $code = $prefix . '-' . strtoupper(bin2hex(random_bytes(2)));
         } while (null !== $this->couponRepository->findOneByCode($code));
 
-        /** @var CouponInterface $coupon */
-        $coupon = $this->couponRepository->createNew();
+        $coupon = $this->couponFactory->create();
         $coupon
             ->setCustomer($customer)
             ->setMode($config['mode'])
-            ->setAmount($config['amount'])
+            ->setAmount(new Decimal($config['amount']))
             ->setCumulative(false)
-            ->setMinGross(0)
+            ->setMinGross(new Decimal(0))
             ->setLimit(1)
             ->setStartAt($start)
             ->setEndAt($end)

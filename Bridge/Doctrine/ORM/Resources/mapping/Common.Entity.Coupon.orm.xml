@@ -26,12 +26,12 @@
         <field name="endAt" column="end_at" type="date" nullable="true"/>
         <field name="limit" column="usage_limit" type="smallint" nullable="true"/>
         <field name="usage" column="usage_count" type="smallint" nullable="false"/>
-        <field name="minGross" column="min_gross" type="decimal" precision="15" scale="5" nullable="false"/>
+        <field name="minGross" column="min_gross" type="php_decimal" precision="15" scale="5" nullable="false"/>
         <field name="cumulative" column="cumulative" type="boolean" nullable="false"/>
 
         <field name="designation" column="designation" type="string" length="64" nullable="true"/>
         <field name="mode" column="mode" type="string" length="16"/>
-        <field name="amount" column="amount" type="decimal" precision="15" scale="5"/>
+        <field name="amount" column="amount" type="php_decimal" precision="15" scale="5"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
                      field="customer">

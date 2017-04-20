@@ -25,9 +25,7 @@ class SupplierAddress extends AbstractAddress implements SupplierAddressInterfac
 
 
     /**
-     * Returns the id.
-     *
-     * @return int
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -35,7 +33,7 @@ class SupplierAddress extends AbstractAddress implements SupplierAddressInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getSupplier()
     {
@@ -43,7 +41,7 @@ class SupplierAddress extends AbstractAddress implements SupplierAddressInterfac
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setSupplier(SupplierInterface $supplier = null)
     {

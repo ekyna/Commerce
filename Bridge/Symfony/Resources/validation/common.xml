@@ -146,7 +146,7 @@
     <!-- Attachment -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAttachment">
-        <constraint name="Ekyna\Bundle\CoreBundle\Validator\Constraints\Uploadable"/>
+        <constraint name="Ekyna\Bundle\ResourceBundle\Validator\Constraints\Uploadable"/>
         <property name="file">
             <constraint name="File"/>
         </property>
@@ -326,15 +326,6 @@
         <!-- TODO (?) <property name="payments">
             <constraint name="Valid" />
         </property>-->
-        <property name="createdAt">
-            <constraint name="DateTime"/>
-        </property>
-        <property name="updatedAt">
-            <constraint name="DateTime"/>
-        </property>
-        <property name="acceptedAt">
-            <constraint name="DateTime"/>
-        </property>
         <property name="source">
             <constraint name="Choice">
                 <option name="callback">
@@ -508,30 +499,14 @@
                 <option name="max">16</option>
             </constraint>
         </property>
-        <property name="startAt">
-            <constraint name="Type">
-                <option name="type">\DateTime</option>
-            </constraint>
-        </property>
-        <property name="endAt">
-            <constraint name="Type">
-                <option name="type">\DateTime</option>
-            </constraint>
-        </property>
         <property name="limit">
             <constraint name="NotBlank"/>
-            <constraint name="Type">
-                <option name="type">int</option>
-            </constraint>
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
             </constraint>
         </property>
         <property name="usage">
             <constraint name="NotBlank"/>
-            <constraint name="Type">
-                <option name="type">int</option>
-            </constraint>
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
             </constraint>

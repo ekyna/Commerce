@@ -1,63 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class ShipmentItemNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentItemNormalizer extends AbstractResourceNormalizer
+class ShipmentItemNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param ShipmentItemInterface $item
+     * @param ShipmentItemInterface $object
      */
-    public function normalize($item, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         $data = [];
 
         if ($this->contextHasGroup('Summary', $context)) {
-            $saleItem = $item->getSaleItem();
+            $saleItem = $object->getSaleItem();
 
             $data = array_replace($data, [
-                'designation'      => $saleItem->getDesignation(),
-                'reference'        => $saleItem->getReference(),
-                'quantity'         => $item->getQuantity(),
-                'total'            => $saleItem->getTotalQuantity(),
+                'designation' => $saleItem->getDesignation(),
+                'reference'   => $saleItem->getReference(),
+                'quantity'    => $object->getQuantity(),
+                'total'       => $saleItem->getTotalQuantity(),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof ShipmentItemInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, ShipmentItemInterface::class);
     }
 }

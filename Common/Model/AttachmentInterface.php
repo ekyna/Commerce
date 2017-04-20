@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Bundle\CoreBundle\Model\UploadableInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\UploadableInterface;
 
 /**
  * Interface SaleAttachmentInterface
@@ -12,51 +14,21 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface AttachmentInterface extends UploadableInterface, ResourceInterface
 {
-    /**
-     * Returns the title.
-     *
-     * @return string
-     */
-    public function getTitle();
+    public function getTitle(): ?string;
+
+    public function setTitle(?string $title): AttachmentInterface;
+
+    public function getType(): ?string;
+
+    public function setType(?string $type): AttachmentInterface;
 
     /**
-     * Sets the title.
-     *
-     * @param string $title
-     *
-     * @return $this|AttachmentInterface
+     * Returns whether the attachment is internal (not public) or not.
      */
-    public function setTitle($title);
+    public function isInternal(): bool;
 
     /**
-     * Returns the type.
-     *
-     * @return string
+     * Sets whether the attachment is internal (not public) or not.
      */
-    public function getType();
-
-    /**
-     * Sets the type.
-     *
-     * @param string $type
-     *
-     * @return $this|AttachmentInterface
-     */
-    public function setType($type);
-
-    /**
-     * Returns whether the attachment is internal or not.
-     *
-     * @return boolean
-     */
-    public function isInternal();
-
-    /**
-     * Sets whether the attachment is internal or not.
-     *
-     * @param boolean $internal
-     *
-     * @return $this|AttachmentInterface
-     */
-    public function setInternal($internal);
+    public function setInternal(bool $internal): AttachmentInterface;
 }

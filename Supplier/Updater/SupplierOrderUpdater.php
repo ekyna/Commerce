@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Updater;
 
+use DateTime;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
@@ -16,35 +20,12 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
  */
 class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
 {
-    /**
-     * @var GeneratorInterface
-     */
-    protected $numberGenerator;
-
-    /**
-     * @var StateResolverInterface
-     */
-    protected $stateResolver;
-
-    /**
-     * @var SupplierOrderCalculatorInterface
-     */
-    protected $calculator;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
+    protected GeneratorInterface $numberGenerator;
+    protected StateResolverInterface $stateResolver;
+    protected SupplierOrderCalculatorInterface $calculator;
+    protected CurrencyConverterInterface $currencyConverter;
 
 
-    /**
-     * Constructor.
-     *
-     * @param GeneratorInterface               $numberGenerator
-     * @param StateResolverInterface           $stateResolver
-     * @param SupplierOrderCalculatorInterface $calculator
-     * @param CurrencyConverterInterface       $currencyConverter
-     */
     public function __construct(
         GeneratorInterface $numberGenerator,
         StateResolverInterface $stateResolver,
@@ -57,9 +38,36 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
         $this->currencyConverter = $currencyConverter;
     }
 
-    /**
-     * @inheritdoc
-     */
+    public function updateCurrency(SupplierOrderInterface $order): bool
+    {
+        if (null === $supplier = $order->getSupplier()) {
+            return false;
+        }
+
+        if ($order->getCurrency() !== $supplier->getCurrency()) {
+            $order->setCurrency($supplier->getCurrency());
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function updateCarrier(SupplierOrderInterface $order): bool
+    {
+        if (null === $supplier = $order->getSupplier()) {
+            return false;
+        }
+
+        if (null === $order->getCarrier()) {
+            $order->setCarrier($supplier->getCarrier());
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function updateNumber(SupplierOrderInterface $order): bool
     {
         if (!empty($order->getNumber())) {
@@ -71,9 +79,6 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function updateState(SupplierOrderInterface $order): bool
     {
         $changed = $this->stateResolver->resolve($order);
@@ -81,10 +86,10 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
         // If state is canceled, clear dates
         if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
             $order
-                ->setEstimatedDateOfArrival()
-                ->setPaymentDate()
-                ->setForwarderDate()
-                ->setCompletedAt();
+                ->setEstimatedDateOfArrival(null)
+                ->setPaymentDate(null)
+                ->setForwarderDate(null)
+                ->setCompletedAt(null);
         }
         // If order state is 'completed' and 'competed at' date is not set
         elseif (
@@ -92,61 +97,58 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
             && is_null($order->getCompletedAt())
         ) {
             // Set the 'completed at' date
-            $order->setCompletedAt(new \DateTime());
+            $order->setCompletedAt(new DateTime());
             $changed = true;
         }
 
         return $changed;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function updateTotals(SupplierOrderInterface $order): bool
     {
         $changed = false;
 
         $tax = $this->calculator->calculatePaymentTax($order);
-        if ($tax != $order->getTaxTotal()) {
+        if (!$order->getTaxTotal()->equals($tax)) {
             $order->setTaxTotal($tax);
             $changed = true;
         }
 
         $payment = $this->calculator->calculatePaymentTotal($order);
-        if ($payment != $order->getPaymentTotal()) {
+        if (!$order->getPaymentTotal()->equals($payment)) {
             $order->setPaymentTotal($payment);
             $changed = true;
         }
 
         if (null !== $order->getCarrier()) {
             $forwarder = $this->calculator->calculateForwarderTotal($order);
-            if ($forwarder != $order->getForwarderTotal()) {
+            if (!$order->getForwarderTotal()->equals($forwarder)) {
                 $order->setForwarderTotal($forwarder);
                 $changed = true;
             }
         } else {
             if (0 != $order->getForwarderFee()) {
-                $order->setForwarderFee(0);
+                $order->setForwarderFee(new Decimal(0));
                 $changed = true;
             }
             if (0 != $order->getCustomsTax()) {
-                $order->setCustomsTax(0);
+                $order->setCustomsTax(new Decimal(0));
                 $changed = true;
             }
             if (0 != $order->getCustomsVat()) {
-                $order->setCustomsVat(0);
+                $order->setCustomsVat(new Decimal(0));
                 $changed = true;
             }
             if (0 != $order->getForwarderTotal()) {
-                $order->setForwarderTotal(0);
+                $order->setForwarderTotal(new Decimal(0));
                 $changed = true;
             }
             if (null !== $order->getForwarderDate()) {
-                $order->setForwarderDate();
+                $order->setForwarderDate(null);
                 $changed = true;
             }
             if (null !== $order->getForwarderDueDate()) {
-                $order->setForwarderDueDate();
+                $order->setForwarderDueDate(null);
                 $changed = true;
             }
         }
@@ -154,9 +156,6 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
         return $changed;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function updateExchangeRate(SupplierOrderInterface $order): bool
     {
         // TODO Remove when supplier order payments will be implemented.

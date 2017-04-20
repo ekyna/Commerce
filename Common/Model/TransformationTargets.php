@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
@@ -15,9 +17,9 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
  */
 final class TransformationTargets
 {
-    const TARGET_CART  = 'cart';
-    const TARGET_QUOTE = 'quote';
-    const TARGET_ORDER = 'order';
+    public const TARGET_CART = 'cart';
+    public const TARGET_QUOTE = 'quote';
+    public const TARGET_ORDER = 'order';
 
 
     /**
@@ -28,13 +30,13 @@ final class TransformationTargets
      *
      * @return array
      */
-    static public function getTargetsForSale(SaleInterface $sale, bool $duplicate): array
+    public static function getTargetsForSale(SaleInterface $sale, bool $duplicate): array
     {
         if ($sale instanceof CartInterface) {
-            $targets = [static::TARGET_ORDER, static::TARGET_QUOTE];
+            $targets = [TransformationTargets::TARGET_ORDER, TransformationTargets::TARGET_QUOTE];
 
             if ($duplicate) {
-                $targets[] = static::TARGET_CART;
+                $targets[] = TransformationTargets::TARGET_CART;
             }
 
             return $targets;
@@ -42,9 +44,9 @@ final class TransformationTargets
 
         if ($sale instanceof OrderInterface) {
             if ($duplicate) {
-                $targets = [static::TARGET_ORDER, static::TARGET_QUOTE];
+                $targets = [TransformationTargets::TARGET_ORDER, TransformationTargets::TARGET_QUOTE];
             } elseif ($sale->getState() === OrderStates::STATE_NEW) {
-                $targets = [static::TARGET_QUOTE];
+                $targets = [TransformationTargets::TARGET_QUOTE];
             } else {
                 $targets = [];
             }
@@ -53,35 +55,27 @@ final class TransformationTargets
         }
 
         if ($sale instanceof QuoteInterface) {
-            $targets = [static::TARGET_ORDER];
+            $targets = [TransformationTargets::TARGET_ORDER];
 
             if ($duplicate) {
-                $targets[] = static::TARGET_QUOTE;
+                $targets[] = TransformationTargets::TARGET_QUOTE;
             }
 
             return $targets;
         }
 
-        throw new InvalidArgumentException("Unexpected sale type.");
+        throw new InvalidArgumentException('Unexpected sale type.');
     }
 
     /**
-     * Returns whether the target is validfor the sale.
-     *
-     * @param string        $target
-     * @param SaleInterface $sale
-     * @param bool          $duplicate
-     *
-     * @return bool
+     * Returns whether the target is valid for the sale.
      */
-    static public function isValidTargetForSale(string $target, SaleInterface $sale, bool $duplicate): bool
+    public static function isValidTargetForSale(string $target, SaleInterface $sale, bool $duplicate): bool
     {
-        return in_array($target, static::getTargetsForSale($sale, $duplicate), true);
+        return in_array($target, TransformationTargets::getTargetsForSale($sale, $duplicate), true);
     }
 
     /**
-     * Disabled constructor.
-     *
      * @codeCoverageIgnore
      */
     final private function __construct()

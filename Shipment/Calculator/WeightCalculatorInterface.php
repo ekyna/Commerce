@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Shipment\Model;
 
 /**
@@ -13,19 +16,11 @@ interface WeightCalculatorInterface
 {
     /**
      * Calculate the shipment total weight.
-     *
-     * @param Model\ShipmentInterface $shipment
-     *
-     * @return float
      */
-    public function calculateShipment(Model\ShipmentInterface $shipment): float;
+    public function calculateShipment(Model\ShipmentInterface $shipment): Decimal;
 
     /**
      * Calculate the shipment item total weight.
-     *
-     * @param Model\ShipmentItemInterface $item
-     *
-     * @return float
      */
-    public function calculateShipmentItem(Model\ShipmentItemInterface $item): float;
+    public function calculateShipmentItem(Model\ShipmentItemInterface $item): Decimal;
 }

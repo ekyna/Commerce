@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerContactRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class CustomerContactRepository
@@ -15,7 +17,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 class CustomerContactRepository extends ResourceRepository implements CustomerContactRepositoryInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findByCustomer(CustomerInterface $customer, CustomerAddressInterface $exclude = null): array
     {
@@ -33,9 +35,9 @@ class CustomerContactRepository extends ResourceRepository implements CustomerCo
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'c';
     }

@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Currency;
+
+use DateTimeInterface;
+use Decimal\Decimal;
 
 /**
  * Class AbstractExchangeRateProvider
@@ -9,26 +14,15 @@ namespace Ekyna\Component\Commerce\Common\Currency;
  */
 abstract class AbstractExchangeRateProvider implements ExchangeRateProviderInterface
 {
-    /**
-     * @var ExchangeRateProviderInterface
-     */
-    private $fallback;
+    private ?ExchangeRateProviderInterface $fallback;
 
 
-    /**
-     * Constructor.
-     *
-     * @param ExchangeRateProviderInterface|null $fallback
-     */
     public function __construct(ExchangeRateProviderInterface $fallback = null)
     {
         $this->fallback = $fallback;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function get(string $base, string $quote, \DateTime $date): ?float
+    public function get(string $base, string $quote, DateTimeInterface $date): ?Decimal
     {
         if (null !== $rate = $this->fetch($base, $quote, $date)) {
             return $rate;
@@ -47,36 +41,19 @@ abstract class AbstractExchangeRateProvider implements ExchangeRateProviderInter
 
     /**
      * Fetches the exchange rate.
-     *
-     * @param string    $base
-     * @param string    $quote
-     * @param \DateTime $date
-     *
-     * @return float|null
      */
-    abstract protected function fetch(string $base, string $quote, \DateTime $date): ?float;
+    abstract protected function fetch(string $base, string $quote, DateTimeInterface $date): ?Decimal;
 
     /**
      * Persists the exchange rate.
-     *
-     * @param string    $base
-     * @param string    $quote
-     * @param \DateTime $date
-     * @param float     $rate
      */
-    abstract protected function persist(string $base, string $quote, \DateTime $date, float $rate): void;
+    abstract protected function persist(string $base, string $quote, DateTimeInterface $date, Decimal $rate): void;
 
     /**
      * Builds the exchange rate cache key.
-     *
-     * @param string    $base
-     * @param string    $quote
-     * @param \DateTime $date
-     *
-     * @return string
      */
-    protected function buildKey(string $base, string $quote, \DateTime $date): string
+    protected function buildKey(string $base, string $quote, DateTimeInterface $date): string
     {
-        return sprintf("%s-%s-%s", $base, $quote, $date->format('YmdHi'));
+        return sprintf('ecr-%s-%s-%s', $base, $quote, $date->format('YmdHi'));
     }
 }

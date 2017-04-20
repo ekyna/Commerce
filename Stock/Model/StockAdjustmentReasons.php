@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -9,47 +11,40 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  * @package Ekyna\Component\Commerce\Stock\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockAdjustmentReasons
+final class StockAdjustmentReasons
 {
-    const REASON_FAULTY   = 'faulty';
-    const REASON_IMPROPER = 'improper';
-    const REASON_DEBIT    = 'debit';
-    const REASON_CREDIT   = 'credit';
-    const REASON_FOUND    = 'found';
+    public const REASON_FAULTY   = 'faulty';
+    public const REASON_IMPROPER = 'improper';
+    public const REASON_DEBIT    = 'debit';
+    public const REASON_CREDIT   = 'credit';
+    public const REASON_FOUND    = 'found';
 
 
     /**
      * Returns all the reasons.
-     *
-     * @return array
      */
-    static public function getReasons()
+    public static function getReasons(): array
     {
         return [
-            static::REASON_FAULTY,
-            static::REASON_IMPROPER,
-            static::REASON_FOUND,
-            static::REASON_CREDIT,
-            static::REASON_DEBIT,
+            self::REASON_FAULTY,
+            self::REASON_IMPROPER,
+            self::REASON_FOUND,
+            self::REASON_CREDIT,
+            self::REASON_DEBIT,
         ];
     }
 
     /**
      * Returns whether the given reason is valid or not.
-     *
-     * @param string $reason
-     * @param bool $throw
-     *
-     * @return bool
      */
-    static public function isValidReason($reason, $throw = true)
+    public static function isValidReason(string $reason, bool $throw = true): bool
     {
-        if (in_array($reason, static::getReasons(), true)) {
+        if (in_array($reason, self::getReasons(), true)) {
             return true;
         }
 
         if ($throw) {
-            throw new InvalidArgumentException("Invalid stock adjustment reason.");
+            throw new InvalidArgumentException('Invalid stock adjustment reason.');
         }
 
         return false;
@@ -57,29 +52,30 @@ class StockAdjustmentReasons
 
     /**
      * Returns all the debit reasons.
-     *
-     * @return array
      */
-    static public function getDebitReasons()
+    public static function getDebitReasons(): array
     {
         return [
-            static::REASON_FAULTY,
-            static::REASON_IMPROPER,
-            static::REASON_DEBIT,
+            self::REASON_FAULTY,
+            self::REASON_IMPROPER,
+            self::REASON_DEBIT,
         ];
     }
 
     /**
      * Returns whether the given reason is debit or not.
-     *
-     * @param string $reason
-     *
-     * @return bool
      */
-    static public function isDebitReason($reason)
+    public static function isDebitReason(string $reason): bool
     {
-        static::isValidReason($reason);
+        self::isValidReason($reason);
 
-        return in_array($reason, static::getDebitReasons(), true);
+        return in_array($reason, self::getDebitReasons(), true);
+    }
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct() {
+
     }
 }

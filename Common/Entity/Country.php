@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\StateInterface;
 
@@ -13,165 +16,104 @@ use Ekyna\Component\Commerce\Common\Model\StateInterface;
  */
 class Country implements CountryInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var string
-     */
-    protected $code;
-
-    /**
-     * @var boolean
-     */
-    protected $enabled;
-
-    /**
-     * @var boolean
-     */
-    protected $default;
-
-    /**
-     * @var ArrayCollection|StateInterface[]
-     */
-    protected $states;
+    protected ?int   $id      = null;
+    protected string $name;
+    protected string $code;
+    protected bool   $enabled = true;
+    protected bool   $default = false;
+    /** @var Collection|StateInterface[] */
+    protected Collection $states;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->states = new ArrayCollection();
-        $this->enabled = true;
-        $this->default = false;
     }
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->name ?: 'New country';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setName($name)
+    public function setName(string $name): CountryInterface
     {
         $this->name = $name;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCode()
+    public function getCode(): ?string
     {
         return $this->code;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCode($code)
+    public function setCode(string $code): CountryInterface
     {
         $this->code = $code;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return $this->enabled;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setEnabled($enabled)
+    public function setEnabled(bool $enabled): CountryInterface
     {
-        $this->enabled = (bool)$enabled;
+        $this->enabled = $enabled;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getStates()
+    public function getStates(): Collection
     {
         return $this->states;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasState(StateInterface $state)
+    public function hasState(StateInterface $state): bool
     {
         return $this->states->contains($state);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addState(StateInterface $state)
-    {
-        if (!$this->hasState($state)) {
-            $state->setCountry($this);
-            $this->states->add($state);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeState(StateInterface $state)
+    public function addState(StateInterface $state): CountryInterface
     {
         if ($this->hasState($state)) {
-            $state->setCountry(null);
-            $this->states->removeElement($state);
+            return $this;
         }
+
+        $state->setCountry($this);
+        $this->states->add($state);
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setStates(ArrayCollection $states)
+    public function removeState(StateInterface $state): CountryInterface
+    {
+        if (!$this->hasState($state)) {
+            return $this;
+        }
+
+        $state->setCountry(null);
+        $this->states->removeElement($state);
+
+        return $this;
+    }
+
+    public function setStates(Collection $states): CountryInterface
     {
         $this->states = $states;
 

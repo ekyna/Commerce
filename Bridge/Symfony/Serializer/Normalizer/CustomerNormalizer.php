@@ -1,67 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class CustomerNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerNormalizer extends AbstractResourceNormalizer
+class CustomerNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param CustomerInterface $customer
+     * @param CustomerInterface $object
      */
-    public function normalize($customer, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         if ($format === 'csv' && $this->contextHasGroup('TableExport', $context)) {
-            return (string)$customer;
+            return (string)$object;
         }
 
-        $data = parent::normalize($customer, $format, $context);
+        $data = parent::normalize($object, $format, $context);
 
-        $parent = $customer->getParent();
+        $parent = $object->getParent();
 
         if ($this->contextHasGroup(['Default', 'Customer', 'Search', 'Summary'], $context)) {
             $data = array_replace($data, [
-                'number'         => $customer->getNumber(),
-                'company'        => $customer->getCompany(),
-                'company_number' => $customer->getCompanyNumber(),
-                'email'          => $customer->getEmail(),
-                'first_name'     => $customer->getFirstName(),
-                'last_name'      => $customer->getLastName(),
+                'number'         => $object->getNumber(),
+                'company'        => $object->getCompany(),
+                'company_number' => $object->getCompanyNumber(),
+                'email'          => $object->getEmail(),
+                'first_name'     => $object->getFirstName(),
+                'last_name'      => $object->getLastName(),
                 'parent'         => $parent ? $parent->getId() : null,
-                'currency'       => $customer->getCurrency()->getCode(),
-                'locale'         => $customer->getLocale(),
+                'currency'       => $object->getCurrency()->getCode(),
+                'locale'         => $object->getLocale(),
             ]);
         }
 
         if ($this->contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
             $data = array_replace($data, [
-                'phone'  => $this->normalizeObject($customer->getPhone(), $format, $context),
-                'mobile' => $this->normalizeObject($customer->getMobile(), $format, $context),
+                'phone'  => $this->normalizeObject($object->getPhone(), $format, $context),
+                'mobile' => $this->normalizeObject($object->getMobile(), $format, $context),
             ]);
         }
 
         if ($this->contextHasGroup('Summary', $context)) {
-            $payment = $parent ? $parent : $customer;
+            $payment = $parent ?: $object;
 
             $data = array_replace($data, [
-                'group'                  => (string)$customer->getCustomerGroup(),
+                'group'                  => (string)$object->getCustomerGroup(),
                 'parent'                 => (string)$parent,
                 'vat_number'             => $payment->getVatNumber(),
                 'vat_valid'              => $payment->isVatValid(),
                 'payment_term'           => (string)$payment->getPaymentTerm(),
-                'outstanding_limit'      => $payment->getOutstandingLimit(),
-                'outstanding_balance'    => $payment->getOutstandingBalance(),
+                'outstanding_limit'      => $payment->getOutstandingLimit()->toFixed(5),
+                'outstanding_balance'    => $payment->getOutstandingBalance()->toFixed(5),
                 'outstanding_overflow'   => $payment->isOutstandingOverflow(),
-                'credit_balance'         => $payment->getCreditBalance(),
+                'credit_balance'         => $payment->getCreditBalance()->toFixed(5),
                 'default_payment_method' => (string)$payment->getDefaultPaymentMethod(),
                 'payment_methods'        => implode(', ', array_map(function (PaymentMethodInterface $method) {
                     return (string)$method;
@@ -71,31 +73,5 @@ class CustomerNormalizer extends AbstractResourceNormalizer
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof CustomerInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, CustomerInterface::class);
     }
 }

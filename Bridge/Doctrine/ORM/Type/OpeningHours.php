@@ -1,21 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Type;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\JsonType;
 use Ekyna\Component\Commerce\Shipment\Model\OpeningHour;
+
+use function is_array;
 
 /**
  * Class OpeningHours
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Type
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OpeningHours extends Type
+class OpeningHours extends JsonType
 {
-    const NAME = 'opening_hours';
-
+    public const NAME = 'opening_hours';
 
     /**
      * @inheritDoc
@@ -48,13 +51,7 @@ class OpeningHours extends Type
             }
         }
 
-        $encoded = json_encode($data);
-
-        if (JSON_ERROR_NONE !== json_last_error()) {
-            throw ConversionException::conversionFailedSerialization($data, 'json', json_last_error_msg());
-        }
-
-        return $encoded;
+        return parent::convertToDatabaseValue($data, $platform);
     }
 
     /**
@@ -62,18 +59,10 @@ class OpeningHours extends Type
      */
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
-        if ($value === null || $value === '') {
+        $val = parent::convertToPHPValue($value, $platform);
+
+        if (!is_array($val)) {
             return [];
-        }
-
-        if (is_resource($value)) {
-            $value = stream_get_contents($value);
-        }
-
-        $val = json_decode($value, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw ConversionException::conversionFailed($value, $this->getName());
         }
 
         $data = [];
@@ -92,18 +81,12 @@ class OpeningHours extends Type
         return $data;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform)
+    public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
-        return $platform->getClobTypeDeclarationSQL($fieldDeclaration);
+        return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getName()
+    public function getName(): string
     {
         return self::NAME;
     }

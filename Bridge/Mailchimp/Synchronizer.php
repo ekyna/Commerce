@@ -54,7 +54,7 @@ class Synchronizer extends AbstractSynchronizer
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function configureWebhooks(): void
     {

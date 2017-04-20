@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
@@ -11,29 +13,16 @@ use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
  */
 trait WeightCalculatorAwareTrait
 {
-    /**
-     * @var WeightCalculatorInterface
-     */
-    protected $weightCalculator;
+    protected WeightCalculatorInterface $weightCalculator;
 
 
-    /**
-     * Returns the weight calculator.
-     *
-     * @return WeightCalculatorInterface
-     */
-    public function getWeightCalculator()
-    {
-        return $this->weightCalculator;
-    }
-
-    /**
-     * Sets the weight calculator.
-     *
-     * @param WeightCalculatorInterface $weightCalculator
-     */
-    public function setWeightCalculator(WeightCalculatorInterface $weightCalculator)
+    public function setWeightCalculator(WeightCalculatorInterface $weightCalculator): void
     {
         $this->weightCalculator = $weightCalculator;
+    }
+
+    public function getWeightCalculator(): WeightCalculatorInterface
+    {
+        return $this->weightCalculator;
     }
 }

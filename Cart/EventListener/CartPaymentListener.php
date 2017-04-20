@@ -17,15 +17,15 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class CartPaymentListener extends AbstractPaymentListener
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function scheduleSaleContentChangeEvent(SaleInterface $sale)
     {
-        $this->persistenceHelper->scheduleEvent(CartEvents::CONTENT_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, CartEvents::CONTENT_CHANGE);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getPaymentFromEvent(ResourceEventInterface $event)
     {
@@ -39,7 +39,7 @@ class CartPaymentListener extends AbstractPaymentListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSalePropertyPath()
     {

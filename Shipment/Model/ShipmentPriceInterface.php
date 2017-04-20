@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -11,67 +14,25 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface ShipmentPriceInterface extends ResourceInterface
 {
-    /**
-     * Returns the zone.
-     *
-     * @return ShipmentZoneInterface
-     */
     public function getZone(): ?ShipmentZoneInterface;
 
-    /**
-     * Sets the zone.
-     *
-     * @param ShipmentZoneInterface $zone
-     *
-     * @return $this|ShipmentPriceInterface
-     */
-    public function setZone(ShipmentZoneInterface $zone = null): ShipmentPriceInterface;
+    public function setZone(?ShipmentZoneInterface $zone): ShipmentPriceInterface;
 
-    /**
-     * Returns the method.
-     *
-     * @return ShipmentMethodInterface
-     */
     public function getMethod(): ?ShipmentMethodInterface;
 
-    /**
-     * Sets the method.
-     *
-     * @param ShipmentMethodInterface $method
-     *
-     * @return $this|ShipmentPriceInterface
-     */
-    public function setMethod(ShipmentMethodInterface $method = null): ShipmentPriceInterface;
+    public function setMethod(?ShipmentMethodInterface $method): ShipmentPriceInterface;
 
     /**
      * Returns the weight (kilograms).
-     *
-     * @return float
      */
-    public function getWeight(): float;
+    public function getWeight(): Decimal;
 
     /**
      * Sets the weight (kilograms).
-     *
-     * @param float $weight
-     *
-     * @return $this|ShipmentPriceInterface
      */
-    public function setWeight(float $weight): ShipmentPriceInterface;
+    public function setWeight(Decimal $weight): ShipmentPriceInterface;
 
-    /**
-     * Returns the net price.
-     *
-     * @return float
-     */
-    public function getNetPrice(): float;
+    public function getNetPrice(): Decimal;
 
-    /**
-     * Sets the net price.
-     *
-     * @param float $price
-     *
-     * @return $this|ShipmentPriceInterface
-     */
-    public function setNetPrice(float $price): ShipmentPriceInterface;
+    public function setNetPrice(Decimal $price): ShipmentPriceInterface;
 }

@@ -1,63 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class SupplierNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierNormalizer extends AbstractResourceNormalizer
+class SupplierNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param SupplierInterface $supplier
+     * @param SupplierInterface $object
      */
-    public function normalize($supplier, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
-        $data = parent::normalize($supplier, $format, $context);
+        $data = parent::normalize($object, $format, $context);
 
         if ($this->contextHasGroup('Search', $context)) {
             $data = array_replace($data, [
-                'name'        => $supplier->getName(),
-                'description' => $supplier->getDescription(),
+                'name'        => $object->getName(),
+                'description' => $object->getDescription(),
             ]);
         } elseif ($this->contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
-                'description' => $supplier->getDescription(),
+                'description' => $object->getDescription(),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof SupplierInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, SupplierInterface::class);
     }
 }

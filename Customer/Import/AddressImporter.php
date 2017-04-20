@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Import;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\EventListener\CustomerAddressListener;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
-use Ekyna\Component\Commerce\Customer\Repository\CustomerAddressRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Resource\Factory\ResourceFactoryInterface;
 use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -21,75 +24,28 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class AddressImporter
 {
-    /**
-     * @var CustomerAddressRepositoryInterface
-     */
-    private $addressRepository; // TODO use resource factory
+    private ResourceFactoryInterface   $addressFactory;
+    private CountryRepositoryInterface $countryRepository;
+    private PhoneNumberUtil            $phoneNumberUtil;
+    private ValidatorInterface         $validator;
+    private EntityManagerInterface     $manager;
+    private CustomerAddressListener    $addressListener;
+    private PropertyAccessor           $accessor;
+    private AddressImport              $config;
+    /** @var array<string> */
+    private array $errors;
+    /** @var array<CustomerAddressInterface> */
+    private array $addresses;
 
-    /**
-     * @var CountryRepositoryInterface
-     */
-    private $countryRepository;
-
-    /**
-     * @var PhoneNumberUtil
-     */
-    private $phoneNumberUtil;
-
-    /**
-     * @var ValidatorInterface
-     */
-    private $validator;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $manager;
-
-    /**
-     * @var CustomerAddressListener
-     */
-    private $addressListener;
-
-    /**
-     * @var \Symfony\Component\PropertyAccess\PropertyAccessor
-     */
-    private $accessor;
-
-    /**
-     * @var AddressImport
-     */
-    private $config;
-
-    /**
-     * @var string[]
-     */
-    private $errors;
-
-    /**
-     * @var CustomerAddressInterface[]
-     */
-    private $addresses;
-
-    /**
-     * Constructor.
-     *
-     * @param CustomerAddressRepositoryInterface $addressRepository
-     * @param CountryRepositoryInterface         $countryRepository
-     * @param PhoneNumberUtil                    $phoneNumberUtil
-     * @param ValidatorInterface                 $validator
-     * @param EntityManagerInterface             $manager
-     * @param CustomerAddressListener            $addressListener
-     */
     public function __construct(
-        CustomerAddressRepositoryInterface $addressRepository,
+        ResourceFactoryInterface   $addressFactory,
         CountryRepositoryInterface $countryRepository,
-        PhoneNumberUtil $phoneNumberUtil,
-        ValidatorInterface $validator,
-        EntityManagerInterface $manager,
-        CustomerAddressListener $addressListener
+        PhoneNumberUtil            $phoneNumberUtil,
+        ValidatorInterface         $validator,
+        EntityManagerInterface     $manager,
+        CustomerAddressListener    $addressListener
     ) {
-        $this->addressRepository = $addressRepository;
+        $this->addressFactory = $addressFactory;
         $this->countryRepository = $countryRepository;
         $this->phoneNumberUtil = $phoneNumberUtil;
         $this->validator = $validator;
@@ -202,7 +158,7 @@ class AddressImporter
     private function createAddress(AddressImport $config, array $data, int $line): void
     {
         /** @var CustomerAddressInterface $address */
-        $address = $this->addressRepository->createNew();
+        $address = $this->addressFactory->create();
 
         $address->setCustomer($config->getCustomer());
 

@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
+
+use Decimal\Decimal;
 
 /**
  * Interface ShippableInterface
@@ -11,113 +15,68 @@ interface ShippableInterface
 {
     /**
      * Returns the weight total (kilograms).
-     *
-     * @return float
      */
-    public function getWeightTotal(): float;
+    public function getWeightTotal(): Decimal;
 
     /**
      * Sets the weight total (kilograms).
      *
-     * @param float $total
-     *
      * @return $this|ShippableInterface
      */
-    public function setWeightTotal(float $total): ShippableInterface;
+    public function setWeightTotal(Decimal $total): ShippableInterface;
 
     /**
-     * Returns the shipment method.
-     *
-     * @return ShipmentMethodInterface
+     * Sets the preferred shipment method.
      */
     public function getShipmentMethod(): ?ShipmentMethodInterface;
 
     /**
-     * Sets the shipment method.
-     *
-     * @param ShipmentMethodInterface $method
+     * Returns the preferred shipment method.
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentMethod(ShipmentMethodInterface $method = null): ShippableInterface;
+    public function setShipmentMethod(?ShipmentMethodInterface $method): ShippableInterface;
+
+    public function getShipmentAmount(): Decimal;
 
     /**
-     * Returns the shipment amount.
-     *
-     * @return float
-     */
-    public function getShipmentAmount(): ?float;
-
-    /**
-     * Sets the shipment amount.
-     *
-     * @param float $amount
-     *
      * @return $this|ShippableInterface
      */
-    public function setShipmentAmount(float $amount = null): ShippableInterface;
+    public function setShipmentAmount(Decimal $amount): ShippableInterface;
 
     /**
      * Returns the shipment weight.
-     *
-     * @return float
      */
-    public function getShipmentWeight(): ?float;
+    public function getShipmentWeight(): ?Decimal;
 
     /**
-     * Sets the shipment weight.
-     *
-     * @param float $weight
-     *
      * @return $this|ShippableInterface
      */
-    public function setShipmentWeight(float $weight = null): ShippableInterface;
+    public function setShipmentWeight(?Decimal $weight): ShippableInterface;
 
-    /**
-     * Returns the shipment label.
-     *
-     * @return string
-     */
     public function getShipmentLabel(): ?string;
 
     /**
-     * Sets the shipment label.
-     *
-     * @param string $label
-     *
      * @return $this|ShippableInterface
      */
-    public function setShipmentLabel(string $label = null): ShippableInterface;
+    public function setShipmentLabel(?string $label): ShippableInterface;
 
     /**
      * Returns whether auto shipping is enabled.
-     *
-     * @return bool
      */
     public function isAutoShipping(): bool;
 
     /**
      * Sets whether auto shipping is enabled.
      *
-     * @param bool $auto
-     *
      * @return $this|ShippableInterface
      */
     public function setAutoShipping(bool $auto): ShippableInterface;
 
-    /**
-     * Returns the relay point.
-     *
-     * @return RelayPointInterface
-     */
     public function getRelayPoint(): ?RelayPointInterface;
 
     /**
-     * Sets the relay point.
-     *
-     * @param RelayPointInterface $relayPoint
-     *
      * @return $this|ShippableInterface
      */
-    public function setRelayPoint(RelayPointInterface $relayPoint = null): ShippableInterface;
+    public function setRelayPoint(?RelayPointInterface $relayPoint): ShippableInterface;
 }

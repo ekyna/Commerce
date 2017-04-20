@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
@@ -16,115 +20,41 @@ interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface,
 {
     /**
      * Sets whether the order contains sample items.
-     *
-     * @param bool $sample
-     *
-     * @return $this|OrderInterface
      */
-    public function setSample($sample);
+    public function setSample(bool $sample): OrderInterface;
 
     /**
      * Sets whether the sample order is released.
-     *
-     * @param bool $released
-     *
-     * @return $this|OrderInterface
      */
-    public function setReleased($released);
+    public function setReleased(bool $released): OrderInterface;
 
     /**
      * Returns whether the order is the customer's first.
-     *
-     * @return bool
      */
-    public function isFirst();
+    public function isFirst(): bool;
 
     /**
      * Sets whether the order is the customer's first.
-     *
-     * @param bool $first
-     *
-     * @return $this|OrderInterface
      */
-    public function setFirst($first);
+    public function setFirst(bool $first): OrderInterface;
 
-    /**
-     * Returns the origin customer.
-     *
-     * @return CustomerInterface
-     */
-    public function getOriginCustomer();
+    public function getOriginCustomer(): ?CustomerInterface;
 
-    /**
-     * Sets the origin customer.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return $this|OrderInterface
-     */
-    public function setOriginCustomer(CustomerInterface $customer = null);
+    public function setOriginCustomer(?CustomerInterface $customer): OrderInterface;
 
-    /**
-     * Returns the "completed at" datetime.
-     *
-     * @return \DateTime
-     */
-    public function getCompletedAt();
+    public function getCompletedAt(): ?DateTimeInterface;
 
-    /**
-     * Sets the "completed at" datetime.
-     *
-     * @param \DateTime $completedAt
-     *
-     * @return $this|OrderInterface
-     */
-    public function setCompletedAt(\DateTime $completedAt = null);
+    public function setCompletedAt(?DateTimeInterface $completedAt): OrderInterface;
 
-    /**
-     * Returns the revenue total.
-     *
-     * @return float
-     */
-    public function getRevenueTotal(): ?float;
+    public function getRevenueTotal(): ?Decimal;
 
-    /**
-     * Sets the revenue total.
-     *
-     * @param float $amount
-     *
-     * @return $this|OrderInterface
-     */
-    public function setRevenueTotal(float $amount = null): OrderInterface;
+    public function setRevenueTotal(?Decimal $amount): OrderInterface;
 
-    /**
-     * Returns the margin total.
-     *
-     * @return float
-     */
-    public function getMarginTotal(): ?float;
+    public function getMarginTotal(): ?Decimal;
 
-    /**
-     * Sets the margin total.
-     *
-     * @param float $amount
-     *
-     * @return $this|OrderInterface
-     */
-    public function setMarginTotal(float $amount = null): OrderInterface;
+    public function setMarginTotal(?Decimal $amount): OrderInterface;
 
-    /**
-     * Returns the items count.
-     *
-     * @return int
-     */
     public function getItemsCount(): int;
 
-    /**
-     * Sets the items count.
-     *
-     * @param int $count
-     *
-     * @return $this|OrderInterface
-     */
     public function setItemsCount(int $count): OrderInterface;
 }

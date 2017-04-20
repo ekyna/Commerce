@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Symfony\Component\Config\Definition;
+use Symfony\Component\Config\Definition\NodeInterface;
 
 /**
  * Class AbstractPlatform
@@ -14,77 +17,51 @@ use Symfony\Component\Config\Definition;
  */
 abstract class AbstractPlatform implements PlatformInterface
 {
-    /**
-     * @var RegistryInterface
-     */
-    protected $registry;
+    protected GatewayRegistryInterface $registry;
 
-    /**
-     * @var Definition\ArrayNode
-     */
-    private $configDefinition;
+    private ?Definition\ArrayNode $configDefinition = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function supports(string $action)
+    public function supports(string $action): bool
     {
         return in_array($action, $this->getActions(), true);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function export(array $shipments)
+    public function export(array $shipments): string
     {
         $this->throwUnsupportedOperation('export');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function import($path)
+    public function import(string $path): bool
     {
         $this->throwUnsupportedOperation('import');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setRegistry(RegistryInterface $registry)
+    public function setRegistry(GatewayRegistryInterface $registry): void
     {
         $this->registry = $registry;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getConfigDefinition()
+    public function getConfigDefinition(): NodeInterface
     {
         if (null !== $this->configDefinition) {
             return $this->configDefinition;
         }
 
-        $treeBuilder = new Definition\Builder\TreeBuilder();
+        $treeBuilder = new Definition\Builder\TreeBuilder('config');
 
-        $this->createConfigDefinition($treeBuilder->root('config'));
+        $this->createConfigDefinition($treeBuilder->getRootNode());
 
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         return $this->configDefinition = $treeBuilder->buildTree();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getConfigDefaults()
+    public function getConfigDefaults(): array
     {
         return [];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function processGatewayConfig(array $config)
+    public function processGatewayConfig(array $config): array
     {
         $processor = new Definition\Processor();
 
@@ -93,10 +70,8 @@ abstract class AbstractPlatform implements PlatformInterface
 
     /**
      * Creates the gateway config definition.
-     *
-     * @param Definition\Builder\NodeDefinition $rootNode
      */
-    protected function createConfigDefinition(Definition\Builder\NodeDefinition $rootNode)
+    protected function createConfigDefinition(Definition\Builder\ArrayNodeDefinition $rootNode): void
     {
 
     }
@@ -108,12 +83,13 @@ abstract class AbstractPlatform implements PlatformInterface
      *
      * @throws InvalidArgumentException
      */
-    protected function assertShipmentPlatform(ShipmentInterface $shipment)
+    protected function assertShipmentPlatform(ShipmentInterface $shipment): void
     {
         if ($shipment->getPlatformName() !== $this->getName()) {
             throw new InvalidArgumentException(sprintf(
-                "Platform %s does not support shipment %s.",
-                $this->getName(), $shipment->getNumber()
+                'Platform %s does not support shipment %s.',
+                $this->getName(),
+                $shipment->getNumber()
             ));
         }
     }
@@ -125,7 +101,7 @@ abstract class AbstractPlatform implements PlatformInterface
      *
      * @throws RuntimeException
      */
-    protected function throwUnsupportedOperation($operation)
+    protected function throwUnsupportedOperation(string $operation): void
     {
         throw new RuntimeException(
             "The shipment platform '{$this->getName()}' does not support '$operation' operation."

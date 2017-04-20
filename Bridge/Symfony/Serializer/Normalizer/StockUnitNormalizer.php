@@ -1,26 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class StockUnitNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitNormalizer extends AbstractResourceNormalizer
+class StockUnitNormalizer extends ResourceNormalizer
 {
     use FormatterAwareTrait;
 
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
+    protected CurrencyConverterInterface $currencyConverter;
 
 
     /**
@@ -33,23 +32,23 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
         FormatterFactory $formatterFactory,
         CurrencyConverterInterface $currencyConverter
     ) {
-        $this->formatterFactory  = $formatterFactory;
+        $this->formatterFactory = $formatterFactory;
         $this->currencyConverter = $currencyConverter;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param StockUnitInterface $unit
+     * @param StockUnitInterface $object
      */
-    public function normalize($unit, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         $data = [];
 
         if ($this->contextHasGroup(['StockView', 'StockAssignment'], $context)) {
             $formatter = $this->getFormatter();
 
-            if (null !== $eda = $unit->getEstimatedDateOfArrival()) {
+            if (null !== $eda = $object->getEstimatedDateOfArrival()) {
                 $eda = $formatter->date($eda);
             }
 
@@ -57,29 +56,29 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
             $assignments = [];
 
             if ($this->contextHasGroup('StockView', $context)) {
-                foreach ($unit->getStockAdjustments() as $adjustment) {
+                foreach ($object->getStockAdjustments() as $adjustment) {
                     $adjustments[] = $this->normalizeObject($adjustment, $format, $context);
                 }
-                foreach ($unit->getStockAssignments() as $assignment) {
+                foreach ($object->getStockAssignments() as $assignment) {
                     $assignments[] = $this->normalizeObject($assignment, $format, $context);
                 }
             }
 
-            $default  = $this->currencyConverter->getDefaultCurrency();
+            $default = $this->currencyConverter->getDefaultCurrency();
             $price = sprintf(
                 '%s&nbsp;<em>(%s)</em>',
-                $formatter->currency($unit->getNetPrice() + $unit->getShippingPrice(), $default),
-                $formatter->currency($unit->getNetPrice(), $default)
+                $formatter->currency($object->getNetPrice() + $object->getShippingPrice(), $default),
+                $formatter->currency($object->getNetPrice(), $default)
             );
 
             $data = array_replace($data, [
-                'geocodes'    => implode(',', $unit->getGeocodes()),
-                'ordered'     => $formatter->number($unit->getOrderedQuantity()),
-                'received'    => $formatter->number($unit->getReceivedQuantity()),
-                'adjusted'    => $formatter->number($unit->getAdjustedQuantity()),
-                'sold'        => $formatter->number($unit->getSoldQuantity()),
-                'shipped'     => $formatter->number($unit->getShippedQuantity()),
-                'locked'      => $formatter->number($unit->getLockedQuantity()),
+                'geocodes'    => implode(',', $object->getGeocodes()),
+                'ordered'     => $formatter->number($object->getOrderedQuantity()),
+                'received'    => $formatter->number($object->getReceivedQuantity()),
+                'adjusted'    => $formatter->number($object->getAdjustedQuantity()),
+                'sold'        => $formatter->number($object->getSoldQuantity()),
+                'shipped'     => $formatter->number($object->getShippedQuantity()),
+                'locked'      => $formatter->number($object->getLockedQuantity()),
                 'eda'         => $eda,
                 'net_price'   => $price,
                 'adjustments' => $adjustments,
@@ -88,31 +87,5 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof StockUnitInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, StockUnitInterface::class);
     }
 }

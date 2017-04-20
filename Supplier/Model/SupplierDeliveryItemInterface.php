@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -11,67 +14,19 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface SupplierDeliveryItemInterface extends ResourceInterface
 {
-    /**
-     * Returns the supplier delivery.
-     *
-     * @return SupplierDeliveryInterface
-     */
-    public function getDelivery();
+    public function getDelivery(): ?SupplierDeliveryInterface;
 
-    /**
-     * Sets the supplier delivery.
-     *
-     * @param SupplierDeliveryInterface $delivery
-     *
-     * @return $this|SupplierDeliveryItemInterface
-     */
-    public function setDelivery(SupplierDeliveryInterface $delivery = null);
+    public function setDelivery(?SupplierDeliveryInterface $delivery): SupplierDeliveryItemInterface;
 
-    /**
-     * Returns the supplier order item.
-     *
-     * @return SupplierOrderItemInterface
-     */
-    public function getOrderItem();
+    public function getOrderItem(): ?SupplierOrderItemInterface;
 
-    /**
-     * Sets the supplier order item.
-     *
-     * @param SupplierOrderItemInterface $item
-     *
-     * @return $this|SupplierDeliveryItemInterface
-     */
-    public function setOrderItem(SupplierOrderItemInterface $item = null);
+    public function setOrderItem(?SupplierOrderItemInterface $item): SupplierDeliveryItemInterface;
 
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity();
+    public function getQuantity(): Decimal;
 
-    /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|SupplierDeliveryItemInterface
-     */
-    public function setQuantity($quantity);
+    public function setQuantity(Decimal $quantity): SupplierDeliveryItemInterface;
 
-    /**
-     * Returns the geocode.
-     *
-     * @return string
-     */
-    public function getGeocode();
+    public function getGeocode(): ?string;
 
-    /**
-     * Sets the geocode.
-     *
-     * @param string $geocode
-     *
-     * @return $this|SupplierDeliveryItemInterface
-     */
-    public function setGeocode($geocode);
+    public function setGeocode(?string $geocode): SupplierDeliveryItemInterface;
 }

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\MethodInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 
@@ -13,92 +15,43 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
  */
 interface ShipmentMethodInterface extends MethodInterface, TaxableInterface
 {
-    /**
-     * Returns the platform name.
-     *
-     * @return string
-     */
-    public function getPlatformName();
+    public function getPlatformName(): ?string;
 
     /**
-     * Sets the platform name.
-     *
-     * @param string $name
-     *
      * @return $this|ShipmentMethodInterface
      */
-    public function setPlatformName($name);
+    public function setPlatformName(string $name): ShipmentMethodInterface;
+
+    public function getGatewayName(): ?string;
 
     /**
-     * Returns the gateway name.
-     *
-     * @return string
-     */
-    public function getGatewayName();
-
-    /**
-     * Sets the gateway name.
-     *
-     * @param string $name
-     *
      * @return $this|ShipmentMethodInterface
      */
-    public function setGatewayName($name);
+    public function setGatewayName(string $name): ShipmentMethodInterface;
+
+    public function getGatewayConfig(): array;
 
     /**
-     * Returns the gateway array.
-     *
-     * @return array
-     */
-    public function getGatewayConfig();
-
-    /**
-     * Sets the gateway config.
-     *
-     * @param array $config
-     *
      * @return $this|ShipmentMethodInterface
      */
-    public function setGatewayConfig(array $config = null);
+    public function setGatewayConfig(array $config): ShipmentMethodInterface;
 
     /**
-     * Returns the prices.
-     *
-     * @return ArrayCollection|ShipmentPriceInterface[]
+     * @return Collection|ShipmentPriceInterface[]
      */
-    public function getPrices();
+    public function getPrices(): Collection;
+
+    public function hasPrices(): bool;
+
+    public function hasPrice(ShipmentPriceInterface $price): bool;
 
     /**
-     * Returns whether or not the zone has at least one price.
-     *
-     * @return bool
-     */
-    public function hasPrices();
-
-    /**
-     * Returns whether or not the zone has the given price.
-     *
-     * @param ShipmentPriceInterface $price
-     *
-     * @return bool
-     */
-    public function hasPrice(ShipmentPriceInterface $price);
-
-    /**
-     * Adds the price.
-     *
-     * @param ShipmentPriceInterface $price
-     *
      * @return $this|ShipmentMethodInterface
      */
-    public function addPrice(ShipmentPriceInterface $price);
+    public function addPrice(ShipmentPriceInterface $price): ShipmentMethodInterface;
 
     /**
-     * Removes the price.
-     *
-     * @param ShipmentPriceInterface $price
-     *
      * @return $this|ShipmentMethodInterface
      */
-    public function removePrice(ShipmentPriceInterface $price);
+    public function removePrice(ShipmentPriceInterface $price): ShipmentMethodInterface;
 }

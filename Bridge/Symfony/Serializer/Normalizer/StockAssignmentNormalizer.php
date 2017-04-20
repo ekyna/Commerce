@@ -1,28 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class StockAssignmentNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockAssignmentNormalizer extends AbstractResourceNormalizer
+class StockAssignmentNormalizer extends ResourceNormalizer
 {
     use FormatterAwareTrait;
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param StockAssignmentInterface $assignment
+     * @param StockAssignmentInterface $object
      */
-    public function normalize($assignment, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         $data = [];
 
@@ -30,51 +32,25 @@ class StockAssignmentNormalizer extends AbstractResourceNormalizer
             $formatter = $this->getFormatter();
 
             $data = array_replace($data, [
-                'sold'    => $formatter->number($assignment->getSoldQuantity()),
-                'shipped' => $formatter->number($assignment->getShippedQuantity()),
-                'locked'  => $formatter->number($assignment->getLockedQuantity()),
-                'ready'   => $assignment->isFullyShipped() || $assignment->isFullyShippable(),
+                'sold'    => $formatter->number($object->getSoldQuantity()),
+                'shipped' => $formatter->number($object->getShippedQuantity()),
+                'locked'  => $formatter->number($object->getLockedQuantity()),
+                'ready'   => $object->isFullyShipped() || $object->isFullyShippable(),
             ]);
 
             if ($this->contextHasGroup('StockView', $context)) {
-                $sale                = $assignment->getSaleItem()->getSale();
-                $data['order_id']    = $sale->getId();
+                $sale = $object->getSaleItem()->getSale();
+                $data['order_id'] = $sale->getId();
                 $data['preparation'] =
                     $sale instanceof ShipmentSubjectInterface
                     && $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION;
             }
 
             if ($this->contextHasGroup('StockAssignment', $context)) {
-                $data['unit'] = $this->normalizeObject($assignment->getStockUnit(), $format, $context);
+                $data['unit'] = $this->normalizeObject($object->getStockUnit(), $format, $context);
             }
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof StockAssignmentInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, StockAssignmentInterface::class);
     }
 }

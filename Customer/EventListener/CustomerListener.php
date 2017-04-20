@@ -78,11 +78,11 @@ class CustomerListener
 
         $changed = $this->generateNumber($customer);
 
-        $changed |= $this->generateKey($customer);
+        $changed = $this->generateKey($customer) || $changed;
 
-        $changed |= $this->updateFromParent($customer);
+        $changed = $this->updateFromParent($customer) || $changed;
 
-        $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
+        $changed = $this->pricingUpdater->updateVatNumberSubject($customer) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer, false);
@@ -100,14 +100,14 @@ class CustomerListener
 
         $changed = $this->generateNumber($customer);
 
-        $changed |= $this->generateKey($customer);
+        $changed = $this->generateKey($customer) || $changed;
 
         if ($this->persistenceHelper->isChanged($customer, 'parent')) {
-            $changed |= $this->updateFromParent($customer);
+            $changed = $this->updateFromParent($customer) || $changed;
         }
 
         if ($this->persistenceHelper->isChanged($customer, 'vatNumber')) {
-            $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
+            $changed = $this->pricingUpdater->updateVatNumberSubject($customer) || $changed;
         }
 
         if ($changed) {
@@ -265,7 +265,7 @@ class CustomerListener
         }
 
         foreach ($customer->getChildren() as $child) {
-            $this->persistenceHelper->scheduleEvent(CustomerEvents::PARENT_CHANGE, $child);
+            $this->persistenceHelper->scheduleEvent($child, CustomerEvents::PARENT_CHANGE);
         }
     }
 

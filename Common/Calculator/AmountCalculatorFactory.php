@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
@@ -13,23 +15,10 @@ use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
  */
 class AmountCalculatorFactory
 {
-    /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
-
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    private $invoiceCalculator;
+    private CurrencyConverterInterface $currencyConverter;
+    private InvoiceSubjectCalculatorInterface $invoiceCalculator;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CurrencyConverterInterface        $currencyConverter
-     * @param InvoiceSubjectCalculatorInterface $invoiceCalculator
-     */
     public function __construct(
         CurrencyConverterInterface $currencyConverter,
         InvoiceSubjectCalculatorInterface $invoiceCalculator
@@ -44,15 +33,13 @@ class AmountCalculatorFactory
      * @param string|null     $currency The currency
      * @param bool            $revenue  Whether to use revenue mode
      * @param StatFilter|null $filter   The item filter
-     *
-     * @return AmountCalculatorInterface
      */
     public function create(
         string $currency = null,
         bool $revenue = false,
         StatFilter $filter = null
     ): AmountCalculatorInterface {
-        $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();
+        $currency = $currency ?: $this->currencyConverter->getDefaultCurrency();
 
         $calculator = new AmountCalculator($currency, $revenue, $filter);
 

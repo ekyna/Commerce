@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway\Noop;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\AbstractGateway;
@@ -11,10 +13,7 @@ use Ekyna\Component\Commerce\Shipment\Gateway\AbstractGateway;
  */
 class NoopGateway extends AbstractGateway
 {
-    /**
-     * @inheritDoc
-     */
-    public function getCapabilities()
+    public function getCapabilities(): int
     {
         return static::CAPABILITY_SHIPMENT | static::CAPABILITY_RETURN;
     }

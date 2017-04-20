@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Acme\Product\Entity;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -14,45 +16,30 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
  */
 class StockUnit extends AbstractStockUnit
 {
-    /**
-     * @var Product
-     */
-    protected $product;
+    protected ?Product $product = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function setProduct(Product $product): StockUnitInterface
+    public function setProduct(?Product $product): StockUnitInterface
     {
         $this->product = $product;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getProduct(): ?Product
     {
         return $this->product;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSubject(StockSubjectInterface $subject): StockUnitInterface
+    public function setSubject(?StockSubjectInterface $subject): StockUnitInterface
     {
-        if (!$subject instanceof Product) {
-            throw new InvalidArgumentException("Expected instance of Product.");
+        if ($subject && !$subject instanceof Product) {
+            throw new UnexpectedTypeException($subject, Product::class);
         }
 
         return $this->setProduct($subject);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getSubject(): ?StockSubjectInterface
     {
         return $this->getProduct();

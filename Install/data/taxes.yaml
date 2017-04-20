@@ -1,16 +1,16 @@
 fr_normal:
     name: TVA 20%
-    rate: 20
+    rate: '20'
     country: FR
 fr_intermediate:
     name: TVA 10%
-    rate: 10
+    rate: '10'
     country: FR
 fr_reduced:
     name: TVA 5,5%
-    rate: 5.5
+    rate: '5.5'
     country: FR
 fr_super_reduced:
     name: TVA 2,1%
-    rate: 2.1
+    rate: '2.1'
     country: FR

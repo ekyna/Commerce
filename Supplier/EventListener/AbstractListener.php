@@ -103,6 +103,6 @@ abstract class AbstractListener
      */
     protected function scheduleSupplierOrderContentChangeEvent(Model\SupplierOrderInterface $order)
     {
-        $this->persistenceHelper->scheduleEvent(SupplierOrderEvents::CONTENT_CHANGE, $order);
+        $this->persistenceHelper->scheduleEvent($order, SupplierOrderEvents::CONTENT_CHANGE);
     }
 }

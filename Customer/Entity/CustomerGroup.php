@@ -81,9 +81,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * Returns the id.
-     *
-     * @return int
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -91,7 +89,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getName(): ?string
     {
@@ -99,7 +97,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setName(string $name): CustomerGroupInterface
     {
@@ -109,7 +107,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isDefault(): bool
     {
@@ -117,7 +115,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDefault(bool $default): CustomerGroupInterface
     {
@@ -127,7 +125,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isBusiness(): bool
     {
@@ -135,7 +133,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setBusiness(bool $business): CustomerGroupInterface
     {
@@ -145,7 +143,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isRegistration(): bool
     {
@@ -153,7 +151,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setRegistration(bool $registration): CustomerGroupInterface
     {
@@ -163,7 +161,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isQuoteAllowed(): bool
     {
@@ -171,7 +169,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setQuoteAllowed(bool $allowed): CustomerGroupInterface
     {
@@ -181,7 +179,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isLoyalty(): bool
     {
@@ -189,7 +187,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setLoyalty(bool $enabled): CustomerGroupInterface
     {
@@ -199,7 +197,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getVatDisplayMode(): ?string
     {
@@ -207,7 +205,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setVatDisplayMode(string $mode = null): CustomerGroupInterface
     {
@@ -217,7 +215,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTitle(): ?string
     {

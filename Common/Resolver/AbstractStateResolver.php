@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
@@ -12,9 +14,6 @@ use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
  */
 abstract class AbstractStateResolver implements StateResolverInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function resolve(object $subject): bool
     {
         $this->supports($subject);
@@ -32,17 +31,11 @@ abstract class AbstractStateResolver implements StateResolverInterface
 
     /**
      * Resolves the subject's state.
-     *
-     * @param object $subject
-     *
-     * @return string
      */
     abstract protected function resolveState(object $subject): string;
 
     /**
      * Throws an exception if subject is not supported.
-     *
-     * @param object $subject
      */
     protected function supports(object $subject): void
     {

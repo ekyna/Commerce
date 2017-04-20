@@ -1,111 +1,66 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
+use Ekyna\Bundle\ResourceBundle\Service\Uploader\UploadToggler;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvent;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvents;
-use Ekyna\Component\Commerce\Common\Listener\UploadableListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
-use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Manager\ManagerFactoryInterface;
+use Ekyna\Component\Resource\Manager\ResourceManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+
 
 /**
  * Class SaleTransformer
  * @package Ekyna\Component\Commerce\Common\Transformer
  * @author  Etienne Dauvergne <contact@ekyna.com>
- *
- * @TODO    Use a "resource service factory" to get operators
  */
 class SaleTransformer implements SaleTransformerInterface
 {
-    /**
-     * @var SaleCopierFactoryInterface
-     */
-    private $saleCopierFactory;
+    private SaleCopierFactoryInterface       $saleCopierFactory;
+    private ManagerFactoryInterface          $managerFactory;
+    private UploadToggler                    $uploadToggler;
+    private EventDispatcherInterface         $eventDispatcher;
 
-    /**
-     * @var ResourceOperatorInterface
-     */
-    private $cartOperator;
-
-    /**
-     * @var ResourceOperatorInterface
-     */
-    private $quoteOperator;
-
-    /**
-     * @var ResourceOperatorInterface
-     */
-    private $orderOperator;
-
-    /**
-     * @var UploadableListener
-     */
-    private $uploadableListener;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    /**
-     * @var SaleInterface
-     */
-    protected $source;
-
-    /**
-     * @var SaleInterface
-     */
-    protected $target;
+    protected ?SaleInterface $source = null;
+    protected ?SaleInterface $target = null;
 
 
-    /**
-     * Constructor.
-     *
-     * @param SaleCopierFactoryInterface $saleCopierFactory
-     * @param ResourceOperatorInterface  $cartOperator
-     * @param ResourceOperatorInterface  $quoteOperator
-     * @param ResourceOperatorInterface  $orderOperator
-     * @param UploadableListener         $uploadableListener
-     * @param EventDispatcherInterface   $eventDispatcher
-     */
     public function __construct(
-        SaleCopierFactoryInterface $saleCopierFactory,
-        ResourceOperatorInterface $cartOperator,
-        ResourceOperatorInterface $quoteOperator,
-        ResourceOperatorInterface $orderOperator,
-        UploadableListener $uploadableListener,
-        EventDispatcherInterface $eventDispatcher
+        SaleCopierFactoryInterface       $saleCopierFactory,
+        ManagerFactoryInterface          $managerFactory,
+        UploadToggler                    $uploadToggler,
+        EventDispatcherInterface         $eventDispatcher
     ) {
-        $this->saleCopierFactory  = $saleCopierFactory;
-        $this->cartOperator       = $cartOperator;
-        $this->quoteOperator      = $quoteOperator;
-        $this->orderOperator      = $orderOperator;
-        $this->uploadableListener = $uploadableListener;
-        $this->eventDispatcher    = $eventDispatcher;
+        $this->saleCopierFactory = $saleCopierFactory;
+        $this->managerFactory = $managerFactory;
+        $this->uploadToggler = $uploadToggler;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function initialize(SaleInterface $source, SaleInterface $target)
+    public function initialize(SaleInterface $source, SaleInterface $target): ResourceEventInterface
     {
         $this->source = $source;
         $this->target = $target;
 
-        $event = $this->getOperator($this->target)->initialize($this->target);
-        if ($event->isPropagationStopped()) {
-            return $event;
-        }
+//        // TODO Use resource event dispatcher instead of manager...
+//        $event = $this->getManager($this->target)->initialize($this->target);
+//        if ($event->isPropagationStopped()) {
+//            return $event;
+//        }
 
         $event = new SaleTransformEvent($this->source, $this->target);
 
-        $this->eventDispatcher->dispatch(SaleTransformEvents::PRE_COPY, $event);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::PRE_COPY);
         if ($event->isPropagationStopped()) {
             return $event;
         }
@@ -115,46 +70,43 @@ class SaleTransformer implements SaleTransformerInterface
             ->create($this->source, $this->target)
             ->copySale();
 
-        $this->eventDispatcher->dispatch(SaleTransformEvents::POST_COPY, $event);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::POST_COPY);
 
         return $event;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function transform()
+    public function transform(): ?ResourceEventInterface
     {
         if (null === $this->source || null === $this->target) {
-            throw new LogicException("Please call initialize first.");
+            throw new LogicException('Please call initialize first.');
         }
 
         $event = new SaleTransformEvent($this->source, $this->target);
 
-        $this->eventDispatcher->dispatch(SaleTransformEvents::PRE_TRANSFORM, $event);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::PRE_TRANSFORM);
         if ($event->hasErrors() || $event->isPropagationStopped()) {
             return $event;
         }
 
         // Persist the target sale
-        $targetEvent = $this->getOperator($this->target)->persist($this->target);
+        $targetEvent = $this->getManager($this->target)->save($this->target);
         if (!$targetEvent->isPropagationStopped() && !$targetEvent->hasErrors()) {
-            $this->getOperator($this->target)->refresh($this->target);
+            $this->getManager($this->target)->refresh($this->target);
 
             // Disable the uploadable listener
-            $this->uploadableListener->setEnabled(false);
+            $this->uploadToggler->setEnabled(false);
 
             // Delete the source sale
-            $sourceEvent = $this->getOperator($this->source)->delete($this->source, true); // Hard delete
+            $sourceEvent = $this->getManager($this->source)->delete($this->source, true); // Hard delete
             if (!$sourceEvent->isPropagationStopped() && !$sourceEvent->hasErrors()) {
                 $targetEvent = null;
             }
 
             // Enable the uploadable listener
-            $this->uploadableListener->setEnabled(true);
+            $this->uploadToggler->setEnabled(true);
         }
 
-        $this->eventDispatcher->dispatch(SaleTransformEvents::POST_TRANSFORM, $event);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::POST_TRANSFORM);
         if ($event->hasErrors() || $event->isPropagationStopped()) {
             return $event;
         }
@@ -167,22 +119,20 @@ class SaleTransformer implements SaleTransformerInterface
     }
 
     /**
-     * Returns the proper operator for the given sale.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return ResourceOperatorInterface
+     * Returns the manager for the given sale.
      */
-    protected function getOperator(SaleInterface $sale)
+    protected function getManager(SaleInterface $sale): ResourceManagerInterface
     {
-        if ($sale instanceof CartInterface) {
-            return $this->cartOperator;
-        } elseif ($sale instanceof QuoteInterface) {
-            return $this->quoteOperator;
-        } elseif ($sale instanceof OrderInterface) {
-            return $this->orderOperator;
+        $classes = [CartInterface::class, QuoteInterface::class, OrderInterface::class];
+
+        foreach ($classes as $class) {
+            if (!$sale instanceof $class) {
+                continue;
+            }
+
+            return $this->managerFactory->getManager($class);
         }
 
-        throw new InvalidArgumentException("Unexpected sale type.");
+        throw new UnexpectedTypeException($sale, $classes);
     }
 }

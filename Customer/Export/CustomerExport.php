@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Export;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -13,72 +16,34 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
  */
 class CustomerExport
 {
-    /**
-     * @var \DateTime
-     */
-    private $from;
+    private DateTimeInterface $from;
+    private DateTimeInterface $to;
+    /** @var Collection<CustomerGroupInterface> */
+    private Collection $groups;
 
-    /**
-     * @var \DateTime
-     */
-    private $to;
-
-    /**
-     * @var Collection|CustomerGroupInterface[]
-     */
-    private $groups;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->groups = new ArrayCollection();
     }
 
-    /**
-     * Returns the from.
-     *
-     * @return \DateTime
-     */
-    public function getFrom(): ?\DateTime
+    public function getFrom(): ?DateTimeInterface
     {
         return $this->from;
     }
 
-    /**
-     * Sets the from.
-     *
-     * @param \DateTime $from
-     *
-     * @return CustomerExport
-     */
-    public function setFrom(\DateTime $from = null): CustomerExport
+    public function setFrom(?DateTimeInterface $from): CustomerExport
     {
         $this->from = $from;
 
         return $this;
     }
 
-    /**
-     * Returns the to.
-     *
-     * @return \DateTime
-     */
-    public function getTo(): ?\DateTime
+    public function getTo(): ?DateTimeInterface
     {
         return $this->to;
     }
 
-    /**
-     * Sets the to.
-     *
-     * @param \DateTime $to
-     *
-     * @return CustomerExport
-     */
-    public function setTo(\DateTime $to = null): CustomerExport
+    public function setTo(?DateTimeInterface $to): CustomerExport
     {
         $this->to = $to;
 
@@ -86,22 +51,13 @@ class CustomerExport
     }
 
     /**
-     * Returns the groups.
-     *
-     * @return Collection|CustomerGroupInterface[]
+     * @return Collection<CustomerGroupInterface>
      */
     public function getGroups(): Collection
     {
         return $this->groups;
     }
 
-    /**
-     * Adds the customer group.
-     *
-     * @param CustomerGroupInterface $group
-     *
-     * @return $this
-     */
     public function addGroup(CustomerGroupInterface $group): CustomerExport
     {
         if (!$this->groups->contains($group)) {
@@ -111,13 +67,6 @@ class CustomerExport
         return $this;
     }
 
-    /**
-     * Removes the customer group.
-     *
-     * @param CustomerGroupInterface $group
-     *
-     * @return $this
-     */
     public function removeGroup(CustomerGroupInterface $group): CustomerExport
     {
         if (!$this->groups->contains($group)) {

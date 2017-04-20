@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Factory;
 
 use Ekyna\Component\Commerce\Common\Model;
@@ -16,120 +18,67 @@ use Ekyna\Component\Commerce\Stock\Model as Stock;
 interface SaleFactoryInterface
 {
     /**
-     * Creates an address regarding to the sale type.
-     *
-     * @param Model\SaleInterface    $sale
-     * @param Model\AddressInterface $source
-     *
-     * @return Model\SaleAddressInterface
+     * Creates an address regarding the sale type.
      */
-    public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null);
+    public function createAddressForSale(Model\SaleInterface $sale, ?Model\AddressInterface $source): Model\SaleAddressInterface;
 
     /**
      * Creates an adjustment for the given adjustable.
-     *
-     * @param Model\AdjustableInterface $adjustable
-     *
-     * @return Model\AdjustmentInterface
      */
-    public function createAdjustmentFor(Model\AdjustableInterface $adjustable);
+    public function createAdjustmentFor(Model\AdjustableInterface $adjustable): Model\AdjustmentInterface;
 
     /**
-     * Creates an attachment regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Model\SaleAttachmentInterface
+     * Creates an attachment regarding the sale type.
      */
-    public function createAttachmentForSale(Model\SaleInterface $sale);
+    public function createAttachmentForSale(Model\SaleInterface $sale): Model\SaleAttachmentInterface;
 
     /**
-     * Creates a notification regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Model\SaleNotificationInterface
+     * Creates a notification regarding the sale type.
      */
-    public function createNotificationForSale(Model\SaleInterface $sale);
+    public function createNotificationForSale(Model\SaleInterface $sale): Model\SaleNotificationInterface;
 
     /**
-     * Creates an adjustment regarding to the sale item type.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return Model\AdjustmentInterface
+     * Creates an adjustment regarding the sale item type.
      */
-    public function createAdjustmentForItem(Model\SaleItemInterface $item);
+    public function createAdjustmentForItem(Model\SaleItemInterface $item): Model\AdjustmentInterface;
 
     /**
-     * Creates a stock assignment regarding to the sale item type.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return Stock\StockAssignmentInterface
+     * Creates a stock assignment regarding the sale item type.
      */
-    public function createStockAssignmentForItem(Model\SaleItemInterface $item);
+    public function createStockAssignmentForItem(Model\SaleItemInterface $item): Stock\StockAssignmentInterface;
 
     /**
-     * Creates an adjustment regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Model\AdjustmentInterface
+     * Creates an adjustment regarding the sale type.
      */
-    public function createAdjustmentForSale(Model\SaleInterface $sale);
+    public function createAdjustmentForSale(Model\SaleInterface $sale): Model\AdjustmentInterface;
 
     /**
-     * Creates a sale item regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Model\SaleItemInterface
+     * Creates a sale item regarding the sale type.
      */
-    public function createItemForSale(Model\SaleInterface $sale);
+    public function createItemForSale(Model\SaleInterface $sale): Model\SaleItemInterface;
 
     /**
-     * Creates a shipment regarding to the sale type.
-     *
-     * @param Shipment\ShipmentInterface $shipment
-     *
-     * @return Shipment\ShipmentItemInterface
+     * Creates a shipment regarding the sale type.
      */
-    public function createItemForShipment(Shipment\ShipmentInterface $shipment);
+    public function createItemForShipment(Shipment\ShipmentInterface $shipment): Shipment\ShipmentItemInterface;
 
     /**
-     * Creates a shipment regarding to the sale type.
-     *
-     * @param Invoice\InvoiceInterface $invoice
-     *
-     * @return Invoice\InvoiceLineInterface
+     * Creates a shipment regarding the sale type.
      */
-    public function createLineForInvoice(Invoice\InvoiceInterface $invoice);
+    public function createLineForInvoice(Invoice\InvoiceInterface $invoice): Invoice\InvoiceLineInterface;
 
     /**
-     * Creates an address regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Payment\PaymentInterface
+     * Creates an address regarding the sale type.
      */
-    public function createPaymentForSale(Model\SaleInterface $sale);
+    public function createPaymentForSale(Model\SaleInterface $sale): Payment\PaymentInterface;
 
     /**
-     * Creates a shipment regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Shipment\ShipmentInterface
+     * Creates a shipment regarding the sale type.
      */
-    public function createShipmentForSale(Model\SaleInterface $sale);
+    public function createShipmentForSale(Model\SaleInterface $sale): Shipment\ShipmentInterface;
 
     /**
-     * Creates a invoice regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Invoice\InvoiceInterface
+     * Creates a invoice regarding the sale type.
      */
-    public function createInvoiceForSale(Model\SaleInterface $sale);
+    public function createInvoiceForSale(Model\SaleInterface $sale): Invoice\InvoiceInterface;
 }

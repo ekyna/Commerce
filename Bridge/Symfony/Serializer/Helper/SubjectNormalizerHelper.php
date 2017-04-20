@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Helper;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Ekyna\Bundle\AdminBundle\Helper\ResourceHelper;
 use Ekyna\Bundle\CommerceBundle\Service\ConstantsHelper;
+use Ekyna\Bundle\ResourceBundle\Helper\ResourceHelper;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
+use Ekyna\Component\Resource\Repository\RepositoryFactoryInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 
 /**
@@ -20,55 +23,29 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
  */
 class SubjectNormalizerHelper
 {
-    use NormalizerAwareTrait,
-        FormatterAwareTrait;
+    use FormatterAwareTrait;
+    use NormalizerAwareTrait;
 
-    /**
-     * @var ConstantsHelper
-     */
-    protected $constantHelper;
+    protected ConstantsHelper $constantHelper;
+    protected ResourceHelper $resourceHelper;
+    protected RepositoryFactoryInterface $repositoryFactory;
 
-    /**
-     * @var ResourceHelper
-     */
-    protected $resourceHelper;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager;
-
-
-    /**
-     * Constructor.
-     *
-     * @param FormatterFactory       $formatterFactory
-     * @param ConstantsHelper        $constantHelper
-     * @param ResourceHelper         $resourceHelper
-     * @param EntityManagerInterface $entityManager
-     */
     public function __construct(
         FormatterFactory $formatterFactory,
         ConstantsHelper $constantHelper,
         ResourceHelper $resourceHelper,
-        EntityManagerInterface $entityManager
+        RepositoryFactoryInterface $repositoryFactory
     ) {
         $this->formatterFactory = $formatterFactory;
         $this->constantHelper = $constantHelper;
         $this->resourceHelper = $resourceHelper;
-        $this->entityManager = $entityManager;
+        $this->repositoryFactory = $repositoryFactory;
     }
 
     /**
      * Normalize the subject's stock data.
-     *
-     * @param StockSubjectInterface $subject
-     * @param string                $format
-     * @param array                 $context
-     *
-     * @return array
      */
-    public function normalizeStock(StockSubjectInterface $subject, $format = null, array $context = [])
+    public function normalizeStock(StockSubjectInterface $subject, string $format = null, array $context = []): array
     {
         $translator = $this->constantHelper->getTranslator();
         $formatter = $this->getFormatter();
@@ -76,7 +53,7 @@ class SubjectNormalizerHelper
         if (null !== $eda = $subject->getEstimatedDateOfArrival()) {
             $eda = $formatter->date($eda);
         } else {
-            $eda = $translator->trans('ekyna_core.value.undefined');
+            $eda = $translator->trans('value.undefined', [], 'EkynaUi');
         }
 
         $stockUnits = $this->findStockUnits($subject);
@@ -95,11 +72,11 @@ class SubjectNormalizerHelper
             'eda'           => $eda,
             'moq'           => $formatter->number($subject->getMinimumOrderQuantity()),
             'quote_only'    => $subject->isQuoteOnly()
-                ? $translator->trans('ekyna_core.value.yes')
-                : $translator->trans('ekyna_core.value.no'),
+                ? $translator->trans('value.yes', [], 'EkynaUi')
+                : $translator->trans('value.no', [], 'EkynaUi'),
             'end_of_life'   => $subject->isEndOfLife()
-                ? $translator->trans('ekyna_core.value.yes')
-                : $translator->trans('ekyna_core.value.no'),
+                ? $translator->trans('value.yes', [], 'EkynaUi')
+                : $translator->trans('value.no', [], 'EkynaUi'),
             'stock_units'   => $this->normalizer->normalize($stockUnits, $format, $context),
         ];
     }
@@ -111,12 +88,14 @@ class SubjectNormalizerHelper
      *
      * @return StockUnitInterface[]
      */
-    private function findStockUnits(StockSubjectInterface $subject)
+    private function findStockUnits(StockSubjectInterface $subject): array
     {
-        /** @var StockUnitRepositoryInterface $repository */
-        $repository = $this->entityManager->getRepository($subject::getStockUnitClass());
+        $repository = $this->repositoryFactory->getRepository($subject::getStockUnitClass());
 
-        /** @var StockUnitInterface[] $stockUnits */
+        if (!$repository instanceof StockUnitRepositoryInterface) {
+            throw new UnexpectedTypeException($repository, StockUnitRepositoryInterface::class);
+        }
+
         $stockUnits = array_merge(
             $repository->findNotClosedBySubject($subject),
             $repository->findLatestClosedBySubject($subject)

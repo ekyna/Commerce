@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Util;
+
+use DateTimeInterface;
 
 /**
  * Class DateUtil
@@ -16,12 +20,12 @@ final class DateUtil
     /**
      * Returns whether the given dates are the same.
      *
-     * @param \DateTime|null $a
-     * @param \DateTime|null $b
+     * @param DateTimeInterface|null $a
+     * @param DateTimeInterface|null $b
      *
      * @return bool
      */
-    public static function equals(\DateTime $a = null, \DateTime $b = null): bool
+    public static function equals(?DateTimeInterface $a, ?DateTimeInterface $b): bool
     {
         if (!$a && !$b) {
             return true;

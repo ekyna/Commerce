@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -11,26 +13,9 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface SaleAddressInterface extends AddressInterface, ResourceInterface
 {
-    /**
-     * Returns the sale.
-     *
-     * @return SaleInterface
-     */
-    public function getSale();
+    public function getSale(): ?SaleInterface;
 
-    /**
-     * Returns the information.
-     *
-     * @return string
-     */
     public function getInformation(): ?string;
 
-    /**
-     * Sets the information.
-     *
-     * @param string $information
-     *
-     * @return $this|SaleAddressInterface
-     */
-    public function setInformation(string $information = null): SaleAddressInterface;
+    public function setInformation(?string $information): SaleAddressInterface;
 }

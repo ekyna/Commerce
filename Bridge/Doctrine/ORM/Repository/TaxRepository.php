@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class TaxRepository
@@ -14,10 +16,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class TaxRepository extends ResourceRepository implements TaxRepositoryInterface
 {
-    /**
-     * @var Query
-     */
-    private $byCodeQuery;
+    private ?Query $byCodeQuery = null;
 
 
     /**
@@ -25,6 +24,7 @@ class TaxRepository extends ResourceRepository implements TaxRepositoryInterface
      */
     public function findOneByCode(string $code): ?TaxInterface
     {
+        /** @noinspection PhpUnhandledExceptionInspection */
         return $this
             ->getByCodeQuery()
             ->setParameter('code', $code)
@@ -46,6 +46,7 @@ class TaxRepository extends ResourceRepository implements TaxRepositoryInterface
 
         return $this->byCodeQuery = $qb
             ->andWhere($qb->expr()->eq('t.code', ':code'))
+            ->setMaxResults(1)
             ->getQuery()
             ->useQueryCache(true);
     }

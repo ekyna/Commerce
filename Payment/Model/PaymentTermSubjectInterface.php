@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Model;
 
 /**
@@ -9,19 +11,7 @@ namespace Ekyna\Component\Commerce\Payment\Model;
  */
 interface PaymentTermSubjectInterface
 {
-    /**
-     * Returns the payment term.
-     *
-     * @return PaymentTermInterface
-     */
-    public function getPaymentTerm();
+    public function getPaymentTerm(): ?PaymentTermInterface;
 
-    /**
-     * Sets the payment term.
-     *
-     * @param PaymentTermInterface $paymentTerm
-     *
-     * @return $this|PaymentTermSubjectInterface
-     */
-    public function setPaymentTerm(PaymentTermInterface $paymentTerm = null);
+    public function setPaymentTerm(?PaymentTermInterface $paymentTerm): PaymentTermSubjectInterface;
 }

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Entity;
 
 use Ekyna\Component\Commerce\Cart\Model;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
 
 /**
@@ -12,52 +15,37 @@ use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
  */
 class CartPayment extends AbstractPayment implements Model\CartPaymentInterface
 {
-    /**
-     * @var Model\CartInterface
-     */
-    protected $cart;
+    protected ?Model\CartInterface $cart = null;
 
 
-    /**
-     * @inheritdoc
-     *
-     * @return Model\CartInterface
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getCart();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCart()
+    public function getCart(): ?Model\CartInterface
     {
         return $this->cart;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCart(Model\CartInterface $cart = null)
+    public function setCart(?Model\CartInterface $cart): Model\CartPaymentInterface
     {
-        if ($cart !== $this->cart) {
-            if ($previous = $this->cart) {
-                $this->cart = null;
-                $previous->removePayment($this);
-            }
+        if ($cart === $this->cart) {
+            return $this;
+        }
 
-            if ($this->cart = $cart) {
-                $this->cart->addPayment($this);
-            }
+        if ($previous = $this->cart) {
+            $this->cart = null;
+            $previous->removePayment($this);
+        }
+
+        if ($this->cart = $cart) {
+            $this->cart->addPayment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getLocale(): ?string
     {
         if ($this->cart) {

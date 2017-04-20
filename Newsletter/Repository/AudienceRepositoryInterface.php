@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\Repository;
 
 use Doctrine\ORM\QueryBuilder;
+use Ekyna\Component\Commerce\Exception\CommerceExceptionInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\Cache\ResultCacheAwareInterface;
+use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
 
 /**
  * Interface AudienceRepositoryInterface
  * @package Ekyna\Component\Commerce\Newsletter\Repository
  * @author  Étienne Dauvergne <contact@ekyna.com>
- *
- * @method AudienceInterface createNew()
  */
-interface AudienceRepositoryInterface extends ResourceRepositoryInterface
+interface AudienceRepositoryInterface extends TranslatableRepositoryInterface, ResultCacheAwareInterface
 {
     public const DEFAULT_CACHE_KEY = 'commerce_newsletter_default';
 
@@ -21,6 +23,8 @@ interface AudienceRepositoryInterface extends ResourceRepositoryInterface
      * Returns the default audience.
      *
      * @return AudienceInterface
+     *
+     * @throws CommerceExceptionInterface
      */
     public function findDefault(): AudienceInterface;
 

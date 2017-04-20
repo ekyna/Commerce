@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\MethodTranslationInterface;
@@ -12,47 +14,28 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
  */
 abstract class AbstractMethodTranslation extends AbstractTranslation implements MethodTranslationInterface
 {
-    /**
-     * @var string
-     */
-    protected $title;
-
-    /**
-     * @var string
-     */
-    protected $description;
+    protected ?string $title       = null;
+    protected ?string $description = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTitle($title)
+    public function setTitle(?string $title): MethodTranslationInterface
     {
         $this->title = $title;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): MethodTranslationInterface
     {
         $this->description = $description;
 

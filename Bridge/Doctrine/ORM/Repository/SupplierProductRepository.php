@@ -1,12 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class SupplierProductRepository
@@ -15,108 +22,88 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class SupplierProductRepository extends ResourceRepository implements SupplierProductRepositoryInterface
 {
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $findBySubjectQuery;
+    private ?Query $findBySubjectQuery            = null;
+    private ?Query $getAvailableSumBySubjectQuery = null;
+    private ?Query $getOrderedSumBySubjectQuery   = null;
+    private ?Query $getMinEdaBySubjectQuery       = null;
+    private ?Query $findBySubjectAndSupplierQuery = null;
 
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $getAvailableSumBySubjectQuery;
+    public function existsForSupplier(SupplierInterface $supplier): bool
+    {
+        $qb = $this->createQueryBuilder();
 
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $getOrderedSumBySubjectQuery;
+        return null !== $qb
+            ->select('sp.id')
+            ->andWhere($qb->expr()->eq('sp.supplier', ':supplier'))
+            ->setMaxResults(1)
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameter('supplier', $supplier)
+            ->getOneOrNullResult();
+    }
 
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $getMinEdaBySubjectQuery;
-
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $findBySubjectAndSupplierQuery;
-
-
-    /**
-     * @inheritDoc
-     */
-    public function findBySupplier(SupplierInterface $supplier)
+    public function findBySupplier(SupplierInterface $supplier): array
     {
         return $this->findBy(['supplier' => $supplier]);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findBySubject(SubjectInterface $subject)
+    public function findBySubject(SubjectInterface $subject): array
     {
         return $this
             ->getFindBySubjectQuery()
             ->setParameters([
-                'provider'   => $subject->getProviderName(),
+                'provider'   => $subject::getProviderName(),
                 'identifier' => $subject->getId(),
             ])
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getMinEstimatedDateOfArrivalBySubject(SubjectInterface $subject)
+    public function getMinEstimatedDateOfArrivalBySubject(SubjectInterface $subject): ?DateTimeInterface
     {
         $result = $this
             ->getGetMinEdaBySubjectQuery()
             ->setParameters([
-                'provider'   => $subject->getProviderName(),
+                'provider'   => $subject::getProviderName(),
                 'identifier' => $subject->getId(),
             ])
             ->getSingleScalarResult();
 
-        return null !== $result ? new \DateTime($result) : null;
+        return null !== $result ? new DateTime($result) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getAvailableQuantitySumBySubject(SubjectInterface $subject)
+    public function getAvailableQuantitySumBySubject(SubjectInterface $subject): Decimal
     {
-        return (float)$this
+        $total = $this
             ->getGetAvailableSumBySubjectQuery()
             ->setParameters([
-                'provider'   => $subject->getProviderName(),
+                'provider'   => $subject::getProviderName(),
                 'identifier' => $subject->getId(),
             ])
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getOrderedQuantitySumBySubject(SubjectInterface $subject)
+    public function getOrderedQuantitySumBySubject(SubjectInterface $subject): Decimal
     {
-        return (float)$this
+        $total = $this
             ->getGetOrderedSumBySubjectQuery()
             ->setParameters([
-                'provider'   => $subject->getProviderName(),
+                'provider'   => $subject::getProviderName(),
                 'identifier' => $subject->getId(),
             ])
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findOneBySubjectAndSupplier(
         SubjectInterface $subject,
         SupplierInterface $supplier,
         SupplierProductInterface $exclude = null
-    ) {
+    ): ?SupplierProductInterface {
         $parameters = [
-            'provider'   => $subject->getProviderName(),
+            'provider'   => $subject::getProviderName(),
             'identifier' => $subject->getId(),
             'supplier'   => $supplier,
         ];
@@ -143,10 +130,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
     /**
      * Returns the "find by subject" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    protected function getFindBySubjectQuery()
+    protected function getFindBySubjectQuery(): Query
     {
         if (null !== $this->findBySubjectQuery) {
             return $this->findBySubjectQuery;
@@ -159,10 +144,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
     /**
      * Returns the "get available quantity sum by subject" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    protected function getGetAvailableSumBySubjectQuery()
+    protected function getGetAvailableSumBySubjectQuery(): Query
     {
         if (null !== $this->getAvailableSumBySubjectQuery) {
             return $this->getAvailableSumBySubjectQuery;
@@ -180,10 +163,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
     /**
      * Returns the "get ordered quantity sum by subject" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    protected function getGetOrderedSumBySubjectQuery()
+    protected function getGetOrderedSumBySubjectQuery(): Query
     {
         if (null !== $this->getOrderedSumBySubjectQuery) {
             return $this->getOrderedSumBySubjectQuery;
@@ -201,10 +182,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
     /**
      * Returns the "get estimated date of arrival by subject" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    protected function getGetMinEdaBySubjectQuery()
+    protected function getGetMinEdaBySubjectQuery(): Query
     {
         if (null !== $this->getMinEdaBySubjectQuery) {
             return $this->getMinEdaBySubjectQuery;
@@ -226,10 +205,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
     /**
      * Returns the "find by subject and supplier" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    protected function getFindBySubjectAndSupplierQuery()
+    protected function getFindBySubjectAndSupplierQuery(): Query
     {
         if (null !== $this->findBySubjectAndSupplierQuery) {
             return $this->findBySubjectAndSupplierQuery;
@@ -244,10 +221,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
     /**
      * Creates a "find by subject" query builder.
-     *
-     * @return \Doctrine\ORM\QueryBuilder
      */
-    private function createFindBySubjectQueryBuilder()
+    private function createFindBySubjectQueryBuilder(): QueryBuilder
     {
         $as = $this->getAlias();
         $qb = $this->createQueryBuilder();
@@ -257,10 +232,7 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
             ->andWhere($qb->expr()->eq($as . '.subjectIdentity.identifier', ':identifier'));
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'sp';
     }

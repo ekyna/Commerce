@@ -110,7 +110,7 @@ abstract class AbstractStockUnitListener
         }
 
         if ($this->persistenceHelper->isChanged($stockUnit, ['netPrice', 'shippingPrice'])) {
-            $this->persistenceHelper->scheduleEvent(StockUnitEvents::COST_CHANGE, $stockUnit);
+            $this->persistenceHelper->scheduleEvent($stockUnit, StockUnitEvents::COST_CHANGE);
         }
     }
 
@@ -151,8 +151,8 @@ abstract class AbstractStockUnitListener
     protected function scheduleSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
     {
         $this->persistenceHelper->scheduleEvent(
-            $this->getSubjectStockUnitChangeEventName(),
-            new SubjectStockUnitEvent($stockUnit)
+            new SubjectStockUnitEvent($stockUnit),
+            $this->getSubjectStockUnitChangeEventName()
         );
     }
 

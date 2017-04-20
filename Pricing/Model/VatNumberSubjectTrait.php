@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 /**
@@ -9,28 +11,15 @@ namespace Ekyna\Component\Commerce\Pricing\Model;
  */
 trait VatNumberSubjectTrait
 {
-    /**
-     * @var string
-     */
-    protected $vatNumber;
-
-    /**
-     * @var array
-     */
-    protected $vatDetails = [];
-
-    /**
-     * @var bool
-     */
-    protected $vatValid = false;
+    protected ?string $vatNumber = null;
+    protected array   $vatDetails = [];
+    protected bool    $vatValid   = false;
 
 
     /**
      * Returns the vat number.
-     *
-     * @return string
      */
-    public function getVatNumber()
+    public function getVatNumber(): ?string
     {
         return $this->vatNumber;
     }
@@ -38,11 +27,9 @@ trait VatNumberSubjectTrait
     /**
      * Sets the vat number.
      *
-     * @param string $vatNumber
-     *
-     * @return $this
+     * @return $this|VatNumberSubjectInterface
      */
-    public function setVatNumber($vatNumber)
+    public function setVatNumber(?string $vatNumber): VatNumberSubjectInterface
     {
         $this->vatNumber = $vatNumber;
 
@@ -51,10 +38,8 @@ trait VatNumberSubjectTrait
 
     /**
      * Returns the vat details.
-     *
-     * @return array
      */
-    public function getVatDetails()
+    public function getVatDetails(): array
     {
         return $this->vatDetails;
     }
@@ -62,11 +47,9 @@ trait VatNumberSubjectTrait
     /**
      * Sets the vat details.
      *
-     * @param array $details
-     *
-     * @return $this
+     * @return $this|VatNumberSubjectInterface
      */
-    public function setVatDetails(array $details = null)
+    public function setVatDetails(array $details): VatNumberSubjectInterface
     {
         $this->vatDetails = $details;
 
@@ -75,10 +58,8 @@ trait VatNumberSubjectTrait
 
     /**
      * Returns the vat valid.
-     *
-     * @return bool
      */
-    public function isVatValid()
+    public function isVatValid(): bool
     {
         return $this->vatValid;
     }
@@ -86,23 +67,19 @@ trait VatNumberSubjectTrait
     /**
      * Sets whether the vat number is valid.
      *
-     * @param bool $valid
-     *
-     * @return $this
+     * @return $this|VatNumberSubjectInterface
      */
-    public function setVatValid($valid)
+    public function setVatValid(bool $valid): VatNumberSubjectInterface
     {
-        $this->vatValid = (bool)$valid;
+        $this->vatValid = $valid;
 
         return $this;
     }
 
     /**
      * Returns whether the subject is a business one.
-     *
-     * @return bool
      */
-    public function isBusiness()
+    public function isBusiness(): bool
     {
         return $this->vatValid && !empty($this->vatNumber);
     }

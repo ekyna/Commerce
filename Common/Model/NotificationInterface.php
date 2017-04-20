@@ -1,87 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
+
+use DateTimeInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface NotificationInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface NotificationInterface
+interface NotificationInterface extends ResourceInterface
 {
-    /**
-     * Returns the type.
-     *
-     * @return string
-     */
-    public function getType();
+    public function getType(): ?string;
 
-    /**
-     * Sets the type.
-     *
-     * @param string $type
-     *
-     * @return $this|NotificationInterface
-     */
-    public function setType($type);
+    public function setType(string $type): NotificationInterface;
 
     /**
      * Returns whether the notification has data, optionally for the given key.
-     *
-     * @param string $key
-     *
-     * @return bool
      */
-    public function hasData($key = null);
+    public function hasData(?string $key): bool;
 
     /**
      * Returns the data, optionally for the given key.
      *
-     * @param string $key
-     *
      * @return mixed
+     * @TODO PHP8 union types hint
      */
-    public function getData($key = null);
+    public function getData(?string $key);
 
     /**
      * Sets the data, optionally for the given key.
      *
      * @param mixed $data
-     * @param string $key
-     *
-     * @return $this|NotificationInterface
+     * @TODO PHP8 union types hint
      */
-    public function setData($data, $key = null);
+    public function setData($data, ?string $key): NotificationInterface;
 
-    /**
-     * Returns the sentAt.
-     *
-     * @return \DateTime
-     */
-    public function getSentAt();
+    public function getSentAt(): ?DateTimeInterface;
 
-    /**
-     * Sets the sentAt.
-     *
-     * @param \DateTime $date
-     *
-     * @return $this|NotificationInterface
-     */
-    public function setSentAt(\DateTime $date = null);
+    public function setSentAt(DateTimeInterface $date): NotificationInterface;
 
-    /**
-     * Returns the details.
-     *
-     * @return string
-     */
-    public function getDetails();
+    public function getDetails(): ?string;
 
-    /**
-     * Sets the details.
-     *
-     * @param string $details
-     *
-     * @return $this|NotificationInterface
-     */
-    public function setDetails($details);
+    public function setDetails(string $details): NotificationInterface;
 }

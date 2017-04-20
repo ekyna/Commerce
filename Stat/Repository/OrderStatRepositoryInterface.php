@@ -1,6 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stat\Repository;
+
+use DateTime;
+use Ekyna\Component\Commerce\Stat\Entity\OrderStat;
+use Exception;
 
 /**
  * Interface OrderStatRepositoryInterface
@@ -11,68 +17,38 @@ interface OrderStatRepositoryInterface
 {
     /**
      * Finds the order stat by day.
-     *
-     * @param \DateTime $date
-     *
-     * @return \Ekyna\Component\Commerce\Stat\Entity\OrderStat|null
      */
-    public function findOneByDay(\DateTime $date);
+    public function findOneByDay(DateTime $date): ?OrderStat;
 
     /**
      * Finds the order stat by month.
-     *
-     * @param \DateTime $date
-     *
-     * @return \Ekyna\Component\Commerce\Stat\Entity\OrderStat|null
      */
-    public function findOneByMonth(\DateTime $date);
+    public function findOneByMonth(DateTime $date): ?OrderStat;
 
     /**
      * Finds the order stat by year.
-     *
-     * @param \DateTime $date
-     *
-     * @return \Ekyna\Component\Commerce\Stat\Entity\OrderStat|null
      */
-    public function findOneByYear(\DateTime $date);
+    public function findOneByYear(DateTime $date): ?OrderStat;
 
     /**
      * Returns the daily stats sums of the given year (between the january, 1st and the given date).
      *
-     * @param \DateTime $date
-     *
-     * @return \Ekyna\Component\Commerce\Stat\Entity\OrderStat
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findSumByYear(\DateTime $date);
+    public function findSumByYear(DateTime $date): OrderStat;
 
     /**
      * Finds the day revenues by month.
-     *
-     * @param \DateTime $date
-     * @param bool  $detailed
-     *
-     * @return float[]
      */
-    public function findDayRevenuesByMonth(\DateTime $date, $detailed = false);
+    public function findDayRevenuesByMonth(DateTime $date, bool $detailed = false): array;
 
     /**
      * Finds the month revenues by year.
-     *
-     * @param \DateTime $date
-     * @param bool  $detailed
-     *
-     * @return float[]
      */
-    public function findMonthRevenuesByYear(\DateTime $date, $detailed = false);
+    public function findMonthRevenuesByYear(DateTime $date, bool $detailed = false): array;
 
     /**
      * Finds the year revenues.
-     *
-     * @param int $limit
-     * @param bool  $detailed
-     *
-     * @return float[]
      */
-    public function findYearRevenues($limit = 8, $detailed = false);
+    public function findYearRevenues(int $limit = 8, bool $detailed = false): array;
 }

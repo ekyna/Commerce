@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
-use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
@@ -21,455 +24,185 @@ interface SupplierOrderInterface extends
     ResourceModel\TimestampableInterface,
     ResourceModel\LocalizedInterface
 {
-    /**
-     * Returns the supplier.
-     *
-     * @return SupplierInterface
-     */
     public function getSupplier(): ?SupplierInterface;
 
-    /**
-     * Sets the supplier.
-     *
-     * @param SupplierInterface $supplier
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setSupplier(SupplierInterface $supplier): SupplierOrderInterface;
+    public function setSupplier(?SupplierInterface $supplier): SupplierOrderInterface;
 
-    /**
-     * Returns the carrier.
-     *
-     * @return SupplierCarrierInterface
-     */
     public function getCarrier(): ?SupplierCarrierInterface;
 
-    /**
-     * Sets the carrier.
-     *
-     * @param SupplierCarrierInterface $carrier
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setCarrier(SupplierCarrierInterface $carrier = null): SupplierOrderInterface;
+    public function setCarrier(?SupplierCarrierInterface $carrier): SupplierOrderInterface;
 
-    /**
-     * Returns the warehouse.
-     *
-     * @return WarehouseInterface
-     */
     public function getWarehouse(): ?WarehouseInterface;
 
-    /**
-     * Sets the warehouse.
-     *
-     * @param WarehouseInterface $warehouse
-     *
-     * @return SupplierOrderInterface
-     */
-    public function setWarehouse(WarehouseInterface $warehouse): SupplierOrderInterface;
+    public function setWarehouse(?WarehouseInterface $warehouse): SupplierOrderInterface;
 
     /**
-     * Returns whether or not the supplier order has at least one item.
-     *
-     * @return bool
+     * Returns whether the supplier order has at least one item.
      */
     public function hasItems(): bool;
 
     /**
      * Returns whether the supplier order has the item or not.
-     *
-     * @param SupplierOrderItemInterface $item
-     *
-     * @return bool
      */
     public function hasItem(SupplierOrderItemInterface $item): bool;
 
-    /**
-     * Adds the item.
-     *
-     * @param SupplierOrderItemInterface $item
-     *
-     * @return $this|SupplierOrderInterface
-     */
     public function addItem(SupplierOrderItemInterface $item): SupplierOrderInterface;
 
-    /**
-     * Removes the item.
-     *
-     * @param SupplierOrderItemInterface $item
-     *
-     * @return $this|SupplierOrderInterface
-     */
     public function removeItem(SupplierOrderItemInterface $item): SupplierOrderInterface;
 
     /**
-     * Returns the items.
-     *
-     * @return Collection|SupplierOrderItemInterface[]
+     * @return Collection<SupplierOrderItemInterface>
      */
     public function getItems(): Collection;
 
     /**
-     * Returns whether or not the supplier order has at least one delivery.
-     *
-     * @return bool
+     * Returns whether the supplier order has at least one delivery.
      */
     public function hasDeliveries(): bool;
 
     /**
      * Returns whether the supplier order has the delivery or not.
-     *
-     * @param SupplierDeliveryInterface $delivery
-     *
-     * @return bool
      */
     public function hasDelivery(SupplierDeliveryInterface $delivery): bool;
 
-    /**
-     * Adds the delivery.
-     *
-     * @param SupplierDeliveryInterface $delivery
-     *
-     * @return $this|SupplierOrderInterface
-     */
     public function addDelivery(SupplierDeliveryInterface $delivery): SupplierOrderInterface;
 
-    /**
-     * Removes the delivery.
-     *
-     * @param SupplierDeliveryInterface $delivery
-     *
-     * @return $this|SupplierOrderInterface
-     */
     public function removeDelivery(SupplierDeliveryInterface $delivery): SupplierOrderInterface;
 
     /**
-     * Returns the deliveries.
-     *
-     * @return Collection|SupplierDeliveryInterface[]
+     * @return Collection<SupplierDeliveryInterface>
      */
     public function getDeliveries(): Collection;
 
     /**
      * Returns whether the order has attachments or not, optionally filtered by type.
-     *
-     * @param string $type
-     *
-     * @return bool
      */
     public function hasAttachments(string $type = null): bool;
 
     /**
      * Returns whether the order has the attachment or not.
-     *
-     * @param SupplierOrderAttachmentInterface $attachment
-     *
-     * @return bool
      */
     public function hasAttachment(SupplierOrderAttachmentInterface $attachment): bool;
 
-    /**
-     * Adds the attachment.
-     *
-     * @param SupplierOrderAttachmentInterface $attachment
-     *
-     * @return $this|SupplierOrderInterface
-     */
     public function addAttachment(SupplierOrderAttachmentInterface $attachment): SupplierOrderInterface;
 
-    /**
-     * Removes the attachment.
-     *
-     * @param SupplierOrderAttachmentInterface $attachment
-     *
-     * @return $this|SupplierOrderInterface
-     */
     public function removeAttachment(SupplierOrderAttachmentInterface $attachment): SupplierOrderInterface;
 
     /**
      * Returns the supplier attachments.
      *
-     * @return Collection|SupplierOrderAttachmentInterface[]
+     * @return Collection<SupplierOrderAttachmentInterface>
      */
     public function getSupplierAttachments(): Collection;
 
     /**
      * Returns the attachments.
      *
-     * @return Collection|SupplierOrderAttachmentInterface[]
+     * @return Collection<SupplierOrderAttachmentInterface>
      */
     public function getAttachments(): Collection;
 
-    /**
-     * Returns the shipping cost.
-     *
-     * @return float
-     */
-    public function getShippingCost(): float;
+    public function getShippingCost(): Decimal;
 
-    /**
-     * Sets the shipping cost.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setShippingCost(float $amount): SupplierOrderInterface;
+    public function setShippingCost(Decimal $amount): SupplierOrderInterface;
 
-    /**
-     * Returns the discount total.
-     *
-     * @return float
-     */
-    public function getDiscountTotal(): float;
+    public function getDiscountTotal(): Decimal;
 
-    /**
-     * Sets the discount total.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setDiscountTotal(float $amount): SupplierOrderInterface;
+    public function setDiscountTotal(Decimal $amount): SupplierOrderInterface;
 
-    /**
-     * Returns the tax total.
-     *
-     * @return float
-     */
-    public function getTaxTotal(): float;
+    public function getTaxTotal(): Decimal;
 
-    /**
-     * Sets the tax total.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setTaxTotal(float $amount): SupplierOrderInterface;
+    public function setTaxTotal(Decimal $amount): SupplierOrderInterface;
 
-    /**
-     * Returns the payment total.
-     *
-     * @return float
-     */
-    public function getPaymentTotal(): float;
+    public function getPaymentTotal(): Decimal;
 
-    /**
-     * Sets the payment total.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setPaymentTotal(float $amount): SupplierOrderInterface;
+    public function setPaymentTotal(Decimal $amount): SupplierOrderInterface;
 
-    /**
-     * Returns the payment date.
-     *
-     * @return DateTime
-     */
-    public function getPaymentDate(): ?DateTime;
+    public function getPaymentDate(): ?DateTimeInterface;
 
-    /**
-     * Sets the payment date.
-     *
-     * @param DateTime $date
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setPaymentDate(DateTime $date = null): SupplierOrderInterface;
+    public function setPaymentDate(?DateTimeInterface $date): SupplierOrderInterface;
 
-    /**
-     * Returns the payment due date.
-     *
-     * @return DateTime
-     */
-    public function getPaymentDueDate(): ?DateTime;
+    public function getPaymentDueDate(): ?DateTimeInterface;
 
-    /**
-     * Sets the payment due date.
-     *
-     * @param DateTime $date
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setPaymentDueDate(DateTime $date = null): SupplierOrderInterface;
+    public function setPaymentDueDate(?DateTimeInterface $date): SupplierOrderInterface;
 
-    /**
-     * Returns the customs tax.
-     *
-     * @return float
-     */
-    public function getCustomsTax(): float;
+    public function getCustomsTax(): Decimal;
 
-    /**
-     * Sets the customs tax.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setCustomsTax(float $amount): SupplierOrderInterface;
+    public function setCustomsTax(Decimal $amount): SupplierOrderInterface;
 
-    /**
-     * Returns the customs VAT amount.
-     *
-     * @return float
-     */
-    public function getCustomsVat(): float;
+    public function getCustomsVat(): Decimal;
 
-    /**
-     * Sets the customs VAT amount.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setCustomsVat(float $amount): SupplierOrderInterface;
+    public function setCustomsVat(Decimal $amount): SupplierOrderInterface;
 
-    /**
-     * Returns the "forwarder fee" amount.
-     *
-     * @return float
-     */
-    public function getForwarderFee(): float;
+    public function getForwarderFee(): Decimal;
 
-    /**
-     * Sets the "forwarder fee" amount.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setForwarderFee(float $amount): SupplierOrderInterface;
+    public function setForwarderFee(Decimal $amount): SupplierOrderInterface;
 
-    /**
-     * Returns the forwarder total.
-     *
-     * @return float
-     */
-    public function getForwarderTotal(): float;
+    public function getForwarderTotal(): Decimal;
 
-    /**
-     * Sets the forwarder total.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setForwarderTotal(float $amount): SupplierOrderInterface;
+    public function setForwarderTotal(Decimal $amount): SupplierOrderInterface;
 
     /**
      * Returns the forwarder payment date.
-     *
-     * @return DateTime
      */
-    public function getForwarderDate(): ?DateTime;
+    public function getForwarderDate(): ?DateTimeInterface;
 
     /**
      * Sets the forwarder payment date.
-     *
-     * @param DateTime $date
-     *
-     * @return $this|SupplierOrderInterface
      */
-    public function setForwarderDate(DateTime $date = null): SupplierOrderInterface;
+    public function setForwarderDate(?DateTimeInterface $date): SupplierOrderInterface;
 
     /**
      * Returns the forwarder due date.
-     *
-     * @return DateTime
      */
-    public function getForwarderDueDate(): ?DateTime;
+    public function getForwarderDueDate(): ?DateTimeInterface;
 
     /**
      * Sets the forwarder due date.
-     *
-     * @param DateTime $date
-     *
-     * @return $this|SupplierOrderInterface
      */
-    public function setForwarderDueDate(DateTime $date = null): SupplierOrderInterface;
+    public function setForwarderDueDate(?DateTimeInterface $date): SupplierOrderInterface;
 
     /**
      * Returns the estimated date of arrival.
-     *
-     * @return DateTime
      */
-    public function getEstimatedDateOfArrival(): ?DateTime;
+    public function getEstimatedDateOfArrival(): ?DateTimeInterface;
 
     /**
      * Sets the estimated date of arrival.
-     *
-     * @param DateTime $date
-     *
-     * @return $this|SupplierOrderInterface
      */
-    public function setEstimatedDateOfArrival(DateTime $date = null): SupplierOrderInterface;
+    public function setEstimatedDateOfArrival(?DateTimeInterface $date): SupplierOrderInterface;
 
     /**
      * Returns the tracking urls.
-     *
-     * @return array|null
      */
     public function getTrackingUrls(): ?array;
 
     /**
      * Sets the tracking urls.
-     *
-     * @param array $urls
-     *
-     * @return $this|SupplierOrderInterface
      */
-    public function setTrackingUrls(array $urls = null): SupplierOrderInterface;
+    public function setTrackingUrls(?array $urls): SupplierOrderInterface;
 
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
     public function getDescription(): ?string;
 
-    /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setDescription(string $description): SupplierOrderInterface;
+    public function setDescription(?string $description): SupplierOrderInterface;
 
     /**
-     * Returns the "ordered at" date.
-     *
-     * @return DateTime
+     * Returns the 'ordered at' date.
      */
-    public function getOrderedAt(): ?DateTime;
+    public function getOrderedAt(): ?DateTimeInterface;
 
     /**
-     * Sets the "ordered at" date.
-     *
-     * @param DateTime $orderedAt
-     *
-     * @return $this|SupplierOrderInterface
+     * Sets the 'ordered at' date.
      */
-    public function setOrderedAt(DateTime $orderedAt = null): SupplierOrderInterface;
+    public function setOrderedAt(?DateTimeInterface $date): SupplierOrderInterface;
 
     /**
      * Returns the "completed at" date.
-     *
-     * @return DateTime
      */
-    public function getCompletedAt(): ?DateTime;
+    public function getCompletedAt(): ?DateTimeInterface;
 
     /**
      * Sets the "completed at" date.
-     *
-     * @param DateTime $completedAt
-     *
-     * @return SupplierOrderInterface
      */
-    public function setCompletedAt(DateTime $completedAt = null): SupplierOrderInterface;
+    public function setCompletedAt(?DateTimeInterface $date): SupplierOrderInterface;
 }

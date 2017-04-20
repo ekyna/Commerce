@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 /**
@@ -10,16 +12,12 @@ namespace Ekyna\Component\Commerce\Customer\Model;
 interface NotificationsInterface
 {
     /**
-     * Returns the notifications.
-     *
-     * @return string[]
+     * @return array<string>
      */
     public function getNotifications(): array;
 
     /**
-     * Sets the notifications.
-     *
-     * @param string[] $notifications
+     * @param array<string> $notifications
      *
      * @return $this|NotificationsInterface
      */

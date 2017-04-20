@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Resolver;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
-use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
@@ -21,35 +23,17 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
  */
 class PaymentSubjectStateResolver extends AbstractStateResolver
 {
-    /**
-     * @var PaymentCalculatorInterface
-     */
-    protected $paymentCalculator;
+    protected PaymentCalculatorInterface $paymentCalculator;
+    protected CurrencyConverterInterface $currencyConverter;
+    protected string                     $defaultCurrency;
 
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var string
-     */
-    protected $defaultCurrency;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PaymentCalculatorInterface $paymentCalculator
-     * @param CurrencyConverterInterface $currencyConverter
-     */
     public function __construct(
         PaymentCalculatorInterface $paymentCalculator,
         CurrencyConverterInterface $currencyConverter
     ) {
         $this->paymentCalculator = $paymentCalculator;
         $this->currencyConverter = $currencyConverter;
-        $this->defaultCurrency   = $currencyConverter->getDefaultCurrency();
+        $this->defaultCurrency = $currencyConverter->getDefaultCurrency();
     }
 
     /**
@@ -80,9 +64,8 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         if (!$subject->hasPayments()) {
             // CANCELED subject is invoiceable and is fully credited
             if (
-                $subject instanceof InvoiceSubjectInterface &&
-                $subject->isFullyInvoiced() &&
-                $subject->getInvoiceState() === InvoiceStates::STATE_CREDITED
+                $subject instanceof InvoiceSubjectInterface && $subject->isFullyInvoiced()
+                && $subject->getInvoiceState() === InvoiceStates::STATE_CREDITED
             ) {
                 return PaymentStates::STATE_CANCELED;
             }
@@ -96,28 +79,33 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         // -> use SaleUpdater::updateTotals
 
         $currency = $subject->getCurrency()->getCode();
-        [$total, $paid, $refunded, $deposit, $pending] = $this->paymentCalculator->getPaymentAmounts($subject, $currency);
+        [
+            $total,
+            $paid,
+            $refunded,
+            $deposit,
+            $pending,
+        ] = $this->paymentCalculator->getPaymentAmounts($subject, $currency);
 
         if ($currency === $this->defaultCurrency) {
             $accepted = $subject->getOutstandingAccepted();
-            $expired  = $subject->getOutstandingExpired();
+            $expired = $subject->getOutstandingExpired();
         } elseif ($subject instanceof SaleInterface) {
             $accepted = $this->paymentCalculator->calculateOutstandingAcceptedTotal($subject, $currency);
-            $expired  = $this->paymentCalculator->calculateOutstandingExpiredTotal($subject, $currency);
+            $expired = $this->paymentCalculator->calculateOutstandingExpiredTotal($subject, $currency);
         } else {
             throw new UnexpectedValueException();
         }
 
         // COMPLETED paid total equals grand total and no accepted/expired outstanding
         if (
-            $paid && !$accepted && !$expired &&
-            (0 === Money::compare($paid - $refunded, $total, $currency))
+            $paid && $accepted->isZero() && $expired->isZero() && $paid->sub($refunded)->equals($total)
         ) {
             // If invoice subject and fully invoiced (ignoring credits)
             if ($subject instanceof InvoiceSubjectInterface) {
                 if ($subject->isFullyInvoiced()) {
                     // REFUNDED If refunded amount equals total
-                    if ((0 == $total) || (0 === Money::compare($refunded, $total, $currency))) {
+                    if ($total->isZero() || $refunded->equals($total)) {
                         return PaymentStates::STATE_REFUNDED;
                     }
 
@@ -133,20 +121,18 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
             return PaymentStates::STATE_COMPLETED;
         }
 
-        $fullFill = function ($amount) use ($total, $currency) {
-            return 0 <= Money::compare($amount, $total, $currency);
+        $fullFill = function (Decimal $amount) use ($total): bool {
+            return $amount >= $total;
         };
 
         // CAPTURED paid total plus accepted outstanding total is greater than grand total
-        if (($paid || $accepted) && $fullFill($paid + $accepted)) {
+        if ((0 < $paid || 0 < $accepted) && $fullFill($paid + $accepted)) {
             return PaymentStates::STATE_CAPTURED;
         }
 
         // DEPOSIT paid total is greater than deposit total
-        if ($paid && $deposit) {
-            if (0 <= Money::compare($paid, $deposit, $currency)) {
-                return PaymentStates::STATE_DEPOSIT;
-            }
+        if (0 < $paid && 0 < $deposit && $paid >= $deposit) {
+            return PaymentStates::STATE_DEPOSIT;
         }
 
         // OUTSTANDING expired total is greater than zero
@@ -155,14 +141,12 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         }
 
         // PENDING pending total is greater than deposit total
-        if (!$paid && $pending && $deposit) {
-            if (0 <= Money::compare($pending, $deposit, $currency)) {
-                return PaymentStates::STATE_PENDING;
-            }
+        if ($paid->isZero() && 0 < $pending && 0 < $deposit && $pending >= $deposit) {
+            return PaymentStates::STATE_PENDING;
         }
 
         // PENDING total is greater than zero
-        if (($paid || $accepted || $pending) && $fullFill($paid + $accepted + $pending)) {
+        if ((0 < $paid || 0 < $accepted || 0 < $pending) && $fullFill($paid + $accepted + $pending)) {
             return PaymentStates::STATE_PENDING;
         }
 
@@ -187,9 +171,6 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         return PaymentStates::STATE_NEW;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function supports(object $subject): void
     {
         if (!$subject instanceof PaymentSubjectInterface) {

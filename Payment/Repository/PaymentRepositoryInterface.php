@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Repository;
 
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface PaymentRepositoryInterface
@@ -15,10 +18,6 @@ interface PaymentRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the payment by key.
-     *
-     * @param string $key
-     *
-     * @return PaymentInterface|null
      */
     public function findOneByKey(string $key): ?PaymentInterface;
 
@@ -28,24 +27,21 @@ interface PaymentRepositoryInterface extends ResourceRepositoryInterface
      * @param PaymentMethodInterface $method
      * @param array                  $states
      * @param bool                   $filter TRUE for payments, FALSE for refunds, NULL for all
-     * @param \DateTime              $fromDate
+     * @param DateTimeInterface|null $fromDate
      *
-     * @return PaymentInterface[]
+     * @return array<PaymentInterface>
      */
     public function findByMethodAndStates(
         PaymentMethodInterface $method,
-        array $states,
-        bool $filter = null,
-        \DateTime $fromDate = null
+        array                  $states,
+        bool                   $filter = null,
+        DateTimeInterface      $fromDate = null
     ): array;
 
     /**
      * Finds payments (and refunds) by month.
      *
-     * @param \DateTime $date
-     * @param array     $states
-     *
-     * @return PaymentInterface[]
+     * @return array<PaymentInterface>
      */
-    public function findByMonth(\DateTime $date, array $states): array;
+    public function findByMonth(DateTimeInterface $date, array $states): array;
 }

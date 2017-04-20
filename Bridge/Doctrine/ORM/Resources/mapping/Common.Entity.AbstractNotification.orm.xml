@@ -8,7 +8,7 @@
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractNotification">
 
         <field name="type" column="type" type="string" length="64"/>
-        <field name="data" column="data" type="json_array"/>
+        <field name="data" column="data" type="json"/>
         <field name="sentAt" column="sent_at" type="datetime"/>
         <field name="details" column="details" type="text"/>
 

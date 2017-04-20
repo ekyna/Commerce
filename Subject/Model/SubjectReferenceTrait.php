@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject\Model;
 
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
@@ -13,49 +15,25 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
  */
 trait SubjectReferenceTrait
 {
-    /**
-     * @var SubjectIdentity
-     */
-    protected $subjectIdentity;
+    protected SubjectIdentity $subjectIdentity;
 
 
-    /**
-     * Initializes the subject identity.
-     */
     protected function initializeSubjectIdentity(): void
     {
         $this->subjectIdentity = new SubjectIdentity();
     }
 
-    /**
-     * Returns whether or not the subject identity is set.
-     *
-     * @return bool
-     * @see SubjectIdentity::hasIdentity()
-     *
-     */
     public function hasSubjectIdentity(): bool
     {
         return $this->subjectIdentity->hasIdentity();
     }
 
-    /**
-     * Returns the subject identity.
-     *
-     * @return SubjectIdentity
-     *
-     * @internal
-     */
     public function getSubjectIdentity(): SubjectIdentity
     {
         return $this->subjectIdentity;
     }
 
     /**
-     * Sets the subject identity.
-     *
-     * @param SubjectIdentity $identity
-     *
      * @return $this|SubjectReferenceInterface
      *
      * @internal
@@ -68,8 +46,6 @@ trait SubjectReferenceTrait
     }
 
     /**
-     * Clears the subject identity.
-     *
      * @return $this|SubjectReferenceInterface
      *
      * @internal

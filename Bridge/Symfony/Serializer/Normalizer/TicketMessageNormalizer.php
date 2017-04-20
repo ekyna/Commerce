@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
+use Ekyna\Component\Commerce\Support\Model\TicketAttachmentInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class TicketMessageNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class TicketMessageNormalizer extends AbstractResourceNormalizer
+class TicketMessageNormalizer extends ResourceNormalizer
 {
     use FormatterAwareTrait;
 
@@ -19,37 +22,37 @@ class TicketMessageNormalizer extends AbstractResourceNormalizer
     /**
      * @inheritDoc
      *
-     * @param TicketMessageInterface $message
+     * @param TicketMessageInterface $object
      */
-    public function normalize($message, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
         if ($this->contextHasGroup(['Default', 'Ticket'], $context)) {
             $formatter = $this->getFormatter();
 
             $data = [
-                'id'            => $message->getId(),
-                'ticket'        => $message->getTicket()->getId(),
-                'content'       => $message->getContent(),
-                'author'        => $message->getAuthor(),
-                'internal'      => $message->isInternal(),
-                'notify'        => $message->isNotify(),
-                'notified_at'   => ($date = $message->getNotifiedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_notified_at' => ($date = $message->getNotifiedAt()) ? $formatter->dateTime($date) : null,
-                'created_at'    => ($date = $message->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_created_at'  => ($date = $message->getCreatedAt()) ? $formatter->dateTime($date) : null,
-                'updated_at'    => ($date = $message->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_updated_at'  => ($date = $message->getUpdatedAt()) ? $formatter->dateTime($date) : null,
+                'id'            => $object->getId(),
+                'ticket'        => $object->getTicket()->getId(),
+                'content'       => $object->getContent(),
+                'author'        => $object->getAuthor(),
+                'internal'      => $object->isInternal(),
+                'notify'        => $object->isNotify(),
+                'notified_at'   => ($date = $object->getNotifiedAt()) ? $date->format('Y-m-d H:i:s') : null,
+                'f_notified_at' => ($date = $object->getNotifiedAt()) ? $formatter->dateTime($date) : null,
+                'created_at'    => ($date = $object->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
+                'f_created_at'  => ($date = $object->getCreatedAt()) ? $formatter->dateTime($date) : null,
+                'updated_at'    => ($date = $object->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
+                'f_updated_at'  => ($date = $object->getUpdatedAt()) ? $formatter->dateTime($date) : null,
                 'attachments'   => [],
             ];
 
-            foreach ($this->filterAttachments($message) as $attachment) {
+            foreach ($this->filterAttachments($object) as $attachment) {
                 $data['attachments'][] = $this->normalizeObject($attachment, $format, $context);
             }
 
             return $data;
         }
 
-        return parent::normalize($message, $format, $context);
+        return parent::normalize($object, $format, $context);
     }
 
     /**
@@ -57,36 +60,10 @@ class TicketMessageNormalizer extends AbstractResourceNormalizer
      *
      * @param TicketMessageInterface $message
      *
-     * @return \Ekyna\Component\Commerce\Support\Model\TicketAttachmentInterface[]
+     * @return TicketAttachmentInterface[]
      */
-    protected function filterAttachments(TicketMessageInterface $message)
+    protected function filterAttachments(TicketMessageInterface $message): array
     {
         return $message->getAttachments()->toArray();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof TicketMessageInterface;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, TicketMessageInterface::class);
     }
 }

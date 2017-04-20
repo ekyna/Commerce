@@ -17,16 +17,16 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class QuoteAddressListener extends AbstractSaleAddressListener
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function scheduleSaleAddressChangeEvent(Model\SaleAddressInterface $address)
     {
         /** @var QuoteAddressInterface $address */
-        $this->persistenceHelper->scheduleEvent(QuoteEvents::ADDRESS_CHANGE, $address->getQuote());
+        $this->persistenceHelper->scheduleEvent($address->getQuote(), QuoteEvents::ADDRESS_CHANGE);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getAddressFromEvent(ResourceEventInterface $event)
     {

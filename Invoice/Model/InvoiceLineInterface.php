@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
+use Decimal\Decimal;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -12,74 +16,24 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface InvoiceLineInterface extends DocumentLineInterface, ResourceInterface
 {
-    /**
-     * Returns the invoice.
-     *
-     * @return InvoiceInterface
-     */
-    public function getInvoice();
+    public function getInvoice(): ?InvoiceInterface;
+
+    public function setInvoice(?InvoiceInterface $invoice): InvoiceLineInterface;
+
+    public function setChildren(array $children): InvoiceLineInterface;
 
     /**
-     * Sets the invoice.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return $this|InvoiceLineInterface
+     * @return Collection<InvoiceLineInterface>
      */
-    public function setInvoice(InvoiceInterface $invoice = null);
+    public function getChildren(): Collection;
 
-    /**
-     * Sets the children.
-     *
-     * @param array $children
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setChildren(array $children);
+    public function clearChildren(): InvoiceLineInterface;
 
-    /**
-     * Returns the children invoice lines.
-     *
-     * @return \Doctrine\Common\Collections\Collection|InvoiceLineInterface[]
-     */
-    public function getChildren();
+    public function getExpected(): ?Decimal;
 
-    /**
-     * Clears the children.
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function clearChildren();
+    public function setExpected(?Decimal $expected): InvoiceLineInterface;
 
-    /**
-     * Returns the expected.
-     *
-     * @return float
-     */
-    public function getExpected();
+    public function getAvailable(): ?Decimal;
 
-    /**
-     * Sets the expected.
-     *
-     * @param float $expected
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setExpected($expected);
-
-    /**
-     * Returns the available.
-     *
-     * @return float
-     */
-    public function getAvailable();
-
-    /**
-     * Sets the available.
-     *
-     * @param float $available
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setAvailable($available);
+    public function setAvailable(?Decimal $available): InvoiceLineInterface;
 }

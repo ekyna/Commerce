@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
 /**
@@ -9,13 +11,13 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
  */
 final class InvoiceStates
 {
-    const STATE_NEW       = 'new';       // Subject does not need invoice yet
-    const STATE_CANCELED  = 'canceled';  // Invoicing has been canceled
-    const STATE_PENDING   = 'pending';   // Subject needs invoice but none has been created yet
-    const STATE_PARTIAL   = 'partial';   // Subject has invoices but is not fully invoiced
-    const STATE_INVOICED  = 'invoiced';  // Subject is fully invoiced
-    const STATE_CREDITED  = 'credited';  // Subject is fully credited
-    const STATE_COMPLETED = 'completed'; // Subject is fully completed
+    public const STATE_NEW       = 'new';       // Subject does not need invoice yet
+    public const STATE_CANCELED  = 'canceled';  // Invoicing has been canceled
+    public const STATE_PENDING   = 'pending';   // Subject needs invoice but none has been created yet
+    public const STATE_PARTIAL   = 'partial';   // Subject has invoices but is not fully invoiced
+    public const STATE_INVOICED  = 'invoiced';  // Subject is fully invoiced
+    public const STATE_CREDITED  = 'credited';  // Subject is fully credited
+    public const STATE_COMPLETED = 'completed'; // Subject is fully completed
 
 
     /**
@@ -23,16 +25,16 @@ final class InvoiceStates
      *
      * @return array
      */
-    static public function getStates()
+    public static function getStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_CANCELED,
-            static::STATE_PENDING,
-            static::STATE_PARTIAL,
-            static::STATE_INVOICED,
-            static::STATE_CREDITED,
-            static::STATE_COMPLETED,
+            self::STATE_NEW,
+            self::STATE_CANCELED,
+            self::STATE_PENDING,
+            self::STATE_PARTIAL,
+            self::STATE_INVOICED,
+            self::STATE_CREDITED,
+            self::STATE_COMPLETED,
         ];
     }
 
@@ -43,9 +45,9 @@ final class InvoiceStates
      *
      * @return bool
      */
-    static public function isValidState($state)
+    public static function isValidState(string $state): bool
     {
-        return in_array($state, static::getStates(), true);
+        return in_array($state, self::getStates(), true);
     }
 
     /**

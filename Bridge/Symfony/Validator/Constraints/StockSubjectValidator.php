@@ -25,7 +25,7 @@ class StockSubjectValidator extends ConstraintValidator
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function validate($stockSubject, Constraint $constraint)
     {

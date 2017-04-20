@@ -186,10 +186,10 @@ class SupplierOrderItemListener extends AbstractListener
                 $item->setReference($product->getReference());
             }
             if (is_null($item->getNetPrice())) {
-                $item->setNetPrice($product->getNetPrice());
+                $item->setNetPrice(clone $product->getNetPrice());
             }
             if (is_null($item->getWeight())) {
-                $item->setWeight($product->getWeight());
+                $item->setWeight(clone $product->getWeight());
             }
             if (is_null($item->getTaxGroup())) {
                 $item->setTaxGroup($product->getTaxGroup());

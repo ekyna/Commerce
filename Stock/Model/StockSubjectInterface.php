@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 
 /**
@@ -11,175 +15,85 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
  */
 interface StockSubjectInterface extends SubjectInterface
 {
-    /**
-     * Returns the stock mode.
-     *
-     * @return string
-     */
     public function getStockMode(): string;
 
     /**
-     * Sets the stock mode.
-     *
-     * @param string $mode
-     *
      * @return $this|StockSubjectInterface
      */
     public function setStockMode(string $mode): StockSubjectInterface;
 
-    /**
-     * Returns the stock state.
-     *
-     * @return string
-     */
     public function getStockState(): string;
 
     /**
-     * Sets the stock state.
-     *
-     * @param string $state
-     *
      * @return $this|StockSubjectInterface
      */
     public function setStockState(string $state): StockSubjectInterface;
 
-    /**
-     * Returns the stock floor.
-     *
-     * @return float
-     */
-    public function getStockFloor(): float;
+    public function getStockFloor(): Decimal;
 
     /**
-     * Sets the stock floor.
-     *
-     * @param float $floor
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setStockFloor(float $floor): StockSubjectInterface;
+    public function setStockFloor(Decimal $floor): StockSubjectInterface;
+
+    public function getInStock(): Decimal;
 
     /**
-     * Returns the in stock quantity.
-     *
-     * @return float
-     */
-    public function getInStock(): float;
-
-    /**
-     * Sets the in stock quantity.
-     *
-     * @param float $quantity
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setInStock(float $quantity): StockSubjectInterface;
+    public function setInStock(Decimal $quantity): StockSubjectInterface;
+
+    public function getAvailableStock(): Decimal;
 
     /**
-     * Returns the available stock quantity.
-     *
-     * @return float
-     */
-    public function getAvailableStock(): float;
-
-    /**
-     * Sets the available stock quantity.
-     *
-     * @param float $quantity
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setAvailableStock(float $quantity): StockSubjectInterface;
+    public function setAvailableStock(Decimal $quantity): StockSubjectInterface;
+
+    public function getVirtualStock(): Decimal;
 
     /**
-     * Returns the virtual stock quantity.
-     *
-     * @return float
-     */
-    public function getVirtualStock(): float;
-
-    /**
-     * Sets the virtual stock quantity.
-     *
-     * @param float $quantity
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setVirtualStock(float $quantity): StockSubjectInterface;
+    public function setVirtualStock(Decimal $quantity): StockSubjectInterface;
+
+    public function getEstimatedDateOfArrival(): ?DateTimeInterface;
 
     /**
-     * Returns the estimated date of arrival.
-     *
-     * @return \DateTime
-     */
-    public function getEstimatedDateOfArrival(): ?\DateTime;
-
-    /**
-     * Sets the estimated date of arrival.
-     *
-     * @param \DateTime $eda
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setEstimatedDateOfArrival(\DateTime $eda = null): StockSubjectInterface;
+    public function setEstimatedDateOfArrival(?DateTimeInterface $eda): StockSubjectInterface;
 
-    /**
-     * Returns the replenishment time.
-     *
-     * @return int
-     */
     public function getReplenishmentTime(): int;
 
     /**
-     * Sets the replenishment time.
-     *
-     * @param int $days
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setReplenishmentTime(int $days);
+    public function setReplenishmentTime(int $days): StockSubjectInterface;
 
-    /**
-     * Returns the geocode.
-     *
-     * @return string
-     */
     public function getGeocode(): ?string;
 
     /**
-     * Sets the geocode.
-     *
-     * @param string $code
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setGeocode(string $code = null): StockSubjectInterface;
+    public function setGeocode(?string $code): StockSubjectInterface;
+
+    public function getMinimumOrderQuantity(): Decimal;
 
     /**
-     * Returns the minimum order quantity.
-     *
-     * @return float
-     */
-    public function getMinimumOrderQuantity(): float;
-
-    /**
-     * Sets the minimum order quantity.
-     *
-     * @param float $quantity
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setMinimumOrderQuantity(float $quantity): StockSubjectInterface;
+    public function setMinimumOrderQuantity(Decimal $quantity): StockSubjectInterface;
 
     /**
-     * Returns whether or not this subject is available only through quotes.
+     * Returns whether this subject is available only through quotes.
      *
      * @return bool
      */
     public function isQuoteOnly(): bool;
 
     /**
-     * Sets the whether or not this subject is available only through quotes.
+     * Sets the whether his subject is available only through quotes.
      *
      * @param bool $quoteOnly
      *
@@ -187,65 +101,39 @@ interface StockSubjectInterface extends SubjectInterface
      */
     public function setQuoteOnly(bool $quoteOnly): StockSubjectInterface;
 
-    /**
-     * Returns the endOfLife.
-     *
-     * @return bool
-     */
     public function isEndOfLife(): bool;
 
     /**
-     * Sets the endOfLife.
-     *
-     * @param bool $endOfLife
-     *
      * @return $this|StockSubjectInterface
      */
     public function setEndOfLife(bool $endOfLife): StockSubjectInterface;
 
-    /**
-     * Returns the quantity unit.
-     *
-     * @return string
-     */
     public function getUnit(): string;
 
     /**
-     * Sets the quantity unit.
-     *
-     * @param string $unit
-     *
      * @return $this|StockSubjectInterface
      */
     public function setUnit(string $unit): StockSubjectInterface;
 
     /**
      * Returns the subject weight (kilograms).
-     *
-     * @return float
      */
-    public function getWeight(): ?float;
+    public function getWeight(): Decimal;
 
     /**
-     * Sets the subject weight.
-     *
-     * @param float $weight
+     * Sets the subject weight (kilograms).
      *
      * @return $this|StockSubjectInterface
      */
-    public function setWeight(float $weight): StockSubjectInterface;
+    public function setWeight(Decimal $weight): StockSubjectInterface;
 
     /**
      * Returns the subject width (millimeters).
-     *
-     * @return int
      */
     public function getWidth(): int;
 
     /**
-     * Sets the subject width.
-     *
-     * @param int $width
+     * Sets the subject width (millimeters).
      *
      * @return $this|StockSubjectInterface
      */
@@ -253,15 +141,11 @@ interface StockSubjectInterface extends SubjectInterface
 
     /**
      * Returns the subject height (millimeters).
-     *
-     * @return int
      */
     public function getHeight(): int;
 
     /**
-     * Sets the subject height.
-     *
-     * @param int $height
+     * Sets the subject height (millimeters).
      *
      * @return $this|StockSubjectInterface
      */
@@ -269,15 +153,11 @@ interface StockSubjectInterface extends SubjectInterface
 
     /**
      * Returns the subject depth (millimeters).
-     *
-     * @return int
      */
     public function getDepth(): int;
 
     /**
-     * Sets the subject depth.
-     *
-     * @param int $depth
+     * Sets the subject depth (millimeters).
      *
      * @return $this|StockSubjectInterface
      */
@@ -292,31 +172,23 @@ interface StockSubjectInterface extends SubjectInterface
 
     /**
      * Returns the package weight (kilograms).
-     *
-     * @return float
      */
-    public function getPackageWeight(): float;
+    public function getPackageWeight(): Decimal;
 
     /**
      * Sets the package weight (kilograms).
      *
-     * @param float $weight
-     *
      * @return $this|StockSubjectInterface
      */
-    public function setPackageWeight(float $weight): StockSubjectInterface;
+    public function setPackageWeight(Decimal $weight): StockSubjectInterface;
 
     /**
      * Returns the package height (millimeters).
-     *
-     * @return int
      */
-    public function getPackageHeight(): ?int;
+    public function getPackageHeight(): int;
 
     /**
      * Sets the package height (millimeters).
-     *
-     * @param int $height
      *
      * @return $this|StockSubjectInterface
      */
@@ -324,15 +196,11 @@ interface StockSubjectInterface extends SubjectInterface
 
     /**
      * Returns the package width (millimeters).
-     *
-     * @return int
      */
     public function getPackageWidth(): int;
 
     /**
      * Sets the package width (millimeters).
-     *
-     * @param int $width
      *
      * @return $this|StockSubjectInterface
      */
@@ -340,15 +208,11 @@ interface StockSubjectInterface extends SubjectInterface
 
     /**
      * Returns the package depth (millimeters).
-     *
-     * @return int
      */
     public function getPackageDepth(): int;
 
     /**
      * Sets the package depth (millimeters).
-     *
-     * @param int $depth
      *
      * @return $this|StockSubjectInterface
      */
@@ -356,29 +220,18 @@ interface StockSubjectInterface extends SubjectInterface
 
     /**
      * Returns whether all the package dimensions are set.
-     *
-     * @return bool
      */
     public function hasPackageDimensions(): bool;
 
     /**
-     * Returns whether the subject is compound (ie stock is resolved regarding to children).
-     *
-     * @return bool
+     * Returns whether the subject is compound (ie stock is resolved regarding children).
      */
     public function isStockCompound(): bool;
 
     /**
-     * Returns the stock composition.
-     *
-     * @return StockComponent[]
+     * @return array<StockComponent>
      */
     public function getStockComposition(): array;
 
-    /**
-     * Returns the stock unit class.
-     *
-     * @return string
-     */
     public static function getStockUnitClass(): string;
 }

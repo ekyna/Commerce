@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\Model;
 
 use Ekyna\Component\Commerce\Common\Model\AttachmentInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\AttachmentInterface;
  */
 interface TicketAttachmentInterface extends AttachmentInterface
 {
-    /**
-     * Returns the message.
-     *
-     * @return TicketMessageInterface
-     */
-    public function getMessage();
+    public function getMessage(): ?TicketMessageInterface;
 
-    /**
-     * Sets the message.
-     *
-     * @param TicketMessageInterface $message
-     *
-     * @return $this|TicketAttachmentInterface
-     */
-    public function setMessage(TicketMessageInterface $message = null);
+    public function setMessage(TicketMessageInterface $message = null): TicketAttachmentInterface;
 }

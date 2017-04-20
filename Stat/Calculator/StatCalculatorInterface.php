@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stat\Calculator;
+
+use DateTimeInterface;
 
 /**
  * Interface StatCalculatorInterface
@@ -26,45 +30,26 @@ interface StatCalculatorInterface
 
     /**
      * Calculates the in stock statistics.
-     *
-     * @return array
      */
     public function calculateStockStats(): array;
 
     /**
      * Calculates the in order stats for the given day.
-     *
-     * @param \DateTime       $date
-     * @param StatFilter|null $filter
-     *
-     * @return array
      */
-    public function calculateDayOrderStats(\DateTime $date, StatFilter $filter = null): array;
+    public function calculateDayOrderStats(DateTimeInterface $date, StatFilter $filter = null): array;
 
     /**
      * Calculates the in order stats for the given month.
-     *
-     * @param \DateTime       $date
-     * @param StatFilter|null $filter
-     *
-     * @return array
      */
-    public function calculateMonthOrderStats(\DateTime $date, StatFilter $filter = null): array;
+    public function calculateMonthOrderStats(DateTimeInterface $date, StatFilter $filter = null): array;
 
     /**
      * Calculates the in order stats for the given year.
-     *
-     * @param \DateTime       $date
-     * @param StatFilter|null $filter
-     *
-     * @return array
      */
-    public function calculateYearOrderStats(\DateTime $date, StatFilter $filter = null): array;
+    public function calculateYearOrderStats(DateTimeInterface $date, StatFilter $filter = null): array;
 
     /**
      * Creates an empty result.
-     *
-     * @return array
      */
     public function createEmptyResult(): array;
 }

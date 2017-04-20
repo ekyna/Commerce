@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Invoice\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
@@ -21,7 +22,7 @@ class InvoiceCostCalculator
      */
     public function calculate(InvoiceInterface $invoice): PurchaseCost
     {
-        $invoiceGood = $invoiceShipping = 0;
+        $invoiceGood = $invoiceShipping = new Decimal(0);
 
         foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
             if (!$item = $line->getSaleItem()) {
@@ -42,9 +43,14 @@ class InvoiceCostCalculator
                 continue;
             }
 
-            $count = $goodSum = $shippingSum = 0;
+            $count = 0;
+            $goodSum = new Decimal(0);
+            $shippingSum = new Decimal(0);
             foreach ($assignments as $assignment) {
-                $unit = $assignment->getStockUnit();
+                if (null === $unit = $assignment->getStockUnit()) {
+                    continue;
+                }
+
                 $goodSum += $unit->getNetPrice();
                 $shippingSum += $unit->getShippingPrice();
                 $count++;

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -12,87 +14,28 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface CountryInterface extends ResourceInterface
 {
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
-    public function getName();
+    public function getName(): ?string;
+
+    public function setName(string $name): CountryInterface;
+
+    public function getCode(): ?string;
+
+    public function setCode(string $code): CountryInterface;
+
+    public function isEnabled(): bool;
+
+    public function setEnabled(bool $enabled): CountryInterface;
 
     /**
-     * Sets the name.
-     *
-     * @param string $name
-     * @return $this|CountryInterface
+     * @return Collection|StateInterface[]
      */
-    public function setName($name);
+    public function getStates(): Collection;
 
-    /**
-     * Returns the code.
-     *
-     * @return string
-     */
-    public function getCode();
+    public function hasState(StateInterface $state): bool;
 
-    /**
-     * Sets the code.
-     *
-     * @param string $code
-     * @return $this|CountryInterface
-     */
-    public function setCode($code);
+    public function addState(StateInterface $state): CountryInterface;
 
-    /**
-     * Returns whether the country is enabled or not.
-     *
-     * @return boolean
-     */
-    public function isEnabled();
+    public function removeState(StateInterface $state): CountryInterface;
 
-    /**
-     * Sets the enabled.
-     *
-     * @param boolean $enabled
-     * @return $this|CountryInterface
-     */
-    public function setEnabled($enabled);
-
-    /**
-     * Returns the states.
-     *
-     * @return ArrayCollection|StateInterface[]
-     */
-    public function getStates();
-
-    /**
-     * Returns whether the country has the state or not.
-     *
-     * @param StateInterface $state
-     * @return bool
-     */
-    public function hasState(StateInterface $state);
-
-    /**
-     * Adds the state.
-     *
-     * @param StateInterface $state
-     * @return $this|CountryInterface
-     */
-    public function addState(StateInterface $state);
-
-    /**
-     * Removes the state.
-     *
-     * @param StateInterface $state
-     * @return $this|CountryInterface
-     */
-    public function removeState(StateInterface $state);
-
-    /**
-     * Sets the states.
-     *
-     * @param ArrayCollection|StateInterface[] $states
-     * @return $this|CountryInterface
-     */
-    public function setStates(ArrayCollection $states);
+    public function setStates(Collection $states): CountryInterface;
 }

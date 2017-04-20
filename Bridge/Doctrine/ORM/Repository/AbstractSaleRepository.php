@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class AbstractSaleRepository
@@ -16,9 +19,9 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 abstract class AbstractSaleRepository extends ResourceRepository implements SaleRepositoryInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findOneById(int $id)
+    public function findOneById(int $id): ?SaleInterface
     {
         $qb = $this->getOneQueryBuilder('o');
 
@@ -39,9 +42,9 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findOneByKey(string $key)
+    public function findOneByKey(string $key): ?SaleInterface
     {
         $qb = $this->getOneQueryBuilder('o');
 
@@ -62,26 +65,24 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findOneByNumber(string $number)
+    public function findOneByNumber(string $number): ?SaleInterface
     {
         $qb = $this->getOneQueryBuilder('o');
 
-        $sale = $qb
+        return $qb
             ->andWhere($qb->expr()->eq('o.number', ':number'))
             ->getQuery()
             ->useQueryCache(true)
             ->setParameter('number', $number)
             ->getOneOrNullResult();
-
-        return $sale;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findByCustomer(CustomerInterface $customer, array $states = [], $withChildren = false)
+    public function findByCustomer(CustomerInterface $customer, array $states = [], bool $withChildren = false): array
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -108,9 +109,9 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number)
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number): ?SaleInterface
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -138,9 +139,9 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findBySubject(SubjectInterface $subject, array $states = [])
+    public function findBySubject(SubjectInterface $subject, array $states = []): array
     {
         $qb = $this->createQueryBuilder('o');
         $qb
@@ -182,12 +183,12 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * Returns the "find one result" query builder.
      *
-     * @param string $alias
-     * @param string $indexBy
+     * @param string|null $alias
+     * @param string|null $indexBy
      *
-     * @return \Doctrine\ORM\QueryBuilder
+     * @return QueryBuilder
      */
-    protected function getOneQueryBuilder($alias = null, $indexBy = null)
+    protected function getOneQueryBuilder(string $alias = null, string $indexBy = null): QueryBuilder
     {
         return $this
             ->createQueryBuilder($alias, $indexBy)
@@ -216,7 +217,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
      *
      * @return $this|AbstractSaleRepository
      */
-    protected function loadLines(SaleInterface $sale)
+    protected function loadLines(SaleInterface $sale): AbstractSaleRepository
     {
         if (null !== $sale) {
             $qb = $this->createQueryBuilder('o');
@@ -243,7 +244,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
      *
      * @return $this|AbstractSaleRepository
      */
-    protected function loadPayments(SaleInterface $sale)
+    protected function loadPayments(SaleInterface $sale): AbstractSaleRepository
     {
         if (null !== $sale) {
             $qb = $this->createQueryBuilder('o');

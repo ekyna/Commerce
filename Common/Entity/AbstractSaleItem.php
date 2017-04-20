@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
@@ -15,90 +19,44 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  */
 abstract class AbstractSaleItem implements Model\SaleItemInterface
 {
-    use Model\AdjustableTrait,
-        SubjectRelativeTrait,
-        SortableTrait;
+    use Model\AdjustableTrait;
+    use SortableTrait;
+    use SubjectRelativeTrait;
 
-    /**
-     * @var Model\SaleItemInterface
-     */
-    protected $parent;
-
-    /**
-     * @var ArrayCollection|Model\SaleItemInterface[]
-     */
-    protected $children;
-
-    /**
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * @var float
-     */
-    protected $quantity = 1;
-
-    /**
-     * @var bool
-     */
-    protected $compound = false;
-
-    /**
-     * @var bool
-     */
-    protected $immutable = false;
-
-    /**
-     * @var bool
-     */
-    protected $configurable = false;
-
-    /**
-     * @var bool
-     */
-    protected $private = false;
-
-    /**
-     * @var array
-     */
-    protected $data = [];
+    protected ?Model\SaleItemInterface $parent = null;
+    /** @var Collection|Model\SaleItemInterface[] */
+    protected Collection $children;
+    protected ?string    $description  = null;
+    protected Decimal    $quantity;
+    protected bool       $compound     = false;
+    protected bool       $immutable    = false;
+    protected bool       $configurable = false;
+    protected bool       $private      = false;
+    protected array      $data         = [];
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->initializeAdjustments();
         $this->initializeSubjectRelative();
 
         $this->children = new ArrayCollection();
+        $this->quantity = new Decimal(1);
     }
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->designation ?: $this->reference ?: 'New sale item';
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getParent()
+    public function getParent(): ?Model\SaleItemInterface
     {
         return $this->parent;
     }
 
-    /**
-     * Returns the first public ancestor (if the item itself if it is public).
-     *
-     * @return $this|Model\SaleItemInterface
-     */
     public function getPublicParent(): Model\SaleItemInterface
     {
         if (!$this->isPrivate()) {
@@ -108,44 +66,37 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         $parent = $this;
         do {
             $parent = $parent->getParent();
-        } while($parent->isPrivate());
+        } while ($parent->isPrivate());
 
         return $parent;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setParent(Model\SaleItemInterface $parent = null)
+    public function setParent(?Model\SaleItemInterface $parent): Model\SaleItemInterface
     {
         $parent && $this->assertItemClass($parent);
 
-        if ($parent !== $this->parent) {
-            if ($previous = $this->parent) {
-                $this->parent = null;
-                $previous->removeChild($this);
-            }
+        if ($parent === $this->parent) {
+            return $this;
+        }
 
-            if ($this->parent = $parent) {
-                $this->parent->addChild($this);
-            }
+        if ($previous = $this->parent) {
+            $this->parent = null;
+            $previous->removeChild($this);
+        }
+
+        if ($this->parent = $parent) {
+            $this->parent->addChild($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasChildren()
+    public function hasChildren(): bool
     {
         return 0 < $this->children->count();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function createChild()
+    public function createChild(): Model\SaleItemInterface
     {
         $child = new static();
 
@@ -154,20 +105,14 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $child;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasChild(Model\SaleItemInterface $child)
+    public function hasChild(Model\SaleItemInterface $child): bool
     {
         $this->assertItemClass($child);
 
         return $this->children->contains($child);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addChild(Model\SaleItemInterface $child)
+    public function addChild(Model\SaleItemInterface $child): Model\SaleItemInterface
     {
         $this->assertItemClass($child);
 
@@ -179,10 +124,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeChild(Model\SaleItemInterface $child)
+    public function removeChild(Model\SaleItemInterface $child): Model\SaleItemInterface
     {
         $this->assertItemClass($child);
 
@@ -194,32 +136,23 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getChildren()
+    public function getChildren(): Collection
     {
         return $this->children;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAdjustment(Model\AdjustmentInterface $adjustment)
+    public function hasAdjustment(Model\AdjustmentInterface $adjustment): bool
     {
         $this->assertItemAdjustmentClass($adjustment);
 
         return $this->adjustments->contains($adjustment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAdjustment(Model\AdjustmentInterface $adjustment)
+    public function addAdjustment(Model\AdjustmentInterface $adjustment): Model\AdjustableInterface
     {
         $this->assertItemAdjustmentClass($adjustment);
 
-        /** @var Model\SaleItemAdjustmentInterface $adjustment*/
+        /** @var Model\SaleItemAdjustmentInterface $adjustment */
         if (!$this->adjustments->contains($adjustment)) {
             $this->adjustments->add($adjustment);
             $adjustment->setItem($this);
@@ -228,14 +161,11 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAdjustment(Model\AdjustmentInterface $adjustment)
+    public function removeAdjustment(Model\AdjustmentInterface $adjustment): Model\AdjustableInterface
     {
         $this->assertItemAdjustmentClass($adjustment);
 
-        /** @var AbstractSaleItemAdjustment $adjustment*/
+        /** @var AbstractSaleItemAdjustment $adjustment */
         if ($this->adjustments->contains($adjustment)) {
             $this->adjustments->removeElement($adjustment);
             $adjustment->setItem(null);
@@ -244,119 +174,79 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this;
     }
 
-
-    /**
-     * @inheritdoc
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): Model\SaleItemInterface
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuantity()
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuantity($quantity)
+    public function setQuantity(Decimal $quantity): Model\SaleItemInterface
     {
-        $this->quantity = (float)$quantity;
+        $this->quantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isCompound()
+    public function isCompound(): bool
     {
         return $this->compound;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCompound($compound)
+    public function setCompound(bool $compound): Model\SaleItemInterface
     {
-        $this->compound = (bool)$compound;
+        $this->compound = $compound;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isImmutable()
+    public function isImmutable(): bool
     {
         return $this->immutable;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setImmutable($immutable)
+    public function setImmutable(bool $immutable): Model\SaleItemInterface
     {
-        $this->immutable = (bool)$immutable;
+        $this->immutable = $immutable;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isConfigurable()
+    public function isConfigurable(): bool
     {
         return $this->configurable;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setConfigurable($configurable)
+    public function setConfigurable(bool $configurable): Model\SaleItemInterface
     {
-        $this->configurable = (bool)$configurable;
+        $this->configurable = $configurable;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isPrivate()
+    public function isPrivate(): bool
     {
         return $this->private;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setPrivate($private)
+    public function setPrivate(bool $private): Model\SaleItemInterface
     {
-        $this->private = (bool)$private;
+        $this->private = $private;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function hasPrivateChildren()
+    public function hasPrivateChildren(): bool
     {
         foreach ($this->children as $child) {
             if ($child->isPrivate()) {
@@ -367,10 +257,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function hasPublicChildren()
+    public function hasPublicChildren(): bool
     {
         foreach ($this->children as $child) {
             if (!$child->isPrivate()) {
@@ -381,25 +268,22 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasData($key = null)
+    public function hasData(?string $key): bool
     {
         if (!empty($key)) {
-            return array_key_exists($key, (array)$this->data) && !empty($this->data[$key]);
+            return array_key_exists($key, $this->data) && !empty($this->data[$key]);
         }
 
         return !empty($this->data);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getData($key = null)
     {
         if (!empty($key)) {
-            if (array_key_exists($key, (array)$this->data)) {
+            if (array_key_exists($key, $this->data)) {
                 return $this->data[$key];
             }
 
@@ -410,41 +294,31 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function setData($keyOrData, $data = null)
+    public function setData($keyOrData, $data = null): Model\SaleItemInterface
     {
         if (is_array($keyOrData) && null === $data) {
             $this->data = $keyOrData;
         } elseif (is_string($keyOrData) && !empty($keyOrData)) {
             $this->data[$keyOrData] = $data;
         } else {
-            throw new InvalidArgumentException(sprintf("Bad usage of %s::setData", static::class));
+            throw new InvalidArgumentException(sprintf('Bad usage of %s::setData', static::class));
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function unsetData($key)
+    public function unsetData(string $key): Model\SaleItemInterface
     {
-        if (is_string($key) && !empty($key)) {
-            if (array_key_exists($key, (array)$this->data)) {
-                unset($this->data[$key]);
-            }
-        } else {
-            throw new InvalidArgumentException('Expected key as string.');
+        if (array_key_exists($key, $this->data)) {
+            unset($this->data[$key]);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getLevel()
+    public function getLevel(): int
     {
         $level = 0;
 
@@ -456,9 +330,6 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $level;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getRoot(): ?Model\SaleItemInterface
     {
         $item = $this;
@@ -470,32 +341,23 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $item;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getParentsQuantity()
+    public function getParentsQuantity(): Decimal
     {
-        $modifier = 1;
+        $modifier = new Decimal(1);
 
         $parent = $this;
-        while (null !== $parent = $parent->getParent()) {
-            $modifier *= $parent->getQuantity();
+        while ($parent = $parent->getParent()) {
+            $modifier = $modifier->mul($parent->getQuantity());
         }
 
         return $modifier;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTotalQuantity()
+    public function getTotalQuantity(): Decimal
     {
-        return $this->getQuantity() * $this->getParentsQuantity();
+        return $this->getQuantity()->mul($this->getParentsQuantity());
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isLast(): bool
     {
         if (null !== $this->parent) {
@@ -524,7 +386,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         }
 
         if (null !== $this->parent) {
-            $data['q'] = floatval($this->quantity); // TODO Packaging format
+            $data['q'] = $this->quantity; // TODO Packaging format
         }
 
         if (0 < $this->children->count()) {
@@ -543,22 +405,16 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
 
     /**
      * Asserts that the given sale is an instance of the expected class.
-     *
-     * @param Model\SaleInterface $sale
      */
-    abstract protected function assertSaleClass(Model\SaleInterface $sale);
+    abstract protected function assertSaleClass(Model\SaleInterface $sale): void;
 
     /**
      * Asserts that the given sale item is an instance of the expected class.
-     *
-     * @param Model\SaleItemInterface $child
      */
-    abstract protected function assertItemClass(Model\SaleItemInterface $child);
+    abstract protected function assertItemClass(Model\SaleItemInterface $child): void;
 
     /**
      * Asserts that the given adjustment is an instance of the expected class.
-     *
-     * @param Model\AdjustmentInterface $adjustment
      */
-    abstract protected function assertItemAdjustmentClass(Model\AdjustmentInterface $adjustment);
+    abstract protected function assertItemAdjustmentClass(Model\AdjustmentInterface $adjustment): void;
 }

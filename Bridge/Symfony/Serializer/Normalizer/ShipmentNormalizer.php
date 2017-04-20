@@ -1,86 +1,62 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
  * Class ShipmentNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentNormalizer extends AbstractResourceNormalizer
+class ShipmentNormalizer extends ResourceNormalizer
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
-     * @param ShipmentInterface $shipment
+     * @param ShipmentInterface $object
      */
-    public function normalize($shipment, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
-        $data = parent::normalize($shipment, $format, $context);
+        $data = parent::normalize($object, $format, $context);
 
         if ($this->contextHasGroup(['Default', 'OrderShipment'], $context)) {
-            $sale = $shipment->getSale();
+            $sale = $object->getSale();
 
             $data = array_replace($data, [
-                'number'          => $shipment->getNumber(),
+                'number'          => $object->getNumber(),
                 'company'         => $sale->getCompany(),
                 'email'           => $sale->getEmail(),
                 'first_name'      => $sale->getFirstName(),
                 'last_name'       => $sale->getLastName(),
-                'type'            => $shipment->isReturn() ? 'return' : 'shipment',
-                'method'          => $shipment->getMethod()->getName(),
-                'tracking_number' => $shipment->getTrackingNumber(),
-                'description'     => $shipment->getDescription(),
+                'type'            => $object->isReturn() ? 'return' : 'shipment',
+                'method'          => $object->getMethod()->getName(),
+                'tracking_number' => $object->getTrackingNumber(),
+                'description'     => $object->getDescription(),
             ]);
         } elseif ($this->contextHasGroup('Summary', $context)) {
             $items = [];
             $parcels = [];
 
-            foreach ($shipment->getItems() as $item) {
+            foreach ($object->getItems() as $item) {
                 $items[] = $this->normalizeObject($item, $format, $context);
             }
-            foreach ($shipment->getParcels() as $parcel) {
+            foreach ($object->getParcels() as $parcel) {
                 $parcels[] = $this->normalizeObject($parcel, $format, $context);
             }
 
             $data = array_replace($data, [
                 'items'           => $items,
                 'parcels'         => $parcels,
-                'description'     => $shipment->getDescription(),
-                'tracking_number' => $shipment->getTrackingNumber(),
-                'valorization'    => $shipment->getValorization(),
+                'description'     => $object->getDescription(),
+                'tracking_number' => $object->getTrackingNumber(),
+                'valorization'    => $object->getValorization(),
             ]);
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
-    {
-        //$object = parent::denormalize($data, $class, $format, $context);
-
-        throw new \Exception('Not yet implemented');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsNormalization($data, $format = null)
-    {
-        return $data instanceof ShipmentInterface;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function supportsDenormalization($data, $type, $format = null)
-    {
-        return class_exists($type) && is_subclass_of($type, ShipmentInterface::class);
     }
 }

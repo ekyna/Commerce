@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Common\Model\NotificationInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
@@ -12,66 +15,31 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 abstract class AbstractNotification implements NotificationInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * @var array
-     */
-    protected $data = [];
-
-    /**
-     * @var \DateTime
-     */
-    protected $sentAt;
-
-    /**
-     * @var string
-     */
-    protected $details;
+    protected ?int               $id      = null;
+    protected ?string            $type    = null;
+    protected array              $data    = [];
+    protected ?DateTimeInterface $sentAt  = null;
+    protected ?string            $details = null;
 
 
-    /**
-     * @inheritDoc
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setType($type)
+    public function setType(string $type): NotificationInterface
     {
         $this->type = $type;
 
         return $this;
     }
 
-    /**
-     * Returns whether the notification has data, optionally for the given key.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function hasData($key = null)
+    public function hasData(?string $key): bool
     {
         if (!is_null($key)) {
             return isset($this->data[$key]);
@@ -83,7 +51,7 @@ abstract class AbstractNotification implements NotificationInterface
     /**
      * @inheritDoc
      */
-    public function getData($key = null)
+    public function getData(?string $key = null)
     {
         if (!is_null($key)) {
             if (isset($this->data[$key])) {
@@ -99,16 +67,16 @@ abstract class AbstractNotification implements NotificationInterface
     /**
      * @inheritDoc
      */
-    public function setData($data, $key = null)
+    public function setData($data, ?string $key): NotificationInterface
     {
         if (!is_null($key)) {
             if (!is_scalar($data)) {
-                throw new InvalidArgumentException("Expected scalar data.");
+                throw new InvalidArgumentException('Expected scalar data.');
             }
 
             $this->data[$key] = $data;
         } elseif (!is_array($data)) {
-            throw new InvalidArgumentException("Expected array data.");
+            throw new InvalidArgumentException('Expected array data.');
         } else {
             $this->data = $data;
         }
@@ -116,36 +84,24 @@ abstract class AbstractNotification implements NotificationInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSentAt()
+    public function getSentAt(): ?DateTimeInterface
     {
         return $this->sentAt;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setSentAt(\DateTime $date = null)
+    public function setSentAt(DateTimeInterface $date): NotificationInterface
     {
         $this->sentAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDetails()
+    public function getDetails(): ?string
     {
         return $this->details;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setDetails($details)
+    public function setDetails(string $details): NotificationInterface
     {
         $this->details = $details;
 

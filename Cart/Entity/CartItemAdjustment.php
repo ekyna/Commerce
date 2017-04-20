@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Entity;
 
 use Ekyna\Component\Commerce\Cart\Model\CartItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartItemInterface;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItemAdjustment;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 
 /**
  * Class CartItemAdjustment
@@ -15,13 +17,10 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 class CartItemAdjustment extends AbstractSaleItemAdjustment implements CartItemAdjustmentInterface
 {
-    /**
-     * @inheritDoc
-     */
     protected function assertSaleItemClass(SaleItemInterface $item): void
     {
         if (!$item instanceof CartItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . CartItemInterface::class);
+            throw new UnexpectedTypeException($item, CartItemInterface::class);
         }
     }
 }

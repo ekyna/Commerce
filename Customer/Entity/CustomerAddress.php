@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
@@ -13,104 +15,59 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  */
 class CustomerAddress extends AbstractAddress implements CustomerAddressInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int               $id              = null;
+    protected ?CustomerInterface $customer        = null;
+    protected bool               $invoiceDefault  = false;
+    protected bool               $deliveryDefault = false;
 
-    /**
-     * @var CustomerInterface
-     */
-    protected $customer;
-
-    /**
-     * @var boolean
-     */
-    protected $invoiceDefault;
-
-    /**
-     * @var boolean
-     */
-    protected $deliveryDefault;
-
-
-    /**
-     * Constructor.
-     */
-    public function __construct()
-    {
-        $this->invoiceDefault = false;
-        $this->deliveryDefault = false;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCustomer()
+    public function getCustomer(): ?CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCustomer(CustomerInterface $customer = null)
+    public function setCustomer(?CustomerInterface $customer): CustomerAddressInterface
     {
-        if ($this->customer !== $customer) {
-            if ($previous = $this->customer) {
-                $this->customer = null;
-                $previous->removeAddress($this);
-            }
+        if ($this->customer === $customer) {
+            return $this;
+        }
 
-            if ($this->customer = $customer) {
-                $this->customer->addAddress($this);
-            }
+        if ($previous = $this->customer) {
+            $this->customer = null;
+            $previous->removeAddress($this);
+        }
+
+        if ($this->customer = $customer) {
+            $this->customer->addAddress($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isInvoiceDefault()
+    public function isInvoiceDefault(): bool
     {
         return $this->invoiceDefault;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceDefault($invoiceDefault)
+    public function setInvoiceDefault(bool $default): CustomerAddressInterface
     {
-        $this->invoiceDefault = (bool)$invoiceDefault;
+        $this->invoiceDefault = $default;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isDeliveryDefault()
+    public function isDeliveryDefault(): bool
     {
         return $this->deliveryDefault;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryDefault($deliveryDefault)
+    public function setDeliveryDefault(bool $default): CustomerAddressInterface
     {
-        $this->deliveryDefault = (bool)$deliveryDefault;
+        $this->deliveryDefault = $default;
 
         return $this;
     }

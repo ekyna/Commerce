@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model;
@@ -14,18 +16,14 @@ interface DiscountResolverInterface
     /**
      * Resolves the sale discount adjustments.
      *
-     * @param Model\SaleInterface $sale
-     *
-     * @return array|Model\AdjustmentDataInterface[]
+     * @return Model\AdjustmentDataInterface[]
      */
-    public function resolveSale(Model\SaleInterface $sale);
+    public function resolveSale(Model\SaleInterface $sale): array;
 
     /**
      * Resolves the sale item discount adjustments.
      *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return array|Model\AdjustmentDataInterface[]
+     * @return Model\AdjustmentDataInterface[]
      */
-    public function resolveSaleItem(Model\SaleItemInterface $item);
+    public function resolveSaleItem(Model\SaleItemInterface $item): array;
 }

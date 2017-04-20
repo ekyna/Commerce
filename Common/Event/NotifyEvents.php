@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 /**
@@ -9,8 +11,7 @@ namespace Ekyna\Component\Commerce\Common\Event;
  */
 final class NotifyEvents
 {
-    const BUILD = 'ekyna_commerce.notify.build';
-
+    public const BUILD = 'ekyna_commerce.notify.build';
 
     /**
      * Disabled constructor.

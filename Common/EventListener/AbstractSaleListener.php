@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
@@ -10,7 +13,6 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
-use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Resolver\DueDateResolverInterface;
@@ -19,6 +21,8 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
+use function is_null;
+
 /**
  * Class AbstractSaleListener
  * @package Ekyna\Component\Commerce\Common\EventListener
@@ -26,194 +30,79 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractSaleListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected GeneratorInterface         $numberGenerator;
+    protected GeneratorInterface         $keyGenerator;
+    protected PricingUpdaterInterface    $pricingUpdater;
+    protected SaleFactoryInterface       $saleFactory;
+    protected SaleUpdaterInterface       $saleUpdater;
+    protected DueDateResolverInterface   $dueDateResolver;
+    protected StateResolverInterface     $stateResolver;
+    protected CurrencyProviderInterface  $currencyProvider;
+    protected LocaleProviderInterface    $localeProvider;
+    protected AmountCalculatorFactory    $amountCalculatorFactory;
+    protected string                     $defaultVatDisplayMode;
 
-    /**
-     * @var GeneratorInterface
-     */
-    protected $numberGenerator;
-
-    /**
-     * @var GeneratorInterface
-     */
-    protected $keyGenerator;
-
-    /**
-     * @var PricingUpdaterInterface
-     */
-    protected $pricingUpdater;
-
-    /**
-     * @var SaleFactoryInterface
-     */
-    protected $saleFactory;
-
-    /**
-     * @var SaleUpdaterInterface
-     */
-    protected $saleUpdater;
-
-    /**
-     * @var DueDateResolverInterface
-     */
-    protected $dueDateResolver;
-
-    /**
-     * @var StateResolverInterface
-     */
-    protected $stateResolver;
-
-    /**
-     * @var CurrencyProviderInterface
-     */
-    protected $currencyProvider;
-
-    /**
-     * @var LocaleProviderInterface
-     */
-    protected $localeProvider;
-
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $amountCalculatorFactory;
-
-    /**
-     * @var string
-     */
-    protected $defaultVatDisplayMode;
-
-
-    /**
-     * Sets the persistence helper.
-     *
-     * @param PersistenceHelperInterface $helper
-     */
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
         $this->persistenceHelper = $helper;
     }
 
-    /**
-     * Sets the number generator.
-     *
-     * @param GeneratorInterface $generator
-     */
     public function setNumberGenerator(GeneratorInterface $generator): void
     {
         $this->numberGenerator = $generator;
     }
 
-    /**
-     * Sets the key generator.
-     *
-     * @param GeneratorInterface $generator
-     */
     public function setKeyGenerator(GeneratorInterface $generator): void
     {
         $this->keyGenerator = $generator;
     }
 
-    /**
-     * Sets the pricing updater.
-     *
-     * @param PricingUpdaterInterface $updater
-     */
     public function setPricingUpdater(PricingUpdaterInterface $updater): void
     {
         $this->pricingUpdater = $updater;
     }
 
-    /**
-     * Sets the due date resolver.
-     *
-     * @param DueDateResolverInterface $resolver
-     */
     public function setDueDateResolver(DueDateResolverInterface $resolver): void
     {
         $this->dueDateResolver = $resolver;
     }
 
-    /**
-     * Sets the sale factory.
-     *
-     * @param SaleFactoryInterface $factory
-     */
     public function setSaleFactory(SaleFactoryInterface $factory): void
     {
         $this->saleFactory = $factory;
     }
 
-    /**
-     * Sets the sale updater.
-     *
-     * @param SaleUpdaterInterface $updater
-     */
     public function setSaleUpdater(SaleUpdaterInterface $updater): void
     {
         $this->saleUpdater = $updater;
     }
 
-    /**
-     * Sets the state resolver.
-     *
-     * @param StateResolverInterface $resolver
-     */
     public function setStateResolver(StateResolverInterface $resolver): void
     {
         $this->stateResolver = $resolver;
     }
 
-    /**
-     * Sets the currency provider.
-     *
-     * @param CurrencyProviderInterface $provider
-     */
     public function setCurrencyProvider(CurrencyProviderInterface $provider): void
     {
         $this->currencyProvider = $provider;
     }
 
-    /**
-     * Sets the locale provider.
-     *
-     * @param LocaleProviderInterface $provider
-     */
     public function setLocaleProvider(LocaleProviderInterface $provider): void
     {
         $this->localeProvider = $provider;
     }
 
-    /**
-     * Sets the amount calculator factory.
-     *
-     * @param AmountCalculatorFactory $amountCalculatorFactory
-     */
     public function setAmountCalculatorFactory(AmountCalculatorFactory $amountCalculatorFactory): void
     {
         $this->amountCalculatorFactory = $amountCalculatorFactory;
     }
 
-    /**
-     * Sets the default vat display mode.
-     *
-     * @param string $mode
-     */
     public function setDefaultVatDisplayMode(string $mode): void
     {
         $this->defaultVatDisplayMode = $mode;
     }
 
-    /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws Exception\CommerceExceptionInterface
-     */
     public function onInsert(ResourceEventInterface $event): void
     {
         $sale = $this->getSaleFromEvent($event);
@@ -226,64 +115,53 @@ abstract class AbstractSaleListener
     /**
      * Handles the sale insertion.
      *
-     * @param SaleInterface $sale
-     *
      * @return bool Whether the sale has been changed.
-     *
-     * @throws Exception\CommerceExceptionInterface
      */
     protected function handleInsert(SaleInterface $sale): bool
     {
         $changed = false;
 
         // Generate number and key
-        $changed |= $this->updateNumber($sale);
-        $changed |= $this->updateKey($sale);
+        $changed = $this->updateNumber($sale) || $changed;
+        $changed = $this->updateKey($sale) || $changed;
 
         // Update customer information
-        $changed |= $this->updateInformation($sale, true);
+        $changed = $this->updateInformation($sale, true) || $changed;
 
         // Update pricing
-        $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
+        $changed = $this->pricingUpdater->updateVatNumberSubject($sale) || $changed;
 
         // Update exchange rate
-        $changed |= $this->saleUpdater->updateExchangeRate($sale);
+        $changed = $this->saleUpdater->updateExchangeRate($sale) || $changed;
 
         // Update payment method
-        $changed |= $this->saleUpdater->updatePaymentMethod($sale);
+        $changed = $this->saleUpdater->updatePaymentMethod($sale) || $changed;
 
         // Update outstanding
-        $changed |= $this->saleUpdater->updatePaymentTerm($sale);
+        $changed = $this->saleUpdater->updatePaymentTerm($sale) || $changed;
 
         // Update total weight
-        $changed |= $this->saleUpdater->updateWeightTotal($sale);
+        $changed = $this->saleUpdater->updateWeightTotal($sale) || $changed;
 
         // Update shipment method and amount
-        $changed |= $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+        $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
 
         // Update discounts
-        $changed |= $this->saleUpdater->updateDiscounts($sale, true);
+        $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
 
         // Update taxation
-        $changed |= $this->saleUpdater->updateTaxation($sale, true);
+        $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
 
         // Update totals
-        $changed |= $this->saleUpdater->updateTotals($sale);
+        $changed = $this->saleUpdater->updateTotals($sale) || $changed;
 
         // Update state
-        $changed |= $this->updateState($sale);
+        $changed = $this->updateState($sale) || $changed;
 
         // Coupon validity check
-        $changed |= $this->checkCouponValidity($sale);
-
-        return $changed;
+        return $this->checkCouponValidity($sale) || $changed;
     }
 
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onUpdate(ResourceEventInterface $event): void
     {
         $sale = $this->getSaleFromEvent($event);
@@ -314,8 +192,6 @@ abstract class AbstractSaleListener
     /**
      * Handles the sale update.
      *
-     * @param SaleInterface $sale
-     *
      * @return bool Whether the sale has been changed.
      */
     protected function handleUpdate(SaleInterface $sale): bool
@@ -323,24 +199,24 @@ abstract class AbstractSaleListener
         $changed = false;
 
         // Generate number and key
-        $changed |= $this->updateNumber($sale);
-        $changed |= $this->updateKey($sale);
+        $changed = $this->updateNumber($sale) || $changed;
+        $changed = $this->updateKey($sale) || $changed;
 
         // Handle customer information
-        $changed |= $this->updateInformation($sale, true);
+        $changed = $this->updateInformation($sale, true) || $changed;
 
         // Update pricing
         if ($this->persistenceHelper->isChanged($sale, 'vatNumber')) {
-            $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
+            $changed = $this->pricingUpdater->updateVatNumberSubject($sale) || $changed;
         }
 
         // If customer has changed
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
             // Update payment method
-            $changed |= $this->saleUpdater->updatePaymentMethod($sale);
+            $changed = $this->saleUpdater->updatePaymentMethod($sale) || $changed;
 
             // Update payment term
-            $changed |= $this->saleUpdater->updatePaymentTerm($sale);
+            $changed = $this->saleUpdater->updatePaymentTerm($sale) || $changed;
 
             // TODO For now customer change is prevented
             /** @see preventForbiddenChange() */
@@ -355,29 +231,24 @@ abstract class AbstractSaleListener
 
         // Update shipment and amount
         if ($this->persistenceHelper->isChanged($sale, ['shipmentWeight', 'shipmentMethod', 'customerGroup'])) {
-            $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+            $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
         }
 
         // Update discounts
         if ($this->isDiscountUpdateNeeded($sale)) {
-            $changed |= $this->saleUpdater->updateDiscounts($sale, true);
+            $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
         }
 
         // Update taxation
         if ($this->isTaxationUpdateNeeded($sale)) {
-            $changed |= $this->saleUpdater->updateTaxation($sale, true);
+            $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
         } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed |= $this->saleUpdater->updateShipmentTaxation($sale, true);
+            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
         }
 
         return $changed;
     }
 
-    /**
-     * Address change event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onAddressChange(ResourceEventInterface $event): void
     {
         $sale = $this->getSaleFromEvent($event);
@@ -397,10 +268,6 @@ abstract class AbstractSaleListener
 
     /**
      * Handles the address change.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
      */
     protected function handleAddressChange(SaleInterface $sale): bool
     {
@@ -408,19 +275,19 @@ abstract class AbstractSaleListener
 
         // Update shipment method and amount
         if ($this->didDeliveryCountryChanged($sale)) {
-            $changed |= $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+            $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
         }
 
         // Update discounts
         if ($this->isDiscountUpdateNeeded($sale)) {
-            $changed |= $this->saleUpdater->updateDiscounts($sale, true);
+            $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
         }
 
         // Update taxation
         if ($this->isTaxationUpdateNeeded($sale)) {
-            $changed |= $this->saleUpdater->updateTaxation($sale, true);
+            $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
         } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed |= $this->saleUpdater->updateShipmentTaxation($sale, true);
+            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
         }
 
         return $changed;
@@ -428,10 +295,6 @@ abstract class AbstractSaleListener
 
     /**
      * Content (item/adjustment/payment/shipment/invoice) change event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws Exception\CommerceExceptionInterface
      */
     public function onContentChange(ResourceEventInterface $event): void
     {
@@ -446,7 +309,7 @@ abstract class AbstractSaleListener
         $this->handleContentChange($sale);
 
         // Reflect content change on update timestamp
-        $sale->setUpdatedAt(new \DateTime());
+        $sale->setUpdatedAt(new DateTime());
 
         $this->checkCouponValidity($sale);
 
@@ -455,12 +318,6 @@ abstract class AbstractSaleListener
 
     /**
      * Handles the content change.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
-     *
-     * @throws Exception\CommerceExceptionInterface
      */
     protected function handleContentChange(SaleInterface $sale): bool
     {
@@ -468,32 +325,27 @@ abstract class AbstractSaleListener
         $changed = $this->saleUpdater->updateWeightTotal($sale);
 
         // Shipment method and amount
-        $changed |= $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+        $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
 
         // Shipment taxation
         if ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true);
+            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
         }
 
         // Update totals
-        $changed |= $this->saleUpdater->updateTotals($sale);
+        $changed = $this->saleUpdater->updateTotals($sale) || $changed;
 
         // TODO Check coupon validity
 
         // Update state
-        $changed |= $this->updateState($sale);
+        $changed = $this->updateState($sale) || $changed;
 
         // Update due dates
-        $changed |= $this->updateDueDates($sale);
+        $changed = $this->updateDueDates($sale) || $changed;
 
         return $changed;
     }
 
-    /**
-     * State change event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onStateChange(ResourceEventInterface $event): void
     {
         $sale = $this->getSaleFromEvent($event);
@@ -509,8 +361,6 @@ abstract class AbstractSaleListener
 
     /**
      * Handles the state change.
-     *
-     * @param SaleInterface $sale
      */
     protected function handleStateChange(SaleInterface $sale): void
     {
@@ -519,57 +369,6 @@ abstract class AbstractSaleListener
         }
     }
 
-    /**
-     * Initialize event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInitialize(ResourceEventInterface $event): void
-    {
-        $sale = $this->getSaleFromEvent($event);
-
-        if (null !== $customer = $sale->getCustomer()) {
-            if (!$sale->getLocale()) {
-                $sale->setLocale($customer->getLocale());
-            }
-
-            if (!$sale->getCurrency()) {
-                $sale->setCurrency($customer->getCurrency());
-            }
-
-            $invoiceDefault = $customer->getDefaultInvoiceAddress(true);
-            if (null === $sale->getInvoiceAddress() && null !== $invoiceDefault) {
-                $sale->setInvoiceAddress(
-                    $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
-                );
-            }
-
-            $deliveryDefault = $customer->getDefaultDeliveryAddress(true);
-            if (null === $sale->getDeliveryAddress() && null !== $deliveryDefault && $deliveryDefault !== $invoiceDefault) {
-                $sale
-                    ->setSameAddress(false)
-                    ->setDeliveryAddress(
-                        $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
-                    );
-            }
-
-            $this->saleUpdater->updateShipmentMethodAndAmount($sale);
-        }
-
-        if (!$sale->getLocale()) {
-            $sale->setLocale($this->localeProvider->getCurrentLocale());
-        }
-
-        if (!$sale->getCurrency()) {
-            $sale->setCurrency($this->currencyProvider->getCurrency());
-        }
-    }
-
-    /**
-     * Pre create event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onPreCreate(ResourceEventInterface $event): void
     {
         $sale = $this->getSaleFromEvent($event);
@@ -579,13 +378,6 @@ abstract class AbstractSaleListener
         $this->pricingUpdater->updateVatNumberSubject($sale);
     }
 
-    /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws Exception\IllegalOperationException
-     */
     public function onPreDelete(ResourceEventInterface $event): void
     {
         if ($event->getHard()) {
@@ -607,11 +399,7 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Returns whether or not the discount adjustments should be updated.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
+     * Returns whether the discount adjustments should be updated.
      */
     protected function isDiscountUpdateNeeded(SaleInterface $sale): bool
     {
@@ -619,7 +407,11 @@ abstract class AbstractSaleListener
             return true;
         }
 
-        if ((0 == $sale->getPaidTotal()) && $this->persistenceHelper->isChanged($sale, ['customerGroup', 'customer'])) {
+        if ($sale->getPaidTotal()->isZero()
+            && $this->persistenceHelper->isChanged($sale, [
+                'customerGroup',
+                'customer',
+            ])) {
             return true;
         }
 
@@ -628,10 +420,6 @@ abstract class AbstractSaleListener
 
     /**
      * Returns whether the invoice address has changed.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
      */
     protected function didInvoiceCountryChanged(SaleInterface $sale): bool
     {
@@ -659,11 +447,7 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Returns whether or not the taxation adjustments should be updated.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
+     * Returns whether the taxation adjustments should be updated.
      */
     protected function isTaxationUpdateNeeded(SaleInterface $sale): bool
     {
@@ -680,10 +464,6 @@ abstract class AbstractSaleListener
 
     /**
      * Returns whether the delivery country changed.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
      */
     protected function didDeliveryCountryChanged(SaleInterface $sale): bool
     {
@@ -718,11 +498,7 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Returns whether or not the shipment related taxation adjustments should be updated.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
+     * Returns whether the shipment related taxation adjustments should be updated.
      */
     protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale): bool
     {
@@ -731,8 +507,6 @@ abstract class AbstractSaleListener
 
     /**
      * Updates the number.
-     *
-     * @param SaleInterface $sale
      *
      * @return bool Whether the sale number has been update.
      */
@@ -750,8 +524,6 @@ abstract class AbstractSaleListener
     /**
      * Updates the key.
      *
-     * @param SaleInterface $sale
-     *
      * @return bool Whether the sale key has been updated.
      */
     protected function updateKey(SaleInterface $sale): bool
@@ -768,16 +540,13 @@ abstract class AbstractSaleListener
     /**
      * Updates the customer information.
      *
-     * @param SaleInterface $sale
-     * @param bool          $persistence
-     *
      * @return bool Whether the sale has been changed or not.
      */
     protected function updateInformation(SaleInterface $sale, bool $persistence = false): bool
     {
         $changed = false;
 
-        if (null !== $customer = $sale->getCustomer()) {
+        if ($customer = $sale->getCustomer()) {
             // Customer group
             if (null === $sale->getCustomerGroup()) {
                 $sale->setCustomerGroup($customer->getCustomerGroup());
@@ -785,67 +554,65 @@ abstract class AbstractSaleListener
             }
 
             // Email
-            if (0 == strlen($sale->getEmail())) {
+            if (empty($sale->getEmail())) {
                 $sale->setEmail($customer->getEmail());
                 $changed = true;
             }
 
             // Identity
-            if (0 == strlen($sale->getGender())) {
+            if (empty($sale->getGender())) {
                 $sale->setGender($customer->getGender());
                 $changed = true;
             }
-            if (0 == strlen($sale->getFirstName())) {
+            if (empty($sale->getFirstName())) {
                 $sale->setFirstName($customer->getFirstName());
                 $changed = true;
             }
-            if (0 == strlen($sale->getLastName())) {
+            if (empty($sale->getLastName())) {
                 $sale->setLastName($customer->getLastName());
                 $changed = true;
             }
 
             // Company
-            if (0 == strlen($sale->getCompany()) && 0 < strlen($customer->getCompany())) {
+            if (empty($sale->getCompany()) && !empty($customer->getCompany())) {
                 $sale->setCompany($customer->getCompany());
                 $changed = true;
             }
-            if (0 == strlen($sale->getCompanyNumber()) && 0 < strlen($customer->getCompanyNumber())) {
+            if (empty($sale->getCompanyNumber()) && !empty($customer->getCompanyNumber())) {
                 $sale->setCompanyNumber($customer->getCompanyNumber());
                 $changed = true;
             }
 
             // Vat data
-            $changed |= $this->updateVatData($sale);
+            $changed = $this->updateVatData($sale) || $changed;
 
             // Invoice address
-            if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress(true)) {
-                $changed |= $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address, $persistence);
+            if (is_null($sale->getInvoiceAddress()) && $address = $customer->getDefaultInvoiceAddress(true)) {
+                $changed = $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address, $persistence)
+                    || $changed;
             }
 
             // Delivery address
             if ($sale->isSameAddress()) {
                 // Remove unused address
-                if (null !== $address = $sale->getDeliveryAddress()) {
+                if ($address = $sale->getDeliveryAddress()) {
                     $sale->setDeliveryAddress(null);
                     if ($persistence) {
                         $this->persistenceHelper->remove($address, true);
                     }
                 }
-            } elseif (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
-                $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address, $persistence);
+            } elseif (is_null($sale->getDeliveryAddress()) && $address = $customer->getDefaultDeliveryAddress()) {
+                $changed = $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address, $persistence)
+                    || $changed;
             }
         }
 
         // Vat display mode
-        $changed |= $this->updateVatDisplayMode($sale);
-
-        return $changed;
+        return $this->updateVatDisplayMode($sale) || $changed;
     }
 
     /**
      * Updates the vat data.
-     *
-     * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed.
      */
@@ -854,7 +621,7 @@ abstract class AbstractSaleListener
         $changed = false;
 
         if (null !== $customer = $sale->getCustomer()) {
-            if (0 == strlen($sale->getVatNumber()) && 0 < strlen($customer->getVatNumber())) {
+            if (empty($sale->getVatNumber()) && !empty($customer->getVatNumber())) {
                 $sale->setVatNumber($customer->getVatNumber());
                 $changed = true;
             }
@@ -873,10 +640,6 @@ abstract class AbstractSaleListener
 
     /**
      * Updates the vat display mode.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
      */
     protected function updateVatDisplayMode(SaleInterface $sale): bool
     {
@@ -886,7 +649,7 @@ abstract class AbstractSaleListener
         }
 
         $mode = null;
-        if (null !== $group = $sale->getCustomerGroup()) {
+        if ($group = $sale->getCustomerGroup()) {
             $mode = $group->getVatDisplayMode();
         }
         if (null === $mode) {
@@ -904,8 +667,6 @@ abstract class AbstractSaleListener
 
     /**
      * Updates the state.
-     *
-     * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed or not.
      *
@@ -925,9 +686,7 @@ abstract class AbstractSaleListener
     /**
      * Updates the due dates.
      *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether or not the sale has been updated.
+     * @return bool Whether the sale has been updated.
      */
     protected function updateDueDates(SaleInterface $sale): bool
     {
@@ -946,8 +705,6 @@ abstract class AbstractSaleListener
      * Checks that the coupon can still be applied to the given sale.
      * If not, clears the coupon and its data.
      *
-     * @param SaleInterface $sale
-     *
      * @return bool Whether the coupon has been cleared.
      */
     protected function checkCouponValidity(SaleInterface $sale): bool
@@ -964,7 +721,7 @@ abstract class AbstractSaleListener
         if (0 < $data['gross']) {
             $result = $this->amountCalculatorFactory->create()->calculateSale($sale);
 
-            if (1 === Money::compare($data['gross'], $result->getGross(), 5)) {
+            if ($data['gross'] > $result->getGross()) {
                 $this->clearCoupon($sale);
 
                 return true;
@@ -982,8 +739,6 @@ abstract class AbstractSaleListener
 
     /**
      * Clears the coupon and its data.
-     *
-     * @param SaleInterface $sale
      */
     protected function clearCoupon(SaleInterface $sale): void
     {
@@ -997,17 +752,15 @@ abstract class AbstractSaleListener
     /**
      * Prevent forbidden change(s).
      *
-     * @param SaleInterface $sale
-     *
      * @throws Exception\IllegalOperationException
      */
     protected function preventForbiddenChange(SaleInterface $sale): void
     {
         // Prevent currency change if exchange rate is defined
         if ($this->persistenceHelper->isChanged($sale, 'currency')) {
-            if (null !== $sale->getExchangeRate()) {
+            if ($sale->getExchangeRate()) {
                 throw new Exception\IllegalOperationException(
-                    "Changing the currency while exchange rate is set is not yet supported."
+                    'Changing the currency while exchange rate is set is not yet supported.'
                 );
             }
         }
@@ -1017,7 +770,7 @@ abstract class AbstractSaleListener
             [$old, $new] = $this->persistenceHelper->getChangeSet($sale, 'customer');
             if ($old != $new && (0 < $sale->getOutstandingAccepted() || 0 < $sale->getOutstandingExpired())) {
                 throw new Exception\IllegalOperationException(
-                    "Changing the customer while there is pending outstanding is not yet supported."
+                    'Changing the customer while there is pending outstanding is not yet supported.'
                 );
             }
         }
@@ -1025,25 +778,16 @@ abstract class AbstractSaleListener
 
     /**
      * Returns the sale from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return SaleInterface
-     * @throws Exception\InvalidArgumentException
      */
     abstract protected function getSaleFromEvent(ResourceEventInterface $event): SaleInterface;
 
     /**
      * Schedule the content change event handler.
-     *
-     * @param SaleInterface $sale
      */
     abstract protected function scheduleContentChangeEvent(SaleInterface $sale): void;
 
     /**
      * Schedule the state change event handler.
-     *
-     * @param SaleInterface $sale
      */
     abstract protected function scheduleStateChangeEvent(SaleInterface $sale): void;
 }

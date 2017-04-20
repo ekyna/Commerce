@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleNotificationInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleNotificationInterface;
  */
 interface OrderNotificationInterface extends SaleNotificationInterface
 {
-    /**
-     * Returns the order.
-     *
-     * @return OrderInterface
-     */
-    public function getOrder();
+    public function getOrder(): ?OrderInterface;
 
-    /**
-     * Sets the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|OrderNotificationInterface
-     */
-    public function setOrder(OrderInterface $order = null);
+    public function setOrder(?OrderInterface $order): OrderNotificationInterface;
 }

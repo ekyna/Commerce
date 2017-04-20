@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
 use Ekyna\Component\Commerce\Exception\SubjectException;
@@ -7,6 +9,7 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity as Identity;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface as Reference;
 use Ekyna\Component\Commerce\Subject\Repository\SubjectRepositoryInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 /**
  * Interface SubjectProviderInterface
@@ -105,10 +108,10 @@ interface SubjectProviderInterface
     public function getSubjectClass(): string;
 
     /**
-     * Returns the search url for the given context.
+     * Returns the search action for the given context.
      *
      * [
-     *     'route'      => <string>,
+     *     'action'      => <string>,
      *     'parameters' => <array>,
      * ]
      *
@@ -116,7 +119,7 @@ interface SubjectProviderInterface
      *
      * @return array
      */
-    public function getSearchRouteAndParameters(string $context): array;
+    public function getSearchActionAndParameters(string $context): array;
 
     /**
      * Returns the provider name.
@@ -128,7 +131,7 @@ interface SubjectProviderInterface
     /**
      * Returns the subject type label.
      *
-     * @return string
+     * @return string|TranslatableInterface
      */
-    public function getLabel(): string;
+    public function getLabel();
 }

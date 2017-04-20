@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Provider;
 
+use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 
@@ -12,47 +15,27 @@ use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterfac
  */
 abstract class AbstractCustomerProvider implements CustomerProviderInterface
 {
-    /**
-     * @var CustomerGroupRepositoryInterface
-     */
-    protected $customerGroupRepository;
+    protected CustomerGroupRepositoryInterface $customerGroupRepository;
 
-    /**
-     * @var CustomerInterface
-     */
-    protected $customer;
+    protected ?CustomerInterface $customer = null;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CustomerGroupRepositoryInterface $customerGroupRepository
-     */
     public function __construct(CustomerGroupRepositoryInterface $customerGroupRepository)
     {
         $this->customerGroupRepository = $customerGroupRepository;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasCustomer()
+    public function hasCustomer(): bool
     {
         return null !== $this->customer;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCustomer()
+    public function getCustomer(): ?CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCustomerGroup()
+    public function getCustomerGroup(): CustomerGroupInterface
     {
         if ($this->hasCustomer()) {
             return $this->getCustomer()->getCustomerGroup();
@@ -61,18 +44,12 @@ abstract class AbstractCustomerProvider implements CustomerProviderInterface
         return $this->customerGroupRepository->findDefault();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function reset()
+    public function reset(): void
     {
         $this->customer = null;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function clear()
+    public function clear(): void
     {
         $this->customer = null;
     }

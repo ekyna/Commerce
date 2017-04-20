@@ -1,8 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Util;
 
-use Symfony\Component\Intl\Intl;
+use Decimal\Decimal;
+use Symfony\Component\Intl\Currencies;
+
+use function array_key_exists;
+use function is_null;
+
+use const PHP_ROUND_HALF_DOWN;
 
 /**
  * Class Money
@@ -11,65 +19,43 @@ use Symfony\Component\Intl\Intl;
  */
 final class Money
 {
-    /**
-     * @var \Symfony\Component\Intl\ResourceBundle\CurrencyBundleInterface
-     */
-    static private $currencyBundle;
-
-    /**
-     * @var array
-     */
-    static private $precisions = [];
-
-    /**
-     * @var array
-     */
-    static private $increments = [];
-
+    private static array $precisions = [];
+    private static array $increments = [];
 
     /**
      * Rounds the amount to currency's precision.
      *
-     * @param float  $amount
-     * @param string $currency
-     *
-     * @return float
+     * @param Decimal|string|int|float $amount
      *
      * @see \Symfony\Component\Intl\NumberFormatter\NumberFormatter::roundCurrency()
      */
-    static public function round($amount, $currency)
+    public static function round($amount, string $currency = null): Decimal
     {
-        $precision = static::getPrecision($currency);
-        $roundingIncrement = static::getRoundingIncrement($currency);
+        if (is_null($currency)) {
+            $precision = 5;
+            $roundingIncrement = 0;
+        } else {
+            $precision = self::getPrecision($currency);
+            $roundingIncrement = self::getRoundingIncrement($currency);
+        }
 
-        $amount = round($amount, $precision, \PHP_ROUND_HALF_DOWN);
+        if (!$amount instanceof Decimal) {
+            $amount = new Decimal((string)$amount);
+        }
+
+        $amount = $amount->round($precision, PHP_ROUND_HALF_DOWN);
 
         if (0 < $roundingIncrement && 0 < $precision) {
             $roundingFactor = $roundingIncrement / pow(10, $precision);
-            $amount = round($amount / $roundingFactor) * $roundingFactor;
+            $amount = $amount->div($roundingFactor)->round()->mul($roundingFactor);
         }
 
         return $amount;
     }
 
-    /**
-     * Compares two amounts regarding to the currency precision.
-     *
-     * @param float  $a
-     * @param float  $b
-     * @param string $currency
-     *
-     * @see bccomp()
-     *
-     * @return int  1 if $a &gt; $b<br>
-     *              0 if $a == $b<br>
-     *             -1 if $a &lt; $b
-     */
-    static public function compare($a, $b, $currency)
+    public static function fixed(Decimal $amount, string $currency): string
     {
-        $p = static::getPrecision($currency);
-
-        return bccomp(self::round($a, $p), self::round($b, $p), $p);
+        return $amount->toFixed(self::getPrecision($currency));
     }
 
     /**
@@ -79,13 +65,13 @@ final class Money
      *
      * @return int|null
      */
-    static public function getPrecision($currency)
+    public static function getPrecision(string $currency): ?int
     {
-        if (isset(static::$precisions[$currency])) {
-            return static::$precisions[$currency];
+        if (array_key_exists($currency, self::$precisions)) {
+            return self::$precisions[$currency];
         }
 
-        return static::$precisions[$currency] = static::getCurrencyBundle()->getFractionDigits($currency);
+        return self::$precisions[$currency] = Currencies::getFractionDigits($currency);
     }
 
     /**
@@ -95,27 +81,13 @@ final class Money
      *
      * @return float|int|null
      */
-    static public function getRoundingIncrement($currency)
+    public static function getRoundingIncrement(string $currency)
     {
-        if (isset(static::$increments[$currency])) {
-            return static::$increments[$currency];
+        if (array_key_exists($currency, self::$increments)) {
+            return self::$increments[$currency];
         }
 
-        return static::$increments[$currency] = static::getCurrencyBundle()->getRoundingIncrement($currency);
-    }
-
-    /**
-     * Returns the currency bundle.
-     *
-     * @return \Symfony\Component\Intl\ResourceBundle\CurrencyBundleInterface
-     */
-    static private function getCurrencyBundle()
-    {
-        if (null !== static::$currencyBundle) {
-            return static::$currencyBundle;
-        }
-
-        return static::$currencyBundle = Intl::getCurrencyBundle();
+        return self::$increments[$currency] = Currencies::getRoundingIncrement($currency);
     }
 
     /**

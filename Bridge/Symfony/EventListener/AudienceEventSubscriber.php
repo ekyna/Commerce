@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Newsletter\Event\AudienceEvents;
@@ -13,13 +15,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class AudienceEventSubscriber extends AudienceListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritDoc
-     */
     public static function getSubscribedEvents(): array
     {
         return [
-            AudienceEvents::INITIALIZE => ['onInitialize', 0],
             AudienceEvents::PRE_CREATE => ['onPreCreate', 0],
             AudienceEvents::PRE_UPDATE => ['onPreUpdate', 0],
             AudienceEvents::PRE_DELETE => ['onPreDelete', 0],

@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Resolver;
+
+use Ekyna\Component\Commerce\Exception\CommerceExceptionInterface;
 
 /**
  * Interface StateResolverInterface
@@ -12,11 +16,9 @@ interface StateResolverInterface
     /**
      * Resolves the subject state.
      *
-     * @param object $subject
+     * @return bool Whether the state(s) has been changed.
      *
-     * @return bool Whether or not the state(s) has been changed.
-     *
-     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
+     * @throws CommerceExceptionInterface
      */
     public function resolve(object $subject): bool;
 }

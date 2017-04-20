@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\EventListener;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
@@ -17,23 +20,9 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockAdjustmentListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected StockUnitUpdaterInterface $stockUnitUpdater;
 
-    /**
-     * @var StockUnitUpdaterInterface
-     */
-    protected $stockUnitUpdater;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockUnitUpdaterInterface  $stockUnitUpdater
-     */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         StockUnitUpdaterInterface $stockUnitUpdater
@@ -42,37 +31,27 @@ class StockAdjustmentListener
         $this->stockUnitUpdater = $stockUnitUpdater;
     }
 
-    /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $stockAdjustment = $this->getStockAdjustmentFromEvent($event);
 
         if (null === $stockUnit = $stockAdjustment->getStockUnit()) {
-            throw new RuntimeException("Stock unit must be set at this point.");
+            throw new RuntimeException('Stock unit must be set at this point.');
         }
 
         $quantity = StockAdjustmentReasons::isDebitReason($stockAdjustment->getReason())
-            ? -$stockAdjustment->getQuantity()
+            ? $stockAdjustment->getQuantity()->negate()
             : $stockAdjustment->getQuantity();
 
         $this->stockUnitUpdater->updateAdjusted($stockUnit, $quantity, true);
     }
 
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $stockAdjustment = $this->getStockAdjustmentFromEvent($event);
 
         if (null === $stockUnit = $stockAdjustment->getStockUnit()) {
-            throw new RuntimeException("Stock unit must be set at this point.");
+            throw new RuntimeException('Stock unit must be set at this point.');
         }
 
         $cs = $this->persistenceHelper->getChangeSet($stockAdjustment);
@@ -80,24 +59,25 @@ class StockAdjustmentListener
         if (isset($cs['reason']) && ($cs['reason'][0] != $cs['reason'][1])) {
             // (Default) From DEBIT to CREDIT
             if (isset($cs['quantity'])) {
-                $delta = $cs['quantity'][0] + $cs['quantity'][1];
+                $delta = Decimal::sum($cs['quantity']);
             } else {
-                $delta = 2 * $stockAdjustment->getQuantity();
+                $delta = $stockAdjustment->getQuantity()->mul(2);
             }
             if (
                 !StockAdjustmentReasons::isDebitReason($cs['reason'][0])
                 && StockAdjustmentReasons::isDebitReason($cs['reason'][1])
             ) {
                 // From CREDIT to DEBIT
-                $delta = - $delta;
+                $delta = $delta->negate();
             }
+            // TODO what if both old and new reasons are debit ?
         } elseif (isset($cs['quantity'])) {
-            // OLD quantity - NEW quantity
-            $delta = $cs['quantity'][1] - $cs['quantity'][0];
+            // NEW quantity - OLD quantity
+            $delta = ($cs['quantity'][1] ?? new Decimal(0))->sub($cs['quantity'][0] ?? new Decimal(0));
 
             // Opposite delta if debit
             if (StockAdjustmentReasons::isDebitReason($stockAdjustment->getReason())) {
-                $delta = -$delta;
+                $delta = $delta->negate();
             }
         } else {
             return;
@@ -106,39 +86,27 @@ class StockAdjustmentListener
         $this->stockUnitUpdater->updateAdjusted($stockUnit, $delta, true);
     }
 
-    /**
-     * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         $stockAdjustment = $this->getStockAdjustmentFromEvent($event);
 
         if (null === $stockUnit = $stockAdjustment->getStockUnit()) {
-            throw new RuntimeException("Stock unit must be set at this point.");
+            throw new RuntimeException('Stock unit must be set at this point.');
         }
 
         $quantity = StockAdjustmentReasons::isDebitReason($stockAdjustment->getReason())
             ? $stockAdjustment->getQuantity()
-            : -$stockAdjustment->getQuantity();
+            : $stockAdjustment->getQuantity()->negate();
 
         $this->stockUnitUpdater->updateAdjusted($stockUnit, $quantity, true);
     }
 
-    /**
-     * Returns the stock adjustment from the resource event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return StockAdjustmentInterface
-     */
-    protected function getStockAdjustmentFromEvent(ResourceEventInterface $event)
+    protected function getStockAdjustmentFromEvent(ResourceEventInterface $event): StockAdjustmentInterface
     {
         $stockAdjustment = $event->getResource();
 
         if (!$stockAdjustment instanceof StockAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . StockAdjustmentInterface::class);
+            throw new UnexpectedTypeException($stockAdjustment, StockAdjustmentInterface::class);
         }
 
         return $stockAdjustment;

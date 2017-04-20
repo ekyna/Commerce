@@ -55,7 +55,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -63,7 +63,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getName()
     {
@@ -71,7 +71,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setName($name)
     {
@@ -81,7 +81,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCountries()
     {
@@ -89,7 +89,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasCountries()
     {
@@ -97,7 +97,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasCountry(CountryInterface $country)
     {
@@ -105,7 +105,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addCountry(CountryInterface $country)
     {
@@ -117,7 +117,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function removeCountry(CountryInterface $country)
     {
@@ -129,7 +129,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getPrices()
     {
@@ -137,7 +137,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasPrices()
     {
@@ -145,7 +145,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasPrice(ShipmentPriceInterface $price)
     {
@@ -153,7 +153,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addPrice(ShipmentPriceInterface $price)
     {
@@ -166,7 +166,7 @@ class ShipmentZone implements ShipmentZoneInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function removePrice(ShipmentPriceInterface $price)
     {

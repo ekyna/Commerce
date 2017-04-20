@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 /**
@@ -9,28 +11,14 @@ namespace Ekyna\Component\Commerce\Shipment\Gateway;
  */
 trait PersisterAwareTrait
 {
-    /**
-     * @var PersisterInterface
-     */
-    protected $persister;
+    protected PersisterInterface $persister;
 
-
-    /**
-     * Sets the persister.
-     *
-     * @param PersisterInterface $persister
-     */
-    public function setPersister(PersisterInterface $persister)
+    public function setPersister(PersisterInterface $persister): void
     {
         $this->persister = $persister;
     }
 
-    /**
-     * Returns the persister.
-     *
-     * @return PersisterInterface
-     */
-    public function getPersister()
+    public function getPersister(): PersisterInterface
     {
         return $this->persister;
     }

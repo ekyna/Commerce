@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface;
 use Ekyna\Component\Commerce\Quote\Repository\QuotePaymentRepositoryInterface;
 
@@ -15,11 +17,11 @@ use Ekyna\Component\Commerce\Quote\Repository\QuotePaymentRepositoryInterface;
  */
 class QuotePaymentRepository extends AbstractPaymentRepository implements QuotePaymentRepositoryInterface
 {
-    /**
-     * @return void
-     */
-    public function createNew()
+    public function findOneByQuoteAndKey(QuoteInterface $quote, string $key): ?QuotePaymentInterface
     {
-        throw new RuntimeException("Disabled: use payment factory.");
+        return $this->findOneBy([
+            'quote' => $quote,
+            'key'   => $key,
+        ]);
     }
 }

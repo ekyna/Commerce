@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Model;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -16,138 +19,50 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
  */
 class Document implements DocumentInterface
 {
-    /**
-     * @var string
-     */
-    protected $type;
+    protected ?string $type            = null;
+    protected ?string $currency        = null;
+    protected ?string $locale          = null;
+    protected ?array  $customer        = null;
+    protected ?array  $invoiceAddress  = null;
+    protected ?array  $deliveryAddress = null;
+    protected ?array  $relayPoint      = null;
+    protected ?string $comment         = null;
+    protected ?string $description     = null;
+    protected Decimal $goodsBase;
+    protected Decimal $discountBase;
+    protected Decimal $shipmentBase;
+    protected Decimal $taxesTotal;
+    protected array   $taxesDetails;
+    /** The grand total in document currency. */
+    protected Decimal $grandTotal;
+    /** The grand total in default currency. */
+    protected Decimal $realGrandTotal;
 
-    /**
-     * @var string
-     */
-    protected $currency;
+    protected ?SaleInterface    $sale    = null;
+    protected ?TaxRuleInterface $taxRule = null;
+    /** @var Collection<DocumentLineInterface> */
+    protected Collection $lines;
+    /** @var Collection<DocumentItemInterface> */
+    protected Collection $items;
 
-    /**
-     * @var string
-     */
-    protected $locale;
-
-    /**
-     * @var array
-     */
-    protected $customer;
-
-    /**
-     * @var array
-     */
-    protected $invoiceAddress;
-
-    /**
-     * @var array
-     */
-    protected $deliveryAddress;
-
-    /**
-     * @var array
-     */
-    protected $relayPoint;
-
-    /**
-     * @var Collection|DocumentLineInterface[]
-     */
-    protected $lines;
-
-    /**
-     * @var Collection|DocumentItemInterface[]
-     */
-    protected $items;
-
-    /**
-     * @var string
-     */
-    protected $comment;
-
-    /**
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * @var float
-     */
-    protected $goodsBase;
-
-    /**
-     * @var float
-     */
-    protected $discountBase;
-
-    /**
-     * @var float
-     */
-    protected $shipmentBase;
-
-    /**
-     * @var float
-     */
-    protected $taxesTotal;
-
-    /**
-     * @var array
-     */
-    protected $taxesDetails;
-
-    /**
-     * The grand total in document currency.
-     *
-     * @var float
-     */
-    protected $grandTotal;
-
-    /**
-     * The grand total in default currency.
-     *
-     * @var float
-     */
-    protected $realGrandTotal;
-
-    /**
-     * @var TaxRuleInterface
-     */
-    protected $taxRule;
-
-    /**
-     * @var SaleInterface
-     */
-    protected $sale;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->goodsBase = 0;
-        $this->discountBase = 0;
-        $this->shipmentBase = 0;
-        $this->taxesTotal = 0;
+        $this->goodsBase = new Decimal(0);
+        $this->discountBase = new Decimal(0);
+        $this->shipmentBase = new Decimal(0);
+        $this->taxesTotal = new Decimal(0);
         $this->taxesDetails = [];
-        $this->grandTotal = 0;
-        $this->realGrandTotal = 0;
+        $this->grandTotal = new Decimal(0);
+        $this->realGrandTotal = new Decimal(0);
         $this->lines = new ArrayCollection();
         $this->items = new ArrayCollection();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setType(string $type): DocumentInterface
     {
         $this->type = $type;
@@ -155,9 +70,6 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getCurrency(): ?string
     {
         if (!empty($this->currency)) {
@@ -167,19 +79,13 @@ class Document implements DocumentInterface
         return $this->getSale()->getCurrency()->getCode();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCurrency(string $currency = null): DocumentInterface
+    public function setCurrency(?string $currency): DocumentInterface
     {
         $this->currency = $currency;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLocale(): string
     {
         if (!empty($this->locale)) {
@@ -189,111 +95,75 @@ class Document implements DocumentInterface
         return $this->getSale()->getLocale();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setLocale(string $locale = null): DocumentInterface
+    public function setLocale(?string $locale): DocumentInterface
     {
         $this->locale = $locale;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getCustomer(): ?array
     {
         return $this->customer;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCustomer(array $data): DocumentInterface
+    public function setCustomer(?array $data): DocumentInterface
     {
         $this->customer = $data;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getInvoiceAddress(): ?array
     {
         return $this->invoiceAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceAddress(array $data): DocumentInterface
+    public function setInvoiceAddress(?array $data): DocumentInterface
     {
         $this->invoiceAddress = $data;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDeliveryAddress():? array
+    public function getDeliveryAddress(): ?array
     {
         return $this->deliveryAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryAddress(array $data = null): DocumentInterface
+    public function setDeliveryAddress(?array $data): DocumentInterface
     {
         $this->deliveryAddress = $data;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getRelayPoint(): ?array
     {
         return $this->relayPoint;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setRelayPoint(array $data = null): DocumentInterface
+    public function setRelayPoint(?array $data): DocumentInterface
     {
         $this->relayPoint = $data;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasLines(): bool
     {
         return 0 < $this->lines->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getLines(): Collection
     {
         return $this->lines;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getLinesByType(string $type): array
     {
         if (!DocumentLineTypes::isValidType($type)) {
-            throw new InvalidArgumentException("Invalid document line type.");
+            throw new InvalidArgumentException('Invalid document line type.');
         }
 
         $lines = [];
@@ -307,21 +177,15 @@ class Document implements DocumentInterface
         return $lines;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasLine(DocumentLineInterface $line): bool
     {
         return $this->lines->contains($line);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasLineByType(string $type): bool
     {
         if (!DocumentLineTypes::isValidType($type)) {
-            throw new InvalidArgumentException("Invalid document line type.");
+            throw new InvalidArgumentException('Invalid document line type.');
         }
 
         foreach ($this->getLines() as $line) {
@@ -333,9 +197,6 @@ class Document implements DocumentInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addLine(DocumentLineInterface $line): DocumentInterface
     {
         if (!$this->hasLine($line)) {
@@ -346,9 +207,6 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removeLine(DocumentLineInterface $line): DocumentInterface
     {
         if ($this->hasLine($line)) {
@@ -359,9 +217,6 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setLines(Collection $lines): DocumentInterface
     {
         foreach ($this->lines as $line) {
@@ -379,25 +234,16 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasItems(): bool
     {
         return 0 < $this->items->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasItem(DocumentItemInterface $item): bool
     {
         return $this->items->contains($item);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addItem(DocumentItemInterface $item): DocumentInterface
     {
         if (!$this->hasItem($item)) {
@@ -408,10 +254,7 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeItem(DocumentItemInterface$item): DocumentInterface
+    public function removeItem(DocumentItemInterface $item): DocumentInterface
     {
         if ($this->hasItem($item)) {
             $this->items->removeElement($item);
@@ -421,9 +264,6 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setItems(Collection $items): DocumentInterface
     {
         foreach ($this->items as $item) {
@@ -441,133 +281,88 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getItems(): Collection
     {
         return $this->items;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getComment(): ?string
     {
         return $this->comment;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setComment(string $comment = null): DocumentInterface
+    public function setComment(?string $comment): DocumentInterface
     {
         $this->comment = $comment;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription(string $description = null): DocumentInterface
+    public function setDescription(?string $description): DocumentInterface
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGoodsBase(bool $ati = false): float
+    public function getGoodsBase(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->goodsBase) : $this->goodsBase;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setGoodsBase(float $base): DocumentInterface
+    public function setGoodsBase(Decimal $base): DocumentInterface
     {
         $this->goodsBase = $base;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDiscountBase(bool $ati = false): float
+    public function getDiscountBase(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->discountBase) : $this->discountBase;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDiscountBase(float $base): DocumentInterface
+    public function setDiscountBase(Decimal $base): DocumentInterface
     {
         $this->discountBase = $base;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getShipmentBase(bool $ati = false): float
+    public function getShipmentBase(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->shipmentBase) : $this->shipmentBase;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setShipmentBase(float $base): DocumentInterface
+    public function setShipmentBase(Decimal $base): DocumentInterface
     {
         $this->shipmentBase = $base;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTaxesTotal(): float
+    public function getTaxesTotal(): Decimal
     {
         return $this->taxesTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTaxesTotal(float $total): DocumentInterface
+    public function setTaxesTotal(Decimal $total): DocumentInterface
     {
         $this->taxesTotal = $total;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTaxesDetails(): array
     {
         return $this->taxesDetails;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setTaxesDetails(array $details): DocumentInterface
     {
         $this->taxesDetails = $details;
@@ -575,36 +370,24 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGrandTotal(): float
+    public function getGrandTotal(): Decimal
     {
         return $this->grandTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setGrandTotal(float $total): DocumentInterface
+    public function setGrandTotal(Decimal $total): DocumentInterface
     {
         $this->grandTotal = $total;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getRealGrandTotal(): float
+    public function getRealGrandTotal(): Decimal
     {
         return $this->realGrandTotal;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setRealGrandTotal(float $amount): DocumentInterface
+    public function setRealGrandTotal(Decimal $amount): DocumentInterface
     {
         $this->realGrandTotal = $amount;
 
@@ -623,31 +406,22 @@ class Document implements DocumentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getSale(): ?SaleInterface
     {
         return $this->sale;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSale(SaleInterface $sale = null): DocumentInterface
+    public function setSale(?SaleInterface $sale): DocumentInterface
     {
         $this->sale = $sale;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasLineDiscount(): bool
     {
         foreach ($this->lines as $line) {
-            if (0 != $line->getDiscount()) {
+            if (!$line->getDiscount()->isZero()) {
                 return true;
             }
         }
@@ -655,9 +429,6 @@ class Document implements DocumentInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasMultipleTaxes(): bool
     {
         return 1 < count($this->taxesDetails);
@@ -665,12 +436,8 @@ class Document implements DocumentInterface
 
     /**
      * Adds the taxes to the given amount.
-     *
-     * @param float $amount
-     *
-     * @return float
      */
-    private function ati(float $amount): float
+    private function ati(Decimal $amount): Decimal
     {
         $result = $amount;
 
@@ -681,9 +448,6 @@ class Document implements DocumentInterface
         return Money::round($result, $this->currency);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isAti(): bool
     {
         return $this->getSale()->isAtiDisplayMode();

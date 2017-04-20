@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Currency;
+
+use DateTimeInterface;
+use Decimal\Decimal;
 
 /**
  * Interface ExchangeRateProviderInterface
@@ -11,12 +16,6 @@ interface ExchangeRateProviderInterface
 {
     /**
      * Returns the exchange rate.
-     *
-     * @param string    $base
-     * @param string    $quote
-     * @param \DateTime $date
-     *
-     * @return float|null
      */
-    public function get(string $base, string $quote, \DateTime $date): ?float;
+    public function get(string $base, string $quote, DateTimeInterface $date): ?Decimal;
 }

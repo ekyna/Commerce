@@ -1,103 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Model;
+
+use Decimal\Decimal;
 
 /**
  * Class Availability
  * @package Ekyna\Component\Commerce\Stock\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Availability
+final class Availability
 {
-    /**
-     * @var string
-     */
-    private $overflowMessage;
+    private string  $overflowMessage;
+    private Decimal $minimumQuantity;
+    private string  $minimumMessage;
+    private Decimal $maximumQuantity;
+    private string  $maximumMessage;
+    private Decimal $availableQuantity;
+    private string  $availableMessage;
+    private Decimal $resupplyQuantity;
+    private string  $resupplyMessage;
 
-    /**
-     * @var float
-     */
-    private $minimumQuantity;
-
-    /**
-     * @var string
-     */
-    private $minimumMessage;
-
-    /**
-     * @var float
-     */
-    private $maximumQuantity;
-
-    /**
-     * @var string
-     */
-    private $maximumMessage;
-
-    /**
-     * @var float
-     */
-    private $availableQuantity;
-
-    /**
-     * @var string
-     */
-    private $availableMessage;
-
-    /**
-     * @var float
-     */
-    private $resupplyQuantity;
-
-    /**
-     * @var string
-     */
-    private $resupplyMessage;
-
-
-    /**
-     * Constructor.
-     *
-     * @param string      $overflowMessage
-     * @param float       $minimumQuantity
-     * @param string|null $minimumMessage
-     * @param float       $maximumQuantity
-     * @param string|null $maximumMessage
-     * @param float       $availableQuantity
-     * @param string|null $availableMessage
-     * @param float       $resupplyQuantity
-     * @param string|null $resupplyMessage
-     */
     public function __construct(
-        string $overflowMessage,
-        float $minimumQuantity = 0,
-        string $minimumMessage = null,
-        float $maximumQuantity = 0,
-        string $maximumMessage = null,
-        float $availableQuantity = 0,
-        string $availableMessage = null,
-        float $resupplyQuantity = 0,
-        string $resupplyMessage = null
+        string  $overflowMessage,
+        Decimal $minimumQuantity,
+        string  $minimumMessage,
+        Decimal $maximumQuantity,
+        string  $maximumMessage,
+        Decimal $availableQuantity,
+        string  $availableMessage,
+        Decimal $resupplyQuantity,
+        string  $resupplyMessage
     ) {
-        $this->overflowMessage   = $overflowMessage;
-        $this->minimumQuantity   = $minimumQuantity;
-        $this->minimumMessage    = $minimumMessage;
-        $this->maximumQuantity   = $maximumQuantity;
-        $this->maximumMessage    = $maximumMessage;
+        $this->overflowMessage = $overflowMessage;
+        $this->minimumQuantity = $minimumQuantity;
+        $this->minimumMessage = $minimumMessage;
+        $this->maximumQuantity = $maximumQuantity;
+        $this->maximumMessage = $maximumMessage;
         $this->availableQuantity = $availableQuantity;
-        $this->availableMessage  = $availableMessage;
-        $this->resupplyQuantity  = $resupplyQuantity;
-        $this->resupplyMessage   = $resupplyMessage;
+        $this->availableMessage = $availableMessage;
+        $this->resupplyQuantity = $resupplyQuantity;
+        $this->resupplyMessage = $resupplyMessage;
     }
 
     /**
      * Returns the messages for the given quantity.
-     *
-     * @param float $quantity
-     *
-     * @return array
      */
-    public function getMessagesForQuantity(float $quantity): array
+    public function getMessagesForQuantity(Decimal $quantity): array
     {
         $messages = [];
 
@@ -129,14 +80,7 @@ class Availability
         return $messages;
     }
 
-    /**
-     * Returns
-     *
-     * @param float $quantity
-     *
-     * @return bool
-     */
-    public function isAvailableForQuantity(float $quantity): bool
+    public function isAvailableForQuantity(Decimal $quantity): bool
     {
         if ($quantity < $this->minimumQuantity) {
             return false;
@@ -147,101 +91,51 @@ class Availability
         return true;
     }
 
-    /**
-     * Returns the overflow message.
-     *
-     * @return string
-     */
     public function getOverflowMessage(): string
     {
         return $this->overflowMessage;
     }
 
-    /**
-     * Returns the minimum quantity.
-     *
-     * @return float
-     */
-    public function getMinimumQuantity(): float
+    public function getMinimumQuantity(): Decimal
     {
         return $this->minimumQuantity;
     }
 
-    /**
-     * Returns the minimum message.
-     *
-     * @return string
-     */
     public function getMinimumMessage(): ?string
     {
         return $this->minimumMessage;
     }
 
-    /**
-     * Returns the maximum quantity.
-     *
-     * @return float
-     */
-    public function getMaximumQuantity(): float
+    public function getMaximumQuantity(): Decimal
     {
         return $this->maximumQuantity;
     }
 
-    /**
-     * Returns the maximum message.
-     *
-     * @return string
-     */
     public function getMaximumMessage(): ?string
     {
         return $this->maximumMessage;
     }
 
-    /**
-     * Returns the available quantity.
-     *
-     * @return float
-     */
-    public function getAvailableQuantity(): float
+    public function getAvailableQuantity(): Decimal
     {
         return $this->availableQuantity;
     }
 
-    /**
-     * Returns the available message.
-     *
-     * @return string
-     */
     public function getAvailableMessage(): ?string
     {
         return $this->availableMessage;
     }
 
-    /**
-     * Returns the resupply quantity.
-     *
-     * @return float
-     */
-    public function getResupplyQuantity(): float
+    public function getResupplyQuantity(): Decimal
     {
         return $this->resupplyQuantity;
     }
 
-    /**
-     * Returns the resupply message.
-     *
-     * @return string
-     */
     public function getResupplyMessage(): ?string
     {
         return $this->resupplyMessage;
     }
 
-    /**
-     * Returns the array version.
-     *
-     * @return array
-     */
     public function toArray(): array
     {
         return [

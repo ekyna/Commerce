@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 /**
@@ -9,16 +11,14 @@ namespace Ekyna\Component\Commerce\Pricing\Model;
  */
 class VatDisplayModes
 {
-    const MODE_NET = 'net';
-    const MODE_ATI = 'ati';
+    public const MODE_NET = 'net';
+    public const MODE_ATI = 'ati';
 
 
     /**
      * Returns the vat display modes.
-     *
-     * @return array
      */
-    public static function getModes()
+    public static function getModes(): array
     {
         return [
             static::MODE_NET,

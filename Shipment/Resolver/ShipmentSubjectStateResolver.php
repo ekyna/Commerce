@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
@@ -21,24 +23,15 @@ use function bccomp;
  */
 class ShipmentSubjectStateResolver extends AbstractStateResolver
 {
-    /**
-     * @var ShipmentSubjectCalculatorInterface
-     */
-    protected $calculator;
+    protected ShipmentSubjectCalculatorInterface $calculator;
 
-
-    /**
-     * Constructor.
-     *
-     * @param ShipmentSubjectCalculatorInterface $calculator
-     */
     public function __construct(ShipmentSubjectCalculatorInterface $calculator)
     {
         $this->calculator = $calculator;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
      * @param ShipmentSubjectInterface
      */
@@ -88,18 +81,18 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
         foreach ($quantities as $q) {
             if (!$q['invoiced']) {
                 // Non-invoiced orders does not affect sold quantity (no credit equivalent for return)
-                $q['sold'] -= $q['returned'];
+                $q['sold'] = $q['sold']->sub($q['returned']);
             }
 
             // TODO Use packaging format
             // If shipped greater than zero
             if (0 < $q['shipped']) {
                 // If shipped is greater than sold, item is fully shipped
-                if (0 === bccomp($q['shipped'] - $q['returned'], $q['sold'], 3)) {
+                if ($q['shipped']->sub($q['returned'])->equals($q['sold'])) {
                     $shippedCount++;
 
                     // If shipped equals returned, item is fully returned
-                    if (0 === bccomp($q['shipped'], $q['returned'], 3)) {
+                    if ($q['shipped']->equals($q['returned'])) {
                         $returnedCount++;
                     }
 
@@ -107,14 +100,14 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
                 }
 
                 // Item is partially shipped
-                if (1 === bccomp($q['sold'], 0, 3)) {
+                if (0 < $q['sold']) {
                     $partialCount++;
                 }
 
                 continue;
             }
 
-            if (0 === bccomp($q['sold'], 0, 3)) {
+            if ($q['sold']->isZero()) {
                 // Item is canceled
                 $canceledCount++;
             }
@@ -158,9 +151,6 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
         return ShipmentStates::STATE_NEW;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function supports(object $subject): void
     {
         if (!$subject instanceof ShipmentSubjectInterface) {

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class AccountingRepository
@@ -15,7 +17,7 @@ class AccountingRepository extends ResourceRepository implements AccountingRepos
     /**
      * @inheritDoc
      */
-    public function findByTypes(array $types)
+    public function findByTypes(array $types): array
     {
         $qb = $this->createQueryBuilder('a');
 

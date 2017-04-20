@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Accounting\Export;
 
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 
 /**
@@ -13,8 +16,6 @@ interface AccountingExporterInterface
 {
     /**
      * Adds the given filter.
-     *
-     * @param AccountingFilterInterface $filter
      *
      * @throws LogicException
      */
@@ -33,18 +34,14 @@ interface AccountingExporterInterface
     /**
      * Exports invoices for the given date.
      *
-     * @param \DateTime $month
-     *
      * @return string The generated file path
      */
-    public function exportInvoices(\DateTime $month): string;
+    public function exportInvoices(DateTimeInterface $month): string;
 
     /**
      * Exports payments for the given date.
      *
-     * @param \DateTime $month
-     *
      * @return string The generated file path
      */
-    public function exportPayments(\DateTime $month): string;
+    public function exportPayments(DateTimeInterface $month): string;
 }

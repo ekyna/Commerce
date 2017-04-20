@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Event;
 
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Class PaymentEvent
@@ -13,73 +15,36 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class PaymentEvent extends Event
 {
-    /**
-     * @var PaymentInterface
-     */
-    private $payment;
-
-    /**
-     * @var Response
-     */
-    private $response;
+    private PaymentInterface $payment;
+    private ?Response        $response = null;
 
 
-    /**
-     * Constructor.
-     *
-     * @param PaymentInterface $payment
-     */
     public function __construct(PaymentInterface $payment)
     {
         $this->payment = $payment;
     }
 
-    /**
-     * Sets the payment.
-     *
-     * @param PaymentInterface $payment
-     */
-    public function setPayment(PaymentInterface $payment = null)
+    public function setPayment(PaymentInterface $payment): void
     {
         $this->payment = $payment;
     }
 
-    /**
-     * Returns the payment.
-     *
-     * @return PaymentInterface
-     */
-    public function getPayment()
+    public function getPayment(): PaymentInterface
     {
         return $this->payment;
     }
 
-    /**
-     * Sets the response.
-     *
-     * @param Response $response
-     */
-    public function setResponse(Response $response = null)
+    public function setResponse(Response $response = null): void
     {
         $this->response = $response;
     }
 
-    /**
-     * Returns whether or not the event has a response.
-     *
-     * @return bool
-     */
-    public function hasResponse()
+    public function hasResponse(): bool
     {
         return null !== $this->response;
     }
 
-    /**
-     * Returns the response.
-     *
-     * @return Response
-     */
-    public function getResponse()
+    public function getResponse(): ?Response
     {
         return $this->response;
     }

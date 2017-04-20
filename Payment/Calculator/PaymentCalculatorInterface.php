@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 
 /**
@@ -14,100 +17,52 @@ interface PaymentCalculatorInterface
     /**
      * Returns the subject's payment amounts.
      *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return array [total, paid, refunded, deposit, pending]
+     * @return array<Decimal, Decimal, Decimal, Decimal, Decimal> (total, paid, refunded, deposit, pending)
      */
     public function getPaymentAmounts(PaymentSubjectInterface $subject, string $currency = null): array;
 
     /**
      * Calculates the paid total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculatePaidTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculatePaidTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the refunded total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateRefundedTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateRefundedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the accepted outstanding total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the expired outstanding total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the failed total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateFailedTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateFailedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the canceled total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateCanceledTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateCanceledTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the offline pending total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the subject's expected payment amount.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateExpectedPaymentAmount(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateExpectedPaymentAmount(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 
     /**
      * Calculates the subject's expected refund amount.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
      */
-    public function calculateExpectedRefundAmount(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateExpectedRefundAmount(PaymentSubjectInterface $subject, string $currency = null): Decimal;
 }

@@ -15,7 +15,7 @@ class SalePaymentStep extends Constraint
     public $shipment_method_must_be_set = 'ekyna_commerce.sale.shipment_method_must_be_set';
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTargets()
     {

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
-use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -24,246 +27,117 @@ class SupplierOrder implements Model\SupplierOrderInterface
     use Common\StateSubjectTrait;
     use TimestampableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int                            $id        = null;
+    protected ?Model\SupplierInterface        $supplier  = null;
+    protected ?Model\SupplierCarrierInterface $carrier   = null;
+    protected ?WarehouseInterface             $warehouse = null;
 
-    /**
-     * @var Model\SupplierInterface
-     */
-    protected $supplier;
+    /** @var Collection<Model\SupplierOrderItemInterface> */
+    protected Collection $items;
+    /** @var Collection<Model\SupplierDeliveryInterface> */
+    protected Collection $deliveries;
+    /** @var Collection<Model\SupplierOrderAttachmentInterface> */
+    protected Collection $attachments;
 
-    /**
-     * @var Model\SupplierCarrierInterface
-     */
-    protected $carrier;
+    protected Decimal $shippingCost;
+    protected Decimal $discountTotal;
+    protected Decimal $taxTotal;
+    protected Decimal $paymentTotal;
 
-    /**
-     * @var WarehouseInterface
-     */
-    protected $warehouse;
+    protected ?DateTimeInterface $paymentDate    = null;
+    protected ?DateTimeInterface $paymentDueDate = null;
 
-    /**
-     * @var ArrayCollection|Model\SupplierOrderItemInterface[]
-     */
-    protected $items;
+    protected Decimal $customsTax;
+    protected Decimal $customsVat;
+    protected Decimal $forwarderFee;
+    protected Decimal $forwarderTotal;
 
-    /**
-     * @var ArrayCollection|Model\SupplierDeliveryInterface[]
-     */
-    protected $deliveries;
+    protected ?DateTimeInterface $forwarderDate          = null;
+    protected ?DateTimeInterface $forwarderDueDate       = null;
+    protected ?DateTimeInterface $estimatedDateOfArrival = null;
 
-    /**
-     * @var ArrayCollection|Model\SupplierOrderAttachmentInterface[]
-     */
-    protected $attachments;
+    protected ?array  $trackingUrls = null;
+    protected ?string $description  = null;
 
-    /**
-     * @var float
-     */
-    protected $shippingCost;
-
-    /**
-     * @var float
-     */
-    protected $discountTotal;
-
-    /**
-     * @var float
-     */
-    protected $taxTotal;
-
-    /**
-     * @var float
-     */
-    protected $paymentTotal;
-
-    /**
-     * @var \DateTime
-     */
-    protected $paymentDate;
-
-    /**
-     * @var \DateTime
-     */
-    protected $paymentDueDate;
-
-    /**
-     * @var float
-     */
-    protected $customsTax;
-
-    /**
-     * @var float
-     */
-    protected $customsVat;
-
-    /**
-     * @var float
-     */
-    protected $forwarderFee;
-
-    /**
-     * @var float
-     */
-    protected $forwarderTotal;
-
-    /**
-     * @var \DateTime
-     */
-    protected $forwarderDate;
-
-    /**
-     * @var \DateTime
-     */
-    protected $forwarderDueDate;
-
-    /**
-     * @var \DateTime
-     */
-    protected $estimatedDateOfArrival;
-
-    /**
-     * @var array
-     */
-    protected $trackingUrls;
-
-    /**
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * @var \DateTime
-     */
-    protected $orderedAt;
-
-    /**
-     * @var \DateTime
-     */
-    protected $completedAt;
+    protected ?DateTimeInterface $orderedAt   = null;
+    protected ?DateTimeInterface $completedAt = null;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->state = Model\SupplierOrderStates::STATE_NEW;
 
-        $this->shippingCost = 0.;
-        $this->discountTotal = 0.;
-        $this->taxTotal = 0.;
-        $this->paymentTotal = 0.;
-        $this->customsTax = 0.;
-        $this->customsVat = 0.;
-        $this->forwarderFee = 0.;
-        $this->forwarderTotal = 0.;
+        $this->shippingCost = new Decimal(0);
+        $this->discountTotal = new Decimal(0);
+        $this->taxTotal = new Decimal(0);
+        $this->paymentTotal = new Decimal(0);
+        $this->customsTax = new Decimal(0);
+        $this->customsVat = new Decimal(0);
+        $this->forwarderFee = new Decimal(0);
+        $this->forwarderTotal = new Decimal(0);
 
         $this->items = new ArrayCollection();
         $this->deliveries = new ArrayCollection();
         $this->attachments = new ArrayCollection();
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->number ?: 'New supplier order';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getSupplier(): ?Model\SupplierInterface
     {
         return $this->supplier;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSupplier(Model\SupplierInterface $supplier): Model\SupplierOrderInterface
+    public function setSupplier(?Model\SupplierInterface $supplier): Model\SupplierOrderInterface
     {
         $this->supplier = $supplier;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getCarrier(): ?Model\SupplierCarrierInterface
     {
         return $this->carrier;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCarrier(Model\SupplierCarrierInterface $carrier = null): Model\SupplierOrderInterface
+    public function setCarrier(?Model\SupplierCarrierInterface $carrier): Model\SupplierOrderInterface
     {
         $this->carrier = $carrier;
 
         return $this;
     }
 
-    /**
-     * Returns the warehouse.
-     *
-     * @return WarehouseInterface
-     */
     public function getWarehouse(): ?WarehouseInterface
     {
         return $this->warehouse;
     }
 
-    /**
-     * Sets the warehouse.
-     *
-     * @param WarehouseInterface $warehouse
-     *
-     * @return SupplierOrder
-     */
-    public function setWarehouse(WarehouseInterface $warehouse): Model\SupplierOrderInterface
+    public function setWarehouse(?WarehouseInterface $warehouse): Model\SupplierOrderInterface
     {
         $this->warehouse = $warehouse;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasItems(): bool
     {
         return 0 < $this->items->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasItem(Model\SupplierOrderItemInterface $item): bool
     {
         return $this->items->contains($item);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addItem(Model\SupplierOrderItemInterface $item, $index = null): Model\SupplierOrderInterface
+    public function addItem(Model\SupplierOrderItemInterface $item): Model\SupplierOrderInterface
     {
         if (!$this->hasItem($item)) {
             $this->items->add($item);
@@ -273,9 +147,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removeItem(Model\SupplierOrderItemInterface $item): Model\SupplierOrderInterface
     {
         if ($this->hasItem($item)) {
@@ -286,33 +157,21 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getItems(): Collection
     {
         return $this->items;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasDeliveries(): bool
     {
         return 0 < $this->deliveries->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasDelivery(Model\SupplierDeliveryInterface $delivery): bool
     {
         return $this->deliveries->contains($delivery);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addDelivery(Model\SupplierDeliveryInterface $delivery): Model\SupplierOrderInterface
     {
         if (!$this->hasDelivery($delivery)) {
@@ -323,9 +182,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removeDelivery(Model\SupplierDeliveryInterface $delivery): Model\SupplierOrderInterface
     {
         if ($this->hasDelivery($delivery)) {
@@ -336,17 +192,11 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getDeliveries(): Collection
     {
         return $this->deliveries;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function hasAttachments(string $type = null): bool
     {
         if (null !== $type) {
@@ -362,17 +212,11 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return 0 < $this->attachments->count();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function hasAttachment(SupplierOrderAttachmentInterface $attachment): bool
     {
         return $this->attachments->contains($attachment);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function addAttachment(SupplierOrderAttachmentInterface $attachment): Model\SupplierOrderInterface
     {
         if (!$this->hasAttachment($attachment)) {
@@ -383,9 +227,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function removeAttachment(SupplierOrderAttachmentInterface $attachment): Model\SupplierOrderInterface
     {
         if ($this->hasAttachment($attachment)) {
@@ -396,9 +237,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSupplierAttachments(): Collection
     {
         return $this->attachments->matching(
@@ -406,323 +244,215 @@ class SupplierOrder implements Model\SupplierOrderInterface
         );
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getAttachments(): Collection
     {
         return $this->attachments;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getShippingCost(): float
+    public function getShippingCost(): Decimal
     {
         return $this->shippingCost;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setShippingCost(float $amount): Model\SupplierOrderInterface
+    public function setShippingCost(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->shippingCost = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDiscountTotal(): float
+    public function getDiscountTotal(): Decimal
     {
         return $this->discountTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDiscountTotal(float $amount): Model\SupplierOrderInterface
+    public function setDiscountTotal(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->discountTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTaxTotal(): float
+    public function getTaxTotal(): Decimal
     {
         return $this->taxTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTaxTotal(float $amount): Model\SupplierOrderInterface
+    public function setTaxTotal(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->taxTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPaymentTotal(): float
+    public function getPaymentTotal(): Decimal
     {
         return $this->paymentTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setPaymentTotal(float $amount): Model\SupplierOrderInterface
+    public function setPaymentTotal(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->paymentTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPaymentDate(): ?DateTime
+    public function getPaymentDate(): ?DateTimeInterface
     {
         return $this->paymentDate;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setPaymentDate(DateTime $date = null): Model\SupplierOrderInterface
+    public function setPaymentDate(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
         $this->paymentDate = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPaymentDueDate(): ?DateTime
+    public function getPaymentDueDate(): ?DateTimeInterface
     {
         return $this->paymentDueDate;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setPaymentDueDate(DateTime $date = null): Model\SupplierOrderInterface
+    public function setPaymentDueDate(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
         $this->paymentDueDate = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCustomsTax(): float
+    public function getCustomsTax(): Decimal
     {
         return $this->customsTax;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCustomsTax(float $amount): Model\SupplierOrderInterface
+    public function setCustomsTax(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->customsTax = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCustomsVat(): float
+    public function getCustomsVat(): Decimal
     {
         return $this->customsVat;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCustomsVat(float $amount): Model\SupplierOrderInterface
+    public function setCustomsVat(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->customsVat = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getForwarderFee(): float
+    public function getForwarderFee(): Decimal
     {
         return $this->forwarderFee;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setForwarderFee(float $amount): Model\SupplierOrderInterface
+    public function setForwarderFee(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->forwarderFee = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getForwarderTotal(): float
+    public function getForwarderTotal(): Decimal
     {
         return $this->forwarderTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setForwarderTotal(float $amount): Model\SupplierOrderInterface
+    public function setForwarderTotal(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->forwarderTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getForwarderDate(): ?DateTime
+    public function getForwarderDate(): ?DateTimeInterface
     {
         return $this->forwarderDate;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setForwarderDate(DateTime $date = null): Model\SupplierOrderInterface
+    public function setForwarderDate(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
         $this->forwarderDate = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getForwarderDueDate(): ?DateTime
+    public function getForwarderDueDate(): ?DateTimeInterface
     {
         return $this->forwarderDueDate;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setForwarderDueDate(DateTime $date = null): Model\SupplierOrderInterface
+    public function setForwarderDueDate(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
         $this->forwarderDueDate = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getEstimatedDateOfArrival(): ?DateTime
+    public function getEstimatedDateOfArrival(): ?DateTimeInterface
     {
         return $this->estimatedDateOfArrival;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setEstimatedDateOfArrival(DateTime $date = null): Model\SupplierOrderInterface
+    public function setEstimatedDateOfArrival(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
         $this->estimatedDateOfArrival = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTrackingUrls(): ?array
     {
         return $this->trackingUrls;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTrackingUrls(array $urls = null): Model\SupplierOrderInterface
+    public function setTrackingUrls(?array $urls): Model\SupplierOrderInterface
     {
         $this->trackingUrls = $urls;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription(string $description): Model\SupplierOrderInterface
+    public function setDescription(?string $description): Model\SupplierOrderInterface
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrderedAt(): ?DateTime
+    public function getOrderedAt(): ?DateTimeInterface
     {
         return $this->orderedAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrderedAt(DateTime $orderedAt = null): Model\SupplierOrderInterface
+    public function setOrderedAt(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
-        $this->orderedAt = $orderedAt;
+        $this->orderedAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCompletedAt(): ?DateTime
+    public function getCompletedAt(): ?DateTimeInterface
     {
         return $this->completedAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCompletedAt(DateTime $completedAt = null): Model\SupplierOrderInterface
+    public function setCompletedAt(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
-        $this->completedAt = $completedAt;
+        $this->completedAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getBaseCurrency(): ?string
     {
         if ($this->currency) {
@@ -732,9 +462,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLocale(): ?string
     {
         if ($this->supplier) {

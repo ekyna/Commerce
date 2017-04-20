@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Commerce\Supplier\Model;
@@ -15,133 +18,89 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
 {
     use SubjectRelativeTrait;
 
-    /**
-     * @var Model\SupplierOrderInterface
-     */
-    protected $order;
+    protected ?Model\SupplierOrderInterface   $order     = null;
+    protected ?Model\SupplierProductInterface $product   = null;
+    protected ?StockUnitInterface             $stockUnit = null;
+    protected Decimal                         $quantity;
 
-    /**
-     * @var Model\SupplierProductInterface
-     */
-    protected $product;
-
-    /**
-     * @var StockUnitInterface
-     */
-    protected $stockUnit;
-
-    /**
-     * @var float
-     */
-    protected $quantity;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->initializeSubjectRelative();
 
-        $this->quantity = 1.;
+        $this->quantity = new Decimal(1);
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->designation ?: 'New supplier order item';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getOrder(): ?Model\SupplierOrderInterface
     {
         return $this->order;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrder(Model\SupplierOrderInterface $order = null): Model\SupplierOrderItemInterface
+    public function setOrder(?Model\SupplierOrderInterface $order): Model\SupplierOrderItemInterface
     {
-        if ($this->order !== $order) {
-            if ($previous = $this->order) {
-                $this->order = null;
-                $previous->removeItem($this);
-            }
+        if ($this->order === $order) {
+            return $this;
+        }
 
-            if ($this->order = $order) {
-                $this->order->addItem($this);
-            }
+        if ($previous = $this->order) {
+            $this->order = null;
+            $previous->removeItem($this);
+        }
+
+        if ($this->order = $order) {
+            $this->order->addItem($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getProduct(): ?Model\SupplierProductInterface
     {
         return $this->product;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setProduct(Model\SupplierProductInterface $product = null): Model\SupplierOrderItemInterface
+    public function setProduct(?Model\SupplierProductInterface $product): Model\SupplierOrderItemInterface
     {
         $this->product = $product;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getStockUnit(): ?StockUnitInterface
     {
         return $this->stockUnit;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setStockUnit(StockUnitInterface $stockUnit = null): Model\SupplierOrderItemInterface
+    public function setStockUnit(?StockUnitInterface $stockUnit): Model\SupplierOrderItemInterface
     {
-        if ($this->stockUnit !== $stockUnit) {
-            if ($previous = $this->stockUnit) {
-                $this->stockUnit = null;
-                $previous->setSupplierOrderItem(null);
-            }
+        if ($this->stockUnit === $stockUnit) {
+            return $this;
+        }
 
-            if ($this->stockUnit = $stockUnit) {
-                $this->stockUnit->setSupplierOrderItem($this);
-            }
+        if ($previous = $this->stockUnit) {
+            $this->stockUnit = null;
+            $previous->setSupplierOrderItem(null);
+        }
+
+        if ($this->stockUnit = $stockUnit) {
+            $this->stockUnit->setSupplierOrderItem($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuantity(): float
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuantity(float $quantity): Model\SupplierOrderItemInterface
+    public function setQuantity(Decimal $quantity): Model\SupplierOrderItemInterface
     {
-        $this->quantity = (float)$quantity;
+        $this->quantity = $quantity;
 
         return $this;
     }

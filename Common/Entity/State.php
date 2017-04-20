@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
@@ -12,93 +14,58 @@ use Ekyna\Component\Commerce\Common\Model\StateInterface;
  */
 class State implements StateInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var CountryInterface
-     */
-    protected $country;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var string
-     */
-    protected $code;
+    protected ?int              $id      = null;
+    protected ?CountryInterface $country = null;
+    protected ?string           $name    = null;
+    protected ?string           $code    = null;
 
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->name ?: 'New state';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCountry()
+    public function getCountry(): ?CountryInterface
     {
         return $this->country;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCountry(CountryInterface $country)
+    public function setCountry(CountryInterface $country): StateInterface
     {
         $this->country = $country;
+
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setName($name)
+    public function setName(string $name): StateInterface
     {
         $this->name = $name;
+
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCode()
+    public function getCode(): ?string
     {
         return $this->code;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCode($code)
+    public function setCode(string $code): StateInterface
     {
         $this->code = $code;
+
         return $this;
     }
 }

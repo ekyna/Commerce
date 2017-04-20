@@ -28,9 +28,6 @@
                 </option>
             </constraint>
         </property>
-        <property name="completedAt">
-            <constraint name="DateTime"/>
-        </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Order"/>
     </class>
 

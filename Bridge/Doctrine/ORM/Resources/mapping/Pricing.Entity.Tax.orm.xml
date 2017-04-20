@@ -24,7 +24,7 @@
 
         <field name="code" column="code" type="string" length="32" nullable="true"/>
         <field name="name" column="name" type="string" length="64"/>
-        <field name="rate" column="rate" type="decimal" precision="5" scale="3"/><!-- TODO lower scale (1 should be enough) -->
+        <field name="rate" column="rate" type="php_decimal" precision="5" scale="3"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="country">
             <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>

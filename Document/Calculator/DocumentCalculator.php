@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
@@ -18,55 +21,27 @@ use Ekyna\Component\Commerce\Exception\LogicException;
  */
 class DocumentCalculator implements DocumentCalculatorInterface
 {
-    /**
-     * @var AmountCalculatorFactory
-     */
-    protected $calculatorFactory;
+    protected AmountCalculatorFactory    $calculatorFactory;
+    protected CurrencyConverterInterface $currencyConverter;
 
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
+    protected string                    $currency;
+    protected bool                      $changed;
+    protected AmountCalculatorInterface $calculator;
 
-    /**
-     * @var string
-     */
-    protected $currency;
-
-    /**
-     * @var bool
-     */
-    protected $changed;
-
-    /**
-     * @var AmountCalculatorInterface
-     */
-    protected $calculator;
-
-
-    /**
-     * Constructor.
-     *
-     * @param AmountCalculatorFactory    $calculatorFactory
-     * @param CurrencyConverterInterface $currencyConverter
-     */
     public function __construct(
-        AmountCalculatorFactory $calculatorFactory,
+        AmountCalculatorFactory    $calculatorFactory,
         CurrencyConverterInterface $currencyConverter
     ) {
         $this->calculatorFactory = $calculatorFactory;
         $this->currencyConverter = $currencyConverter;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function calculate(Model\DocumentInterface $document): bool
     {
         $this->changed = false;
 
-        if (null === $sale = $document->getSale()) {
-            throw new LogicException("Document can't be recalculated.");
+        if (null === $document->getSale()) {
+            throw new LogicException('Document can\'t be recalculated.');
         }
 
         $this->currency = $currency ?? $document->getCurrency();
@@ -85,7 +60,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
                 ->currencyConverter
                 ->convertWithRate($document->getGrandTotal(), $rate, $quote);
 
-            if ($this->compareAmount($document->getRealGrandTotal(), $total)) {
+            if (!$document->getRealGrandTotal()->equals($total)) {
                 $document->setRealGrandTotal($total);
             }
         }
@@ -96,9 +71,6 @@ class DocumentCalculator implements DocumentCalculatorInterface
     /**
      * Calculates the document.
      *
-     * @param Model\DocumentInterface $document
-     *
-     * @return Result
      * @throws LogicException
      */
     protected function calculateDocument(Model\DocumentInterface $document): Result
@@ -115,7 +87,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         // Shipment lines
-        $shipment = 0;
+        $shipment = new Decimal(0);
         foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_SHIPMENT) as $line) {
             $result = $this->calculateShipmentLine($line, $final);
 
@@ -135,17 +107,13 @@ class DocumentCalculator implements DocumentCalculatorInterface
 
     /**
      * Calculates the good lines.
-     *
-     * @param Model\DocumentInterface $document
-     *
-     * @return Common\Amount
      */
     protected function calculateGoodLines(Model\DocumentInterface $document): Common\Amount
     {
         $gross = new Common\Amount($this->currency);
 
         foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_GOOD) as $line) {
-            if (null !== $result = $this->calculateGoodLine($line)) {
+            if ($result = $this->calculateGoodLine($line)) {
                 $gross->merge($result);
             }
         }
@@ -162,28 +130,26 @@ class DocumentCalculator implements DocumentCalculatorInterface
     /**
      * Calculate the good line.
      *
-     * @param Model\DocumentLineInterface $line
-     *
-     * @return Common\Amount
-     *
      * @throws LogicException
      */
     protected function calculateGoodLine(Model\DocumentLineInterface $line): ?Common\Amount
     {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_GOOD) {
             throw new LogicException(sprintf(
-                "Expected document line with type '%s'.",
+                'Expected document line with type \'%s\'.',
                 Model\DocumentLineTypes::TYPE_GOOD
             ));
         }
 
         if (null === $item = $line->getSaleItem()) {
-            throw new LogicException("Document can't be recalculated.");
+            throw new LogicException('Document can\'t be recalculated.');
         }
 
         $hasPublicParent = DocumentUtil::hasPublicParent($line->getDocument(), $item);
 
-        $result = $this->calculator->calculateSaleItem($item, $line->getQuantity(), $item->isPrivate() && !$hasPublicParent);
+        $result = $this
+            ->calculator
+            ->calculateSaleItem($item, $line->getQuantity(), $item->isPrivate() && !$hasPublicParent);
 
         $this->syncLine($line, $result);
 
@@ -207,7 +173,8 @@ class DocumentCalculator implements DocumentCalculatorInterface
         $base = $item->getGross();
         $discounts = [];
         foreach ($item->getDiscountRates() as $name => $rate) {
-            $amount = Money::round($base * $rate / 100, $this->currency);
+            $rate = new Decimal((string)$rate);
+            $amount = Money::round($base->mul($rate)->div(100), $this->currency);
             $base -= $amount;
             $discounts[] = new Common\Adjustment($name, $amount, $rate);
         }
@@ -215,32 +182,28 @@ class DocumentCalculator implements DocumentCalculatorInterface
         $base = $item->getBase();
         $taxes = [];
         foreach ($item->getTaxRates() as $name => $rate) {
-            $amount = Money::round($base * (1 + $rate / 100), $this->currency) - Money::round($base, $this->currency);
+            $rate = new Decimal((string)$rate);
+            $amount = Money::round($base->mul($rate->add(1)->div(100)), $this->currency);
+            $amount -= Money::round($base, $this->currency);
             $taxes[] = new Common\Adjustment($name, $amount, $rate);
         }
 
-        $amount = new Common\Amount(
+        return new Common\Amount(
             $this->currency, $item->getUnit(), $item->getGross(),
             $item->getDiscount(), $item->getBase(), $item->getTax(),
             $item->getTotal(), $discounts, $taxes
         );
-
-        return $amount;
     }
 
     /**
      * Calculate the discount line.
      *
-     * @param Model\DocumentLineInterface $line
-     * @param Common\Amount               $gross
-     * @param Common\Amount               $final
-     *
      * @throws LogicException
      */
     protected function calculateDiscountLine(
         Model\DocumentLineInterface $line,
-        Common\Amount $gross,
-        Common\Amount $final
+        Common\Amount               $gross,
+        Common\Amount               $final
     ): void {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_DISCOUNT) {
             throw new LogicException(sprintf(
@@ -262,10 +225,6 @@ class DocumentCalculator implements DocumentCalculatorInterface
     /**
      * Calculate the shipment line.
      *
-     * @param Model\DocumentLineInterface $line
-     * @param Common\Amount               $final
-     *
-     * @return Common\Amount
      * @throws LogicException
      */
     protected function calculateShipmentLine(Model\DocumentLineInterface $line, Common\Amount $final): Common\Amount
@@ -298,25 +257,25 @@ class DocumentCalculator implements DocumentCalculatorInterface
         $final = $result->getFinal();
 
         // Document goods base (after discounts)
-        if ($this->compareAmount($document->getGoodsBase(), $final->getGross())) {
+        if (!$document->getGoodsBase()->equals($final->getGross())) {
             $document->setGoodsBase($gross->getBase());
             $this->changed = true;
         }
 
         // Document discount base.
-        if ($this->compareAmount($document->getDiscountBase(), $final->getDiscount())) {
+        if (!$document->getDiscountBase()->equals($final->getDiscount())) {
             $document->setDiscountBase($final->getDiscount());
             $this->changed = true;
         }
 
         // Document shipment base.
-        if ($this->compareAmount($document->getShipmentBase(), $result->getShipment())) {
+        if (!$document->getShipmentBase()->equals($result->getShipment())) {
             $document->setShipmentBase($result->getShipment());
             $this->changed = true;
         }
 
         // Document taxes total
-        if ($this->compareAmount($document->getTaxesTotal(), $final->getTax())) {
+        if (!$document->getTaxesTotal()->equals($final->getTax())) {
             $document->setTaxesTotal($final->getTax());
             $this->changed = true;
         }
@@ -336,7 +295,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         // Document grand total
-        if ($this->compareAmount($document->getGrandTotal(), $final->getTotal())) {
+        if (!$document->getGrandTotal()->equals($final->getTotal())) {
             $document->setGrandTotal($final->getTotal());
             $this->changed = true;
         }
@@ -344,26 +303,23 @@ class DocumentCalculator implements DocumentCalculatorInterface
 
     /**
      * Synchronizes the line amounts with the given result.
-     *
-     * @param Model\DocumentLineInterface $line
-     * @param Common\Amount               $result
      */
     protected function syncLine(Model\DocumentLineInterface $line, Common\Amount $result): void
     {
         // Unit
-        if ($this->compareAmount($line->getUnit(), $result->getUnit())) {
+        if (!$line->getUnit()->equals($result->getUnit())) {
             $line->setUnit($result->getUnit());
             $this->changed = true;
         }
 
         // Gross
-        if ($this->compareAmount($line->getGross(), $result->getGross())) {
+        if (!$line->getGross()->equals($result->getGross())) {
             $line->setGross($result->getGross());
             $this->changed = true;
         }
 
         // Discount
-        if ($this->compareAmount($line->getDiscount(), $result->getDiscount())) {
+        if (!$line->getDiscount()->equals($result->getDiscount())) {
             $line->setDiscount($result->getDiscount());
             $this->changed = true;
         }
@@ -381,13 +337,13 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         // Base
-        if ($this->compareAmount($line->getBase(), $result->getBase())) {
+        if (!$line->getBase()->equals($result->getBase())) {
             $line->setBase($result->getBase());
             $this->changed = true;
         }
 
         // Tax
-        if ($this->compareAmount($line->getTax(), $result->getTax())) {
+        if (!$line->getTax()->equals($result->getTax())) {
             $line->setTax($result->getTax());
             $this->changed = true;
         }
@@ -405,22 +361,9 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         // Total
-        if ($this->compareAmount($line->getTotal(), $result->getTotal())) {
+        if (!$line->getTotal()->equals($result->getTotal())) {
             $line->setTotal($result->getTotal());
             $this->changed = true;
         }
-    }
-
-    /**
-     * Returns whether amount A is different than amount B.
-     *
-     * @param float $a
-     * @param float $b
-     *
-     * @return bool
-     */
-    protected function compareAmount(float $a, float $b): bool
-    {
-        return 0 !== Money::compare($a, $b, $this->currency);
     }
 }

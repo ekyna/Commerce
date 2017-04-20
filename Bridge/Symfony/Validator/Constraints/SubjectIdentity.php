@@ -15,7 +15,7 @@ class SubjectIdentity extends Constraint
 
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTargets()
     {

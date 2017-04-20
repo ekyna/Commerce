@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Provider;
 
+use Ekyna\Bundle\CommerceBundle\Factory\CartFactory;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
-use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
+use Ekyna\Component\Resource\Manager\ResourceManagerInterface;
+
+use function is_null;
 
 /**
  * Class AbstractCartProvider
@@ -17,72 +22,37 @@ use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
  */
 abstract class AbstractCartProvider implements CartProviderInterface
 {
-    /**
-     * @var CartRepositoryInterface
-     */
-    protected $cartRepository;
+    protected CartFactory               $cartFactory;
+    protected CartRepositoryInterface   $cartRepository;
+    protected ResourceManagerInterface  $cartManager;
+    protected CustomerProviderInterface $customerProvider;
+    protected CurrencyProviderInterface $currencyProvider;
+    protected LocaleProviderInterface   $localeProvider;
 
-    /**
-     * @var ResourceOperatorInterface
-     */
-    protected $cartOperator;
+    protected ?CartInterface $cart = null;
 
-    /**
-     * @var CustomerProviderInterface
-     */
-    protected $customerProvider;
-
-    /**
-     * @var CurrencyProviderInterface
-     */
-    protected $currencyProvider;
-
-    /**
-     * @var LocaleProviderInterface
-     */
-    protected $localeProvider;
-
-    /**
-     * @var CartInterface
-     */
-    protected $cart;
-
-
-    /**
-     * Constructor.
-     *
-     * @param CartRepositoryInterface   $cartRepository
-     * @param ResourceOperatorInterface $cartOperator
-     * @param CustomerProviderInterface $customerProvider
-     * @param CurrencyProviderInterface $currencyProvider
-     * @param LocaleProviderInterface   $localeProvider
-     */
     public function __construct(
-        CartRepositoryInterface $cartRepository,
-        ResourceOperatorInterface $cartOperator,
+        CartFactory               $cartFactory,
+        CartRepositoryInterface   $cartRepository,
+        ResourceManagerInterface  $cartManager,
         CustomerProviderInterface $customerProvider,
         CurrencyProviderInterface $currencyProvider,
-        LocaleProviderInterface $localeProvider
+        LocaleProviderInterface   $localeProvider
     ) {
+        $this->cartFactory = $cartFactory;
         $this->cartRepository = $cartRepository;
-        $this->cartOperator = $cartOperator;
+        $this->cartManager = $cartManager;
         $this->customerProvider = $customerProvider;
         $this->currencyProvider = $currencyProvider;
         $this->localeProvider = $localeProvider;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasCart()
+    public function hasCart(): bool
     {
-        return null !== $this->cart;
+        return !is_null($this->cart);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCart($create = false)
+    public function getCart(bool $create = false): ?CartInterface
     {
         if ($create) {
             return $this->createCart();
@@ -91,10 +61,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
         return $this->cart;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function saveCart()
+    public function saveCart(): CartProviderInterface
     {
         if (!$this->hasCart()) {
             throw new RuntimeException('Cart has not been initialized yet.');
@@ -102,22 +69,19 @@ abstract class AbstractCartProvider implements CartProviderInterface
 
         $this->updateCustomerGroupAndCurrency();
 
-        $this->cartOperator->persist($this->cart);
+        $this->cartManager->save($this->cart);
 
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clearCart()
+    public function clearCart(): CartProviderInterface
     {
         if (!$this->hasCart() || $this->cart->isLocked()) {
             return $this;
         }
 
         if (null !== $this->cart->getId()) {
-            $this->cartOperator->delete($this->cart, true);
+            $this->cartManager->delete($this->cart, true);
         }
 
         $this->cart = null;
@@ -125,10 +89,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clearInformation()
+    public function clearInformation(): CartProviderInterface
     {
         if (!$this->hasCart() || $this->cart->isLocked()) {
             return $this;
@@ -149,12 +110,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
         return $this;
     }
 
-    /**
-     * Updates the cart customer group and currency.
-     *
-     * @return $this
-     */
-    public function updateCustomerGroupAndCurrency()
+    public function updateCustomerGroupAndCurrency(): CartProviderInterface
     {
         if (!$this->hasCart() || $this->cart->isLocked()) {
             return $this;
@@ -185,10 +141,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function createCart()
+    public function createCart(): CartInterface
     {
         if ($this->hasCart()) {
             return $this->cart;
@@ -196,28 +149,21 @@ abstract class AbstractCartProvider implements CartProviderInterface
 
         $this->clearCart();
 
-        $this->setCart($this->cartRepository->createNew());
-
         // Sets the customer if available
         if ($this->customerProvider->hasCustomer()) {
-            $this->cart->setCustomer($this->customerProvider->getCustomer());
+            $cart = $this->cartFactory->createWithCustomer($this->customerProvider->getCustomer());
+        } else {
+            $cart = $this->cartFactory->create();
         }
 
-        $this->updateCustomerGroupAndCurrency();
+        $this->setCart($cart);
 
-        $this->cartOperator->initialize($this->cart);
+        $this->updateCustomerGroupAndCurrency();
 
         return $this->cart;
     }
 
-    /**
-     * Sets the cart.
-     *
-     * @param CartInterface $cart
-     *
-     * @return AbstractCartProvider
-     */
-    protected function setCart(CartInterface $cart)
+    protected function setCart(CartInterface $cart): CartProviderInterface
     {
         $this->cart = $cart;
 

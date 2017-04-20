@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
@@ -12,67 +15,19 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
  */
 interface SupplierOrderItemInterface extends SubjectRelativeInterface
 {
-    /**
-     * Returns the supplier order.
-     *
-     * @return SupplierOrderInterface
-     */
     public function getOrder(): ?SupplierOrderInterface;
 
-    /**
-     * Sets the supplier order.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return $this|SupplierOrderItemInterface
-     */
-    public function setOrder(SupplierOrderInterface $order = null): SupplierOrderItemInterface;
+    public function setOrder(?SupplierOrderInterface $order): SupplierOrderItemInterface;
 
-    /**
-     * Returns the supplier product.
-     *
-     * @return SupplierProductInterface
-     */
     public function getProduct(): ?SupplierProductInterface;
 
-    /**
-     * Sets the supplier product.
-     *
-     * @param SupplierProductInterface $product
-     *
-     * @return $this|SupplierOrderItemInterface
-     */
-    public function setProduct(SupplierProductInterface $product = null): SupplierOrderItemInterface;
+    public function setProduct(?SupplierProductInterface $product): SupplierOrderItemInterface;
 
-    /**
-     * Returns the stock unit.
-     *
-     * @return StockUnitInterface
-     */
     public function getStockUnit(): ?StockUnitInterface;
 
-    /**
-     * Sets the stock unit.
-     *
-     * @param StockUnitInterface $stockUnit
-     *
-     * @return $this|SupplierOrderItemInterface
-     */
-    public function setStockUnit(StockUnitInterface $stockUnit): SupplierOrderItemInterface;
+    public function setStockUnit(?StockUnitInterface $stockUnit): SupplierOrderItemInterface;
 
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity(): float;
+    public function getQuantity(): Decimal;
 
-    /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|SupplierOrderItemInterface
-     */
-    public function setQuantity(float $quantity): SupplierOrderItemInterface;
+    public function setQuantity(Decimal $quantity): SupplierOrderItemInterface;
 }

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Shipment\Model;
 
 /**
@@ -12,102 +16,64 @@ use Ekyna\Component\Commerce\Shipment\Model;
  */
 abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int                     $id       = null;
+    protected ?Model\ShipmentInterface $shipment = null;
+    protected Decimal                  $quantity;
+    /** @var Collection|array<static> */
+    protected Collection $children;
 
-    /**
-     * @var Model\ShipmentInterface
-     */
-    protected $shipment;
+    /* Non-mapped fields */
+    protected ?Decimal $expected  = null;
+    protected ?Decimal $available = null;
 
-    /**
-     * @var float
-     */
-    protected $quantity = 0;
-
-    /**
-     * @var ArrayCollection
-     */
-    protected $children;
-
-    /**
-     * @var float
-     */
-    protected $expected;
-
-    /**
-     * @var float
-     */
-    protected $available;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->clearChildren();
+
+        $this->quantity = new Decimal(0);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getShipment()
+    public function getShipment(): ?Model\ShipmentInterface
     {
         return $this->shipment;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setShipment(Model\ShipmentInterface $shipment = null)
+    public function setShipment(?Model\ShipmentInterface $shipment): Model\ShipmentItemInterface
     {
-        if ($this->shipment !== $shipment) {
-            if ($previous = $this->shipment) {
-                $this->shipment = null;
-                $previous->removeItem($this);
-            }
+        if ($this->shipment === $shipment) {
+            return $this;
+        }
 
-            if ($this->shipment = $shipment) {
-                $this->shipment->addItem($this);
-            }
+        if ($previous = $this->shipment) {
+            $this->shipment = null;
+            $previous->removeItem($this);
+        }
+
+        if ($this->shipment = $shipment) {
+            $this->shipment->addItem($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuantity()
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuantity($quantity)
+    public function setQuantity(Decimal $quantity): Model\ShipmentItemInterface
     {
         $this->quantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setChildren(array $children)
+    public function setChildren(array $children): Model\ShipmentItemInterface
     {
         $this->clearChildren();
 
@@ -118,56 +84,38 @@ abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getChildren()
+    public function getChildren(): Collection
     {
         return $this->children;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function clearChildren()
+    public function clearChildren(): Model\ShipmentItemInterface
     {
         $this->children = new ArrayCollection();
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getExpected()
+    public function getExpected(): ?Decimal
     {
         return $this->expected;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setExpected($expected)
+    public function setExpected(?Decimal $expected): Model\ShipmentItemInterface
     {
-        $this->expected = (float)$expected;
+        $this->expected = $expected;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAvailable()
+    public function getAvailable(): ?Decimal
     {
         return $this->available;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAvailable($available)
+    public function setAvailable(?Decimal $available): Model\ShipmentItemInterface
     {
-        $this->available = (float)$available;
+        $this->available = $available;
 
         return $this;
     }

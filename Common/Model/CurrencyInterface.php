@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -11,51 +13,15 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface CurrencyInterface extends ResourceInterface
 {
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
-    public function getName();
+    public function getName(): ?string;
 
-    /**
-     * Sets the name.
-     *
-     * @param string $name
-     *
-     * @return $this|CurrencyInterface
-     */
-    public function setName($name);
+    public function setName(string $name): CurrencyInterface;
 
-    /**
-     * Returns the code.
-     *
-     * @return string
-     */
-    public function getCode();
+    public function getCode(): ?string;
 
-    /**
-     * Sets the code.
-     *
-     * @param string $code
-     *
-     * @return $this|CurrencyInterface
-     */
-    public function setCode($code);
+    public function setCode(string $code): CurrencyInterface;
 
-    /**
-     * Returns the enabled.
-     *
-     * @return bool
-     */
-    public function isEnabled();
+    public function isEnabled(): bool;
 
-    /**
-     * Sets the enabled.
-     *
-     * @param bool $enabled
-     *
-     * @return $this|CurrencyInterface
-     */
-    public function setEnabled($enabled);
+    public function setEnabled(bool $enabled): CurrencyInterface;
 }

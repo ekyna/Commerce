@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Notify;
 
 use Ekyna\Component\Commerce\Common\Model\Notify;
@@ -11,27 +13,12 @@ use Ekyna\Component\Commerce\Common\Model\Notify;
  */
 class NotifyQueue
 {
-    /**
-     * @var Notify[]
-     */
-    private $scheduled;
+    private NotifyBuilder $builder;
+    /** @var array<Notify> */
+    private array $scheduled;
+    /** @var array<Notify> */
+    private array $queued;
 
-    /**
-     * @var Notify[]
-     */
-    private $queued;
-
-    /**
-     * @var NotifyBuilder
-     */
-    private $builder;
-
-
-    /**
-     * Constructor.
-     *
-     * @param NotifyBuilder $builder
-     */
     public function __construct(NotifyBuilder $builder)
     {
         $this->builder = $builder;

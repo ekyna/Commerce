@@ -6,7 +6,6 @@
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
     <entity name="Acme\Product\Entity\StockUnit"
-            repository-class="Acme\Product\Repository\StockUnitRepository"
             table="acme_stock_unit">
 
         <many-to-one target-entity="Acme\Product\Entity\Product"

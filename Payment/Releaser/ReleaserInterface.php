@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Releaser;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -14,9 +16,7 @@ interface ReleaserInterface
     /**
      * Releases fund from the given sale.
      *
-     * @param SaleInterface $sale
-     *
      * @return bool Whether any payments has been changed
      */
-    public function releaseFund(SaleInterface $sale);
+    public function releaseFund(SaleInterface $sale): bool;
 }

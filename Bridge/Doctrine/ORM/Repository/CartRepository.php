@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateTime;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -18,9 +21,9 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 class CartRepository extends AbstractSaleRepository implements CartRepositoryInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findLatestByCustomer(CustomerInterface $customer)
+    public function findLatestByCustomer(CustomerInterface $customer): ?CartInterface
     {
         $qb = $this->createQueryBuilder('c');
 
@@ -36,12 +39,12 @@ class CartRepository extends AbstractSaleRepository implements CartRepositoryInt
     /**
      * @inheritDoc
      */
-    public function findExpired()
+    public function findExpired(): array
     {
         $qb = $this->createQueryBuilder('c');
 
-        $today = new \DateTime();
-        $today->setTime(0, 0, 0, 0);
+        $today = new DateTime();
+        $today->setTime(0, 0);
 
         return $qb
             ->andWhere($qb->expr()->lt('c.expiresAt', ':today'))
@@ -52,9 +55,9 @@ class CartRepository extends AbstractSaleRepository implements CartRepositoryInt
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'c';
     }

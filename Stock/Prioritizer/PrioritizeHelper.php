@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
@@ -14,23 +17,9 @@ use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
  */
 class PrioritizeHelper
 {
-    /**
-     * @var StockUnitResolverInterface
-     */
-    protected $unitResolver;
+    protected StockUnitResolverInterface $unitResolver;
+    protected StockUnitCacheInterface $unitCache;
 
-    /**
-     * @var StockUnitCacheInterface
-     */
-    protected $unitCache;
-
-
-    /**
-     * Constructor.
-     *
-     * @param StockUnitResolverInterface $unitResolver
-     * @param StockUnitCacheInterface    $unitCache
-     */
     public function __construct(StockUnitResolverInterface $unitResolver, StockUnitCacheInterface $unitCache)
     {
         $this->unitResolver = $unitResolver;
@@ -39,13 +28,8 @@ class PrioritizeHelper
 
     /**
      * Finds the best stock unit to move/merge assignment(s) into for the given quantity.
-     *
-     * @param StockAssignmentInterface $assignment
-     * @param float                    $quantity
-     *
-     * @return UnitCandidate|null
      */
-    public function getUnitCandidate(StockAssignmentInterface $assignment, $quantity): ?UnitCandidate
+    public function getUnitCandidate(StockAssignmentInterface $assignment, Decimal $quantity): ?UnitCandidate
     {
         $stockUnit = $assignment->getStockUnit();
         $subject = $stockUnit->getSubject();
@@ -87,7 +71,7 @@ class PrioritizeHelper
             if (0 < $release = min($diff, $candidate->releasable)) {
                 if (null !== $combination = $candidate->getCombination($release)) {
                     // Unit has enough reservable + releasable quantity
-                    if (empty($candidates) && $combination->sum == $diff) {
+                    if (empty($candidates) && $combination->sum->equals($diff)) {
                         return $candidate;
                     }
                     $add = true;
@@ -117,13 +101,13 @@ class PrioritizeHelper
 
             // Prefer units with shippable >= quantity, reservable >= quantity or releasable >= quantity
             foreach (['shippable', 'reservable', 'releasable'] as $property) {
-                if (false !== $r = $this->ceilComparison($a, $b, $property, $quantity)) {
+                if (0 !== $r = $this->ceilComparison($a, $b, $property, $quantity)) {
                     return $r;
                 }
             }
             // Prefer units with shippable == quantity, reservable == quantity or releasable == quantity
             foreach (['reservable', 'releasable'] as $property) { // 'shippable' ?
-                if (false !== $r = $this->equalComparison($a, $b, $property, $quantity)) {
+                if (0 !== $r = $this->equalComparison($a, $b, $property, $quantity)) {
                     return $r;
                 }
             }
@@ -154,16 +138,9 @@ class PrioritizeHelper
     /**
      * Returns -1 if A's property is greater than or equal quantity but not B.
      * Returns 1 if B's property is greater than or equal quantity but not A.
-     * Else returns false.
-     *
-     * @param UnitCandidate $a
-     * @param UnitCandidate $b
-     * @param string        $property
-     * @param float         $quantity
-     *
-     * @return bool|int
+     * Else returns 0.
      */
-    protected function ceilComparison(UnitCandidate $a, UnitCandidate $b, $property, $quantity)
+    protected function ceilComparison(UnitCandidate $a, UnitCandidate $b, string $property, Decimal $quantity): int
     {
         if ($a->{$property} >= $quantity && $b->{$property} < $quantity) {
             return -1;
@@ -172,22 +149,15 @@ class PrioritizeHelper
             return 1;
         }
 
-        return false;
+        return 0;
     }
 
     /**
      * Returns -1 if A's equals quantity but not B.
      * Returns 1 if B's equals quantity but not A.
-     * Else returns false.
-     *
-     * @param UnitCandidate $a
-     * @param UnitCandidate $b
-     * @param string        $property
-     * @param float         $quantity
-     *
-     * @return bool|int
+     * Else returns 0.
      */
-    protected function equalComparison(UnitCandidate $a, UnitCandidate $b, $property, $quantity)
+    protected function equalComparison(UnitCandidate $a, UnitCandidate $b, string $property, Decimal $quantity): int
     {
         if ($a->{$property} == $quantity && $b->{$property} != $quantity) {
             return -1;
@@ -196,7 +166,7 @@ class PrioritizeHelper
             return 1;
         }
 
-        return false;
+        return 0;
     }
 
 //    /**

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderItemRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class SupplierOrderItemRepository
@@ -14,9 +17,9 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 class SupplierOrderItemRepository extends ResourceRepository implements SupplierOrderItemRepositoryInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findLatestOrderedBySubject(SubjectInterface $subject)
+    public function findLatestOrderedBySubject(SubjectInterface $subject): ?SupplierOrderItemInterface
     {
         $qb = $this->createQueryBuilder('i');
 
@@ -30,7 +33,7 @@ class SupplierOrderItemRepository extends ResourceRepository implements Supplier
             ->getQuery()
             ->setMaxResults(1)
             ->setParameters([
-                'provider'   => $subject->getProviderName(),
+                'provider'   => $subject::getProviderName(),
                 'identifier' => $subject->getId(),
             ])
             ->getOneOrNullResult();

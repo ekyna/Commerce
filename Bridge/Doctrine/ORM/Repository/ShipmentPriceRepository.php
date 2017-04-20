@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Decimal\Decimal;
+use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentPriceRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class ShipmentPriceRepository
@@ -15,20 +19,13 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class ShipmentPriceRepository extends ResourceRepository implements ShipmentPriceRepositoryInterface
 {
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $findOneByCountryAndMethodAndWeightQuery;
+    private ?Query $findOneByCountryAndMethodAndWeightQuery = null;
 
-
-    /**
-     * @inheritdoc
-     */
     public function findOneByCountryAndMethodAndWeight(
         CountryInterface $country,
         ShipmentMethodInterface $method,
-        $weight
-    ) {
+        Decimal $weight
+    ): ShipmentPriceInterface {
         return $this
             ->getFindOneByCountryAndMethodAndWeightQuery()
             ->setParameters([
@@ -41,10 +38,7 @@ class ShipmentPriceRepository extends ResourceRepository implements ShipmentPric
             ->getOneOrNullResult();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function findByCountryAndWeight(CountryInterface $country, $weight, $available = true)
+    public function findByCountryAndWeight(CountryInterface $country, Decimal $weight, bool $available = true): array
     {
         $qb = $this->getCollectionQueryBuilder('o');
         $qb
@@ -101,10 +95,7 @@ class ShipmentPriceRepository extends ResourceRepository implements ShipmentPric
         return $result;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function findByCountry(CountryInterface $country)
+    public function findByCountry(CountryInterface $country): array
     {
         $qb = $this->getCollectionQueryBuilder('o');
         $qb
@@ -128,10 +119,8 @@ class ShipmentPriceRepository extends ResourceRepository implements ShipmentPric
 
     /**
      * Returns the "find one price by country, method and weight" query.
-     *
-     * @return \Doctrine\ORM\Query
      */
-    private function getFindOneByCountryAndMethodAndWeightQuery()
+    private function getFindOneByCountryAndMethodAndWeightQuery(): Query
     {
         if (null === $this->findOneByCountryAndMethodAndWeightQuery) {
             $qb = $this->getCollectionQueryBuilder('o');
@@ -142,8 +131,7 @@ class ShipmentPriceRepository extends ResourceRepository implements ShipmentPric
                 ->andWhere($qb->expr()->gte('o.weight', ':weight'))
                 ->andWhere($qb->expr()->eq('o.method', ':method'))
                 ->addOrderBy('o.weight', 'ASC')
-                ->setMaxResults(1)
-            ;
+                ->setMaxResults(1);
 
             $this->findOneByCountryAndMethodAndWeightQuery = $qb->getQuery();
         }

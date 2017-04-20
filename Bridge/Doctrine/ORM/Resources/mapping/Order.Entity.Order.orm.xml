@@ -27,12 +27,12 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="revenueTotal" column="revenue_total" type="decimal" precision="15" scale="5" nullable="true"/>
-        <field name="marginTotal" column="margin_total" type="decimal" precision="15" scale="5" nullable="true"/>
+        <field name="revenueTotal" column="revenue_total" type="php_decimal" precision="15" scale="5" nullable="true"/>
+        <field name="marginTotal" column="margin_total" type="php_decimal" precision="15" scale="5" nullable="true"/>
         <field name="itemsCount" column="items_count" type="integer"/>
         <field name="shipmentState" column="shipment_state" type="string" length="16"/>
-        <field name="invoiceTotal" column="invoice_total" type="decimal" precision="15" scale="5"/>
-        <field name="creditTotal" column="credit_total" type="decimal" precision="15" scale="5"/>
+        <field name="invoiceTotal" column="invoice_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="creditTotal" column="credit_total" type="php_decimal" precision="15" scale="5"/>
         <field name="invoiceState" column="invoice_state" type="string" length="16"/>
         <field name="sample" column="is_sample" type="boolean"/>
         <field name="released" column="is_released" type="boolean"/>

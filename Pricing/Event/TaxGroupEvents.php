@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Event;
 
 /**
@@ -10,19 +12,24 @@ namespace Ekyna\Component\Commerce\Pricing\Event;
 final class TaxGroupEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.tax_group.insert';
-    const UPDATE      = 'ekyna_commerce.tax_group.update';
-    const DELETE      = 'ekyna_commerce.tax_group.delete';
+    public const INSERT      = 'ekyna_commerce.tax_group.insert';
+    public const UPDATE      = 'ekyna_commerce.tax_group.update';
+    public const DELETE      = 'ekyna_commerce.tax_group.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.tax_group.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.tax_group.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.tax_group.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.tax_group.pre_create';
-    const POST_CREATE = 'ekyna_commerce.tax_group.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.tax_group.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.tax_group.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.tax_group.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.tax_group.post_update';
+    public const PRE_DELETE  = 'ekyna_commerce.tax_group.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.tax_group.post_delete';
 
-    const PRE_DELETE  = 'ekyna_commerce.tax_group.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.tax_group.post_delete';
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

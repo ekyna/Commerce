@@ -6,7 +6,7 @@ use Acme\Product\Entity\Product;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class StockUnitRepository
@@ -16,7 +16,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 class StockUnitRepository extends ResourceRepository implements StockUnitRepositoryInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findNewBySubject(StockSubjectInterface $subject): array
     {
@@ -26,7 +26,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findPendingBySubject(StockSubjectInterface $subject): array
     {
@@ -36,7 +36,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findReadyBySubject(StockSubjectInterface $subject): array
     {
@@ -46,7 +46,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findPendingOrReadyBySubject(StockSubjectInterface $subject): array
     {
@@ -57,7 +57,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findNotClosedBySubject(StockSubjectInterface $subject): array
     {
@@ -69,7 +69,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findAssignableBySubject(StockSubjectInterface $subject): array
     {
@@ -96,7 +96,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findLinkableBySubject(StockSubjectInterface $subject): array
     {
@@ -235,9 +235,9 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'su';
     }

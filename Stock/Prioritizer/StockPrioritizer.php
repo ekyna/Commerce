@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -24,74 +27,32 @@ use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
  */
 class StockPrioritizer implements StockPrioritizerInterface
 {
-    /**
-     * @var StockUnitResolverInterface
-     */
-    protected $unitResolver;
+    protected StockUnitResolverInterface         $unitResolver;
+    protected StockUnitAssignerInterface         $unitAssigner;
+    protected StockUnitManagerInterface          $unitManager;
+    protected StockUnitCacheInterface            $unitCache;
+    protected StockAssignmentManagerInterface    $assignmentManager;
+    protected StockAssignmentDispatcherInterface $assignmentDispatcher;
+    protected StockLoggerInterface               $logger;
 
-    /**
-     * @var StockUnitAssignerInterface
-     */
-    protected $unitAssigner;
-
-    /**
-     * @var StockUnitManagerInterface
-     */
-    protected $unitManager;
-
-    /**
-     * @var StockUnitCacheInterface
-     */
-    protected $unitCache;
-
-    /**
-     * @var StockAssignmentManagerInterface
-     */
-    protected $assignmentManager;
-
-    /**
-     * @var StockAssignmentDispatcherInterface
-     */
-    protected $assignmentDispatcher;
-
-    /**
-     * @var StockLoggerInterface
-     */
-    protected $logger;
-
-
-    /**
-     * Constructor.
-     *
-     * @param StockUnitResolverInterface         $unitResolver
-     * @param StockUnitAssignerInterface         $unitAssigner
-     * @param StockUnitManagerInterface          $unitManager
-     * @param StockUnitCacheInterface            $unitCache
-     * @param StockAssignmentManagerInterface    $assignmentManager
-     * @param StockAssignmentDispatcherInterface $assignmentDispatcher
-     * @param StockLoggerInterface               $logger
-     */
     public function __construct(
-        StockUnitResolverInterface $unitResolver,
-        StockUnitAssignerInterface $unitAssigner,
-        StockUnitManagerInterface $unitManager,
-        StockUnitCacheInterface $unitCache,
-        StockAssignmentManagerInterface $assignmentManager,
+        StockUnitResolverInterface         $unitResolver,
+        StockUnitAssignerInterface         $unitAssigner,
+        StockUnitManagerInterface          $unitManager,
+        StockUnitCacheInterface            $unitCache,
+        StockAssignmentManagerInterface    $assignmentManager,
         StockAssignmentDispatcherInterface $assignmentDispatcher,
-        StockLoggerInterface $logger
+        StockLoggerInterface               $logger
     ) {
-        $this->unitResolver         = $unitResolver;
-        $this->unitAssigner         = $unitAssigner;
-        $this->unitManager          = $unitManager;
-        $this->unitCache            = $unitCache;
-        $this->assignmentManager    = $assignmentManager;
+        $this->unitResolver = $unitResolver;
+        $this->unitAssigner = $unitAssigner;
+        $this->unitManager = $unitManager;
+        $this->unitCache = $unitCache;
+        $this->assignmentManager = $assignmentManager;
         $this->assignmentDispatcher = $assignmentDispatcher;
-        $this->logger               = $logger;
+        $this->logger = $logger;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function canPrioritizeSale(Common\SaleInterface $sale): bool
     {
         if (!$this->checkSale($sale)) {
@@ -107,9 +68,6 @@ class StockPrioritizer implements StockPrioritizerInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true): bool
     {
         if ($checkSale && !$this->checkSale($item->getSale())) {
@@ -141,9 +99,6 @@ class StockPrioritizer implements StockPrioritizerInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function prioritizeSale(Common\SaleInterface $sale): bool
     {
         if (!$this->checkSale($sale)) {
@@ -153,19 +108,16 @@ class StockPrioritizer implements StockPrioritizerInterface
         $changed = false;
 
         foreach ($sale->getItems() as $item) {
-            $changed |= $this->prioritizeSaleItem($item, null, false);
+            $changed = $this->prioritizeSaleItem($item, null, false) || $changed;
         }
 
         return $changed;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function prioritizeSaleItem(
         Common\SaleItemInterface $item,
-        float $quantity = null,
-        bool $checkSale = true
+        Decimal                  $quantity = null,
+        bool                     $checkSale = true
     ): bool {
         if ($checkSale && !$this->checkSale($item->getSale())) {
             return false;
@@ -174,7 +126,8 @@ class StockPrioritizer implements StockPrioritizerInterface
         $changed = false;
 
         foreach ($item->getChildren() as $child) {
-            $changed |= $this->prioritizeSaleItem($child, $quantity ? $quantity * $child->getQuantity() : null, false);
+            $q = $quantity ? $quantity->mul($child->getQuantity()) : null;
+            $changed = $this->prioritizeSaleItem($child, $quantity ? $q : null, false) || $changed;
         }
 
         if (!$item instanceof StockAssignmentsInterface) {
@@ -194,7 +147,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         foreach ($item->getStockAssignments() as $assignment) {
-            $changed |= $this->prioritizeAssignment($assignment, $quantity);
+            $changed = $this->prioritizeAssignment($assignment, $quantity) || $changed;
         }
 
         return $changed;
@@ -202,12 +155,8 @@ class StockPrioritizer implements StockPrioritizerInterface
 
     /**
      * Checks whether the sale can be prioritized.
-     *
-     * @param Common\SaleInterface $sale
-     *
-     * @return bool
      */
-    protected function checkSale(Common\SaleInterface $sale)
+    protected function checkSale(Common\SaleInterface $sale): bool
     {
         if (!$sale instanceof OrderInterface) {
             return false;
@@ -227,20 +176,17 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * Prioritize the stock assignment.
      *
-     * @param Assignment $assignment
-     * @param float      $quantity
-     *
      * @return bool Whether the assignment has been prioritized.
      */
-    protected function prioritizeAssignment(Assignment $assignment, float $quantity = null)
+    protected function prioritizeAssignment(Assignment $assignment, Decimal $quantity = null): bool
     {
         if ($assignment->isFullyShipped() || $assignment->isFullyShippable()) {
             return false;
         }
 
         if (is_null($quantity)) {
-            // Get the non shippable quantity
-            $quantity = $assignment->getSoldQuantity() - $assignment->getShippableQuantity();
+            // Get the non-shippable quantity
+            $quantity = $assignment->getSoldQuantity()->sub($assignment->getShippableQuantity());
         }
 
         if (0 >= $quantity) {
@@ -268,7 +214,7 @@ class StockPrioritizer implements StockPrioritizerInterface
                 // Use combination to release quantity
                 foreach ($combination->map as $id => $qty) {
                     if (null === $a = $candidate->getAssignmentById($id)) {
-                        throw new StockLogicException("Assignment not found.");
+                        throw new StockLogicException('Assignment not found.');
                     }
 
                     // Move assignment to the source unit
@@ -284,7 +230,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             }
 
             // Move assignment to the target unit using reservable quantity first.
-            $delta    = min($quantity, $targetUnit->getReservableQuantity());
+            $delta = min($quantity, $targetUnit->getReservableQuantity());
             $quantity -= $this->assignmentDispatcher->moveAssignment($assignment, $targetUnit, $delta);
 
             $this->unitManager->persistOrRemove($sourceUnit);

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -11,12 +14,9 @@ use Ekyna\Component\Commerce\Common\Model;
  */
 class WeightCalculator implements WeightCalculatorInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public function calculateSale(Model\SaleInterface $sale)
+    public function calculateSale(Model\SaleInterface $sale): Decimal
     {
-        $total = .0;
+        $total = new Decimal(0);
 
         foreach ($sale->getItems() as $item) {
             $total += $this->calculateSaleItem($item);
@@ -25,10 +25,7 @@ class WeightCalculator implements WeightCalculatorInterface
         return $total;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function calculateSaleItem(Model\SaleItemInterface $item)
+    public function calculateSaleItem(Model\SaleItemInterface $item): Decimal
     {
         $total = $item->getWeight() * $item->getTotalQuantity();
 

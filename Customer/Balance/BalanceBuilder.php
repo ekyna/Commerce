@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Balance;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
@@ -18,52 +21,24 @@ use Ekyna\Component\Commerce\Payment\Resolver\DueDateResolverInterface;
  */
 class BalanceBuilder
 {
-    /**
-     * @var OrderInvoiceRepositoryInterface
-     */
-    protected $invoiceRepository;
-
-    /**
-     * @var OrderPaymentRepositoryInterface
-     */
-    protected $paymentRepository;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
-
-    /**
-     * @var DueDateResolverInterface
-     */
-    protected $dueDateResolver;
+    protected OrderInvoiceRepositoryInterface $invoiceRepository;
+    protected OrderPaymentRepositoryInterface $paymentRepository;
+    protected CurrencyConverterInterface      $currencyConverter;
+    protected DueDateResolverInterface        $dueDateResolver;
 
 
-    /**
-     * Constructor.
-     *
-     * @param OrderInvoiceRepositoryInterface $invoiceRepository
-     * @param OrderPaymentRepositoryInterface $paymentRepository
-     * @param CurrencyConverterInterface      $currencyConverter
-     * @param DueDateResolverInterface        $dueDateResolver
-     */
     public function __construct(
         OrderInvoiceRepositoryInterface $invoiceRepository,
         OrderPaymentRepositoryInterface $paymentRepository,
-        CurrencyConverterInterface $currencyConverter,
-        DueDateResolverInterface $dueDateResolver
+        CurrencyConverterInterface      $currencyConverter,
+        DueDateResolverInterface        $dueDateResolver
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
         $this->currencyConverter = $currencyConverter;
-        $this->dueDateResolver   = $dueDateResolver;
+        $this->dueDateResolver = $dueDateResolver;
     }
 
-    /**
-     * Builds the customer balance.
-     *
-     * @param Balance $balance
-     */
     public function build(Balance $balance): void
     {
         $payments = [];
@@ -89,23 +64,21 @@ class BalanceBuilder
     }
 
     /**
-     * Builds the invoices lines.
-     *
-     * @param Balance                 $balance
      * @param OrderInvoiceInterface[] $invoices
      */
     private function buildInvoices(Balance $balance, array $invoices): void
     {
         foreach ($invoices as $invoice) {
-            $debit   = $credit = 0;
+            $debit = new Decimal(0);
+            $credit = new Decimal(0);
             $dueDate = null;
 
             if ($invoice->isCredit()) {
-                $type   = Line::TYPE_CREDIT;
+                $type = Line::TYPE_CREDIT;
                 $credit = $invoice->getGrandTotal();
             } else {
-                $type    = Line::TYPE_INVOICE;
-                $debit   = $invoice->getGrandTotal();
+                $type = Line::TYPE_INVOICE;
+                $debit = $invoice->getGrandTotal();
                 $dueDate = $invoice->getDueDate();
 
                 if ($balance->getFilter() !== Balance::FILTER_ALL) {
@@ -144,9 +117,6 @@ class BalanceBuilder
     }
 
     /**
-     * Builds the payments lines.
-     *
-     * @param Balance                 $balance
      * @param OrderPaymentInterface[] $payments
      */
     private function buildPayments(Balance $balance, array $payments): void
@@ -162,15 +132,15 @@ class BalanceBuilder
                     ->currencyConverter
                     ->convertWithRate($payment->getAmount(), $payment->getSale()->getExchangeRate(), $bc);
             } else {
-                throw new LogicException("Unexpected payment currency");
+                throw new LogicException('Unexpected payment currency');
             }
 
-            $debit = $credit = 0;
+            $debit = $credit = new Decimal(0);
             if ($payment->isRefund()) {
-                $type  = Line::TYPE_REFUND;
+                $type = Line::TYPE_REFUND;
                 $debit = $amount;
             } else {
-                $type   = Line::TYPE_PAYMENT;
+                $type = Line::TYPE_PAYMENT;
                 $credit = $amount;
             }
 

@@ -17,15 +17,15 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class OrderShipmentListener extends AbstractShipmentListener
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function scheduleSaleContentChangeEvent(SaleInterface $sale)
     {
-        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, OrderEvents::CONTENT_CHANGE);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getShipmentFromEvent(ResourceEventInterface $event)
     {
@@ -39,7 +39,7 @@ class OrderShipmentListener extends AbstractShipmentListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSalePropertyPath()
     {

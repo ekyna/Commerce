@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Model;
 
 /**
@@ -9,30 +11,18 @@ namespace Ekyna\Component\Commerce\Payment\Model;
  */
 trait PaymentTermSubjectTrait
 {
-    /**
-     * @var PaymentTermInterface
-     */
-    protected $paymentTerm;
+    protected ?PaymentTermInterface $paymentTerm = null;
 
 
-    /**
-     * Returns the payment term.
-     *
-     * @return PaymentTermInterface
-     */
-    public function getPaymentTerm()
+    public function getPaymentTerm(): ?PaymentTermInterface
     {
         return $this->paymentTerm;
     }
 
     /**
-     * Sets the payment term.
-     *
-     * @param PaymentTermInterface $paymentTerm
-     *
      * @return $this|PaymentTermSubjectInterface
      */
-    public function setPaymentTerm(PaymentTermInterface $paymentTerm = null)
+    public function setPaymentTerm(?PaymentTermInterface $paymentTerm): PaymentTermSubjectInterface
     {
         $this->paymentTerm = $paymentTerm;
 

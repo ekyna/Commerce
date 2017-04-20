@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\EventListener;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
@@ -8,11 +10,11 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Transformer\SaleTransformerInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Event\PaymentEvent;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteStates;
+use Ekyna\Component\Resource\Factory\ResourceFactoryInterface;
 use Payum\Core\Payum;
 use Payum\Core\Security\TokenInterface;
 use Payum\Core\Storage\IdentityInterface;
@@ -24,36 +26,18 @@ use Payum\Core\Storage\IdentityInterface;
  */
 class PaymentDoneEventSubscriber
 {
-    /**
-     * @var SaleTransformerInterface
-     */
-    private $saleTransformer;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private $orderRepository;
-
-    /**
-     * @var Payum
-     */
-    private $payum;
+    private SaleTransformerInterface $saleTransformer;
+    private ResourceFactoryInterface $orderFactory;
+    private Payum                    $payum;
 
 
-    /**
-     * Constructor.
-     *
-     * @param SaleTransformerInterface $saleTransformer
-     * @param OrderRepositoryInterface $orderRepository
-     * @param Payum                    $payum
-     */
     public function __construct(
         SaleTransformerInterface $saleTransformer,
-        OrderRepositoryInterface $orderRepository,
-        Payum $payum
+        ResourceFactoryInterface $orderFactory,
+        Payum                    $payum
     ) {
         $this->saleTransformer = $saleTransformer;
-        $this->orderRepository = $orderRepository;
+        $this->orderFactory = $orderFactory;
         $this->payum = $payum;
     }
 
@@ -99,7 +83,7 @@ class PaymentDoneEventSubscriber
             }
         }
         if (null === $newPayment) {
-            throw new RuntimeException("Failed to find the transformed payment.");
+            throw new RuntimeException('Failed to find the transformed payment.');
         }
 
         // Convert tokens
@@ -112,30 +96,21 @@ class PaymentDoneEventSubscriber
     /**
      * Find the given payment's security tokens.
      *
-     * @param PaymentInterface $payment
-     *
-     * @return TokenInterface[]
+     * @return array<TokenInterface>
      */
-    private function findPaymentTokens(PaymentInterface $payment)
+    private function findPaymentTokens(PaymentInterface $payment): array
     {
         $identity = $this->getPaymentIdentity($payment);
 
-        /** @var TokenInterface[] $tokens */
-        $tokens = $this->payum->getTokenStorage()->findBy([
+        return $this->payum->getTokenStorage()->findBy([
             'details' => $identity,
         ]);
-
-        return $tokens;
     }
 
     /**
-     * Transforms the given cart or quote to an order.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return OrderInterface|null
+     * Transforms the given cart or quote into an order.
      */
-    private function transform(SaleInterface $sale)
+    private function transform(SaleInterface $sale): ?OrderInterface
     {
         $order = $this->newOrder();
 
@@ -143,7 +118,7 @@ class PaymentDoneEventSubscriber
         $this->saleTransformer->initialize($sale, $order);
 
         // Transform
-        if (null === $event = $this->saleTransformer->transform()) {
+        if (null === $this->saleTransformer->transform()) {
             // Success
             return $order;
         }
@@ -152,10 +127,10 @@ class PaymentDoneEventSubscriber
     }
 
     /**
-     * @param IdentityInterface $identity New payment's identity
-     * @param TokenInterface[]  $tokens   The original payment's tokens
+     * @param IdentityInterface     $identity New payment's identity
+     * @param array<TokenInterface> $tokens   The original payment's tokens
      */
-    private function convertTokens(IdentityInterface $identity, array $tokens)
+    private function convertTokens(IdentityInterface $identity, array $tokens): void
     {
         if (empty($tokens)) {
             return;
@@ -171,24 +146,18 @@ class PaymentDoneEventSubscriber
 
     /**
      * Returns the payment identity.
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return \Payum\Core\Storage\IdentityInterface
      */
-    private function getPaymentIdentity(PaymentInterface $payment)
+    private function getPaymentIdentity(PaymentInterface $payment): IdentityInterface
     {
         return $this->payum->getStorage($payment)->identify($payment);
     }
 
     /**
      * Returns a new order.
-     *
-     * @return \Ekyna\Bundle\CommerceBundle\Model\OrderInterface
      */
-    private function newOrder()
+    private function newOrder(): OrderInterface
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->orderRepository->createNew();
+        return $this->orderFactory->create();
     }
 }

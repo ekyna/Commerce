@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Currency;
 
+use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -13,96 +18,71 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
  */
 class CurrencyConverter implements CurrencyConverterInterface
 {
-    /**
-     * @var ExchangeRateProviderInterface
-     */
-    protected $provider;
-
-    /**
-     * @var string
-     */
-    protected $defaultCurrency;
+    protected ExchangeRateProviderInterface $provider;
+    protected string                        $defaultCurrency;
 
 
-    /**
-     * Constructor.
-     *
-     * @param ExchangeRateProviderInterface $provider
-     * @param string                        $currency
-     */
     public function __construct(ExchangeRateProviderInterface $provider, string $currency = 'USD')
     {
-        $this->provider        = $provider;
+        $this->provider = $provider;
         $this->defaultCurrency = strtoupper($currency);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function convert(
-        float $amount,
-        string $base,
-        string $quote = null,
-        \DateTime $date = null,
-        bool $round = true
-    ): float {
+        Decimal            $amount,
+        string             $base,
+        string             $quote = null,
+        ?DateTimeInterface $date = null,
+        bool               $round = true
+    ): Decimal {
         return $this->convertWithRate($amount, $this->getRate($base, $quote, $date), $quote, $round);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function convertWithRate(float $amount, float $rate, string $quote = null, bool $round = true): float
+    public function convertWithRate(Decimal $amount, Decimal $rate, string $quote = null, bool $round = true): Decimal
     {
-        return $round ? Money::round($amount * $rate, $quote ?? $this->defaultCurrency) : $amount * $rate;
+        $amount = $amount->mul($rate);
+
+        if ($round) {
+            return Money::round($amount, $quote ?? $this->defaultCurrency);
+        }
+
+        return $amount;
     }
 
-    /**
-     * Returns the exchange rate base on the given subject's data.
-     *
-     * @param ExchangeSubjectInterface $subject
-     * @param string                   $base
-     * @param string                   $quote
-     *
-     * @return float
-     */
     public function getSubjectExchangeRate(
         ExchangeSubjectInterface $subject,
-        string $base = null,
-        string $quote = null
-    ): float {
+        string                   $base = null,
+        string                   $quote = null
+    ): Decimal {
         $default = $this->defaultCurrency;
         $currency = $subject->getCurrency()->getCode();
 
-        $base  = strtoupper($base ?? $subject->getBaseCurrency() ?? $default);
+        $base = strtoupper($base ?? $subject->getBaseCurrency() ?? $default);
         $quote = strtoupper($quote ?? $currency);
 
         if ($base === $quote) {
-            return 1.0;
+            return new Decimal(1);
         }
 
-        if (0 < $rate = $subject->getExchangeRate()) {
+        if ($rate = $subject->getExchangeRate()) {
             if (($base === $default) && ($quote === $currency)) {
                 return $rate;
             }
 
             if (($base === $currency) && ($quote === $default)) {
-                return round(1 / $rate, 5);
+                return (new Decimal(1))->div($rate)->round(5);
             }
         }
 
         return $this->getRate($base, $quote, $subject->getExchangeDate());
     }
 
-    /**
-     * @inheritDoc
-     */
     public function convertWithSubject(
-        float $amount,
+        Decimal                  $amount,
         ExchangeSubjectInterface $subject,
-        string $quote = null,
-        bool $round = true
-    ): float {
+        string                   $quote = null,
+        bool                     $round = true
+    ): Decimal {
         if (is_null($quote)) {
             $quote = $subject->getCurrency()->getCode();
         }
@@ -112,31 +92,25 @@ class CurrencyConverter implements CurrencyConverterInterface
         return $this->convertWithRate($amount, $rate, $quote, $round);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getRate(string $base, string $quote = null, \DateTime $date = null): float
+    public function getRate(string $base, string $quote = null, DateTimeInterface $date = null): Decimal
     {
-        $base  = strtoupper($base);
+        $base = strtoupper($base);
         $quote = strtoupper($quote ?? $this->defaultCurrency);
 
         if ($base === $quote) {
-            return 1.0;
+            return new Decimal(1);
         }
 
-        $date = $date ? clone $date : new \DateTime();
-        $date->setTime((int)$date->format('H'), 0, 0, 0);
+        $date = $date ? clone $date : new DateTime();
+        $date->setTime((int)$date->format('H'), 0);
 
-        if (null !== $rate = $this->provider->get($base, $quote, $date)) {
+        if ($rate = $this->provider->get($base, $quote, $date)) {
             return $rate;
         }
 
-        throw new RuntimeException("Failed to retrieve exchange rate.");
+        throw new RuntimeException('Failed to retrieve exchange rate.');
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setSubjectExchangeRate(ExchangeSubjectInterface $subject): bool
     {
         if (!is_null($subject->getExchangeRate())) {
@@ -144,10 +118,10 @@ class CurrencyConverter implements CurrencyConverterInterface
         }
 
         if (null === $currency = $subject->getCurrency()) {
-            throw new RuntimeException("Subject currency is not set");
+            throw new RuntimeException('Subject currency is not set');
         }
 
-        $date = $subject->getExchangeDate() ?? new \DateTime();
+        $date = $subject->getExchangeDate() ?? new DateTime();
 
         $rate = $this->getRate($this->defaultCurrency, $currency->getCode(), $date);
 
@@ -158,9 +132,6 @@ class CurrencyConverter implements CurrencyConverterInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getDefaultCurrency(): string
     {
         return $this->defaultCurrency;

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 
 /**
@@ -12,16 +15,12 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 interface StockPrioritizerInterface
 {
     /**
-     * Returns whether or not the sale can be prioritized.
-     *
-     * @param Common\SaleInterface $sale
-     *
-     * @return bool
+     * Returns whether the sale can be prioritized.
      */
     public function canPrioritizeSale(Common\SaleInterface $sale): bool;
 
     /**
-     * Returns whether or not the sale item can be prioritized.
+     * Returns whether the sale item can be prioritized.
      *
      * @param Common\SaleItemInterface $item
      * @param bool                     $checkSale Whether to check if sale can be prioritized.
@@ -34,9 +33,7 @@ interface StockPrioritizerInterface
      * Prioritizes a sale by trying to move stock assignments
      * to make all items shippable.
      *
-     * @param Common\SaleInterface $sale
-     *
-     * @return bool Whether or not the sale has been prioritized.
+     * @return bool Whether the sale has been prioritized.
      */
     public function prioritizeSale(Common\SaleInterface $sale): bool;
 
@@ -46,14 +43,14 @@ interface StockPrioritizerInterface
      * to make the item and its children shippable.
      *
      * @param Common\SaleItemInterface $item
-     * @param float                    $quantity The quantity to prioritize
+     * @param Decimal|null             $quantity  The quantity to prioritize
      * @param bool                     $checkSale Whether to check if sale can be prioritized.
      *
-     * @return bool Whether or not the sale item has been prioritized.
+     * @return bool Whether the sale item has been prioritized.
      */
     public function prioritizeSaleItem(
         Common\SaleItemInterface $item,
-        float $quantity = null,
-        bool $checkSale = true
+        Decimal                  $quantity = null,
+        bool                     $checkSale = true
     ): bool;
 }

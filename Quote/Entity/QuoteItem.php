@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Quote\Model;
 
 /**
@@ -14,36 +16,31 @@ use Ekyna\Component\Commerce\Quote\Model;
  */
 class QuoteItem extends AbstractSaleItem implements Model\QuoteItemInterface
 {
-    /**
-     * @var Model\QuoteInterface
-     */
-    protected $quote;
+    protected ?Model\QuoteInterface $quote = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function getSale()
+    public function getSale(): ?Common\SaleInterface
     {
-        if (null === $quote = $this->getQuote()) {
-            $parent = $this;
-            while (null !== $parent) {
-                if (null !== $quote = $parent->getQuote()) {
-                    return $quote;
-                }
-                $parent = $parent->getParent();
+        if ($quote = $this->getQuote()) {
+            return $quote;
+        }
+
+        $parent = $this;
+        while ($parent) {
+            if ($quote = $parent->getQuote()) {
+                return $quote;
             }
+
+            $parent = $parent->getParent();
         }
 
         return $quote;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @param Model\QuoteInterface $sale
+     * @param Model\QuoteInterface|null $sale
      */
-    public function setSale(Common\SaleInterface $sale = null)
+    public function setSale(?Common\SaleInterface $sale): Common\SaleItemInterface
     {
         $sale && $this->assertSaleClass($sale);
 
@@ -52,60 +49,47 @@ class QuoteItem extends AbstractSaleItem implements Model\QuoteItemInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuote()
+    public function getQuote(): ?Model\QuoteInterface
     {
         return $this->quote;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuote(Model\QuoteInterface $quote = null)
+    public function setQuote(?Model\QuoteInterface $quote): Model\QuoteItemInterface
     {
-        if ($quote !== $this->quote) {
-            if ($previous = $this->quote) {
-                $this->quote = null;
-                $previous->removeItem($this);
-            }
+        if ($quote === $this->quote) {
+            return $this;
+        }
 
-            if ($this->quote = $quote) {
-                $this->quote->addItem($this);
-            }
+        if ($previous = $this->quote) {
+            $this->quote = null;
+            $previous->removeItem($this);
+        }
+
+        if ($this->quote = $quote) {
+            $this->quote->addItem($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function assertSaleClass(Common\SaleInterface $sale)
+    protected function assertSaleClass(Common\SaleInterface $sale): void
     {
         if (!$sale instanceof Model\QuoteInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteInterface::class);
+            throw new UnexpectedTypeException($sale, Model\QuoteInterface::class);
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function assertItemClass(Common\SaleItemInterface $child)
+    protected function assertItemClass(Common\SaleItemInterface $child): void
     {
         if (!$child instanceof Model\QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteItemInterface::class);
+            throw new UnexpectedTypeException($child, Model\QuoteItemInterface::class);
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function assertItemAdjustmentClass(Common\AdjustmentInterface $adjustment)
+    protected function assertItemAdjustmentClass(Common\AdjustmentInterface $adjustment): void
     {
         if (!$adjustment instanceof Model\QuoteItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\QuoteItemAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\QuoteItemAdjustmentInterface::class);
         }
     }
 }

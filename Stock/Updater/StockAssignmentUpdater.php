@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
 
@@ -12,23 +15,9 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
  */
 class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 {
-    /**
-     * @var StockUnitUpdaterInterface
-     */
-    protected $stockUnitUpdater;
+    protected StockUnitUpdaterInterface $stockUnitUpdater;
+    protected StockAssignmentManagerInterface $assignmentManager;
 
-    /**
-     * @var StockAssignmentManagerInterface
-     */
-    protected $assignmentManager;
-
-
-    /**
-     * Constructor.
-     *
-     * @param StockUnitUpdaterInterface       $stockUnitUpdater
-     * @param StockAssignmentManagerInterface $assignmentManager
-     */
     public function __construct(
         StockUnitUpdaterInterface $stockUnitUpdater,
         StockAssignmentManagerInterface $assignmentManager
@@ -37,10 +26,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         $this->assignmentManager = $assignmentManager;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function updateSold(Assignment $assignment, float $quantity, bool $relative = true): float
+    public function updateSold(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal
     {
         // TODO use Packaging format
 
@@ -65,14 +51,13 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
                 $unit->getShippedQuantity() - $unit->getSoldQuantity()
             );
         }
-
         // No update
-        if (0 == $quantity) {
-            return 0.;
+        else {
+            return new Decimal(0);
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateSold($unit, $quantity, true);
+        $this->stockUnitUpdater->updateSold($unit, $quantity);
 
         // Assignment update
         $assignment->setSoldQuantity($assignment->getSoldQuantity() + $quantity);
@@ -81,10 +66,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         return $quantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function updateShipped(Assignment $assignment, float $quantity, bool $relative = true): float
+    public function updateShipped(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal
     {
         // TODO use Packaging format
 
@@ -106,12 +88,12 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             $quantity = max($quantity, -$assignment->getShippedQuantity(), -$unit->getShippedQuantity());
         }
         // No update
-        if (0 == $quantity) {
-            return 0.;
+        else {
+            return new Decimal(0);
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateShipped($unit, $quantity, true);
+        $this->stockUnitUpdater->updateShipped($unit, $quantity);
 
         // Assignment update
         $assignment->setShippedQuantity($assignment->getShippedQuantity() + $quantity);
@@ -120,10 +102,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         return $quantity;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function updateLocked(Assignment $assignment, float $quantity, bool $relative = true): float
+    public function updateLocked(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal
     {
         // TODO use Packaging format
 
@@ -145,12 +124,12 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             $quantity = max($quantity, -$assignment->getLockedQuantity(), -$unit->getLockedQuantity());
         }
         // No update
-        if (0 == $quantity) {
-            return 0.;
+        else {
+            return new Decimal(0);
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateLocked($unit, $quantity, true);
+        $this->stockUnitUpdater->updateLocked($unit, $quantity);
 
         // Assignment update
         $assignment->setLockedQuantity($assignment->getLockedQuantity() + $quantity);

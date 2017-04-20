@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -12,44 +14,24 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
  */
 abstract class AbstractProvider implements ProviderInterface
 {
-    /**
-     * @var RegistryInterface
-     */
-    private $registry;
+    private GatewayRegistryInterface $registry;
+    /** @var array<GatewayInterface> */
+    private array $gateways    = [];
+    private bool  $initialized = false;
 
-    /**
-     * @var array|GatewayInterface[]
-     */
-    private $gateways = [];
-
-    /**
-     * @var bool
-     */
-    private $initialized = false;
-
-
-    /**
-     * @inheritDoc
-     */
-    public function setRegistry(RegistryInterface $registry)
+    public function setRegistry(GatewayRegistryInterface $registry): void
     {
         $this->registry = $registry;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasGateway($name)
+    public function hasGateway(string $name): bool
     {
         $this->initialize();
 
         return isset($this->gateways[$name]);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGateway($name)
+    public function getGateway(string $name): GatewayInterface
     {
         $this->initialize();
 
@@ -60,10 +42,7 @@ abstract class AbstractProvider implements ProviderInterface
         return $this->gateways[$name];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function allGateways()
+    public function allGateways(): array
     {
         $this->initialize();
 
@@ -73,20 +52,16 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * Loads the gateways.
      */
-    abstract protected function loadGateways();
+    abstract protected function loadGateways(): void;
 
     /**
      * Creates and registers a gateway.
-     *
-     * @param string $platformName
-     * @param string $name
-     * @param array  $config
      */
-    protected function createAndRegisterGateway($platformName, $name, array $config)
+    protected function createAndRegisterGateway(string $platformName, string $gatewayName, array $config): void
     {
         $platform = $this->registry->getPlatform($platformName);
 
-        $gateway = $platform->createGateway($name, $config);
+        $gateway = $platform->createGateway($gatewayName, $config);
 
         if ($gateway instanceof Shipment\AddressResolverAwareInterface) {
             $gateway->setAddressResolver($this->registry->getAddressResolver());
@@ -98,13 +73,13 @@ abstract class AbstractProvider implements ProviderInterface
             $gateway->setPersister($this->registry->getPersister());
         }
 
-        $this->gateways[$name] = $gateway;
+        $this->gateways[$gatewayName] = $gateway;
     }
 
     /**
      * Initializes the provider.
      */
-    private function initialize()
+    private function initialize(): void
     {
         if ($this->initialized) {
             return;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -11,61 +13,47 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class NotificationTypes
 {
-    const MANUAL             = 'manual';
-    const CART_REMIND        = 'cart_remind';
-    const ORDER_ACCEPTED     = 'order_accepted';
-    const QUOTE_REMIND       = 'quote_remind';
-    const PAYMENT_AUTHORIZED = 'payment_authorized';
-    const PAYMENT_CAPTURED   = 'payment_captured';
-    const PAYMENT_PAYEDOUT   = 'payment_payedout';
-    const PAYMENT_EXPIRED    = 'payment_expired';
-    const SHIPMENT_READY     = 'shipment_ready';
-    const SHIPMENT_COMPLETE  = 'shipment_complete';
-    const SHIPMENT_PARTIAL   = 'shipment_partial';
-    const INVOICE_COMPLETE   = 'invoice_complete';
-    const INVOICE_PARTIAL    = 'invoice_partial';
-    const RETURN_PENDING     = 'return_pending';
-    const RETURN_RECEIVED    = 'return_received';
+    public const MANUAL             = 'manual';
+    public const CART_REMIND        = 'cart_remind';
+    public const ORDER_ACCEPTED     = 'order_accepted';
+    public const QUOTE_REMIND       = 'quote_remind';
+    public const PAYMENT_AUTHORIZED = 'payment_authorized';
+    public const PAYMENT_CAPTURED   = 'payment_captured';
+    public const PAYMENT_PAYEDOUT   = 'payment_payedout';
+    public const PAYMENT_EXPIRED    = 'payment_expired';
+    public const SHIPMENT_READY     = 'shipment_ready';
+    public const SHIPMENT_COMPLETE  = 'shipment_complete';
+    public const SHIPMENT_PARTIAL   = 'shipment_partial';
+    public const INVOICE_COMPLETE   = 'invoice_complete';
+    public const INVOICE_PARTIAL    = 'invoice_partial';
+    public const RETURN_PENDING     = 'return_pending';
+    public const RETURN_RECEIVED    = 'return_received';
 
 
-
-    /**
-     * Returns all the types.
-     *
-     * @return array
-     */
-    static public function getTypes(): array
+    public static function getTypes(): array
     {
         return [
-            static::MANUAL,
-            static::CART_REMIND,
-            static::ORDER_ACCEPTED,
-            static::QUOTE_REMIND,
-            static::PAYMENT_AUTHORIZED,
-            static::PAYMENT_CAPTURED,
-            static::PAYMENT_PAYEDOUT,
-            static::PAYMENT_EXPIRED,
-            static::SHIPMENT_READY,
-            static::SHIPMENT_COMPLETE,
-            static::SHIPMENT_PARTIAL,
-            static::INVOICE_COMPLETE,
-            static::INVOICE_PARTIAL,
-            static::RETURN_PENDING,
-            static::RETURN_RECEIVED,
+            NotificationTypes::MANUAL,
+            NotificationTypes::CART_REMIND,
+            NotificationTypes::ORDER_ACCEPTED,
+            NotificationTypes::QUOTE_REMIND,
+            NotificationTypes::PAYMENT_AUTHORIZED,
+            NotificationTypes::PAYMENT_CAPTURED,
+            NotificationTypes::PAYMENT_PAYEDOUT,
+            NotificationTypes::PAYMENT_EXPIRED,
+            NotificationTypes::SHIPMENT_READY,
+            NotificationTypes::SHIPMENT_COMPLETE,
+            NotificationTypes::SHIPMENT_PARTIAL,
+            NotificationTypes::INVOICE_COMPLETE,
+            NotificationTypes::INVOICE_PARTIAL,
+            NotificationTypes::RETURN_PENDING,
+            NotificationTypes::RETURN_RECEIVED,
         ];
     }
 
-    /**
-     * Returns whether the given type is valid or not.
-     *
-     * @param string $type
-     * @param bool   $throw
-     *
-     * @return bool
-     */
-    static public function isValid(string $type, bool $throw = true): bool
+    public static function isValid(string $type, bool $throw = true): bool
     {
-        if (in_array($type, static::getTypes(), true)) {
+        if (in_array($type, NotificationTypes::getTypes(), true)) {
             return true;
         }
 
@@ -76,9 +64,6 @@ final class NotificationTypes
         return false;
     }
 
-    /**
-     * Disabled constructor.
-     */
     private function __construct()
     {
     }

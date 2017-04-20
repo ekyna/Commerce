@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,19 +11,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 interface NumberSubjectInterface
 {
-    /**
-     * Returns the number.
-     *
-     * @return string
-     */
-    public function getNumber();
+    public function getNumber(): ?string;
 
-    /**
-     * Sets the number.
-     *
-     * @param string $number
-     *
-     * @return $this|NumberSubjectInterface
-     */
-    public function setNumber($number);
+    public function setNumber(string $number): NumberSubjectInterface;
 }

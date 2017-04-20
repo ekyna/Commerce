@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 /**
@@ -9,37 +11,20 @@ namespace Ekyna\Component\Commerce\Shipment\Gateway;
  */
 interface ProviderInterface
 {
-    /**
-     * Sets the registry.
-     *
-     * @param RegistryInterface $registry
-     *
-     * @return mixed
-     */
-    public function setRegistry(RegistryInterface $registry);
+    public function setRegistry(GatewayRegistryInterface $registry): void;
 
     /**
-     * Returns whether or not a gateway is exists for the given name.
-     *
-     * @param string $name
-     *
-     * @return bool
+     * Returns whether a gateway is exists for the given name.
      */
-    public function hasGateway($name);
+    public function hasGateway(string $name): bool;
 
     /**
      * Returns the gateway by its name.
-     *
-     * @param string $name
-     *
-     * @return GatewayInterface
      */
-    public function getGateway($name);
+    public function getGateway(string $name): GatewayInterface;
 
     /**
-     * Returns the gateways.
-     *
-     * @return GatewayInterface[]
+     * @return array<GatewayInterface>
      */
-    public function allGateways();
+    public function allGateways(): array;
 }

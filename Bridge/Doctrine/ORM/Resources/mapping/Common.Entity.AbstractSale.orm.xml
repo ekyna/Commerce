@@ -18,9 +18,9 @@
         <field name="sameAddress" column="same_address" type="boolean"/>
         <field name="couponData" column="coupon_data" type="json" nullable="true"/>
 
-        <field name="weightTotal" column="weight_total" type="decimal" precision="10" scale="3"/>
-        <field name="shipmentAmount" column="shipment_amount" type="decimal" precision="15" scale="5"/>
-        <field name="shipmentWeight" column="shipment_weight" type="decimal" precision="10" scale="3" nullable="true"/>
+        <field name="weightTotal" column="weight_total" type="php_decimal" precision="10" scale="3"/>
+        <field name="shipmentAmount" column="shipment_amount" type="php_decimal" precision="15" scale="5"/>
+        <field name="shipmentWeight" column="shipment_weight" type="php_decimal" precision="10" scale="3" nullable="true"/>
         <field name="shipmentLabel" column="shipment_label" type="string" length="64" nullable="true"/>
 
         <field name="autoShipping" column="auto_shipping" type="boolean"/>
@@ -30,17 +30,17 @@
         <field name="taxExempt" column="tax_exempt" type="boolean"/>
         <field name="vatDisplayMode" column="vat_display_mode" type="string" length="4"/>
 
-        <field name="netTotal" column="net_total" type="decimal" precision="15" scale="5"/>
-        <field name="depositTotal" column="deposit_total" type="decimal" precision="15" scale="5"/>
-        <field name="grandTotal" column="grand_total" type="decimal" precision="15" scale="5"/>
-        <field name="paidTotal" column="paid_total" type="decimal" precision="15" scale="5"/>
-        <field name="refundedTotal" column="refunded_total" type="decimal" precision="15" scale="5"/>
-        <field name="pendingTotal" column="pending_total" type="decimal" precision="15" scale="5"/>
-        <field name="outstandingAccepted" column="outstanding_accepted" type="decimal" precision="15" scale="5"/>
-        <field name="outstandingExpired" column="outstanding_expired" type="decimal" precision="15" scale="5"/>
-        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="15" scale="5"/>
+        <field name="netTotal" column="net_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="depositTotal" column="deposit_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="grandTotal" column="grand_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="paidTotal" column="paid_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="refundedTotal" column="refunded_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="pendingTotal" column="pending_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="outstandingAccepted" column="outstanding_accepted" type="php_decimal" precision="15" scale="5"/>
+        <field name="outstandingExpired" column="outstanding_expired" type="php_decimal" precision="15" scale="5"/>
+        <field name="outstandingLimit" column="outstanding_limit" type="php_decimal" precision="15" scale="5"/>
         <field name="outstandingDate" column="outstanding_date" type="datetime" nullable="true"/>
-        <field name="exchangeRate" column="exchange_rate" type="decimal" precision="10" scale="5" nullable="true"/>
+        <field name="exchangeRate" column="exchange_rate" type="php_decimal" precision="10" scale="5" nullable="true"/>
         <field name="exchangeDate" column="exchange_date" type="datetime" nullable="true"/>
 
         <field name="state" column="state" type="string" length="16"/>

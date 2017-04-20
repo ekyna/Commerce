@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
@@ -11,64 +13,25 @@ use Doctrine\Common\Collections\Collection;
  */
 interface NotifiableInterface
 {
-    /**
-     * Returns whether auto notify is enabled.
-     *
-     * @return bool
-     */
-    public function isAutoNotify();
+    public function isAutoNotify(): bool;
 
-    /**
-     * Sets whether auto notify is enabled.
-     *
-     * @param bool $enabled
-     *
-     * @return $this|NotificationInterface
-     */
-    public function setAutoNotify($enabled);
+    public function setAutoNotify(bool $enabled): NotifiableInterface;
 
     /**
      * Returns whether the notifiable has notifications or not, optionally filtered by type.
-     *
-     * @param string $type
-     *
-     * @return bool
      */
-    public function hasNotifications($type = null);
+    public function hasNotifications(string $type = null): bool;
 
-    /**
-     * Returns whether the notifiable has the notification or not.
-     *
-     * @param NotificationInterface $notification
-     *
-     * @return bool
-     */
-    public function hasNotification(NotificationInterface $notification);
+    public function hasNotification(NotificationInterface $notification): bool;
 
-    /**
-     * Adds the notification.
-     *
-     * @param NotificationInterface $notification
-     *
-     * @return $this|NotifiableInterface
-     */
-    public function addNotification(NotificationInterface $notification);
+    public function addNotification(NotificationInterface $notification): NotifiableInterface;
 
-    /**
-     * Removes the notification.
-     *
-     * @param NotificationInterface $notification
-     *
-     * @return $this|NotifiableInterface
-     */
-    public function removeNotification(NotificationInterface $notification);
+    public function removeNotification(NotificationInterface $notification): NotifiableInterface;
 
     /**
      * Returns the notifications, optionally filtered by type.
      *
-     * @param string $type
-     *
      * @return Collection|NotificationInterface[]
      */
-    public function getNotifications($type = null);
+    public function getNotifications(string $type = null): Collection;
 }

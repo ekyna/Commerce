@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraint;
 class Adjustment extends Constraint
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTargets()
     {

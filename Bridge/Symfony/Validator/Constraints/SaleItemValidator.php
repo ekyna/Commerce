@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -19,23 +21,9 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class SaleItemValidator extends ConstraintValidator
 {
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    protected $invoiceCalculator;
+    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    protected ShipmentSubjectCalculatorInterface $shipmentCalculator;
 
-    /**
-     * @var ShipmentSubjectCalculatorInterface
-     */
-    protected $shipmentCalculator;
-
-
-    /**
-     * Constructor.
-     *
-     * @param InvoiceSubjectCalculatorInterface  $invoiceCalculator
-     * @param ShipmentSubjectCalculatorInterface $shipmentCalculator
-     */
     public function __construct(
         InvoiceSubjectCalculatorInterface $invoiceCalculator,
         ShipmentSubjectCalculatorInterface $shipmentCalculator
@@ -45,25 +33,25 @@ class SaleItemValidator extends ConstraintValidator
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function validate($item, Constraint $constraint)
+    public function validate($value, Constraint $constraint)
     {
-        if (null === $item) {
+        if (null === $value) {
             return;
         }
 
-        if (!$item instanceof SaleItemInterface) {
-            throw new UnexpectedTypeException($item, SaleItemInterface::class);
+        if (!$value instanceof SaleItemInterface) {
+            throw new UnexpectedTypeException($value, SaleItemInterface::class);
         }
         if (!$constraint instanceof SaleItem) {
             throw new UnexpectedTypeException($constraint, SaleItem::class);
         }
 
         try {
-            $this->checkPrivacyIntegrity($item, $constraint);
-            $this->checkInvoiceIntegrity($item, $constraint);
-            $this->checkShipmentIntegrity($item, $constraint);
+            $this->checkPrivacyIntegrity($value, $constraint);
+            $this->checkInvoiceIntegrity($value, $constraint);
+            $this->checkShipmentIntegrity($value, $constraint);
         } catch (ValidationFailedException $e) {
             return;
         }
@@ -72,12 +60,9 @@ class SaleItemValidator extends ConstraintValidator
     /**
      * Checks the sale item privacy integrity.
      *
-     * @param SaleItemInterface $item
-     * @param SaleItem          $constraint
-     *
      * @throws ValidationFailedException
      */
-    protected function checkPrivacyIntegrity(SaleItemInterface $item, SaleItem $constraint)
+    protected function checkPrivacyIntegrity(SaleItemInterface $item, SaleItem $constraint): void
     {
         $parent = $item->getParent();
 
@@ -116,12 +101,9 @@ class SaleItemValidator extends ConstraintValidator
     /**
      * Checks that the sale item quantity is greater than or equals the invoiced quantity.
      *
-     * @param SaleItemInterface $item
-     * @param SaleItem          $constraint
-     *
      * @throws ValidationFailedException
      */
-    protected function checkInvoiceIntegrity(SaleItemInterface $item, SaleItem $constraint)
+    protected function checkInvoiceIntegrity(SaleItemInterface $item, SaleItem $constraint): void
     {
         $sale = $item->getSale();
         if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
@@ -136,7 +118,7 @@ class SaleItemValidator extends ConstraintValidator
              - $this->invoiceCalculator->calculateCreditedQuantity($item);
 
         // TODO Use packaging format
-        if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $item->getTotalQuantity(), 3)) {
+        if (0 < $min && $min > $item->getTotalQuantity()) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_is_lower_than_invoiced, [
@@ -152,12 +134,9 @@ class SaleItemValidator extends ConstraintValidator
     /**
      * Checks that the sale item quantity is greater than or equals the shipped quantity.
      *
-     * @param SaleItemInterface $item
-     * @param SaleItem          $constraint
-     *
      * @throws ValidationFailedException
      */
-    protected function checkShipmentIntegrity(SaleItemInterface $item, SaleItem $constraint)
+    protected function checkShipmentIntegrity(SaleItemInterface $item, SaleItem $constraint): void
     {
         $sale = $item->getSale();
         if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
@@ -172,7 +151,7 @@ class SaleItemValidator extends ConstraintValidator
              - $this->shipmentCalculator->calculateReturnedQuantity($item);
 
         // TODO Use packaging format
-        if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $item->getTotalQuantity(), 3)) {
+        if (0 < $min && $min > $item->getTotalQuantity()) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_is_lower_than_shipped, [

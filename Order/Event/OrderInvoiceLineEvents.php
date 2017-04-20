@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Event;
 
 /**
@@ -10,22 +12,19 @@ namespace Ekyna\Component\Commerce\Order\Event;
 final class OrderInvoiceLineEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.order_invoice_line.insert';
-    const UPDATE      = 'ekyna_commerce.order_invoice_line.update';
-    const DELETE      = 'ekyna_commerce.order_invoice_line.delete';
+    public const INSERT      = 'ekyna_commerce.order_invoice_line.insert';
+    public const UPDATE      = 'ekyna_commerce.order_invoice_line.update';
+    public const DELETE      = 'ekyna_commerce.order_invoice_line.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.order_invoice_line.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.order_invoice_line.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.order_invoice_line.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.order_invoice_line.pre_create';
-    const POST_CREATE = 'ekyna_commerce.order_invoice_line.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.order_invoice_line.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.order_invoice_line.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.order_invoice_line.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.order_invoice_line.post_update';
-
-    const PRE_DELETE  = 'ekyna_commerce.order_invoice_line.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.order_invoice_line.post_delete';
-
+    public const PRE_DELETE  = 'ekyna_commerce.order_invoice_line.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.order_invoice_line.post_delete';
 
     /**
      * Disabled constructor.

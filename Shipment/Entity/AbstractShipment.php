@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -15,80 +19,28 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 abstract class AbstractShipment implements Shipment\ShipmentInterface
 {
-    use Common\NumberSubjectTrait,
-        Common\StateSubjectTrait,
-        TimestampableTrait,
-        Shipment\ShipmentDataTrait;
+    use Common\NumberSubjectTrait;
+    use Common\StateSubjectTrait;
+    use Shipment\ShipmentDataTrait;
+    use TimestampableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var Shipment\ShipmentMethodInterface
-     */
-    protected $method;
-
-    /**
-     * @var ArrayCollection|Shipment\ShipmentItemInterface[]
-     */
-    protected $items;
-
-    /**
-     * @var ArrayCollection|Shipment\ShipmentParcelInterface[]
-     */
-    protected $parcels;
-
-    /**
-     * @var bool
-     */
-    protected $autoInvoice;
-
-    /**
-     * @var bool
-     */
-    protected $return;
-
-    /**
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * @var array
-     */
-    protected $gatewayData;
-
-    /**
-     * @var \DateTime
-     */
-    protected $shippedAt;
-
-    /**
-     * @var \DateTime
-     */
-    protected $completedAt;
-
-    /**
-     * @var array
-     */
-    protected $senderAddress;
-
-    /**
-     * @var array
-     */
-    protected $receiverAddress;
-
-    /**
-     * @var Shipment\RelayPointInterface
-     */
-    protected $relayPoint;
+    protected ?int                              $id              = null;
+    protected ?Shipment\ShipmentMethodInterface $method          = null;
+    protected bool                              $autoInvoice;
+    protected bool                              $return;
+    protected ?string                           $description     = null;
+    protected ?array                            $gatewayData     = null;
+    protected ?DateTimeInterface                $shippedAt       = null;
+    protected ?DateTimeInterface                $completedAt     = null;
+    protected ?array                            $senderAddress   = null;
+    protected ?array                            $receiverAddress = null;
+    protected ?Shipment\RelayPointInterface     $relayPoint      = null;
+    /** @var Collection<Shipment\ShipmentItemInterface> */
+    protected Collection $items;
+    /** @var Collection<Shipment\ShipmentParcelInterface> */
+    protected Collection $parcels;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->state = Shipment\ShipmentStates::STATE_NEW;
@@ -100,88 +52,56 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         $this->initializeShipmentData();
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->number ?: 'New shipment rule';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMethod()
+    public function getMethod(): ?Shipment\ShipmentMethodInterface
     {
         return $this->method;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setMethod(Shipment\ShipmentMethodInterface $method)
+    public function setMethod(?Shipment\ShipmentMethodInterface $method): Shipment\ShipmentInterface
     {
         $this->method = $method;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isAutoInvoice()
+    public function isAutoInvoice(): bool
     {
         return $this->autoInvoice;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAutoInvoice($auto)
+    public function setAutoInvoice(bool $auto): Shipment\ShipmentInterface
     {
-        $this->autoInvoice = (bool)$auto;
+        $this->autoInvoice = $auto;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasItems()
+    public function hasItems(): bool
     {
         return 0 < $this->items->count();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getItems()
+    public function getItems(): Collection
     {
         return $this->items;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasItem(Shipment\ShipmentItemInterface $item)
+    public function hasItem(Shipment\ShipmentItemInterface $item): bool
     {
         return $this->items->contains($item);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addItem(Shipment\ShipmentItemInterface $item)
+    public function addItem(Shipment\ShipmentItemInterface $item): Shipment\ShipmentInterface
     {
         if (!$this->hasItem($item)) {
             $this->items->add($item);
@@ -191,10 +111,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeItem(Shipment\ShipmentItemInterface $item)
+    public function removeItem(Shipment\ShipmentItemInterface $item): Shipment\ShipmentInterface
     {
         if ($this->hasItem($item)) {
             $this->items->removeElement($item);
@@ -204,34 +121,22 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasParcels()
+    public function hasParcels(): bool
     {
         return 0 < $this->parcels->count();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getParcels()
+    public function getParcels(): Collection
     {
         return $this->parcels;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasParcel(Shipment\ShipmentParcelInterface $parcel)
+    public function hasParcel(Shipment\ShipmentParcelInterface $parcel): bool
     {
         return $this->parcels->contains($parcel);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addParcel(Shipment\ShipmentParcelInterface $parcel)
+    public function addParcel(Shipment\ShipmentParcelInterface $parcel): Shipment\ShipmentInterface
     {
         if (!$this->hasParcel($parcel)) {
             $this->parcels->add($parcel);
@@ -241,10 +146,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeParcel(Shipment\ShipmentParcelInterface $parcel)
+    public function removeParcel(Shipment\ShipmentParcelInterface $parcel): Shipment\ShipmentInterface
     {
         if ($this->hasParcel($parcel)) {
             $this->parcels->removeElement($parcel);
@@ -254,180 +156,121 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isReturn()
+    public function isReturn(): bool
     {
         return $this->return;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setReturn($return)
+    public function setReturn(bool $return): Shipment\ShipmentInterface
     {
-        $this->return = (bool)$return;
+        $this->return = $return;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): Shipment\ShipmentInterface
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPlatformName()
+    public function getPlatformName(): string
     {
         if ($this->method) {
             return $this->method->getPlatformName();
         }
 
-        throw new LogicException("Shipment method is not set.");
+        throw new LogicException('Shipment method is not set.');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGatewayName()
+    public function getGatewayName(): string
     {
         if ($this->method) {
             return $this->method->getGatewayName();
         }
 
-        throw new LogicException("Shipment method is not set.");
+        throw new LogicException('Shipment method is not set.');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGatewayData()
+    public function getGatewayData(): ?array
     {
         return $this->gatewayData;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setGatewayData(array $data = null)
+    public function setGatewayData(?array $data): Shipment\ShipmentInterface
     {
         $this->gatewayData = $data;
 
         return $this;
     }
 
-    /**
-     * Returns the "shipped at" date time.
-     *
-     * @return \DateTime
-     */
-    public function getShippedAt()
+    public function getShippedAt(): ?DateTimeInterface
     {
         return $this->shippedAt;
     }
 
-    /**
-     * Sets the "shipped at" date time.
-     *
-     * @param \DateTime $shippedAt
-     */
-    public function setShippedAt(\DateTime $shippedAt = null)
+    public function setShippedAt(?DateTimeInterface $date): Shipment\ShipmentInterface
     {
-        $this->shippedAt = $shippedAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCompletedAt()
-    {
-        return $this->completedAt;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCompletedAt(\DateTime $completedAt = null)
-    {
-        $this->completedAt = $completedAt;
+        $this->shippedAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSenderAddress()
+    public function getCompletedAt(): ?DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?DateTimeInterface $date): Shipment\ShipmentInterface
+    {
+        $this->completedAt = $date;
+
+        return $this;
+    }
+
+    public function getSenderAddress(): ?array
     {
         return $this->senderAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSenderAddress($data)
+    public function setSenderAddress(?array $data): Shipment\ShipmentInterface
     {
         $this->senderAddress = empty($data) ? null : $data;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getReceiverAddress()
+    public function getReceiverAddress(): ?array
     {
         return $this->receiverAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setReceiverAddress($data)
+    public function setReceiverAddress(?array $data): Shipment\ShipmentInterface
     {
         $this->receiverAddress = empty($data) ? null : $data;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getRelayPoint()
+    public function getRelayPoint(): ?Shipment\RelayPointInterface
     {
         return $this->relayPoint;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setRelayPoint(Shipment\RelayPointInterface $relayPoint = null)
+    public function setRelayPoint(?Shipment\RelayPointInterface $relayPoint): Shipment\ShipmentInterface
     {
         $this->relayPoint = $relayPoint;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         foreach ($this->items as $item) {
             if (0 < $item->getQuantity()) {
@@ -438,10 +281,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isPartial()
+    public function isPartial(): bool
     {
         $coveredIds = [];
 
@@ -450,7 +290,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
             // Retain sale item id
             $coveredIds[] = $item->getSaleItem()->getId();
             // If shipment item quantity does not equal sale item total quantity
-            if ($item->getQuantity() != $item->getSaleItem()->getTotalQuantity()) {
+            if (!$item->getQuantity()->equals($item->getSaleItem()->getTotalQuantity())) {
                 // Shipment is partial
                 return true;
             }
@@ -472,13 +312,8 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
 
     /**
      * Returns whether the given sale item is covered by this shipment.
-     *
-     * @param Common\SaleItemInterface $saleItem
-     * @param array                    $coveredIds
-     *
-     * @return bool
      */
-    private function isSaleItemCovered(Common\SaleItemInterface $saleItem, array $coveredIds)
+    private function isSaleItemCovered(Common\SaleItemInterface $saleItem, array $coveredIds): bool
     {
         // Skip compound with only public children
         if ($saleItem->isCompound() && !$saleItem->hasPrivateChildren()) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
@@ -16,17 +18,11 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class OrderInvoiceItemListener extends AbstractInvoiceItemListener
 {
-    /**
-     * @inheritDoc
-     */
     protected function scheduleInvoiceContentChangeEvent(Model\InvoiceInterface $invoice): void
     {
-        $this->persistenceHelper->scheduleEvent(OrderInvoiceEvents::CONTENT_CHANGE, $invoice);
+        $this->persistenceHelper->scheduleEvent($invoice, OrderInvoiceEvents::CONTENT_CHANGE);
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function getInvoiceItemFromEvent(ResourceEventInterface $event): Model\InvoiceItemInterface
     {
         $resource = $event->getResource();

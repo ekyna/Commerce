@@ -1,7 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Util;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use IntlDateFormatter;
 use NumberFormatter;
@@ -13,64 +17,25 @@ use NumberFormatter;
  */
 class Formatter
 {
-    /**
-     * @var string
-     */
-    private $locale;
-
-    /**
-     * @var string
-     */
-    private $currency;
-
-    /**
-     * @var IntlDateFormatter
-     */
-    private $dateFormatter;
-
-    /**
-     * @var IntlDateFormatter
-     */
-    private $dateTimeFormatter;
-
-    /**
-     * @var NumberFormatter
-     */
-    private $numberFormatter;
-
-    /**
-     * @var NumberFormatter
-     */
-    private $currencyFormatter;
+    private string             $locale;
+    private string             $currency;
+    private ?IntlDateFormatter $dateFormatter     = null;
+    private ?IntlDateFormatter $dateTimeFormatter = null;
+    private ?NumberFormatter   $numberFormatter   = null;
+    private ?NumberFormatter   $currencyFormatter = null;
 
 
-    /**
-     * Constructor.
-     *
-     * @param string $locale
-     * @param string $currency
-     */
     public function __construct(string $locale = 'FR', string $currency = 'EUR')
     {
         $this->locale = $locale;
         $this->currency = $currency;
     }
 
-    /**
-     * Returns the locale.
-     *
-     * @return string
-     */
     public function getLocale(): string
     {
         return $this->locale;
     }
 
-    /**
-     * Returns the currency.
-     *
-     * @return string
-     */
     public function getCurrency(): string
     {
         return $this->currency;
@@ -78,44 +43,31 @@ class Formatter
 
     /**
      * Formats the given date for display.
-     *
-     * @param \DateTime $date
-     *
-     * @return string
      */
-    public function date(\DateTime $date): string
+    public function date(DateTimeInterface $date): string
     {
-        //$this->dateFormatter->getTimeZone()
-        //if ($this->dateFormatter->getTimeZone() === $date->getTimezone();
-
         return $this->getDateFormatter()->format($date->getTimestamp());
     }
 
     /**
      * Formats the given date time for display.
-     *
-     * @param \DateTime $date
-     *
-     * @return string
      */
-    public function dateTime(\DateTime $date): string
+    public function dateTime(DateTimeInterface $date): string
     {
-        //$this->dateFormatter->getTimeZone()
-        //if ($this->dateFormatter->getTimeZone() === $date->getTimezone();
-
         return $this->getDateTimeFormatter()->format($date->getTimestamp());
     }
 
     /**
      * Formats the given number for display.
      *
-     * @param float $number
-     * @param int   $scale
-     *
-     * @return string
+     * @param string|float|int|Decimal $number
      */
-    public function number(float $number, int $scale = null): string
+    public function number($number, int $scale = null): string
     {
+        if ($number instanceof Decimal) {
+            $number = $number->toFloat();
+        }
+
         $formatter = $this->getNumberFormatter();
 
         if ($scale) {
@@ -129,34 +81,35 @@ class Formatter
     /**
      * Formats the given currency number for display.
      *
-     * @param float  $number
-     * @param string $currency
-     *
-     * @return string
+     * @param string|float|int|Decimal $number
      */
-    public function currency(float $number, string $currency = null): string
+    public function currency($number, string $currency = null): string
     {
+        if ($number instanceof Decimal) {
+            $number = $number->toFloat();
+        }
+
         return $this->getCurrencyFormatter()->formatCurrency($number, $currency ?? $this->currency);
     }
 
     /**
      * Formats the given percent number for display.
      *
-     * @param float $number
-     *
-     * @return string
+     * @param string|float|int|Decimal $number
      */
-    public function percent(float $number): string
+    public function percent($number): string
     {
+        if ($number instanceof Decimal) {
+            $number = $number->toFloat();
+        }
+
+        // TODO getPercentFormatter()
+
         return $this->getNumberFormatter()->format($number, NumberFormatter::TYPE_DEFAULT) . '%';
     }
 
     /**
      * Formats the given adjustments rates for display.
-     *
-     * @param Adjustment[] $adjustments
-     *
-     * @return string
      */
     public function rates(Adjustment ...$adjustments): string
     {
@@ -167,10 +120,8 @@ class Formatter
 
     /**
      * Returns the date formatter.
-     *
-     * @return IntlDateFormatter
      */
-    private function getDateFormatter()
+    private function getDateFormatter(): IntlDateFormatter
     {
         if ($this->dateFormatter) {
             return $this->dateFormatter;
@@ -188,10 +139,8 @@ class Formatter
 
     /**
      * Returns the date time formatter.
-     *
-     * @return IntlDateFormatter
      */
-    private function getDateTimeFormatter()
+    private function getDateTimeFormatter(): IntlDateFormatter
     {
         if ($this->dateTimeFormatter) {
             return $this->dateTimeFormatter;
@@ -209,10 +158,8 @@ class Formatter
 
     /**
      * Returns the number formatter.
-     *
-     * @return NumberFormatter
      */
-    private function getNumberFormatter()
+    private function getNumberFormatter(): NumberFormatter
     {
         if ($this->numberFormatter) {
             return $this->numberFormatter;
@@ -223,10 +170,8 @@ class Formatter
 
     /**
      * Returns the currency formatter.
-     *
-     * @return NumberFormatter
      */
-    private function getCurrencyFormatter()
+    private function getCurrencyFormatter(): NumberFormatter
     {
         if ($this->currencyFormatter) {
             return $this->currencyFormatter;

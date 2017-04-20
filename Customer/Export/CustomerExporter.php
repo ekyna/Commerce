@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Export;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
+use Ekyna\Component\Resource\Helper\File\Csv;
+use Ekyna\Component\Resource\Helper\File\File;
 
 /**
  * Class CustomerExporter
@@ -12,23 +16,9 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class CustomerExporter
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $manager;
+    private EntityManagerInterface $manager;
+    private string $orderClass;
 
-    /**
-     * @var string
-     */
-    private $orderClass;
-
-
-    /**
-     * Constructor.
-     *
-     * @param EntityManagerInterface $manager
-     * @param string                 $orderClass
-     */
     public function __construct(EntityManagerInterface $manager, string $orderClass)
     {
         $this->manager    = $manager;
@@ -36,13 +26,9 @@ class CustomerExporter
     }
 
     /**
-     * Exports the customers data.
-     *
-     * @param CustomerExport $config
-     *
-     * @return string The export file path
+     * Exports customers data.
      */
-    public function export(CustomerExport $config): string
+    public function export(CustomerExport $config): File
     {
         $qb = $this->manager->createQueryBuilder();
 
@@ -110,23 +96,16 @@ class CustomerExporter
                 ->setParameter('groups', $config->getGroups()->toArray());
         }
 
+        $file = Csv::create('customer_export.csv');
+        $file->addRow($headers);
+
         $lines = $qb
             ->select($select)
             ->getQuery()
             ->getScalarResult();
 
-        $path = tempnam(sys_get_temp_dir(), 'customer_export');
+        $file->addRows($lines);
 
-        $handle = fopen($path, 'w');
-
-        fputcsv($handle, $headers, ';');
-
-        foreach ($lines as $line) {
-            fputcsv($handle, $line, ';');
-        }
-
-        fclose($handle);
-
-        return $path;
+        return $file;
     }
 }

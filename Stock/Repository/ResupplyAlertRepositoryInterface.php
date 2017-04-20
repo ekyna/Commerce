@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Repository;
 
 use Ekyna\Component\Commerce\Stock\Entity\ResupplyAlert;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Class ResupplyAlertRepository

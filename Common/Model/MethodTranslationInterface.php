@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\TranslationInterface;
@@ -11,35 +13,11 @@ use Ekyna\Component\Resource\Model\TranslationInterface;
  */
 interface MethodTranslationInterface extends TranslationInterface
 {
-    /**
-     * Returns the title.
-     *
-     * @return string
-     */
-    public function getTitle();
+    public function getTitle(): ?string;
 
-    /**
-     * Sets the title.
-     *
-     * @param string $title
-     *
-     * @return $this|MethodTranslationInterface
-     */
-    public function setTitle($title);
+    public function setTitle(?string $title): MethodTranslationInterface;
 
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
-    public function getDescription();
+    public function getDescription(): ?string;
 
-    /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|MethodTranslationInterface
-     */
-    public function setDescription($description);
+    public function setDescription(?string $description): MethodTranslationInterface;
 }

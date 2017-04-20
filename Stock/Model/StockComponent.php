@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Model;
+
+use Decimal\Decimal;
 
 /**
  * Class StockComponent
@@ -9,45 +13,21 @@ namespace Ekyna\Component\Commerce\Stock\Model;
  */
 class StockComponent
 {
-    /**
-     * @var StockSubjectInterface
-     */
-    private $subject;
+    private StockSubjectInterface $subject;
+    private Decimal               $quantity;
 
-    /**
-     * @var float
-     */
-    private $quantity;
-
-
-    /**
-     * Constructor.
-     *
-     * @param StockSubjectInterface $subject
-     * @param float                 $quantity
-     */
-    public function __construct(StockSubjectInterface $subject, float $quantity)
+    public function __construct(StockSubjectInterface $subject, Decimal $quantity)
     {
         $this->subject = $subject;
         $this->quantity = $quantity;
     }
 
-    /**
-     * Returns the subject.
-     *
-     * @return StockSubjectInterface
-     */
     public function getSubject(): StockSubjectInterface
     {
         return $this->subject;
     }
 
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity(): float
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }

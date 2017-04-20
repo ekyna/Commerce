@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\EventListener;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
@@ -17,29 +19,10 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class LoyaltyListener
 {
-    /**
-     * @var Features
-     */
-    private $features;
+    private Features $features;
+    private LoyaltyUpdater $updater;
+    private AmountCalculatorFactory $calculatorFactory;
 
-    /**
-     * @var LoyaltyUpdater
-     */
-    private $updater;
-
-    /**
-     * @var AmountCalculatorFactory
-     */
-    private $calculatorFactory;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Features                $features
-     * @param LoyaltyUpdater          $updater
-     * @param AmountCalculatorFactory $calculatorFactory
-     */
     public function __construct(
         Features $features,
         LoyaltyUpdater $updater,
@@ -117,10 +100,11 @@ class LoyaltyListener
 
         $calculator = $this->calculatorFactory->create();
 
-        $points = floor(
-            ($order->getGrandTotal() - $calculator->calculateSaleShipment($order)->getTotal()) *
-            (float)$this->features->getConfig(Features::LOYALTY. '.credit_rate')
-        );
+        $points = (int)$order
+            ->getGrandTotal()
+            ->sub($calculator->calculateSaleShipment($order)->getTotal())
+            ->mul($this->features->getConfig(Features::LOYALTY. '.credit_rate'))
+            ->floor();
 
         if (0 >= $points) {
             return;
@@ -131,10 +115,6 @@ class LoyaltyListener
 
     /**
      * Returns the customer from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return CustomerInterface
      */
     private function getCustomerFromEvent(ResourceEventInterface $event): CustomerInterface
     {
@@ -149,10 +129,6 @@ class LoyaltyListener
 
     /**
      * Returns the order from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return OrderInterface
      */
     private function getOrderFromEvent(ResourceEventInterface $event): OrderInterface
     {

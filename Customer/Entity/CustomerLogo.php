@@ -1,67 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
-use Ekyna\Bundle\CoreBundle\Model\UploadableInterface;
-use Ekyna\Bundle\CoreBundle\Model\UploadableTrait;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\UploadableInterface;
+use Ekyna\Component\Resource\Model\UploadableTrait;
 
 /**
  * Class CustomerLogo
  * @package Ekyna\Component\Commerce\Customer\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerLogo implements UploadableInterface
+class CustomerLogo implements UploadableInterface, ResourceInterface
 {
     use UploadableTrait;
 
-    /**
-     * @var int
-     */
-    private $id;
+    private ?int $id = null;
+    private ?CustomerInterface $customer = null;
 
-    /**
-     * @var CustomerInterface
-     */
-    private $customer;
-
-
-    /**
-     * Returns the id.
-     *
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Returns the customer.
-     *
-     * @return CustomerInterface|null
-     */
     public function getCustomer(): ?CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * Sets the customer.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return CustomerLogo
-     */
-    public function setCustomer(CustomerInterface $customer = null): CustomerLogo
+    public function setCustomer(?CustomerInterface $customer): CustomerLogo
     {
-        if ($customer !== $this->customer) {
-            if ($this->customer) {
-                $this->customer->setBrandLogo(null);
-            }
+        if ($customer === $this->customer) {
+            return $this;
+        }
 
-            $this->customer = $customer;
+        if ($previous = $this->customer) {
+            $this->customer = null;
+            $previous->setBrandLogo(null);
+        }
 
+        if ($this->customer = $customer) {
             $this->customer->setBrandLogo($this);
         }
 

@@ -43,13 +43,9 @@ class ShipmentSubjectStateResolverTest extends TestCase
     }
 
     /**
-     * @param string                   $expected
-     * @param ShipmentSubjectInterface $subject
-     * @param array                    $map
-     *
-     * @dataProvider provide_resolveState
+     * @dataProvider provideResolveState
      */
-    public function test_resolveState(string $expected, ShipmentSubjectInterface $subject, array $map = null): void
+    public function testResolveState(string $expected, ShipmentSubjectInterface $subject, array $map = null): void
     {
         if (!is_null($map)) {
             $this
@@ -67,7 +63,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
         $this->assertEquals($expected, $rm->invoke($this->resolver, $subject));
     }
 
-    public function provide_resolveState(): \Generator
+    public function provideResolveState(): \Generator
     {
         yield 'Preparation case' => [
             ShipmentStates::STATE_PREPARATION,

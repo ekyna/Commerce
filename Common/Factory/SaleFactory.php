@@ -1,15 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Factory;
 
-use Ekyna\Component\Commerce\Cart;
+use Ekyna\Component\Commerce\Cart\Model as Cart;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\AddressUtil;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Order;
-use Ekyna\Component\Commerce\Quote;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Commerce\Order\Model as Order;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Commerce\Quote\Model as Quote;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Stock\Model as Stock;
+use Ekyna\Component\Resource\Factory\FactoryFactoryInterface;
 
 /**
  * Class SaleFactory
@@ -18,31 +24,85 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
  */
 class SaleFactory implements SaleFactoryInterface
 {
-    /**
-     * @var array
-     */
-    private $classes;
+    public const ADDRESS               = 'address';
+    public const ADJUSTMENT            = 'adjustment';
+    public const ATTACHMENT            = 'attachment';
+    public const INVOICE               = 'invoice';
+    public const INVOICE_LINE          = 'invoice_line';
+    public const ITEM                  = 'item';
+    public const ITEM_ADJUSTMENT       = 'item_adjustment';
+    public const ITEM_STOCK_ASSIGNMENT = 'item_stock_assignment';
+    public const NOTIFICATION          = 'notification';
+    public const PAYMENT               = 'payment';
+    public const SHIPMENT              = 'shipment';
+    public const SHIPMENT_ITEM         = 'shipment_item';
 
+    private const MAP = [
+        self::ADDRESS               => [
+            Cart\CartInterface::class   => Cart\CartAddressInterface::class,
+            Order\OrderInterface::class => Order\OrderAddressInterface::class,
+            Quote\QuoteInterface::class => Quote\QuoteAddressInterface::class,
+        ],
+        self::ADJUSTMENT            => [
+            Cart\CartInterface::class   => Cart\CartAdjustmentInterface::class,
+            Order\OrderInterface::class => Order\OrderAdjustmentInterface::class,
+            Quote\QuoteInterface::class => Quote\QuoteAdjustmentInterface::class,
+        ],
+        self::ATTACHMENT            => [
+            Cart\CartInterface::class   => Cart\CartAttachmentInterface::class,
+            Order\OrderInterface::class => Order\OrderAttachmentInterface::class,
+            Quote\QuoteInterface::class => Quote\QuoteAttachmentInterface::class,
+        ],
+        self::INVOICE               => [
+            Order\OrderInterface::class => Order\OrderInvoiceInterface::class,
+        ],
+        self::INVOICE_LINE          => [
+            Order\OrderInvoiceInterface::class => Order\OrderInvoiceLineInterface::class,
+        ],
+        self::ITEM                  => [
+            Cart\CartInterface::class   => Cart\CartItemInterface::class,
+            Order\OrderInterface::class => Order\OrderItemInterface::class,
+            Quote\QuoteInterface::class => Quote\QuoteItemInterface::class,
+        ],
+        self::ITEM_ADJUSTMENT       => [
+            Cart\CartItemInterface::class   => Cart\CartItemAdjustmentInterface::class,
+            Order\OrderItemInterface::class => Order\OrderItemAdjustmentInterface::class,
+            Quote\QuoteItemInterface::class => Quote\QuoteItemAdjustmentInterface::class,
+        ],
+        self::ITEM_STOCK_ASSIGNMENT => [
+            Order\OrderItemInterface::class => Order\OrderItemStockAssignmentInterface::class,
+        ],
+        self::NOTIFICATION          => [
+            Cart\CartInterface::class   => Cart\CartNotificationInterface::class,
+            Order\OrderInterface::class => Order\OrderNotificationInterface::class,
+            Quote\QuoteInterface::class => Quote\QuoteNotificationInterface::class,
+        ],
+        self::PAYMENT               => [
+            Cart\CartInterface::class   => Cart\CartPaymentInterface::class,
+            Order\OrderInterface::class => Order\OrderPaymentInterface::class,
+            Quote\QuoteInterface::class => Quote\QuotePaymentInterface::class,
+        ],
+        self::SHIPMENT              => [
+            Order\OrderInterface::class => Order\OrderShipmentInterface::class,
+        ],
+        self::SHIPMENT_ITEM         => [
+            Order\OrderShipmentInterface::class => Order\OrderShipmentItemInterface::class,
+        ],
+    ];
 
-    /**
-     * Constructor.
-     *
-     * @param array $classes
-     */
-    public function __construct(array $classes = [])
+    private FactoryFactoryInterface $factory;
+
+    public function __construct(FactoryFactoryInterface $factory)
     {
-        $this->classes = array_replace_recursive($this->getDefaultClasses(), $classes);
-
-        // TODO validate classes
+        $this->factory = $factory;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null)
-    {
+    public function createAddressForSale(
+        Model\SaleInterface     $sale,
+        ?Model\AddressInterface $source
+    ): Model\SaleAddressInterface {
         /** @var Model\SaleAddressInterface $address */
-        $address = $this->resolveClassAndCreateObject('address', $sale);
+        $address = $this->resolveClassAndCreateObject(self::ADDRESS, $sale);
 
         if (null !== $source) {
             AddressUtil::copy($source, $address);
@@ -51,26 +111,7 @@ class SaleFactory implements SaleFactoryInterface
         return $address;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createAttachmentForSale(Model\SaleInterface $sale)
-    {
-        return $this->resolveClassAndCreateObject('attachment', $sale);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createNotificationForSale(Model\SaleInterface $sale)
-    {
-        return $this->resolveClassAndCreateObject('notification', $sale);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createAdjustmentFor(Model\AdjustableInterface $adjustable)
+    public function createAdjustmentFor(Model\AdjustableInterface $adjustable): Model\AdjustmentInterface
     {
         if ($adjustable instanceof Model\SaleInterface) {
             return $this->createAdjustmentForSale($adjustable);
@@ -78,160 +119,89 @@ class SaleFactory implements SaleFactoryInterface
             return $this->createAdjustmentForItem($adjustable);
         }
 
-        throw new InvalidArgumentException("Expected instanceof SaleInterface or SaleItemInterface.");
+        throw new UnexpectedTypeException($adjustable, [
+            Model\SaleInterface::class,
+            Model\SaleItemInterface::class,
+        ]);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createAdjustmentForItem(Model\SaleItemInterface $item)
+    public function createAttachmentForSale(Model\SaleInterface $sale): Model\SaleAttachmentInterface
     {
-        return $this->resolveClassAndCreateObject('item_adjustment', $item);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::ATTACHMENT, $sale);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createStockAssignmentForItem(Model\SaleItemInterface $item)
+    public function createNotificationForSale(Model\SaleInterface $sale): Model\SaleNotificationInterface
     {
-        return $this->resolveClassAndCreateObject('item_stock_assignment', $item);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::NOTIFICATION, $sale);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createAdjustmentForSale(Model\SaleInterface $sale)
+    public function createAdjustmentForItem(Model\SaleItemInterface $item): Model\AdjustmentInterface
     {
-        return $this->resolveClassAndCreateObject('adjustment', $sale);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::ITEM_ADJUSTMENT, $item);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createItemForSale(Model\SaleInterface $sale)
+    public function createStockAssignmentForItem(Model\SaleItemInterface $item): Stock\StockAssignmentInterface
     {
-        return $this->resolveClassAndCreateObject('item', $sale);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::ITEM_STOCK_ASSIGNMENT, $item);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createItemForShipment(ShipmentInterface $shipment)
+    public function createAdjustmentForSale(Model\SaleInterface $sale): Model\AdjustmentInterface
     {
-        return $this->resolveClassAndCreateObject('shipment_item', $shipment);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::ADJUSTMENT, $sale);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createLineForInvoice(InvoiceInterface $invoice)
+    public function createItemForSale(Model\SaleInterface $sale): Model\SaleItemInterface
     {
-        return $this->resolveClassAndCreateObject('invoice_line', $invoice);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::ITEM, $sale);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createPaymentForSale(Model\SaleInterface $sale)
+    public function createItemForShipment(Shipment\ShipmentInterface $shipment): Shipment\ShipmentItemInterface
     {
-        return $this->resolveClassAndCreateObject('payment', $sale);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::SHIPMENT_ITEM, $shipment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createShipmentForSale(Model\SaleInterface $sale)
+    public function createLineForInvoice(Invoice\InvoiceInterface $invoice): Invoice\InvoiceLineInterface
     {
-        return $this->resolveClassAndCreateObject('shipment', $sale);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::INVOICE_LINE, $invoice);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createInvoiceForSale(Model\SaleInterface $sale)
+    public function createPaymentForSale(Model\SaleInterface $sale): Payment\PaymentInterface
     {
-        return $this->resolveClassAndCreateObject('invoice', $sale);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::PAYMENT, $sale);
+    }
+
+    public function createShipmentForSale(Model\SaleInterface $sale): Shipment\ShipmentInterface
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::SHIPMENT, $sale);
+    }
+
+    public function createInvoiceForSale(Model\SaleInterface $sale): Invoice\InvoiceInterface
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->resolveClassAndCreateObject(self::INVOICE, $sale);
     }
 
     /**
      * Resolves the class and creates the expected object.
-     *
-     * @param string $type
-     * @param object $subject
-     *
-     * @return object
      */
-    private function resolveClassAndCreateObject($type, $subject)
+    private function resolveClassAndCreateObject(string $type, object $subject): object
     {
-        foreach ($this->classes[$type] as $source => $target) {
+        foreach (self::MAP[$type] as $source => $target) {
             if ($subject instanceof $source) {
-                return new $target;
+                return $this->factory->getFactory($target)->create();
             }
         }
 
         throw new InvalidArgumentException('Unsupported object class.');
-    }
-
-    /**
-     * Returns the default classes.
-     *
-     * @return array
-     */
-    private function getDefaultClasses()
-    {
-        // TODO use constants for keys
-
-        return [
-            'address'               => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartAddress::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderAddress::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAddress::class,
-            ],
-            'adjustment'            => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartAdjustment::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderAdjustment::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAdjustment::class,
-            ],
-            'attachment'            => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartAttachment::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderAttachment::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAttachment::class,
-            ],
-            'invoice'               => [
-                Order\Model\OrderInterface::class => Order\Entity\OrderInvoice::class,
-            ],
-            'invoice_line'          => [
-                Order\Model\OrderInvoiceInterface::class => Order\Entity\OrderInvoiceLine::class,
-            ],
-            'item'                  => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartItem::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderItem::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteItem::class,
-            ],
-            'item_adjustment'       => [
-                Cart\Model\CartItemInterface::class   => Cart\Entity\CartItemAdjustment::class,
-                Order\Model\OrderItemInterface::class => Order\Entity\OrderItemAdjustment::class,
-                Quote\Model\QuoteItemInterface::class => Quote\Entity\QuoteItemAdjustment::class,
-            ],
-            'item_stock_assignment' => [
-                Order\Model\OrderItemInterface::class => Order\Entity\OrderItemStockAssignment::class,
-            ],
-            'notification'          => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartNotification::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderNotification::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteNotification::class,
-            ],
-            'payment'               => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartPayment::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderPayment::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuotePayment::class,
-            ],
-            'shipment'              => [
-                Order\Model\OrderInterface::class => Order\Entity\OrderShipment::class,
-            ],
-            'shipment_item'         => [
-                Order\Model\OrderShipmentInterface::class => Order\Entity\OrderShipmentItem::class,
-            ],
-        ];
     }
 }

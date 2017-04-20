@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 use Ekyna\Component\Commerce\Common\Model\Notify;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Class NotifyEvent
@@ -12,22 +14,10 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class NotifyEvent extends Event
 {
-    /**
-     * @var Notify
-     */
-    private $notify;
-
-    /**
-     * @var bool
-     */
-    private $abort = false;
+    private Notify $notify;
+    private bool $abort = false;
 
 
-    /**
-     * Constructor.
-     *
-     * @param Notify $notify
-     */
     public function __construct(Notify $notify)
     {
         $this->notify = $notify;
@@ -38,7 +28,7 @@ class NotifyEvent extends Event
      *
      * @return Notify
      */
-    public function getNotify()
+    public function getNotify(): Notify
     {
         return $this->notify;
     }
@@ -48,22 +38,18 @@ class NotifyEvent extends Event
      *
      * @return bool
      */
-    public function isAbort()
+    public function isAbort(): bool
     {
         return $this->abort;
     }
 
     /**
      * Sets the notify as abort.
-     *
-     * @return NotifyEvent
      */
-    public function abort()
+    public function abort(): void
     {
         $this->stopPropagation();
 
         $this->abort = true;
-
-        return $this;
     }
 }

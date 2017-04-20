@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
 
 /**
  * Class OrderItem
@@ -16,20 +20,12 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
  */
 class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
 {
-    /**
-     * @var Model\OrderInterface
-     */
-    protected $order;
+    protected ?Model\OrderInterface $order = null;
 
-    /**
-     * @var ArrayCollection|StockAssignmentInterface[]
-     */
-    protected $stockAssignments;
+    /** @var Collection|StockAssignmentInterface[] */
+    protected Collection $stockAssignments;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
@@ -37,30 +33,28 @@ class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
         $this->stockAssignments = new ArrayCollection();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSale()
+    public function getSale(): ?Common\SaleInterface
     {
-        if (null === $order = $this->getOrder()) {
-            $parent = $this;
-            while (null !== $parent) {
-                if (null !== $order = $parent->getOrder()) {
-                    return $order;
-                }
-                $parent = $parent->getParent();
-            }
+        if ($order = $this->getOrder()) {
+            return $order;
         }
 
-        return $order;
+        $parent = $this;
+        while ($parent) {
+            if ($order = $parent->getOrder()) {
+                return $order;
+            }
+
+            $parent = $parent->getParent();
+        }
+
+        return null;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @param Model\OrderInterface $sale
+     * @param Model\OrderInterface|null $sale
      */
-    public function setSale(Common\SaleInterface $sale = null)
+    public function setSale(?Common\SaleInterface $sale): Common\SaleItemInterface
     {
         $sale && $this->assertSaleClass($sale);
 
@@ -69,110 +63,86 @@ class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
+    public function getOrder(): ?Model\OrderInterface
     {
         return $this->order;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrder(Model\OrderInterface $order = null)
+    public function setOrder(?Model\OrderInterface $order): Model\OrderItemInterface
     {
-        if ($order !== $this->order) {
-            if ($previous = $this->order) {
-                $this->order = null;
-                $previous->removeItem($this);
-            }
+        if ($order === $this->order) {
+            return $this;
+        }
 
-            if ($this->order = $order) {
-                $this->order->addItem($this);
-            }
+        if ($previous = $this->order) {
+            $this->order = null;
+            $previous->removeItem($this);
+        }
+
+        if ($this->order = $order) {
+            $this->order->addItem($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasStockAssignment(StockAssignmentInterface $assignment)
+    public function hasStockAssignment(StockAssignmentInterface $assignment): bool
     {
         return $this->stockAssignments->contains($assignment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addStockAssignment(StockAssignmentInterface $assignment)
-    {
-        if (!$this->hasStockAssignment($assignment)) {
-            $this->stockAssignments->add($assignment);
-            $assignment->setSaleItem($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeStockAssignment(StockAssignmentInterface $assignment)
+    public function addStockAssignment(StockAssignmentInterface $assignment): StockAssignmentsInterface
     {
         if ($this->hasStockAssignment($assignment)) {
-            $this->stockAssignments->removeElement($assignment);
-            $assignment->setSaleItem(null);
+            return $this;
         }
+
+        $this->stockAssignments->add($assignment);
+        $assignment->setSaleItem($this);
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasStockAssignments()
+    public function removeStockAssignment(StockAssignmentInterface $assignment): StockAssignmentsInterface
+    {
+        if (!$this->hasStockAssignment($assignment)) {
+            return $this;
+        }
+
+        $this->stockAssignments->removeElement($assignment);
+        $assignment->setSaleItem(null);
+
+        return $this;
+    }
+
+    public function hasStockAssignments(): bool
     {
         return 0 < $this->stockAssignments->count();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getStockAssignments()
+    public function getStockAssignments(): Collection
     {
         return $this->stockAssignments;
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function assertSaleClass(Common\SaleInterface $sale)
+    protected function assertSaleClass(Common\SaleInterface $sale): void
     {
         if (!$sale instanceof Model\OrderInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderInterface::class);
+            throw new UnexpectedTypeException($sale, Model\OrderInterface::class);
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function assertItemClass(Common\SaleItemInterface $child)
+    protected function assertItemClass(Common\SaleItemInterface $child): void
     {
         if (!$child instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderItemInterface::class);
+            throw new UnexpectedTypeException($child, Model\OrderItemInterface::class);
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function assertItemAdjustmentClass(Common\AdjustmentInterface $adjustment)
+    protected function assertItemAdjustmentClass(Common\AdjustmentInterface $adjustment): void
     {
         if (!$adjustment instanceof Model\OrderItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderItemAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\OrderItemAdjustmentInterface::class);
         }
     }
 }

@@ -16,7 +16,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 class RelayPointValidator extends ConstraintValidator
 {
     /**
-     * @var Gateway\RegistryInterface
+     * @var Gateway\GatewayRegistryInterface
      */
     private $gatewayRegistry;
 
@@ -29,9 +29,9 @@ class RelayPointValidator extends ConstraintValidator
     /**
      * Constructor.
      *
-     * @param Gateway\RegistryInterface $gatewayRegistry
+     * @param Gateway\GatewayRegistryInterface $gatewayRegistry
      */
-    public function __construct(Gateway\RegistryInterface $gatewayRegistry)
+    public function __construct(Gateway\GatewayRegistryInterface $gatewayRegistry)
     {
         $this->gatewayRegistry = $gatewayRegistry;
     }

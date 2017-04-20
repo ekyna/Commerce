@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject\Model;
 
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
@@ -12,36 +14,16 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 interface SubjectReferenceInterface
 {
     /**
-     * Returns whether or not the subject identity is set.
-     *
-     * @return bool
-     *
      * @see SubjectIdentity::hasIdentity()
      */
     public function hasSubjectIdentity(): bool;
 
-    /**
-     * Returns the subject identity.
-     *
-     * @return SubjectIdentity
-     */
     public function getSubjectIdentity(): SubjectIdentity;
 
     /**
-     * Sets the subject identity.
-     *
-     * @param SubjectIdentity $identity
-     *
-     * @return $this|SubjectReferenceInterface
-     *
      * @internal
      */
     public function setSubjectIdentity(SubjectIdentity $identity): SubjectReferenceInterface;
 
-    /**
-     * Clears the subject identity.
-     *
-     * @return $this|SubjectReferenceInterface
-     */
     public function clearSubjectIdentity(): SubjectReferenceInterface;
 }

@@ -1,12 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateInterval;
+use DatePeriod;
+use DateTime;
+use Decimal\Decimal;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Common\Model\SaleSources;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stat\Entity\OrderStat;
 use Ekyna\Component\Commerce\Stat\Repository\OrderStatRepositoryInterface;
+
+use function json_decode;
 
 /**
  * Class OrderStatRepository
@@ -15,16 +24,9 @@ use Ekyna\Component\Commerce\Stat\Repository\OrderStatRepositoryInterface;
  */
 class OrderStatRepository extends EntityRepository implements OrderStatRepositoryInterface
 {
-    /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $revenueQuery;
+    private ?Query $revenueQuery = null;
 
-
-    /**
-     * @inheritDoc
-     */
-    public function findOneByDay(\DateTime $date)
+    public function findOneByDay(DateTime $date): ?OrderStat
     {
         return $this->findOneBy([
             'type' => OrderStat::TYPE_DAY,
@@ -32,10 +34,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         ]);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findOneByMonth(\DateTime $date)
+    public function findOneByMonth(DateTime $date): ?OrderStat
     {
         return $this->findOneBy([
             'type' => OrderStat::TYPE_MONTH,
@@ -43,10 +42,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         ]);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findOneByYear(\DateTime $date)
+    public function findOneByYear(DateTime $date): ?OrderStat
     {
         return $this->findOneBy([
             'type' => OrderStat::TYPE_YEAR,
@@ -54,10 +50,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         ]);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findSumByYear(\DateTime $date)
+    public function findSumByYear(DateTime $date): OrderStat
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
@@ -74,7 +67,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
             ->andWhere($ex->between('o.date', ':from', ':to'))
             ->setParameters([
                 'type' => OrderStat::TYPE_DAY,
-                'from' => $from = new \DateTime('first day of january ' . $date->format('Y')),
+                'from' => new DateTime('first day of january ' . $date->format('Y')),
                 'to'   => $date,
             ])
             ->getQuery()
@@ -89,26 +82,17 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findDayRevenuesByMonth(\DateTime $date, $detailed = false)
+    public function findDayRevenuesByMonth(DateTime $date, bool $detailed = false): array
     {
         return $this->findRevenues(OrderStat::TYPE_DAY, $date, null, $detailed);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findMonthRevenuesByYear(\DateTime $date, $detailed = false)
+    public function findMonthRevenuesByYear(DateTime $date, bool $detailed = false): array
     {
         return $this->findRevenues(OrderStat::TYPE_MONTH, $date, null, $detailed);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findYearRevenues($limit = 8, $detailed = false)
+    public function findYearRevenues(int $limit = 8, bool $detailed = false): array
     {
         $qb = $this->createQueryBuilder('o');
         $expr = $qb->expr();
@@ -119,7 +103,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
             ->addOrderBy('o.date')
             ->getQuery()
             ->setParameter('type', OrderStat::TYPE_YEAR)
-            ->setMaxResults($limit = 8)
+            ->setMaxResults(8)
             ->getScalarResult();
 
         return $this->buildRevenueData($result, $detailed);
@@ -127,32 +111,25 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
 
     /**
      * Finds revenues.
-     *
-     * @param int            $type
-     * @param \DateTime      $from
-     * @param \DateTime|null $to
-     * @param bool           $detailed
-     *
-     * @return array
      */
-    private function findRevenues($type, \DateTime $from, \DateTime $to = null, $detailed = false)
+    private function findRevenues(int $type, DateTime $from, DateTime $to = null, bool $detailed = false): array
     {
         if ($type === OrderStat::TYPE_DAY) {
             if (null === $to) {
                 $from = (clone $from)->modify('first day of this month');
                 $to = (clone $from)->modify('last day of this month');
             }
-            $interval = new \DateInterval('P1D');
+            $interval = new DateInterval('P1D');
             $format = 'Y-m-d';
         } elseif ($type === OrderStat::TYPE_MONTH) {
             if (null === $to) {
                 $from = (clone $from)->modify('first day of january ' . $from->format('Y'));
                 $to = (clone $from)->modify('last day of december ' . $from->format('Y'));
             }
-            $interval = new \DateInterval('P1M');
+            $interval = new DateInterval('P1M');
             $format = 'Y-m';
         } else {
-            throw new InvalidArgumentException("Unexpected order stat type.");
+            throw new InvalidArgumentException('Unexpected order stat type.');
         }
 
         $result = $this
@@ -166,21 +143,21 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
 
         $data = $this->buildRevenueData($result, $detailed);
 
-        $period = new \DatePeriod($from, $interval, $to);
+        $period = new DatePeriod($from, $interval, $to);
 
-        $defaults = $detailed ? [] : 0;
+        $defaults = $detailed ? [] : '0';
         if ($detailed) {
             foreach (SaleSources::getSources() as $source) {
-                $defaults[$source] = 0;
+                $defaults[$source] = '0';
             }
         }
 
-        /** @var \DateTime $d */
+        /** @var DateTime $d */
         foreach ($period as $d) {
             $index = $d->format($format);
             if (!isset($data[$index])) {
                 $data[$index] = $defaults;
-            };
+            }
         }
         ksort($data);
 
@@ -189,13 +166,8 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
 
     /**
      * Builds the revenue data.
-     *
-     * @param array $result
-     * @param bool  $detailed
-     *
-     * @return array
      */
-    private function buildRevenueData(array $result, $detailed = false)
+    private function buildRevenueData(array $result, bool $detailed = false): array
     {
         $data = [];
 
@@ -208,10 +180,8 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
 
     /**
      * Returns the revenues query.
-     *
-     * @return \Doctrine\ORM\AbstractQuery
      */
-    private function getRevenueQuery()
+    private function getRevenueQuery(): Query
     {
         if (null !== $this->revenueQuery) {
             return $this->revenueQuery;

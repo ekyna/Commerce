@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Class ContextChangeEvent
@@ -13,29 +15,11 @@ use Symfony\Component\EventDispatcher\Event;
  */
 final class ContextChangeEvent extends Event
 {
-    /**
-     * @var CurrencyInterface
-     */
-    private $currency;
-
-    /**
-     * @var CountryInterface
-     */
-    private $country;
-
-    /**
-     * @var string
-     */
-    private $locale;
+    private ?CurrencyInterface $currency;
+    private ?CountryInterface $country;
+    private ?string $locale;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CurrencyInterface $currency
-     * @param CountryInterface  $country
-     * @param string $locale
-     */
     public function __construct(
         CurrencyInterface $currency = null,
         CountryInterface $country = null,
@@ -69,7 +53,7 @@ final class ContextChangeEvent extends Event
     /**
      * Returns the locale.
      *
-     * @return string
+     * @return string|null
      */
     public function getLocale(): ?string
     {

@@ -1,6 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Model;
+
+use DateTimeInterface;
+use Decimal\Decimal;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Interface InvoiceSubjectInterface
@@ -9,110 +15,40 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
  */
 interface InvoiceSubjectInterface
 {
-    /**
-     * Returns the invoice total.
-     *
-     * @return float
-     */
-    public function getInvoiceTotal();
+    public function getInvoiceTotal(): Decimal;
+
+    public function setInvoiceTotal(Decimal $total): InvoiceSubjectInterface;
+
+    public function getCreditTotal(): Decimal;
+
+    public function setCreditTotal(Decimal $total): InvoiceSubjectInterface;
+
+    public function getInvoiceState(): string;
+
+    public function setInvoiceState(string $state): InvoiceSubjectInterface;
+
+    public function hasInvoices(): bool;
 
     /**
-     * Sets the invoice total.
-     *
-     * @param float $total
-     *
-     * @return InvoiceSubjectTrait
-     */
-    public function setInvoiceTotal($total);
-
-    /**
-     * Returns the credits total.
-     *
-     * @return float
-     */
-    public function getCreditTotal();
-
-    /**
-     * Sets the credit total.
-     *
-     * @param float $total
-     *
-     * @return $this|InvoiceSubjectInterface
-     */
-    public function setCreditTotal($total);
-
-    /**
-     * Returns the invoice state.
-     *
-     * @return string
-     */
-    public function getInvoiceState();
-
-    /**
-     * Sets the invoice state.
-     *
-     * @param string $state
-     *
-     * @return $this|InvoiceSubjectInterface
-     */
-    public function setInvoiceState($state);
-
-    /**
-     * Returns whether the order has invoices or not.
-     *
-     * @return bool
-     */
-    public function hasInvoices();
-
-    /**
-     * Returns the invoices.
-     *
      * @param bool $filter TRUE for invoices, FALSE for credits, NULL for all
      *
-     * @return \Doctrine\Common\Collections\Collection|InvoiceInterface[]
+     * @return Collection|InvoiceInterface[]
      */
-    public function getInvoices($filter = null);
+    public function getInvoices(bool $filter = null): Collection;
+
+    public function hasInvoice(InvoiceInterface $invoice): bool;
+
+    public function addInvoice(InvoiceInterface $invoice): InvoiceSubjectInterface;
+
+    public function removeInvoice(InvoiceInterface $invoice): InvoiceSubjectInterface;
 
     /**
-     * Returns whether the order has the invoice or not.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return bool
-     */
-    public function hasInvoice(InvoiceInterface $invoice);
-
-    /**
-     * Adds the invoice.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return $this|InvoiceSubjectInterface
-     */
-    public function addInvoice(InvoiceInterface $invoice);
-
-    /**
-     * Removes the invoice.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return $this|InvoiceSubjectInterface
-     */
-    public function removeInvoice(InvoiceInterface $invoice);
-
-    /**
-     * Returns the invoice date.
-     *
      * @param bool $latest Whether to return the last invoice date instead of the first.
-     *
-     * @return \DateTime|null
      */
-    public function getInvoicedAt($latest = false);
+    public function getInvoicedAt(bool $latest = false): ?DateTimeInterface;
 
     /**
      * Returns whether the sale has been fully invoiced (ignoring credits).
-     *
-     * @return bool
      */
     public function isFullyInvoiced(): bool;
 }

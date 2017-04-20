@@ -85,30 +85,6 @@
                 </option>
             </constraint>
         </property>
-        <property name="createdAt">
-            <constraint name="DateTime">
-                <option name="groups">
-                    <value>Default</value>
-                    <value>Checkout</value>
-                </option>
-            </constraint>
-        </property>
-        <property name="updatedAt">
-            <constraint name="DateTime">
-                <option name="groups">
-                    <value>Default</value>
-                    <value>Checkout</value>
-                </option>
-            </constraint>
-        </property>
-        <property name="completedAt">
-            <constraint name="DateTime">
-                <option name="groups">
-                    <value>Default</value>
-                    <value>Checkout</value>
-                </option>
-            </constraint>
-        </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Payment">
             <option name="groups">
                 <value>Default</value>

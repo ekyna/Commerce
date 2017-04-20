@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Common\Util\Money;
 
@@ -12,408 +15,238 @@ use Ekyna\Component\Commerce\Common\Util\Money;
  */
 class DocumentLine implements DocumentLineInterface
 {
-    /**
-     * @var Document
-     */
-    protected $document;
+    protected ?Document                   $document       = null;
+    protected ?string                     $type           = null;
+    protected ?string                     $designation    = null;
+    protected ?string                     $description    = null;
+    protected ?string                     $reference      = null;
+    protected Decimal                     $unit;
+    protected Decimal                     $quantity;
+    protected Decimal                     $gross;
+    protected Decimal                     $discount;
+    protected array                       $discountRates;
+    protected Decimal                     $base;
+    protected Decimal                     $tax;
+    protected array                       $taxRates;
+    protected Decimal                     $total;
+    protected ?Common\SaleItemInterface   $saleItem       = null;
+    protected ?Common\AdjustmentInterface $saleAdjustment = null;
 
-    /**
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * @var string
-     */
-    protected $designation;
-
-    /**
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * @var string
-     */
-    protected $reference;
-
-    /**
-     * @var float
-     */
-    protected $unit;
-
-    /**
-     * @var float
-     */
-    protected $quantity;
-
-    /**
-     * @var float
-     */
-    protected $gross;
-
-    /**
-     * @var float
-     */
-    protected $discount;
-
-    /**
-     * @var array
-     */
-    protected $discountRates;
-
-    /**
-     * @var float
-     */
-    protected $base;
-
-    /**
-     * @var float
-     */
-    protected $tax;
-
-    /**
-     * @var array
-     */
-    protected $taxRates;
-
-    /**
-     * @var float
-     */
-    protected $total;
-
-    /**
-     * @var Common\SaleItemInterface
-     */
-    protected $saleItem;
-
-    /**
-     * @var Common\AdjustmentInterface
-     */
-    protected $saleAdjustment;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->unit = 0;
-        $this->quantity = 0;
-        $this->gross = 0;
-        $this->discount = 0;
+        $this->unit = new Decimal(0);
+        $this->quantity = new Decimal(0);
+        $this->gross = new Decimal(0);
+        $this->discount = new Decimal(0);
         $this->discountRates = [];
-        $this->base = 0;
-        $this->tax = 0;
+        $this->base = new Decimal(0);
+        $this->tax = new Decimal(0);
         $this->taxRates = [];
-        $this->total = 0;
+        $this->total = new Decimal(0);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDocument()
+    public function getDocument(): ?DocumentInterface
     {
         return $this->document;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDocument(DocumentInterface $document = null)
+    public function setDocument(?DocumentInterface $document): DocumentLineInterface
     {
-        if ($this->document !== $document) {
-            if ($previous = $this->document) {
-                $this->document = null;
-                $previous->removeLine($this);
-            }
+        if ($this->document === $document) {
+            return $this;
+        }
 
-            if ($this->document = $document) {
-                $this->document->addLine($this);
-            }
+        if ($previous = $this->document) {
+            $this->document = null;
+            $previous->removeLine($this);
+        }
+
+        if ($this->document = $document) {
+            $this->document->addLine($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setType($type)
+    public function setType(?string $type): DocumentLineInterface
     {
         $this->type = $type;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDesignation()
+    public function getDesignation(): ?string
     {
         return $this->designation;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDesignation($designation)
+    public function setDesignation(?string $designation): DocumentLineInterface
     {
         $this->designation = $designation;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): DocumentLineInterface
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getReference()
+    public function getReference(): ?string
     {
         return $this->reference;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setReference($reference)
+    public function setReference(?string $reference): DocumentLineInterface
     {
         $this->reference = $reference;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getUnit(bool $ati = false)
+    public function getUnit(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->unit) : $this->unit;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setUnit($price)
+    public function setUnit(Decimal $price): DocumentLineInterface
     {
-        $this->unit = (float)$price;
+        $this->unit = $price;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuantity()
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuantity($quantity)
+    public function setQuantity(Decimal $quantity): DocumentLineInterface
     {
-        $this->quantity = (float)$quantity;
+        $this->quantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGross(bool $ati = false)
+    public function getGross(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->gross) : $this->gross;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setGross($gross)
+    public function setGross(Decimal $total): DocumentLineInterface
     {
-        $this->gross = (float)$gross;
+        $this->gross = $total;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDiscount(bool $ati = false)
+    public function getDiscount(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->discount) : $this->discount;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDiscount($total)
+    public function setDiscount(Decimal $total): DocumentLineInterface
     {
-        $this->discount = (float)$total;
+        $this->discount = $total;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDiscountRates()
+    public function getDiscountRates(): array
     {
         return $this->discountRates;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDiscountRates(array $rates)
+    public function setDiscountRates(array $rates): DocumentLineInterface
     {
         $this->discountRates = $rates;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getBase(bool $ati = false)
+    public function getBase(bool $ati = false): Decimal
     {
         return $ati ? $this->ati($this->base) : $this->base;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setBase($total)
+    public function setBase(Decimal $total): DocumentLineInterface
     {
-        $this->base = (float)$total;
+        $this->base = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the tax.
-     *
-     * @return float
-     */
-    public function getTax()
+    public function getTax(): Decimal
     {
         return $this->tax;
     }
 
-    /**
-     * Sets the tax.
-     *
-     * @param float $tax
-     *
-     * @return DocumentLine
-     */
-    public function setTax($tax)
+    public function setTax(Decimal $tax): DocumentLineInterface
     {
-        $this->tax = (float)$tax;
+        $this->tax = $tax;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTaxRates()
+    public function getTaxRates(): array
     {
         return $this->taxRates;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTaxRates(array $rates)
+    public function setTaxRates(array $rates): DocumentLineInterface
     {
         $this->taxRates = $rates;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTotal()
+    public function getTotal(): Decimal
     {
         return $this->total;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTotal($total)
+    public function setTotal(Decimal $total): DocumentLineInterface
     {
-        $this->total = (float)$total;
+        $this->total = $total;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSale()
+    public function getSale(): ?Common\SaleInterface
     {
         return $this->getDocument()->getSale();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSaleItem()
+    public function getSaleItem(): ?Common\SaleItemInterface
     {
         return $this->saleItem;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSaleItem(Common\SaleItemInterface $item = null)
+    public function setSaleItem(?Common\SaleItemInterface $item): DocumentLineInterface
     {
         $this->saleItem = $item;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSaleAdjustment()
+    public function getSaleAdjustment(): ?Common\AdjustmentInterface
     {
         return $this->saleAdjustment;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSaleAdjustment(Common\AdjustmentInterface $adjustment = null)
+    public function setSaleAdjustment(?Common\AdjustmentInterface $adjustment): DocumentLineInterface
     {
         $this->saleAdjustment = $adjustment;
 
@@ -422,12 +255,8 @@ class DocumentLine implements DocumentLineInterface
 
     /**
      * Adds the taxes to the given amount.
-     *
-     * @param float $amount
-     *
-     * @return float
      */
-    private function ati(float $amount)
+    private function ati(Decimal $amount): Decimal
     {
         $result = $amount;
 

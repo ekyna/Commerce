@@ -27,7 +27,7 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addType(ViewTypeInterface $type): void
     {
@@ -39,7 +39,7 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTypesForSale(Model\SaleInterface $sale): array
     {

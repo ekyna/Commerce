@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAttachmentInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleAttachmentInterface;
  */
 interface QuoteAttachmentInterface extends SaleAttachmentInterface
 {
-    /**
-     * Returns the quote.
-     *
-     * @return QuoteInterface
-     */
-    public function getQuote();
+    public function getQuote(): ?QuoteInterface;
 
-    /**
-     * Sets the quote.
-     *
-     * @param QuoteInterface|null $quote
-     *
-     * @return $this|QuoteAttachmentInterface
-     */
-    public function setQuote(QuoteInterface $quote = null);
+    public function setQuote(?QuoteInterface $quote): QuoteAttachmentInterface;
 }

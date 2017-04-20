@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model;
@@ -14,78 +16,46 @@ use Ekyna\Component\Resource\Model\AbstractTranslatable;
  */
 abstract class AbstractMessage extends AbstractTranslatable implements Model\MessageInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $state;
-
-    /**
-     * @var Model\MethodInterface
-     */
-    protected $method;
+    protected ?int $id = null;
+    protected ?string $state = null;
+    protected ?Model\MethodInterface $method = null;
 
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getState()
+    public function getState(): ?string
     {
         return $this->state;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setState($state)
+    public function setState(?string $state): Model\MessageInterface
     {
         $this->state = $state;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMethod()
+    public function getMethod(): ?Model\MethodInterface
     {
         return $this->method;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setMethod(Model\MethodInterface $method)
+    public function setMethod(?Model\MethodInterface $method): Model\MessageInterface
     {
         $this->method = $method;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->translate()->getContent();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setContent($content)
+    public function setContent(?string $content) : Model\MessageInterface
     {
         $this->translate()->setContent($content);
 

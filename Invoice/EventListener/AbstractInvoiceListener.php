@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
@@ -22,87 +24,37 @@ abstract class AbstractInvoiceListener
 {
     use LockingHelperAwareTrait;
 
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected GeneratorInterface $invoiceNumberGenerator;
+    protected GeneratorInterface $creditNumberGenerator;
+    protected DocumentBuilderInterface $invoiceBuilder;
+    protected DocumentCalculatorInterface $invoiceCalculator;
 
-    /**
-     * @var GeneratorInterface
-     */
-    protected $invoiceNumberGenerator;
-
-    /**
-     * @var GeneratorInterface
-     */
-    protected $creditNumberGenerator;
-
-    /**
-     * @var DocumentBuilderInterface
-     */
-    protected $invoiceBuilder;
-
-    /**
-     * @var DocumentCalculatorInterface
-     */
-    protected $invoiceCalculator;
-
-
-    /**
-     * Sets the persistence helper.
-     *
-     * @param PersistenceHelperInterface $helper
-     */
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
         $this->persistenceHelper = $helper;
     }
 
-    /**
-     * Sets the invoice number generator.
-     *
-     * @param GeneratorInterface $generator
-     */
     public function setInvoiceNumberGenerator(GeneratorInterface $generator): void
     {
         $this->invoiceNumberGenerator = $generator;
     }
 
-    /**
-     * Sets the credit number generator.
-     *
-     * @param GeneratorInterface $generator
-     */
     public function setCreditNumberGenerator(GeneratorInterface $generator): void
     {
         $this->creditNumberGenerator = $generator;
     }
 
-    /**
-     * Sets the invoice updater.
-     *
-     * @param DocumentBuilderInterface $builder
-     */
     public function setInvoiceBuilder(DocumentBuilderInterface $builder): void
     {
         $this->invoiceBuilder = $builder;
     }
 
-    /**
-     * Sets the invoice calculator.
-     *
-     * @param DocumentCalculatorInterface $calculator
-     */
     public function setInvoiceCalculator(DocumentCalculatorInterface $calculator): void
     {
         $this->invoiceCalculator = $calculator;
     }
 
-    /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onInsert(ResourceEventInterface $event): void
     {
         $invoice = $this->getInvoiceFromEvent($event);
@@ -115,10 +67,10 @@ abstract class AbstractInvoiceListener
         $changed = $this->generateNumber($invoice);
 
         // Updates the invoice data
-        $changed |= $this->invoiceBuilder->update($invoice);
+        $changed = $this->invoiceBuilder->update($invoice) || $changed;
 
         // Updates the totals
-        $changed |= $this->updateTotals($invoice);
+        $changed = $this->updateTotals($invoice) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
@@ -132,11 +84,6 @@ abstract class AbstractInvoiceListener
         $this->scheduleSaleContentChangeEvent($sale);
     }
 
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onUpdate(ResourceEventInterface $event): void
     {
         $invoice = $this->getInvoiceFromEvent($event);
@@ -146,11 +93,6 @@ abstract class AbstractInvoiceListener
         $this->scheduleSaleContentChangeEvent($this->getSaleFromInvoice($invoice));
     }
 
-    /**
-     * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onDelete(ResourceEventInterface $event): void
     {
         $invoice = $this->getInvoiceFromEvent($event);
@@ -169,11 +111,6 @@ abstract class AbstractInvoiceListener
         $this->scheduleSaleContentChangeEvent($sale);
     }
 
-    /**
-     * Content change event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onContentChange(ResourceEventInterface $event): void
     {
         $invoice = $this->getInvoiceFromEvent($event);
@@ -189,11 +126,6 @@ abstract class AbstractInvoiceListener
         $this->scheduleSaleContentChangeEvent($sale);
     }
 
-    /**
-     * Pre update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onPreUpdate(ResourceEventInterface $event): void
     {
         $invoice = $this->getInvoiceFromEvent($event);
@@ -204,11 +136,6 @@ abstract class AbstractInvoiceListener
         $sale->getInvoices()->toArray();
     }
 
-    /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onPreDelete(ResourceEventInterface $event): void
     {
         $invoice = $this->getInvoiceFromEvent($event);
@@ -219,13 +146,6 @@ abstract class AbstractInvoiceListener
         $sale->getInvoices()->toArray();
     }
 
-    /**
-     * Updates the invoice totals.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @return bool
-     */
     protected function updateTotals(InvoiceInterface $invoice): bool
     {
         $changed = $this->invoiceCalculator->calculate($invoice);
@@ -240,10 +160,6 @@ abstract class AbstractInvoiceListener
     }
 
     /**
-     * Generates the number.
-     *
-     * @param InvoiceInterface $invoice
-     *
      * @return bool Whether the invoice number has been generated or not.
      */
     protected function generateNumber(InvoiceInterface $invoice): bool
@@ -263,16 +179,16 @@ abstract class AbstractInvoiceListener
 
     /**
      * Prevents some of the invoice's properties to change.
-     *
-     * @param InvoiceInterface $invoice
-     *
-     * @throws Exception\IllegalOperationException
      */
     protected function preventForbiddenChange(InvoiceInterface $invoice): void
     {
+        $cs = $this->persistenceHelper->getChangeSet($invoice);
+        if (empty($cs)) {
+            return;
+        }
+
         // Only comment, description, paid total and real paid total can change for locked invoices
         $allowed = ['comment', 'description', 'paidTotal', 'realPaidTotal'];
-        $cs = $this->persistenceHelper->getChangeSet($invoice);
         if (!empty(array_diff(array_keys($cs), $allowed)) && $this->lockingHelper->isLocked($invoice)) {
             throw new Exception\IllegalOperationException(sprintf(
                 'Invoice %s is locked.',
@@ -280,20 +196,19 @@ abstract class AbstractInvoiceListener
             ));
         }
 
-        if ($this->persistenceHelper->isChanged($invoice, 'type')) {
-            [$old, $new] = $this->persistenceHelper->getChangeSet($invoice, 'type');
-            if ($old != $new) {
-                throw new Exception\IllegalOperationException(
-                    "Changing the invoice type is not yet supported."
-                );
-            }
+        if (!isset($cs['type'])) {
+            return;
+        }
+
+        if ($cs['type'][0] !== $cs['type'][1]) {
+            throw new Exception\IllegalOperationException(
+                'Changing the invoice type is not yet supported.'
+            );
         }
     }
 
     /**
      * Returns the invoice's sale.
-     *
-     * @param InvoiceInterface $invoice
      *
      * @return SaleInterface|InvoiceSubjectInterface
      */
@@ -307,7 +222,7 @@ abstract class AbstractInvoiceListener
         }
 
         if (!$sale instanceof SaleInterface) {
-            throw new Exception\RuntimeException("Failed to retrieve invoice's sale.");
+            throw new Exception\RuntimeException('Failed to retrieve invoice\'s sale.');
         }
 
         return $sale;
@@ -315,25 +230,18 @@ abstract class AbstractInvoiceListener
 
     /**
      * Dispatches the sale content change event.
-     *
-     * @param SaleInterface $sale
      */
     abstract protected function scheduleSaleContentChangeEvent(SaleInterface $sale): void;
 
     /**
      * Returns the invoice from the event.
      *
-     * @param ResourceEventInterface $event
-     *
-     * @return InvoiceInterface
-     * @throws Exception\InvalidArgumentException
+     * @throws Exception\UnexpectedTypeException
      */
     abstract protected function getInvoiceFromEvent(ResourceEventInterface $event): InvoiceInterface;
 
     /**
      * Returns the invoice's sale property path.
-     *
-     * @return string
      */
     abstract protected function getSalePropertyPath(): string;
 }

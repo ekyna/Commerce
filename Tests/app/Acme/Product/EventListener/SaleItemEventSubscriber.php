@@ -47,8 +47,8 @@ class SaleItemEventSubscriber
         $item
             ->setDesignation($product->getDesignation())
             ->setReference($product->getReference())
-            ->setNetPrice($product->getNetPrice())
-            ->setWeight($product->getPackageWeight())
+            ->setNetPrice(clone $product->getNetPrice())
+            ->setWeight(clone $product->getPackageWeight())
             ->setTaxGroup($product->getTaxGroup());
     }
 

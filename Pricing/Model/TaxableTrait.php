@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 /**
@@ -9,30 +11,18 @@ namespace Ekyna\Component\Commerce\Pricing\Model;
  */
 trait TaxableTrait
 {
-    /**
-     * @var TaxGroupInterface
-     */
-    protected $taxGroup;
+    protected ?TaxGroupInterface $taxGroup = null;
 
 
-    /**
-     * Returns the tax group.
-     *
-     * @return TaxGroupInterface
-     */
     public function getTaxGroup(): ?TaxGroupInterface
     {
         return $this->taxGroup;
     }
 
     /**
-     * Sets the tax group.
-     *
-     * @param TaxGroupInterface $taxGroup
-     *
      * @return $this|TaxableInterface
      */
-    public function setTaxGroup(TaxGroupInterface $taxGroup = null): TaxableInterface
+    public function setTaxGroup(?TaxGroupInterface $taxGroup): TaxableInterface
     {
         $this->taxGroup = $taxGroup;
 

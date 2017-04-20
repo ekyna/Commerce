@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
@@ -13,40 +15,23 @@ interface OrderAddressInterface extends SaleAddressInterface
 {
     /**
      * Returns the order this address is the invoice one.
-     *
-     * @return OrderInterface|null
      */
-    public function getInvoiceOrder();
+    public function getInvoiceOrder(): ?OrderInterface;
 
     /**
      * Sets the order this address is the invoice one.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|OrderAddressInterface
      */
-    public function setInvoiceOrder(OrderInterface $order = null);
+    public function setInvoiceOrder(?OrderInterface $order): OrderAddressInterface;
 
     /**
      * Returns the order this address is the delivery one.
-     *
-     * @return OrderInterface|null
      */
-    public function getDeliveryOrder();
+    public function getDeliveryOrder(): ?OrderInterface;
 
     /**
      * Sets the order this address is the delivery one.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|OrderAddressInterface
      */
-    public function setDeliveryOrder(OrderInterface $order = null);
+    public function setDeliveryOrder(?OrderInterface $order): OrderAddressInterface;
 
-    /**
-     * Returns the related order.
-     *
-     * @return OrderInterface|null
-     */
-    public function getOrder();
+    public function getOrder(): ?OrderInterface;
 }

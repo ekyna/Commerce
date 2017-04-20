@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Dispatcher;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
 
 /**
  * Interface StockAssignmentDispatcherInterface
@@ -18,17 +23,28 @@ interface StockAssignmentDispatcherInterface
      *
      * @param StockUnitInterface $sourceUnit
      * @param StockUnitInterface $targetUnit
-     * @param float              $quantity
+     * @param Decimal            $quantity
      * @param int                $direction The source assignments sort direction (default SORT_DESC)
      *
-     * @return float The quantity indeed moved
+     * @return Decimal The quantity indeed moved
      *
      * @throws StockLogicException
      */
     public function moveAssignments(
         StockUnitInterface $sourceUnit,
         StockUnitInterface $targetUnit,
-        float $quantity,
-        int $direction = SORT_DESC
-    ): float;
+        Decimal            $quantity,
+        int                $direction = SORT_DESC
+    ): Decimal;
+
+    /**
+     * Move the given assignment to the given unit for the given sold quantity.
+     *
+     * @param Assignment $assignment
+     * @param Unit       $targetUnit
+     * @param Decimal    $quantity
+     *
+     * @return Decimal The quantity moved
+     */
+    public function moveAssignment(Assignment $assignment, Unit $targetUnit, Decimal $quantity): Decimal;
 }

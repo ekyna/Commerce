@@ -12,6 +12,24 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 interface SupplierOrderUpdaterInterface
 {
     /**
+     * Updates the currency based on selected supplier.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return bool Whether or not the supplier order number has been changed.
+     */
+    public function updateCurrency(SupplierOrderInterface $order): bool;
+
+    /**
+     * Updates the carrier based on selected supplier.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return bool Whether or not the supplier order number has been changed.
+     */
+    public function updateCarrier(SupplierOrderInterface $order): bool;
+
+    /**
      * Updates the number.
      *
      * @param SupplierOrderInterface $order

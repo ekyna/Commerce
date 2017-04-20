@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Currency;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProvider;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class SessionCurrencyProvider
@@ -16,34 +19,19 @@ class SessionCurrencyProvider extends CurrencyProvider
 {
     private const KEY = 'ekyna_commerce/currency';
 
-    /**
-     * @var SessionInterface
-     */
-    private $session;
-
-    /**
-     * @var string
-     */
-    private $key;
+    private RequestStack $requestStack;
+    private string       $key;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CurrencyRepositoryInterface $currencyRepository
-     * @param SessionInterface            $session
-     * @param string                      $fallbackCurrency
-     * @param string                      $key
-     */
     public function __construct(
         CurrencyRepositoryInterface $currencyRepository,
-        SessionInterface $session,
+        RequestStack $requestStack,
         string $fallbackCurrency,
         string $key = self::KEY
     ) {
         parent::__construct($currencyRepository, $fallbackCurrency);
 
-        $this->session = $session;
+        $this->requestStack = $requestStack;
         $this->key = $key;
     }
 
@@ -59,17 +47,19 @@ class SessionCurrencyProvider extends CurrencyProvider
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrentCurrency(): string
     {
         if ($this->currentCurrency) {
             return $this->currentCurrency;
         }
 
-        if ($this->session->has($this->key)) {
-            return $this->currentCurrency = $this->session->get($this->key);
+        try {
+            $session = $this->requestStack->getSession();
+
+            if ($session->has($this->key)) {
+                return $this->currentCurrency = $session->get($this->key);
+            }
+        } catch (SessionNotFoundException $exception) {
         }
 
         $this->currentCurrency = parent::getCurrentCurrency();
@@ -79,11 +69,11 @@ class SessionCurrencyProvider extends CurrencyProvider
         return $this->currentCurrency;
     }
 
-    /**
-     * Saves the current currency into the session.
-     */
     private function save(): void
     {
-        $this->session->set($this->key, $this->currentCurrency);
+        try {
+            $this->requestStack->getSession()->set($this->key, $this->currentCurrency);
+        } catch (SessionNotFoundException $exception) {
+        }
     }
 }

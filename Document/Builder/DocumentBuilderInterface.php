@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Builder;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
@@ -15,46 +17,32 @@ interface DocumentBuilderInterface
 {
     /**
      * Builds the invoice.
-     *
-     * @param DocumentInterface $document
      */
     public function build(DocumentInterface $document): void;
 
     /**
      * Updates the document's data (currency, customer and addresses).
-     *
-     * @param DocumentInterface $document
-     *
-     * @return bool
      */
     public function update(DocumentInterface $document): bool;
 
     /**
      * Builds the document good line from the given sale item.
-     *
-     * @param Common\SaleItemInterface $item
-     * @param DocumentInterface        $document
-     *
-     * @return DocumentLineInterface|null
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, DocumentInterface $document): ?DocumentLineInterface;
+    public function buildGoodLine(
+        Common\SaleItemInterface $item,
+        DocumentInterface $document
+    ): ?DocumentLineInterface;
 
     /**
      * Builds the discount line from the given adjustment.
-     *
-     * @param Common\SaleAdjustmentInterface $adjustment
-     * @param DocumentInterface          $document
-     *
-     * @return DocumentLineInterface|null
      */
-    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, DocumentInterface $document): ?DocumentLineInterface;
+    public function buildDiscountLine(
+        Common\SaleAdjustmentInterface $adjustment,
+        DocumentInterface              $document
+    ): ?DocumentLineInterface;
 
     /**
      * Builds the document's shipment line.
-     *
-     * @param DocumentInterface $document
-     *
-     * @return DocumentLineInterface|null
      */
     public function buildShipmentLine(DocumentInterface $document): ?DocumentLineInterface;
 }

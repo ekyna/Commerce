@@ -173,6 +173,6 @@ class SubscriptionListener implements ListenerInterface
      */
     protected function scheduleMemberSubscriptionChangeEvent(MemberInterface $member): void
     {
-        $this->persistenceHelper->scheduleEvent(MemberEvents::SUBSCRIPTION_CHANGE, $member);
+        $this->persistenceHelper->scheduleEvent($member, MemberEvents::SUBSCRIPTION_CHANGE);
     }
 }

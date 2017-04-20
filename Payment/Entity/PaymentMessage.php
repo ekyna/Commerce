@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractMessage;
@@ -11,9 +13,6 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractMessage;
  */
 class PaymentMessage extends AbstractMessage
 {
-    /**
-     * @inheritdoc
-     */
     protected function getTranslationClass(): string
     {
         return PaymentMessageTranslation::class;

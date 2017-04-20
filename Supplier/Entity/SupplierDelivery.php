@@ -54,7 +54,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -62,7 +62,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getOrder()
     {
@@ -70,7 +70,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setOrder(Model\SupplierOrderInterface $order = null)
     {
@@ -89,7 +89,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasItems()
     {
@@ -97,7 +97,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasItem(Model\SupplierDeliveryItemInterface $item)
     {
@@ -105,7 +105,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addItem(Model\SupplierDeliveryItemInterface $item)
     {
@@ -118,7 +118,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function removeItem(Model\SupplierDeliveryItemInterface $item)
     {
@@ -131,7 +131,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getItems()
     {

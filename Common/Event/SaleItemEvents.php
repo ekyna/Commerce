@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Event;
 
 /**
@@ -9,10 +11,9 @@ namespace Ekyna\Component\Commerce\Common\Event;
  */
 final class SaleItemEvents
 {
-    const INITIALIZE = 'ekyna_commerce.sale_item.initialize';
-    const BUILD      = 'ekyna_commerce.sale_item.build';
-    const DISCOUNT   = 'ekyna_commerce.sale_item.discount';
-
+    public const INITIALIZE = 'ekyna_commerce.sale_item.initialize';
+    public const BUILD      = 'ekyna_commerce.sale_item.build';
+    public const DISCOUNT   = 'ekyna_commerce.sale_item.discount';
 
     /**
      * Disabled constructor.

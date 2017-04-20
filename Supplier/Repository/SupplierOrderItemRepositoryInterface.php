@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Repository;
 
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface SupplierOrderItemRepository
@@ -17,7 +20,7 @@ interface SupplierOrderItemRepositoryInterface extends ResourceRepositoryInterfa
      *
      * @param SubjectInterface $subject
      *
-     * @return \Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface|null
+     * @return SupplierOrderItemInterface|null
      */
-    public function findLatestOrderedBySubject(SubjectInterface $subject);
+    public function findLatestOrderedBySubject(SubjectInterface $subject): ?SupplierOrderItemInterface;
 }

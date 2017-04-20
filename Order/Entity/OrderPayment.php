@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
 
@@ -12,52 +15,37 @@ use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
  */
 class OrderPayment extends AbstractPayment implements Model\OrderPaymentInterface
 {
-    /**
-     * @var Model\OrderInterface
-     */
-    protected $order;
+    protected ?Model\OrderInterface $order = null;
 
 
-    /**
-     * @inheritdoc
-     *
-     * @return Model\OrderInterface
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getOrder();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
+    public function getOrder(): ?Model\OrderInterface
     {
         return $this->order;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrder(Model\OrderInterface $order = null)
+    public function setOrder(Model\OrderInterface $order = null): Model\OrderPaymentInterface
     {
-        if ($order !== $this->order) {
-            if ($previous = $this->order) {
-                $this->order = null;
-                $previous->removePayment($this);
-            }
+        if ($order === $this->order) {
+            return $this;
+        }
 
-            if ($this->order = $order) {
-                $this->order->addPayment($this);
-            }
+        if ($previous = $this->order) {
+            $this->order = null;
+            $previous->removePayment($this);
+        }
+
+        if ($this->order = $order) {
+            $this->order->addPayment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getLocale(): ?string
     {
         if ($this->order) {

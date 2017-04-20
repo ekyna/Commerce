@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItemAdjustment;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 
@@ -15,13 +17,10 @@ use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
  */
 class OrderItemAdjustment extends AbstractSaleItemAdjustment implements OrderItemAdjustmentInterface
 {
-    /**
-     * @inheritDoc
-     */
     protected function assertSaleItemClass(SaleItemInterface $item): void
     {
         if (!$item instanceof OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderItemInterface::class);
+            throw new UnexpectedTypeException($item, OrderItemInterface::class);
         }
     }
 }

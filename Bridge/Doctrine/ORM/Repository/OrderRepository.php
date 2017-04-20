@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateTime;
+use Decimal\Decimal;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr;
@@ -26,10 +30,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
  */
 class OrderRepository extends AbstractSaleRepository implements OrderRepositoryInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public function existsForCustomer(CustomerInterface $customer)
+    public function existsForCustomer(CustomerInterface $customer): bool
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -46,30 +47,22 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         return null !== $id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function existsForEmail(string $email)
+    public function existsForEmail(string $email): bool
     {
         $qb = $this->createQueryBuilder('o');
 
-        $id = $qb
-            ->select('o.id')
-            ->andWhere($qb->expr()->eq('o.email', ':email'))
-            ->getQuery()
-            ->setMaxResults(1)
-            ->setParameters([
-                'email' => $email,
-            ])
-            ->getOneOrNullResult(Query::HYDRATE_SINGLE_SCALAR);
-
-        return null !== $id;
+        return null !== $qb
+                ->select('o.id')
+                ->andWhere($qb->expr()->eq('o.email', ':email'))
+                ->getQuery()
+                ->setMaxResults(1)
+                ->setParameters([
+                    'email' => $email,
+                ])
+                ->getOneOrNullResult(Query::HYDRATE_SINGLE_SCALAR);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number)
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number): ?OrderInterface
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -97,10 +90,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         return $sale;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function findByOriginCustomer(CustomerInterface $customer, array $states = [], $strict = false)
+    public function findByOriginCustomer(CustomerInterface $customer, array $states = [], bool $strict = false): array
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -129,12 +119,9 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findCompletedYesterday(): array
     {
-        $start = (new \DateTime('-1 day'))->setTime(0, 0, 0, 0);
+        $start = (new DateTime('-1 day'))->setTime(0, 0);
         $end = (clone $start)->setTime(23, 59, 59, 999999);
 
         $qb = $this->createQueryBuilder('o');
@@ -151,10 +138,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function findDueOrders()
+    public function findDueOrders(): array
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
@@ -181,14 +165,11 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         return $query
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
+            ->setParameter('today', (new DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->useQueryCache(true)
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findWithNullRevenueOrMargin(): array
     {
         $qb = $this->createQueryBuilder('o');
@@ -209,24 +190,20 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         }, array_column($ids, 'id'));
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getRegularDue()
+    public function getRegularDue(): Decimal
     {
-        return $this
+        $total = $this
             ->getRegularDueQueryBuilder()
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
             ->enableResultCache(300)
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getRegularDueOrders()
+    public function getRegularDueOrders(): array
     {
         return $this
             ->getRegularDueQueryBuilder()
@@ -235,24 +212,20 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOutstandingExpiredDue()
+    public function getOutstandingExpiredDue(): Decimal
     {
-        return $this
+        $total = $this
             ->getOutstandingExpiredDueQueryBuilder()
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
             ->enableResultCache(300)
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOutstandingExpiredDueOrders()
+    public function getOutstandingExpiredDueOrders(): array
     {
         return $this
             ->getOutstandingExpiredDueQueryBuilder()
@@ -262,24 +235,20 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getOutstandingFallDue()
+    public function getOutstandingFallDue(): Decimal
     {
-        return $this
+        $total = $this
             ->getOutstandingFallDueQueryBuilder()
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
             ->enableResultCache(300)
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getOutstandingFallDueOrders()
+    public function getOutstandingFallDueOrders(): array
     {
         return $this
             ->getOutstandingFallDueQueryBuilder()
@@ -288,24 +257,20 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOutstandingPendingDue()
+    public function getOutstandingPendingDue(): Decimal
     {
-        return $this
+        $total = $this
             ->getOutstandingPendingDueQueryBuilder()
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
             ->enableResultCache(300)
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOutstandingPendingDueOrders()
+    public function getOutstandingPendingDueOrders(): array
     {
         return $this
             ->getOutstandingPendingDueQueryBuilder()
@@ -314,24 +279,20 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getRemainingTotal()
+    public function getRemainingTotal(): Decimal
     {
-        return $this
+        $total = $this
             ->getRemainingQueryBuilder()
             ->select('SUM(o.grandTotal - o.invoiceTotal)')
             ->getQuery()
             ->useQueryCache(true)
             ->enableResultCache(300)
             ->getSingleScalarResult();
+
+        return new Decimal($total ?: 0);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getRemainingOrders()
+    public function getRemainingOrders(): array
     {
         return $this
             ->getRemainingQueryBuilder()
@@ -340,9 +301,6 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCustomerCurrencies(CustomerInterface $customer): array
     {
         $qb = $this->createQueryBuilder('o');
@@ -357,9 +315,6 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         return array_column($qb->getQuery()->getScalarResult(), 'code');
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCouponUsage(CouponInterface $coupon): int
     {
         $qb = $this->createQueryBuilder('o');
@@ -374,10 +329,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
     /**
      * Returns the remaining query builder.
-     *
-     * @return QueryBuilder
      */
-    private function getRemainingQueryBuilder()
+    private function getRemainingQueryBuilder(): QueryBuilder
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
@@ -398,10 +351,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
     /**
      * Returns the regular due query builder.
-     *
-     * @return QueryBuilder
      */
-    private function getRegularDueQueryBuilder()
+    private function getRegularDueQueryBuilder(): QueryBuilder
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
@@ -422,10 +373,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
     /**
      * Returns the outstanding expired due query builder.
-     *
-     * @return QueryBuilder
      */
-    private function getOutstandingExpiredDueQueryBuilder()
+    private function getOutstandingExpiredDueQueryBuilder(): QueryBuilder
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
@@ -441,7 +390,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ))
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
+            ->setParameter('today', (new DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
 
         $this->setDueParameters($qb);
@@ -451,10 +400,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
     /**
      * Returns the outstanding fall due query builder.
-     *
-     * @return QueryBuilder
      */
-    private function getOutstandingFallDueQueryBuilder()
+    private function getOutstandingFallDueQueryBuilder(): QueryBuilder
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
@@ -470,7 +417,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ))
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
+            ->setParameter('today', (new DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
 
         $this->setDueParameters($qb);
@@ -479,9 +426,9 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     }
 
     /**
-     * @inheritdoc
+     * Returns the outstanding pending due query builder.
      */
-    private function getOutstandingPendingDueQueryBuilder()
+    private function getOutstandingPendingDueQueryBuilder(): QueryBuilder
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
@@ -507,10 +454,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
      * Returns the due clause:
      * - payment term triggered
      * - payment date lower than or equal today
-     *
-     * @return Expr\Base
      */
-    private function getDueClauses()
+    private function getDueClauses(): Expr\Base
     {
         $ex = new Expr();
 
@@ -552,10 +497,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->setParameter('state_fully_shipped', ShipmentStates::STATE_COMPLETED);
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'o';
     }

@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Country;
 
 use Ekyna\Component\Commerce\Common\Country\CountryProvider;
 use Ekyna\Component\Commerce\Common\Country\CountryProviderInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class SessionCountryProvider
@@ -16,34 +19,19 @@ class SessionCountryProvider extends CountryProvider
 {
     private const KEY = 'ekyna_commerce/country';
 
-    /**
-     * @var SessionInterface
-     */
-    private $session;
-
-    /**
-     * @var string
-     */
-    private $key;
+    private RequestStack $requestStack;
+    private string       $key;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CountryRepositoryInterface $countryRepository
-     * @param SessionInterface           $session
-     * @param string                     $fallbackCountry
-     * @param string                     $key
-     */
     public function __construct(
         CountryRepositoryInterface $countryRepository,
-        SessionInterface $session,
+        RequestStack $requestStack,
         string $fallbackCountry,
         string $key = self::KEY
     ) {
         parent::__construct($countryRepository, $fallbackCountry);
 
-        $this->session = $session;
+        $this->requestStack = $requestStack;
         $this->key = $key;
     }
 
@@ -59,21 +47,23 @@ class SessionCountryProvider extends CountryProvider
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrentCountry(): string
     {
         if (!empty($this->currentCountry)) {
             return $this->currentCountry;
         }
 
-        if ($this->session->has($this->key)) {
-            if (!empty($country = $this->session->get($this->key))) {
-                parent::setCountry($country);
+        try {
+            $session = $this->requestStack->getSession();
 
-                return $this->currentCountry;
+            if ($session->has($this->key)) {
+                if (!empty($country = $session->get($this->key))) {
+                    parent::setCountry($country);
+
+                    return $this->currentCountry;
+                }
             }
+        } catch (SessionNotFoundException $exception) {
         }
 
         parent::getCurrentCountry();
@@ -86,8 +76,14 @@ class SessionCountryProvider extends CountryProvider
     /**
      * Saves the current country into the session.
      */
-    private function save()
+    private function save(): void
     {
-        $this->session->set($this->key, $this->currentCountry);
+        try {
+            $this
+                ->requestStack
+                ->getSession()
+                ->set($this->key, $this->currentCountry);
+        } catch (SessionNotFoundException $exception) {
+        }
     }
 }

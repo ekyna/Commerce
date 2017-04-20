@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Event;
 
 /**
@@ -10,24 +12,29 @@ namespace Ekyna\Component\Commerce\Customer\Event;
 final class CustomerEvents
 {
     // Persistence
-    const INSERT = 'ekyna_commerce.customer.insert';
-    const UPDATE = 'ekyna_commerce.customer.update';
-    const DELETE = 'ekyna_commerce.customer.delete';
+    public const INSERT = 'ekyna_commerce.customer.insert';
+    public const UPDATE = 'ekyna_commerce.customer.update';
+    public const DELETE = 'ekyna_commerce.customer.delete';
 
     // Domain
-    const INITIALIZE = 'ekyna_commerce.customer.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.customer.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.customer.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.customer.pre_create';
-    const POST_CREATE = 'ekyna_commerce.customer.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.customer.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.customer.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.customer.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.customer.post_update';
+    public const PRE_DELETE  = 'ekyna_commerce.customer.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.customer.post_delete';
 
-    const PRE_DELETE  = 'ekyna_commerce.customer.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.customer.post_delete';
+    public const PARENT_CHANGE = 'ekyna_commerce.customer.parent_change';
 
-    const PARENT_CHANGE = 'ekyna_commerce.customer.parent_change';
+    public const BIRTHDAY               = 'ekyna_commerce.customer.birthday';
+    public const NEWSLETTER_SUBSCRIBE   = 'ekyna_commerce.customer.newsletter_subscribe';
 
-    const BIRTHDAY               = 'ekyna_commerce.customer.birthday';
-    const NEWSLETTER_SUBSCRIBE   = 'ekyna_commerce.customer.newsletter_subscribe';
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

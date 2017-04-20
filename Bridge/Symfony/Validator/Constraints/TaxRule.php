@@ -15,7 +15,7 @@ class TaxRule extends Constraint
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTargets()
     {

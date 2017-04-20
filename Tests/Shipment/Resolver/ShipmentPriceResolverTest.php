@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Tests\Shipment\Resolver;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\GatewayInterface;
-use Ekyna\Component\Commerce\Shipment\Gateway\RegistryInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\GatewayRegistryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentPriceRepositoryInterface;
@@ -38,7 +38,7 @@ class ShipmentPriceResolverTest extends TestCase
     private $ruleRepository;
 
     /**
-     * @var RegistryInterface|MockObject
+     * @var GatewayRegistryInterface|MockObject
      */
     private $gatewayRegistry;
 
@@ -46,7 +46,7 @@ class ShipmentPriceResolverTest extends TestCase
     {
         $this->priceRepository = $this->createMock(ShipmentPriceRepositoryInterface::class);
         $this->ruleRepository = $this->createMock(ShipmentRuleRepositoryInterface::class);
-        $this->gatewayRegistry = $this->createMock(RegistryInterface::class);
+        $this->gatewayRegistry = $this->createMock(GatewayRegistryInterface::class);
 
         $this->priceResolver = new ShipmentPriceResolver(
             $this->priceRepository,

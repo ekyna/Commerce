@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as SaleItem;
 use Ekyna\Component\Commerce\Shipment\Model\RemainingList;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface as Shipment;
@@ -15,87 +18,53 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface as Subject;
 interface ShipmentSubjectCalculatorInterface
 {
     /**
-     * Returns whether or not the given sale item is shipped (present in any shipment or return).
-     *
-     * @param SaleItem $saleItem
-     *
-     * @return bool
+     * Returns whether the given sale item is shipped (present in any shipment or return).
      */
     public function isShipped(SaleItem $saleItem): bool;
 
     /**
      * Calculate the shipment item available quantity.
-     *
-     * @param SaleItem      $saleItem
-     * @param Shipment|null $ignore
-     *
-     * @return float
      */
-    public function calculateAvailableQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
+    public function calculateAvailableQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal;
 
     /**
      * Calculates the shipment item shippable quantity.
-     *
-     * @param SaleItem      $saleItem
-     * @param Shipment|null $ignore
-     *
-     * @return float
      */
-    public function calculateShippableQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
+    public function calculateShippableQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal;
 
     /**
      * Calculates the shipment item returnable quantity.
-     *
-     * @param SaleItem      $saleItem
-     * @param Shipment|null $ignore
-     *
-     * @return float
      */
-    public function calculateReturnableQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
+    public function calculateReturnableQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal;
 
     /**
      * Calculates the shipped quantity for the given sale item.
-     *
-     * @param SaleItem      $saleItem
-     * @param Shipment|null $ignore
-     *
-     * @return float
      */
-    public function calculateShippedQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
+    public function calculateShippedQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal;
 
     /**
      * Calculates the returned quantity for the given sale item.
-     *
-     * @param SaleItem      $saleItem
-     * @param Shipment|null $ignore
-     *
-     * @return float
      */
-    public function calculateReturnedQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
+    public function calculateReturnedQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal;
 
     /**
      * Builds the shipment quantity map.
      *
      * [
      *     (int) sale item id => [
-     *         'sold'     => (float) quantity,
-     *         'shipped'  => (float) quantity,
-     *         'returned' => (float) quantity,
+     *         'sold'     => (Decimal) quantity,
+     *         'invoiced' => (Decimal) quantity,
+     *         'shipped'  => (Decimal) quantity,
+     *         'returned' => (Decimal) quantity,
      *     ]
      * ]
      *
-     * @param Subject $subject
-     *
-     * @return array
+     * @return array<int, array<string, Decimal>>
      */
     public function buildShipmentQuantityMap(Subject $subject): array;
 
     /**
      * Builds the remaining sale items list.
-     *
-     * @param Shipment $shipment
-     *
-     * @return RemainingList
      */
     public function buildRemainingList(Shipment $shipment): RemainingList;
 }

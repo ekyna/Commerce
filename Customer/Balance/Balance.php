@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Balance;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
 /**
@@ -15,77 +19,25 @@ class Balance
     public const FILTER_DUE_INVOICES    = 'due_invoices';
     public const FILTER_BEFALL_INVOICES = 'befall_invoices';
 
-    /**
-     * @var CustomerInterface
-     */
-    private $customer;
+    private CustomerInterface  $customer;
+    private string             $currency;
+    private ?DateTimeInterface $from;
+    private ?DateTimeInterface $to;
+    private string             $filter;
+    private bool               $public;
+    /** @var Line[] */
+    private array   $lines = [];
+    private Decimal $creditForward;
+    private Decimal $debitForward;
+    private ?Decimal $credit = null;
+    private ?Decimal $debit = null;
 
-    /**
-     * @var string
-     */
-    private $currency;
-
-    /**
-     * @var \DateTime
-     */
-    private $from;
-
-    /**
-     * @var \DateTime
-     */
-    private $to;
-
-    /**
-     * @var string
-     */
-    private $filter;
-
-    /**
-     * @var bool
-     */
-    private $public;
-
-    /**
-     * @var Line[]
-     */
-    private $lines = [];
-
-    /**
-     * @var float
-     */
-    private $creditForward = 0;
-
-    /**
-     * @var float
-     */
-    private $debitForward = 0;
-
-    /**
-     * @var float
-     */
-    private $credit;
-
-    /**
-     * @var float
-     */
-    private $debit;
-
-
-    /**
-     * Constructor.
-     *
-     * @param CustomerInterface $customer
-     * @param \DateTime         $from
-     * @param \DateTime         $to
-     * @param string            $filter
-     * @param bool              $public
-     */
     public function __construct(
         CustomerInterface $customer,
-        \DateTime $from = null,
-        \DateTime $to = null,
-        string $filter = self::FILTER_ALL,
-        bool $public = true
+        DateTimeInterface $from = null,
+        DateTimeInterface $to = null,
+        string            $filter = self::FILTER_ALL,
+        bool              $public = true
     ) {
         $this->customer = $customer;
         $this->currency = $customer->getCurrency() ? $customer->getCurrency()->getCode() : null;
@@ -93,35 +45,21 @@ class Balance
         $this->to = $to;
         $this->filter = $filter;
         $this->public = $public;
+
+        $this->creditForward = new Decimal(0);
+        $this->debitForward = new Decimal(0);
     }
 
-    /**
-     * Returns the customer.
-     *
-     * @return CustomerInterface
-     */
     public function getCustomer(): CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * Returns the currency.
-     *
-     * @return string
-     */
     public function getCurrency(): ?string
     {
         return $this->currency;
     }
 
-    /**
-     * Sets the currency.
-     *
-     * @param string $currency
-     *
-     * @return Balance
-     */
     public function setCurrency(string $currency): Balance
     {
         $this->currency = $currency;
@@ -129,27 +67,15 @@ class Balance
         return $this;
     }
 
-    /**
-     * Returns the from.
-     *
-     * @return \DateTime
-     */
-    public function getFrom(): ?\DateTime
+    public function getFrom(): ?DateTimeInterface
     {
         return $this->from;
     }
 
-    /**
-     * Sets the from.
-     *
-     * @param \DateTime $from
-     *
-     * @return Balance
-     */
-    public function setFrom(\DateTime $from = null): self
+    public function setFrom(?DateTimeInterface $from): self
     {
         if ($from) {
-            $from->setTime(0, 0, 0, 0);
+            $from->setTime(0, 0);
         }
 
         $this->from = $from;
@@ -157,24 +83,12 @@ class Balance
         return $this;
     }
 
-    /**
-     * Returns the to.
-     *
-     * @return \DateTime
-     */
-    public function getTo(): ?\DateTime
+    public function getTo(): ?DateTimeInterface
     {
         return $this->to;
     }
 
-    /**
-     * Sets the to.
-     *
-     * @param \DateTime $to
-     *
-     * @return Balance
-     */
-    public function setTo(\DateTime $to = null): self
+    public function setTo(?DateTimeInterface $to): self
     {
         if ($to) {
             $to->setTime(23, 59, 59, 999999);
@@ -185,23 +99,11 @@ class Balance
         return $this;
     }
 
-    /**
-     * Returns the filter.
-     *
-     * @return string
-     */
     public function getFilter(): string
     {
         return $this->filter;
     }
 
-    /**
-     * Sets the filter.
-     *
-     * @param string $filter
-     *
-     * @return Balance
-     */
     public function setFilter(string $filter): self
     {
         $this->filter = $filter;
@@ -209,23 +111,11 @@ class Balance
         return $this;
     }
 
-    /**
-     * Returns the public.
-     *
-     * @return bool
-     */
     public function isPublic(): bool
     {
         return $this->public;
     }
 
-    /**
-     * Sets the public.
-     *
-     * @param bool $public
-     *
-     * @return Balance
-     */
     public function setPublic(bool $public): self
     {
         $this->public = $public;
@@ -234,22 +124,13 @@ class Balance
     }
 
     /**
-     * Returns the lines.
-     *
-     * @return Line[]
+     * @return array<Line>
      */
     public function getLines(): array
     {
         return $this->lines;
     }
 
-    /**
-     * Adds the line.
-     *
-     * @param Line $line
-     *
-     * @return Balance
-     */
     public function addLine(Line $line): self
     {
         $this->lines[] = $line;
@@ -257,60 +138,31 @@ class Balance
         return $this;
     }
 
-    /**
-     * Returns the creditForward.
-     *
-     * @return float
-     */
-    public function getCreditForward(): float
+    public function getCreditForward(): Decimal
     {
         return $this->creditForward;
     }
 
-    /**
-     * Sets the amount to credit forward.
-     *
-     * @param float $amount
-     *
-     * @return Balance
-     */
-    public function addCreditForward(float $amount): self
+    public function addCreditForward(Decimal $amount): self
     {
         $this->creditForward += $amount;
 
         return $this;
     }
 
-    /**
-     * Returns the debitForward.
-     *
-     * @return float
-     */
-    public function getDebitForward(): float
+    public function getDebitForward(): Decimal
     {
         return $this->debitForward;
     }
 
-    /**
-     * Adds the amount to debit forward.
-     *
-     * @param float $amount
-     *
-     * @return Balance
-     */
-    public function addDebitForward(float $amount): self
+    public function addDebitForward(Decimal $amount): self
     {
         $this->debitForward += $amount;
 
         return $this;
     }
 
-    /**
-     * Returns the credit.
-     *
-     * @return float
-     */
-    public function getCredit(): float
+    public function getCredit(): Decimal
     {
         if (null !== $this->credit) {
             return $this->credit;
@@ -325,12 +177,7 @@ class Balance
         return $this->credit = $total;
     }
 
-    /**
-     * Returns the debit.
-     *
-     * @return float
-     */
-    public function getDebit(): float
+    public function getDebit(): Decimal
     {
         if (null !== $this->debit) {
             return $this->debit;
@@ -345,20 +192,13 @@ class Balance
         return $this->debit = $total;
     }
 
-    /**
-     * Returns the diff.
-     *
-     * @return float
-     */
-    public function getDiff(): float
+    public function getDiff(): Decimal
     {
         return $this->getCredit() - $this->getDebit();
     }
 
     /**
      * Sorts the lines by date ascending.
-     *
-     * @return Balance
      */
     public function sortLines(): self
     {
@@ -367,8 +207,7 @@ class Balance
                 return 0;
             }
 
-            return $a->getDate()->getTimestamp() > $b->getDate()->getTimestamp()
-                ? 1 : -1;
+            return $a->getDate()->getTimestamp() > $b->getDate()->getTimestamp() ? 1 : -1;
         });
 
         return $this;

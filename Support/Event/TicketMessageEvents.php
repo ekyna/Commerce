@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\Event;
 
 /**
@@ -10,22 +12,19 @@ namespace Ekyna\Component\Commerce\Support\Event;
 final class TicketMessageEvents
 {
     // Persistence
-    const INSERT         = 'ekyna_commerce.ticket_message.insert';
-    const UPDATE         = 'ekyna_commerce.ticket_message.update';
-    const DELETE         = 'ekyna_commerce.ticket_message.delete';
+    public const INSERT         = 'ekyna_commerce.ticket_message.insert';
+    public const UPDATE         = 'ekyna_commerce.ticket_message.update';
+    public const DELETE         = 'ekyna_commerce.ticket_message.delete';
 
     // Domain
-    const INITIALIZE     = 'ekyna_commerce.ticket_message.initialize';
+    public const PRE_CREATE     = 'ekyna_commerce.ticket_message.pre_create';
+    public const POST_CREATE    = 'ekyna_commerce.ticket_message.post_create';
 
-    const PRE_CREATE     = 'ekyna_commerce.ticket_message.pre_create';
-    const POST_CREATE    = 'ekyna_commerce.ticket_message.post_create';
+    public const PRE_UPDATE     = 'ekyna_commerce.ticket_message.pre_update';
+    public const POST_UPDATE    = 'ekyna_commerce.ticket_message.post_update';
 
-    const PRE_UPDATE     = 'ekyna_commerce.ticket_message.pre_update';
-    const POST_UPDATE    = 'ekyna_commerce.ticket_message.post_update';
-
-    const PRE_DELETE     = 'ekyna_commerce.ticket_message.pre_delete';
-    const POST_DELETE    = 'ekyna_commerce.ticket_message.post_delete';
-
+    public const PRE_DELETE     = 'ekyna_commerce.ticket_message.pre_delete';
+    public const POST_DELETE    = 'ekyna_commerce.ticket_message.post_delete';
 
     /**
      * Disabled constructor.

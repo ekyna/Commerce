@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Currency;
 
+use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencySubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
@@ -9,54 +14,27 @@ use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 
+/**
+ * Class CurrencyRenderer
+ * @package Ekyna\Component\Commerce\Common\Currency
+ * @author  Étienne Dauvergne <contact@ekyna.com>
+ */
 class CurrencyRenderer implements CurrencyRendererInterface
 {
-    /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
+    private CurrencyConverterInterface $currencyConverter;
+    private FormatterFactory           $formatterFactory;
 
-    /**
-     * @var FormatterFactory
-     */
-    private $formatterFactory;
-
-    /**
-     * @var string
-     */
-    private $base;
-
-    /**
-     * @var string
-     */
-    private $quote;
-
-    /**
-     * @var float
-     */
-    private $rate;
-
-    /**
-     * @var \DateTime
-     */
-    private $date;
-
-    /**
-     * @var string
-     */
-    private $locale;
+    private string             $base;
+    private ?string            $quote  = null;
+    private ?Decimal             $rate   = null;
+    private ?DateTimeInterface $date   = null;
+    private ?string            $locale = null;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CurrencyConverterInterface $currencyConverter
-     * @param FormatterFactory           $formatterFactory
-     */
     public function __construct(CurrencyConverterInterface $currencyConverter, FormatterFactory $formatterFactory)
     {
         $this->currencyConverter = $currencyConverter;
-        $this->formatterFactory  = $formatterFactory;
+        $this->formatterFactory = $formatterFactory;
 
         $this->base = $this->currencyConverter->getDefaultCurrency();
     }
@@ -64,12 +42,12 @@ class CurrencyRenderer implements CurrencyRendererInterface
     /**
      * @inheritDoc
      */
-    public function configure($quote = null, float $rate = null, string $locale = null): void
+    public function configure($quote = null, Decimal $rate = null, string $locale = null): void
     {
         if (is_null($quote)) {
-            $this->quote  = null;
-            $this->rate   = null;
-            $this->date   = null;
+            $this->quote = null;
+            $this->rate = null;
+            $this->date = null;
             $this->locale = null;
 
             return;
@@ -84,21 +62,15 @@ class CurrencyRenderer implements CurrencyRendererInterface
         $this->locale = $locale;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getBase(): string
     {
         return $this->base;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getQuote(): string
     {
         if (!$this->quote) {
-            throw new RuntimeException("Currency renderer is not configured");
+            throw new RuntimeException('Currency renderer is not configured');
         }
 
         return $this->quote;
@@ -113,10 +85,10 @@ class CurrencyRenderer implements CurrencyRendererInterface
             [$quote, $rate, $date] = $this->resolve($quote);
         } elseif ($this->isConfigured()) {
             $quote = $this->quote;
-            $rate  = $this->rate;
-            $date  = $this->date;
+            $rate = $this->rate;
+            $date = $this->date;
         } else {
-            throw new RuntimeException("You must either provide a value as quote argument or call configure().");
+            throw new RuntimeException('You must either provide a value as quote argument or call configure().');
         }
 
         if ($quote === $this->base) {
@@ -143,15 +115,15 @@ class CurrencyRenderer implements CurrencyRendererInterface
     /**
      * @inheritDoc
      */
-    public function renderQuote(float $amount, $quote = null, bool $withBase = false): string
+    public function renderQuote(Decimal $amount, $quote = null, bool $withBase = false): string
     {
         if ($quote) {
             [$quote, $rate] = $this->resolve($quote);
         } elseif ($this->isConfigured()) {
             $quote = $this->quote;
-            $rate  = $this->rate;
+            $rate = $this->rate;
         } else {
-            throw new RuntimeException("You must either provide a value as quote argument or call configure().");
+            throw new RuntimeException('You must either provide a value as quote argument or call configure().');
         }
 
         $output = $this->format($amount, $quote, $rate);
@@ -166,15 +138,15 @@ class CurrencyRenderer implements CurrencyRendererInterface
     /**
      * @inheritDoc
      */
-    public function renderBase(float $amount, $quote = null, bool $withQuote = false)
+    public function renderBase(Decimal $amount, $quote = null, bool $withQuote = false): string
     {
         if ($quote) {
             [$quote, $rate] = $this->resolve($quote);
         } elseif ($this->isConfigured()) {
             $quote = $this->quote;
-            $rate  = $this->rate;
+            $rate = $this->rate;
         } else {
-            throw new RuntimeException("You must either provide a value as quote argument or call configure().");
+            throw new RuntimeException('You must either provide a value as quote argument or call configure().');
         }
 
         $output = $this->format($amount, $this->base);
@@ -191,25 +163,25 @@ class CurrencyRenderer implements CurrencyRendererInterface
      *
      * @param mixed $quote
      *
-     * @return array [(string) currency, (float) rate, (\DateTime) $date]
+     * @return array [(string) currency, (Decimal) rate, (\DateTime) $date]
      */
     protected function resolve($quote): array
     {
         if ($quote instanceof ExchangeSubjectInterface) {
             if (is_null($currency = $quote->getCurrency())) {
-                throw new RuntimeException("Exchange subject's currency is not defined.");
+                throw new RuntimeException('Exchange subject\'s currency is not defined.');
             }
 
             $code = $currency->getCode();
 
             $rate = $this->currencyConverter->getSubjectExchangeRate($quote, $this->base, $code);
 
-            $date = $quote->getExchangeDate() ?? new \DateTime();
+            $date = $quote->getExchangeDate() ?? new DateTime();
 
             return [$code, $rate, $date];
         }
 
-        $date = new \DateTime();
+        $date = new DateTime();
 
         if ($quote instanceof CurrencySubjectInterface) {
             $quote = $quote->getCurrency();
@@ -226,7 +198,7 @@ class CurrencyRenderer implements CurrencyRendererInterface
         }
 
         throw new UnexpectedValueException(sprintf(
-            "Expected string or instance of %s, %s or %s",
+            'Expected string or instance of %s, %s or %s',
             ExchangeSubjectInterface::class,
             CurrencySubjectInterface::class,
             CurrencyInterface::class
@@ -235,14 +207,8 @@ class CurrencyRenderer implements CurrencyRendererInterface
 
     /**
      * Formats the given amount. Amount is converted if currency is not the default one.
-     *
-     * @param float  $amount
-     * @param string $currency
-     * @param float  $rate
-     *
-     * @return string
      */
-    protected function format(float $amount, string $currency, float $rate = null): string
+    protected function format(Decimal $amount, string $currency, Decimal $rate = null): string
     {
         if (!is_null($rate)) {
             $amount = $this->currencyConverter->convertWithRate($amount, $rate, $currency);
@@ -253,8 +219,6 @@ class CurrencyRenderer implements CurrencyRendererInterface
 
     /**
      * Returns whether the currency and the rate is defined.
-     *
-     * @return bool
      */
     protected function isConfigured(): bool
     {

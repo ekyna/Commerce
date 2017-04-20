@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject\Model;
 
+use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 
 /**
@@ -13,69 +17,36 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
  */
 trait SubjectRelativeTrait
 {
-    use SubjectReferenceTrait,
-        TaxableTrait;
+    use SubjectReferenceTrait;
+    use TaxableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $designation;
-
-    /**
-     * @var string
-     */
-    protected $reference;
-
-    /**
-     * @var float
-     */
-    protected $netPrice;
-
-    /**
-     * @var float
-     */
-    protected $weight;
+    protected ?int    $id          = null;
+    protected ?string $designation = null;
+    protected ?string $reference   = null;
+    protected Decimal $netPrice;
+    protected Decimal $weight;
+    protected string  $unit        = Units::PIECE;
 
 
-    /**
-     * Initializes the subject relative.
-     */
     protected function initializeSubjectRelative(): void
     {
-        $this->netPrice = 0.;
-        $this->weight = 0.;
-
         $this->initializeSubjectIdentity();
+
+        $this->netPrice = new Decimal(0);
+        $this->weight = new Decimal(0);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Returns the designation.
-     *
-     * @return string
-     */
     public function getDesignation(): ?string
     {
         return $this->designation;
     }
 
     /**
-     * Sets the designation.
-     *
-     * @param string $designation
-     *
      * @return $this|SubjectRelativeInterface
      */
     public function setDesignation(string $designation): SubjectRelativeInterface
@@ -85,21 +56,12 @@ trait SubjectRelativeTrait
         return $this;
     }
 
-    /**
-     * Returns the reference.
-     *
-     * @return string
-     */
     public function getReference(): ?string
     {
         return $this->reference;
     }
 
     /**
-     * Sets the reference.
-     *
-     * @param string $reference
-     *
      * @return $this|SubjectRelativeInterface
      */
     public function setReference(string $reference): SubjectRelativeInterface
@@ -109,24 +71,15 @@ trait SubjectRelativeTrait
         return $this;
     }
 
-    /**
-     * Returns the net price.
-     *
-     * @return float
-     */
-    public function getNetPrice(): float
+    public function getNetPrice(): Decimal
     {
         return $this->netPrice;
     }
 
     /**
-     * Sets the net price.
-     *
-     * @param float $price
-     *
      * @return $this|SubjectRelativeInterface
      */
-    public function setNetPrice(float $price): SubjectRelativeInterface
+    public function setNetPrice(Decimal $price): SubjectRelativeInterface
     {
         $this->netPrice = $price;
 
@@ -135,10 +88,8 @@ trait SubjectRelativeTrait
 
     /**
      * Returns the weight (kilograms).
-     *
-     * @return float
      */
-    public function getWeight(): float
+    public function getWeight(): Decimal
     {
         return $this->weight;
     }
@@ -146,13 +97,26 @@ trait SubjectRelativeTrait
     /**
      * Sets the weight (kilograms).
      *
-     * @param float $weight
-     *
      * @return $this|SubjectRelativeInterface
      */
-    public function setWeight(float $weight): SubjectRelativeInterface
+    public function setWeight(Decimal $weight): SubjectRelativeInterface
     {
-        $this->weight = (float)$weight;
+        $this->weight = $weight;
+
+        return $this;
+    }
+
+    public function getUnit(): string
+    {
+        return $this->unit;
+    }
+
+    /**
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setUnit(string $unit): SubjectRelativeInterface
+    {
+        $this->unit = $unit;
 
         return $this;
     }

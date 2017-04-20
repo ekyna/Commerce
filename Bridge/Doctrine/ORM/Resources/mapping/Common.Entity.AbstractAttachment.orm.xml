@@ -8,10 +8,6 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractAttachment">
 
-        <entity-listeners>
-            <entity-listener class="Ekyna\Component\Commerce\Common\Listener\UploadableListener"/>
-        </entity-listeners>
-
         <!-- TODO move from mapped-superclass to entity (?) -->
         <id name="id" column="id" type="integer">
             <generator strategy="AUTO"/>

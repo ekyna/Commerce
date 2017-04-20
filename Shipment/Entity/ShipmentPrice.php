@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
@@ -13,149 +16,97 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
  */
 class ShipmentPrice implements ShipmentPriceInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var ShipmentZoneInterface
-     */
-    protected $zone;
-
-    /**
-     * @var ShipmentMethodInterface
-     */
-    protected $method;
-
-    /**
-     * @var float
-     */
-    protected $weight;
-
-    /**
-     * @var float
-     */
-    protected $netPrice;
+    protected ?int                     $id     = null;
+    protected ?ShipmentZoneInterface   $zone   = null;
+    protected ?ShipmentMethodInterface $method = null;
+    protected Decimal                  $weight;
+    protected Decimal                  $netPrice;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->weight = 0.;
-        $this->netPrice = 0.;
+        $this->weight = new Decimal(0);
+        $this->netPrice = new Decimal(0);
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         if ($this->zone && $this->method) {
-            return sprintf('%s / %s (%s kg)', $this->zone, $this->method, round($this->weight, 2));
+            return sprintf('%s / %s (%s kg)', $this->zone, $this->method, $this->weight->toFixed(3));
         }
 
         return 'New shipment price';
     }
 
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getZone(): ?ShipmentZoneInterface
     {
         return $this->zone;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setZone(ShipmentZoneInterface $zone = null): ShipmentPriceInterface
+    public function setZone(?ShipmentZoneInterface $zone): ShipmentPriceInterface
     {
-        if ($zone !== $this->zone) {
-            if ($previous = $this->zone) {
-                $this->zone = null;
-                $previous->removePrice($this);
-            }
+        if ($zone === $this->zone) {
+            return $this;
+        }
 
-            if ($this->zone = $zone) {
-                $this->zone->addPrice($this);
-            }
+        if ($previous = $this->zone) {
+            $this->zone = null;
+            $previous->removePrice($this);
+        }
+
+        if ($this->zone = $zone) {
+            $this->zone->addPrice($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getMethod(): ?ShipmentMethodInterface
     {
         return $this->method;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setMethod(ShipmentMethodInterface $method = null): ShipmentPriceInterface
+    public function setMethod(?ShipmentMethodInterface $method): ShipmentPriceInterface
     {
-        if ($method !== $this->method) {
-            if ($previous = $this->method) {
-                $this->method = null;
-                $previous->removePrice($this);
-            }
+        if ($method === $this->method) {
+            return $this;
+        }
 
-            if ($this->method = $method) {
-                $this->method->addPrice($this);
-            }
+        if ($previous = $this->method) {
+            $this->method = null;
+            $previous->removePrice($this);
+        }
+
+        if ($this->method = $method) {
+            $this->method->addPrice($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getWeight(): float
+    public function getWeight(): Decimal
     {
         return $this->weight;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setWeight(float $weight): ShipmentPriceInterface
+    public function setWeight(Decimal $weight): ShipmentPriceInterface
     {
         $this->weight = $weight;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getNetPrice(): float
+    public function getNetPrice(): Decimal
     {
         return $this->netPrice;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setNetPrice(float $price): ShipmentPriceInterface
+    public function setNetPrice(Decimal $price): ShipmentPriceInterface
     {
         $this->netPrice = $price;
 

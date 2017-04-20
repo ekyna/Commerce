@@ -52,7 +52,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -60,7 +60,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getPlatformName()
     {
@@ -68,7 +68,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setPlatformName($name)
     {
@@ -78,7 +78,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getPlatformData()
     {
@@ -86,7 +86,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setPlatformData(array $platformData)
     {
@@ -94,7 +94,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getNumber()
     {
@@ -102,7 +102,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setNumber($number)
     {
@@ -112,7 +112,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getOpeningHours()
     {
@@ -120,7 +120,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addOpeningHour(OpeningHour $openingHour)
     {
@@ -130,7 +130,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDistance()
     {
@@ -138,7 +138,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDistance($distance)
     {

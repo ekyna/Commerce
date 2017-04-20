@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Entity;
 
 use Ekyna\Component\Commerce\Cart\Model;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAddress;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
  * Class CartAddress
@@ -12,102 +15,68 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAddress;
  */
 class CartAddress extends AbstractSaleAddress implements Model\CartAddressInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var Model\CartInterface
-     */
-    protected $invoiceCart;
-
-    /**
-     * @var Model\CartInterface
-     */
-    protected $deliveryCart;
+    protected ?int                 $id           = null;
+    protected ?Model\CartInterface $invoiceCart  = null;
+    protected ?Model\CartInterface $deliveryCart = null;
 
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getInvoiceCart()
+    public function getInvoiceCart(): ?Model\CartInterface
     {
         return $this->invoiceCart;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceCart(Model\CartInterface $cart = null)
+    public function setInvoiceCart(?Model\CartInterface $cart): Model\CartAddressInterface
     {
-        if ($cart !== $this->invoiceCart) {
-            if ($previous = $this->invoiceCart) {
-                $this->invoiceCart = null;
-                $previous->setInvoiceAddress(null);
-            }
+        if ($cart === $this->invoiceCart) {
+            return $this;
+        }
 
-            if ($this->invoiceCart = $cart) {
-                $this->invoiceCart->setInvoiceAddress($this);
-            }
+        if ($previous = $this->invoiceCart) {
+            $this->invoiceCart = null;
+            $previous->setInvoiceAddress(null);
+        }
+
+        if ($this->invoiceCart = $cart) {
+            $this->invoiceCart->setInvoiceAddress($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDeliveryCart()
+    public function getDeliveryCart(): ?Model\CartInterface
     {
         return $this->deliveryCart;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryCart(Model\CartInterface $cart = null)
+    public function setDeliveryCart(?Model\CartInterface $cart): Model\CartAddressInterface
     {
-        if ($cart !== $this->deliveryCart) {
-            if ($previous = $this->deliveryCart) {
-                $this->deliveryCart = null;
-                $previous->setDeliveryAddress(null);
-            }
+        if ($cart === $this->deliveryCart) {
+            return $this;
+        }
 
-            if ($this->deliveryCart = $cart) {
-                $this->deliveryCart->setDeliveryAddress($this);
-            }
+        if ($previous = $this->deliveryCart) {
+            $this->deliveryCart = null;
+            $previous->setDeliveryAddress(null);
+        }
+
+        if ($this->deliveryCart = $cart) {
+            $this->deliveryCart->setDeliveryAddress($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCart()
+    public function getCart(): ?Model\CartInterface
     {
-        if (null !== $this->invoiceCart) {
-            return $this->invoiceCart;
-        } elseif (null !== $this->deliveryCart) {
-            return $this->deliveryCart;
-        }
-
-        return null;
+        return $this->invoiceCart ?: $this->deliveryCart;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getCart();
     }

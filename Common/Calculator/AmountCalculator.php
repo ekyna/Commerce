@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\Money;
@@ -18,49 +21,17 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
  */
 class AmountCalculator implements AmountCalculatorInterface
 {
-    /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
-
-    /**
-     * @var InvoiceSubjectCalculatorInterface
-     */
-    private $invoiceCalculator;
-
-    /**
-     * @var AmountCalculatorFactory
-     */
-    private $amountCalculatorFactory;
-
-    /**
-     * @var string
-     */
-    private $currency;
-
-    /**
-     * @var bool
-     */
-    private $revenue;
-
-    /**
-     * @var StatFilter
-     */
-    private $filter;
-
-    /**
-     * @var Model\Amount[]
-     */
-    private $cache;
+    private CurrencyConverterInterface        $currencyConverter;
+    private InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    private AmountCalculatorFactory           $amountCalculatorFactory;
+    private string                            $currency;
+    private bool                              $revenue;
+    private ?StatFilter                       $filter;
+    /** @var Model\Amount[] */
+    private array $cache;
 
 
     /**
-     * Constructor.
-     *
-     * @param string          $currency
-     * @param bool            $revenue
-     * @param StatFilter|null $filter
-     *
      * @internal Use Calculator factory
      */
     public function __construct(string $currency, bool $revenue, StatFilter $filter = null)
@@ -72,47 +43,26 @@ class AmountCalculator implements AmountCalculatorInterface
         $this->clear();
     }
 
-    /**
-     * Clears the cache.
-     */
     public function clear(): void
     {
         $this->cache = [];
     }
 
-    /**
-     * Sets the currency converter.
-     *
-     * @param CurrencyConverterInterface $converter
-     */
     public function setCurrencyConverter(CurrencyConverterInterface $converter): void
     {
         $this->currencyConverter = $converter;
     }
 
-    /**
-     * Sets the invoice calculator.
-     *
-     * @param InvoiceSubjectCalculatorInterface $calculator
-     */
     public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $calculator): void
     {
         $this->invoiceCalculator = $calculator;
     }
 
-    /**
-     * Sets the amount calculator factory.
-     *
-     * @param AmountCalculatorFactory $factory
-     */
     public function setAmountCalculatorFactory(AmountCalculatorFactory $factory): void
     {
         $this->amountCalculatorFactory = $factory;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function calculateSale(Model\SaleInterface $sale, bool $asGross = false): Model\Amount
     {
         $key = spl_object_hash($sale);
@@ -147,9 +97,6 @@ class AmountCalculator implements AmountCalculatorInterface
         return $asGross ? $gross : $final;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function calculateSaleItems(Model\SaleInterface $sale): Model\Amount
     {
         $key = spl_object_hash($sale) . '_items';
@@ -167,7 +114,7 @@ class AmountCalculator implements AmountCalculatorInterface
             }
 
             if ($item->isPrivate()) {
-                throw new Exception\LogicException("Root sale items can't be private.");
+                throw new Exception\LogicException('Root sale items can\'t be private.');
             }
 
             // Skip compound with only public children
@@ -185,21 +132,20 @@ class AmountCalculator implements AmountCalculatorInterface
     }
 
     /**
-     * @inheritDoc
-     *
      * @TODO use packaging format on quantities
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item, float $quantity = null, bool $asPublic = false): Model\Amount
-    {
-        if (null !== $quantity) {
+    public function calculateSaleItem(
+        Model\SaleItemInterface $item,
+        Decimal $quantity = null,
+        bool $asPublic = false
+    ): Model\Amount {
+        if ($quantity) {
             if ($this->revenue) {
-                throw new Exception\LogicException("You can't override quantity if revenue mode is enabled.");
+                throw new Exception\LogicException('You can\'t override quantity if revenue mode is enabled.');
             }
 
-            if (0 >= $quantity) {
-                throw new Exception\InvalidArgumentException(
-                    "Specific quantity must be greater than or equal to zero."
-                );
+            if ($quantity->isNegative()) {
+                throw new Exception\InvalidArgumentException('Specific quantity must be greater than or equal to zero.');
             }
         }
 
@@ -224,7 +170,7 @@ class AmountCalculator implements AmountCalculatorInterface
                 continue;
             }
 
-            $q = $quantity ? $quantity * $child->getQuantity() : null;
+            $q = $quantity ? $child->getQuantity()->mul($quantity) : null;
             $childResult = $this->calculateSaleItem($child, $q);
 
             if (!$child->isPrivate()) {
@@ -232,16 +178,16 @@ class AmountCalculator implements AmountCalculatorInterface
             }
 
             if ($taxGroup !== $child->getTaxGroup()) {
-                throw new Exception\LogicException("Private item must have the same tax group as its parent.");
+                throw new Exception\LogicException('Private item must have the same tax group as its parent.');
             }
 
             if ($child->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
-                throw new Exception\LogicException("Private items can't have discount adjustment.");
+                throw new Exception\LogicException('Private items can\'t have discount adjustment.');
             }
 
             $unit += $ati
-                ? $childResult->getUnit() * $child->getQuantity()
-                : Money::round($childResult->getUnit(), $this->currency) * $child->getQuantity();
+                ? $childResult->getUnit()->mul($child->getQuantity())
+                : Money::round($childResult->getUnit(), $this->currency)->mul($child->getQuantity());
         }
 
         $quantity = $quantity ?? $this->calculateSaleItemQuantity($item);
@@ -251,15 +197,16 @@ class AmountCalculator implements AmountCalculatorInterface
             $result = new Model\Amount($this->currency);
         } elseif ($item->isPrivate() && !$asPublic) {
             // Private case : we just need unit amount
-            $gross = $unit * $quantity;
-            $result = new Model\Amount($this->currency, $unit, $gross, 0, $gross);
+            $gross = $unit->mul($quantity);
+            $result = new Model\Amount($this->currency, $unit, $gross, null, $gross);
         } else {
             // Regular case
             $discounts = $taxes = [];
-            $discount = $tax = 0;
+            $discount = new Decimal(0);
+            $tax = new Decimal(0);
 
             // Gross price
-            $gross = $unit * $quantity;
+            $gross = $unit->mul($quantity);
 
             $parent = $item->getParent();
             $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
@@ -285,9 +232,8 @@ class AmountCalculator implements AmountCalculatorInterface
             }
 
             // Base
-            $base = $ati
-                ? round($gross - $discount, 5)
-                : Money::round($gross - $discount, $this->currency);
+            $base = $gross->sub($discount);
+            $base = $ati ? $base->round(5) : Money::round($base, $this->currency);
 
             // Tax amount and result adjustments
             if ($item->isPrivate() && $asPublic) {
@@ -325,9 +271,6 @@ class AmountCalculator implements AmountCalculatorInterface
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function calculateSaleDiscount(
         Model\SaleAdjustmentInterface $adjustment,
         Model\Amount $gross = null,
@@ -344,7 +287,7 @@ class AmountCalculator implements AmountCalculatorInterface
         $sale = $adjustment->getAdjustable();
 
         if (!$gross && !$gross = $this->get(spl_object_hash($adjustment->getSale()) . '_items')) {
-            throw new Exception\LogicException("Failed to retrieve sale gross result.");
+            throw new Exception\LogicException('Failed to retrieve sale gross result.');
         }
 
         $this->set($key, $result = new Model\Amount($this->currency));
@@ -356,7 +299,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
         // Revenue mode
         if ($this->revenue && $sale instanceof InvoiceSubjectInterface) {
-            if (0 >= $this->invoiceCalculator->calculateSoldQuantity($adjustment)) {
+            if ($this->invoiceCalculator->calculateSoldQuantity($adjustment)->isZero()) {
                 return $result;
             }
         }
@@ -365,7 +308,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
         $mode = $adjustment->getMode();
         if (Model\AdjustmentModes::MODE_PERCENT === $mode) {
-            $rate = (float)$adjustment->getAmount();
+            $rate = $adjustment->getAmount();
 
             $result->addUnit(Money::round($base * $rate / 100, $this->currency));
 
@@ -379,9 +322,9 @@ class AmountCalculator implements AmountCalculatorInterface
 
             $amount = $this
                 ->currencyConverter
-                ->convertWithSubject((float)$adjustment->getAmount(), $sale, $this->currency, false);
+                ->convertWithSubject($adjustment->getAmount(), $sale, $this->currency, false);
 
-            if (1 === Money::compare($realBase, $base, $this->currency)) {
+            if ($realBase > $base) {
                 $unit = Money::round($amount * $base / $realBase, $this->currency);
             } else {
                 $unit = $amount;
@@ -397,8 +340,8 @@ class AmountCalculator implements AmountCalculatorInterface
             throw new Exception\InvalidArgumentException("Unexpected adjustment mode '$mode'.");
         }
 
-        $result->addGross($result->getUnit());
-        $result->addBase($result->getUnit());
+        $result->addGross(clone $result->getUnit());
+        $result->addBase(clone $result->getUnit());
         $result->addTotal($result->getUnit() + $result->getTax());
 
         if (!$final) {
@@ -406,19 +349,19 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Add to final result
-        $final->addDiscount($result->getBase());
-        $final->addBase(-$result->getBase());
-        $final->addTotal(-$result->getBase());
+        $final->addDiscount(clone $result->getBase());
+        $final->addBase($result->getBase()->negate());
+        $final->addTotal($result->getBase()->negate());
         $final->addDiscountAdjustment(new Model\Adjustment(
-            (string)$adjustment->getDesignation(),
-            $result->getBase(),
-            $adjustment->getMode() === Model\AdjustmentModes::MODE_PERCENT ? (float)$adjustment->getAmount() : 0
+            $adjustment->getDesignation() ?: '',
+            clone $result->getBase(),
+            $adjustment->getMode() === Model\AdjustmentModes::MODE_PERCENT ? $adjustment->getAmount() : null
         ));
 
         foreach ($result->getTaxAdjustments() as $a) {
-            $final->addTaxAdjustment(new Model\Adjustment($a->getName(), -$a->getAmount(), $a->getRate()));
-            $final->addTax(-$a->getAmount());
-            $final->addTotal(-$a->getAmount());
+            $final->addTaxAdjustment(new Model\Adjustment($a->getName(), $a->getAmount()->negate(), $a->getRate()));
+            $final->addTax($a->getAmount()->negate());
+            $final->addTotal($a->getAmount()->negate());
         }
 
         if ($sale->isAtiDisplayMode()) {
@@ -428,9 +371,6 @@ class AmountCalculator implements AmountCalculatorInterface
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function calculateSaleShipment(
         Model\SaleInterface $sale,
         Model\Amount $final = null
@@ -449,7 +389,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
         // Revenue mode
         if ($this->revenue && $sale instanceof InvoiceSubjectInterface) {
-            if (0 >= $this->invoiceCalculator->calculateSoldQuantity($sale)) {
+            if ($this->invoiceCalculator->calculateSoldQuantity($sale)->isZero()) {
                 return $result;
             }
         }
@@ -464,7 +404,7 @@ class AmountCalculator implements AmountCalculatorInterface
         $result->addBase($base);
         $result->addTotal($base);
 
-        if (1 === Money::compare($base, 0, $this->currency)) {
+        if (0 < $base) {
             // Shipment taxation
             foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION) as $data) {
                 $adjustment = $this->createPercentAdjustment($data, $base);
@@ -496,20 +436,15 @@ class AmountCalculator implements AmountCalculatorInterface
 
     /**
      * Calculates the sale item quantity.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return float
      */
-    protected function calculateSaleItemQuantity(Model\SaleItemInterface $item): float
+    protected function calculateSaleItemQuantity(Model\SaleItemInterface $item): Decimal
     {
         if (!$this->revenue) {
             return $item->getTotalQuantity();
         }
 
-        $quantity = 0.;
-
         if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
+            $quantity = new Decimal('0');
             foreach ($item->getStockAssignments() as $assignment) {
                 $quantity += $assignment->getSoldQuantity();
             }
@@ -517,8 +452,7 @@ class AmountCalculator implements AmountCalculatorInterface
             return $quantity;
         }
 
-        $sale = $item->getSale();
-        if ($sale instanceof InvoiceSubjectInterface) {
+        if ($item->getSale() instanceof InvoiceSubjectInterface) {
             return $this->invoiceCalculator->calculateSoldQuantity($item);
         }
 
@@ -527,17 +461,12 @@ class AmountCalculator implements AmountCalculatorInterface
 
     /**
      * Creates a new result adjustment.
-     *
-     * @param Model\AdjustmentInterface $data
-     * @param float                     $base
-     *
-     * @return Model\Adjustment
      */
-    protected function createPercentAdjustment(Model\AdjustmentInterface $data, float $base): Model\Adjustment
+    protected function createPercentAdjustment(Model\AdjustmentInterface $data, Decimal $base): Model\Adjustment
     {
         $this->assertAdjustmentMode($data, Model\AdjustmentModes::MODE_PERCENT);
 
-        $rate = (float)$data->getAmount();
+        $rate = $data->getAmount();
 
         if ($data->getType() === Model\AdjustmentTypes::TYPE_TAXATION) {
             // Calculate taxation as ATI - NET
@@ -546,28 +475,23 @@ class AmountCalculator implements AmountCalculatorInterface
             $amount = Money::round($base * $rate / 100, $this->currency);
         }
 
-        return new Model\Adjustment((string)$data->getDesignation(), $amount, $rate);
+        return new Model\Adjustment($data->getDesignation() ?: '', $amount, $rate);
     }
 
     /**
      * Asserts that the adjustment mode is as expected.
-     *
-     * @param Model\AdjustmentInterface $adjustment
-     * @param string                    $expected
      */
     protected function assertAdjustmentMode(Model\AdjustmentInterface $adjustment, string $expected): void
     {
-        if ($expected !== $mode = $adjustment->getMode()) {
-            throw new Exception\InvalidArgumentException("Unexpected adjustment mode '$mode'.");
+        if ($expected === $mode = $adjustment->getMode()) {
+            return;
         }
+
+        throw new Exception\InvalidArgumentException("Unexpected adjustment mode '$mode'.");
     }
 
     /**
      * Returns whether the given item should be skipped regarding to the configured filter.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return bool
      */
     protected function isItemSkipped(Model\SaleItemInterface $item): bool
     {
@@ -584,9 +508,6 @@ class AmountCalculator implements AmountCalculatorInterface
 
     /**
      * Merges the public children results recursively into the given result.
-     *
-     * @param Model\SaleItemInterface $item
-     * @param Model\Amount            $result
      */
     protected function mergeItemsResults(Model\SaleItemInterface $item, Model\Amount $result): void
     {
@@ -609,27 +530,22 @@ class AmountCalculator implements AmountCalculatorInterface
 
     /**
      * Asserts that the adjustment type is as expected.
-     *
-     * @param Model\AdjustmentInterface $adjustment
-     * @param string                    $expected
      */
     protected function assertAdjustmentType(Model\AdjustmentInterface $adjustment, string $expected): void
     {
-        if ($expected !== $type = $adjustment->getType()) {
-            throw new Exception\InvalidArgumentException("Unexpected adjustment type '$type'.");
+        if ($expected === $type = $adjustment->getType()) {
+            return;
         }
+
+        throw new Exception\InvalidArgumentException("Unexpected adjustment type '$type'.");
     }
 
     /**
      * Calculates the real sale gross base amount.
      *
-     * @param Model\SaleInterface $sale
-     *
-     * @return float
-     *
      * @throws Exception\LogicException
      */
-    protected function getRealGrossBase(Model\SaleInterface $sale): float
+    protected function getRealGrossBase(Model\SaleInterface $sale): Decimal
     {
         // Calculate real gross base
         return $this
@@ -641,10 +557,6 @@ class AmountCalculator implements AmountCalculatorInterface
 
     /**
      * Returns the cached amount if any.
-     *
-     * @param string $key
-     *
-     * @return Model\Amount|null
      */
     protected function get(string $key): ?Model\Amount
     {
@@ -657,9 +569,6 @@ class AmountCalculator implements AmountCalculatorInterface
 
     /**
      * Sets the cached amount.
-     *
-     * @param string       $key
-     * @param Model\Amount $amount
      */
     protected function set(string $key, Model\Amount $amount): void
     {

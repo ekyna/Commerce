@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use DateTimeInterface;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Resource\Model as Resource;
@@ -21,312 +24,125 @@ interface ShipmentInterface extends
     ShipmentDataInterface
 {
     /**
-     * Returns the sale.
-     *
-     * @return Common\SaleInterface|ShipmentSubjectInterface
+     * @return Common\SaleInterface|ShipmentSubjectInterface|null
      */
-    public function getSale();
+    public function getSale(): ?Common\SaleInterface;
 
-    /**
-     * Returns the invoice.
-     *
-     * @return InvoiceInterface
-     */
-    public function getInvoice();
+    public function getInvoice(): ?InvoiceInterface;
 
-    /**
-     * Sets the invoice.
-     *
-     * @param InvoiceInterface|null $invoice
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setInvoice(InvoiceInterface $invoice = null);
+    public function setInvoice(?InvoiceInterface $invoice): ShipmentInterface;
 
-    /**
-     * Returns the method.
-     *
-     * @return ShipmentMethodInterface
-     */
-    public function getMethod();
+    public function getMethod(): ?ShipmentMethodInterface;
 
-    /**
-     * Sets the method.
-     *
-     * @param ShipmentMethodInterface $method
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setMethod(ShipmentMethodInterface $method);
+    public function setMethod(?ShipmentMethodInterface $method): ShipmentInterface;
 
     /**
      * Returns whether the shipment has at least one item or not.
-     *
-     * @return bool
      */
-    public function hasItems();
+    public function hasItems(): bool;
 
     /**
-     * Returns the items.
-     *
-     * @return ArrayCollection|ShipmentItemInterface[]
+     * @return Collection<ShipmentItemInterface>
      */
-    public function getItems();
+    public function getItems(): Collection;
 
-    /**
-     * Returns whether the shipment has the item or not.
-     *
-     * @param ShipmentItemInterface $item
-     *
-     * @return bool
-     */
-    public function hasItem(ShipmentItemInterface $item);
+    public function hasItem(ShipmentItemInterface $item): bool;
 
-    /**
-     * Adds the item.
-     *
-     * @param ShipmentItemInterface $item
-     *
-     * @return $this
-     */
-    public function addItem(ShipmentItemInterface $item);
+    public function addItem(ShipmentItemInterface $item): ShipmentInterface;
 
-    /**
-     * Removes the item.
-     *
-     * @param ShipmentItemInterface $item
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function removeItem(ShipmentItemInterface $item);
-
-    /**
-     * Sets the shipment items.
-     *
-     * @param ArrayCollection|ShipmentItemInterface[] $items
-     *
-     * @return $this|ShipmentInterface
-     */
-    //public function setItems(ArrayCollection $items);
+    public function removeItem(ShipmentItemInterface $item): ShipmentInterface;
 
     /**
      * Returns whether the shipment has at least one parcel or not.
-     *
-     * @return bool
      */
-    public function hasParcels();
+    public function hasParcels(): bool;
 
     /**
-     * Returns the parcels.
-     *
-     * @return ArrayCollection|ShipmentParcelInterface[]
+     * @return Collection<ShipmentParcelInterface>
      */
-    public function getParcels();
+    public function getParcels(): Collection;
 
     /**
      * Returns whether the shipment has the parcel or not.
-     *
-     * @param ShipmentParcelInterface $parcel
-     *
-     * @return bool
      */
-    public function hasParcel(ShipmentParcelInterface $parcel);
+    public function hasParcel(ShipmentParcelInterface $parcel): bool;
+
+    public function addParcel(ShipmentParcelInterface $parcel): ShipmentInterface;
+
+    public function removeParcel(ShipmentParcelInterface $parcel): ShipmentInterface;
 
     /**
-     * Adds the parcel.
-     *
-     * @param ShipmentParcelInterface $parcel
-     *
-     * @return $this
+     * Returns whether an equivalent invoice should be generated automatically.
      */
-    public function addParcel(ShipmentParcelInterface $parcel);
+    public function isAutoInvoice(): bool;
 
     /**
-     * Removes the parcel.
-     *
-     * @param ShipmentParcelInterface $parcel
-     *
-     * @return $this|ShipmentInterface
+     * Sets whether an equivalent invoice should be generated automatically.
      */
-    public function removeParcel(ShipmentParcelInterface $parcel);
+    public function setAutoInvoice(bool $auto): ShipmentInterface;
 
     /**
-     * Sets the shipment parcels.
-     *
-     * @param ArrayCollection|ShipmentParcelInterface[] $parcels
-     *
-     * @return $this|ShipmentInterface
-     */
-    //public function setParcels(ArrayCollection $parcels);
-
-    /**
-     * Returns whether or not an equivalent invoice should be generated automatically.
-     *
-     * @return bool
-     */
-    public function isAutoInvoice();
-
-    /**
-     * Sets whether or not an equivalent invoice should be generated automatically.
-     *
-     * @param bool $auto
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setAutoInvoice($auto);
-
-    /**
-     * Returns whether or not the shipment is a return.
-     *
-     * @return bool
+     * Returns whether the shipment is a return.
      */
     public function isReturn();
 
     /**
-     * Sets whether or not the shipment is a return.
-     *
-     * @param bool $return
-     *
-     * @return $this|ShipmentInterface
+     * Sets whether the shipment is a return.
      */
-    public function setReturn($return);
+    public function setReturn(bool $return): ShipmentInterface;
+
+    public function getDescription(): ?string;
+
+    public function setDescription(?string $description): ShipmentInterface;
+
+    public function getPlatformName(): string;
+
+    public function getGatewayName(): string;
+
+    public function getGatewayData(): ?array;
+
+    public function setGatewayData(?array $data): ShipmentInterface;
 
     /**
-     * Returns the description.
-     *
-     * @return string
+     * Returns the 'shipped at' date.
      */
-    public function getDescription();
+    public function getShippedAt(): ?DateTimeInterface;
 
     /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|ShipmentInterface
+     * Sets the 'shipped at' date.
      */
-    public function setDescription($description);
+    public function setShippedAt(?DateTimeInterface $date): ShipmentInterface;
 
     /**
-     * Returns the platform name.
-     *
-     * @return string
+     * Returns the 'completed at' date.
      */
-    public function getPlatformName();
+    public function getCompletedAt(): ?DateTimeInterface;
 
     /**
-     * Returns the gateway name.
-     *
-     * @return string
+     * Sets the 'completed at' date.
      */
-    public function getGatewayName();
+    public function setCompletedAt(?DateTimeInterface $date): ShipmentInterface;
 
-    /**
-     * Returns the gateway data.
-     *
-     * @return array
-     */
-    public function getGatewayData();
+    public function getSenderAddress(): ?array;
 
-    /**
-     * Sets the gateway data.
-     *
-     * @param array $data
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setGatewayData(array $data = null);
+    public function setSenderAddress(?array $data): ShipmentInterface;
 
-    /**
-     * Returns the "shipped at" date time.
-     *
-     * @return \DateTime
-     */
-    public function getShippedAt();
+    public function getReceiverAddress(): ?array;
 
-    /**
-     * Sets the "shipped at" date time.
-     *
-     * @param \DateTime $shippedAt
-     */
-    public function setShippedAt(\DateTime $shippedAt = null);
+    public function setReceiverAddress(?array $data): ShipmentInterface;
 
-    /**
-     * Returns the completedAt.
-     *
-     * @return \DateTime
-     */
-    public function getCompletedAt();
+    public function getRelayPoint(): ?RelayPointInterface;
 
-    /**
-     * Sets the completedAt.
-     *
-     * @param \DateTime $completedAt
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setCompletedAt(\DateTime $completedAt = null);
-
-    /**
-     * Returns the sender address data.
-     *
-     * @return array
-     */
-    public function getSenderAddress();
-
-    /**
-     * Sets the sender address data.
-     *
-     * @param array $data
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setSenderAddress($data);
-
-    /**
-     * Returns the receiver address data.
-     *
-     * @return array
-     */
-    public function getReceiverAddress();
-
-    /**
-     * Sets the receiver address data.
-     *
-     * @param array $data
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setReceiverAddress($data);
-
-    /**
-     * Returns the relay point.
-     *
-     * @return RelayPointInterface
-     */
-    public function getRelayPoint();
-
-    /**
-     * Sets the relay point.
-     *
-     * @param RelayPointInterface $relayPoint
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setRelayPoint(RelayPointInterface $relayPoint = null);
+    public function setRelayPoint(?RelayPointInterface $relayPoint): ShipmentInterface;
 
     /**
      * Returns whether the shipment is empty
      * (do not have at least one item with quantity greater than zero).
-     *
-     * @return bool
      */
-    public function isEmpty();
+    public function isEmpty(): bool;
 
     /**
      * Returns whether this shipment is a partial one.
-     *
-     * @return bool
      */
-    public function isPartial();
+    public function isPartial(): bool;
 }

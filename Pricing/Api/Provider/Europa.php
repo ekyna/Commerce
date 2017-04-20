@@ -12,7 +12,7 @@ use Ekyna\Component\Commerce\Pricing\Api\VatNumberResult;
  */
 class Europa implements VatNumberValidatorInterface
 {
-    const SERVICE_ID = 'ekyna_commerce.pricing.api.provider.europa';
+    const SERVICE_ID = 'ekyna_commerce.provider.pricing_api.europa';
 
     const ENDPOINT = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\Event;
 
 /**
@@ -10,22 +12,19 @@ namespace Ekyna\Component\Commerce\Newsletter\Event;
 final class SubscriptionEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.subscription.insert';
-    const UPDATE      = 'ekyna_commerce.subscription.update';
-    const DELETE      = 'ekyna_commerce.subscription.delete';
+    public const INSERT      = 'ekyna_commerce.subscription.insert';
+    public const UPDATE      = 'ekyna_commerce.subscription.update';
+    public const DELETE      = 'ekyna_commerce.subscription.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.subscription.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.subscription.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.subscription.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.subscription.pre_create';
-    const POST_CREATE = 'ekyna_commerce.subscription.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.subscription.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.subscription.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.subscription.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.subscription.post_update';
-
-    const PRE_DELETE  = 'ekyna_commerce.subscription.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.subscription.post_delete';
-
+    public const PRE_DELETE  = 'ekyna_commerce.subscription.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.subscription.post_delete';
 
     /**
      * Disabled constructor.

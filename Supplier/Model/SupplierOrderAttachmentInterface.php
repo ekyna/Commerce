@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Ekyna\Component\Commerce\Common\Model\AttachmentInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\AttachmentInterface;
  */
 interface SupplierOrderAttachmentInterface extends AttachmentInterface
 {
-    /**
-     * Returns the supplier order.
-     *
-     * @return SupplierOrderInterface
-     */
-    public function getSupplierOrder();
+    public function getSupplierOrder(): ?SupplierOrderInterface;
 
-    /**
-     * Sets the supplier order.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return SupplierOrderAttachmentInterface
-     */
-    public function setSupplierOrder(SupplierOrderInterface $order = null);
+    public function setSupplierOrder(SupplierOrderInterface $order = null): SupplierOrderAttachmentInterface;
 }

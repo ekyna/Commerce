@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -11,53 +13,47 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class PlatformActions
 {
-    const EXPORT       = 'export';
-    const IMPORT       = 'import';
-    const SHIP         = 'ship';
-    const CANCEL       = 'cancel';
-    const PRINT_LABELS = 'print_labels';
+    public const EXPORT       = 'export';
+    public const IMPORT       = 'import';
+    public const SHIP         = 'ship';
+    public const CANCEL       = 'cancel';
+    public const PRINT_LABELS = 'print_labels';
 
 
     /**
      * Returns the global actions.
-     *
-     * @return array
      */
-    public static function getGlobalActions()
+    public static function getGlobalActions(): array
     {
         return [
-            static::EXPORT,
-            static::IMPORT,
+            self::EXPORT,
+            self::IMPORT,
         ];
     }
 
     /**
      * Returns the mass/batch actions.
-     *
-     * @return array
      */
-    public static function getMassActions()
+    public static function getMassActions(): array
     {
         return [
-            static::SHIP,
-            static::CANCEL,
-            static::PRINT_LABELS,
+            self::SHIP,
+            self::CANCEL,
+            self::PRINT_LABELS,
         ];
     }
 
     /**
      * Returns all the capabilities.
-     *
-     * @return array
      */
-    public static function getActions()
+    public static function getActions(): array
     {
         return [
-            static::EXPORT,
-            static::IMPORT,
-            static::SHIP,
-            static::CANCEL,
-            static::PRINT_LABELS,
+            self::EXPORT,
+            self::IMPORT,
+            self::SHIP,
+            self::CANCEL,
+            self::PRINT_LABELS,
         ];
     }
 
@@ -69,9 +65,9 @@ final class PlatformActions
      *
      * @return bool
      */
-    public static function isValid($action, $throw = false)
+    public static function isValid(string $action, bool $throw = false): bool
     {
-        if (in_array($action, static::getActions(), true)) {
+        if (in_array($action, self::getActions(), true)) {
             return true;
         }
 

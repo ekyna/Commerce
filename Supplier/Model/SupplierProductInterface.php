@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model\TimestampableInterface;
-use DateTime;
 
 /**
  * Interface SupplierProductInterface
@@ -13,67 +16,19 @@ use DateTime;
  */
 interface SupplierProductInterface extends SubjectRelativeInterface, TimestampableInterface
 {
-    /**
-     * Returns the supplier.
-     *
-     * @return SupplierInterface|null
-     */
     public function getSupplier(): ?SupplierInterface;
 
-    /**
-     * Sets the supplier.
-     *
-     * @param SupplierInterface $supplier
-     *
-     * @return $this|SupplierProductInterface
-     */
-    public function setSupplier(SupplierInterface $supplier);
+    public function setSupplier(?SupplierInterface $supplier): SupplierProductInterface;
 
-    /**
-     * Returns the available stock.
-     *
-     * @return float
-     */
-    public function getAvailableStock(): float;
+    public function getAvailableStock(): Decimal;
 
-    /**
-     * Sets the available stock.
-     *
-     * @param float $stock
-     *
-     * @return $this|SupplierProductInterface
-     */
-    public function setAvailableStock(float $stock): SupplierProductInterface;
+    public function setAvailableStock(Decimal $stock): SupplierProductInterface;
 
-    /**
-     * Returns the ordered stock.
-     *
-     * @return float
-     */
-    public function getOrderedStock(): float;
+    public function getOrderedStock(): Decimal;
 
-    /**
-     * Sets the ordered stock.
-     *
-     * @param float $stock
-     *
-     * @return $this|SupplierProductInterface
-     */
-    public function setOrderedStock(float $stock): SupplierProductInterface;
+    public function setOrderedStock(Decimal $stock): SupplierProductInterface;
 
-    /**
-     * Returns the estimated date of arrival.
-     *
-     * @return DateTime
-     */
-    public function getEstimatedDateOfArrival(): ?DateTime;
+    public function getEstimatedDateOfArrival(): ?DateTimeInterface;
 
-    /**
-     * Sets the estimated date of arrival.
-     *
-     * @param \DateTime $date
-     *
-     * @return $this|SupplierProductInterface
-     */
-    public function setEstimatedDateOfArrival(DateTime $date = null): SupplierProductInterface;
+    public function setEstimatedDateOfArrival(?DateTimeInterface $date): SupplierProductInterface;
 }

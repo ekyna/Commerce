@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Resolver;
 
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
@@ -58,9 +60,6 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
         return QuoteStates::STATE_NEW;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function supports(object $subject): void
     {
         if (!$subject instanceof QuoteInterface) {

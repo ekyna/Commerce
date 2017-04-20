@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -12,119 +15,60 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface StockAssignmentInterface extends ResourceInterface
 {
-    /**
-     * Returns the stock unit.
-     *
-     * @return StockUnitInterface
-     */
-    public function getStockUnit();
+    public function getStockUnit(): ?StockUnitInterface;
 
     /**
-     * Sets the stock unit.
-     *
-     * @param StockUnitInterface $stockUnit
-     *
      * @return $this|StockAssignmentInterface
      */
-    public function setStockUnit(StockUnitInterface $stockUnit = null);
+    public function setStockUnit(?StockUnitInterface $stockUnit): StockAssignmentInterface;
 
     /**
      * Returns the sale item.
-     *
-     * @return SaleItemInterface|StockAssignmentsInterface
      */
-    public function getSaleItem();
+    public function getSaleItem(): ?SaleItemInterface;
 
     /**
-     * Sets the sale item.
-     *
-     * @param SaleItemInterface $saleItem
-     *
      * @return $this|StockAssignmentInterface
      */
-    public function setSaleItem(SaleItemInterface $saleItem = null);
+    public function setSaleItem(?SaleItemInterface $saleItem): StockAssignmentInterface;
+
+    public function getSoldQuantity(): Decimal;
 
     /**
-     * Returns the sold quantity.
-     *
-     * @return float
-     */
-    public function getSoldQuantity(): float;
-
-    /**
-     * Sets the sold quantity.
-     *
-     * @param float $quantity
-     *
      * @return $this|StockAssignmentInterface
      */
-    public function setSoldQuantity(float $quantity): StockAssignmentInterface;
+    public function setSoldQuantity(Decimal $quantity): StockAssignmentInterface;
+
+    public function getShippedQuantity(): Decimal;
 
     /**
-     * Returns the shipped quantity.
-     *
-     * @return float
-     */
-    public function getShippedQuantity(): float;
-
-    /**
-     * Sets the shipped quantity.
-     *
-     * @param float $quantity
-     *
      * @return $this|StockAssignmentInterface
      */
-    public function setShippedQuantity(float $quantity): StockAssignmentInterface;
+    public function setShippedQuantity(Decimal $quantity): StockAssignmentInterface;
+
+    public function getLockedQuantity(): Decimal;
 
     /**
-     * Returns the locked quantity.
-     *
-     * @return float
-     */
-    public function getLockedQuantity(): float;
-
-    /**
-     * Sets the locked quantity.
-     *
-     * @param float $quantity
-     *
      * @return $this|StockAssignmentInterface
      */
-    public function setLockedQuantity(float $quantity): StockAssignmentInterface;
+    public function setLockedQuantity(Decimal $quantity): StockAssignmentInterface;
+
+    public function getShippableQuantity(): Decimal;
+
+    public function getReleasableQuantity(): Decimal;
 
     /**
-     * Returns the shippable quantity.
-     *
-     * @return float
-     */
-    public function getShippableQuantity(): float;
-
-    /**
-     * Returns the releasable quantity.
-     *
-     * @return float
-     */
-    public function getReleasableQuantity(): float;
-
-    /**
-     * Returns whether or not the assignment is fully shipped.
-     *
-     * @return bool
+     * Returns whether the assignment is fully shipped.
      */
     public function isFullyShipped(): bool;
 
-
     /**
-     * Returns whether or not the assignment is fully shippable.
-     *
-     * @return bool
+     * Returns whether the assignment is fully shippable.
      */
     public function isFullyShippable(): bool;
 
     /**
-     * REturns whether the assignment is empty.
-     *
-     * @return bool
+     * Returns whether the assignment is empty.
      */
     public function isEmpty(): bool;
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractMessageTranslation;

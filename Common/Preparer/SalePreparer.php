@@ -15,6 +15,8 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizerInterface;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 
+use function is_null;
+
 /**
  * Class SalePreparer
  * @package Ekyna\Component\Commerce\Common\Preparer
@@ -63,7 +65,7 @@ class SalePreparer implements SalePreparerInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function prepare(SaleInterface $sale)
     {
@@ -112,14 +114,14 @@ class SalePreparer implements SalePreparerInterface
     protected function purge(ShipmentInterface $shipment)
     {
         foreach ($shipment->getItems() as $item) {
-            if (0 == $item->getAvailable()) {
+            if (is_null($available = $item->getAvailable()) || $available->isZero()) {
                 $shipment->removeItem($item);
             }
         }
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function abort(SaleInterface $sale)
     {
@@ -153,7 +155,7 @@ class SalePreparer implements SalePreparerInterface
 
         try {
             /** @noinspection PhpParamsInspection */
-            $this->eventDispatcher->dispatch(OrderEvents::PREPARE, $event);
+            $this->eventDispatcher->dispatch($event, OrderEvents::PREPARE);
         } catch (IllegalOperationException $e) {
             return false;
         }

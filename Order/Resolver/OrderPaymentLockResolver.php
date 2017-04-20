@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Resolver;
 
 use DateTime;
@@ -16,24 +18,13 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class OrderPaymentLockResolver implements LockResolverInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
+    private PersistenceHelperInterface $persistenceHelper;
 
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     */
     public function __construct(PersistenceHelperInterface $persistenceHelper)
     {
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function support(ResourceInterface $resource): bool
     {
         if (!$resource instanceof OrderPaymentInterface) {
@@ -66,8 +57,6 @@ class OrderPaymentLockResolver implements LockResolverInterface
     }
 
     /**
-     * @inheritDoc
-     *
      * @param OrderPaymentInterface $resource
      */
     public function resolve(ResourceInterface $resource): ?DateTime

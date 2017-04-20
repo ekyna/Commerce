@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -18,8 +21,8 @@ use Ekyna\Component\Resource\Model as Resource;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method Collection|SaleAdjustmentInterface[] getAdjustments($type = null)
- * @method Collection|SaleNotificationInterface[] getNotifications($type = null)
+ * @method Collection|SaleAdjustmentInterface[] getAdjustments(string $type = null)
+ * @method Collection|SaleNotificationInterface[] getNotifications(string $type = null)
  */
 interface SaleInterface extends
     Resource\ResourceInterface,
@@ -36,527 +39,159 @@ interface SaleInterface extends
     ShippableInterface,
     VatNumberSubjectInterface
 {
-    /**
-     * Returns the customer.
-     *
-     * @return CustomerInterface
-     */
-    public function getCustomer();
+    public function getCustomer(): ?CustomerInterface;
 
-    /**
-     * Sets the customer.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return $this|SaleInterface
-     */
-    public function setCustomer(CustomerInterface $customer = null);
+    public function setCustomer(?CustomerInterface $customer): SaleInterface;
 
-    /**
-     * Returns the customer group.
-     *
-     * @return CustomerGroupInterface
-     */
-    public function getCustomerGroup();
+    public function getCustomerGroup(): ?CustomerGroupInterface;
 
-    /**
-     * Sets the customer group.
-     *
-     * @param CustomerGroupInterface $customerGroup
-     *
-     * @return $this|SaleInterface
-     */
-    public function setCustomerGroup(CustomerGroupInterface $customerGroup = null);
+    public function setCustomerGroup(?CustomerGroupInterface $customerGroup): SaleInterface;
 
-    /**
-     * Returns the company.
-     *
-     * @return string
-     */
-    public function getCompany();
+    public function getCompany(): ?string;
 
-    /**
-     * Sets the company.
-     *
-     * @param string $company
-     *
-     * @return $this|SaleInterface
-     */
-    public function setCompany($company);
+    public function setCompany(?string $company): SaleInterface;
 
-    /**
-     * Returns the company number.
-     *
-     * @return string
-     */
     public function getCompanyNumber(): ?string;
 
-    /**
-     * Sets the company number.
-     *
-     * @param string $number
-     *
-     * @return $this|SaleInterface
-     */
-    public function setCompanyNumber(string $number = null): SaleInterface;
+    public function setCompanyNumber(?string $number): SaleInterface;
 
-    /**
-     * Returns the email.
-     *
-     * @return string
-     */
-    public function getEmail();
+    public function getEmail(): ?string;
 
-    /**
-     * Sets the email.
-     *
-     * @param string $email
-     *
-     * @return $this|SaleInterface
-     */
-    public function setEmail($email);
+    public function setEmail(?string $email): SaleInterface;
 
-    /**
-     * Returns the invoice address.
-     *
-     * @return SaleAddressInterface
-     */
-    public function getInvoiceAddress();
+    public function getInvoiceAddress(): ?SaleAddressInterface;
 
-    /**
-     * Sets the invoice address.
-     *
-     * @param SaleAddressInterface $address
-     *
-     * @return $this|SaleInterface
-     */
-    public function setInvoiceAddress(SaleAddressInterface $address = null);
+    public function setInvoiceAddress(?SaleAddressInterface $address): SaleInterface;
 
-    /**
-     * Returns the delivery address.
-     *
-     * @return SaleAddressInterface
-     */
-    public function getDeliveryAddress();
+    public function getDeliveryAddress(): ?SaleAddressInterface;
 
-    /**
-     * Sets the delivery address.
-     *
-     * @param SaleAddressInterface $address
-     *
-     * @return $this|SaleInterface
-     */
-    public function setDeliveryAddress(SaleAddressInterface $address = null);
+    public function setDeliveryAddress(?SaleAddressInterface $address): SaleInterface;
 
     /**
      * Returns whether the invoice address is used as delivery address or not.
-     *
-     * @return boolean
      */
-    public function isSameAddress();
+    public function isSameAddress(): bool;
 
     /**
      * Sets whether to use the invoice address as delivery address or not.
-     *
-     * @param boolean $same
-     *
-     * @return $this|SaleInterface
      */
-    public function setSameAddress($same);
+    public function setSameAddress(bool $same): SaleInterface;
 
-    /**
-     * Returns the coupon.
-     *
-     * @return CouponInterface|null
-     */
     public function getCoupon(): ?CouponInterface;
 
-    /**
-     * Sets the coupon.
-     *
-     * @param CouponInterface|null $coupon
-     *
-     * @return SaleInterface
-     */
-    public function setCoupon(CouponInterface $coupon = null): SaleInterface;
+    public function setCoupon(?CouponInterface $coupon): SaleInterface;
 
-    /**
-     * Returns the coupon data.
-     *
-     * @return array|null
-     */
     public function getCouponData(): ?array;
 
-    /**
-     * Sets the coupon data.
-     *
-     * @param array|null $data
-     *
-     * @return SaleInterface
-     */
-    public function setCouponData(array $data = null): SaleInterface;
+    public function setCouponData(?array $data): SaleInterface;
 
     /**
      * Returns whether to generate discounts automatically.
-     *
-     * @return bool
      */
-    public function isAutoDiscount();
+    public function isAutoDiscount(): bool;
 
     /**
      * Sets whether to generate discounts automatically.
-     *
-     * @param bool $auto
-     *
-     * @return $this|SaleInterface
      */
-    public function setAutoDiscount($auto);
+    public function setAutoDiscount(bool $auto): SaleInterface;
 
-    /**
-     * Returns whether the sale is tax exempt.
-     *
-     * @return boolean
-     */
-    public function isTaxExempt();
+    public function isTaxExempt(): bool;
 
-    /**
-     * Sets whether the sale is tax exempt.
-     *
-     * @param boolean $exempt
-     *
-     * @return $this|SaleInterface
-     */
-    public function setTaxExempt($exempt);
+    public function setTaxExempt(bool $exempt): SaleInterface;
 
-    /**
-     * Returns the vat display mode.
-     *
-     * @return string
-     */
-    public function getVatDisplayMode();
+    public function getVatDisplayMode(): ?string;
 
-    /**
-     * Sets the vat display mode.
-     *
-     * @param string $mode
-     *
-     * @return $this|SaleInterface
-     */
-    public function setVatDisplayMode($mode);
+    public function setVatDisplayMode(?string $mode): SaleInterface;
 
     /**
      * Returns whether prices should be displayed "all taxes included".
-     *
-     * @return bool
      */
-    public function isAtiDisplayMode();
+    public function isAtiDisplayMode(): bool;
 
     /**
      * Returns whether the sale contains sample items.
-     *
-     * @return bool
      */
-    public function isSample();
+    public function isSample(): bool;
 
     /**
      * Returns whether the sale is released.
-     *
-     * @return bool
      */
-    public function isReleased();
+    public function isReleased(): bool;
+
+    public function getNetTotal(): Decimal;
+
+    public function setNetTotal(Decimal $total): SaleInterface;
+
+    public function getTitle(): ?string;
+
+    public function setTitle(?string $title): SaleInterface;
+
+    public function getVoucherNumber(): ?string;
+
+    public function setVoucherNumber(?string $number): SaleInterface;
+
+    public function getOriginNumber(): ?string;
+
+    public function setOriginNumber(?string $number): SaleInterface;
+
+    public function getDescription(): ?string;
+
+    public function setDescription(?string $description): SaleInterface;
+
+    public function getPreparationNote(): ?string;
+
+    public function setPreparationNote(?string $note): SaleInterface;
+
+    public function getComment(): ?string;
+
+    public function setComment(?string $comment): SaleInterface;
+
+    public function getDocumentComment(): ?string;
+
+    public function setDocumentComment(?string $comment): SaleInterface;
+
+    public function getAcceptedAt(): ?DateTimeInterface;
+
+    public function setAcceptedAt(?DateTimeInterface $date): SaleInterface;
+
+    public function getSource(): string;
+
+    public function setSource(string $source): SaleInterface;
+
+    public function setLocale(?string $locale): Resource\LocalizedInterface;
+
+    public function hasAttachments(): bool;
+
+    public function hasAttachment(SaleAttachmentInterface $attachment): bool;
+
+    public function addAttachment(SaleAttachmentInterface $attachment): SaleInterface;
+
+    public function removeAttachment(SaleAttachmentInterface $attachment): SaleInterface;
+
+    public function getAttachments(): Collection;
+
+    public function hasItems(): bool;
+
+    public function hasItem(SaleItemInterface $item): bool;
+
+    public function addItem(SaleItemInterface $item): SaleInterface;
+
+    public function removeItem(SaleItemInterface $item): SaleInterface;
 
     /**
-     * Returns the net total.
-     *
-     * @return float
-     */
-    public function getNetTotal();
-
-    /**
-     * Sets the net total.
-     *
-     * @param float $total
-     *
-     * @return $this|SaleInterface
-     */
-    public function setNetTotal($total);
-
-    /**
-     * Returns the title.
-     *
-     * @return string
-     */
-    public function getTitle();
-
-    /**
-     * Sets the title.
-     *
-     * @param string $title
-     *
-     * @return $this|SaleInterface
-     */
-    public function setTitle($title);
-
-    /**
-     * Returns the voucher number.
-     *
-     * @return string
-     */
-    public function getVoucherNumber();
-
-    /**
-     * Sets the voucher number.
-     *
-     * @param string $number
-     *
-     * @return $this|SaleInterface
-     */
-    public function setVoucherNumber($number);
-
-    /**
-     * Returns the origin number.
-     *
-     * @return string
-     */
-    public function getOriginNumber();
-
-    /**
-     * Sets the origin number.
-     *
-     * @param string $number
-     *
-     * @return $this|SaleInterface
-     */
-    public function setOriginNumber($number);
-
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
-    public function getDescription();
-
-    /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|SaleInterface
-     */
-    public function setDescription($description);
-
-    /**
-     * Returns the preparation note.
-     *
-     * @return string
-     */
-    public function getPreparationNote();
-
-    /**
-     * Sets the preparation note.
-     *
-     * @param string $note
-     *
-     * @return $this|SaleInterface
-     */
-    public function setPreparationNote($note);
-
-    /**
-     * Returns the comment.
-     *
-     * @return string
-     */
-    public function getComment();
-
-    /**
-     * Sets the comment.
-     *
-     * @param string $comment
-     *
-     * @return $this|SaleInterface
-     */
-    public function setComment($comment);
-
-    /**
-     * Returns the document comment.
-     *
-     * @return string
-     */
-    public function getDocumentComment();
-
-    /**
-     * Sets the document comment.
-     *
-     * @param string $comment
-     *
-     * @return $this|SaleInterface
-     */
-    public function setDocumentComment($comment);
-
-    /**
-     * Returns the "accepted at" datetime.
-     *
-     * @return DateTime
-     */
-    public function getAcceptedAt();
-
-    /**
-     * Sets the "accepted at" datetime.
-     *
-     * @param DateTime $acceptedAt
-     *
-     * @return $this|SaleInterface
-     */
-    public function setAcceptedAt(DateTime $acceptedAt = null);
-
-    /**
-     * Returns the source.
-     *
-     * @return string
-     */
-    public function getSource();
-
-    /**
-     * Sets the source.
-     *
-     * @param string $source
-     *
-     * @return $this|SaleInterface
-     */
-    public function setSource($source);
-
-    /**
-     * Sets the locale.
-     *
-     * @param string $locale
-     *
-     * @return $this|SaleInterface
-     */
-    public function setLocale(string $locale = null): Resource\LocalizedInterface;
-
-    /**
-     * Returns whether the order has attachments or not.
-     *
-     * @return bool
-     */
-    public function hasAttachments();
-
-    /**
-     * Returns whether the order has the attachment or not.
-     *
-     * @param SaleAttachmentInterface $attachment
-     *
-     * @return bool
-     */
-    public function hasAttachment(SaleAttachmentInterface $attachment);
-
-    /**
-     * Adds the attachment.
-     *
-     * @param SaleAttachmentInterface $attachment
-     *
-     * @return $this|SaleInterface
-     */
-    public function addAttachment(SaleAttachmentInterface $attachment);
-
-    /**
-     * Removes the attachment.
-     *
-     * @param SaleAttachmentInterface $attachment
-     *
-     * @return $this|SaleInterface
-     */
-    public function removeAttachment(SaleAttachmentInterface $attachment);
-
-    /**
-     * Returns the attachments.
-     *
-     * @return Collection|SaleAttachmentInterface[]
-     */
-    public function getAttachments();
-
-    /**
-     * Returns whether or not the sale has at least one item.
-     *
-     * @return bool
-     */
-    public function hasItems();
-
-    /**
-     * Returns whether the sale has the item or not.
-     *
-     * @param SaleItemInterface $item
-     *
-     * @return bool
-     */
-    public function hasItem(SaleItemInterface $item);
-
-    /**
-     * Adds the item.
-     *
-     * @param SaleItemInterface $item
-     *
-     * @return $this|SaleInterface
-     */
-    public function addItem(SaleItemInterface $item);
-
-    /**
-     * Removes the item.
-     *
-     * @param SaleItemInterface $item
-     *
-     * @return $this|SaleInterface
-     */
-    public function removeItem(SaleItemInterface $item);
-
-    /**
-     * Returns the items.
-     *
      * @return Collection|SaleItemInterface[]
      */
-    public function getItems();
+    public function getItems(): Collection;
 
-    /**
-     * Returns the delivery country.
-     *
-     * @return CountryInterface|null
-     */
-    public function getDeliveryCountry();
+    public function getDeliveryCountry(): ?CountryInterface;
 
-    /**
-     * Sets the context.
-     *
-     * @param ContextInterface $context
-     *
-     * @return $this|SaleInterface
-     */
     public function setContext(ContextInterface $context): SaleInterface;
 
-    /**
-     * Returns the context.
-     *
-     * @return ContextInterface|null
-     */
     public function getContext(): ?ContextInterface;
 
-    /**
-     * Returns whether the sale is locked.
-     *
-     * @return bool
-     */
     public function isLocked(): bool;
 
-    /**
-     * Returns whether the sale can be released.
-     *
-     * @return bool
-     */
     public function canBeReleased(): bool;
 
-    /**
-     * Returns whether at least one item has a discount adjustment.
-     *
-     * @return bool
-     */
     public function hasDiscountItemAdjustment(): bool;
 }

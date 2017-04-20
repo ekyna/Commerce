@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
+
+use Decimal\Decimal;
 
 /**
  * Class AdjustmentData
@@ -9,47 +13,19 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 class AdjustmentData implements AdjustmentDataInterface
 {
-    /**
-     * @var string
-     */
-    private $mode;
-
-    /**
-     * @var string
-     */
-    private $designation;
-
-    /**
-     * @var float
-     */
-    private $amount;
-
-    /**
-     * @var string
-     */
-    private $source;
-
-    /**
-     * @var bool
-     */
-    private $immutable;
+    private string  $mode;
+    private string  $designation;
+    private Decimal $amount;
+    private ?string $source;
+    private bool    $immutable;
 
 
-    /**
-     * Constructor.
-     *
-     * @param string $mode
-     * @param string $designation
-     * @param float  $amount
-     * @param bool   $immutable
-     * @param string $source
-     */
     public function __construct(
-        string $mode,
-        string $designation,
-        float $amount,
-        string $source,
-        bool $immutable = true
+        string  $mode,
+        string  $designation,
+        Decimal $amount,
+        ?string $source,
+        bool    $immutable = true
     ) {
         $this->mode = $mode;
         $this->designation = $designation;
@@ -58,42 +34,27 @@ class AdjustmentData implements AdjustmentDataInterface
         $this->immutable = $immutable;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMode()
+    public function getMode(): string
     {
         return $this->mode;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDesignation()
+    public function getDesignation(): string
     {
         return $this->designation;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAmount()
+    public function getAmount(): Decimal
     {
         return $this->amount;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSource()
+    public function getSource(): ?string
     {
         return $this->source;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isImmutable()
+    public function isImmutable(): bool
     {
         return $this->immutable;
     }

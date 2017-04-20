@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
+use Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model;
@@ -17,59 +21,27 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractInvoiceItemListener
 {
-    use \Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
+    use LockingHelperAwareTrait;
 
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected ContextProviderInterface $contextProvider;
+    protected TaxResolverInterface $taxResolver;
 
-    /**
-     * @var ContextProviderInterface
-     */
-    protected $contextProvider;
-
-    /**
-     * @var TaxResolverInterface
-     */
-    protected $taxResolver;
-
-
-    /**
-     * Sets the persistence helper.
-     *
-     * @param PersistenceHelperInterface $helper
-     */
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
         $this->persistenceHelper = $helper;
     }
 
-    /**
-     * Sets the context provider.
-     *
-     * @param ContextProviderInterface $contextProvider
-     */
     public function setContextProvider(ContextProviderInterface $contextProvider): void
     {
         $this->contextProvider = $contextProvider;
     }
 
-    /**
-     * Sets the tax resolver.
-     *
-     * @param TaxResolverInterface $taxResolver
-     */
     public function setTaxResolver(TaxResolverInterface $taxResolver): void
     {
         $this->taxResolver = $taxResolver;
     }
 
-    /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onInsert(ResourceEventInterface $event): void
     {
         $item = $this->getInvoiceItemFromEvent($event);
@@ -81,11 +53,6 @@ abstract class AbstractInvoiceItemListener
         $this->scheduleInvoiceContentChangeEvent($item->getInvoice());
     }
 
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onUpdate(ResourceEventInterface $event): void
     {
         $item = $this->getInvoiceItemFromEvent($event);
@@ -103,11 +70,6 @@ abstract class AbstractInvoiceItemListener
         $this->scheduleInvoiceContentChangeEvent($item->getInvoice());
     }
 
-    /**
-     * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onDelete(ResourceEventInterface $event): void
     {
         $item = $this->getInvoiceItemFromEvent($event);
@@ -119,7 +81,7 @@ abstract class AbstractInvoiceItemListener
 
         if ($this->lockingHelper->isLocked($invoice)) {
             throw new Exception\IllegalOperationException(
-                "This invoice is locked."
+                'This invoice is locked.'
             );
         }
 
@@ -127,8 +89,6 @@ abstract class AbstractInvoiceItemListener
     }
 
     /**
-     * @param Model\InvoiceItemInterface $item
-     *
      * @see \Ekyna\Component\Commerce\Common\Calculator\AmountCalculator::calculateSaleItem()
      */
     protected function calculate(Model\InvoiceItemInterface $item): void
@@ -144,7 +104,7 @@ abstract class AbstractInvoiceItemListener
         $gross = $unit * $item->getQuantity();
 
         // TODO (or not) Discounts
-        $discount = 0;
+        $discount = new Decimal(0);
         $discountRates = [];
 
         // Base
@@ -156,7 +116,7 @@ abstract class AbstractInvoiceItemListener
         $context = $this->contextProvider->getContext($sale);
         $taxes = $this->taxResolver->resolveTaxes($item, $context);
 
-        $tax = 0;
+        $tax = new Decimal(0);
         $taxRates = [];
         foreach ($taxes as $model) {
             $rate = $model->getRate();
@@ -189,35 +149,24 @@ abstract class AbstractInvoiceItemListener
 
     /**
      * Prevents some of the invoice item's fields to change.
-     *
-     * @param Model\InvoiceItemInterface $item
-     *
-     * @throws Exception\IllegalOperationException
      */
-    protected function preventForbiddenChange(Model\InvoiceItemInterface $item)
+    protected function preventForbiddenChange(Model\InvoiceItemInterface $item): void
     {
         $cs = $this->persistenceHelper->getChangeSet($item);
         if (!empty($cs) && $this->lockingHelper->isLocked($item->getInvoice())) {
             throw new Exception\IllegalOperationException(
-                "This invoice is locked."
+                'This invoice is locked.'
             );
         }
     }
 
     /**
      * Schedules the invoice content change event.
-     *
-     * @param Model\InvoiceInterface $invoice
      */
     abstract protected function scheduleInvoiceContentChangeEvent(Model\InvoiceInterface $invoice): void;
 
     /**
      * Returns the invoice item from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return Model\InvoiceItemInterface
-     * @throws Exception\InvalidArgumentException
      */
     abstract protected function getInvoiceItemFromEvent(ResourceEventInterface $event): Model\InvoiceItemInterface;
 }

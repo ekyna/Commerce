@@ -14,11 +14,12 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
-use Symfony\Component\Intl\Intl;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Intl\Currencies;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class SaleXlsExporter
@@ -40,7 +41,7 @@ class SaleXlsExporter implements SaleExporterInterface
         ],
         'borders' => [
             'bottom' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'borderStyle' => Border::BORDER_THIN,
             ],
         ],
     ];
@@ -48,7 +49,7 @@ class SaleXlsExporter implements SaleExporterInterface
     private const STYLE_QUANTITY = [
         'borders' => [
             'allBorders' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'borderStyle' => Border::BORDER_THIN,
             ],
         ],
     ];
@@ -167,11 +168,11 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->row();
 
         if ($sale instanceof CartInterface) {
-            $type = $this->translator->trans('ekyna_commerce.cart.label.singular');
+            $type = $this->translator->trans('cart.label.singular', [], 'EkynaCommerce');
         } elseif ($sale instanceof QuoteInterface) {
-            $type = $this->translator->trans('ekyna_commerce.quote.label.singular');
+            $type = $this->translator->trans('quote.label.singular', [], 'EkynaCommerce');
         } else {
-            $type = $this->translator->trans('ekyna_commerce.order.label.singular');
+            $type = $this->translator->trans('order.label.singular', [], 'EkynaCommerce');
         }
 
         $this->sheet->mergeCells("B{$this->row}:K{$this->row}");
@@ -184,14 +185,14 @@ class SaleXlsExporter implements SaleExporterInterface
 
         $this->sheet->mergeCells("B{$this->row}:C{$this->row}");
         $this->col = 1;
-        $this->cell($this->translator->trans('ekyna_commerce.sale.field.invoice_address'));
+        $this->cell($this->translator->trans('sale.field.invoice_address', [], 'EkynaCommerce'));
         $this->sheet->getStyle("B{$this->row}")->applyFromArray(self::STYLE_ROW_HEADERS);
 
         $this->sheet->mergeCells("D{$this->row}:E{$this->row}");
 
         $this->sheet->mergeCells("F{$this->row}:K{$this->row}");
         $this->col = 5;
-        $this->cell($this->translator->trans('ekyna_commerce.sale.field.delivery_address'));
+        $this->cell($this->translator->trans('sale.field.delivery_address', [], 'EkynaCommerce'));
         $this->sheet->getStyle("F{$this->row}")->applyFromArray(self::STYLE_ROW_HEADERS);
 
         $this->row();
@@ -246,14 +247,14 @@ class SaleXlsExporter implements SaleExporterInterface
         // G - Discount rate
         // H - Discount amount
         $this->sheet->mergeCells("G{$this->row}:H{$this->row}");
-        $this->cell($this->translator->trans('ekyna_commerce.sale.field.discount'));
+        $this->cell($this->translator->trans('sale.field.discount', [], 'EkynaCommerce'));
         // I - Total
         $this->col = 8;
         $this->cell($trans['net_total']);
         // J - Tax rate
         // K - Tax amount
         $this->sheet->mergeCells("J{$this->row}:K{$this->row}");
-        $this->cell($this->translator->trans('ekyna_commerce.field.vat'));
+        $this->cell($this->translator->trans('field.vat', [], 'EkynaCommerce'));
         $this->col = 11;
         // L - Ati Total
         //$this->cell($trans['ati_total']);
@@ -405,7 +406,7 @@ class SaleXlsExporter implements SaleExporterInterface
         // E - Quantity
         $this->sheet->mergeCells("B{$this->row}:E{$this->row}");
         $this->col = 1;
-        $this->cell($this->translator->trans('ekyna_commerce.sale.field.gross_totals'));
+        $this->cell($this->translator->trans('sale.field.gross_totals', [], 'EkynaCommerce'));
         $this->col = 5;
 
         // F - Gross
@@ -527,7 +528,7 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->sheet->mergeCells("C{$this->row}:H{$this->row}");
         $this->col = 8;
         // I - Net total
-        $this->cell($line ? floatval($line->getBase()) : 0); // TODO floatval because it may be 'Offert'
+        $this->cell($line ? (string)(float)$line->getBase() : 0); // TODO (string)(float) because it may be 'Offert'
         // J - Tax rate
         $this->cell($line ? $line->getTaxRates() : 0);
         // K - Tax amount
@@ -643,7 +644,7 @@ class SaleXlsExporter implements SaleExporterInterface
             return self::FORMAT_CURRENCY[$currency];
         }
 
-        $symbol = Intl::getCurrencyBundle()->getCurrencySymbol($currency);
+        $symbol = Currencies::getSymbol($currency);
 
         return str_replace('$', $symbol, NumberFormat::FORMAT_CURRENCY_USD);
     }

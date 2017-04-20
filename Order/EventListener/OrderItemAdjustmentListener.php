@@ -16,7 +16,7 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class OrderItemAdjustmentListener extends AbstractAdjustmentListener
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getAdjustmentFromEvent(ResourceEventInterface $event)
     {

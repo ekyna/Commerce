@@ -28,7 +28,7 @@ class Identity extends Constraint
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTargets()
     {

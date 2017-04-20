@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Entity;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model;
@@ -14,35 +18,14 @@ use Ekyna\Component\Commerce\Invoice\Model;
  */
 abstract class AbstractInvoiceLine extends Document\DocumentLine implements Model\InvoiceLineInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int                    $id      = null;
+    protected ?Model\InvoiceInterface $invoice = null;
+    protected Collection              $children;
 
-    /**
-     * @var Model\InvoiceInterface
-     */
-    protected $invoice;
+    /* Non-mapped fields */
+    protected ?Decimal $expected  = null;
+    protected ?Decimal $available = null;
 
-    /**
-     * @var ArrayCollection
-     */
-    protected $children;
-
-    /**
-     * @var float
-     */
-    protected $expected;
-
-    /**
-     * @var float
-     */
-    protected $available;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
@@ -50,28 +33,20 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
         $this->clearChildren();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @inheritdoc
-     *
      * @return Model\InvoiceInterface
      */
-    public function getDocument()
+    public function getDocument(): ?Document\DocumentInterface
     {
         return $this->getInvoice();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDocument(Document\DocumentInterface $document = null)
+    public function setDocument(?Document\DocumentInterface $document): Document\DocumentLineInterface
     {
         if ($document && !$document instanceof Model\InvoiceInterface) {
             throw new UnexpectedTypeException($document, Model\InvoiceInterface::class);
@@ -80,37 +55,30 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
         return $this->setInvoice($document);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getInvoice()
+    public function getInvoice(): ?Model\InvoiceInterface
     {
         return $this->invoice;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoice(Model\InvoiceInterface $invoice = null)
+    public function setInvoice(?Model\InvoiceInterface $invoice): Model\InvoiceLineInterface
     {
-        if ($this->invoice !== $invoice) {
-            if ($previous = $this->invoice) {
-                $this->invoice = null;
-                $previous->removeLine($this);
-            }
+        if ($this->invoice === $invoice) {
+            return $this;
+        }
 
-            if ($this->invoice = $invoice) {
-                $this->invoice->addLine($this);
-            }
+        if ($previous = $this->invoice) {
+            $this->invoice = null;
+            $previous->removeLine($this);
+        }
+
+        if ($this->invoice = $invoice) {
+            $this->invoice->addLine($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setChildren(array $children)
+    public function setChildren(array $children): Model\InvoiceLineInterface
     {
         $this->clearChildren();
 
@@ -121,56 +89,38 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getChildren()
+    public function getChildren(): Collection
     {
         return $this->children;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function clearChildren()
+    public function clearChildren(): Model\InvoiceLineInterface
     {
         $this->children = new ArrayCollection();
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getExpected()
+    public function getExpected(): ?Decimal
     {
         return $this->expected;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setExpected($expected)
+    public function setExpected(?Decimal $expected): Model\InvoiceLineInterface
     {
-        $this->expected = (float)$expected;
+        $this->expected = $expected;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAvailable()
+    public function getAvailable(): ?Decimal
     {
         return $this->available;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAvailable($available)
+    public function setAvailable(?Decimal $available): Model\InvoiceLineInterface
     {
-        $this->available = (float)$available;
+        $this->available = $available;
 
         return $this;
     }

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Tests;
 
+use Decimal\Decimal;
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface as CommonWeightCalculator;
@@ -177,12 +178,12 @@ abstract class TestCase extends BaseTestCase
         }
 
         return $this->currencyConverter = new CurrencyConverter(new ArrayExchangeRateProvider([
-            'EUR/USD' => 1.25,
-            'USD/EUR' => 0.8,
-            'EUR/GBP' => 0.9,
-            'GBP/EUR' => 1.111111,
-            'USD/GBP' => 0.72,
-            'GBP/USD' => 1.388889,
+            'EUR/USD' => new Decimal('1.25'),
+            'USD/EUR' => new Decimal('0.8'),
+            'EUR/GBP' => new Decimal('0.9'),
+            'GBP/EUR' => new Decimal('1.111111'),
+            'USD/GBP' => new Decimal('0.72'),
+            'GBP/USD' => new Decimal('1.388889'),
         ]), self::DEFAULT_CURRENCY);
     }
 

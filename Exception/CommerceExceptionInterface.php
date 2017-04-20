@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Exception;
 
 use Ekyna\Component\Resource\Exception\ResourceExceptionInterface;

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Logger;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
@@ -13,62 +16,44 @@ use Psr\Log\LoggerInterface;
  */
 class StockLogger extends AbstractLogger implements StockLoggerInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-
-    /**
-     * Constructor.
-     *
-     * @param LoggerInterface $logger
-     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function log($level, $message, array $context = [])
     {
         $this->logger->log($level, '[Stock] ' . $message, $context);
     }
 
-    /**
-     * @inheritdoc                   $relative
-     */
-    public function unitSold(Model\StockUnitInterface $unit, $quantity, $relative = true)
+    public function unitSold(Model\StockUnitInterface $unit, Decimal $quantity, bool $relative = true): void
     {
         // unit.sold: {old} => {new} {unit: {id}, order: {id}, subject: {provider: {name}, id: {identifier}}
 
-        $this->debug(sprintf('unit#%d sold: %f => %f',
+        $this->debug(sprintf('unit#%d sold: %s => %s',
             $unit->getId(),
-            $unit->getSoldQuantity(),
-            $relative ? $unit->getSoldQuantity() + $quantity : $quantity
+            $unit->getSoldQuantity()->toFixed(5),
+            ($relative ? $unit->getSoldQuantity() + $quantity : $quantity)->toFixed(5)
         ));
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function assignmentSold(Model\StockAssignmentInterface $assignment, $quantity, $relative = true)
+    public function assignmentSold(Model\StockAssignmentInterface $assignment, Decimal $quantity, bool $relative = true): void
     {
         // assignment.sold: {old} => {new} {assignment: {id}, unit: {id}}
 
-        $this->debug(sprintf('assignment#%d sold: %f => %f',
+        $this->debug(sprintf('assignment#%d sold: %s => %s',
             $assignment->getId(),
-            $assignment->getSoldQuantity(),
-            $relative ? $assignment->getSoldQuantity() + $quantity : $quantity
+            $assignment->getSoldQuantity()->toFixed(5),
+            ($relative ? $assignment->getSoldQuantity() + $quantity : $quantity)->toFixed(5)
         ));
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function assignmentUnit(Model\StockAssignmentInterface $assignment, Model\StockUnitInterface $unit)
+    public function assignmentUnit(Model\StockAssignmentInterface $assignment, Model\StockUnitInterface $unit): void
     {
         // assignment.unit: {old} => {new} {assignment: {id}}
 

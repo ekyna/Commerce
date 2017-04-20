@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
+
+use Decimal\Decimal;
 
 /**
  * Interface AdjustmentDataInterface
@@ -9,38 +13,13 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 interface AdjustmentDataInterface
 {
-    /**
-     * Returns the designation.
-     *
-     * @return string
-     */
-    public function getDesignation();
+    public function getDesignation(): string;
 
-    /**
-     * Returns the mode.
-     *
-     * @return string
-     */
-    public function getMode();
+    public function getMode(): string;
 
-    /**
-     * Returns the amount.
-     *
-     * @return float
-     */
-    public function getAmount();
+    public function getAmount(): Decimal;
 
-    /**
-     * Returns the source.
-     *
-     * @return string
-     */
-    public function getSource();
+    public function getSource(): ?string;
 
-    /**
-     * Returns the immutable.
-     *
-     * @return bool
-     */
-    public function isImmutable();
+    public function isImmutable(): bool;
 }

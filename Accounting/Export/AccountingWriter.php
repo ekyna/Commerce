@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Accounting\Export;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use DateTimeInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 
@@ -14,57 +17,27 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
  */
 class AccountingWriter
 {
-    /**
-     * @var resource
-     */
-    private $handle;
+    /** @var bool|resource */
+    private        $handle;
+    private string $separator;
+    private string $enclosure;
 
-    /**
-     * @var string
-     */
-    private $delimiter;
+    private string $date;
+    private string $identity;
+    private string $number;
 
-    /**
-     * @var string
-     */
-    private $enclosure;
-
-    /***
-     * @var string
-     */
-    private $date;
-
-    /***
-     * @var string
-     */
-    private $identity;
-
-    /**
-     * @var string
-     */
-    private $number;
-
-
-    /**
-     * Constructor.
-     *
-     * @param string $delimiter
-     * @param string $enclosure
-     */
-    public function __construct(string $delimiter = ';', string $enclosure = '"')
+    public function __construct(string $delimiter = ',', string $enclosure = '"')
     {
-        $this->delimiter = $delimiter;
+        $this->separator = $delimiter;
         $this->enclosure = $enclosure;
     }
 
     /**
      * Opens the file for writing.
-     *
-     * @param string $path
      */
-    public function open(string $path)
+    public function open(string $path): void
     {
-        if (false === $this->handle = fopen($path, "w")) {
+        if (false === $this->handle = fopen($path, 'w')) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
     }
@@ -72,7 +45,7 @@ class AccountingWriter
     /**
      * Closes the file.
      */
-    public function close()
+    public function close(): void
     {
         if (false === $this->handle) {
             return;
@@ -86,16 +59,14 @@ class AccountingWriter
      *
      * @param InvoiceInterface|PaymentInterface $subject
      */
-    public function configure($subject)
+    public function configure($subject): void
     {
         if ($subject instanceof InvoiceInterface) {
             $this->date = $subject->getCreatedAt()->format('Y-m-d');
         } elseif ($subject instanceof PaymentInterface) {
             $this->date = $subject->getCompletedAt()->format('Y-m-d');
         } else {
-            throw new InvalidArgumentException(
-                "Expected instance of " . InvoiceInterface::class . " or " . PaymentInterface::class
-            );
+            throw new UnexpectedTypeException($subject, [InvoiceInterface::class, PaymentInterface::class]);
         }
 
         $this->number = $subject->getNumber();
@@ -113,12 +84,8 @@ class AccountingWriter
 
     /**
      * Writes the debit line.
-     *
-     * @param string    $account
-     * @param string    $amount
-     * @param \DateTime $date
      */
-    public function debit($account, $amount, \DateTime $date)
+    public function debit(string $account, string $amount, DateTimeInterface $date): void
     {
         $data = [
             $this->date,
@@ -130,19 +97,15 @@ class AccountingWriter
             $date->format('Y-m-d'),
         ];
 
-        if (false === fputcsv($this->handle, $data, ';', '"')) {
-            throw new RuntimeException("Failed to write line.");
+        if (false === fputcsv($this->handle, $data, $this->separator, $this->enclosure)) {
+            throw new RuntimeException('Failed to write line.');
         }
     }
 
     /**
      * Writes the credit line.
-     *
-     * @param string $account
-     * @param string $amount
-     * @param \DateTime $date
      */
-    public function credit($account, $amount, \DateTime $date)
+    public function credit(string $account, string $amount, DateTimeInterface $date)
     {
         $data = [
             $this->date,
@@ -154,8 +117,8 @@ class AccountingWriter
             $date->format('Y-m-d'),
         ];
 
-        if (false === fputcsv($this->handle, $data, ';', '"')) {
-            throw new RuntimeException("Failed to write line.");
+        if (false === fputcsv($this->handle, $data, $this->separator, $this->enclosure)) {
+            throw new RuntimeException('Failed to write line.');
         }
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
@@ -17,9 +19,9 @@ use Ekyna\Component\Commerce\Quote\Repository\QuoteRepositoryInterface;
 class QuoteRepository extends AbstractSaleRepository implements QuoteRepositoryInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    protected function getAlias()
+    protected function getAlias(): string
     {
         return 'q';
     }

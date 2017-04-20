@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
  */
 interface CartAdjustmentInterface extends SaleAdjustmentInterface
 {
-    /**
-     * Returns the cart.
-     *
-     * @return CartInterface
-     */
     public function getCart(): ?CartInterface;
 
-    /**
-     * Sets the cart.
-     *
-     * @param CartInterface $cart
-     *
-     * @return $this|CartAdjustmentInterface
-     */
-    public function setCart(CartInterface $cart = null): CartAdjustmentInterface;
+    public function setCart(?CartInterface $cart): CartAdjustmentInterface;
 }

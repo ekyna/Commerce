@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
@@ -12,51 +14,27 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface CustomerAddressInterface extends ResourceInterface, AddressInterface
 {
-    /**
-     * Returns the customer.
-     *
-     * @return CustomerInterface
-     */
-    public function getCustomer();
+    public function getCustomer(): ?CustomerInterface;
+
+    public function setCustomer(?CustomerInterface $customer): CustomerAddressInterface;
 
     /**
-     * Sets the customer.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return $this|CustomerAddressInterface
+     * Returns whether this is the default invoice address.
      */
-    public function setCustomer(CustomerInterface $customer = null);
+    public function isInvoiceDefault(): bool;
 
     /**
-     * Returns whether this is the default invoice address or not.
-     *
-     * @return boolean
+     * Sets whether this is the default invoice address.
      */
-    public function isInvoiceDefault();
+    public function setInvoiceDefault(bool $default): CustomerAddressInterface;
 
     /**
-     * Sets the invoice default.
-     *
-     * @param boolean $invoiceDefault
-     *
-     * @return $this|CustomerAddressInterface
+     * Returns whether this is the default delivery address.
      */
-    public function setInvoiceDefault($invoiceDefault);
+    public function isDeliveryDefault(): bool;
 
     /**
-     * Returns whether this is the default delivery address or not
-     *
-     * @return boolean
+     * Sets whether this is the default delivery address.
      */
-    public function isDeliveryDefault();
-
-    /**
-     * Sets the deliveryDefault.
-     *
-     * @param boolean $deliveryDefault
-     *
-     * @return $this|CustomerAddressInterface
-     */
-    public function setDeliveryDefault($deliveryDefault);
+    public function setDeliveryDefault(bool $default): CustomerAddressInterface;
 }

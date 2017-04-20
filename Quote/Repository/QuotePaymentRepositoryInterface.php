@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Quote\Repository;
 
+use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
 
@@ -14,10 +17,5 @@ use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
  */
 interface QuotePaymentRepositoryInterface extends PaymentRepositoryInterface
 {
-    /**
-     * Creates a new quote payment instance.
-     *
-     * @return QuotePaymentInterface
-     */
-    public function createNew();
+    public function findOneByQuoteAndKey(QuoteInterface $quote, string $key): ?QuotePaymentInterface;
 }

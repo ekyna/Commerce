@@ -19,7 +19,7 @@
         <field name="base" column="base" type="string" length="3"/>
         <field name="quote" column="quote" type="string" length="3"/>
         <field name="date" column="date" type="datetime"/>
-        <field name="rate" column="rate" type="decimal" precision="12" scale="6"/>
+        <field name="rate" column="rate" type="php_decimal" precision="12" scale="6"/>
 
     </entity>
 

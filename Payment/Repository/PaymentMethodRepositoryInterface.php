@@ -1,29 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
 
 /**
  * Interface PaymentMethodRepositoryInterface
  * @package Ekyna\Component\Commerce\Payment\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface PaymentMethodRepositoryInterface extends TranslatableResourceRepositoryInterface
+interface PaymentMethodRepositoryInterface extends TranslatableRepositoryInterface
 {
-    /**
-     * Create a new payment method with pre-populated messages (one by notifiable state).
-     *
-     * @return PaymentMethodInterface
-     */
-    public function createNew();
-
     /**
      * Finds the available and enabled payment methods.
      *
-     * @param CurrencyInterface $currency Filter authorized currency.
+     * @param CurrencyInterface|null $currency Filter authorized currency.
      *
      * @return PaymentMethodInterface[]
      */
@@ -32,7 +27,7 @@ interface PaymentMethodRepositoryInterface extends TranslatableResourceRepositor
     /**
      * Finds the enabled payment methods.
      *
-     * @param CurrencyInterface $currency Filter authorized currency.
+     * @param CurrencyInterface|null $currency Filter authorized currency.
      *
      * @return PaymentMethodInterface[]
      */

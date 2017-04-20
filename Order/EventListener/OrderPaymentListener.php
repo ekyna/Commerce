@@ -51,7 +51,7 @@ class OrderPaymentListener extends AbstractPaymentListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function onPreDelete(ResourceEventInterface $event): void
     {
@@ -63,15 +63,15 @@ class OrderPaymentListener extends AbstractPaymentListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function scheduleSaleContentChangeEvent(SaleInterface $sale): void
     {
-        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, OrderEvents::CONTENT_CHANGE);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getPaymentFromEvent(ResourceEventInterface $event): PaymentInterface
     {
@@ -117,7 +117,7 @@ class OrderPaymentListener extends AbstractPaymentListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSalePropertyPath(): string
     {

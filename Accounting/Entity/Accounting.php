@@ -81,7 +81,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId(): ?int
     {
@@ -89,7 +89,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getNumber()
     {
@@ -97,7 +97,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setNumber($number)
     {
@@ -107,7 +107,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getName()
     {
@@ -115,7 +115,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setName($name)
     {
@@ -125,7 +125,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getType()
     {
@@ -133,7 +133,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setType($type)
     {
@@ -143,7 +143,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTaxRule()
     {
@@ -151,7 +151,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setTaxRule(TaxRuleInterface $taxRule = null)
     {
@@ -161,7 +161,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getTax()
     {
@@ -169,7 +169,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setTax(TaxInterface $tax = null)
     {
@@ -179,7 +179,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getPaymentMethod()
     {
@@ -187,7 +187,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setPaymentMethod(PaymentMethodInterface $method = null)
     {
@@ -197,7 +197,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCustomerGroups()
     {
@@ -205,7 +205,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addCustomerGroup(CustomerGroupInterface $group)
     {
@@ -217,7 +217,7 @@ class Accounting implements AccountingInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function removeCustomerGroup(CustomerGroupInterface $group)
     {

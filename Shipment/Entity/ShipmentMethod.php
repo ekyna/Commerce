@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethod;
 use Ekyna\Component\Commerce\Common\Model\MessageInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 
 /**
  * Class ShipmentMethod
@@ -18,30 +22,13 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
 {
     use TaxableTrait;
 
-    /**
-     * @var string
-     */
-    protected $platformName;
-
-    /**
-     * @var string
-     */
-    protected $gatewayName;
-
-    /**
-     * @var array
-     */
-    protected $gatewayConfig;
-
-    /**
-     * @var ArrayCollection|Shipment\ShipmentPriceInterface[]
-     */
-    protected $prices;
+    protected ?string $platformName  = null;
+    protected ?string $gatewayName   = null;
+    protected array   $gatewayConfig = [];
+    /** @var Collection|Shipment\ShipmentPriceInterface[] */
+    protected Collection $prices;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
@@ -49,123 +36,88 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
         $this->prices = new ArrayCollection();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPlatformName()
+    public function getPlatformName(): ?string
     {
         return $this->platformName;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setPlatformName($name)
+    public function setPlatformName(string $name): ShipmentMethodInterface
     {
         $this->platformName = $name;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGatewayName()
+    public function getGatewayName(): ?string
     {
         return $this->gatewayName;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setGatewayName($name)
+    public function setGatewayName(string $name): ShipmentMethodInterface
     {
         $this->gatewayName = $name;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGatewayConfig()
+    public function getGatewayConfig(): array
     {
         return $this->gatewayConfig;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setGatewayConfig(array $config = null)
+    public function setGatewayConfig(array $config): ShipmentMethodInterface
     {
         $this->gatewayConfig = $config;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPrices()
+    public function getPrices(): Collection
     {
         return $this->prices;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasPrices()
+    public function hasPrices(): bool
     {
         return 0 < $this->prices->count();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasPrice(Shipment\ShipmentPriceInterface $price)
+    public function hasPrice(Shipment\ShipmentPriceInterface $price): bool
     {
         return $this->prices->contains($price);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addPrice(Shipment\ShipmentPriceInterface $price)
-    {
-        if (!$this->hasPrice($price)) {
-            $this->prices->add($price);
-            $price->setMethod($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removePrice(Shipment\ShipmentPriceInterface $price)
+    public function addPrice(Shipment\ShipmentPriceInterface $price): ShipmentMethodInterface
     {
         if ($this->hasPrice($price)) {
-            $this->prices->removeElement($price);
-            $price->setMethod(null);
+            return $this;
         }
+
+        $this->prices->add($price);
+        $price->setMethod($this);
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function validateMessageClass(MessageInterface $message)
+    public function removePrice(Shipment\ShipmentPriceInterface $price): ShipmentMethodInterface
+    {
+        if (!$this->hasPrice($price)) {
+            return $this;
+        }
+
+        $this->prices->removeElement($price);
+        $price->setMethod(null);
+
+        return $this;
+    }
+
+    protected function validateMessageClass(MessageInterface $message): void
     {
         if (!$message instanceof ShipmentMessage) {
-            throw new InvalidArgumentException("Expected instance of ShipmentMessage.");
+            throw new UnexpectedTypeException($message, ShipmentMessage::class);
         }
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function getTranslationClass(): string
     {
         return ShipmentMethodTranslation::class;

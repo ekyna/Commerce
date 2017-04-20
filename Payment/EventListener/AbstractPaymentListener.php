@@ -110,13 +110,13 @@ abstract class AbstractPaymentListener
 
         // Generate number and key
         $changed = $this->generateNumber($payment);
-        $changed |= $this->generateKey($payment);
+        $changed = $this->generateKey($payment) || $changed;
 
         // Fix real amount
-        $changed |= $this->paymentUpdater->fixRealAmount($payment);
+        $changed = $this->paymentUpdater->fixRealAmount($payment) || $changed;
 
         // Completed state
-        $changed |= $this->handleCompletedState($payment);
+        $changed = $this->handleCompletedState($payment) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($payment);
@@ -150,16 +150,16 @@ abstract class AbstractPaymentListener
 
         // Generate number and key
         $changed = $this->generateNumber($payment);
-        $changed |= $this->generateKey($payment);
+        $changed = $this->generateKey($payment) || $changed;
 
         if ($this->persistenceHelper->isChanged($payment, 'amount')) {
-            $changed |= $this->paymentUpdater->fixRealAmount($payment);
+            $changed = $this->paymentUpdater->fixRealAmount($payment) || $changed;
         } elseif ($this->persistenceHelper->isChanged($payment, 'realAmount')) {
-            $changed |= $this->paymentUpdater->fixAmount($payment);
+            $changed = $this->paymentUpdater->fixAmount($payment) || $changed;
         }
 
         if ($this->persistenceHelper->isChanged($payment, 'state')) {
-            $changed |= $this->handleCompletedState($payment);
+            $changed = $this->handleCompletedState($payment) || $changed;
         }
 
         if ($changed) {

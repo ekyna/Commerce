@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
+
+use function array_column;
 
 /**
  * Class CountryRepository
@@ -15,44 +19,13 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class CountryRepository extends ResourceRepository implements CountryRepositoryInterface
 {
-    /**
-     * @var string
-     */
-    private $defaultCode;
+    private string            $defaultCode;
+    private array             $cachedCodes;
+    private ?array            $enabledCodes   = null;
+    private ?array            $allCodes       = null;
+    private ?CountryInterface $defaultCountry = null;
+    private array             $cache          = [];
 
-    /**
-     * @var string[]
-     */
-    private $enabledCodes;
-
-    /**
-     * @var string[]
-     */
-    private $allCodes;
-
-    /**
-     * @var CountryInterface
-     */
-    private $defaultCountry;
-
-    /**
-     * @var array
-     */
-    private $cachedCodes;
-
-    /**
-     * @var array
-     */
-    private $cache = [];
-
-
-    /**
-     * @inheritDoc
-     */
-    public function getDefaultCode(): string
-    {
-        return $this->defaultCode;
-    }
 
     /**
      * @inheritDoc
@@ -68,6 +41,14 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     public function setCachedCodes(array $codes): void
     {
         $this->cachedCodes = $codes;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDefaultCode(): string
+    {
+        return $this->defaultCode;
     }
 
     /**
@@ -145,6 +126,25 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
             ->getScalarResult();
 
         return $this->allCodes = array_column($result, 'code');
+    }
+
+    public function getNames(bool $enabled): array
+    {
+        $qb = $this
+            ->getQueryBuilder('c')
+            ->select(['c.code', 'c.name']);
+
+        if ($enabled) {
+            $qb
+                ->andWhere('c.enabled = :enabled')
+                ->setParameter('enabled', true);
+        }
+
+        $result =$qb
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($result, 'name', 'code');
     }
 
     /**

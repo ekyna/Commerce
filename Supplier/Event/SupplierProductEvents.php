@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Event;
 
 /**
@@ -7,22 +9,27 @@ namespace Ekyna\Component\Commerce\Supplier\Event;
  * @package Ekyna\Component\Commerce\Supplier\Event
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierProductEvents
+final class SupplierProductEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.supplier_product.insert';
-    const UPDATE      = 'ekyna_commerce.supplier_product.update';
-    const DELETE      = 'ekyna_commerce.supplier_product.delete';
+    public const INSERT      = 'ekyna_commerce.supplier_product.insert';
+    public const UPDATE      = 'ekyna_commerce.supplier_product.update';
+    public const DELETE      = 'ekyna_commerce.supplier_product.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.supplier_product.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.supplier_product.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.supplier_product.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.supplier_product.pre_create';
-    const POST_CREATE = 'ekyna_commerce.supplier_product.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.supplier_product.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.supplier_product.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.supplier_product.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.supplier_product.post_update';
+    public const PRE_DELETE  = 'ekyna_commerce.supplier_product.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.supplier_product.post_delete';
 
-    const PRE_DELETE  = 'ekyna_commerce.supplier_product.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.supplier_product.post_delete';
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

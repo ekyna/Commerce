@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
 
 /**
@@ -14,33 +17,21 @@ interface StockAssignmentUpdaterInterface
     /**
      * Updates the assignment's sold quantity.
      *
-     * @param Assignment $assignment
-     * @param float      $quantity
-     * @param bool       $relative
-     *
-     * @return float The resulting updated quantity (relative).
+     * @return Decimal The resulting updated quantity (relative).
      */
-    public function updateSold(Assignment $assignment, float $quantity, bool $relative = true): float;
+    public function updateSold(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal;
 
     /**
      * Updates the assignment's shipped quantity.
      *
-     * @param Assignment $assignment
-     * @param float      $quantity
-     * @param bool       $relative
-     *
-     * @return float The resulting updated quantity (relative).
+     * @return Decimal The resulting updated quantity (relative).
      */
-    public function updateShipped(Assignment $assignment, float $quantity, bool $relative = true): float;
+    public function updateShipped(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal;
 
     /**
      * Updates the assignment's locked quantity.
      *
-     * @param Assignment $assignment
-     * @param float      $quantity
-     * @param bool       $relative
-     *
-     * @return float The resulting updated quantity (relative).
+     * @return Decimal The resulting updated quantity (relative).
      */
-    public function updateLocked(Assignment $assignment, float $quantity, bool $relative = true): float;
+    public function updateLocked(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal;
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,20 +11,11 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 class RecipientList
 {
-    /**
-     * @var Recipient[]
-     */
-    private $recipients = [];
+    /** @var Recipient[]  */
+    private array $recipients = [];
 
 
-    /**
-     * Adds the recipient.
-     *
-     * @param Recipient $recipient
-     *
-     * @return $this|RecipientList
-     */
-    public function add(Recipient $recipient)
+    public function add(Recipient $recipient): RecipientList
     {
         foreach ($this->recipients as $r) {
             if ($r->getEmail() === $recipient->getEmail()) {
@@ -40,11 +33,9 @@ class RecipientList
     }
 
     /**
-     * Returns the recipients.
-     *
      * @return Recipient[]
      */
-    public function all()
+    public function all(): array
     {
         return $this->recipients;
     }

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Supplier\Model;
 
 /**
@@ -11,115 +14,75 @@ use Ekyna\Component\Commerce\Supplier\Model;
  */
 class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int                              $id        = null;
+    protected ?Model\SupplierDeliveryInterface  $delivery  = null;
+    protected ?Model\SupplierOrderItemInterface $orderItem = null;
+    protected Decimal                           $quantity;
+    protected ?string                           $geocode   = null;
 
-    /**
-     * @var Model\SupplierDeliveryInterface
-     */
-    protected $delivery;
+    public function __construct()
+    {
+        $this->quantity = new Decimal(0);
+    }
 
-    /**
-     * @var Model\SupplierOrderItemInterface
-     */
-    protected $orderItem;
-
-    /**
-     * @var float
-     */
-    protected $quantity;
-
-    /**
-     * @var string
-     */
-    protected $geocode;
-
-
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDelivery()
+    public function getDelivery(): ?Model\SupplierDeliveryInterface
     {
         return $this->delivery;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDelivery(Model\SupplierDeliveryInterface $delivery = null)
+    public function setDelivery(?Model\SupplierDeliveryInterface $delivery): Model\SupplierDeliveryItemInterface
     {
-        if ($delivery !== $this->delivery) {
-            if ($previous = $this->delivery) {
-                $this->delivery = null;
-                $previous->removeItem($this);
-            }
+        if ($delivery === $this->delivery) {
+            return $this;
+        }
 
-            if ($this->delivery = $delivery) {
-                $this->delivery->addItem($this);
-            }
+        if ($previous = $this->delivery) {
+            $this->delivery = null;
+            $previous->removeItem($this);
+        }
+
+        if ($this->delivery = $delivery) {
+            $this->delivery->addItem($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrderItem()
+    public function getOrderItem(): Model\SupplierOrderItemInterface
     {
         return $this->orderItem;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrderItem(Model\SupplierOrderItemInterface $item = null)
+    public function setOrderItem(?Model\SupplierOrderItemInterface $item): Model\SupplierDeliveryItemInterface
     {
         $this->orderItem = $item;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuantity()
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuantity($quantity)
+    public function setQuantity(Decimal $quantity): Model\SupplierDeliveryItemInterface
     {
-        $this->quantity = (float)$quantity;
+        $this->quantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getGeocode()
+    public function getGeocode(): ?string
     {
         return $this->geocode;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setGeocode($geocode)
+    public function setGeocode(?string $geocode): Model\SupplierDeliveryItemInterface
     {
         $this->geocode = $geocode;
 

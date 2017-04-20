@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\MentionInterface;
@@ -19,38 +21,21 @@ abstract class AbstractMention extends AbstractTranslatable implements MentionIn
 {
     use SortableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var string[]
-     */
-    protected $documentTypes = [];
+    protected ?int $id = null;
+    /** @var string[] */
+    protected array $documentTypes = [];
 
 
-    /**
-     * @inheritDoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Returns the documentTypes.
-     *
-     * @return string[]
-     */
     public function getDocumentTypes(): array
     {
         return $this->documentTypes;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function addDocumentType(string $type): MentionInterface
     {
         DocumentTypes::isValid($type);
@@ -64,9 +49,6 @@ abstract class AbstractMention extends AbstractTranslatable implements MentionIn
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setDocumentTypes(array $types): MentionInterface
     {
         $this->documentTypes = [];
@@ -78,10 +60,7 @@ abstract class AbstractMention extends AbstractTranslatable implements MentionIn
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->translate()->getContent();
     }

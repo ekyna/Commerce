@@ -78,7 +78,7 @@ class InvoiceLineValidator extends ConstraintValidator
                 }
 
                 // Check that quantities equals
-                if ($shipmentItem->getQuantity() != $line->getQuantity()) {
+                if (!$shipmentItem->getQuantity()->equals($line->getQuantity())) {
                     $message = $invoice->isCredit()
                         ? $constraint->returned_miss_match
                         : $constraint->shipped_miss_match;

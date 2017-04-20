@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Resource\Model\TranslationInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Resource\Model\TranslationInterface;
  */
 interface MentionTranslationInterface extends TranslationInterface
 {
-    /**
-     * Returns the content.
-     *
-     * @return string
-     */
     public function getContent(): ?string;
 
-    /**
-     * Sets the content.
-     *
-     * @param string $content
-     *
-     * @return MentionTranslationInterface
-     */
-    public function setContent(string $content): MentionTranslationInterface;
+    public function setContent(?string $content): MentionTranslationInterface;
 }

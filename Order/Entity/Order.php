@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -21,50 +25,16 @@ class Order extends AbstractSale implements Model\OrderInterface
     use Shipment\ShipmentSubjectTrait;
     use Invoice\InvoiceSubjectTrait;
 
-    /**
-     * @var bool
-     */
-    protected $sample;
-
-    /**
-     * @var bool
-     */
-    protected $released;
-
-    /**
-     * @var bool
-     */
-    protected $first;
-
-    /**
-     * @var CustomerInterface
-     */
-    protected $originCustomer;
-
-    /**
-     * @var \DateTime
-     */
-    protected $completedAt;
-
-    /**
-     * @var float
-     */
-    protected $revenueTotal;
-
-    /**
-     * @var float
-     */
-    protected $marginTotal;
-
-    /**
-     * @var int
-     */
-    protected $itemsCount;
+    protected bool               $sample         = false;
+    protected bool               $released       = false;
+    protected bool               $first          = false;
+    protected ?CustomerInterface $originCustomer = null;
+    protected ?DateTimeInterface $completedAt    = null;
+    protected ?Decimal           $revenueTotal   = null;
+    protected ?Decimal           $marginTotal    = null;
+    protected int                $itemsCount     = 0;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         parent::__construct();
@@ -74,86 +44,50 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         $this->state = Model\OrderStates::STATE_NEW;
         $this->source = Common\SaleSources::SOURCE_COMMERCIAL;
-        $this->sample = false;
-        $this->released = false;
-        $this->first = false;
-
-        $this->marginTotal = null;
-        $this->itemsCount = 0;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isSample()
+    public function isSample(): bool
     {
         return $this->sample;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSample($sample)
+    public function setSample(bool $sample): Model\OrderInterface
     {
-        $this->sample = (bool)$sample;
+        $this->sample = $sample;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isReleased()
+    public function isReleased(): bool
     {
         return $this->released;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setReleased($released)
+    public function setReleased(bool $released): Model\OrderInterface
     {
-        $this->released = (bool)$released;
+        $this->released = $released;
 
         return $this;
     }
 
-    /**
-     * Returns the first.
-     *
-     * @return bool
-     */
-    public function isFirst()
+    public function isFirst(): bool
     {
         return $this->first;
     }
 
-    /**
-     * Sets the first.
-     *
-     * @param bool $first
-     *
-     * @return Order
-     */
-    public function setFirst($first)
+    public function setFirst(bool $first): Model\OrderInterface
     {
-        $this->first = (bool)$first;
+        $this->first = $first;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOriginCustomer()
+    public function getOriginCustomer(): ?CustomerInterface
     {
         return $this->originCustomer;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOriginCustomer(CustomerInterface $customer = null)
+    public function setOriginCustomer(?CustomerInterface $customer): Model\OrderInterface
     {
         $this->originCustomer = $customer;
 
@@ -161,94 +95,80 @@ class Order extends AbstractSale implements Model\OrderInterface
     }
 
     /**
-     * @inheritdoc
-     *
-     * @return Model\OrderAddressInterface
+     * @return Model\OrderAddressInterface|null
      */
-    public function getInvoiceAddress()
+    public function getInvoiceAddress(): ?Common\SaleAddressInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->invoiceAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setInvoiceAddress(Common\SaleAddressInterface $address = null)
+    public function setInvoiceAddress(?Common\SaleAddressInterface $address): Common\SaleInterface
     {
-        if (null !== $address & !$address instanceof Model\OrderAddressInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAddressInterface::class);
+        if ($address && !$address instanceof Model\OrderAddressInterface) {
+            throw new UnexpectedTypeException($address, Model\OrderAddressInterface::class);
         }
 
-        if ($address !== $current = $this->getInvoiceAddress()) {
-            if (null !== $current) {
-                $current->setInvoiceOrder(null);
-            }
+        if ($address === $this->invoiceAddress) {
+            return $this;
+        }
 
-            $this->invoiceAddress = $address;
+        if ($previous = $this->invoiceAddress) {
+            $this->invoiceAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setInvoiceOrder(null);
+        }
 
-            if (null !== $address) {
-                $address->setInvoiceOrder($this);
-            }
+        if ($this->invoiceAddress = $address) {
+            $address->setInvoiceOrder($this);
         }
 
         return $this;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @return Model\OrderAddressInterface
+     * @return Model\OrderAddressInterface|null
      */
-    public function getDeliveryAddress()
+    public function getDeliveryAddress(): ?Common\SaleAddressInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->deliveryAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDeliveryAddress(Common\SaleAddressInterface $address = null)
+    public function setDeliveryAddress(?Common\SaleAddressInterface $address): Common\SaleInterface
     {
-        if (null !== $address && !$address instanceof Model\OrderAddressInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAddressInterface::class);
+        if ($address && !$address instanceof Model\OrderAddressInterface) {
+            throw new UnexpectedTypeException($address, Model\OrderAddressInterface::class);
         }
 
-        if ($address !== $current = $this->getDeliveryAddress()) {
-            if (null !== $current) {
-                $current->setDeliveryOrder(null);
-            }
+        if ($address === $this->deliveryAddress) {
+            return $this;
+        }
 
-            $this->deliveryAddress = $address;
+        if ($previous = $this->deliveryAddress) {
+            $this->deliveryAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setDeliveryOrder(null);
+        }
 
-            if (null !== $address) {
-                $address->setDeliveryOrder($this);
-            }
+        if ($this->deliveryAddress = $address) {
+            $address->setDeliveryOrder($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAttachment(Common\SaleAttachmentInterface $attachment)
+    public function hasAttachment(Common\SaleAttachmentInterface $attachment): bool
     {
         if (!$attachment instanceof Model\OrderAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\OrderAttachmentInterface::class);
         }
 
         return $this->attachments->contains($attachment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAttachment(Common\SaleAttachmentInterface $attachment)
+    public function addAttachment(Common\SaleAttachmentInterface $attachment): Common\SaleInterface
     {
         if (!$attachment instanceof Model\OrderAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\OrderAttachmentInterface::class);
         }
 
         if (!$this->hasAttachment($attachment)) {
@@ -259,13 +179,10 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAttachment(Common\SaleAttachmentInterface $attachment)
+    public function removeAttachment(Common\SaleAttachmentInterface $attachment): Common\SaleInterface
     {
         if (!$attachment instanceof Model\OrderAttachmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, Model\OrderAttachmentInterface::class);
         }
 
         if ($this->hasAttachment($attachment)) {
@@ -276,25 +193,19 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasItem(Common\SaleItemInterface $item)
+    public function hasItem(Common\SaleItemInterface $item): bool
     {
         if (!$item instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\OrderItemInterface::class);
         }
 
         return $this->items->contains($item);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addItem(Common\SaleItemInterface $item)
+    public function addItem(Common\SaleItemInterface $item): Common\SaleInterface
     {
         if (!$item instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\OrderItemInterface::class);
         }
 
         if (!$this->hasItem($item)) {
@@ -305,13 +216,10 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeItem(Common\SaleItemInterface $item)
+    public function removeItem(Common\SaleItemInterface $item): Common\SaleInterface
     {
         if (!$item instanceof Model\OrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderItemInterface::class);
+            throw new UnexpectedTypeException($item, Model\OrderItemInterface::class);
         }
 
         if ($this->hasItem($item)) {
@@ -322,25 +230,19 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAdjustment(Common\AdjustmentInterface $adjustment)
+    public function hasAdjustment(Common\AdjustmentInterface $adjustment): bool
     {
         if (!$adjustment instanceof Model\OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\OrderAdjustmentInterface::class);
         }
 
         return $this->adjustments->contains($adjustment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAdjustment(Common\AdjustmentInterface $adjustment)
+    public function addAdjustment(Common\AdjustmentInterface $adjustment): Common\AdjustableInterface
     {
         if (!$adjustment instanceof Model\OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\OrderAdjustmentInterface::class);
         }
 
         if (!$this->hasAdjustment($adjustment)) {
@@ -351,13 +253,10 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAdjustment(Common\AdjustmentInterface $adjustment)
+    public function removeAdjustment(Common\AdjustmentInterface $adjustment): Common\AdjustableInterface
     {
         if (!$adjustment instanceof Model\OrderAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderAdjustmentInterface::class);
+            throw new UnexpectedTypeException($adjustment, Model\OrderAdjustmentInterface::class);
         }
 
         if ($this->hasAdjustment($adjustment)) {
@@ -368,25 +267,19 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasNotification(Common\NotificationInterface $notification)
+    public function hasNotification(Common\NotificationInterface $notification): bool
     {
         if (!$notification instanceof Model\OrderNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\OrderNotificationInterface::class);
         }
 
         return $this->notifications->contains($notification);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addNotification(Common\NotificationInterface $notification)
+    public function addNotification(Common\NotificationInterface $notification): Common\NotifiableInterface
     {
         if (!$notification instanceof Model\OrderNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\OrderNotificationInterface::class);
         }
 
         if (!$this->hasNotification($notification)) {
@@ -397,13 +290,10 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeNotification(Common\NotificationInterface $notification)
+    public function removeNotification(Common\NotificationInterface $notification): Common\NotifiableInterface
     {
         if (!$notification instanceof Model\OrderNotificationInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderNotificationInterface::class);
+            throw new UnexpectedTypeException($notification, Model\OrderNotificationInterface::class);
         }
 
         if ($this->hasNotification($notification)) {
@@ -414,25 +304,19 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasPayment(Payment\PaymentInterface $payment): bool
     {
         if (!$payment instanceof Model\OrderPaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderPaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\OrderPaymentInterface::class);
         }
 
         return $this->payments->contains($payment);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addPayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\OrderPaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderPaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\OrderPaymentInterface::class);
         }
 
         if (!$this->hasPayment($payment)) {
@@ -443,13 +327,10 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removePayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\OrderPaymentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderPaymentInterface::class);
+            throw new UnexpectedTypeException($payment, Model\OrderPaymentInterface::class);
         }
 
         if ($this->hasPayment($payment)) {
@@ -460,25 +341,19 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasShipment(Shipment\ShipmentInterface $shipment)
+    public function hasShipment(Shipment\ShipmentInterface $shipment): bool
     {
         if (!$shipment instanceof Model\OrderShipmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderShipmentInterface::class);
+            throw new UnexpectedTypeException($shipment, Model\OrderShipmentInterface::class);
         }
 
         return $this->shipments->contains($shipment);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addShipment(Shipment\ShipmentInterface $shipment)
+    public function addShipment(Shipment\ShipmentInterface $shipment): Shipment\ShipmentSubjectInterface
     {
         if (!$shipment instanceof Model\OrderShipmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderShipmentInterface::class);
+            throw new UnexpectedTypeException($shipment, Model\OrderShipmentInterface::class);
         }
 
         if (!$this->hasShipment($shipment)) {
@@ -489,13 +364,10 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeShipment(Shipment\ShipmentInterface $shipment)
+    public function removeShipment(Shipment\ShipmentInterface $shipment): Shipment\ShipmentSubjectInterface
     {
         if (!$shipment instanceof Model\OrderShipmentInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderShipmentInterface::class);
+            throw new UnexpectedTypeException($shipment, Model\OrderShipmentInterface::class);
         }
 
         if ($this->hasShipment($shipment)) {
@@ -506,25 +378,19 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasInvoice(Invoice\InvoiceInterface $invoice)
+    public function hasInvoice(Invoice\InvoiceInterface $invoice): bool
     {
         if (!$invoice instanceof Model\OrderInvoiceInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderInvoiceInterface::class);
+            throw new UnexpectedTypeException($invoice, Model\OrderInvoiceInterface::class);
         }
 
         return $this->invoices->contains($invoice);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addInvoice(Invoice\InvoiceInterface $invoice)
+    public function addInvoice(Invoice\InvoiceInterface $invoice): Invoice\InvoiceSubjectInterface
     {
         if (!$invoice instanceof Model\OrderInvoiceInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderInvoiceInterface::class);
+            throw new UnexpectedTypeException($invoice, Model\OrderInvoiceInterface::class);
         }
 
         if (!$this->hasInvoice($invoice)) {
@@ -535,13 +401,10 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeInvoice(Invoice\InvoiceInterface $invoice)
+    public function removeInvoice(Invoice\InvoiceInterface $invoice): Invoice\InvoiceSubjectInterface
     {
         if (!$invoice instanceof Model\OrderInvoiceInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Model\OrderInvoiceInterface::class);
+            throw new UnexpectedTypeException($invoice, Model\OrderInvoiceInterface::class);
         }
 
         if ($this->hasInvoice($invoice)) {
@@ -552,79 +415,52 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function isFullyInvoiced(): bool
     {
-        return -1 !== bccomp($this->invoiceTotal, $this->grandTotal, 3);
+        return $this->invoiceTotal >= $this->grandTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCompletedAt()
+    public function getCompletedAt(): ?DateTimeInterface
     {
         return $this->completedAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCompletedAt(\DateTime $completedAt = null)
+    public function setCompletedAt(?DateTimeInterface $completedAt): Model\OrderInterface
     {
         $this->completedAt = $completedAt;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getRevenueTotal(): ?float
+    public function getRevenueTotal(): ?Decimal
     {
         return $this->revenueTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setRevenueTotal(float $amount = null): Model\OrderInterface
+    public function setRevenueTotal(?Decimal $amount): Model\OrderInterface
     {
         $this->revenueTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMarginTotal(): ?float
+    public function getMarginTotal(): ?Decimal
     {
         return $this->marginTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setMarginTotal(float $amount = null): Model\OrderInterface
+    public function setMarginTotal(?Decimal $amount): Model\OrderInterface
     {
         $this->marginTotal = $amount;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getItemsCount(): int
     {
         return $this->itemsCount;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setItemsCount(int $count): Model\OrderInterface
     {
         $this->itemsCount = $count;
@@ -632,9 +468,6 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function canBeReleased(): bool
     {
         if (!$this->isSample()) {

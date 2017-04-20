@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\Entity;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Support\Model\TicketAttachmentInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
@@ -17,55 +21,17 @@ class TicketMessage implements TicketMessageInterface
 {
     use TimestampableTrait;
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var TicketInterface
-     */
-    protected $ticket;
-
-    /**
-     * @var bool
-     */
-    protected $customer;
-
-    /**
-     * @var string
-     */
-    protected $author;
-
-    /**
-     * @var string
-     */
-    protected $content;
-
-    /**
-     * @var bool
-     */
-    protected $internal;
-
-    /**
-     * @var bool
-     */
-    protected $notify;
-
-    /**
-     * @var \DateTime
-     */
-    protected $notifiedAt;
-
-    /**
-     * @var ArrayCollection|TicketAttachment[]
-     */
-    protected $attachments;
+    protected ?int               $id         = null;
+    protected ?TicketInterface   $ticket     = null;
+    protected ?string            $author     = null;
+    protected ?string            $content    = null;
+    protected bool               $internal   = false;
+    protected bool               $notify     = false;
+    protected ?DateTimeInterface $notifiedAt = null;
+    /** @var Collection<TicketAttachment> */
+    protected Collection $attachments;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->internal = false;
@@ -73,143 +39,100 @@ class TicketMessage implements TicketMessageInterface
         $this->attachments = new ArrayCollection();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTicket()
+    public function getTicket(): ?TicketInterface
     {
         return $this->ticket;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTicket(TicketInterface $ticket = null)
+    public function setTicket(TicketInterface $ticket = null): TicketMessageInterface
     {
-        if ($ticket !== $this->ticket) {
-            if ($previous = $this->ticket) {
-                $this->ticket = null;
-                $previous->removeMessage($this);
-            }
+        if ($ticket === $this->ticket) {
+            return $this;
+        }
 
-            if ($this->ticket = $ticket) {
-                $this->ticket->addMessage($this);
-            }
+        if ($previous = $this->ticket) {
+            $this->ticket = null;
+            $previous->removeMessage($this);
+        }
+
+        if ($this->ticket = $ticket) {
+            $this->ticket->addMessage($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAuthor()
+    public function getAuthor(): ?string
     {
         return $this->author;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAuthor(string $author)
+    public function setAuthor(?string $author): TicketMessageInterface
     {
         $this->author = $author;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->content;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setContent(string $content)
+    public function setContent(?string $content): TicketMessageInterface
     {
         $this->content = $content;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isInternal()
+    public function isInternal(): bool
     {
         return $this->internal;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setInternal(bool $internal)
+    public function setInternal(bool $internal): TicketMessageInterface
     {
         $this->internal = $internal;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isNotify()
+    public function isNotify(): bool
     {
         return $this->notify;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setNotify(bool $notify)
+    public function setNotify(bool $notify): TicketMessageInterface
     {
         $this->notify = $notify;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getNotifiedAt()
+    public function getNotifiedAt(): ?DateTimeInterface
     {
         return $this->notifiedAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setNotifiedAt(\DateTime $date = null)
+    public function setNotifiedAt(?DateTimeInterface $date): TicketMessageInterface
     {
         $this->notifiedAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAttachments()
+    public function getAttachments(): Collection
     {
         return $this->attachments;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function addAttachment(TicketAttachmentInterface $attachment)
+    public function addAttachment(TicketAttachmentInterface $attachment): TicketMessageInterface
     {
         if (!$this->attachments->contains($attachment)) {
             $this->attachments->add($attachment);
@@ -219,10 +142,7 @@ class TicketMessage implements TicketMessageInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function removeAttachment(TicketAttachmentInterface $attachment)
+    public function removeAttachment(TicketAttachmentInterface $attachment): TicketMessageInterface
     {
         if ($this->attachments->contains($attachment)) {
             $this->attachments->removeElement($attachment);
@@ -232,18 +152,12 @@ class TicketMessage implements TicketMessageInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isCustomer()
+    public function isCustomer(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isLatest()
+    public function isLatest(): bool
     {
         return $this === $this->getTicket()->getMessages()->last();
     }

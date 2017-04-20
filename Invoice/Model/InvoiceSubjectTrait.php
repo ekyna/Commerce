@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 
 /**
@@ -12,128 +17,76 @@ use Doctrine\Common\Collections\Criteria;
  */
 trait InvoiceSubjectTrait
 {
-    /**
-     * @var float
-     */
-    protected $invoiceTotal;
-
-    /**
-     * @var float
-     */
-    protected $creditTotal;
-
-    /**
-     * @var string
-     */
-    protected $invoiceState;
-
-    /**
-     * @var \Doctrine\Common\Collections\Collection|InvoiceInterface[]
-     */
-    protected $invoices;
+    protected Decimal    $invoiceTotal;
+    protected Decimal    $creditTotal;
+    protected string     $invoiceState;
+    protected Collection $invoices;
 
 
-    /**
-     * Initializes the invoices.
-     */
     protected function initializeInvoiceSubject()
     {
-        $this->invoiceTotal = 0;
-        $this->creditTotal  = 0;
+        $this->invoiceTotal = new Decimal(0);
+        $this->creditTotal = new Decimal(0);
         $this->invoiceState = InvoiceStates::STATE_NEW;
-        $this->invoices     = new ArrayCollection();
+        $this->invoices = new ArrayCollection();
     }
 
-    /**
-     * Returns the invoice total.
-     *
-     * @return float
-     */
-    public function getInvoiceTotal()
+    public function getInvoiceTotal(): Decimal
     {
         return $this->invoiceTotal;
     }
 
     /**
-     * Sets the invoices total.
-     *
-     * @param float $total
-     *
      * @return $this|InvoiceSubjectInterface
      */
-    public function setInvoiceTotal($total)
+    public function setInvoiceTotal(Decimal $total): InvoiceSubjectInterface
     {
-        $this->invoiceTotal = (float)$total;
+        $this->invoiceTotal = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the credits total.
-     *
-     * @return float
-     */
-    public function getCreditTotal()
+    public function getCreditTotal(): Decimal
     {
         return $this->creditTotal;
     }
 
     /**
-     * Sets the credit total.
-     *
-     * @param float $total
-     *
      * @return $this|InvoiceSubjectInterface
      */
-    public function setCreditTotal($total)
+    public function setCreditTotal(Decimal $total): InvoiceSubjectInterface
     {
-        $this->creditTotal = (float)$total;
+        $this->creditTotal = $total;
 
         return $this;
     }
 
-    /**
-     * Returns the invoice state.
-     *
-     * @return string
-     */
-    public function getInvoiceState()
+    public function getInvoiceState(): string
     {
         return $this->invoiceState;
     }
 
     /**
-     * Sets the invoice state.
-     *
-     * @param string $invoiceState
-     *
      * @return $this|InvoiceSubjectInterface
      */
-    public function setInvoiceState($invoiceState)
+    public function setInvoiceState(string $state): InvoiceSubjectInterface
     {
-        $this->invoiceState = $invoiceState;
+        $this->invoiceState = $state;
 
         return $this;
     }
 
-    /**
-     * Returns whether the order has invoices or not.
-     *
-     * @return bool
-     */
-    public function hasInvoices()
+    public function hasInvoices(): bool
     {
         return 0 < $this->invoices->count();
     }
 
     /**
-     * Returns the invoices.
-     *
      * @param bool $filter TRUE for invoices, FALSE for credits, NULL for all
      *
-     * @return \Doctrine\Common\Collections\Collection|InvoiceInterface[]
+     * @return Collection|InvoiceInterface[]
      */
-    public function getInvoices($filter = null)
+    public function getInvoices(bool $filter = null): Collection
     {
         if (null === $filter) {
             return $this->invoices;
@@ -145,15 +98,11 @@ trait InvoiceSubjectTrait
     }
 
     /**
-     * Returns the invoice date.
-     *
      * @param bool $latest Whether to return the last invoice date instead of the first.
-     *
-     * @return \DateTime|null
      */
-    public function getInvoicedAt($latest = false)
+    public function getInvoicedAt(bool $latest = false): ?DateTimeInterface
     {
-        if (0 == $this->invoices->count()) {
+        if (0 === $this->invoices->count()) {
             return null;
         }
 

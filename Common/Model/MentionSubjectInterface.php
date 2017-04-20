@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
@@ -12,8 +14,6 @@ use Doctrine\Common\Collections\Collection;
 interface MentionSubjectInterface
 {
     /**
-     * Returns the mentions.
-     *
      * @return Collection|MentionInterface[]
      */
     public function getMentions(): Collection;

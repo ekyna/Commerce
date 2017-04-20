@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractAttachment;
+use Ekyna\Component\Commerce\Common\Model\SaleAttachmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderAttachmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
@@ -14,50 +18,41 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
  */
 class OrderAttachment extends AbstractAttachment implements OrderAttachmentInterface
 {
-    /**
-     * @var OrderInterface
-     */
-    protected $order;
+    protected ?OrderInterface $order = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getOrder();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSale(SaleInterface $sale = null)
+    public function setSale(SaleInterface $sale = null): SaleAttachmentInterface
     {
+        if ($sale && !$sale instanceof OrderInterface) {
+            throw new UnexpectedTypeException($sale, OrderInterface::class);
+        }
+
         return $this->setOrder($sale);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
+    public function getOrder(): ?OrderInterface
     {
         return $this->order;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrder(OrderInterface $order = null)
+    public function setOrder(?OrderInterface $order): OrderAttachmentInterface
     {
-        if ($order !== $this->order) {
-            if ($previous = $this->order) {
-                $this->order = null;
-                $previous->removeAttachment($this);
-            }
+        if ($order === $this->order) {
+            return $this;
+        }
 
-            if ($this->order = $order) {
-                $this->order->addAttachment($this);
-            }
+        if ($previous = $this->order) {
+            $this->order = null;
+            $previous->removeAttachment($this);
+        }
+
+        if ($this->order = $order) {
+            $this->order->addAttachment($this);
         }
 
         return $this;

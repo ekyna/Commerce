@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Newsletter\Synchronizer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Exception\NewsletterException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Newsletter\Event\AudienceEvents;
 use Ekyna\Component\Commerce\Newsletter\Event\MemberEvents;
 use Ekyna\Component\Commerce\Newsletter\Event\SubscriptionEvents;
 use Ekyna\Component\Commerce\Newsletter\EventListener\ListenerGatewayToggler;
+use Ekyna\Component\Commerce\Newsletter\Factory\AudienceFactoryInterface;
+use Ekyna\Component\Commerce\Newsletter\Factory\MemberFactoryInterface;
+use Ekyna\Component\Commerce\Newsletter\Factory\SubscriptionFactoryInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionInterface;
@@ -30,97 +34,50 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 abstract class AbstractSynchronizer implements SynchronizerInterface
 {
-    /**
-     * @var AudienceRepositoryInterface
-     */
-    protected $audienceRepository;
+    protected AudienceFactoryInterface        $audienceFactory;
+    protected AudienceRepositoryInterface     $audienceRepository;
+    protected MemberFactoryInterface          $memberFactory;
+    protected MemberRepositoryInterface       $memberRepository;
+    protected SubscriptionFactoryInterface    $subscriptionFactory;
+    protected SubscriptionRepositoryInterface $subscriptionRepository;
+    protected ListenerGatewayToggler          $gatewayToggler;
+    protected EventDispatcherInterface        $dispatcher;
+    protected EntityManagerInterface          $manager;
+    protected UrlGeneratorInterface           $urlGenerator;
+    protected LoggerInterface                 $defaultLogger;
+    protected LoggerInterface                 $logger;
 
-    /**
-     * @var MemberRepositoryInterface
-     */
-    protected $memberRepository;
+    /** @var array<int> */
+    protected array $audienceIdentifiers;
+    /** @var array<MemberInterface> */
+    protected array $createdMembers;
 
-    /**
-     * @var SubscriptionRepositoryInterface
-     */
-    protected $subscriptionRepository;
-
-    /**
-     * @var ListenerGatewayToggler
-     */
-    protected $gatewayToggler;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $dispatcher;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $manager;
-
-    /**
-     * @var UrlGeneratorInterface
-     */
-    protected $urlGenerator;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $defaultLogger;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @var array
-     */
-    protected $audienceIdentifiers;
-
-    /**
-     * @var MemberInterface[]
-     */
-    protected $createdMembers;
-
-
-    /**
-     * Constructor.
-     *
-     * @param AudienceRepositoryInterface     $audienceRepository
-     * @param MemberRepositoryInterface       $memberRepository
-     * @param SubscriptionRepositoryInterface $subscriptionRepository
-     * @param EventDispatcherInterface        $dispatcher
-     * @param ListenerGatewayToggler          $gatewayToggler
-     * @param EntityManagerInterface          $manager
-     * @param UrlGeneratorInterface           $urlGenerator
-     * @param LoggerInterface                 $logger
-     */
     public function __construct(
-        AudienceRepositoryInterface $audienceRepository,
-        MemberRepositoryInterface $memberRepository,
+        AudienceFactoryInterface        $audienceFactory,
+        AudienceRepositoryInterface     $audienceRepository,
+        MemberFactoryInterface          $memberFactory,
+        MemberRepositoryInterface       $memberRepository,
+        SubscriptionFactoryInterface    $subscriptionFactory,
         SubscriptionRepositoryInterface $subscriptionRepository,
-        ListenerGatewayToggler $gatewayToggler,
-        EventDispatcherInterface $dispatcher,
-        EntityManagerInterface $manager,
-        UrlGeneratorInterface $urlGenerator,
-        LoggerInterface $logger
+        ListenerGatewayToggler          $gatewayToggler,
+        EventDispatcherInterface        $dispatcher,
+        EntityManagerInterface          $manager,
+        UrlGeneratorInterface           $urlGenerator,
+        LoggerInterface                 $logger
     ) {
-        $this->audienceRepository     = $audienceRepository;
-        $this->memberRepository       = $memberRepository;
+        $this->audienceFactory = $audienceFactory;
+        $this->audienceRepository = $audienceRepository;
+        $this->memberFactory = $memberFactory;
+        $this->memberRepository = $memberRepository;
+        $this->subscriptionFactory = $subscriptionFactory;
         $this->subscriptionRepository = $subscriptionRepository;
-        $this->gatewayToggler         = $gatewayToggler;
-        $this->dispatcher             = $dispatcher;
-        $this->manager                = $manager;
-        $this->urlGenerator           = $urlGenerator;
-        $this->defaultLogger          = $logger;
+        $this->gatewayToggler = $gatewayToggler;
+        $this->dispatcher = $dispatcher;
+        $this->manager = $manager;
+        $this->urlGenerator = $urlGenerator;
+        $this->defaultLogger = $logger;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function synchronize(LoggerInterface $logger = null): void
     {
         $this->logger = $logger ?? $this->defaultLogger;
@@ -145,7 +102,6 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
      */
     abstract protected function syncAudiences(): void;
 
-
     /**
      * Configures webhooks.
      */
@@ -161,7 +117,7 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
 
         // Subscriptions status
         $class = $this->audienceRepository->getClassName();
-        $sub   = $this->manager->createQuery(
+        $sub = $this->manager->createQuery(
             "SELECT a.id FROM $class a WHERE a.gateway = :gateway"
         )->getDQL();
 
@@ -174,7 +130,7 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
         ]);
 
         // Member status
-        $sub   = $this->manager->createQuery(
+        $sub = $this->manager->createQuery(
             "SELECT s FROM $class s WHERE s.member = m AND s.status = :subscribed"
         )->getDQL();
         $class = $this->memberRepository->getClassName();
@@ -206,7 +162,7 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
             ->findOneByGatewayAndIdentifier(static::getName(), $identifier);
 
         if (null === $audience) {
-            $audience = $this->audienceRepository->createNew();
+            $audience = $this->audienceFactory->create();
             $audience
                 ->setGateway(static::getName())
                 ->setIdentifier($identifier)
@@ -220,8 +176,6 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
                     ->setPublic(true)
                     ->setDefault(true);
             }
-
-            $this->dispatch($audience, AudienceEvents::INITIALIZE);
 
             $this->logger->info(sprintf("Audience '%s': created", $audience->getName()));
             $this->manager->persist($audience);
@@ -280,7 +234,7 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
         }
 
         if (null === $member) {
-            $member = $this->memberRepository->createNew();
+            $member = $this->memberFactory->create();
             $member
                 ->setEmail($email)
                 ->setIdentifier(static::getName(), $identifier);
@@ -340,13 +294,13 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
      */
     protected function syncSubscription(
         AudienceInterface $audience,
-        MemberInterface $member,
-        string $status,
-        array $attributes,
-        string $identifier = null
+        MemberInterface   $member,
+        string            $status,
+        array             $attributes,
+        string            $identifier = null
     ): SubscriptionInterface {
         if (!$subscription = $member->getSubscription($audience)) {
-            $subscription = $this->subscriptionRepository->createNew();
+            $subscription = $this->subscriptionFactory->create();
             $subscription
                 ->setAudience($audience)
                 ->setMember($member);
@@ -371,9 +325,9 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
      */
     protected function updateSubscription(
         SubscriptionInterface $subscription,
-        string $status,
-        array $attributes,
-        string $identifier = null
+        string                $status,
+        array                 $attributes,
+        string                $identifier = null
     ): bool {
         $changed = false;
 
@@ -406,7 +360,7 @@ abstract class AbstractSynchronizer implements SynchronizerInterface
         $event = new ResourceEvent();
         $event->setResource($resource);
 
-        $this->dispatcher->dispatch($name, $event);
+        $this->dispatcher->dispatch($event, $name);
 
         if ($event->hasErrors()) {
             $message = array_map(function (ResourceMessage $message) {

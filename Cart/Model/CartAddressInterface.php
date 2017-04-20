@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Cart\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
@@ -13,40 +15,23 @@ interface CartAddressInterface extends SaleAddressInterface
 {
     /**
      * Returns the cart this address is the invoice one.
-     *
-     * @return CartInterface|null
      */
-    public function getInvoiceCart();
+    public function getInvoiceCart(): ?CartInterface;
 
     /**
      * Sets the cart this address is the invoice one.
-     *
-     * @param CartInterface $cart
-     *
-     * @return $this|CartAddressInterface
      */
-    public function setInvoiceCart(CartInterface $cart = null);
+    public function setInvoiceCart(?CartInterface $cart): CartAddressInterface;
 
     /**
      * Returns the cart this address is the delivery one.
-     *
-     * @return CartInterface|null
      */
-    public function getDeliveryCart();
+    public function getDeliveryCart(): ?CartInterface;
 
     /**
      * Sets the cart this address is the delivery one.
-     *
-     * @param CartInterface $cart
-     *
-     * @return $this|CartAddressInterface
      */
-    public function setDeliveryCart(CartInterface $cart = null);
+    public function setDeliveryCart(?CartInterface $cart): CartAddressInterface;
 
-    /**
-     * Returns the related cart.
-     *
-     * @return CartInterface|null
-     */
-    public function getCart();
+    public function getCart(): ?CartInterface;
 }

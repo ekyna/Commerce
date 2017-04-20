@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Repository;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface ShipmentPriceRepositoryInterface
@@ -16,35 +20,25 @@ interface ShipmentPriceRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Returns one price by country, method and weight.
      *
-     * @param CountryInterface        $country
-     * @param ShipmentMethodInterface $method
-     * @param float                   $weight The weight in Kg.
-     *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface|null
+     * @param Decimal $weight The weight in Kg.
      */
     public function findOneByCountryAndMethodAndWeight(
-        CountryInterface $country,
+        CountryInterface        $country,
         ShipmentMethodInterface $method,
-        $weight
-    );
+        Decimal                 $weight
+    ): ?ShipmentPriceInterface;
 
     /**
      * Returns the prices by country and weight.
      *
-     * @param CountryInterface $country
-     * @param float            $weight
-     * @param bool             $available
-     *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
+     * @return array<ShipmentPriceInterface>
      */
-    public function findByCountryAndWeight(CountryInterface $country, $weight, $available = true);
+    public function findByCountryAndWeight(CountryInterface $country, Decimal $weight, bool $available = true): array;
 
     /**
      * Returns the prices by country.
      *
-     * @param CountryInterface $country
-     *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
+     * @return array<ShipmentPriceInterface>
      */
-    public function findByCountry(CountryInterface $country);
+    public function findByCountry(CountryInterface $country): array;
 }

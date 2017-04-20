@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
 use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model;
 
 /**
@@ -12,110 +16,64 @@ use Ekyna\Component\Commerce\Stock\Model;
  */
 class StockAdjustment implements Model\StockAdjustmentInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int                      $id        = null;
+    protected ?Model\StockUnitInterface $stockUnit = null;
+    protected Decimal                   $quantity;
+    protected ?string                   $reason    = null;
+    protected ?string                   $note      = null;
+    protected DateTimeInterface         $createdAt;
 
-    /**
-     * @var Model\StockUnitInterface
-     */
-    protected $stockUnit;
-
-    /**
-     * @var float
-     */
-    protected $quantity;
-
-    /**
-     * @var string
-     */
-    protected $reason;
-
-    /**
-     * @var string
-     */
-    protected $note;
-
-    /**
-     * @var DateTime
-     */
-    protected $createdAt;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->quantity = 0.;
+        $this->quantity = new Decimal(0);
         $this->createdAt = new DateTime();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getStockUnit(): ?Model\StockUnitInterface
     {
         return $this->stockUnit;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setStockUnit(Model\StockUnitInterface $stockUnit = null): Model\StockAdjustmentInterface
+    public function setStockUnit(?Model\StockUnitInterface $stockUnit): Model\StockAdjustmentInterface
     {
-        if ($stockUnit !== $this->stockUnit) {
-            if ($previous = $this->stockUnit) {
-                $this->stockUnit = null;
-                $previous->removeStockAdjustment($this);
-            }
+        if ($stockUnit === $this->stockUnit) {
+            return $this;
+        }
 
-            if ($this->stockUnit = $stockUnit) {
-                $this->stockUnit->addStockAdjustment($this);
-            }
+        if ($previous = $this->stockUnit) {
+            $this->stockUnit = null;
+            $previous->removeStockAdjustment($this);
+        }
+
+        if ($this->stockUnit = $stockUnit) {
+            $this->stockUnit->addStockAdjustment($this);
         }
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getQuantity(): float
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setQuantity(float $quantity): Model\StockAdjustmentInterface
+    public function setQuantity(Decimal $quantity): Model\StockAdjustmentInterface
     {
         $this->quantity = $quantity;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getReason(): ?string
     {
         return $this->reason;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setReason(string $reason): Model\StockAdjustmentInterface
     {
         $this->reason = $reason;
@@ -123,17 +81,11 @@ class StockAdjustment implements Model\StockAdjustmentInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getNote(): ?string
     {
         return $this->note;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setNote(string $note): Model\StockAdjustmentInterface
     {
         $this->note = $note;
@@ -141,18 +93,12 @@ class StockAdjustment implements Model\StockAdjustmentInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCreatedAt(): DateTime
+    public function getCreatedAt(): DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setCreatedAt(DateTime $createdAt): Model\StockAdjustmentInterface
+    public function setCreatedAt(DateTimeInterface $createdAt): Model\StockAdjustmentInterface
     {
         $this->createdAt = $createdAt;
 

@@ -71,11 +71,12 @@ class LoyaltyLogger
             ->setAmount($points)
             ->setOrigin($origin);
 
-        $this->persistenceHelper->getManager()->persist($log);
+        $manager = $this->persistenceHelper->getManager();
+        $manager->persist($log);
 
         if ($this->persistenceHelper->getEventQueue()->isOpened()) {
-            $uow = $this->persistenceHelper->getManager()->getUnitOfWork();
-            $metadata = $this->persistenceHelper->getManager()->getClassMetadata(LoyaltyLog::class);
+            $uow = $manager->getUnitOfWork();
+            $metadata = $manager->getClassMetadata(LoyaltyLog::class);
             $uow->computeChangeSet($metadata, $log);
         }
     }

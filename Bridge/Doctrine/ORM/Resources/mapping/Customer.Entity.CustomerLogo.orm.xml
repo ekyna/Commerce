@@ -9,10 +9,6 @@
     <entity name="Ekyna\Component\Commerce\Customer\Entity\CustomerLogo"
             table="commerce_customer_logo">
 
-        <entity-listeners>
-            <entity-listener class="Ekyna\Component\Commerce\Common\Listener\UploadableListener"/>
-        </entity-listeners>
-
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>

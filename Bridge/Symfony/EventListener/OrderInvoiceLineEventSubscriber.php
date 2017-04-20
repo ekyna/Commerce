@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Order\Event\OrderInvoiceLineEvents;
@@ -13,10 +15,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class OrderInvoiceLineEventSubscriber extends OrderInvoiceLineListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             OrderInvoiceLineEvents::INSERT => ['onInsert', 0],

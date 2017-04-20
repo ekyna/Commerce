@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Provider;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\AbstractProvider;
@@ -13,26 +15,14 @@ use Ekyna\Component\Commerce\Shipment\Repository\ShipmentMethodRepositoryInterfa
  */
 class ShipmentGatewayProvider extends AbstractProvider
 {
-    /**
-     * @var ShipmentMethodRepositoryInterface
-     */
-    private $shipmentMethodRepository;
+    private ShipmentMethodRepositoryInterface $shipmentMethodRepository;
 
-
-    /**
-     * Constructor.
-     *
-     * @param ShipmentMethodRepositoryInterface $shipmentMethodRepository
-     */
     public function __construct(ShipmentMethodRepositoryInterface $shipmentMethodRepository)
     {
         $this->shipmentMethodRepository = $shipmentMethodRepository;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function loadGateways()
+    protected function loadGateways(): void
     {
         $methods = $this->shipmentMethodRepository->findAll();
 

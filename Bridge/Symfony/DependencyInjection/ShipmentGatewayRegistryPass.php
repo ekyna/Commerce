@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -13,27 +15,21 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class ShipmentGatewayRegistryPass implements CompilerPassInterface
 {
-    /**
-     * @inheritDoc
-     */
-    public function process(ContainerBuilder $container)
-    {
-        if (!$container->hasDefinition('ekyna_commerce.shipment.gateway_registry')) {
-            return;
-        }
+    public const PLATFORM_TAG = 'ekyna_commerce.shipment.gateway_platform';
+    public const PROVIDER_TAG = 'ekyna_commerce.shipment.gateway_provider';
 
-        $registryDefinition = $container->getDefinition('ekyna_commerce.shipment.gateway_registry');
+    public function process(ContainerBuilder $container): void
+    {
+        $definition = $container->getDefinition('ekyna_commerce.registry.shipment_gateway');
 
         // Registers the platforms
-        $platforms = $container->findTaggedServiceIds('ekyna_commerce.shipment.gateway_platform');
-        foreach ($platforms as $id => $attributes) {
-            $registryDefinition->addMethodCall('registerPlatform', [new Reference($id)]);
+        foreach ($container->findTaggedServiceIds(self::PLATFORM_TAG, true) as $serviceId => $tags) {
+            $definition->addMethodCall('registerPlatform', [new Reference($serviceId)]);
         }
 
         // Registers the providers
-        $providers = $container->findTaggedServiceIds('ekyna_commerce.shipment.gateway_provider');
-        foreach ($providers as $id => $attributes) {
-            $registryDefinition->addMethodCall('registerProvider', [new Reference($id)]);
+        foreach ($container->findTaggedServiceIds(self::PROVIDER_TAG, true) as $serviceId => $tags) {
+            $definition->addMethodCall('registerProvider', [new Reference($serviceId)]);
         }
     }
 }

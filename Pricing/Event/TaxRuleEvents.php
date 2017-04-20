@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Event;
 
 /**
@@ -10,19 +12,24 @@ namespace Ekyna\Component\Commerce\Pricing\Event;
 final class TaxRuleEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.tax_rule.insert';
-    const UPDATE      = 'ekyna_commerce.tax_rule.update';
-    const DELETE      = 'ekyna_commerce.tax_rule.delete';
+    public const INSERT      = 'ekyna_commerce.tax_rule.insert';
+    public const UPDATE      = 'ekyna_commerce.tax_rule.update';
+    public const DELETE      = 'ekyna_commerce.tax_rule.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.tax_rule.initialize';
+    public const PRE_CREATE  = 'ekyna_commerce.tax_rule.pre_create';
+    public const POST_CREATE = 'ekyna_commerce.tax_rule.post_create';
 
-    const PRE_CREATE  = 'ekyna_commerce.tax_rule.pre_create';
-    const POST_CREATE = 'ekyna_commerce.tax_rule.post_create';
+    public const PRE_UPDATE  = 'ekyna_commerce.tax_rule.pre_update';
+    public const POST_UPDATE = 'ekyna_commerce.tax_rule.post_update';
 
-    const PRE_UPDATE  = 'ekyna_commerce.tax_rule.pre_update';
-    const POST_UPDATE = 'ekyna_commerce.tax_rule.post_update';
+    public const PRE_DELETE  = 'ekyna_commerce.tax_rule.pre_delete';
+    public const POST_DELETE = 'ekyna_commerce.tax_rule.post_delete';
 
-    const PRE_DELETE  = 'ekyna_commerce.tax_rule.pre_delete';
-    const POST_DELETE = 'ekyna_commerce.tax_rule.post_delete';
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

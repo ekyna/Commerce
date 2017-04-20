@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\MessageTranslationInterface;
@@ -12,24 +14,15 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
  */
 abstract class AbstractMessageTranslation extends AbstractTranslation implements MessageTranslationInterface
 {
-    /**
-     * @var string
-     */
-    protected $content;
+    protected ?string $content = null;
 
 
-    /**
-     * @inheritdoc
-     */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->content;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setContent($content)
+    public function setContent(?string $content): MessageTranslationInterface
     {
         $this->content = $content;
 

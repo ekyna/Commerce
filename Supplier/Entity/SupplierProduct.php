@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
-use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
@@ -18,114 +21,67 @@ class SupplierProduct implements SupplierProductInterface
     use SubjectRelativeTrait;
     use TimestampableTrait;
 
-    /**
-     * @var Supplier
-     */
-    protected $supplier;
-
-    /**
-     * @var float
-     */
-    protected $availableStock;
-
-    /**
-     * @var float
-     */
-    protected $orderedStock;
-
-    /**
-     * @var DateTime
-     */
-    protected $estimatedDateOfArrival;
+    protected ?SupplierInterface $supplier               = null;
+    protected Decimal            $availableStock;
+    protected Decimal            $orderedStock;
+    protected ?DateTimeInterface $estimatedDateOfArrival = null;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->initializeSubjectRelative();
 
-        $this->availableStock = 0.;
-        $this->orderedStock = 0.;
+        $this->availableStock = new Decimal(0);
+        $this->orderedStock = new Decimal(0);
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->designation ?: 'New supplier product';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getSupplier(): ?SupplierInterface
     {
         return $this->supplier;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSupplier(SupplierInterface $supplier)
+    public function setSupplier(?SupplierInterface $supplier): SupplierProductInterface
     {
         $this->supplier = $supplier;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAvailableStock(): float
+    public function getAvailableStock(): Decimal
     {
         return $this->availableStock;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAvailableStock(float $stock): SupplierProductInterface
+    public function setAvailableStock(Decimal $stock): SupplierProductInterface
     {
         $this->availableStock = $stock;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOrderedStock(): float
+    public function getOrderedStock(): Decimal
     {
         return $this->orderedStock;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOrderedStock(float $stock): SupplierProductInterface
+    public function setOrderedStock(Decimal $stock): SupplierProductInterface
     {
         $this->orderedStock = $stock;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getEstimatedDateOfArrival(): ?DateTime
+    public function getEstimatedDateOfArrival(): ?DateTimeInterface
     {
         return $this->estimatedDateOfArrival;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setEstimatedDateOfArrival(DateTime $date = null): SupplierProductInterface
+    public function setEstimatedDateOfArrival(?DateTimeInterface $date): SupplierProductInterface
     {
         $this->estimatedDateOfArrival = $date;
 

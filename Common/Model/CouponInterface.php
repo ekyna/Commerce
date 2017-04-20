@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -14,177 +18,57 @@ interface CouponInterface extends ResourceInterface
 {
     /**
      * Returns the customer that owns this coupon.
-     *
-     * @return CustomerInterface
      */
     public function getCustomer(): ?CustomerInterface;
 
     /**
      * Sets the customer that owns this coupon.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return $this|CouponInterface
      */
-    public function setCustomer(CustomerInterface $customer = null): CouponInterface;
+    public function setCustomer(?CustomerInterface $customer): CouponInterface;
 
-    /**
-     * Returns the code.
-     *
-     * @return string
-     */
     public function getCode(): ?string;
 
-    /**
-     * Sets the code.
-     *
-     * @param string $code
-     *
-     * @return $this|CouponInterface
-     */
     public function setCode(string $code): CouponInterface;
 
-    /**
-     * Returns the start date.
-     *
-     * @return \DateTime
-     */
-    public function getStartAt(): ?\DateTime;
+    public function getStartAt(): ?DateTimeInterface;
 
-    /**
-     * Sets the start date.
-     *
-     * @param \DateTime $from
-     *
-     * @return $this|CouponInterface
-     */
-    public function setStartAt(\DateTime $from = null): CouponInterface;
+    public function setStartAt(DateTimeInterface $date): CouponInterface;
 
-    /**
-     * Returns the end date.
-     *
-     * @return \DateTime
-     */
-    public function getEndAt(): ?\DateTime;
+    public function getEndAt(): ?DateTimeInterface;
 
-    /**
-     * Sets the end date.
-     *
-     * @param \DateTime $to
-     *
-     * @return $this|CouponInterface
-     */
-    public function setEndAt(\DateTime $to = null): CouponInterface;
+    public function setEndAt(?DateTimeInterface $date): CouponInterface;
 
-    /**
-     * Returns the limit.
-     *
-     * @return int
-     */
     public function getLimit(): int;
 
-    /**
-     * Sets the limit.
-     *
-     * @param int $limit
-     *
-     * @return $this|CouponInterface
-     */
     public function setLimit(int $limit): CouponInterface;
 
-    /**
-     * Returns the usage.
-     *
-     * @return int
-     */
     public function getUsage(): int;
 
-    /**
-     * Sets the usage.
-     *
-     * @param int $usage
-     *
-     * @return $this|CouponInterface
-     */
     public function setUsage(int $usage): CouponInterface;
 
-    /**
-     * Returns the minimum gross amount.
-     *
-     * @return float
-     */
-    public function getMinGross(): float;
+    public function getMinGross(): Decimal;
 
-    /**
-     * Sets the minimum gross amount.
-     *
-     * @param float $min
-     *
-     * @return $this|CouponInterface
-     */
-    public function setMinGross(float $min): CouponInterface;
+    public function setMinGross(Decimal $min): CouponInterface;
 
     /**
      * Returns whether this coupon can be combined with other discounts.
-     *
-     * @return bool
      */
     public function isCumulative(): bool;
 
     /**
      * Sets whether this coupon can be combined with other discounts.
-     *
-     * @param bool $cumulative
-     *
-     * @return $this|CouponInterface
      */
     public function setCumulative(bool $cumulative): CouponInterface;
 
-    /**
-     * Returns the designation.
-     *
-     * @return string
-     */
     public function getDesignation(): ?string;
 
-    /**
-     * Sets the designation.
-     *
-     * @param string $designation
-     *
-     * @return $this|CouponInterface
-     */
-    public function setDesignation(string $designation = null): CouponInterface;
+    public function setDesignation(?string $designation): CouponInterface;
 
-    /**
-     * Returns the mode.
-     *
-     * @return string
-     */
-    public function getMode(): ?string;
+    public function getMode(): string;
 
-    /**
-     * Sets the mode.
-     *
-     * @param string $mode
-     *
-     * @return $this|CouponInterface
-     */
     public function setMode(string $mode): CouponInterface;
 
-    /**
-     * Returns the amount.
-     *
-     * @return float
-     */
-    public function getAmount(): ?float;
+    public function getAmount(): Decimal;
 
-    /**
-     * Sets the amount.
-     *
-     * @param float $amount
-     *
-     * @return $this|CouponInterface
-     */
-    public function setAmount(float $amount): CouponInterface;
+    public function setAmount(Decimal $amount): CouponInterface;
 }

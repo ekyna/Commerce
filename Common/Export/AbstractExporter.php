@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Export;
 
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -14,15 +16,8 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
  */
 abstract class AbstractExporter
 {
-    /**
-     * @var PropertyAccessor
-     */
-    protected $accessor;
+    protected PropertyAccessor $accessor;
 
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->accessor = PropertyAccess::createPropertyAccessor();
@@ -30,12 +25,6 @@ abstract class AbstractExporter
 
     /**
      * Builds the CSV file.
-     *
-     * @param array  $objects
-     * @param string $name
-     * @param array  $map
-     *
-     * @return string
      */
     protected function buildFile(array $objects, string $name, array $map): string
     {
@@ -56,24 +45,19 @@ abstract class AbstractExporter
 
     /**
      * Creates the CSV file.
-     *
-     * @param array  $rows
-     * @param string $name
-     *
-     * @return string
      */
     protected function createFile(array $rows, string $name): string
     {
         if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
-            throw new RuntimeException("Failed to create temporary file.");
+            throw new RuntimeException('Failed to create temporary file.');
         }
 
-        if (false === $handle = fopen($path, "w")) {
+        if (false === $handle = fopen($path, 'w')) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
         foreach ($rows as $row) {
-            fputcsv($handle, $row, ';', '"');
+            fputcsv($handle, $row);
         }
 
         fclose($handle);
@@ -83,10 +67,6 @@ abstract class AbstractExporter
 
     /**
      * Returns the headers.
-     *
-     * @param array $names
-     *
-     * @return array
      */
     protected function buildHeaders(array $names): array
     {
@@ -101,10 +81,6 @@ abstract class AbstractExporter
 
     /**
      * Returns the header for the given name.
-     *
-     * @param string $name
-     *
-     * @return string
      */
     protected function buildHeader(string $name): string
     {
@@ -115,9 +91,6 @@ abstract class AbstractExporter
      * Builds the row.
      *
      * @param mixed $object
-     * @param array $map
-     *
-     * @return array
      */
     protected function buildRow($object, array $map): array
     {
@@ -129,7 +102,7 @@ abstract class AbstractExporter
             } elseif (is_callable($value)) {
                 $value = $value($object);
             } else {
-                throw new UnexpectedValueException("Expected string or callable.");
+                throw new UnexpectedValueException('Expected string or callable.');
             }
 
             $row[] = $this->transform($name, (string)$value);
@@ -140,11 +113,6 @@ abstract class AbstractExporter
 
     /**
      * Transforms the value.
-     *
-     * @param string $name
-     * @param string $value
-     *
-     * @return string|null
      */
     protected function transform(string $name, string $value): ?string
     {

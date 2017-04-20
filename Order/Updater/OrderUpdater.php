@@ -1,33 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Updater;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorFactory;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 
+/**
+ * Class OrderUpdater
+ * @package Ekyna\Component\Commerce\Order\Updater
+ * @author  Étienne Dauvergne <contact@ekyna.com>
+ */
 class OrderUpdater implements OrderUpdaterInterface
 {
-    /**
-     * @var MarginCalculatorFactory
-     */
-    private $marginCalculatorFactory;
+    private MarginCalculatorFactory $marginCalculatorFactory;
 
-
-    /**
-     * Constructor.
-     *
-     * @param MarginCalculatorFactory $marginCalculatorFactory
-     */
     public function __construct(MarginCalculatorFactory $marginCalculatorFactory)
     {
         $this->marginCalculatorFactory = $marginCalculatorFactory;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateMarginTotals(OrderInterface $order): bool
     {
         $changed = false;
@@ -35,15 +31,15 @@ class OrderUpdater implements OrderUpdaterInterface
         $result = $this->marginCalculatorFactory->create(null, true)->calculateSale($order);
 
         // Margin
-        $total = round($result ? $result->getAmount() : 0, 5);
-        if ($total !== $order->getMarginTotal()) {
+        $total = $result ? $result->getAmount() : new Decimal(0);
+        if (!$total->equals($order->getMarginTotal())) {
             $order->setMarginTotal($total);
             $changed = true;
         }
 
         // Revenue
-        $total = round($result ? $result->getSellingPrice() : 0, 5);
-        if ($total !== $order->getRevenueTotal()) {
+        $total = $result ? $result->getSellingPrice() : new Decimal(0);
+        if (!$total->equals($order->getRevenueTotal())) {
             $order->setRevenueTotal($total);
             $changed = true;
         }
@@ -51,9 +47,6 @@ class OrderUpdater implements OrderUpdaterInterface
         return $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function updateItemsCount(OrderInterface $order): bool
     {
         $count = $this->calculateItemsCount($order->getItems());
@@ -70,7 +63,7 @@ class OrderUpdater implements OrderUpdaterInterface
     /**
      * Calculates the items count.
      *
-     * @param Collection|OrderItemInterface[] $items
+     * @param Collection<OrderItemInterface> $items
      *
      * @return int
      */
@@ -85,16 +78,9 @@ class OrderUpdater implements OrderUpdaterInterface
         return $count;
     }
 
-    /**
-     * Calculate
-     *
-     * @param OrderItemInterface $item
-     *
-     * @return int
-     */
     private function calculateItemCount(OrderItemInterface $item): int
     {
-        $count = 0;
+        $count = new Decimal(0);
 
         if (!$item->isCompound()) {
             if ($item->hasStockAssignments()) {
@@ -108,6 +94,6 @@ class OrderUpdater implements OrderUpdaterInterface
 
         $count += $this->calculateItemsCount($item->getChildren());
 
-        return $count;
+        return $count->toInt();
     }
 }

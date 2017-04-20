@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,30 +11,18 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 trait KeySubjectTrait
 {
-    /**
-     * @var string
-     */
-    protected $key;
+    protected ?string $key = null;
 
 
-    /**
-     * Returns the key.
-     *
-     * @return string
-     */
-    public function getKey()
+    public function getKey(): ?String
     {
         return $this->key;
     }
 
     /**
-     * Sets the key.
-     *
-     * @param string $key
-     *
      * @return $this|KeySubjectInterface
      */
-    public function setKey($key)
+    public function setKey(?string $key): KeySubjectInterface
     {
         $this->key = $key;
 

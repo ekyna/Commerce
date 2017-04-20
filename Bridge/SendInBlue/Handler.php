@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\SendInBlue;
 
 use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionStatus;
@@ -8,6 +10,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
+use function json_decode;
+use function sleep;
+
 /**
  * Class Handler
  * @package Ekyna\Component\Commerce\Bridge\SendInBlue
@@ -15,12 +20,9 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  */
 class Handler extends AbstractHandler
 {
-    /**
-     * @inheritDoc
-     */
     public function handle(Request $request): Response
     {
-        $data = \json_decode($request->getContent(), true);
+        $data = json_decode($request->getContent(), true);
 
         $this->logger->error('[SendInBlue webhook] ' . $request->getContent());
 
@@ -73,7 +75,7 @@ class Handler extends AbstractHandler
 
         $member = $this->memberRepository->findOneByEmail($data['email']);
         if (null === $member) {
-            $member = $this->memberRepository->createNew();
+            $member = $this->memberFactory->create();
             $member
                 ->setIdentifier(static::getName(), $data['id'])
                 ->setEmail($data['email']);
@@ -87,7 +89,7 @@ class Handler extends AbstractHandler
             }
 
             if (null === $subscription = $member->getSubscription($audience)) {
-                $subscription = $this->subscriptionRepository->createNew();
+                $subscription = $this->subscriptionFactory->create();
                 $subscription
                     ->setMember($member)
                     ->setAudience($audience);
@@ -176,7 +178,7 @@ class Handler extends AbstractHandler
                             continue;
                         }
 
-                        $subscription = $this->subscriptionRepository->createNew();
+                        $subscription = $this->subscriptionFactory->create();
                         $subscription
                             ->setAudience($audience)
                             ->setMember($member)
@@ -304,9 +306,6 @@ class Handler extends AbstractHandler
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public static function getName(): string
     {
         return Constants::NAME;

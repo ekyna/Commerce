@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
+use DateTimeInterface;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
@@ -12,125 +16,52 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  */
 class Coupon implements Model\CouponInterface
 {
-    /**
-     * @var int
-     */
-    private $id;
+    private ?int               $id          = null;
+    private ?CustomerInterface $customer    = null;
+    private ?string            $code        = null;
+    private ?DateTimeInterface $startAt     = null;
+    private ?DateTimeInterface $endAt       = null;
+    private int                $limit       = 0;
+    private int                $usage       = 0;
+    private Decimal            $minGross;
+    private bool               $cumulative  = false;
+    private ?string            $designation = null;
+    private string             $mode        = Model\AdjustmentModes::MODE_PERCENT;
+    private Decimal            $amount;
 
-    /**
-     * @var CustomerInterface|null
-     */
-    private $customer;
-
-    /**
-     * @var string
-     */
-    private $code;
-
-    /**
-     * @var \DateTime
-     */
-    private $startAt;
-
-    /**
-     * @var \DateTime
-     */
-    private $endAt;
-
-    /**
-     * @var int
-     */
-    private $limit;
-
-    /**
-     * @var int
-     */
-    private $usage;
-
-    /**
-     * @var float
-     */
-    private $minGross;
-
-    /**
-     * @var bool
-     */
-    private $cumulative;
-
-    /**
-     * @var string
-     */
-    private $designation;
-
-    /**
-     * @var string
-     */
-    private $mode;
-
-    /**
-     * @var float
-     */
-    private $amount;
-
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->limit = 0;
-        $this->usage = 0;
-        $this->minGross = 0;
-        $this->cumulative = false;
-        $this->mode = Model\AdjustmentModes::MODE_PERCENT;
+        $this->minGross = new Decimal(0);
+        $this->amount = new Decimal(0);
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->code ?: 'New coupon';
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCustomer(): ?CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setCustomer(CustomerInterface $customer = null): Model\CouponInterface
+    public function setCustomer(?CustomerInterface $customer): Model\CouponInterface
     {
         $this->customer = $customer;
+
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCode(): ?string
     {
         return $this->code;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setCode(string $code): Model\CouponInterface
     {
         $this->code = $code;
@@ -138,53 +69,35 @@ class Coupon implements Model\CouponInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getStartAt(): ?\DateTime
+    public function getStartAt(): ?DateTimeInterface
     {
         return $this->startAt;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setStartAt(\DateTime $startAt = null): Model\CouponInterface
+    public function setStartAt(?DateTimeInterface $date): Model\CouponInterface
     {
-        $this->startAt = $startAt;
+        $this->startAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getEndAt(): ?\DateTime
+    public function getEndAt(): ?DateTimeInterface
     {
         return $this->endAt;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setEndAt(\DateTime $endAt = null): Model\CouponInterface
+    public function setEndAt(?DateTimeInterface $date): Model\CouponInterface
     {
-        $this->endAt = $endAt;
+        $this->endAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLimit(): int
     {
         return $this->limit;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setLimit(int $limit): Model\CouponInterface
     {
         $this->limit = $limit;
@@ -192,17 +105,11 @@ class Coupon implements Model\CouponInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getUsage(): int
     {
         return $this->usage;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setUsage(int $usage): Model\CouponInterface
     {
         $this->usage = $usage;
@@ -210,41 +117,23 @@ class Coupon implements Model\CouponInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getMinGross(): float
+    public function getMinGross(): Decimal
     {
         return $this->minGross;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setMinGross(float $min): Model\CouponInterface
+    public function setMinGross(Decimal $min): Model\CouponInterface
     {
         $this->minGross = $min;
 
         return $this;
     }
 
-    /**
-     * Returns whether this coupon can be combined with other discounts.
-     *
-     * @return bool
-     */
     public function isCumulative(): bool
     {
         return $this->cumulative;
     }
 
-    /**
-     * Sets whether this coupon can be combined with other discounts.
-     *
-     * @param bool $cumulative
-     *
-     * @return Coupon
-     */
     public function setCumulative(bool $cumulative): Model\CouponInterface
     {
         $this->cumulative = $cumulative;
@@ -252,54 +141,36 @@ class Coupon implements Model\CouponInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getDesignation(): ?string
     {
         return $this->designation;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setDesignation(string $designation = null): Model\CouponInterface
+    public function setDesignation(?string $designation): Model\CouponInterface
     {
         $this->designation = $designation;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getMode(): ?string
+    public function getMode(): string
     {
         return $this->mode;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setMode(string $mode = null): Model\CouponInterface
+    public function setMode(string $mode): Model\CouponInterface
     {
         $this->mode = $mode;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getAmount(): ?float
+    public function getAmount(): Decimal
     {
         return $this->amount;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setAmount(float $amount): Model\CouponInterface
+    public function setAmount(Decimal $amount): Model\CouponInterface
     {
         $this->amount = $amount;
 

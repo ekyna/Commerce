@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface as Country;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
-use Ekyna\Component\Commerce\Shipment\Gateway\RegistryInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\GatewayRegistryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice as Price;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface as Method;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentPriceRepositoryInterface;
@@ -21,41 +24,22 @@ use Ekyna\Component\Commerce\Shipment\Repository\ShipmentRuleRepositoryInterface
  */
 class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 {
-    /**
-     * @var ShipmentPriceRepositoryInterface
-     */
-    private $priceRepository;
-
-    /**
-     * @var ShipmentRuleRepositoryInterface
-     */
-    private $ruleRepository;
-
-    /**
-     * @var RegistryInterface
-     */
-    private $gatewayRegistry;
-
-    /**
-     * @var TaxResolverInterface
-     */
-    private $taxResolver;
-
-    /**
-     * @var ContextProviderInterface
-     */
-    private $contextProvider;
+    private ShipmentPriceRepositoryInterface $priceRepository;
+    private ShipmentRuleRepositoryInterface  $ruleRepository;
+    private GatewayRegistryInterface         $gatewayRegistry;
+    private TaxResolverInterface             $taxResolver;
+    private ContextProviderInterface         $contextProvider;
 
     /**
      * [
      *     {countryId} => [
      *         [
      *             'method'     => (ShipmentMethodInterface),
-     *             'max_weight' => (float),
+     *             'max_weight' => (Decimal),
      *             'prices'     => [
      *                 [
-     *                     'weight' => (float),
-     *                     'price'  => (float),
+     *                     'weight' => (Decimal),
+     *                     'price'  => (Decimal),
      *                 ]
      *             ],
      *         ]
@@ -64,24 +48,14 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      *
      * @var array
      */
-    private $grids = [];
+    private array $grids = [];
 
-
-    /**
-     * Constructor.
-     *
-     * @param ShipmentPriceRepositoryInterface $priceRepository
-     * @param ShipmentRuleRepositoryInterface  $ruleRepository
-     * @param RegistryInterface                $gatewayRegistry
-     * @param TaxResolverInterface             $taxResolver
-     * @param ContextProviderInterface         $contextProvider
-     */
     public function __construct(
         ShipmentPriceRepositoryInterface $priceRepository,
-        ShipmentRuleRepositoryInterface $ruleRepository,
-        RegistryInterface $gatewayRegistry,
-        TaxResolverInterface $taxResolver,
-        ContextProviderInterface $contextProvider
+        ShipmentRuleRepositoryInterface  $ruleRepository,
+        GatewayRegistryInterface         $gatewayRegistry,
+        TaxResolverInterface             $taxResolver,
+        ContextProviderInterface         $contextProvider
     ) {
         $this->priceRepository = $priceRepository;
         $this->ruleRepository = $ruleRepository;
@@ -90,9 +64,6 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         $this->contextProvider = $contextProvider;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getAvailablePricesBySale(SaleInterface $sale, bool $availableOnly = true): array
     {
         $context = $this->contextProvider->getContext($sale);
@@ -128,9 +99,6 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         return $prices;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getPriceBySale(SaleInterface $sale): ?Price
     {
         if (null === $method = $sale->getShipmentMethod()) {
@@ -156,10 +124,7 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
             ->setTaxes($this->getTaxesRates($method, $context));
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPriceByCountryAndMethodAndWeight(Country $country, Method $method, float $weight): ?Price
+    public function getPriceByCountryAndMethodAndWeight(Country $country, Method $method, Decimal $weight): ?Price
     {
         if (!$grid = $this->getGridForCountryAndMethod($country, $method)) {
             return null;
@@ -180,19 +145,16 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     /**
      * Resolves the price form the given grid entry and total weight.
-     *
-     * @param array $entry
-     * @param float $weight
-     *
-     * @return float
      */
-    private function resolvePrice(array $entry, float $weight): float
+    private function resolvePrice(array $entry, Decimal $weight): Decimal
     {
-        $price = $count = 0;
+        $price = new Decimal(0);
+        $count = 0;
 
-        if ($weight > $max = $entry['max_weight']) {
-            $count = floor($weight / $max);
-            $weight = round(fmod($weight, $max), 3);
+        $max = $entry['max_weight'];
+        if (0 < $max && $max < $weight) {
+            $count = $weight->div($max)->floor();
+            $weight = $weight->rem($max)->round(3);
         }
 
         if (0 < $count) {
@@ -202,7 +164,7 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
         foreach ($entry['prices'] as $p) {
             // If sale weight is lower than or equal price weight
-            if (-1 !== bccomp($p['weight'], $weight, 3)) {
+            if ($p['weight'] >= $weight) {
                 $price += $p['price'];
                 break;
             }
@@ -213,10 +175,6 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     /**
      * Returns the price grid for the given country.
-     *
-     * @param Country $country
-     *
-     * @return array
      */
     private function getGridForCountry(Country $country): array
     {
@@ -227,11 +185,6 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     /**
      * Returns the price grid for the given country and method.
-     *
-     * @param Country        $country
-     * @param Method $method
-     *
-     * @return array|null
      */
     private function getGridForCountryAndMethod(Country $country, Method $method): ?array
     {
@@ -246,8 +199,6 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     /**
      * Loads the country price grid.
-     *
-     * @param Country $country
      */
     private function loadCountryGrid(Country $country): void
     {
@@ -282,11 +233,7 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         foreach ($grid as &$method) {
             // Sort prices by weight ASC
             usort($method['prices'], function ($a, $b) {
-                if (0 === bccomp($a['weight'], $b['weight'], 3)) {
-                    return 0;
-                }
-
-                return $a['weight'] > $b['weight'] ? 1 : -1;
+                return $a['weight']->compareTo($b['weight']);
             });
 
             // Fix max weight
@@ -303,11 +250,6 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     /**
      * Returns the tax rates for the given method.
-     *
-     * @param Method $method
-     * @param ContextInterface        $context
-     *
-     * @return array
      */
     private function getTaxesRates(Method $method, ContextInterface $context): array
     {

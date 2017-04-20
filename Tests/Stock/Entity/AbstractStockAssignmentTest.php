@@ -1,7 +1,10 @@
-<?php
+<?php /** @noinspection PhpMethodNamingConventionInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Tests\Stock\Entity;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Tests\Fixture;
 use PHPUnit\Framework\TestCase;
 
@@ -15,60 +18,60 @@ class AbstractStockAssignmentTest extends TestCase
     public function test_stockUnit(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertNull($assignment->getStockUnit());
+        self::assertNull($assignment->getStockUnit());
 
         $unitA = Fixture::stockUnit();
         $assignment->setStockUnit($unitA);
-        $this->assertSame($unitA, $assignment->getStockUnit());
-        $this->assertTrue($unitA->hasStockAssignment($assignment));
+        self::assertSame($unitA, $assignment->getStockUnit());
+        self::assertTrue($unitA->hasStockAssignment($assignment));
 
         $unitB = Fixture::stockUnit();
         $assignment->setStockUnit($unitB);
-        $this->assertSame($unitB, $assignment->getStockUnit());
-        $this->assertTrue($unitB->hasStockAssignment($assignment));
-        $this->assertFalse($unitA->hasStockAssignment($assignment));
+        self::assertSame($unitB, $assignment->getStockUnit());
+        self::assertTrue($unitB->hasStockAssignment($assignment));
+        self::assertFalse($unitA->hasStockAssignment($assignment));
 
         $assignment->setStockUnit(null);
-        $this->assertNull($assignment->getStockUnit());
-        $this->assertFalse($unitB->hasStockAssignment($assignment));
+        self::assertNull($assignment->getStockUnit());
+        self::assertFalse($unitB->hasStockAssignment($assignment));
     }
 
     public function test_soldQuantity(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertSame(0., $assignment->getSoldQuantity());
+        self::assertTrue($assignment->getSoldQuantity()->isZero());
 
-        $assignment->setSoldQuantity(10);
-        $this->assertSame(10., $assignment->getSoldQuantity());
+        $assignment->setSoldQuantity(new Decimal(10));
+        self::assertEquals(new Decimal(10), $assignment->getSoldQuantity());
     }
 
     public function test_shippedQuantity(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertSame(0., $assignment->getShippedQuantity());
+        self::assertTrue($assignment->getShippedQuantity()->isZero());
 
-        $assignment->setShippedQuantity(10);
-        $this->assertSame(10., $assignment->getShippedQuantity());
+        $assignment->setShippedQuantity(new Decimal(10));
+        self::assertEquals(new Decimal(10), $assignment->getShippedQuantity());
     }
 
     public function test_lockedQuantity(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertSame(0., $assignment->getLockedQuantity());
+        self::assertTrue($assignment->getLockedQuantity()->isZero());
 
-        $assignment->setLockedQuantity(10);
-        $this->assertSame(10., $assignment->getLockedQuantity());
+        $assignment->setLockedQuantity(new Decimal(10));
+        self::assertEquals(new Decimal(10), $assignment->getLockedQuantity());
     }
 
     public function test_getShippableQuantity(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertSame(0., $assignment->getShippableQuantity());
+        self::assertTrue($assignment->getShippableQuantity()->isZero());
 
         $assignment = Fixture::stockAssignment([
             'sold' => 10.,
         ]);
-        $this->assertSame(0., $assignment->getShippableQuantity()); // No stock unit
+        self::assertTrue($assignment->getShippableQuantity()->isZero()); // No stock unit
 
         $assignment = Fixture::stockAssignment([
             'unit' => [
@@ -77,7 +80,7 @@ class AbstractStockAssignmentTest extends TestCase
             ],
             'sold' => 10.,
         ]);
-        $this->assertSame(10., $assignment->getShippableQuantity());
+        self::assertEquals(new Decimal(10), $assignment->getShippableQuantity());
 
         $assignment = Fixture::stockAssignment([
             'unit'    => [
@@ -87,7 +90,7 @@ class AbstractStockAssignmentTest extends TestCase
             'sold'    => 10.,
             'shipped' => 5.,
         ]);
-        $this->assertSame(5., $assignment->getShippableQuantity());
+        self::assertEquals(new Decimal(5), $assignment->getShippableQuantity());
 
         $assignment = Fixture::stockAssignment([
             'unit'    => [
@@ -98,7 +101,7 @@ class AbstractStockAssignmentTest extends TestCase
             'shipped' => 5.,
             'locked'  => 5.,
         ]);
-        $this->assertSame(0., $assignment->getShippableQuantity());
+        self::assertTrue($assignment->getShippableQuantity()->isZero());
 
         $assignment = Fixture::stockAssignment([
             'unit'    => [
@@ -109,7 +112,7 @@ class AbstractStockAssignmentTest extends TestCase
             'shipped' => 5.,
             'locked'  => 5.,
         ]);
-        $this->assertSame(20., $assignment->getShippableQuantity());
+        self::assertEquals(new Decimal(20), $assignment->getShippableQuantity());
 
         $assignment = Fixture::stockAssignment([
             'unit' => [
@@ -120,18 +123,18 @@ class AbstractStockAssignmentTest extends TestCase
             ],
             'sold' => 40.,
         ]);
-        $this->assertSame(5., $assignment->getShippableQuantity());
+        self::assertEquals(new Decimal(5), $assignment->getShippableQuantity());
     }
 
     public function test_getReleasableQuantity(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertsame(0., $assignment->getReleasableQuantity());
+        self::assertTrue($assignment->getReleasableQuantity()->isZero());
 
         $assignment = Fixture::stockAssignment([
             'sold' => 20.,
         ]);
-        $this->assertsame(0., $assignment->getReleasableQuantity()); // No stock unit
+        self::assertTrue($assignment->getReleasableQuantity()->isZero()); // No stock unit
 
         $assignment = Fixture::stockAssignment([
             'unit' => [
@@ -139,7 +142,7 @@ class AbstractStockAssignmentTest extends TestCase
             ],
             'sold' => 20.,
         ]);
-        $this->assertsame(20., $assignment->getReleasableQuantity());
+        self::assertEquals(new Decimal(20), $assignment->getReleasableQuantity());
 
         $assignment = Fixture::stockAssignment([
             'unit'    => [
@@ -148,7 +151,7 @@ class AbstractStockAssignmentTest extends TestCase
             'sold'    => 20.,
             'shipped' => 5.,
         ]);
-        $this->assertsame(15., $assignment->getReleasableQuantity());
+        self::assertEquals(new Decimal(15), $assignment->getReleasableQuantity());
 
         $assignment = Fixture::stockAssignment([
             'unit' => [
@@ -157,7 +160,7 @@ class AbstractStockAssignmentTest extends TestCase
             ],
             'sold' => 20.,
         ]);
-        $this->assertsame(20., $assignment->getReleasableQuantity());
+        self::assertEquals(new Decimal(20), $assignment->getReleasableQuantity());
 
         $assignment = Fixture::stockAssignment([
             'unit'    => [
@@ -167,22 +170,22 @@ class AbstractStockAssignmentTest extends TestCase
             'shipped' => 5.,
             'locked'  => 5.,
         ]);
-        $this->assertsame(10., $assignment->getReleasableQuantity());
+        self::assertEquals(new Decimal(10), $assignment->getReleasableQuantity());
     }
 
     public function test_isFullyShipped(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertTrue($assignment->isFullyShipped());
+        self::assertTrue($assignment->isFullyShipped());
 
-        $assignment->setSoldQuantity(20);
-        $this->assertFalse($assignment->isFullyShipped());
+        $assignment->setSoldQuantity(new Decimal(20));
+        self::assertFalse($assignment->isFullyShipped());
 
-        $assignment->setShippedQuantity(10);
-        $this->assertFalse($assignment->isFullyShipped());
+        $assignment->setShippedQuantity(new Decimal(10));
+        self::assertFalse($assignment->isFullyShipped());
 
-        $assignment->setShippedQuantity(20);
-        $this->assertTrue($assignment->isFullyShipped());
+        $assignment->setShippedQuantity(new Decimal(20));
+        self::assertTrue($assignment->isFullyShipped());
     }
 
     public function test_isFullyShippable(): void
@@ -194,7 +197,7 @@ class AbstractStockAssignmentTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($assignment->isFullyShippable());
+        self::assertTrue($assignment->isFullyShippable());
 
         $assignment = Fixture::stockAssignment([
             'unit' => [
@@ -203,7 +206,7 @@ class AbstractStockAssignmentTest extends TestCase
             ],
             'sold' => 20,
         ]);
-        $this->assertTrue($assignment->isFullyShippable());
+        self::assertTrue($assignment->isFullyShippable());
 
         $assignment = Fixture::stockAssignment([
             'unit' => [
@@ -212,7 +215,7 @@ class AbstractStockAssignmentTest extends TestCase
             ],
             'sold' => 30,
         ]);
-        $this->assertFalse($assignment->isFullyShippable()); // Limited by the stock unit
+        self::assertFalse($assignment->isFullyShippable()); // Limited by the stock unit
 
         $assignment = Fixture::stockAssignment([
             'unit'    => [
@@ -223,7 +226,7 @@ class AbstractStockAssignmentTest extends TestCase
             'sold'    => 20,
             'shipped' => 10,
         ]);
-        $this->assertTrue($assignment->isFullyShippable());
+        self::assertTrue($assignment->isFullyShippable());
 
         $assignment = Fixture::stockAssignment([
             'unit'    => [
@@ -236,15 +239,15 @@ class AbstractStockAssignmentTest extends TestCase
             'shipped' => 10,
             'locked'  => 10,
         ]);
-        $this->assertTrue($assignment->isFullyShippable());
+        self::assertTrue($assignment->isFullyShippable());
     }
 
     public function test_isEmpty(): void
     {
         $assignment = Fixture::stockAssignment();
-        $this->assertTrue($assignment->isEmpty());
+        self::assertTrue($assignment->isEmpty());
 
-        $assignment->setSoldQuantity(10);
-        $this->assertFalse($assignment->isEmpty());
+        $assignment->setSoldQuantity(new Decimal(10));
+        self::assertFalse($assignment->isEmpty());
     }
 }

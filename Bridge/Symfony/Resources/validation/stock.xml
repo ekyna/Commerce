@@ -39,9 +39,6 @@
                 <option name="max">64</option>
             </constraint>
         </property>-->
-        <property name="estimatedDateOfArrival">
-            <constraint name="DateTime"/>
-        </property>
         <property name="orderedQuantity">
             <constraint name="GreaterThan">
                 <option name="value">0</option>
@@ -66,9 +63,6 @@
             <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
-        </property>
-        <property name="closedAt">
-            <constraint name="DateTime"/>
         </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\StockUnit"/>
     </class>

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\View;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorFactory;
@@ -12,6 +15,7 @@ use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Locale;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -22,101 +26,33 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class ViewBuilder
 {
-    /**
-     * @var ViewTypeRegistryInterface
-     */
-    private $registry;
+    private ViewTypeRegistryInterface  $registry;
+    private AmountCalculatorFactory    $amountCalculatorFactory;
+    private CurrencyConverterInterface $currencyConverter;
+    private MarginCalculatorFactory    $marginCalculatorFactory;
+    private FormatterFactory           $formatterFactory;
+    private string                     $defaultTemplate;
+    private string                     $editableTemplate;
 
-    /**
-     * @var AmountCalculatorFactory
-     */
-    private $amountCalculatorFactory;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
-
-    /**
-     * @var MarginCalculatorFactory
-     */
-    private $marginCalculatorFactory;
-
-    /**
-     * @var FormatterFactory
-     */
-    private $formatterFactory;
-
-    /**
-     * @var string
-     */
-    private $defaultTemplate;
-
-    /**
-     * @var string
-     */
-    private $editableTemplate;
-
-    /**
-     * @var OptionsResolver
-     */
-    private $optionsResolver;
-
-    /**
-     * @var array
-     */
-    private $options;
-
-    /**
-     * @var SaleView
-     */
-    private $view;
-
-    /**
-     * @var ViewTypeInterface[]
-     */
-    private $types;
-
-    /**
-     * @var int
-     */
-    private $lineNumber;
-
-    /**
-     * @var Formatter
-     */
-    private $formatter;
-
-    /**
-     * @var AmountCalculatorInterface
-     */
-    private $amountCalculator;
-
-    /**
-     * @var MarginCalculatorInterface
-     */
-    private $marginCalculator;
+    private ?OptionsResolver $optionsResolver = null;
+    private array            $options;
+    private SaleView         $view;
+    /** @var ViewTypeInterface[] */
+    private array                     $types;
+    private int                       $lineNumber;
+    private Formatter                 $formatter;
+    private AmountCalculatorInterface $amountCalculator;
+    private MarginCalculatorInterface $marginCalculator;
 
 
-    /**
-     * Constructor.
-     *
-     * @param ViewTypeRegistryInterface  $registry
-     * @param AmountCalculatorFactory    $amountCalculatorFactory
-     * @param MarginCalculatorFactory    $marginCalculatorFactory
-     * @param CurrencyConverterInterface $currencyConverter
-     * @param FormatterFactory           $formatterFactory
-     * @param string                     $defaultTemplate
-     * @param string                     $editableTemplate
-     */
     public function __construct(
-        ViewTypeRegistryInterface $registry,
-        AmountCalculatorFactory $amountCalculatorFactory,
-        MarginCalculatorFactory $marginCalculatorFactory,
+        ViewTypeRegistryInterface  $registry,
+        AmountCalculatorFactory    $amountCalculatorFactory,
+        MarginCalculatorFactory    $marginCalculatorFactory,
         CurrencyConverterInterface $currencyConverter,
-        FormatterFactory $formatterFactory,
-        $defaultTemplate = '@Commerce/Sale/view.html.twig',
-        $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
+        FormatterFactory           $formatterFactory,
+        string                     $defaultTemplate = '@Commerce/Sale/view.html.twig',
+        string                     $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
         $this->registry = $registry;
         $this->amountCalculatorFactory = $amountCalculatorFactory;
@@ -129,11 +65,6 @@ class ViewBuilder
 
     /**
      * Builds the sale view.
-     *
-     * @param Model\SaleInterface $sale
-     * @param array               $options
-     *
-     * @return SaleView
      */
     public function buildSaleView(Model\SaleInterface $sale, array $options = []): SaleView
     {
@@ -216,9 +147,6 @@ class ViewBuilder
 
     /**
      * Initializes the view builder.
-     *
-     * @param Model\SaleInterface $sale
-     * @param array               $options
      */
     private function initialize(Model\SaleInterface $sale, array $options = []): void
     {
@@ -249,8 +177,6 @@ class ViewBuilder
 
     /**
      * Builds the sale taxes views.
-     *
-     * @param Model\SaleInterface $sale
      */
     private function buildSaleTaxesViews(Model\SaleInterface $sale): void
     {
@@ -270,8 +196,6 @@ class ViewBuilder
 
     /**
      * Builds the sale lines views.
-     *
-     * @param Model\SaleInterface $sale
      */
     private function buildSaleItemsLinesViews(Model\SaleInterface $sale): void
     {
@@ -287,8 +211,6 @@ class ViewBuilder
 
     /**
      * Builds the sale discounts lines views.
-     *
-     * @param Model\SaleInterface $sale
      */
     private function buildSaleDiscountsLinesViews(Model\SaleInterface $sale): void
     {
@@ -303,13 +225,8 @@ class ViewBuilder
 
     /**
      * Builds the sale line view.
-     *
-     * @param Model\SaleItemInterface $item
-     * @param int                     $level
-     *
-     * @return LineView|null
      */
-    private function buildSaleItemLineView(Model\SaleItemInterface $item, $level = 0): ?LineView
+    private function buildSaleItemLineView(Model\SaleItemInterface $item, int $level = 0): ?LineView
     {
         if (!$this->options['private'] && $item->isPrivate()) {
             return null;
@@ -413,16 +330,11 @@ class ViewBuilder
 
     /**
      * Builds the sale discount line view.
-     *
-     * @param Model\SaleAdjustmentInterface $adjustment
-     * @param int                           $level
-     *
-     * @return LineView
      */
-    private function buildDiscountLine(Model\SaleAdjustmentInterface $adjustment, $level = 0): LineView
+    private function buildDiscountLine(Model\SaleAdjustmentInterface $adjustment, int $level = 0): LineView
     {
         if (Model\AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
-            throw new InvalidArgumentException("Unexpected adjustment type.");
+            throw new InvalidArgumentException('Unexpected adjustment type.');
         }
 
         $lineNumber = $this->lineNumber++;
@@ -459,8 +371,6 @@ class ViewBuilder
 
     /**
      * Builds the shipment adjustment line view.
-     *
-     * @param Model\SaleInterface $sale
      */
     private function buildShipmentLine(Model\SaleInterface $sale): void
     {
@@ -506,67 +416,48 @@ class ViewBuilder
     }
 
     /**
-     * Formats currency as needed.
-     *
-     * @param float  $amount
-     * @param string $prefix
-     *
-     * @return string
+     * Formats currency.
      */
-    private function currency(float $amount, string $prefix = ''): string
+    private function currency(Decimal $amount, string $prefix = ''): string
     {
         if ($this->options['export']) {
-            return (string)round($amount, 5);
+            return $amount->toFixed(5);
         }
 
         return $prefix . $this->formatter->currency($amount);
     }
 
     /**
-     * Formats percent as needed.
-     *
-     * @param float  $amount
-     * @param string $prefix
-     *
-     * @return string
+     * Formats percent.
      */
-    private function percent(float $amount, string $prefix = ''): string
+    private function percent(Decimal $amount, string $prefix = ''): string
     {
         if ($this->options['export']) {
-            return (string)round($amount, 2);
+            return $amount->toFixed(2);
         }
 
         return $prefix . $this->formatter->percent($amount);
     }
 
     /**
-     * Formats number as needed.
-     *
-     * @param float  $value
-     * @param string $prefix
-     *
-     * @return string
+     * Formats number.
      */
-    private function number(float $value, string $prefix = ''): string
+    private function number(Decimal $value, string $prefix = ''): string
     {
         if ($this->options['export']) {
-            return (string)round($value, 2);
+            return $value->toFixed(2);
         }
 
         return $prefix . $this->formatter->number($value);
     }
 
     /**
-     * Formats adjustments rates as needed.
-     *
-     * @param Adjustment ...$adjustments
-     *
-     * @return string
+     * Formats adjustments rates.
      */
     private function rates(Adjustment ...$adjustments): string
     {
         if ($this->options['export']) {
-            $rate = 0;
+            $rate = new Decimal(0);
             if (!empty($adjustments)) {
                 $rate = reset($adjustments)->getRate() / 100;
                 foreach (array_slice($adjustments, 1) as $adjustment) {
@@ -574,7 +465,7 @@ class ViewBuilder
                 }
             }
 
-            return (string)round($rate, 2);
+            return $rate->toFixed(2);
         }
 
         return $this->formatter->rates(...$adjustments);
@@ -582,8 +473,6 @@ class ViewBuilder
 
     /**
      * Returns the options resolver.
-     *
-     * @return OptionsResolver
      */
     private function getOptionsResolver(): OptionsResolver
     {
@@ -597,7 +486,7 @@ class ViewBuilder
                 'private'    => false,
                 'editable'   => false,
                 'taxes_view' => true,
-                'locale'     => \Locale::getDefault(),
+                'locale'     => Locale::getDefault(),
                 'currency'   => $this->currencyConverter->getDefaultCurrency(),
                 'ati'        => false,
                 'export'     => false,

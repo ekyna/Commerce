@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce;
 
 /**
@@ -9,8 +11,5 @@ namespace Ekyna\Component\Commerce;
  */
 class Commerce
 {
-    public function setup()
-    {
-        // TODO
-    }
+
 }

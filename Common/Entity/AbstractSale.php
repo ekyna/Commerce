@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Entity;
 
-use DateTime;
+use DateTimeInterface;
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -24,172 +28,59 @@ use Ekyna\Component\Resource\Model as RM;
  */
 abstract class AbstractSale implements Common\SaleInterface
 {
-    use Common\IdentityTrait,
-        Common\KeySubjectTrait,
-        Common\NumberSubjectTrait,
-        Common\StateSubjectTrait,
-        Common\AdjustableTrait,
-        Common\NotifiableTrait,
-        Payment\PaymentSubjectTrait,
-        Payment\PaymentTermSubjectTrait,
-        Shipment\ShippableTrait,
-        VatNumberSubjectTrait,
-        RM\TimestampableTrait,
-        RM\LocalizedTrait;
+    use Common\AdjustableTrait;
+    use Common\IdentityTrait;
+    use Common\KeySubjectTrait;
+    use Common\NotifiableTrait;
+    use Common\NumberSubjectTrait;
+    use Common\StateSubjectTrait;
+    use Payment\PaymentSubjectTrait;
+    use Payment\PaymentTermSubjectTrait;
+    use RM\LocalizedTrait;
+    use RM\TimestampableTrait;
+    use Shipment\ShippableTrait;
+    use VatNumberSubjectTrait;
 
 
-    /**
-     * @var int
-     */
-    protected $id;
-
-    /**
-     * @var CustomerInterface
-     */
-    protected $customer;
-
-    /**
-     * @var CustomerGroupInterface
-     */
-    protected $customerGroup;
-
-    /**
-     * @var string
-     */
-    protected $company;
-
-    /**
-     * @var string
-     */
-    protected $companyNumber;
-
-    /**
-     * @var string
-     */
-    protected $email;
-
-    /**
-     * @var Common\AddressInterface
-     */
-    protected $invoiceAddress;
-
-    /**
-     * @var Common\AddressInterface
-     */
-    protected $deliveryAddress;
-
-    /**
-     * @var bool
-     */
-    protected $sameAddress;
-
-    /**
-     * @var Common\CouponInterface
-     */
-    protected $coupon;
-
-    /**
-     * @var array
-     */
-    protected $couponData;
-
-    /**
-     * @var bool
-     */
-    protected $autoDiscount;
-
-    /**
-     * @var bool
-     */
-    protected $taxExempt;
-
-    /**
-     * @var string
-     */
-    protected $vatDisplayMode;
-
-    /**
-     * @var float
-     */
-    protected $netTotal;
-
-    /**
-     * @var string
-     */
-    protected $title;
-
-    /**
-     * @var string
-     */
-    protected $voucherNumber;
-
-    /**
-     * @var string
-     */
-    protected $originNumber;
-
-    /**
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * @var string
-     */
-    protected $preparationNote;
-
-    /**
-     * @var string
-     */
-    protected $comment;
-
-    /**
-     * @var string
-     */
-    protected $documentComment;
-
-    /**
-     * @var DateTime
-     */
-    protected $acceptedAt;
-
-    /**
-     * @var string
-     */
-    protected $source;
-
-    /**
-     * @var ArrayCollection|Common\SaleAttachmentInterface[]
-     */
-    protected $attachments;
-
-    /**
-     * @var ArrayCollection|Common\SaleItemInterface[]
-     */
-    protected $items;
-
-    /**
-     * @var ContextInterface
-     */
-    private $context;
+    protected ?int                         $id              = null;
+    protected ?CustomerInterface           $customer        = null;
+    protected ?CustomerGroupInterface      $customerGroup   = null;
+    protected ?string                      $company         = null;
+    protected ?string                      $companyNumber   = null;
+    protected ?string                      $email           = null;
+    protected ?Common\SaleAddressInterface $invoiceAddress  = null;
+    protected ?Common\SaleAddressInterface $deliveryAddress = null;
+    protected bool                         $sameAddress     = true;
+    protected ?Common\CouponInterface      $coupon          = null;
+    protected ?array                       $couponData      = null;
+    protected bool                         $autoDiscount    = true;
+    protected bool                         $taxExempt       = false;
+    protected ?string                      $vatDisplayMode  = null;
+    protected Decimal                      $netTotal;
+    protected ?string                      $title           = null;
+    protected ?string                      $voucherNumber   = null;
+    protected ?string                      $originNumber    = null;
+    protected ?string                      $description     = null;
+    protected ?string                      $preparationNote = null;
+    protected ?string                      $comment         = null;
+    protected ?string                      $documentComment = null;
+    protected ?DateTimeInterface           $acceptedAt      = null;
+    protected string                       $source          = Common\SaleSources::SOURCE_WEBSITE;
+    /** @var Collection|Common\SaleAttachmentInterface[] */
+    protected Collection $attachments;
+    /** @var ArrayCollection|Common\SaleItemInterface[] */
+    protected Collection      $items;
+    private ?ContextInterface $context = null;
 
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
-        $this->sameAddress = true;
-        $this->autoDiscount = true;
-        $this->taxExempt = false;
-
-        $this->netTotal = 0;
-
-        $this->createdAt = new DateTime();
+        $this->netTotal = new Decimal(0);
 
         $this->attachments = new ArrayCollection();
         $this->items = new ArrayCollection();
 
+        $this->initializeTimestampable();
         $this->initializeAdjustments();
         $this->initializeNotifications();
         $this->initializePaymentSubject();
@@ -198,412 +89,269 @@ abstract class AbstractSale implements Common\SaleInterface
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->number ?: 'New sale';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCustomer()
+    public function getCustomer(): ?CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCustomer(CustomerInterface $customer = null)
+    public function setCustomer(?CustomerInterface $customer): Common\SaleInterface
     {
         $this->customer = $customer;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCustomerGroup()
+    public function getCustomerGroup(): ?CustomerGroupInterface
     {
         return $this->customerGroup;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCustomerGroup(CustomerGroupInterface $customerGroup = null)
+    public function setCustomerGroup(?CustomerGroupInterface $customerGroup): Common\SaleInterface
     {
         $this->customerGroup = $customerGroup;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCompany()
+    public function getCompany(): ?string
     {
         return $this->company;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCompany($company)
+    public function setCompany(?string $company): Common\SaleInterface
     {
         $this->company = $company;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getCompanyNumber(): ?string
     {
         return $this->companyNumber;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setCompanyNumber(string $number = null): Common\SaleInterface
+    public function setCompanyNumber(?string $number): Common\SaleInterface
     {
         $this->companyNumber = $number;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getEmail()
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setEmail($email)
+    public function setEmail(?string $email): Common\SaleInterface
     {
         $this->email = $email;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isAutoDiscount()
+    public function isAutoDiscount(): bool
     {
         return $this->autoDiscount;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAutoDiscount($auto)
+    public function setAutoDiscount(bool $auto): Common\SaleInterface
     {
-        $this->autoDiscount = (bool)$auto;
+        $this->autoDiscount = $auto;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isTaxExempt()
+    public function isTaxExempt(): bool
     {
         return $this->taxExempt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTaxExempt($exempt)
+    public function setTaxExempt(bool $exempt): Common\SaleInterface
     {
         $this->taxExempt = $exempt;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getVatDisplayMode()
+    public function getVatDisplayMode(): ?string
     {
         return $this->vatDisplayMode;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setVatDisplayMode($mode)
+    public function setVatDisplayMode(?string $mode): Common\SaleInterface
     {
         $this->vatDisplayMode = $mode;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isAtiDisplayMode()
+    public function isAtiDisplayMode(): bool
     {
         return $this->vatDisplayMode === VatDisplayModes::MODE_ATI;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isSample()
+    public function isSample(): bool
     {
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isReleased()
+    public function isReleased(): bool
     {
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getNetTotal()
+    public function getNetTotal(): Decimal
     {
         return $this->netTotal;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setNetTotal($total)
+    public function setNetTotal(Decimal $total): Common\SaleInterface
     {
         $this->netTotal = $total;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setTitle($title)
+    public function setTitle(?string $title): Common\SaleInterface
     {
         $this->title = $title;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getVoucherNumber()
+    public function getVoucherNumber(): ?string
     {
         return $this->voucherNumber;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setVoucherNumber($number)
+    public function setVoucherNumber(?string $number): Common\SaleInterface
     {
         $this->voucherNumber = $number;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getOriginNumber()
+    public function getOriginNumber(): ?string
     {
         return $this->originNumber;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setOriginNumber($number)
+    public function setOriginNumber(?string $number): Common\SaleInterface
     {
         $this->originNumber = $number;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): Common\SaleInterface
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getPreparationNote()
+    public function getPreparationNote(): ?string
     {
         return $this->preparationNote;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setPreparationNote($note)
+    public function setPreparationNote(?string $note): Common\SaleInterface
     {
         $this->preparationNote = $note;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getComment()
+    public function getComment(): ?string
     {
         return $this->comment;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setComment($comment)
+    public function setComment(?string $comment): Common\SaleInterface
     {
         $this->comment = $comment;
 
         return $this;
     }
 
-    /**
-     * Returns the document comment.
-     *
-     * @return string
-     */
-    public function getDocumentComment()
+    public function getDocumentComment(): ?string
     {
         return $this->documentComment;
     }
 
-    /**
-     * Sets the document comment.
-     *
-     * @param string $comment
-     *
-     * @return AbstractSale
-     */
-    public function setDocumentComment($comment)
+    public function setDocumentComment(?string $comment): Common\SaleInterface
     {
         $this->documentComment = $comment;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAcceptedAt()
+    public function getAcceptedAt(): ?DateTimeInterface
     {
         return $this->acceptedAt;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setAcceptedAt(DateTime $acceptedAt = null)
+    public function setAcceptedAt(?DateTimeInterface $date): Common\SaleInterface
     {
-        $this->acceptedAt = $acceptedAt;
+        $this->acceptedAt = $date;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSource()
+    public function getSource(): string
     {
         return $this->source;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSource($source)
+    public function setSource(string $source): Common\SaleInterface
     {
         $this->source = $source;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasAttachments()
+    public function hasAttachments(): bool
     {
         return 0 < $this->attachments->count();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAttachments()
+    public function getAttachments(): Collection
     {
         return $this->attachments;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hasItems()
+    public function hasItems(): bool
     {
         return 0 < $this->items->count();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getItems()
+    public function getItems(): Collection
     {
         return $this->items;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDeliveryCountry()
+    public function getDeliveryCountry(): ?Common\CountryInterface
     {
         if ($relayPoint = $this->getRelayPoint()) {
             return $relayPoint->getCountry();
@@ -614,71 +362,47 @@ abstract class AbstractSale implements Common\SaleInterface
         return null !== $address ? $address->getCountry() : null;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isSameAddress()
+    public function isSameAddress(): bool
     {
         return $this->sameAddress;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setSameAddress($sameAddress)
+    public function setSameAddress(bool $same): Common\SaleInterface
     {
-        $this->sameAddress = (bool)$sameAddress;
+        $this->sameAddress = $same;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCoupon(): ?Common\CouponInterface
     {
         return $this->coupon;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setCoupon(Common\CouponInterface $coupon = null): Common\SaleInterface
+    public function setCoupon(?Common\CouponInterface $coupon): Common\SaleInterface
     {
         $this->coupon = $coupon;
 
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCouponData(): ?array
     {
         return $this->couponData;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setCouponData(array $data = null): Common\SaleInterface
+    public function setCouponData(?array $data): Common\SaleInterface
     {
         $this->couponData = $data;
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getContext(): ?ContextInterface
     {
         return $this->context;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setContext(ContextInterface $context): Common\SaleInterface
     {
         $this->context = $context;
@@ -686,9 +410,6 @@ abstract class AbstractSale implements Common\SaleInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isLocked(): bool
     {
         foreach ($this->payments as $payment) {
@@ -700,17 +421,11 @@ abstract class AbstractSale implements Common\SaleInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function canBeReleased(): bool
     {
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function hasDiscountItemAdjustment(array $items = null): bool
     {
         $items = $items ?? $this->items;

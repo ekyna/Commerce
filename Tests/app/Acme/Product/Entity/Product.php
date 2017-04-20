@@ -48,20 +48,12 @@ class Product implements Stock\StockSubjectInterface
         return $this->designation ?: 'New designation';
     }
 
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getIdentifier()
+    public function getIdentifier(): int
     {
         return $this->getId();
     }

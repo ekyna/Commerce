@@ -36,7 +36,7 @@ class OrderItemListener extends AbstractSaleItemListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function onInsert(ResourceEventInterface $event)
     {
@@ -53,7 +53,7 @@ class OrderItemListener extends AbstractSaleItemListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function onUpdate(ResourceEventInterface $event)
     {
@@ -94,7 +94,7 @@ class OrderItemListener extends AbstractSaleItemListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function onDelete(ResourceEventInterface $event)
     {
@@ -145,7 +145,7 @@ class OrderItemListener extends AbstractSaleItemListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function getSalePropertyPath()
     {
@@ -153,15 +153,15 @@ class OrderItemListener extends AbstractSaleItemListener
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale)
     {
-        $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $sale);
+        $this->persistenceHelper->scheduleEvent($sale, OrderEvents::CONTENT_CHANGE);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
      * @return OrderItemInterface
      */

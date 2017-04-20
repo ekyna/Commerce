@@ -6,7 +6,7 @@ namespace Ekyna\Component\Commerce\Stock\Repository;
 
 use DateTime;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Interface StockAdjustmentRepositoryInterface

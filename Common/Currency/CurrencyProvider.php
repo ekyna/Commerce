@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Currency;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 
 /**
@@ -13,58 +16,29 @@ use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
  */
 class CurrencyProvider implements CurrencyProviderInterface
 {
-    /**
-     * @var CurrencyRepositoryInterface
-     */
-    protected $currencyRepository;
-
-    /**
-     * @var string
-     */
-    protected $fallbackCurrency;
-
-    /**
-     * @var string
-     */
-    protected $currentCurrency;
+    protected CurrencyRepositoryInterface $currencyRepository;
+    protected string                      $fallbackCurrency;
+    protected ?string                     $currentCurrency = null;
 
 
-    /**
-     * Constructor.
-     *
-     * @param CurrencyRepositoryInterface $currencyRepository
-     * @param string                      $fallbackCurrency
-     * @param string                      $currentCurrency
-     */
     public function __construct(
         CurrencyRepositoryInterface $currencyRepository,
-        string $fallbackCurrency,
-        string $currentCurrency = null
+        string $fallbackCurrency
     ) {
         $this->currencyRepository = $currencyRepository;
         $this->fallbackCurrency = $fallbackCurrency;
-        $this->currentCurrency = $currentCurrency;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getAvailableCurrencies(): array
     {
         return $this->currencyRepository->findEnabledCodes();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getFallbackCurrency(): string
     {
         return $this->fallbackCurrency;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrentCurrency(): string
     {
         if ($this->currentCurrency) {
@@ -86,7 +60,7 @@ class CurrencyProvider implements CurrencyProviderInterface
         $currency = $currency instanceof CurrencyInterface ? $currency->getCode() : $currency;
 
         if (!is_string($currency)) {
-            throw new UnexpectedValueException("Expected string or instance of " . CurrencyInterface::class);
+            throw new UnexpectedTypeException($currency, ['string', CurrencyInterface::class]);
         }
 
         if (!in_array($currency, $this->getAvailableCurrencies(), true)) {
@@ -98,17 +72,11 @@ class CurrencyProvider implements CurrencyProviderInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrency(string $code = null): CurrencyInterface
     {
         return $this->currencyRepository->findOneByCode($code ?? $this->getCurrentCurrency());
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCurrencyRepository(): CurrencyRepositoryInterface
     {
         return $this->currencyRepository;
@@ -116,8 +84,6 @@ class CurrencyProvider implements CurrencyProviderInterface
 
     /**
      * Guesses the user currency.
-     *
-     * @return string|null
      */
     protected function guessCurrency(): ?string
     {

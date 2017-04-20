@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 use Ekyna\Component\Commerce\Stock\Repository\WarehouseRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class WarehouseRepository
@@ -15,10 +17,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
  */
 class WarehouseRepository extends ResourceRepository implements WarehouseRepositoryInterface
 {
-    /**
-     * @var WarehouseInterface
-     */
-    private $defaultWarehouse;
+    private ?WarehouseInterface $defaultWarehouse = null;
 
 
     /**
@@ -48,6 +47,7 @@ class WarehouseRepository extends ResourceRepository implements WarehouseReposit
     {
         $qb = $this->createQueryBuilder('w');
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         return $qb
             ->andWhere($qb->expr()->isMemberOf(':country', 'w.countries'))
             ->andWhere($qb->expr()->eq('w.enabled', ':enabled'))

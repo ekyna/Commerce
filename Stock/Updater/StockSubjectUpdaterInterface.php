@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
@@ -13,17 +15,13 @@ interface StockSubjectUpdaterInterface
 {
     /**
      * Resets the subject's stock data and state.
-     *
-     * @param StockSubjectInterface $subject
      */
     public function reset(StockSubjectInterface  $subject): void;
 
     /**
      * Updates the subject's stock data and state.
      *
-     * @param StockSubjectInterface $subject
-     *
-     * @return bool Whether or not the subject has been updated.
+     * @return bool Whether the subject has been updated.
      */
     public function update(StockSubjectInterface $subject): bool;
 }

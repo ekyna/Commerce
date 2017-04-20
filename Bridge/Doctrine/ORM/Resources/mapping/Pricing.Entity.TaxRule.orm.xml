@@ -6,7 +6,6 @@
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
     <entity name="Ekyna\Component\Commerce\Pricing\Entity\TaxRule"
-            repository-class="Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\TaxRuleRepository"
             table="commerce_tax_rule">
 
         <indexes>

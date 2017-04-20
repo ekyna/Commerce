@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Builder;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
@@ -12,7 +14,8 @@ use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
-use Symfony\Component\Intl\Intl;
+use Symfony\Component\Intl\Countries;
+use Symfony\Component\Intl\Exception\ExceptionInterface as IntlException;
 
 /**
  * Class DocumentBuilder
@@ -21,36 +24,19 @@ use Symfony\Component\Intl\Intl;
  */
 class DocumentBuilder implements DocumentBuilderInterface
 {
-    /**
-     * @var LocaleProviderInterface
-     */
-    protected $localeProvider;
+    protected LocaleProviderInterface $localeProvider;
+    private PhoneNumberUtil           $phoneNumberUtil;
 
-    /**
-     * @var PhoneNumberUtil
-     */
-    private $phoneNumberUtil;
-
-
-    /**
-     * Constructor.
-     *
-     * @param LocaleProviderInterface $localeProvider
-     * @param PhoneNumberUtil|null    $phoneNumberUtil
-     */
     public function __construct(LocaleProviderInterface $localeProvider, PhoneNumberUtil $phoneNumberUtil = null)
     {
-        $this->localeProvider  = $localeProvider;
+        $this->localeProvider = $localeProvider;
         $this->phoneNumberUtil = $phoneNumberUtil ?: PhoneNumberUtil::getInstance();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function build(Document\DocumentInterface $document): void
     {
-        if (null === $sale = $document->getSale()) {
-            throw new LogicException("Document's sale must be set at this point.");
+        if (null === $document->getSale()) {
+            throw new LogicException('Document\'s sale must be set at this point.');
         }
 
         $this->update($document);
@@ -65,13 +51,10 @@ class DocumentBuilder implements DocumentBuilderInterface
         $this->buildShipmentLine($document);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function update(Document\DocumentInterface $document): bool
     {
         if (null === $sale = $document->getSale()) {
-            throw new LogicException("Invoice's sale must be set at this point.");
+            throw new LogicException('Invoice\'s sale must be set at this point.');
         }
 
         if (!$sale->getLocale()) {
@@ -137,15 +120,10 @@ class DocumentBuilder implements DocumentBuilderInterface
 
     /**
      * Finds the document good line for the given sale item.
-     *
-     * @param Document\DocumentInterface $document
-     * @param Common\SaleItemInterface   $item
-     *
-     * @return Document\DocumentLineInterface|null
      */
     protected function findGoodLine(
         Document\DocumentInterface $document,
-        Common\SaleItemInterface $item
+        Common\SaleItemInterface   $item
     ): ?Document\DocumentLineInterface {
         foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $line) {
             if ($line->getSaleItem() === $item) {
@@ -156,11 +134,8 @@ class DocumentBuilder implements DocumentBuilderInterface
         return null;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildGoodLine(
-        Common\SaleItemInterface $item,
+        Common\SaleItemInterface   $item,
         Document\DocumentInterface $document
     ): ?Document\DocumentLineInterface {
         // Abort if document contains one of the public parents
@@ -195,15 +170,12 @@ class DocumentBuilder implements DocumentBuilderInterface
         return $line;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildDiscountLine(
         Common\SaleAdjustmentInterface $adjustment,
-        Document\DocumentInterface $document
+        Document\DocumentInterface     $document
     ): ?Document\DocumentLineInterface {
         if ($adjustment->getType() !== Common\AdjustmentTypes::TYPE_DISCOUNT) {
-            throw new InvalidArgumentException("Unexpected adjustment type.");
+            throw new InvalidArgumentException('Unexpected adjustment type.');
         }
 
         $line = null;
@@ -226,9 +198,6 @@ class DocumentBuilder implements DocumentBuilderInterface
         return $line;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildShipmentLine(Document\DocumentInterface $document): ?Document\DocumentLineInterface
     {
         $sale = $document->getSale();
@@ -239,7 +208,7 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // Existing line lookup
         $shipmentLines = $document->getLinesByType(Document\DocumentLineTypes::TYPE_SHIPMENT);
-        $line          = !empty($shipmentLines) ? current($shipmentLines) : null;
+        $line = !empty($shipmentLines) ? current($shipmentLines) : null;
 
         // Not found, create it
         if (null === $line) {
@@ -255,14 +224,10 @@ class DocumentBuilder implements DocumentBuilderInterface
 
     /**
      * Builds the document's customer data.
-     *
-     * @param Common\SaleInterface $sale
-     *
-     * @return array
      */
     protected function buildCustomerData(Common\SaleInterface $sale): array
     {
-        if (null !== $customer = $sale->getCustomer()) {
+        if ($customer = $sale->getCustomer()) {
             return [
                 'number'    => $customer->getNumber(),
                 'company'   => $customer->getCompany(),
@@ -285,15 +250,14 @@ class DocumentBuilder implements DocumentBuilderInterface
 
     /**
      * Builds the document's address data.
-     *
-     * @param Common\AddressInterface $address
-     * @param string                  $locale
-     *
-     * @return array
      */
-    protected function buildAddressData(Common\AddressInterface $address, string $locale)
+    protected function buildAddressData(Common\AddressInterface $address, string $locale): array
     {
-        $country = Intl::getRegionBundle()->getCountryName($address->getCountry()->getCode(), $locale);
+        try {
+            $country = Countries::getName($address->getCountry()->getCode(), $locale);
+        } catch (IntlException $exception) {
+            $country = $address->getCountry()->getName();
+        }
 
         $fullName = trim($address->getFirstName() . ' ' . $address->getLastName());
 
@@ -324,10 +288,6 @@ class DocumentBuilder implements DocumentBuilderInterface
 
     /**
      * Formats the given phone number.
-     *
-     * @param PhoneNumber|null $number
-     *
-     * @return string|null
      */
     protected function formatPhoneNumber(PhoneNumber $number = null): ?string
     {
@@ -340,8 +300,6 @@ class DocumentBuilder implements DocumentBuilderInterface
 
     /**
      * Builds the document's goods lines.
-     *
-     * @param Document\DocumentInterface $document
      */
     protected function buildGoodsLines(Document\DocumentInterface $document): void
     {
@@ -352,8 +310,6 @@ class DocumentBuilder implements DocumentBuilderInterface
 
     /**
      * Builds the document's discounts lines.
-     *
-     * @param Document\DocumentInterface $document
      */
     protected function buildDiscountsLines(Document\DocumentInterface $document): void
     {
@@ -373,13 +329,8 @@ class DocumentBuilder implements DocumentBuilderInterface
 
     /**
      * Creates a new line.
-     *
-     * @param Document\DocumentInterface $document
-     *
-     * @return Document\DocumentLineInterface
      */
     protected function createLine(
-        /** @noinspection PhpUnusedParameterInspection */
         Document\DocumentInterface $document
     ): Document\DocumentLineInterface {
         return new Document\DocumentLine();

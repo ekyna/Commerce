@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Pricing\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,30 +16,13 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
  */
 class TaxGroup implements TaxGroupInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected ?int    $id      = null;
+    protected ?string $code    = null;
+    protected ?string $name    = null;
+    protected bool    $default = false;
 
-    /**
-     * @var string
-     */
-    protected $code;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var boolean
-     */
-    protected $default;
-
-    /**
-     * @var ArrayCollection|TaxInterface[]
-     */
-    protected $taxes;
+    /** @var Collection|TaxInterface[] */
+    protected Collection $taxes;
 
 
     /**
@@ -45,39 +30,27 @@ class TaxGroup implements TaxGroupInterface
      */
     public function __construct()
     {
-        $this->default = false;
         $this->taxes = new ArrayCollection();
     }
 
     /**
      * Returns the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
         return $this->name ?: 'New tax group';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getCode(): ?string
     {
         return $this->code;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setCode(string $code): TaxGroupInterface
     {
         $this->code = $code;
@@ -85,17 +58,11 @@ class TaxGroup implements TaxGroupInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setName(string $name): TaxGroupInterface
     {
         $this->name = $name;
@@ -103,17 +70,11 @@ class TaxGroup implements TaxGroupInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isDefault(): bool
     {
         return $this->default;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setDefault(bool $default): TaxGroupInterface
     {
         $this->default = $default;
@@ -121,33 +82,21 @@ class TaxGroup implements TaxGroupInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasTaxes(): bool
     {
         return 0 < $this->taxes->count();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTaxes(): Collection
     {
         return $this->taxes;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function hasTax(TaxInterface $tax): bool
     {
         return $this->taxes->contains($tax);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function addTax(TaxInterface $tax): TaxGroupInterface
     {
         if (!$this->hasTax($tax)) {
@@ -157,9 +106,6 @@ class TaxGroup implements TaxGroupInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function removeTax(TaxInterface $tax): TaxGroupInterface
     {
         if ($this->hasTax($tax)) {
@@ -169,9 +115,6 @@ class TaxGroup implements TaxGroupInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setTaxes(array $taxes): TaxGroupInterface
     {
         foreach ($this->taxes as $tax) {

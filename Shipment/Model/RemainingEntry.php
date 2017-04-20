@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 
 /**
@@ -11,62 +14,23 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
  */
 class RemainingEntry
 {
-    /**
-     * @var SaleItemInterface
-     */
-    private $saleItem;
+    private SaleItemInterface $saleItem;
+    private Decimal           $quantity;
 
-    /**
-     * @var float
-     */
-    private $quantity;
+    public function __construct(SaleItemInterface $saleItem, Decimal $quantity)
+    {
+        $this->saleItem = $saleItem;
+        $this->quantity = $quantity;
+    }
 
-
-    /**
-     * Returns the saleItem.
-     *
-     * @return SaleItemInterface
-     */
-    public function getSaleItem()
+    public function getSaleItem(): SaleItemInterface
     {
         return $this->saleItem;
     }
 
-    /**
-     * Sets the saleItem.
-     *
-     * @param SaleItemInterface $saleItem
-     *
-     * @return RemainingEntry
-     */
-    public function setSaleItem($saleItem)
-    {
-        $this->saleItem = $saleItem;
-
-        return $this;
-    }
-
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity()
+    public function getQuantity(): Decimal
     {
         return $this->quantity;
     }
 
-    /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return RemainingEntry
-     */
-    public function setQuantity($quantity)
-    {
-        $this->quantity = $quantity;
-
-        return $this;
-    }
 }

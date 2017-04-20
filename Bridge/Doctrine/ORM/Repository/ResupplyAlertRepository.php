@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Stock\Entity\ResupplyAlert;
 use Ekyna\Component\Commerce\Stock\Repository\ResupplyAlertRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 /**
  * Class ResupplyAlertRepository
@@ -27,9 +29,10 @@ class ResupplyAlertRepository extends ResourceRepository implements ResupplyAler
             ->andWhere($ex->eq('r.subjectIdentity.provider', ':provider'))
             ->andWhere($ex->eq('r.subjectIdentity.identifier', ':identifier'))
             ->getQuery()
+            ->setMaxResults(1)
             ->setParameters([
                 'email'      => $email,
-                'provider'   => $subject->getProviderName(),
+                'provider'   => $subject::getProviderName(),
                 'identifier' => $subject->getId(),
             ])
             ->getOneOrNullResult();

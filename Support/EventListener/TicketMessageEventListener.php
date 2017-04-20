@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\EventListener;
 
-use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Support\Event\TicketEvents;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Event\ResourceMessage;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -16,27 +19,13 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class TicketMessageEventListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
 
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     */
     public function __construct(PersistenceHelperInterface $persistenceHelper)
     {
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onInsert(ResourceEventInterface $event): void
     {
         $message = $this->getMessageFromEvent($event);
@@ -44,11 +33,6 @@ class TicketMessageEventListener
         $this->scheduleTicketContentChangeEvent($message->getTicket());
     }
 
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
     public function onUpdate(ResourceEventInterface $event): void
     {
         $message = $this->getMessageFromEvent($event);
@@ -56,11 +40,29 @@ class TicketMessageEventListener
         $this->scheduleTicketContentChangeEvent($message->getTicket());
     }
 
-    /**
-     * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
+    public function onPreDelete(ResourceEventInterface $event): void
+    {
+        $message = $this->getMessageFromEvent($event);
+
+        $limit = 1;
+        if (null === $ticket = $message->getTicket()) {
+            $ticket = $this->persistenceHelper->getChangeSet($message, 'ticket')[0];
+            $limit = 0;
+        }
+
+        if ($limit < $ticket->getMessages()->count()) {
+            return;
+        }
+
+        if ($this->persistenceHelper->isScheduledForRemove($ticket)) {
+            return;
+        }
+
+        $event->addMessage(
+            ResourceMessage::create('A ticket must have at least one message', ResourceMessage::TYPE_ERROR)
+        );
+    }
+
     public function onDelete(ResourceEventInterface $event): void
     {
         $message = $this->getMessageFromEvent($event);
@@ -72,27 +74,17 @@ class TicketMessageEventListener
         $this->scheduleTicketContentChangeEvent($ticket);
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function scheduleTicketContentChangeEvent(TicketInterface $ticket): void
     {
-        $this->persistenceHelper->scheduleEvent(TicketEvents::CONTENT_CHANGE, $ticket);
+        $this->persistenceHelper->scheduleEvent($ticket, TicketEvents::CONTENT_CHANGE);
     }
 
-    /**
-     * Returns the message from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return TicketMessageInterface
-     */
     protected function getMessageFromEvent(ResourceEventInterface $event): TicketMessageInterface
     {
         $message = $event->getResource();
 
         if (!$message instanceof TicketMessageInterface) {
-            throw new UnexpectedValueException("Expected instance of " . TicketMessageInterface::class);
+            throw new UnexpectedTypeException($message, TicketMessageInterface::class);
         }
 
         return $message;

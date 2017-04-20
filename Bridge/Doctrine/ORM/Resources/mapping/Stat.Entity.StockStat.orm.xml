@@ -21,8 +21,8 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="inValue" column="in_value" type="decimal" precision="16" scale="3" nullable="false"/>
-        <field name="soldValue" column="sold_value" type="decimal" precision="16" scale="3" nullable="false"/>
+        <field name="inValue" column="in_value" type="php_decimal" precision="16" scale="3" nullable="false"/>
+        <field name="soldValue" column="sold_value" type="php_decimal" precision="16" scale="3" nullable="false"/>
         <field name="date" column="date" type="string" length="10" nullable="false"/>
 
     </entity>

@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Ekyna\Component\Commerce\Bridge\Payum\Action;
 use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance as Credit;
 use Ekyna\Component\Commerce\Bridge\Payum\Offline as Offline;
 use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance as Outstanding;
-use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\ExpressionLanguage\Expression;
+
+use function class_exists;
 
 /**
  * Class PayumCompilerPass
@@ -20,33 +23,22 @@ use Symfony\Component\ExpressionLanguage\Expression;
  */
 class PayumBuilderPass implements CompilerPassInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasDefinition('payum.builder')) {
-            return;
-        }
-
         $this->registerFactories($container);
         $this->registerActions($container);
     }
 
     /**
      * Registers the required factories.
-     *
-     * @param ContainerBuilder $container
      */
-    private function registerFactories(ContainerBuilder $container)
+    private function registerFactories(ContainerBuilder $container): void
     {
-        $defaultConfig = [];
-
         $builder = $container->getDefinition('payum.builder');
 
         $builder->addMethodCall('addGatewayFactoryConfig', [
             Offline\Constants::FACTORY_NAME,
-            $defaultConfig,
+            [],
         ]);
         $builder->addMethodCall('addGatewayFactory', [
             Offline\Constants::FACTORY_NAME,
@@ -55,7 +47,7 @@ class PayumBuilderPass implements CompilerPassInterface
 
         $builder->addMethodCall('addGatewayFactoryConfig', [
             Outstanding\Constants::FACTORY_NAME,
-            $defaultConfig,
+            [],
         ]);
         $builder->addMethodCall('addGatewayFactory', [
             Outstanding\Constants::FACTORY_NAME,
@@ -64,7 +56,7 @@ class PayumBuilderPass implements CompilerPassInterface
 
         $builder->addMethodCall('addGatewayFactoryConfig', [
             Credit\Constants::FACTORY_NAME,
-            $defaultConfig,
+            [],
         ]);
         $builder->addMethodCall('addGatewayFactory', [
             Credit\Constants::FACTORY_NAME,
@@ -74,21 +66,21 @@ class PayumBuilderPass implements CompilerPassInterface
 
     /**
      * Registers the payum actions.
-     *
-     * @param ContainerBuilder $container
      */
-    private function registerActions(ContainerBuilder $container)
+    private function registerActions(ContainerBuilder $container): void
     {
         // Payzen convert action
         if (class_exists('Ekyna\Component\Payum\Payzen\PayzenGatewayFactory')) {
             // Convert action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Payzen\Action\ConvertAction');
             $definition->addTag('payum.action', ['factory' => 'payzen', 'prepend' => true]);
+            $definition->setPublic(true);
             $container->setDefinition('ekyna_commerce.payum.action.payzen.convert_payment', $definition);
 
             // Fraud level action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Payzen\Action\FraudLevelAction');
             $definition->addTag('payum.action', ['factory' => 'payzen', 'prepend' => true]);
+            $definition->setPublic(true);
             $container->setDefinition('ekyna_commerce.payum.action.payzen.fraud_level', $definition);
         }
 
@@ -97,6 +89,7 @@ class PayumBuilderPass implements CompilerPassInterface
             // Convert action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Sips\Action\ConvertAction');
             $definition->addTag('payum.action', ['factory' => 'atos_sips', 'prepend' => true]);
+            $definition->setPublic(true);
             $container->setDefinition('ekyna_commerce.payum.action.sips.convert_payment', $definition);
         }
 
@@ -104,23 +97,26 @@ class PayumBuilderPass implements CompilerPassInterface
         if (class_exists('Payum\Paypal\ExpressCheckout\Nvp\PaypalExpressCheckoutGatewayFactory')) {
             // Convert action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpConvertAction');
-            $definition->setArgument(0, new Reference(AmountCalculatorFactory::class));
-            if ($container->has('ekyna_setting.manager') && class_exists('Ekyna\Bundle\AdminBundle\Settings\GeneralSettingsSchema')) {
+            $definition->setArgument(0, new Reference('ekyna_commerce.factory.amount_calculator'));
+            if ($container->has('ekyna_setting.manager') && class_exists('Ekyna\Bundle\AdminBundle\Service\Setting\GeneralSettingSchema')) {
                 $definition->setArgument(1, new Expression(
                     "service('ekyna_setting.manager').getParameter('general.site_name')"
                 ));
             }
             $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
+            $definition->setPublic(true);
             $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.convert_payment', $definition);
 
             // Cancel action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpCancelAction');
             $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
+            $definition->setPublic(true);
             $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.cancel_payment', $definition);
 
             // Refund action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpRefundAction');
             $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
+            $definition->setPublic(true);
             $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.refund_payment', $definition);
         }
 
@@ -133,6 +129,7 @@ class PayumBuilderPass implements CompilerPassInterface
         foreach ($actions as $name => $class) {
             $definition = new Definition($class);
             $definition->addTag('payum.action', ['all' => true, 'prepend' => true]);
+            $definition->setPublic(true);
 
             $container->setDefinition('ekyna_commerce.payum.action.' . $name, $definition);
         }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
@@ -11,19 +13,10 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
  */
 interface OrderItemStockAssignmentInterface extends StockAssignmentInterface
 {
-    /**
-     * Returns the order item.
-     *
-     * @return OrderItemInterface
-     */
-    public function getOrderItem();
+    public function getOrderItem(): ?OrderItemInterface;
 
     /**
-     * Sets the order item.
-     *
-     * @param OrderItemInterface $orderItem
-     *
-     * @return OrderItemStockAssignmentInterface
+     * @return $this|OrderItemStockAssignmentInterface
      */
-    public function setOrderItem(OrderItemInterface $orderItem = null);
+    public function setOrderItem(?OrderItemInterface $orderItem): OrderItemStockAssignmentInterface;
 }

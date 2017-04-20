@@ -61,7 +61,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copySale()
     {
@@ -76,7 +76,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copyData()
     {
@@ -133,18 +133,18 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copyAddresses()
     {
         // Invoice address
-        if (null !== $sourceInvoiceAddress = $this->source->getInvoiceAddress()) {
+        if ($sourceInvoiceAddress = $this->source->getInvoiceAddress()) {
             $targetInvoiceAddress = $this->saleFactory->createAddressForSale($this->target, $sourceInvoiceAddress);
             $this->target->setInvoiceAddress($targetInvoiceAddress);
         }
 
         // Delivery address
-        if (null !== $sourceDeliveryAddress = $this->source->getDeliveryAddress()) {
+        if ($sourceDeliveryAddress = $this->source->getDeliveryAddress()) {
             $targetDeliveryAddress = $this->saleFactory->createAddressForSale($this->target, $sourceDeliveryAddress);
             $this->target->setDeliveryAddress($targetDeliveryAddress);
         }
@@ -153,7 +153,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copyAdjustments()
     {
@@ -167,7 +167,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copyAttachments()
     {
@@ -181,7 +181,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copyNotifications()
     {
@@ -195,7 +195,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copyItems()
     {
@@ -209,7 +209,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function copyPayments()
     {
@@ -223,7 +223,7 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     /*public function copyShipments()
     {
@@ -244,7 +244,7 @@ class SaleCopier implements SaleCopierInterface
     }*/
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     /*public function copyInvoices()
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
@@ -11,19 +13,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
  */
 interface OrderShipmentInterface extends ShipmentInterface
 {
-    /**
-     * Returns the order.
-     *
-     * @return OrderInterface
-     */
-    public function getOrder();
+    public function getOrder(): ?OrderInterface;
 
-    /**
-     * Sets the order.
-     *
-     * @param OrderInterface $order
-     *
-     * @return $this|OrderShipmentInterface
-     */
-    public function setOrder(OrderInterface $order = null);
+    public function setOrder(?OrderInterface $order): OrderShipmentInterface;
 }

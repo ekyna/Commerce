@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
+use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\ShipmentGatewayException;
 use Ekyna\Component\Commerce\Order\Entity\OrderShipmentLabel;
+use Ekyna\Component\Commerce\Shipment\Gateway\Model\GetRelayPointResponse;
+use Ekyna\Component\Commerce\Shipment\Gateway\Model\ListRelayPointResponse;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Symfony\Component\Form\FormInterface;
 
@@ -14,60 +20,32 @@ use Symfony\Component\Form\FormInterface;
  */
 abstract class AbstractGateway implements GatewayInterface
 {
-    use Shipment\WeightCalculatorAwareTrait,
-        Shipment\AddressResolverAwareTrait,
-        PersisterAwareTrait;
+    use PersisterAwareTrait;
+    use Shipment\AddressResolverAwareTrait;
+    use Shipment\WeightCalculatorAwareTrait;
 
-    /**
-     * @var PlatformInterface
-     */
-    protected $platform;
+    protected PlatformInterface $platform;
+    protected string            $name;
+    protected array             $config;
 
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var array
-     */
-    protected $config;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PlatformInterface $platform
-     * @param string            $name
-     * @param array             $config
-     */
-    public function __construct(PlatformInterface $platform, $name, array $config)
+    public function __construct(PlatformInterface $platform, string $name, array $config)
     {
         $this->platform = $platform;
         $this->name = $name;
         $this->config = $config;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getPlatform()
+    public function getPlatform(): PlatformInterface
     {
         return $this->platform;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getActions()
+    public function getActions(): array
     {
         return [
             GatewayActions::SHIP,
@@ -76,42 +54,27 @@ abstract class AbstractGateway implements GatewayInterface
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCapabilities()
+    public function getCapabilities(): ?int
     {
         return static::CAPABILITY_SHIPMENT;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getRequirements()
+    public function getRequirements(): ?int
     {
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function supports(int $capability)
+    public function supports(int $capability): bool
     {
         return (bool)($capability & $this->getCapabilities());
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function requires(int $requirement)
+    public function requires(int $requirement): bool
     {
         return (bool)($requirement & $this->getRequirements());
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function ship(Shipment\ShipmentInterface $shipment)
+    public function ship(Shipment\ShipmentInterface $shipment): bool
     {
         $this->supportShipment($shipment);
 
@@ -134,10 +97,7 @@ abstract class AbstractGateway implements GatewayInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function cancel(Shipment\ShipmentInterface $shipment)
+    public function cancel(Shipment\ShipmentInterface $shipment): bool
     {
         $this->supportShipment($shipment);
 
@@ -158,10 +118,7 @@ abstract class AbstractGateway implements GatewayInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function complete(Shipment\ShipmentInterface $shipment)
+    public function complete(Shipment\ShipmentInterface $shipment): bool
     {
         $this->supportShipment($shipment);
 
@@ -183,55 +140,36 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @inheritDoc
      */
-    public function buildForm(FormInterface $form)
+    public function buildForm(FormInterface $form): void
     {
-
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function track(Shipment\ShipmentDataInterface $shipment)
+    public function track(Shipment\ShipmentDataInterface $shipment): ?string
     {
         $this->throwUnsupportedAction('track');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function prove(Shipment\ShipmentDataInterface $shipment)
+    public function prove(Shipment\ShipmentDataInterface $shipment): ?string
     {
         $this->throwUnsupportedAction('prove');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function printLabel(Shipment\ShipmentDataInterface $shipment, array $types = null)
+    public function printLabel(Shipment\ShipmentDataInterface $shipment, array $types = null): array
     {
         $this->throwUnsupportedAction('print');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function listRelayPoints(Model\Address $address, float $weight)
+    public function listRelayPoints(Model\Address $address, Decimal $weight): ListRelayPointResponse
     {
         $this->throwUnsupportedAction('list relay points');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getRelayPoint(string $number)
+    public function getRelayPoint(string $number): GetRelayPointResponse
     {
         $this->throwUnsupportedAction('get relay point');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function can(Shipment\ShipmentInterface $shipment, $action)
+    public function can(Shipment\ShipmentInterface $shipment, string $action): bool
     {
         if (!($this->supportShipment($shipment, false) && $this->supportAction($action, false))) {
             return false;
@@ -242,7 +180,7 @@ abstract class AbstractGateway implements GatewayInterface
                 if ($shipment->isReturn()) {
                     return !in_array($shipment->getState(), [
                         Shipment\ShipmentStates::STATE_PENDING,
-                        Shipment\ShipmentStates::STATE_RETURNED
+                        Shipment\ShipmentStates::STATE_RETURNED,
                     ], true);
                 }
 
@@ -262,14 +200,11 @@ abstract class AbstractGateway implements GatewayInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function supportShipment(Shipment\ShipmentDataInterface $shipment, $throw = true)
+    public function supportShipment(Shipment\ShipmentDataInterface $shipment, bool $throw = true): bool
     {
         if ($shipment instanceof Shipment\ShipmentParcelInterface) {
             if (!(static::CAPABILITY_PARCEL & $this->getCapabilities())) {
-                $this->throwUnsupportedShipment($shipment->getShipment(), "Parcel given as argument.");
+                $this->throwUnsupportedShipment($shipment->getShipment(), 'Parcel given as argument.');
             }
 
             $shipment = $shipment->getShipment();
@@ -278,7 +213,7 @@ abstract class AbstractGateway implements GatewayInterface
         // Assert gateway name
         if ($shipment->getGatewayName() !== $this->getName()) {
             if ($throw) {
-                $this->throwUnsupportedShipment($shipment, "Wrong gateway.");
+                $this->throwUnsupportedShipment($shipment, 'Wrong gateway.');
             }
 
             return false;
@@ -287,7 +222,7 @@ abstract class AbstractGateway implements GatewayInterface
         // Assert shipment support
         if (!$shipment->isReturn() && !$this->supports(static::CAPABILITY_SHIPMENT)) {
             if ($throw) {
-                $this->throwUnsupportedShipment($shipment, "Shipments are not supported.");
+                $this->throwUnsupportedShipment($shipment, 'Shipments are not supported.');
             }
 
             return false;
@@ -296,7 +231,7 @@ abstract class AbstractGateway implements GatewayInterface
         // Assert return support
         if ($shipment->isReturn() && !$this->supports(static::CAPABILITY_RETURN)) {
             if ($throw) {
-                $this->throwUnsupportedShipment($shipment, "Returns are not supported.");
+                $this->throwUnsupportedShipment($shipment, 'Returns are not supported.');
             }
 
             return false;
@@ -305,7 +240,7 @@ abstract class AbstractGateway implements GatewayInterface
         // Assert parcel support
         if ($shipment->hasParcels() && !$this->supports(static::CAPABILITY_PARCEL)) {
             if ($throw) {
-                $this->throwUnsupportedShipment($shipment, "Parcels are not supported.");
+                $this->throwUnsupportedShipment($shipment, 'Parcels are not supported.');
             }
 
             return false;
@@ -316,10 +251,7 @@ abstract class AbstractGateway implements GatewayInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function supportAction(string $action, $throw = true)
+    public function supportAction(string $action, bool $throw = true): bool
     {
         if (in_array($action, $this->getActions(), true)) {
             return true;
@@ -332,10 +264,7 @@ abstract class AbstractGateway implements GatewayInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMaxWeight()
+    public function getMaxWeight(): ?Decimal
     {
         return null;
     }
@@ -343,11 +272,9 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * Returns whether the shipment (or its parcels) has tracking number(s).
      *
-     * @param Shipment\ShipmentInterface $shipment
-     *
      * @return bool Whether the given shipment has label data.
      */
-    protected function hasTrackingNumber(Shipment\ShipmentInterface $shipment)
+    protected function hasTrackingNumber(Shipment\ShipmentInterface $shipment): bool
     {
         if ($shipment->hasParcels()) {
             foreach ($shipment->getParcels() as $parcel) {
@@ -365,11 +292,9 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * Returns whether the shipment (or its parcels) has label(s) data.
      *
-     * @param Shipment\ShipmentInterface $shipment
-     *
      * @return bool Whether the given shipment has label data.
      */
-    protected function hasLabelData(Shipment\ShipmentInterface $shipment)
+    protected function hasLabelData(Shipment\ShipmentInterface $shipment): bool
     {
         if ($shipment->hasParcels()) {
             foreach ($shipment->getParcels() as $parcel) {
@@ -384,17 +309,7 @@ abstract class AbstractGateway implements GatewayInterface
         return $shipment->hasLabels();
     }
 
-    /**
-     * Creates the shipment label.
-     *
-     * @param string $content
-     * @param string $type
-     * @param string $format
-     * @param string $size
-     *
-     * @return OrderShipmentLabel
-     */
-    protected function createLabel($content, $type, $format, $size)
+    protected function createLabel(string $content, string $type, string $format, string $size): OrderShipmentLabel
     {
         $label = new OrderShipmentLabel(); // TODO use SaleFactory ?
         $label
@@ -408,12 +323,8 @@ abstract class AbstractGateway implements GatewayInterface
 
     /**
      * Clears the shipment data.
-     *
-     * @param Shipment\ShipmentInterface $shipment
-     *
-     * @return bool
      */
-    protected function clearShipment(Shipment\ShipmentInterface $shipment)
+    protected function clearShipment(Shipment\ShipmentInterface $shipment): bool
     {
         if (empty($shipment->getTrackingNumber()) && !$shipment->hasLabels()) {
             return false;
@@ -430,12 +341,8 @@ abstract class AbstractGateway implements GatewayInterface
 
     /**
      * Clears the parcel data.
-     *
-     * @param Shipment\ShipmentParcelInterface $parcel
-     *
-     * @return bool
      */
-    protected function clearParcel(Shipment\ShipmentParcelInterface $parcel)
+    protected function clearParcel(Shipment\ShipmentParcelInterface $parcel): bool
     {
         if (empty($parcel->getTrackingNumber()) && !$parcel->hasLabels()) {
             return false;
@@ -452,32 +359,25 @@ abstract class AbstractGateway implements GatewayInterface
 
     /**
      * Calculates the shipment's good value (for insurance).
-     *
-     * @param Shipment\ShipmentInterface $shipment
-     *
-     * @return float
      */
-    protected function calculateGoodsValue(Shipment\ShipmentInterface $shipment)
+    protected function calculateGoodsValue(Shipment\ShipmentInterface $shipment): Decimal
     {
-        $value = 0;
+        $value = new Decimal(0);
 
         foreach ($shipment->getItems() as $item) {
             $saleItem = $item->getSaleItem();
             $value += $saleItem->getNetPrice() * $item->getQuantity();
         }
 
-        return round($value, 2); // TODO Convert/Round regarding to gateway and sale currencies
+        return Money::round($value, $shipment->getSale()->getCurrency()->getCode());
     }
 
     /**
      * Throws an unsupported operation exception.
      *
-     * @param Shipment\ShipmentInterface $shipment
-     * @param string                     $reason
-     *
      * @throws ShipmentGatewayException
      */
-    protected function throwUnsupportedShipment(Shipment\ShipmentInterface $shipment, $reason = null)
+    protected function throwUnsupportedShipment(Shipment\ShipmentInterface $shipment, string $reason = null): void
     {
         throw new ShipmentGatewayException(sprintf(
             "Gateway '%s' does not support shipment '%s'. %s",
@@ -488,12 +388,9 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * Throws an unsupported operation exception.
      *
-     * @param string $operation
-     * @param string $reason
-     *
      * @throws ShipmentGatewayException
      */
-    protected function throwUnsupportedAction($operation, $reason = null)
+    protected function throwUnsupportedAction(string $operation, string $reason = null): void
     {
         throw new ShipmentGatewayException(sprintf(
             "The shipment gateway '%s' does not support '%s' operation. %s",

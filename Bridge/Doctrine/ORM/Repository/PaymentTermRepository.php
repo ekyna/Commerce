@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Payment\Entity\PaymentTerm;
+use Ekyna\Component\Commerce\Payment\Model\PaymentTermInterface;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentTermRepositoryInterface;
-use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
+use Ekyna\Component\Resource\Doctrine\ORM\Repository\TranslatableRepository;
 
 /**
  * Class PaymentTermRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class PaymentTermRepository extends TranslatableResourceRepository implements PaymentTermRepositoryInterface
+class PaymentTermRepository extends TranslatableRepository implements PaymentTermRepositoryInterface
 {
     /**
      * @var PaymentTerm
@@ -22,7 +25,7 @@ class PaymentTermRepository extends TranslatableResourceRepository implements Pa
     /**
      * @inheritDoc
      */
-    public function findLongest()
+    public function findLongest(): ?PaymentTermInterface
     {
         if (false !== $this->longestTerm) {
             return $this->longestTerm;

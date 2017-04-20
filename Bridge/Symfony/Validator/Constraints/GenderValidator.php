@@ -30,7 +30,7 @@ class GenderValidator extends ConstraintValidator
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function validate($gender, Constraint $constraint)
     {

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -13,133 +16,50 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  */
 interface MethodInterface extends ResourceModel\TranslatableInterface, ResourceModel\SortableInterface
 {
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
-    public function getName();
+    public function getName(): ?string;
 
-    /**
-     * Sets the name.
-     *
-     * @param string $name
-     *
-     * @return $this|MethodInterface
-     */
-    public function setName($name);
+    public function setName(string $name): MethodInterface;
 
     /**
      * Returns the title (translation alias).
-     *
-     * @return string
      */
-    public function getTitle();
+    public function getTitle(): ?string;
 
     /**
      * Sets the title (translation alias).
-     *
-     * @param string $title
-     *
-     * @return $this|MethodInterface
      */
-    public function setTitle($title);
+    public function setTitle(?string $title): MethodInterface;
 
     /**
      * Returns the description (translation alias).
-     *
-     * @return string
      */
-    public function getDescription();
+    public function getDescription(): ?string;
 
     /**
      * Sets the description (translation alias).
-     *
-     * @param string $description
-     *
-     * @return $this|MethodInterface
      */
-    public function setDescription($description);
+    public function setDescription(?string $description): MethodInterface;
+
+    public function hasMessages(): bool;
+
+    public function hasMessage(MessageInterface $message): bool;
+
+    public function addMessage(MessageInterface $message): MethodInterface;
+
+    public function removeMessage(MessageInterface $message): MethodInterface;
 
     /**
-     * Returns whether the method has at least one message or not.
-     *
-     * @return bool
+     * @return Collection|MessageInterface[]
      */
-    public function hasMessages();
+    public function getMessages(): Collection;
 
-    /**
-     * Returns whether the method has the message or not.
-     *
-     * @param MessageInterface $message
-     *
-     * @return bool
-     */
-    public function hasMessage(MessageInterface $message);
+    public function getMessageByState(string $state): ?MessageInterface;
 
-    /**
-     * Adds the message.
-     *
-     * @param MessageInterface $message
-     *
-     * @return $this|MethodInterface
-     */
-    public function addMessage(MessageInterface $message);
+    public function isEnabled(): bool;
 
-    /**
-     * Removes the message.
-     *
-     * @param MessageInterface $message
-     *
-     * @return $this|MethodInterface
-     */
-    public function removeMessage(MessageInterface $message);
+    public function setEnabled(bool $enabled): MethodInterface;
 
-    /**
-     * Returns the messages.
-     *
-     * @return \Doctrine\Common\Collections\Collection|MessageInterface[]
-     */
-    public function getMessages();
+    public function isAvailable(): bool;
 
-    /**
-     * Returns the messages for the given state.
-     *
-     * @param string $state
-     *
-     * @return MessageInterface|null
-     */
-    public function getMessageByState($state);
-
-    /**
-     * Returns whether the method is enabled or not.
-     *
-     * @return boolean
-     */
-    public function isEnabled();
-
-    /**
-     * Sets whether the method is enabled or not.
-     *
-     * @param boolean $enabled
-     *
-     * @return $this|MethodInterface
-     */
-    public function setEnabled($enabled);
-
-    /**
-     * Returns whether the method is available or not.
-     *
-     * @return boolean
-     */
-    public function isAvailable();
-
-    /**
-     * Sets whether the method is available or not.
-     *
-     * @param boolean $available
-     *
-     * @return $this|MethodInterface
-     */
-    public function setAvailable($available);
+    public function setAvailable(bool $available): MethodInterface;
 }

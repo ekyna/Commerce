@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Builder;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
@@ -14,37 +16,21 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class AddressBuilder implements AddressBuilderInterface
 {
-    /**
-     * @var SaleFactoryInterface
-     */
-    private $saleFactory;
-
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
+    private SaleFactoryInterface       $saleFactory;
+    private PersistenceHelperInterface $persistenceHelper;
 
 
-    /**
-     * Constructor.
-     *
-     * @param SaleFactoryInterface       $saleFactory
-     * @param PersistenceHelperInterface $persistenceHelper
-     */
     public function __construct(SaleFactoryInterface $saleFactory, PersistenceHelperInterface $persistenceHelper)
     {
         $this->saleFactory = $saleFactory;
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildSaleInvoiceAddressFromAddress(
         Model\SaleInterface $sale,
         Model\AddressInterface $source,
-        $persistence = false
-    ) {
+        bool $persistence = false
+    ): bool {
         // If the sale does not have an invoice address
         if (null === $current = $sale->getInvoiceAddress()) {
             // Create a new sale address
@@ -73,14 +59,11 @@ class AddressBuilder implements AddressBuilderInterface
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function buildSaleDeliveryAddressFromAddress(
         Model\SaleInterface $sale,
         Model\AddressInterface $source,
-        $persistence = false
-    ) {
+        bool $persistence = false
+    ): bool {
         // If the source address equals the invoice address, use the "same address" property.
         if ((null !== $invoice = $sale->getInvoiceAddress()) && AddressUtil::equals($source, $invoice)) {
             if (null !== $current = $sale->getDeliveryAddress()) {

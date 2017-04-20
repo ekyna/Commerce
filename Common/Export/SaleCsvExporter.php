@@ -315,7 +315,7 @@ class SaleCsvExporter implements SaleExporterInterface
         }
 
         foreach ($rows as $row) {
-            fputcsv($handle, $row, ';', '"');
+            fputcsv($handle, $row);
         }
 
         fclose($handle);

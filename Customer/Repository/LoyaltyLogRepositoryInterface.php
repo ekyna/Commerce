@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Repository;
 
 use Ekyna\Component\Commerce\Customer\Entity\LoyaltyLog;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -9,19 +11,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 interface SaleNotificationInterface extends NotificationInterface
 {
-    /**
-     * Returns the sale.
-     *
-     * @return SaleInterface|null
-     */
-    public function getSale();
+    public function getSale(): ?SaleInterface;
 
-    /**
-     * Sets the sale.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return $this|SaleNotificationInterface
-     */
-    public function setSale(SaleInterface $sale = null);
+    public function setSale(?SaleInterface $sale): SaleNotificationInterface;
 }

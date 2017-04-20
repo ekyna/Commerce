@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Support\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use DateTimeInterface;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 use Ekyna\Component\Resource\Model\TimestampableInterface;
 
@@ -15,136 +18,80 @@ interface TicketMessageInterface extends ResourceInterface, TimestampableInterfa
 {
     /**
      * Returns the ticket.
-     *
-     * @return TicketInterface
      */
-    public function getTicket();
+    public function getTicket(): ?TicketInterface;
 
     /**
      * Sets the ticket.
-     *
-     * @param TicketInterface $ticket
-     *
-     * @return $this|TicketMessageInterface
      */
-    public function setTicket(TicketInterface $ticket = null);
+    public function setTicket(?TicketInterface $ticket): TicketMessageInterface;
 
     /**
      * Returns the author.
-     *
-     * @return string
      */
-    public function getAuthor();
+    public function getAuthor(): ?string;
 
     /**
      * Sets the author.
-     *
-     * @param string $author
-     *
-     * @return $this|TicketMessageInterface
      */
-    public function setAuthor(string $author);
+    public function setAuthor(?string $author): TicketMessageInterface;
 
     /**
      * Returns the content.
-     *
-     * @return string
      */
-    public function getContent();
+    public function getContent(): ?string;
 
     /**
      * Sets the content.
-     *
-     * @param string $content
-     *
-     * @return $this|TicketMessageInterface
      */
-    public function setContent(string $content);
+    public function setContent(?string $content): TicketMessageInterface;
 
     /**
      * Returns the 'notified at' date time.
-     *
-     * @return \DateTime
      */
-    public function getNotifiedAt();
+    public function getNotifiedAt(): ?DateTimeInterface;
 
     /**
      * Sets the 'notified at' date time.
-     *
-     * @param \DateTime $date
-     *
-     * @return $this|TicketMessageInterface
      */
-    public function setNotifiedAt(\DateTime $date = null);
+    public function setNotifiedAt(?DateTimeInterface $date): TicketMessageInterface;
 
     /**
-     * Returns the attachments.
-     *
-     * @return ArrayCollection|TicketAttachmentInterface[]
+     * @return Collection<TicketAttachmentInterface>
      */
-    public function getAttachments();
+    public function getAttachments(): Collection;
 
-    /**
-     * Adds the attachment.
-     *
-     * @param TicketAttachmentInterface $attachment
-     *
-     * @return $this|TicketMessageInterface
-     */
-    public function addAttachment(TicketAttachmentInterface $attachment);
+    public function addAttachment(TicketAttachmentInterface $attachment): TicketMessageInterface;
 
-    /**
-     * Removes the attachment.
-     *
-     * @param TicketAttachmentInterface $attachment
-     *
-     * @return $this|TicketMessageInterface
-     */
-    public function removeAttachment(TicketAttachmentInterface $attachment);
+    public function removeAttachment(TicketAttachmentInterface $attachment): TicketMessageInterface;
 
     /**
      * Returns whether this message is internal.
-     *
-     * @return bool
      */
-    public function isInternal();
+    public function isInternal(): bool;
 
     /**
      * Sets whether this message is internal.
-     *
-     * @param bool $internal
-     *
-     * @return TicketMessageInterface
      */
-    public function setInternal(bool $internal);
+    public function setInternal(bool $internal): TicketMessageInterface;
 
     /**
      * Returns whether to notify the customer or admin.
-     *
-     * @return bool
      */
-    public function isNotify();
+    public function isNotify(): bool;
 
     /**
      * Sets whether to notify the customer or admin.
-     *
-     * @param bool $notify
-     *
-     * @return TicketMessageInterface
      */
-    public function setNotify(bool $notify);
+    public function setNotify(bool $notify): TicketMessageInterface;
 
     /**
-     * Returns whether or not this message is from the customer.
-     *
-     * @return bool
+     * Returns whether this message is from the customer.
      */
-    public function isCustomer();
+    public function isCustomer() : bool;
 
     /**
-     * Returns whether or not this message is the latest.
-     *
-     * @return bool
+     * Returns whether this message is the latest.
      */
-    public function isLatest();
+    public function isLatest(): bool;
 }
