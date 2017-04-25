@@ -3,8 +3,8 @@
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Resource\Model as ResourceModel;
+use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Resource\Model as Resource;
 
 /**
  * Interface ShipmentInterface
@@ -12,15 +12,15 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 interface ShipmentInterface extends
-    ResourceModel\ResourceInterface,
-    ResourceModel\TimestampableInterface,
-    Model\NumberSubjectInterface,
-    Model\StateSubjectInterface
+    Resource\ResourceInterface,
+    Resource\TimestampableInterface,
+    Common\NumberSubjectInterface,
+    Common\StateSubjectInterface
 {
     /**
      * Returns the sale.
      *
-     * @return Model\SaleInterface|ShipmentSubjectInterface
+     * @return Common\SaleInterface|ShipmentSubjectInterface
      */
     public function getSale();
 
@@ -77,9 +77,25 @@ interface ShipmentInterface extends
      *
      * @param ShipmentItemInterface $item
      *
-     * @return $this
+     * @return $this|ShipmentInterface
      */
     public function removeItem(ShipmentItemInterface $item);
+
+    /**
+     * Returns whether or not the shipment is a return.
+     *
+     * @return bool
+     */
+    public function isReturn();
+
+    /**
+     * Sets whether or not the shipment is a return.
+     *
+     * @param bool $return
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setReturn($return);
 
     /**
      * Returns the description.

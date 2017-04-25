@@ -56,7 +56,7 @@ class QuoteAttachment extends AbstractAttachment implements QuoteAttachmentInter
      */
     public function setQuote(QuoteInterface $quote = null)
     {
-        if ($quote != $this->quote) {
+        if ($quote !== $this->quote) {
             $previous = $this->quote;
             $this->quote = $quote;
 

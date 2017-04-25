@@ -117,28 +117,45 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 continue;
             }
 
+            $key = $shipment->isReturn() ? 'returned' : 'shipped';
+
             foreach ($shipment->getItems() as $shipmentItem) {
                 $orderItem = $shipmentItem->getSaleItem();
                 if (!isset($quantities[$orderItem->getId()])) {
                     throw new RuntimeException("Shipment item / Sale item miss match.");
                 }
 
-                $quantities[$orderItem->getId()]['shipped'] += $shipmentItem->getQuantity();
+                $quantities[$orderItem->getId()][$key] += $shipmentItem->getQuantity();
             }
         }
 
-        $doneCount = 0;
+        $partialCount = $shippedCount = $returnedCount = 0;
 
         foreach ($quantities as $q) {
-            // If shipped quantity equals ordered quantity : increment done count
-            if ($q['shipped'] == $q['ordered']) {
-                $doneCount++;
+            // If returned quantity equals max of ordered or shipped, item is fully returned
+            if (max($q['ordered'], $q['shipped']) == $q['returned']) {
+                $returnedCount++;
                 continue;
+            }
+            $delta = $q['shipped'] - $q['returned'];
+
+            // Else if shipped quantity minus returned equals ordered, item is fully shipped
+            if ($q['ordered'] == $delta) {
+                $shippedCount++;
+            }
+            // Else if shipped minus returned is greater than zero, item is partially shipped
+            elseif (0 < $delta) {
+                $partialCount++;
             }
         }
 
-        // If all done
-        if ($doneCount == count($quantities)) {
+        // If all fully returned
+        if ($returnedCount == count($quantities)) {
+            return Ship::STATE_RETURNED;
+
+        }
+        // Else if all fully shipped
+        elseif ($shippedCount == count($quantities)) {
             // Watch for non completed shipment
             foreach ($shipments as $shipment) {
                 if ($shipment->getState() != Ship::STATE_COMPLETED) {
@@ -147,7 +164,9 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
             // All clear !
             return Ship::STATE_COMPLETED;
-        } elseif (0 < $doneCount) {
+        }
+        // Else if some partially shipped
+        elseif (0 < $partialCount) {
             return Ship::STATE_PARTIAL;
         }
 
@@ -170,6 +189,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             $quantities[$item->getId()] = array(
                 'ordered' => $item->getTotalQuantity(),
                 'shipped' => 0,
+                'returned' => 0,
             );
         }
     }

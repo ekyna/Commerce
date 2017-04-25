@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMessage;
 
 /**

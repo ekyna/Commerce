@@ -1,6 +1,7 @@
 <?php
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
+
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**

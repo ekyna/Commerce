@@ -86,7 +86,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
      */
     public function setOrder(OrderInterface $order = null)
     {
-        if ($order != $this->order) {
+        if ($order !== $this->order) {
             $previous = $this->order;
             $this->order = $order;
 
@@ -145,7 +145,7 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
             throw new InvalidArgumentException("Expected instance of OrderItemInterface.");
         }
 
-        if ($parent != $this->parent) {
+        if ($parent !== $this->parent) {
             $previous = $this->parent;
             $this->parent = $parent;
 

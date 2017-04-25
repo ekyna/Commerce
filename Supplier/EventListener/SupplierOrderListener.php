@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Supplier\Calculator\CalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -23,6 +24,11 @@ class SupplierOrderListener extends AbstractListener
     protected $numberGenerator;
 
     /**
+     * @var CalculatorInterface
+     */
+    protected $calculator;
+
+    /**
      * @var StateResolverInterface
      */
     protected $stateResolver;
@@ -31,14 +37,17 @@ class SupplierOrderListener extends AbstractListener
     /**
      * Constructor.
      *
-     * @param NumberGeneratorInterface         $numberGenerator
-     * @param StateResolverInterface           $stateResolver
+     * @param NumberGeneratorInterface $numberGenerator
+     * @param CalculatorInterface      $calculator
+     * @param StateResolverInterface   $stateResolver
      */
     public function __construct(
         NumberGeneratorInterface $numberGenerator,
+        CalculatorInterface $calculator,
         StateResolverInterface $stateResolver
     ) {
         $this->numberGenerator = $numberGenerator;
+        $this->calculator = $calculator;
         $this->stateResolver = $stateResolver;
     }
 
@@ -55,6 +64,8 @@ class SupplierOrderListener extends AbstractListener
         $changed = $this->generateNumber($order);
 
         $changed |= $this->updateState($order);
+
+        $changed |= $this->updateTotal($order);
 
         /**
          * TODO Resource behaviors.
@@ -83,6 +94,9 @@ class SupplierOrderListener extends AbstractListener
         // Update state
         $changed |= $this->updateState($order);
 
+        // Update state
+        $changed |= $this->updateTotal($order);
+
         /**
          * TODO Resource behaviors.
          */
@@ -102,8 +116,7 @@ class SupplierOrderListener extends AbstractListener
                 foreach ($order->getItems() as $item) {
                     $this->deleteSupplierOrderItemStockUnit($item);
                 }
-            }
-            // Else if order state's has changed to a stockable state
+            } // Else if order state's has changed to a stockable state
             elseif (SupplierOrderStates::hasChangedToStockable($stateCs)) {
                 // Create stock unit (if not exists) for each supplier order items.
                 foreach ($order->getItems() as $item) {
@@ -135,6 +148,8 @@ class SupplierOrderListener extends AbstractListener
         $order = $this->getSupplierOrderFromEvent($event);
 
         $changed = $this->updateState($order);
+
+        $changed |= $this->updateTotal($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
@@ -194,6 +209,26 @@ class SupplierOrderListener extends AbstractListener
         }
 
         return $changed;
+    }
+
+    /**
+     * Updates the payment total.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return bool Whether the supplier order has been changed or not.
+     */
+    protected function updateTotal(SupplierOrderInterface $order)
+    {
+        $total = $this->calculator->calculatePaymentTotal($order);
+
+        if ($total != $order->getPaymentTotal()) {
+            $order->setPaymentTotal($total);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -68,7 +68,7 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
      */
     public function setOrder(Model\SupplierOrderInterface $order = null)
     {
-        if ($order != $this->order) {
+        if ($order !== $this->order) {
             if ($this->order) {
                 $this->order->removeDelivery($this);
             }

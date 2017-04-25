@@ -69,18 +69,5 @@ class SupplierOrderValidator extends ConstraintValidator
                 return;
             }
         }
-
-        // Payment total must be greater than or equals the sum of item price*quantity
-        $total = 0;
-        foreach ($order->getItems() as $orderItem) {
-            $total += round($orderItem->getNetPrice(), 2) * $orderItem->getQuantity();
-        }
-        if ($order->getPaymentTotal() < $total) {
-            $this
-                ->context
-                ->buildViolation($constraint->payment_total_is_too_low, ['%min%' => round($total, 2)]) // TODO localized format
-                ->atPath('paymentTotal')
-                ->addViolation();
-        }
     }
 }

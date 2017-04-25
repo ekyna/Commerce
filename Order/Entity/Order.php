@@ -83,7 +83,7 @@ class Order extends AbstractSale implements Model\OrderInterface
             throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
         }
 
-        if ($address != $current = $this->getInvoiceAddress()) {
+        if ($address !== $current = $this->getInvoiceAddress()) {
             if (null !== $current) {
                 $current->setInvoiceOrder(null);
             }
@@ -118,7 +118,7 @@ class Order extends AbstractSale implements Model\OrderInterface
             throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
         }
 
-        if ($address != $current = $this->getDeliveryAddress()) {
+        if ($address !== $current = $this->getDeliveryAddress()) {
             if (null !== $current) {
                 $current->setDeliveryOrder(null);
             }

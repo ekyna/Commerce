@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 
@@ -50,7 +49,7 @@ abstract class AbstractShipmentItem implements ShipmentItemInterface
      */
     public function setShipment(ShipmentInterface $shipment = null)
     {
-        if ($this->shipment != $shipment) {
+        if ($this->shipment !== $shipment) {
             $previous = $this->shipment;
             $this->shipment = $shipment;
 

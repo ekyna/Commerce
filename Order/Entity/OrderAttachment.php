@@ -56,7 +56,7 @@ class OrderAttachment extends AbstractAttachment implements OrderAttachmentInter
      */
     public function setOrder(OrderInterface $order = null)
     {
-        if ($order != $this->order) {
+        if ($order !== $this->order) {
             $previous = $this->order;
             $this->order = $order;
 

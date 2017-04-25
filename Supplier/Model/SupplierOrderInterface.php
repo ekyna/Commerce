@@ -117,6 +117,22 @@ interface SupplierOrderInterface extends
     public function getDeliveries();
 
     /**
+     * Returns the shipping cost.
+     *
+     * @return float
+     */
+    public function getShippingCost();
+
+    /**
+     * Sets the shipping cost.
+     *
+     * @param float $shippingCost
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setShippingCost($shippingCost);
+
+    /**
      * Returns the paymentTotal.
      *
      * @return float

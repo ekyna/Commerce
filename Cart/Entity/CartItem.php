@@ -69,7 +69,7 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
      */
     public function setCart(CartInterface $cart = null)
     {
-        if ($cart != $this->cart) {
+        if ($cart !== $this->cart) {
             $previous = $this->cart;
             $this->cart = $cart;
 
@@ -94,7 +94,7 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
             throw new InvalidArgumentException("Expected instance of CartItemInterface.");
         }
 
-        if ($parent != $this->parent) {
+        if ($parent !== $this->parent) {
             $previous = $this->parent;
             $this->parent = $parent;
 

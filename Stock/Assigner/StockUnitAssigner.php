@@ -206,6 +206,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // TODO Use packaging format
 
         foreach ($assignments as $assignment) {
+            // TODO Should be relative ? (multiple shipment items may point to the same sale item)
             $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, false);
         }
 
@@ -236,9 +237,15 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // TODO sort assignments ? (reverse for debit)
 
+        $return = $item->getShipment()->isReturn();
+
         // Update assignments
         foreach ($assignments as $assignment) {
-            $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+            if ($return) {
+                $quantity += $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+            } else {
+                $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+            }
 
             if (0 == $quantity) {
                 return;
@@ -268,6 +275,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // Update assignments
         $result = 0;
         foreach ($assignments as $assignment) {
+            // TODO Should be relative ? (multiple shipment items may point to the same sale item)
             $result += $this->assignmentUpdater->updateShipped($assignment, 0, false);
         }
 

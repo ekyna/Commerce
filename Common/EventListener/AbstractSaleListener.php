@@ -316,7 +316,7 @@ abstract class AbstractSaleListener
             $newCountry = $newAddress->getCountry();
         }
 
-        if ($oldCountry != $newCountry) {
+        if ($oldCountry !== $newCountry) {
             return true;
         }
 
@@ -364,7 +364,7 @@ abstract class AbstractSaleListener
             $newCountry = $newAddress->getCountry();
         }
 
-        if ($oldCountry != $newCountry) {
+        if ($oldCountry !== $newCountry) {
             return true;
         }
 
@@ -494,7 +494,7 @@ abstract class AbstractSaleListener
 
         // New customer's payment term
         if (null !== $customer = $sale->getCustomer()) {
-            if ($sale->getPaymentTerm() != $term = $customer->getPaymentTerm()) {
+            if ($sale->getPaymentTerm() !== $term = $customer->getPaymentTerm()) {
                 $sale->setPaymentTerm($term);
                 $changed = true;
             }

@@ -67,7 +67,11 @@ class SaleItemValidator extends ConstraintValidator
 
             foreach ($shipment->getItems() as $shipmentItem) {
                 if ($shipmentItem->getSaleItem() === $item) {
-                    $quantity += $shipmentItem->getQuantity();
+                    if ($shipment->isReturn()) {
+                        $quantity -= $shipmentItem->getQuantity();
+                    } else {
+                        $quantity += $shipmentItem->getQuantity();
+                    }
                 }
             }
         }

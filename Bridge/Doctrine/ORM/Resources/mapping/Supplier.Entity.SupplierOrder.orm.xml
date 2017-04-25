@@ -23,6 +23,7 @@
 
         <field name="number" column="number" type="string" length="16" />
         <field name="state" column="state" type="string" length="16"/>
+        <field name="shippingCost" column="shipping_cost" type="decimal" precision="10" scale="5"/>
         <field name="paymentTotal" column="payment_total" type="decimal" precision="12" scale="5"/>
         <field name="paymentDate" column="payment_date" type="datetime" nullable="true" />
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true" />

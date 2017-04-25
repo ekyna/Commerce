@@ -36,7 +36,7 @@ class ShipmentUtil
         // If shipment is in stockable state, this shipment item's quantity
         // is considered as shipped.
         // TODO Test. Multiple shipment items can point to the same subject ...
-        if (Model\ShipmentStates::isStockableState($item->getShipment())) {
+        if (Model\ShipmentStates::isStockableState($item->getShipment()->getState())) {
             $quantity += $item->getQuantity();
         }
 
@@ -44,13 +44,13 @@ class ShipmentUtil
     }
 
     /**
-     * Calculates the shipment item expected quantity.
+     * Calculates the shipment item shippable quantity.
      *
      * @param Model\ShipmentItemInterface $item
      *
      * @return float
      */
-    static public function calculateExpectedQuantity(Model\ShipmentItemInterface $item)
+    static public function calculateShippableQuantity(Model\ShipmentItemInterface $item)
     {
         $saleItem = $item->getSaleItem();
 
@@ -73,7 +73,11 @@ class ShipmentUtil
             // Find matching sale item
             foreach ($shipment->getItems() as $shipmentItem) {
                 if ($shipmentItem->getSaleItem() === $saleItem) {
-                    $quantity -= $shipmentItem->getQuantity();
+                    if ($shipment->isReturn()) {
+                        $quantity += $shipmentItem->getQuantity();
+                    } else {
+                        $quantity -= $shipmentItem->getQuantity();
+                    }
                 }
             }
 
@@ -83,8 +87,66 @@ class ShipmentUtil
         // If shipment is in stockable state, this shipment item's quantity
         // is considered as shipped.
         // TODO Test. Multiple shipment items can point to the same subject ...
+        /*$shipment = $item->getShipment();
+        if (Model\ShipmentStates::isStockableState($shipment->getState())) {
+            if ($shipment->isReturn()) {
+                $quantity -= $item->getQuantity();
+            } else {
+                $quantity += $item->getQuantity();
+            }
+        }*/
+
+        return $quantity;
+    }
+
+    /**
+     * Calculates the shipment item returnable quantity.
+     *
+     * @param Model\ShipmentItemInterface $item
+     *
+     * @return float
+     */
+    static public function calculateReturnableQuantity(Model\ShipmentItemInterface $item)
+    {
+        $saleItem = $item->getSaleItem();
+
+        $quantity = 0;
+
+        /** @var Model\ShipmentSubjectInterface $sale */
+        $sale = $saleItem->getSale();
+
+        foreach ($sale->getShipments() as $shipment) {
+            // Skip this shipment
+            if ($shipment === $item->getShipment()) {
+                continue;
+            }
+
+            // Skip if shipment is cancelled
+            if (!Model\ShipmentStates::isShippedState($shipment->getState())) {
+                continue;
+            }
+
+            // Find matching sale item
+            foreach ($shipment->getItems() as $shipmentItem) {
+                if ($shipmentItem->getSaleItem() === $saleItem) {
+                    if ($shipment->isReturn()) {
+                        $quantity -= $shipmentItem->getQuantity();
+                    } else {
+                        $quantity += $shipmentItem->getQuantity();
+                    }
+                }
+            }
+        }
+
+        // If shipment is in stockable state, this shipment item's quantity
+        // is considered as shipped.
+        // TODO Test. Multiple shipment items can point to the same subject ...
         if (Model\ShipmentStates::isStockableState($item->getShipment())) {
-            $quantity += $item->getQuantity();
+            if ($item->getShipment()->isReturn()) {
+                $quantity += $item->getQuantity();
+            } else {
+                $quantity -= $item->getQuantity();
+            }
         }
 
         return $quantity;

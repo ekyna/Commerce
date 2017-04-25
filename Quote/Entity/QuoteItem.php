@@ -69,7 +69,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
      */
     public function setQuote(QuoteInterface $quote = null)
     {
-        if ($quote != $this->quote) {
+        if ($quote !== $this->quote) {
             $previous = $this->quote;
             $this->quote = $quote;
 
@@ -94,7 +94,7 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
             throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
         }
 
-        if ($parent != $this->parent) {
+        if ($parent !== $this->parent) {
             $previous = $this->parent;
             $this->parent = $parent;
 

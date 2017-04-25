@@ -34,6 +34,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $items;
 
     /**
+     * @var bool
+     */
+    protected $return;
+
+    /**
      * @var string
      */
     protected $description;
@@ -56,6 +61,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     {
         $this->state = Shipment\ShipmentStates::STATE_NEW;
         $this->items = new ArrayCollection();
+        $this->return = false;
     }
 
     /**
@@ -138,6 +144,30 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
             $this->items->removeElement($item);
             $item->setShipment(null);
         }
+
+        return $this;
+    }
+
+    /**
+     * Returns the return.
+     *
+     * @return bool
+     */
+    public function isReturn()
+    {
+        return $this->return;
+    }
+
+    /**
+     * Sets the return.
+     *
+     * @param bool $return
+     *
+     * @return AbstractShipment
+     */
+    public function setReturn($return)
+    {
+        $this->return = (bool)$return;
 
         return $this;
     }

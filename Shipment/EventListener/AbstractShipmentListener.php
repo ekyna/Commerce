@@ -119,6 +119,8 @@ abstract class AbstractShipmentListener
 
         if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($shipment);
+
+            $this->scheduleSaleContentChangeEvent($shipment->getSale());
         }
 
         if ($this->persistenceHelper->isChanged($shipment, 'state')) {
@@ -126,16 +128,30 @@ abstract class AbstractShipmentListener
             // If shipment state has changed from non stockable to stockable
             if (ShipmentStates::hasChangedToStockable($stateCs)) {
                 // For each shipment item
-                foreach ($shipment->getItems() as $item) {
-                    // Credit sale item stock units shipped quantity through assignments
-                    $this->stockUnitAssigner->assignShipmentItem($item);
+                if ($shipment->isReturn()) {
+                    foreach ($shipment->getItems() as $item) {
+                        // Credit sale item stock units shipped quantity through assignments
+                        $this->stockUnitAssigner->detachShipmentItem($item);
+                    }
+                } else {
+                    foreach ($shipment->getItems() as $item) {
+                        // Credit sale item stock units shipped quantity through assignments
+                        $this->stockUnitAssigner->assignShipmentItem($item);
+                    }
                 }
             } // Else if shipment state has changed from stockable to non stockable
             elseif (ShipmentStates::hasChangedFromStockable($stateCs)) {
                 // For each shipment item
-                foreach ($shipment->getItems() as $item) {
-                    // Debit sale item stock units shipped quantity through assignments
-                    $this->stockUnitAssigner->detachShipmentItem($item);
+                if ($shipment->isReturn()) {
+                    foreach ($shipment->getItems() as $item) {
+                        // Debit sale item stock units shipped quantity through assignments
+                        $this->stockUnitAssigner->assignShipmentItem($item);
+                    }
+                } else {
+                    foreach ($shipment->getItems() as $item) {
+                        // Debit sale item stock units shipped quantity through assignments
+                        $this->stockUnitAssigner->detachShipmentItem($item);
+                    }
                 }
             }
         }
@@ -231,16 +247,12 @@ abstract class AbstractShipmentListener
         $state = $shipment->getState();
         $completedAt = $shipment->getCompletedAt();
 
-        if (($state === ShipmentStates::STATE_COMPLETED) && (null === $completedAt)) {
+        if ($state === ShipmentStates::STATE_COMPLETED && null === $completedAt) {
             $shipment->setCompletedAt(new \DateTime());
             $changed = true;
-        } elseif (($state != ShipmentStates::STATE_COMPLETED) && (null !== $completedAt)) {
+        } elseif ($state != ShipmentStates::STATE_COMPLETED && null !== $completedAt) {
             $shipment->setCompletedAt(null);
             $changed = true;
-        }
-
-        if ($changed) {
-            $this->scheduleSaleContentChangeEvent($shipment->getSale());
         }
 
         return $changed;

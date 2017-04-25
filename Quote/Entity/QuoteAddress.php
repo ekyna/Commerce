@@ -50,7 +50,7 @@ class QuoteAddress extends AbstractAddress implements Model\QuoteAddressInterfac
      */
     public function setInvoiceQuote(Model\QuoteInterface $quote = null)
     {
-        if ($quote != $this->invoiceQuote) {
+        if ($quote !== $this->invoiceQuote) {
             $previous = $this->invoiceQuote;
             $this->invoiceQuote = $quote;
 
@@ -79,7 +79,7 @@ class QuoteAddress extends AbstractAddress implements Model\QuoteAddressInterfac
      */
     public function setDeliveryQuote(Model\QuoteInterface $quote = null)
     {
-        if ($quote != $this->deliveryQuote) {
+        if ($quote !== $this->deliveryQuote) {
             $previous = $this->deliveryQuote;
             $this->deliveryQuote = $quote;
 

@@ -42,6 +42,11 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @var float
      */
+    private $shippingCost = 0;
+
+    /**
+     * @var float
+     */
     private $paymentTotal = 0;
 
     /**
@@ -210,6 +215,24 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function getDeliveries()
     {
         return $this->deliveries;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShippingCost()
+    {
+        return $this->shippingCost;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setShippingCost($shippingCost)
+    {
+        $this->shippingCost = (float)$shippingCost;
+
+        return $this;
     }
 
     /**

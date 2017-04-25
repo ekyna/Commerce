@@ -85,7 +85,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
      */
     public function setOrder(Model\SupplierOrderInterface $order = null)
     {
-        if ($this->order != $order) {
+        if ($this->order !== $order) {
             if ($this->order) {
                 $this->order->removeItem($this);
             }
@@ -131,7 +131,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
      */
     public function setStockUnit(StockUnitInterface $stockUnit = null)
     {
-        if ($this->stockUnit != $stockUnit) {
+        if ($this->stockUnit !== $stockUnit) {
             $previous = $this->stockUnit;
             $this->stockUnit = $stockUnit;
 

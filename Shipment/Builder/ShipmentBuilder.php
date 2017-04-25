@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Shipment\Builder;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Util\ShipmentUtil;
 
 /**
@@ -67,11 +66,17 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         $item->setSaleItem($saleItem);
         $shipment->addItem($item);
 
-        if (0 >= $expected = ShipmentUtil::calculateExpectedQuantity($item)) {
+        $expected = $shipment->isReturn()
+            ? ShipmentUtil::calculateReturnableQuantity($item)
+            : ShipmentUtil::calculateShippableQuantity($item);
+
+        if (0 >= $expected) {
             $shipment->removeItem($item);
             return;
         }
 
-        $item->setQuantity(min($expected, ShipmentUtil::calculateAvailableQuantity($item)));
+        if (!$shipment->isReturn()) {
+            $item->setQuantity(min($expected, ShipmentUtil::calculateAvailableQuantity($item)));
+        }
     }
 }

@@ -154,7 +154,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null)
     {
-        if ($this->supplierOrderItem != $item) {
+        if ($this->supplierOrderItem !== $item) {
             $previous = $this->supplierOrderItem;
             $this->supplierOrderItem = $item;
 

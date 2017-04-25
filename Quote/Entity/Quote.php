@@ -45,7 +45,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
             throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
         }
 
-        if ($address != $current = $this->getInvoiceAddress()) {
+        if ($address !== $current = $this->getInvoiceAddress()) {
             if (null !== $current) {
                 $current->setInvoiceQuote(null);
             }
@@ -80,7 +80,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
             throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
         }
 
-        if ($address != $current = $this->getDeliveryAddress()) {
+        if ($address !== $current = $this->getDeliveryAddress()) {
             if (null !== $current) {
                 $current->setDeliveryQuote(null);
             }
