@@ -118,7 +118,7 @@ final class OrderStates
         return [
             static::STATE_ACCEPTED,
             static::STATE_OUTSTANDING,
-            //static::STATE_REFUNDED, TODO ?
+            static::STATE_REFUNDED,
             static::STATE_COMPLETED,
         ];
     }

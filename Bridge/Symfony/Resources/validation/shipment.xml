@@ -46,6 +46,7 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
         </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Shipment"/>
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentItem">

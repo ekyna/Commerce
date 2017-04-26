@@ -13,6 +13,22 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
 interface AttachmentInterface extends UploadableInterface, ResourceInterface
 {
     /**
+     * Returns the title.
+     *
+     * @return string
+     */
+    public function getTitle();
+
+    /**
+     * Sets the title.
+     *
+     * @param string $title
+     *
+     * @return $this|AttachmentInterface
+     */
+    public function setTitle($title);
+
+    /**
      * Returns whether the attachment is internal or not.
      *
      * @return boolean

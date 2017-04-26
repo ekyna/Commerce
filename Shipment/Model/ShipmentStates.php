@@ -68,7 +68,6 @@ final class ShipmentStates
     static public function getNotifiableStates()
     {
         return [
-            static::STATE_PENDING,
             static::STATE_READY,
             static::STATE_SHIPPED,
         ];
@@ -176,8 +175,9 @@ final class ShipmentStates
     static public function getStockableStates()
     {
         return [
-            static::STATE_SHIPPED,
+            static::STATE_READY,
             static::STATE_PARTIAL,
+            static::STATE_SHIPPED,
             static::STATE_COMPLETED,
             static::STATE_RETURNED,
         ];

@@ -71,20 +71,19 @@ class ShipmentItemValidator extends ConstraintValidator
 
                 return;
             }
-        } else {
-            // Shipment item's quantity must be lower than or equals the shipment item's available expected
-            if ($item->getQuantity() > $expected) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->quantity_must_be_lower_than_or_equal_expected, [
-                        '%max%' => $expected
-                    ])
-                    ->setInvalidValue($item->getQuantity())
-                    ->atPath('quantity')
-                    ->addViolation();
+        }
+        // Shipment item's quantity must be lower than or equals the shipment item's available expected
+        elseif ($item->getQuantity() > $expected) {
+            $this
+                ->context
+                ->buildViolation($constraint->quantity_must_be_lower_than_or_equal_expected, [
+                    '%max%' => $expected
+                ])
+                ->setInvalidValue($item->getQuantity())
+                ->atPath('quantity')
+                ->addViolation();
 
-                return;
-            }
+            return;
         }
     }
 }

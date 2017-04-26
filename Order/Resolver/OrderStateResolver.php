@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates as Pay;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates as Ship;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 
 /**
  * Class OrderStateResolver
@@ -74,6 +75,17 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 $newState = OrderStates::STATE_CANCELLED;
             } else {
                 $newState = OrderStates::STATE_NEW;
+            }
+        }
+
+        // If the new order state is not stockable and order has at least one stockable shipment
+        // Set the new state as ACCEPTED
+        if (!OrderStates::isStockableState($newState) && $order->hasShipments()) {
+            foreach ($order->getShipments() as $shipment) {
+                if (ShipmentStates::isStockableState($shipment->getState())) {
+                    $newState = OrderStates::STATE_ACCEPTED;
+                    break;
+                }
             }
         }
 

@@ -10,8 +10,6 @@ use Payum\Core\Model as Payum;
  * Interface PaymentInterface
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
- *
- * @method $this|PaymentInterface setDetails($details)
  */
 interface PaymentInterface extends
     ResourceModel\ResourceInterface,
@@ -63,6 +61,15 @@ interface PaymentInterface extends
      * @return $this|PaymentInterface
      */
     public function setAmount($amount);
+
+    /**
+     * Sets the details.
+     *
+     * @param object $details
+     *
+     * @return $this|PaymentInterface
+     */
+    public function setDetails($details);
 
     /**
      * Returns the description.
