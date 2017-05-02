@@ -114,8 +114,8 @@ abstract class AbstractSaleListener
         // Handle customer information
         $changed |= $this->handleInformation($sale);
 
-        // Handle payment term
-        $changed |= $this->handlePaymentTerm($sale);
+        // Update outstanding
+        $changed |= $this->saleUpdater->updateOutstandingAndTerm($sale);
 
         // Update discounts
         $changed |= $this->saleUpdater->updateDiscounts($sale, true);
@@ -125,9 +125,6 @@ abstract class AbstractSaleListener
 
         // Update totals
         $changed |= $this->saleUpdater->updateTotals($sale);
-
-        // Update outstanding
-        $changed |= $this->saleUpdater->updateOutstanding($sale);
 
         // Update state
         $changed |= $this->updateState($sale);
@@ -165,24 +162,19 @@ abstract class AbstractSaleListener
 
         // If customer has changed
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
-            /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerInterface $oldCustomer */
-            list($oldCustomer) = $this->persistenceHelper->getChangeSet($sale, 'customer');
+            $changed |= $this->saleUpdater->updateOutstandingAndTerm($sale);
 
-            // Restore customer outstanding amount
-            if (null !== $oldCustomer) {
-                $changed |= $this->saleUpdater->clearOutstanding($sale, $oldCustomer);
-            }
+            // TODO Update customer's balances
+            // For each payments
+            // If payment is paid or has changed from paid state
         }
-
-        // Handle payment term
-        $changed |= $this->handlePaymentTerm($sale);
 
         /**
          * TODO Resource behaviors.
          */
         $sale->setUpdatedAt(new \DateTime());
 
-        // Recompute to get an update-to-date change set.
+        // Recompute to get an up-to-date change set.
         if (true || $changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
@@ -206,6 +198,11 @@ abstract class AbstractSaleListener
     public function onAddressChange(ResourceEventInterface $event)
     {
         $sale = $this->getSaleFromEvent($event);
+
+        if ($this->persistenceHelper->isScheduledForRemove($sale)) {
+            $event->stopPropagation();
+            return;
+        }
 
         $changed = false;
 
@@ -237,11 +234,13 @@ abstract class AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
+        if ($this->persistenceHelper->isScheduledForRemove($sale)) {
+            $event->stopPropagation();
+            return;
+        }
+
         // Update totals
         $changed = $this->saleUpdater->updateTotals($sale);
-
-        // Update outstanding
-        $changed |= $this->saleUpdater->updateOutstanding($sale);
 
         // Update state
         $changed |= $this->updateState($sale);
@@ -258,7 +257,12 @@ abstract class AbstractSaleListener
      */
     public function onStateChange(ResourceEventInterface $event)
     {
+        $sale = $this->getSaleFromEvent($event);
 
+        if ($this->persistenceHelper->isScheduledForRemove($sale)) {
+            $event->stopPropagation();
+            return;
+        }
     }
 
     /**
@@ -476,31 +480,6 @@ abstract class AbstractSaleListener
             } else if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
                 $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address);
             }
-        }
-
-        return $changed;
-    }
-
-    /**
-     * Handles the customer / payment term.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
-     */
-    protected function handlePaymentTerm(SaleInterface $sale)
-    {
-        $changed = false;
-
-        // New customer's payment term
-        if (null !== $customer = $sale->getCustomer()) {
-            if ($sale->getPaymentTerm() !== $term = $customer->getPaymentTerm()) {
-                $sale->setPaymentTerm($term);
-                $changed = true;
-            }
-        } elseif ($sale->getPaymentTerm()) {
-            $sale->setPaymentTerm(null);
-            $changed = true;
         }
 
         return $changed;

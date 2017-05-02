@@ -4,7 +4,9 @@ namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
@@ -46,7 +48,7 @@ class SaleTransformer implements SaleTransformerInterface
             'currency', 'customer', 'customerGroup',
             'email', 'company', 'gender', 'firstName', 'lastName',
             'sameAddress', 'preferredShipmentMethod', 'shipmentAmount',
-            'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingAmount',
+            'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
             'voucherNumber', 'description', 'comment',
         ]);
 
@@ -98,7 +100,9 @@ class SaleTransformer implements SaleTransformerInterface
         }*/
 
         // Origin number
-        $target->setOriginNumber($source->getNumber());
+        if ($source instanceof QuoteInterface || $source instanceof OrderInterface) {
+            $target->setOriginNumber($source->getNumber());
+        }
     }
 
     /**
@@ -139,7 +143,7 @@ class SaleTransformer implements SaleTransformerInterface
     public function copyPayment(PaymentInterface $source, PaymentInterface $target)
     {
         $this->copy($source, $target, [
-            'currency', 'method', 'number', 'amount', 'state', 'details',
+            'currency', 'method', 'amount', 'state', 'details',
             'description', 'createdAt', 'updatedAt', 'completedAt',
         ]);
     }

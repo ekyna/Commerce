@@ -25,6 +25,22 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
+    public function isCredit()
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isOutstanding()
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function validateMessageClass(MessageInterface $message)
     {
         if (!$message instanceof PaymentMessage) {

@@ -84,6 +84,24 @@
                 </option>
             </constraint>
         </property>
+        <property name="creditBalance">
+            <constraint name="GreaterThanOrEqual">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="outstandingLimit">
+            <constraint name="GreaterThanOrEqual">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+                <option name="value">0</option>
+            </constraint>
+        </property>
         <property name="parent">
             <constraint name="Valid" />
         </property>

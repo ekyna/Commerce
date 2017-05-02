@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
 /**
  * Class CartRepository
@@ -11,6 +12,22 @@ use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
  */
 class CartRepository extends AbstractSaleRepository implements CartRepositoryInterface
 {
+    /**
+     * @inheritdoc
+     */
+    public function findLatestByCustomer(CustomerInterface $customer)
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('c.customer', ':customer'))
+            ->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->setMaxResults(1)
+            ->setParameter('customer', $customer)
+            ->getOneOrNullResult();
+    }
+
     /**
      * @inheritdoc
      */

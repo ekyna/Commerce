@@ -29,4 +29,38 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
 
         return $method;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function findAvailable()
+    {
+        $qb = $this->createQueryBuilder('m');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
+            ->andWhere($qb->expr()->eq('m.available', ':available'))
+            ->getQuery()
+            ->setParameters([
+                'enabled'   => true,
+                'available' => true,
+            ])
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findEnabled()
+    {
+        $qb = $this->createQueryBuilder('m');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
+            ->getQuery()
+            ->setParameters([
+                'enabled' => true,
+            ])
+            ->getResult();
+    }
 }

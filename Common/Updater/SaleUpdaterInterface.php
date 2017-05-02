@@ -92,23 +92,13 @@ interface SaleUpdaterInterface
     public function updateTotalWeight(Model\SaleInterface $sale);
 
     /**
-     * Clears the outstanding date and amount.
-     *
-     * @param Model\SaleInterface    $sale
-     * @param CustomerInterface|null $customer
-     *
-     * @return bool Whether or not the sale has been updated.
-     */
-    public function clearOutstanding(Model\SaleInterface $sale, CustomerInterface $customer = null);
-
-    /**
-     * Updates the outstanding date and amount.
+     * Updates the payment terms and outstanding date.
      *
      * @param Model\SaleInterface $sale
      *
      * @return bool Whether or not the sale has been updated.
      */
-    public function updateOutstanding(Model\SaleInterface $sale);
+    public function updateOutstandingAndTerm(Model\SaleInterface $sale);
 
     /**
      * Updates the paid total.

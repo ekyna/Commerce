@@ -28,7 +28,7 @@
         <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
         <field name="paidTotal" column="paid_total" type="decimal" precision="12" scale="5"/>
 
-        <field name="outstandingAmount" column="outstanding_amount" type="decimal" precision="12" scale="5" />
+        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="5" />
         <field name="outstandingDate" column="outstanding_date" type="datetime" nullable="true" />
 
         <field name="state" column="state" type="string" length="16"/>

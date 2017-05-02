@@ -26,7 +26,7 @@
         </property>
         <property name="amount">
             <constraint name="NotBlank"/>
-            <constraint name="GreaterThanOrEqual">
+            <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
         </property>

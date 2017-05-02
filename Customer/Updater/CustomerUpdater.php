@@ -32,39 +32,36 @@ class CustomerUpdater implements CustomerUpdaterInterface
     /**
      * @inheritdoc
      */
+    public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false)
+    {
+        $old = $customer->getCreditBalance();
+        $new = $relative ? $old + $amount : $amount;
+
+        if ($old != $new) {
+            $customer->setCreditBalance($new);
+            $this->persistenceHelper->persistAndRecompute($customer, false);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false)
     {
-        $balance = $customer->getOutstandingBalance();
+        $old = $customer->getOutstandingBalance();
+        $new = $relative ? $old + $amount : $amount;
 
-        $delta = $amount;
-        if (!$relative) {
-            $delta -= $balance;
+        if ($old != $new) {
+            $customer->setOutstandingBalance($new);
+            $this->persistenceHelper->persistAndRecompute($customer, false);
+
+            return true;
         }
 
-        if (0 < $delta) {
-            // Credit case
-            $limit = $customer->getOutstandingLimit();
-            if ($limit < $balance + $delta) {
-                $delta = $limit - $balance;
-            }
-        } elseif (0 > $delta) {
-            // Debit case
-            if (0 > $balance + $delta) {
-                $delta = -$balance;
-            }
-        }
-        if (0 == $delta) {
-            return 0;
-        }
-
-        $balance = $balance + $delta;
-        if (0 > $balance) {
-            throw new InvalidArgumentException("Unexpected outstanding amount.");
-        }
-
-        $customer->setOutstandingBalance($balance);
-        $this->persistenceHelper->persistAndRecompute($customer);
-
-        return $relative ? $delta : $balance;
+        return false;
     }
 }

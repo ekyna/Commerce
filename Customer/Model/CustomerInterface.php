@@ -212,6 +212,22 @@ interface CustomerInterface extends
     public function getDefaultDeliveryAddress();
 
     /**
+     * Returns the credit balance.
+     *
+     * @return float
+     */
+    public function getCreditBalance();
+
+    /**
+     * Sets the credit balance.
+     *
+     * @param float $creditBalance
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setCreditBalance($creditBalance);
+
+    /**
      * Returns the outstanding limit.
      *
      * @return float

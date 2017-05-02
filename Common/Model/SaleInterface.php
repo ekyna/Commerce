@@ -267,11 +267,11 @@ interface SaleInterface extends
     public function setPaidTotal($total);
 
     /**
-     * Returns the outstanding amount.
+     * Returns the outstanding limit.
      *
      * @return float
      */
-    public function getOutstandingAmount();
+    public function getOutstandingLimit();
 
     /**
      * Sets the outstanding amount.
@@ -280,7 +280,7 @@ interface SaleInterface extends
      *
      * @return $this|SaleInterface
      */
-    public function setOutstandingAmount($amount);
+    public function setOutstandingLimit($amount);
 
     /**
      * Returns the outstanding date.
@@ -508,6 +508,13 @@ interface SaleInterface extends
      * @return Collection|PaymentInterface[]
      */
     public function getPayments();
+
+    /**
+     * Returns the payment remaining amount.
+     *
+     * @return float
+     */
+    public function getRemainingAmount();
 
     /**
      * Returns whether or not the sale has a weight greater that zero.

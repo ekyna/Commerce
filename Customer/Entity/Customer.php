@@ -69,6 +69,11 @@ class Customer implements Model\CustomerInterface
     /**
      * @var float
      */
+    protected $creditBalance;
+
+    /**
+     * @var float
+     */
     protected $outstandingLimit;
 
     /**
@@ -87,6 +92,7 @@ class Customer implements Model\CustomerInterface
      */
     public function __construct()
     {
+        $this->creditBalance = 0;
         $this->outstandingLimit = 0;
         $this->outstandingBalance = 0;
 
@@ -382,6 +388,24 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
+    public function getCreditBalance()
+    {
+        return $this->creditBalance;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCreditBalance($creditBalance)
+    {
+        $this->creditBalance = (float)$creditBalance;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOutstandingLimit()
     {
         return $this->outstandingLimit;
@@ -410,7 +434,7 @@ class Customer implements Model\CustomerInterface
      */
     public function setOutstandingBalance($amount)
     {
-        $this->outstandingBalance = $amount;
+        $this->outstandingBalance = (float)$amount;
 
         return $this;
     }

@@ -31,13 +31,10 @@ class CartStateResolver extends AbstractSaleStateResolver implements StateResolv
 
         $paymentState = $this->resolvePaymentsState($cart);
 
-        //$outstanding = $this->resolveOutstanding($cart, $paymentState);
-
         if ($cart->hasItems()) {
             if (
                 PaymentStates::isPaidState($paymentState)
                 || $paymentState === PaymentStates::STATE_PENDING
-                //|| ($outstanding && $outstanding->isValid())
             ) {
                 $newState = CartStates::STATE_ACCEPTED;
             } else {

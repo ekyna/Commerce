@@ -33,19 +33,6 @@ class CartListener extends AbstractSaleListener
     }
 
     /**
-     * @inheritDoc
-     */
-    protected function handlePaymentTerm(SaleInterface $sale)
-    {
-        // Prevent payment term for carts
-        if (null !== $sale->getPaymentTerm()) {
-            $sale->setPaymentTerm(null);
-        }
-
-        return false;
-    }
-
-    /**
      * @inheritdoc
      */
     protected function scheduleContentChangeEvent(SaleInterface $sale)

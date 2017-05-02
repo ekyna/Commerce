@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Cart\Repository;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
 /**
  * Interface CartRepositoryInterface
@@ -21,4 +22,13 @@ interface CartRepositoryInterface extends SaleRepositoryInterface
      * @return CartInterface
      */
     public function createNew();
+
+    /**
+     * Finds the latest non expired customer cart.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return CartInterface|null
+     */
+    public function findLatestByCustomer(CustomerInterface $customer);
 }

@@ -86,6 +86,10 @@ class OrderListener extends AbstractSaleListener
     {
         parent::onStateChange($event);
 
+        if ($event->isPropagationStopped()) {
+            return;
+        }
+
         $sale = $this->getSaleFromEvent($event);
 
         if ($this->persistenceHelper->isChanged($sale, 'state')) {

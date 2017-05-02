@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Payment\Util;
 
+use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermInterface;
 
 /**
@@ -31,5 +33,33 @@ class PaymentUtil
         $date->setTime(23, 59, 59);
 
         return $date;
+    }
+
+    /**
+     * Returns whether the payment can be cancelled by the user.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool
+     */
+    static public function isUserCancellable(PaymentInterface $payment)
+    {
+        if (null === $method = $payment->getMethod()) {
+            return false;
+        }
+
+        if ($payment->getState() === PaymentStates::STATE_CANCELLED) {
+            return false;
+        }
+
+        if ($method->isManual() && $payment->getState() === PaymentStates::STATE_PENDING) {
+            return true;
+        }
+
+        if ($method->isCredit() || $method->isOutstanding()) {
+            return true;
+        }
+
+        return false;
     }
 }

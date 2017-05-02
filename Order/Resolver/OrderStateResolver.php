@@ -48,8 +48,6 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             $changed = true;
         }
 
-        $outstanding = $this->resolveOutstanding($order, $paymentState);
-
         // Order states
         if ($order->hasItems()) {
             if (Pay::isPaidState($paymentState)) {
@@ -57,13 +55,6 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                     $newState = OrderStates::STATE_COMPLETED;
                 } else {
                     $newState = OrderStates::STATE_ACCEPTED;
-                }
-            } elseif ($outstanding) {
-                $newState = OrderStates::STATE_PENDING; // TODO ?
-                if ($outstanding->isValid()) {
-                    $newState = OrderStates::STATE_ACCEPTED;
-                } elseif ($outstanding->isExpired()) {
-                    $newState = OrderStates::STATE_OUTSTANDING;
                 }
             } elseif ($paymentState == Pay::STATE_PENDING) {
                 $newState = OrderStates::STATE_PENDING;

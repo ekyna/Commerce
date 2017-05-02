@@ -12,13 +12,24 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 interface CustomerUpdaterInterface
 {
     /**
-     * Updates the customer outstanding balance.
+     * Updates the customer's credit balance.
      *
      * @param CustomerInterface $customer
      * @param float             $amount
      * @param bool              $relative
      *
-     * @return float The resulting updated quantity (relative or absolute).
+     * @return bool Whether the customer has been changed.
+     */
+    public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false);
+
+    /**
+     * Updates the customer's outstanding balance.
+     *
+     * @param CustomerInterface $customer
+     * @param float             $amount
+     * @param bool              $relative
+     *
+     * @return float Whether the customer has been changed.
      */
     public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false);
 }

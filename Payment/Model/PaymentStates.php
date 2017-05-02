@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
 /**
  * Class PaymentStates
  * @package Ekyna\Component\Commerce\Payment\Model
@@ -9,16 +11,17 @@ namespace Ekyna\Component\Commerce\Payment\Model;
  */
 final class PaymentStates
 {
-    const STATE_NEW        = 'new';
-    const STATE_PENDING    = 'pending';
-    const STATE_CAPTURED   = 'captured';
-    const STATE_FAILED     = 'failed';
-    const STATE_CANCELLED  = 'cancelled';
-    const STATE_REFUNDED   = 'refunded';
-    const STATE_AUTHORIZED = 'authorized';
-    const STATE_SUSPENDED  = 'suspended';
-    const STATE_EXPIRED    = 'expired';
-    const STATE_UNKNOWN    = 'unknown';
+    const STATE_NEW         = 'new';
+    const STATE_PENDING     = 'pending';
+    const STATE_CAPTURED    = 'captured';
+    const STATE_FAILED      = 'failed';
+    const STATE_CANCELLED   = 'cancelled';
+    const STATE_REFUNDED    = 'refunded';
+    const STATE_AUTHORIZED  = 'authorized';
+    const STATE_OUTSTANDING = 'outstanding';
+    const STATE_SUSPENDED   = 'suspended';
+    const STATE_EXPIRED     = 'expired';
+    const STATE_UNKNOWN     = 'unknown';
 
 
     /**
@@ -36,6 +39,7 @@ final class PaymentStates
             static::STATE_CANCELLED,
             static::STATE_REFUNDED,
             static::STATE_AUTHORIZED,
+            static::STATE_OUTSTANDING,
             static::STATE_SUSPENDED,
             static::STATE_EXPIRED,
             static::STATE_UNKNOWN,
@@ -66,6 +70,7 @@ final class PaymentStates
             static::STATE_CAPTURED,
             static::STATE_FAILED,
             static::STATE_REFUNDED,
+            static::STATE_OUTSTANDING,
         ];
     }
 
@@ -103,7 +108,7 @@ final class PaymentStates
      */
     static public function isDeletableState($state)
     {
-        return null === $state || in_array($state, static::getDeletableStates(), true);
+        return is_null($state) || in_array($state, static::getDeletableStates(), true);
     }
 
     /**
@@ -116,6 +121,7 @@ final class PaymentStates
         return [
             static::STATE_CAPTURED,
             static::STATE_AUTHORIZED,
+            static::STATE_OUTSTANDING,
         ];
     }
 
@@ -128,6 +134,59 @@ final class PaymentStates
      */
     static public function isPaidState($state)
     {
-        return null !== $state && in_array($state, static::getPaidStates(), true);
+        return in_array($state, static::getPaidStates(), true);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a non paid state to a paid state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedToPaid(array $cs)
+    {
+        return static::assertValidChangeSet($cs)
+            && !static::isPaidState($cs[0])
+            && static::isPaidState($cs[1]);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a paid state to a non paid state.
+     *
+     * @param array $cs The persistence change set
+     *
+     * @return bool
+     */
+    static public function hasChangedFromPaid(array $cs)
+    {
+        return static::assertValidChangeSet($cs)
+            && static::isPaidState($cs[0])
+            && !static::isPaidState($cs[1]);
+    }
+
+    /**
+     * Returns whether or not the change set is valid.
+     *
+     * @param array $cs
+     *
+     * @return bool
+     *
+     * @throws InvalidArgumentException
+     */
+    static private function assertValidChangeSet(array $cs)
+    {
+        if (
+            array_key_exists(0, $cs) &&
+            array_key_exists(1, $cs) &&
+            (is_null($cs[0]) || static::isValidState($cs[0])) &&
+            (is_null($cs[1]) || static::isValidState($cs[1]))
+        ) {
+            return true;
+        }
+
+        throw new InvalidArgumentException("Unexpected order state change set.");
     }
 }

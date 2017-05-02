@@ -17,4 +17,18 @@ interface PaymentMethodInterface extends MethodInterface
      * @return bool
      */
     public function isManual();
+
+    /**
+     * Returns whether or not the method results in an customer credit balance payment.
+     *
+     * @return bool
+     */
+    public function isCredit();
+
+    /**
+     * Returns whether or not the method results in an customer outstanding balance payment.
+     *
+     * @return bool
+     */
+    public function isOutstanding();
 }
