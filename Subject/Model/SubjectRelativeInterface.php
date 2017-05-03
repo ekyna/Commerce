@@ -14,6 +14,15 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 interface SubjectRelativeInterface
 {
     /**
+     * Returns whether or not the subject identity is set.
+     *
+     * @see SubjectIdentity::hasIdentity()
+     *
+     * @return bool
+     */
+    public function hasIdentity();
+
+    /**
      * Returns the subjectIdentity.
      *
      * @return SubjectIdentity

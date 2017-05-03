@@ -40,6 +40,10 @@ ekyna_commerce:
         entity: Ekyna\Component\Commerce\Order\Entity\OrderAttachment
     order_adjustment:
         entity: Ekyna\Component\Commerce\Order\Entity\OrderAdjustment
+    order_credit:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderCredit
+    order_credit_item:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderCreditItem
     order_item:
         entity: Ekyna\Component\Commerce\Order\Entity\OrderItem
 #    order_item_adjustment:

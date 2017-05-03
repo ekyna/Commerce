@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Credit\Model\CreditItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
@@ -193,8 +194,98 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
+    public function assignCreditItem(CreditItemInterface $item)
+    {
+        // Abort if not supported
+        if (null === $assignments = $this->getAssignments($item)) {
+            return;
+        }
+
+        // TODO sort assignments ?
+
+        $quantity = $item->getQuantity();
+
+        // TODO Use packaging format
+
+        foreach ($assignments as $assignment) {
+            $quantity += $this->assignmentUpdater->updateReserved($assignment, -$quantity, true);
+        }
+
+        // Remaining quantity
+        if (0 < $quantity) {
+            throw new InvalidArgumentException('Failed to assign credit item.');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function applyCreditItem(CreditItemInterface $item)
+    {
+        // Abort if not supported
+        if (null === $assignments = $this->getAssignments($item)) {
+            return;
+        }
+
+        // Resolve quantity change
+        if (!$this->persistenceHelper->isChanged($item, 'quantity')) {
+            return;
+        }
+        list($old, $new) = $this->persistenceHelper->getChangeSet($item, 'quantity');
+        if (0 == $quantity = $new - $old) {
+            return;
+        }
+
+        // TODO sort assignments ? (reverse for debit)
+
+
+        // Update assignments
+        foreach ($assignments as $assignment) {
+            $quantity += $this->assignmentUpdater->updateReserved($assignment, -$quantity, true);
+
+            if (0 == $quantity) {
+                return;
+            }
+        }
+
+        // Remaining quantity
+        if (0 != $quantity) {
+            throw new InvalidArgumentException('Failed to assign credit item.');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function detachCreditItem(CreditItemInterface $item)
+    {
+        // Abort if not supported
+        if (null === $assignments = $this->getAssignments($item)) {
+            return;
+        }
+
+        // TODO sort assignments ?
+
+        $quantity = $item->getQuantity();
+
+        // TODO Use packaging format
+
+        foreach ($assignments as $assignment) {
+            $quantity -= $this->assignmentUpdater->updateReserved($assignment, $quantity, true);
+        }
+
+        // Remaining quantity
+        if (0 < $quantity) {
+            throw new InvalidArgumentException('Failed to detach credit item.');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function assignShipmentItem(ShipmentItemInterface $item)
     {
+        // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
             return;
         }
@@ -253,7 +344,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // Remaining quantity
-        if (0 < $quantity) {
+        if (0 != $quantity) {
             throw new InvalidArgumentException('Failed to assign shipment item.');
         }
     }
@@ -323,6 +414,8 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     protected function getAssignments($item)
     {
         if ($item instanceof ShipmentItemInterface) {
+            $item = $item->getSaleItem();
+        } elseif ($item instanceof CreditItemInterface) {
             $item = $item->getSaleItem();
         }
 

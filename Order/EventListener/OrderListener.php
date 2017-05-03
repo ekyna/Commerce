@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Order\EventListener;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Credit\Model\CreditInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
@@ -90,6 +91,7 @@ class OrderListener extends AbstractSaleListener
             return;
         }
 
+        /** @var OrderInterface $sale */
         $sale = $this->getSaleFromEvent($event);
 
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
@@ -100,12 +102,16 @@ class OrderListener extends AbstractSaleListener
                 foreach ($sale->getItems() as $item) {
                     $this->assignSaleItemRecursively($item);
                 }
+                foreach ($sale->getCredits() as $credit) {
+                    $this->assignCredit($credit);
+                }
             }
             // If order state has changed from stockable to non stockable
-            elseif(OrderStates::hasChangedFromStockable($stateCs)) {
+            elseif (OrderStates::hasChangedFromStockable($stateCs)) {
                 foreach ($sale->getItems() as $item) {
                     $this->detachSaleItemRecursively($item);
                 }
+                // We don't need to handle credits as they are detached with sale items.
             }
         }
     }
@@ -128,6 +134,19 @@ class OrderListener extends AbstractSaleListener
 
         return false;
     }
+
+    /**
+     * Assigns the credit's item to stock units.
+     *
+     * @param CreditInterface $credit
+     */
+    protected function assignCredit(CreditInterface $credit)
+    {
+        foreach ($credit->getItems() as $creditItem) {
+            $this->stockAssigner->assignCreditItem($creditItem);
+        }
+    }
+
 
     /**
      * Assigns the sale item to stock units recursively.

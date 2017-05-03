@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Credit\Model as Credit;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
@@ -28,6 +29,11 @@ class Order extends AbstractSale implements Model\OrderInterface
     protected $shipments;
 
     /**
+     * @var ArrayCollection|Credit\CreditInterface[]
+     */
+    protected $credits;
+
+    /**
      * @var \DateTime
      */
     protected $completedAt;
@@ -41,6 +47,7 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->state = Model\OrderStates::STATE_NEW;
         $this->shipmentState = Shipment\ShipmentStates::STATE_NONE;
         $this->shipments = new ArrayCollection();
+        $this->credits = new ArrayCollection();
 
         parent::__construct();
     }
@@ -374,6 +381,68 @@ class Order extends AbstractSale implements Model\OrderInterface
         if ($this->hasShipment($shipment)) {
             $this->shipments->removeElement($shipment);
             //$shipment->setOrder(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasCredits()
+    {
+        return 0 < $this->credits->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCredits()
+    {
+        return $this->credits;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasCredit(Credit\CreditInterface $credit)
+    {
+        if (!$credit instanceof Model\OrderCreditInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderCreditInterface.");
+        }
+
+        return $this->credits->contains($credit);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addCredit(Credit\CreditInterface $credit)
+    {
+        if (!$credit instanceof Model\OrderCreditInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderCreditInterface.");
+        }
+
+        if (!$this->hasCredit($credit)) {
+            $this->credits->add($credit);
+            $credit->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeCredit(Credit\CreditInterface $credit)
+    {
+        if (!$credit instanceof Model\OrderCreditInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderCreditInterface.");
+        }
+
+        if ($this->hasCredit($credit)) {
+            $this->credits->removeElement($credit);
+            //$credit->setOrder(null);
         }
 
         return $this;

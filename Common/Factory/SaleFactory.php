@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\AddressUtil;
+use Ekyna\Component\Commerce\Credit\Model\CreditInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order;
@@ -151,6 +152,14 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
+    public function createItemForCredit(CreditInterface $credit)
+    {
+        return $this->resolveClassAndCreateObject('credit_item', $credit);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function createPaymentForSale(Model\SaleInterface $sale)
     {
         /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentInterface $payment */
@@ -169,6 +178,14 @@ class SaleFactory implements SaleFactoryInterface
     public function createShipmentForSale(Model\SaleInterface $sale)
     {
         return $this->resolveClassAndCreateObject('shipment', $sale);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createCreditForSale(Model\SaleInterface $sale)
+    {
+        return $this->resolveClassAndCreateObject('credit', $sale);
     }
 
     /**
@@ -200,27 +217,27 @@ class SaleFactory implements SaleFactoryInterface
         // TODO use constants for keys
 
         return [
-            'address'         => [
+            'address'               => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartAddress::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderAddress::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAddress::class,
             ],
-            'attachment'      => [
+            'attachment'            => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartAttachment::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderAttachment::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAttachment::class,
             ],
-            'item'            => [
+            'item'                  => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartItem::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderItem::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteItem::class,
             ],
-            'adjustment'      => [
+            'adjustment'            => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartAdjustment::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderAdjustment::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAdjustment::class,
             ],
-            'item_adjustment' => [
+            'item_adjustment'       => [
                 Cart\Model\CartItemInterface::class   => Cart\Entity\CartItemAdjustment::class,
                 Order\Model\OrderItemInterface::class => Order\Entity\OrderItemAdjustment::class,
                 Quote\Model\QuoteItemInterface::class => Quote\Entity\QuoteItemAdjustment::class,
@@ -228,16 +245,22 @@ class SaleFactory implements SaleFactoryInterface
             'item_stock_assignment' => [
                 Order\Model\OrderItemInterface::class => Order\Entity\OrderItemStockAssignment::class,
             ],
-            'payment'         => [
+            'payment'               => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartPayment::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderPayment::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuotePayment::class,
             ],
-            'shipment'        => [
+            'shipment'              => [
                 Order\Model\OrderInterface::class => Order\Entity\OrderShipment::class,
             ],
-            'shipment_item'   => [
+            'shipment_item'         => [
                 Order\Model\OrderShipmentInterface::class => Order\Entity\OrderShipmentItem::class,
+            ],
+            'credit'                => [
+                Order\Model\OrderInterface::class => Order\Entity\OrderCredit::class,
+            ],
+            'credit_item'           => [
+                Order\Model\OrderCreditInterface::class => Order\Entity\OrderCreditItem::class,
             ],
         ];
     }

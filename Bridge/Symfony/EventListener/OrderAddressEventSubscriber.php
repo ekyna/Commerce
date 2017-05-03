@@ -19,7 +19,7 @@ class OrderAddressEventSubscriber extends OrderAddressListener implements EventS
     public static function getSubscribedEvents()
     {
         return [
-            OrderAddressEvents::UPDATE     => ['onUpdate', 0],
+            OrderAddressEvents::UPDATE => ['onUpdate', 0],
         ];
     }
 }

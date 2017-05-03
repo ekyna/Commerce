@@ -7,7 +7,6 @@ use Ekyna\Component\Commerce\Order\Event\OrderShipmentEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\EventListener\AbstractShipmentItemListener;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
-use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**

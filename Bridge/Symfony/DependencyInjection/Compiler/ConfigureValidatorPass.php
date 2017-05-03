@@ -27,6 +27,7 @@ class ConfigureValidatorPass implements CompilerPassInterface
         $names = [
             'cart',
             'common',
+            'credit',
             'customer',
             'order',
             'payment',

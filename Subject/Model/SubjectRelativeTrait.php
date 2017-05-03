@@ -34,6 +34,18 @@ trait SubjectRelativeTrait
     }
 
     /**
+     * Returns whether or not the subject identity is set.
+     *
+     * @see SubjectIdentity::hasIdentity()
+     *
+     * @return bool
+     */
+    public function hasIdentity()
+    {
+        return $this->subjectIdentity->hasIdentity();
+    }
+
+    /**
      * Returns the subjectIdentity.
      *
      * @return SubjectIdentity

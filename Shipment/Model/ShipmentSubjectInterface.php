@@ -2,8 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
 /**
  * Class ShipmentSubjectInterface
  * @package Ekyna\Component\Commerce\Shipment\Model
@@ -22,6 +20,7 @@ interface ShipmentSubjectInterface
      * Sets the shipment state.
      *
      * @param string $shipmentState
+     *
      * @return $this|ShipmentSubjectInterface
      */
     public function setShipmentState($shipmentState);
@@ -36,7 +35,7 @@ interface ShipmentSubjectInterface
     /**
      * Returns the shipments.
      *
-     * @return ArrayCollection|ShipmentInterface[]
+     * @return \Doctrine\Common\Collections\Collection|ShipmentInterface[]
      */
     public function getShipments();
 
@@ -44,6 +43,7 @@ interface ShipmentSubjectInterface
      * Returns whether the order has the shipment or not.
      *
      * @param ShipmentInterface $shipment
+     *
      * @return bool
      */
     public function hasShipment(ShipmentInterface $shipment);
@@ -52,6 +52,7 @@ interface ShipmentSubjectInterface
      * Adds the shipment.
      *
      * @param ShipmentInterface $shipment
+     *
      * @return $this|ShipmentSubjectInterface
      */
     public function addShipment(ShipmentInterface $shipment);
@@ -60,6 +61,7 @@ interface ShipmentSubjectInterface
      * Removes the shipment.
      *
      * @param ShipmentInterface $shipment
+     *
      * @return $this|ShipmentSubjectInterface
      */
     public function removeShipment(ShipmentInterface $shipment);

@@ -155,9 +155,9 @@ abstract class AbstractShipmentItemListener
     }
 
     /**
-     * @param Model\ShipmentItemInterface $item
+     * Prevents the sale item from changing.
      *
-     * @return mixed
+     * @param Model\ShipmentItemInterface $item
      */
     abstract protected function preventSaleItemChange(Model\ShipmentItemInterface $item);
 

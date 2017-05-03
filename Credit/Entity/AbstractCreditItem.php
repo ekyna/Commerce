@@ -1,15 +1,15 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Shipment\Entity;
+namespace Ekyna\Component\Commerce\Credit\Entity;
 
-use Ekyna\Component\Commerce\Shipment\Model;
+use Ekyna\Component\Commerce\Credit\Model;
 
 /**
- * Class ShipmentItem
- * @package Ekyna\Component\Commerce\Shipment\Entity
+ * Class AbstractCreditItem
+ * @package Ekyna\Component\Commerce\Credit\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
+abstract class AbstractCreditItem implements Model\CreditItemInterface
 {
     /**
      * @var int
@@ -17,9 +17,9 @@ abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
     protected $id;
 
     /**
-     * @var Model\ShipmentInterface
+     * @var Model\CreditInterface
      */
-    protected $shipment;
+    protected $credit;
 
     /**
      * @var float
@@ -38,26 +38,26 @@ abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
     /**
      * @inheritdoc
      */
-    public function getShipment()
+    public function getCredit()
     {
-        return $this->shipment;
+        return $this->credit;
     }
 
     /**
      * @inheritdoc
      */
-    public function setShipment(Model\ShipmentInterface $shipment = null)
+    public function setCredit(Model\CreditInterface $credit = null)
     {
-        if ($this->shipment !== $shipment) {
-            $previous = $this->shipment;
-            $this->shipment = $shipment;
+        if ($this->credit !== $credit) {
+            $previous = $this->credit;
+            $this->credit = $credit;
 
             if ($previous) {
                 $previous->removeItem($this);
             }
 
-            if ($this->shipment) {
-                $this->shipment->addItem($this);
+            if ($this->credit) {
+                $this->credit->addItem($this);
             }
         }
 

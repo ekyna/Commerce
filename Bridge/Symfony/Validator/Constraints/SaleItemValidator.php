@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Credit\Model as Credit;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -40,11 +41,48 @@ class SaleItemValidator extends ConstraintValidator
                 ->addViolation();
         }
 
+        $this->checkCreditIntegrity($item, $constraint);
         $this->checkShipmentIntegrity($item, $constraint);
     }
 
     /**
-     * Checks that the sale item quantity is lower than or equals the shipped quantity.
+     * Checks that the sale item quantity is greater than or equals the credited quantity.
+     *
+     * @param SaleItemInterface $item
+     * @param SaleItem          $constraint
+     */
+    protected function checkCreditIntegrity(SaleItemInterface $item, SaleItem $constraint)
+    {
+        $sale = $item->getSale();
+        if (!$sale instanceof Credit\CreditSubjectInterface) {
+            return;
+        }
+
+        $quantity = 0;
+
+        $credits = $sale->getCredits();
+        /** @var Credit\CreditInterface $credit */
+        foreach ($credits as $credit) {
+            foreach ($credit->getItems() as $creditItem) {
+                if ($creditItem->getSaleItem() === $item) {
+                    $quantity += $creditItem->getQuantity();
+                }
+            }
+        }
+
+        if (0 < $quantity && $item->getTotalQuantity() < $quantity) {
+            $this
+                ->context
+                ->buildViolation($constraint->quantity_is_lower_than_credited, [
+                    '%max%' => $quantity,
+                ])
+                ->atPath('quantity')
+                ->addViolation();
+        }
+    }
+
+    /**
+     * Checks that the sale item quantity is greater than or equals the shipped quantity.
      *
      * @param SaleItemInterface $item
      * @param SaleItem $constraint
@@ -79,7 +117,10 @@ class SaleItemValidator extends ConstraintValidator
         if (0 < $quantity && $item->getTotalQuantity() < $quantity) {
             $this
                 ->context
-                ->buildViolation($constraint->shipment_integrity)
+                ->buildViolation($constraint->quantity_is_lower_than_shipped, [
+                    '%max%' => $quantity
+                ])
+                ->setInvalidValue($item->getQuantity())
                 ->atPath('quantity')
                 ->addViolation();
         }

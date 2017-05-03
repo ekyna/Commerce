@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Factory;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Credit\Model as Credit;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 
 /**
@@ -39,15 +40,6 @@ interface SaleFactoryInterface
     public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null);
 
     /**
-     * Creates an attachment regarding to the sale type.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Model\SaleAttachmentInterface
-     */
-    public function createAttachmentForSale(Model\SaleInterface $sale);
-
-    /**
      * Creates an adjustment for the given adjustable.
      *
      * @param Model\AdjustableInterface $adjustable
@@ -55,6 +47,15 @@ interface SaleFactoryInterface
      * @return Model\AdjustmentInterface
      */
     public function createAdjustmentFor(Model\AdjustableInterface $adjustable);
+
+    /**
+     * Creates an attachment regarding to the sale type.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return Model\SaleAttachmentInterface
+     */
+    public function createAttachmentForSale(Model\SaleInterface $sale);
 
     /**
      * Creates an adjustment regarding to the sale item type.
@@ -102,6 +103,15 @@ interface SaleFactoryInterface
     public function createItemForShipment(Shipment\ShipmentInterface $shipment);
 
     /**
+     * Creates a shipment regarding to the sale type.
+     *
+     * @param Credit\CreditInterface $credit
+     *
+     * @return Credit\CreditItemInterface
+     */
+    public function createItemForCredit(Credit\CreditInterface $credit);
+
+    /**
      * Creates an address regarding to the sale type.
      *
      * @param Model\SaleInterface $sale
@@ -118,4 +128,13 @@ interface SaleFactoryInterface
      * @return Shipment\ShipmentInterface
      */
     public function createShipmentForSale(Model\SaleInterface $sale);
+
+    /**
+     * Creates a credit regarding to the sale type.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return Credit\CreditInterface
+     */
+    public function createCreditForSale(Model\SaleInterface $sale);
 }
