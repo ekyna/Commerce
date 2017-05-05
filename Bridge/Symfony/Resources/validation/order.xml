@@ -57,7 +57,7 @@
 
     </class>-->
 
-    <class name="Ekyna\Component\Commerce\Order\Entity\OrderCredit">
+    <class name="Ekyna\Component\Commerce\Order\Entity\OrderInvoice">
         <property name="order">
             <constraint name="NotNull"/>
         </property>

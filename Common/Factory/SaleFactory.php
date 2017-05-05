@@ -6,7 +6,7 @@ use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\AddressUtil;
-use Ekyna\Component\Commerce\Credit\Model\CreditInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order;
@@ -152,9 +152,9 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createItemForCredit(CreditInterface $credit)
+    public function createLineForInvoice(InvoiceInterface $invoice)
     {
-        return $this->resolveClassAndCreateObject('credit_item', $credit);
+        return $this->resolveClassAndCreateObject('invoice_line', $invoice);
     }
 
     /**
@@ -183,9 +183,9 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createCreditForSale(Model\SaleInterface $sale)
+    public function createInvoiceForSale(Model\SaleInterface $sale)
     {
-        return $this->resolveClassAndCreateObject('credit', $sale);
+        return $this->resolveClassAndCreateObject('invoice', $sale);
     }
 
     /**
@@ -256,11 +256,11 @@ class SaleFactory implements SaleFactoryInterface
             'shipment_item'         => [
                 Order\Model\OrderShipmentInterface::class => Order\Entity\OrderShipmentItem::class,
             ],
-            'credit'                => [
-                Order\Model\OrderInterface::class => Order\Entity\OrderCredit::class,
+            'invoice'               => [
+                Order\Model\OrderInterface::class => Order\Entity\OrderInvoice::class,
             ],
-            'credit_item'           => [
-                Order\Model\OrderCreditInterface::class => Order\Entity\OrderCreditItem::class,
+            'invoice_line'          => [
+                Order\Model\OrderInvoiceInterface::class => Order\Entity\OrderInvoiceLine::class,
             ],
         ];
     }

@@ -9,11 +9,11 @@
             table="commerce_order_shipment_item">
 
         <indexes>
-            <index columns="shipment_id,order_item_id" name="idx_commerce_order_shipment_item_order_item_id" />
+            <index columns="shipment_id,order_item_id" name="idx_commerce_order_shipment_order_item_id" />
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="shipment_id,order_item_id" name="unique_commerce_order_shipment_item_item_order_item_id" />
+            <unique-constraint columns="shipment_id,order_item_id" name="unique_commerce_order_shipment_order_item_id" />
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

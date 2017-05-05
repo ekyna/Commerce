@@ -52,7 +52,7 @@ interface AmountsCalculatorInterface
     public function calculateShipment(Model\SaleInterface $sale);
 
     /**
-     * Calculates the sale item amounts.
+     * Calculates the sale item unit amounts.
      *
      * @param Model\SaleItemInterface $item
      * @param bool                    $gross
@@ -65,8 +65,9 @@ interface AmountsCalculatorInterface
      * Calculates the discount adjustment amounts.
      *
      * @param Model\AdjustmentInterface $adjustment
+     * @param Result                    $parentResult
      *
      * @return Result
      */
-    public function calculateDiscountAdjustment(Model\AdjustmentInterface $adjustment);
+    public function calculateDiscountAdjustment(Model\AdjustmentInterface $adjustment, Result $parentResult = null);
 }

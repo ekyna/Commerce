@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Order\EventListener;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Credit\Model\CreditInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
@@ -102,8 +102,8 @@ class OrderListener extends AbstractSaleListener
                 foreach ($sale->getItems() as $item) {
                     $this->assignSaleItemRecursively($item);
                 }
-                foreach ($sale->getCredits() as $credit) {
-                    $this->assignCredit($credit);
+                foreach ($sale->getInvoices() as $invoice) {
+                    $this->assignInvoice($invoice);
                 }
             }
             // If order state has changed from stockable to non stockable
@@ -111,7 +111,7 @@ class OrderListener extends AbstractSaleListener
                 foreach ($sale->getItems() as $item) {
                     $this->detachSaleItemRecursively($item);
                 }
-                // We don't need to handle credits as they are detached with sale items.
+                // We don't need to handle invoices as they are detached with sale items.
             }
         }
     }
@@ -136,17 +136,16 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
-     * Assigns the credit's item to stock units.
+     * Assigns the invoice's item to stock units.
      *
-     * @param CreditInterface $credit
+     * @param InvoiceInterface $invoice
      */
-    protected function assignCredit(CreditInterface $credit)
+    protected function assignInvoice(InvoiceInterface $invoice)
     {
-        foreach ($credit->getItems() as $creditItem) {
-            $this->stockAssigner->assignCreditItem($creditItem);
+        foreach ($invoice->getLines() as $line) {
+            $this->stockAssigner->assignInvoiceLine($line);
         }
     }
-
 
     /**
      * Assigns the sale item to stock units recursively.

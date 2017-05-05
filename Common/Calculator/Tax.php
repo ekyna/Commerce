@@ -24,6 +24,11 @@ class Tax
      */
     private $amount = 0;
 
+    /**
+     * @var float
+     */
+    private $precision = 0;
+
 
     /**
      * Constructor.
@@ -31,11 +36,13 @@ class Tax
      * @param string $name
      * @param float  $rate
      * @param float  $amount
+     * @param int    $precision
      */
-    public function __construct($name, $rate, $amount = .0)
+    public function __construct($name, $rate, $amount = .0, $precision = 2)
     {
         $this->name = $name;
-        $this->rate = $rate;
+        $this->rate = (float)$rate;
+        $this->precision = $precision;
 
         $this->addAmount($amount);
     }
@@ -74,9 +81,27 @@ class Tax
      * Adds the amount.
      *
      * @param float $amount
+     *
+     * @return Tax
      */
     public function addAmount($amount)
     {
-        $this->amount += $amount;
+        $this->amount += (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * Multiply the amount.
+     *
+     * @param float $quantity
+     *
+     * @return Tax
+     */
+    public function multiply($quantity)
+    {
+        $this->amount = round($this->amount * $quantity, $this->precision);
+
+        return $this;
     }
 }

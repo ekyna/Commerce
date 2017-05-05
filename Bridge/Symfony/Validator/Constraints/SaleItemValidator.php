@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Credit\Model as Credit;
+use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -41,31 +41,31 @@ class SaleItemValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        $this->checkCreditIntegrity($item, $constraint);
+        $this->checkInvoiceIntegrity($item, $constraint);
         $this->checkShipmentIntegrity($item, $constraint);
     }
 
     /**
-     * Checks that the sale item quantity is greater than or equals the credited quantity.
+     * Checks that the sale item quantity is greater than or equals the invoiced quantity.
      *
      * @param SaleItemInterface $item
      * @param SaleItem          $constraint
      */
-    protected function checkCreditIntegrity(SaleItemInterface $item, SaleItem $constraint)
+    protected function checkInvoiceIntegrity(SaleItemInterface $item, SaleItem $constraint)
     {
         $sale = $item->getSale();
-        if (!$sale instanceof Credit\CreditSubjectInterface) {
+        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
             return;
         }
 
         $quantity = 0;
 
-        $credits = $sale->getCredits();
-        /** @var Credit\CreditInterface $credit */
-        foreach ($credits as $credit) {
-            foreach ($credit->getItems() as $creditItem) {
-                if ($creditItem->getSaleItem() === $item) {
-                    $quantity += $creditItem->getQuantity();
+        $invoices = $sale->getInvoices();
+        /** @var Invoice\InvoiceInterface $invoice */
+        foreach ($invoices as $invoice) {
+            foreach ($invoice->getLines() as $line) {
+                if ($line->getSaleItem() === $item) {
+                    $quantity += $line->getQuantity();
                 }
             }
         }
@@ -73,7 +73,7 @@ class SaleItemValidator extends ConstraintValidator
         if (0 < $quantity && $item->getTotalQuantity() < $quantity) {
             $this
                 ->context
-                ->buildViolation($constraint->quantity_is_lower_than_credited, [
+                ->buildViolation($constraint->quantity_is_lower_than_invoiced, [
                     '%max%' => $quantity,
                 ])
                 ->atPath('quantity')

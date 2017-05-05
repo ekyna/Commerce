@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Credit\Model\CreditItemInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 
 /**
@@ -35,28 +35,28 @@ interface StockUnitAssignerInterface
     public function detachSaleItem(SaleItemInterface $item);
 
     /**
-     * Assigns the credit item to stock units by updating the
+     * Assigns the invoice line to stock units by updating the
      * stock assignment's reserved quantities of the related sale item.
      *
-     * @param CreditItemInterface $item
+     * @param InvoiceLineInterface $line
      */
-    public function assignCreditItem(CreditItemInterface $item);
+    public function assignInvoiceLine(InvoiceLineInterface $line);
 
     /**
-     * Applies the credit item quantity change to stock units by updating the
+     * Applies the invoice line quantity change to stock units by updating the
      * stock assignment's reserved quantities of the related sale item.
      *
-     * @param CreditItemInterface $item
+     * @param InvoiceLineInterface $line
      */
-    public function applyCreditItem(CreditItemInterface $item);
+    public function applyInvoiceLine(InvoiceLineInterface $line);
 
     /**
-     * Detaches the credit item from stock units by updating
+     * Detaches the invoice line from stock units by updating
      * stock assignment's reserved quantities of the related sale item.
      *
-     * @param CreditItemInterface $item
+     * @param InvoiceLineInterface $line
      */
-    public function detachCreditItem(CreditItemInterface $item);
+    public function detachInvoiceLine(InvoiceLineInterface $line);
 
     /**
      * Assigns the shipment item to stock units

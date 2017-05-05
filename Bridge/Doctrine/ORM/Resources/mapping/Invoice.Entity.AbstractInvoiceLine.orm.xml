@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoiceLine">
+
+        <field name="type" column="type" type="string" length="16"/>
+        <field name="designation" column="designation" type="string" length="255"/>
+        <field name="reference" column="reference" type="string" length="32" nullable="true"/>
+        <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5"/>
+        <field name="taxesDetails" column="taxes_details" type="json_array"/>
+        <field name="quantity" column="quantity" type="decimal" precision="10" scale="5"/>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Credit\Model\CreditSubjectInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 
 /**
@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface, CreditSubjectInterface
+interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface, InvoiceSubjectInterface
 {
     /**
      * Returns the "completed at" datetime.

@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Credit\Model as Credit;
+use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
@@ -29,9 +29,9 @@ class Order extends AbstractSale implements Model\OrderInterface
     protected $shipments;
 
     /**
-     * @var ArrayCollection|Credit\CreditInterface[]
+     * @var ArrayCollection|Invoice\InvoiceInterface[]
      */
-    protected $credits;
+    protected $invoices;
 
     /**
      * @var \DateTime
@@ -47,7 +47,7 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->state = Model\OrderStates::STATE_NEW;
         $this->shipmentState = Shipment\ShipmentStates::STATE_NONE;
         $this->shipments = new ArrayCollection();
-        $this->credits = new ArrayCollection();
+        $this->invoices = new ArrayCollection();
 
         parent::__construct();
     }
@@ -389,43 +389,43 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function hasCredits()
+    public function hasInvoices()
     {
-        return 0 < $this->credits->count();
+        return 0 < $this->invoices->count();
     }
 
     /**
      * @inheritdoc
      */
-    public function getCredits()
+    public function getInvoices()
     {
-        return $this->credits;
+        return $this->invoices;
     }
 
     /**
      * @inheritdoc
      */
-    public function hasCredit(Credit\CreditInterface $credit)
+    public function hasInvoice(Invoice\InvoiceInterface $invoice)
     {
-        if (!$credit instanceof Model\OrderCreditInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderCreditInterface.");
+        if (!$invoice instanceof Model\OrderInvoiceInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderInvoiceInterface.");
         }
 
-        return $this->credits->contains($credit);
+        return $this->invoices->contains($invoice);
     }
 
     /**
      * @inheritdoc
      */
-    public function addCredit(Credit\CreditInterface $credit)
+    public function addInvoice(Invoice\InvoiceInterface $invoice)
     {
-        if (!$credit instanceof Model\OrderCreditInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderCreditInterface.");
+        if (!$invoice instanceof Model\OrderInvoiceInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderInvoiceInterface.");
         }
 
-        if (!$this->hasCredit($credit)) {
-            $this->credits->add($credit);
-            $credit->setOrder($this);
+        if (!$this->hasInvoice($invoice)) {
+            $this->invoices->add($invoice);
+            $invoice->setOrder($this);
         }
 
         return $this;
@@ -434,15 +434,15 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function removeCredit(Credit\CreditInterface $credit)
+    public function removeInvoice(Invoice\InvoiceInterface $invoice)
     {
-        if (!$credit instanceof Model\OrderCreditInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderCreditInterface.");
+        if (!$invoice instanceof Model\OrderInvoiceInterface) {
+            throw new InvalidArgumentException("Expected instance of OrderInvoiceInterface.");
         }
 
-        if ($this->hasCredit($credit)) {
-            $this->credits->removeElement($credit);
-            //$credit->setOrder(null);
+        if ($this->hasInvoice($invoice)) {
+            $this->invoices->removeElement($invoice);
+            //$invoice->setOrder(null);
         }
 
         return $this;

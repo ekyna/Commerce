@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Factory;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
-use Ekyna\Component\Commerce\Credit\Model as Credit;
+use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 
 /**
@@ -105,11 +105,11 @@ interface SaleFactoryInterface
     /**
      * Creates a shipment regarding to the sale type.
      *
-     * @param Credit\CreditInterface $credit
+     * @param Invoice\InvoiceInterface $invoice
      *
-     * @return Credit\CreditItemInterface
+     * @return Invoice\InvoiceLineInterface
      */
-    public function createItemForCredit(Credit\CreditInterface $credit);
+    public function createLineForInvoice(Invoice\InvoiceInterface $invoice);
 
     /**
      * Creates an address regarding to the sale type.
@@ -130,11 +130,11 @@ interface SaleFactoryInterface
     public function createShipmentForSale(Model\SaleInterface $sale);
 
     /**
-     * Creates a credit regarding to the sale type.
+     * Creates a invoice regarding to the sale type.
      *
      * @param Model\SaleInterface $sale
      *
-     * @return Credit\CreditInterface
+     * @return Invoice\InvoiceInterface
      */
-    public function createCreditForSale(Model\SaleInterface $sale);
+    public function createInvoiceForSale(Model\SaleInterface $sale);
 }

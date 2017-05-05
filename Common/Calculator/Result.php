@@ -24,17 +24,25 @@ class Result
      */
     private $total;
 
+    /**
+     * @var int
+     */
+    private $precision;
+
 
     /**
      * Constructor.
      *
      * @param float $base
+     * @param int   $precision
      */
-    public function __construct($base = .0)
+    public function __construct($base = .0, $precision = 2)
     {
         $this->clear();
 
         $this->addBase($base);
+
+        $this->precision = 2;
     }
 
     /**
@@ -104,8 +112,8 @@ class Result
      * Adds the tax.
      *
      * @param string $name
-     * @param float $rate
-     * @param float $amount
+     * @param float  $rate
+     * @param float  $amount
      *
      * @return Result
      */
@@ -122,7 +130,27 @@ class Result
             }
         }
 
-        $this->taxes[] = new Tax($name, $rate, $amount);
+        $this->taxes[] = new Tax($name, $rate, $amount, $this->precision);
+
+        return $this;
+    }
+
+    /**
+     * Multiply the result.
+     *
+     * @param float $quantity
+     *
+     * @return Result
+     */
+    public function multiply($quantity)
+    {
+        $this->clearTotal();
+
+        $this->base = round($this->base * $quantity, $this->precision);
+
+        foreach ($this->taxes as $tax) {
+            $tax->multiply($quantity);
+        }
 
         return $this;
     }

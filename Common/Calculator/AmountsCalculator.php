@@ -59,7 +59,7 @@ class AmountsCalculator implements AmountsCalculatorInterface
         // Items result
         if ($sale->hasItems()) {
             foreach ($sale->getItems() as $item) {
-                $result->merge($this->calculateSaleItem($item));
+                $result->merge($this->calculateSaleItem($item)->multiply($item->getQuantity()));
             }
         }
 
@@ -114,14 +114,14 @@ class AmountsCalculator implements AmountsCalculatorInterface
             // Merge children results
             foreach ($item->getChildren() as $child) {
                 // Item result must take account of child's discounts, so not gross
-                $result->merge($this->calculateSaleItem($child));
+                $result->merge($this->calculateSaleItem($child)->multiply($child->getQuantity()));
             }
 
         } else { // Calculate as a "child" item
 
             $base = $this->mode === self::MODE_NET
-                ? $this->round($item->getNetPrice()) * $item->getTotalQuantity()
-                : $item->getNetPrice() * $item->getTotalQuantity();
+                ? $this->round($item->getNetPrice())
+                : $item->getNetPrice();
 
             $result
                 ->addBase($base)
@@ -191,19 +191,21 @@ class AmountsCalculator implements AmountsCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateDiscountAdjustment(AdjustmentInterface $adjustment)
+    public function calculateDiscountAdjustment(AdjustmentInterface $adjustment, Result $parentResult = null)
     {
         $this->assertAdjustmentType($adjustment, AdjustmentTypes::TYPE_DISCOUNT);
 
         // TODO don't calculate twice
 
-        $adjustable = $adjustment->getAdjustable();
-        if ($adjustable instanceof SaleInterface) {
-            $parentResult = $this->calculateSale($adjustable, true);
-        } elseif ($adjustable instanceof SaleItemInterface) {
-            $parentResult = $this->calculateSaleItem($adjustable, true);
-        } else {
-            throw new InvalidArgumentException('Unexpected adjustable.');
+        if (null === $parentResult) {
+            $adjustable = $adjustment->getAdjustable();
+            if ($adjustable instanceof SaleInterface) {
+                $parentResult = $this->calculateSale($adjustable, true);
+            } elseif ($adjustable instanceof SaleItemInterface) {
+                $parentResult = $this->calculateSaleItem($adjustable, true);
+            } else {
+                throw new InvalidArgumentException('Unexpected adjustable.');
+            }
         }
 
         $result = new Result();
@@ -214,11 +216,11 @@ class AmountsCalculator implements AmountsCalculatorInterface
 
             $result->addBase(-$this->round($parentResult->getBase() * $adjustmentRate));
 
-            foreach ($parentResult->getTaxes() as $taxAmount) {
+            foreach ($parentResult->getTaxes() as $tax) {
                 $result->addTax(
-                    $taxAmount->getName(),
-                    $taxAmount->getRate(),
-                    -$this->round($taxAmount->getAmount() * $adjustmentRate)
+                    $tax->getName(),
+                    $tax->getRate(),
+                    -$this->round($tax->getAmount() * $adjustmentRate)
                 );
             }
         } elseif (AdjustmentModes::MODE_FLAT === $mode) {
@@ -227,11 +229,11 @@ class AmountsCalculator implements AmountsCalculatorInterface
             // TODO calculate per tax discount (dispatch regarding to each tax total)
 
             /*$rate = $adjustment->getAmount() / $parentResult->getBase();
-            foreach ($parentResult->getTaxes() as $taxAmount) {
+            foreach ($parentResult->getTaxes() as $tax) {
                 $result->addTax(
-                    $taxAmount->getName(),
-                    $taxAmount->getRate(),
-                    -$this->round($taxAmount->getAmount() * $rate)
+                    $tax->getName(),
+                    $tax->getRate(),
+                    -$this->round($tax->getAmount() * $rate)
                 );
             }*/
 

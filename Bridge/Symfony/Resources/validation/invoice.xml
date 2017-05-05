@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice">
+        <property name="number">
+            <constraint name="Length">
+                <option name="min">8</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="type">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes</value>
+                    <value>getTypes</value>
+                </option>
+            </constraint>
+        </property>
+        <!--<property name="currency">
+            <constraint name="NotBlank"/>
+            <constraint name="Currency"/>
+        </property>-->
+        <property name="description">
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="lines">
+            <constraint name="Valid"/>
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+        <!--<property name="goodsBase">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+                <option name="groups">
+                    <value>calculation</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="shipmentBase">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+                <option name="groups">
+                    <value>calculation</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="taxesTotal">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+                <option name="groups">
+                    <value>calculation</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="grandTotal">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+                <option name="groups">
+                    <value>calculation</value>
+                </option>
+            </constraint>
+        </property>-->
+        <property name="createdAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="updatedAt">
+            <constraint name="DateTime"/>
+        </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">number</option>
+        </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Invoice"/>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoiceLine">
+        <property name="invoice">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="type">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Invoice\Model\InvoiceLineTypes</value>
+                    <value>getTypes</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="designation">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="reference">
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="quantity">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <!--<property name="netUnit">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+                <option name="groups">
+                    <value>calculation</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="taxesDetails">
+            &lt;!&ndash;
+            [
+                ['name' => (string), 'amount' => (float)],
+            ]
+            &ndash;&gt;
+            <constraint name="All">
+                <option name="groups">
+                    <value>calculation</value>
+                </option>
+                <option name="constraints">
+                    <constraint name="Collection">
+                        <option name="groups">
+                            <value>calculation</value>
+                        </option>
+                        <option name="fields">
+                            <value key="name">
+                                <constraint name="NotBlank">
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                                <constraint name="Type">
+                                    <option name="type">string</option>
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                            </value>
+                            <value key="rate">
+                                <constraint name="NotBlank">
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                                <constraint name="Type">
+                                    <option name="type">numeric</option>
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                                <constraint name="GreaterThan">
+                                    <option name="value">0</option>
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                            </value>
+                            <value key="amount">
+                                <constraint name="NotBlank">
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                                <constraint name="Type">
+                                    <option name="type">numeric</option>
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                                <constraint name="GreaterThan">
+                                    <option name="value">0</option>
+                                    <option name="groups">
+                                        <value>calculation</value>
+                                    </option>
+                                </constraint>
+                            </value>
+                        </option>
+                    </constraint>
+                </option>
+            </constraint>
+        </property>-->
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\InvoiceLine"/>
+    </class>
+
+</constraint-mapping>

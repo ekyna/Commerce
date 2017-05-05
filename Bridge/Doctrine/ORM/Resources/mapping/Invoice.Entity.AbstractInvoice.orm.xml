@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice">
+
+        <field name="type" column="type" type="string" length="16"/>
+        <field name="number" column="number" type="string" length="16"/>
+        <field name="currency" column="currency" type="string" length="8"/>
+
+        <field name="customer" column="customer" type="json_array"/>
+        <field name="invoiceAddress" column="invoice_address" type="json_array"/>
+        <field name="deliveryAddress" column="delivery_address" type="json_array" nullable="true"/>
+
+        <field name="goodsBase" column="goods_base" type="decimal" precision="12" scale="5"/>
+        <field name="shipmentBase" column="shipment_base" type="decimal" precision="12" scale="5"/>
+        <field name="taxesTotal" column="taxes_total" type="decimal" precision="12" scale="5"/>
+        <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
+
+        <field name="description" column="description" type="string" length="255" nullable="true"/>
+
+        <field name="createdAt" column="created_at" type="datetime" />
+        <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
+
+    </mapped-superclass>
+
+</doctrine-mapping>

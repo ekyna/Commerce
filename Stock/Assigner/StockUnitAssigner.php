@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Credit\Model\CreditItemInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
@@ -194,16 +194,16 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function assignCreditItem(CreditItemInterface $item)
+    public function assignInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not supported
-        if (null === $assignments = $this->getAssignments($item)) {
+        if (null === $assignments = $this->getAssignments($line)) {
             return;
         }
 
         // TODO sort assignments ?
 
-        $quantity = $item->getQuantity();
+        $quantity = $line->getQuantity();
 
         // TODO Use packaging format
 
@@ -213,25 +213,25 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 < $quantity) {
-            throw new InvalidArgumentException('Failed to assign credit item.');
+            throw new InvalidArgumentException('Failed to assign invoice item.');
         }
     }
 
     /**
      * @inheritdoc
      */
-    public function applyCreditItem(CreditItemInterface $item)
+    public function applyInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not supported
-        if (null === $assignments = $this->getAssignments($item)) {
+        if (null === $assignments = $this->getAssignments($line)) {
             return;
         }
 
         // Resolve quantity change
-        if (!$this->persistenceHelper->isChanged($item, 'quantity')) {
+        if (!$this->persistenceHelper->isChanged($line, 'quantity')) {
             return;
         }
-        list($old, $new) = $this->persistenceHelper->getChangeSet($item, 'quantity');
+        list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'quantity');
         if (0 == $quantity = $new - $old) {
             return;
         }
@@ -250,23 +250,23 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new InvalidArgumentException('Failed to assign credit item.');
+            throw new InvalidArgumentException('Failed to assign invoice item.');
         }
     }
 
     /**
      * @inheritdoc
      */
-    public function detachCreditItem(CreditItemInterface $item)
+    public function detachInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not supported
-        if (null === $assignments = $this->getAssignments($item)) {
+        if (null === $assignments = $this->getAssignments($line)) {
             return;
         }
 
         // TODO sort assignments ?
 
-        $quantity = $item->getQuantity();
+        $quantity = $line->getQuantity();
 
         // TODO Use packaging format
 
@@ -276,7 +276,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 < $quantity) {
-            throw new InvalidArgumentException('Failed to detach credit item.');
+            throw new InvalidArgumentException('Failed to detach invoice item.');
         }
     }
 
@@ -415,7 +415,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     {
         if ($item instanceof ShipmentItemInterface) {
             $item = $item->getSaleItem();
-        } elseif ($item instanceof CreditItemInterface) {
+        } elseif ($item instanceof InvoiceLineInterface) {
             $item = $item->getSaleItem();
         }
 
