@@ -30,22 +30,25 @@ class StockUnitValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, StockUnit::class);
         }
 
-        if ($stockUnit->getDeliveredQuantity() > $stockUnit->getOrderedQuantity()) {
+        if ($stockUnit->getReceivedQuantity() > $stockUnit->getOrderedQuantity()) {
             $this->context
-                ->buildViolation($constraint->delivered_must_be_lower_than_ordered)
-                ->atPath('deliveredQuantity')
+                ->buildViolation($constraint->received_must_be_lower_than_ordered)
+                ->setInvalidValue($stockUnit->getReceivedQuantity())
+                ->atPath('receivedQuantity')
                 ->addViolation();
         }
-        if ($stockUnit->getShippedQuantity() > $stockUnit->getDeliveredQuantity()) {
+        if ($stockUnit->getShippedQuantity() > $stockUnit->getReceivedQuantity()) {
             $this->context
-                ->buildViolation($constraint->shipped_must_be_lower_than_delivered)
+                ->buildViolation($constraint->shipped_must_be_lower_than_received)
+                ->setInvalidValue($stockUnit->getShippedQuantity())
                 ->atPath('shippedQuantity')
                 ->addViolation();
         }
-        if ($stockUnit->getShippedQuantity() > $stockUnit->getReservedQuantity()) {
+        if ($stockUnit->getShippedQuantity() > $stockUnit->getSoldQuantity()) {
             $this->context
-                ->buildViolation($constraint->delivered_must_be_lower_than_ordered)
-                ->atPath('deliveredQuantity')
+                ->buildViolation($constraint->shipped_must_be_lower_than_sold)
+                ->setInvalidValue($stockUnit->getShippedQuantity())
+                ->atPath('shippedQuantity')
                 ->addViolation();
         }
     }

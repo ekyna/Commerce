@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
 
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -12,7 +11,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Invoice\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface InvoiceLineInterface extends ResourceInterface, SubjectRelativeInterface
+interface InvoiceLineInterface extends ResourceInterface
 {
     /**
      * Returns the invoice.

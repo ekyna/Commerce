@@ -19,11 +19,11 @@
             <generator strategy="AUTO" />
         </id>
 
-        <field name="reservedQuantity" column="reserved_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="soldQuantity" column="sold_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit"
-                     field="stockUnit" inversed-by="stockAssignments">
+                     field="stockUnit">
             <join-column name="stock_unit_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 

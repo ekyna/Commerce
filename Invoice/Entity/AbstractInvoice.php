@@ -118,6 +118,8 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
     public function setType($type)
     {
         $this->type = $type;
+
+        return $this;
     }
 
     /**
@@ -139,9 +141,7 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
     }
 
     /**
-     * Returns the customer data.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function getCustomer()
     {
@@ -149,19 +149,17 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
     }
 
     /**
-     * Sets the customer data.
-     *
-     * @param array $data
+     * @inheritdoc
      */
     public function setCustomer(array $data)
     {
         $this->customer = $data;
+
+        return $this;
     }
 
     /**
-     * Returns the invoice address data.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function getInvoiceAddress()
     {
@@ -169,19 +167,17 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
     }
 
     /**
-     * Sets the invoice address data.
-     *
-     * @param array $data
+     * @inheritdoc
      */
     public function setInvoiceAddress(array $data)
     {
         $this->invoiceAddress = $data;
+
+        return $this;
     }
 
     /**
-     * Returns the delivery address data.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function getDeliveryAddress()
     {
@@ -189,13 +185,13 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
     }
 
     /**
-     * Sets the delivery address data.
-     *
-     * @param array|null $data
+     * @inheritdoc
      */
     public function setDeliveryAddress(array $data = null)
     {
         $this->deliveryAddress = $data;
+
+        return $this;
     }
 
     /**

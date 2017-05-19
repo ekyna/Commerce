@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Stock\Util\StockUtil;
@@ -33,11 +32,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $supplierOrderItem;
 
     /**
-     * @var ArrayCollection|Model\StockAssignmentInterface[]
-     */
-    protected $stockAssignments;
-
-    /**
      * The estimated date of arrival (for ordered quantity).
      *
      * @var \DateTime
@@ -52,18 +46,18 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $orderedQuantity = 0;
 
     /**
-     * The quantity delivered by supplier.
+     * The quantity received by supplier.
      *
      * @var float
      */
-    protected $deliveredQuantity = 0;
+    protected $receivedQuantity = 0;
 
     /**
-     * The quantity reserved from sales.
+     * The quantity sold from sales.
      *
      * @var float
      */
-    protected $reservedQuantity = 0;
+    protected $soldQuantity = 0;
 
     /**
      * The quantity shipped through sales.
@@ -93,7 +87,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function __construct()
     {
-        $this->stockAssignments = new ArrayCollection();
         $this->state = Model\StockUnitStates::STATE_NEW;
         $this->createdAt = new \DateTime();
     }
@@ -173,40 +166,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function addStockAssignment(Model\StockAssignmentInterface $item)
-    {
-        if (!$this->stockAssignments->contains($item)) {
-            $this->stockAssignments->add($item);
-            $item->setStockUnit($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeStockAssignment(Model\StockAssignmentInterface $item)
-    {
-        if ($this->stockAssignments->contains($item)) {
-            $this->stockAssignments->removeElement($item);
-            $item->setStockUnit(null);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStockAssignments()
-    {
-        return $this->stockAssignments;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getEstimatedDateOfArrival()
     {
         return $this->estimatedDateOfArrival;
@@ -243,17 +202,17 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function getDeliveredQuantity()
+    public function getReceivedQuantity()
     {
-        return $this->deliveredQuantity;
+        return $this->receivedQuantity;
     }
 
     /**
      * @inheritdoc
      */
-    public function setDeliveredQuantity($quantity)
+    public function setReceivedQuantity($quantity)
     {
-        $this->deliveredQuantity = (float)$quantity;
+        $this->receivedQuantity = (float)$quantity;
 
         return $this;
     }
@@ -261,17 +220,17 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function getReservedQuantity()
+    public function getSoldQuantity()
     {
-        return $this->reservedQuantity;
+        return $this->soldQuantity;
     }
 
     /**
      * @inheritdoc
      */
-    public function setReservedQuantity($quantity)
+    public function setSoldQuantity($quantity)
     {
-        $this->reservedQuantity = $quantity;
+        $this->soldQuantity = $quantity;
 
         return $this;
     }
@@ -353,7 +312,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function isEmpty()
     {
-        return 0 == $this->orderedQuantity && 0 == $this->reservedQuantity;
+        return 0 == $this->orderedQuantity && 0 == $this->soldQuantity;
     }
 
     /**
@@ -362,8 +321,8 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function getInStockQuantity()
     {
         return StockUtil::calculateInStock(
-            $this->deliveredQuantity,
-            $this->reservedQuantity
+            $this->receivedQuantity,
+            $this->soldQuantity
         );
     }
 
@@ -374,8 +333,8 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     {
         return StockUtil::calculateVirtualStock(
             $this->orderedQuantity,
-            $this->deliveredQuantity,
-            $this->reservedQuantity
+            $this->receivedQuantity,
+            $this->soldQuantity
         );
     }
 
@@ -386,7 +345,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     {
         return StockUtil::calculateReservable(
             $this->orderedQuantity,
-            $this->reservedQuantity
+            $this->soldQuantity
         );
     }
 
@@ -396,8 +355,8 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function getShippableQuantity()
     {
         return StockUtil::calculateShippable(
-            $this->deliveredQuantity,
-            $this->reservedQuantity,
+            $this->receivedQuantity,
+            $this->soldQuantity,
             $this->shippedQuantity
         );
     }

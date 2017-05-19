@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineTypes;
 use Ekyna\Component\Commerce\Invoice\Util\InvoiceUtil;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -31,13 +32,20 @@ class InvoiceLineValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, InvoiceLine::class);
         }
 
-        return; // TODO
+        if ($item->getType() === InvoiceLineTypes::TYPE_GOOD) {
+            if (null === $item->getSaleItem()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->shipment_is_not_return)
+                    ->setInvalidValue(null)
+                    ->atPath('saleItem')
+                    ->addViolation();
 
-        // If id is null, initial item/adjustment must be set for calculation.
-
-        if ($line->hasIdentity() && !$item->hasIdentity()) {
-            // TODO "Desynchronizing sale item and invoice line subjet identities is not supported."
+                return;
+            }
         }
+
+        return; // TODO
 
         // ShipmentItem vs SaleItem integrity
         if (null !== $shipmentItem = $item->getShipmentItem()) {

@@ -60,14 +60,14 @@ interface StockSubjectInterface extends ResourceInterface
     public function setInStock($quantity);
 
     /**
-     * Returns the virtualStock.
+     * Returns the virtual stock quantity.
      *
      * @return float
      */
     public function getVirtualStock();
 
     /**
-     * Sets the virtualStock.
+     * Sets the virtual stock quantity.
      *
      * @param float $virtualStock
      *

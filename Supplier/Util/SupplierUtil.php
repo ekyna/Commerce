@@ -14,13 +14,13 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 final class SupplierUtil
 {
     /**
-     * Calculate the given supplier order item's delivered quantity.
+     * Calculate the given supplier order item's received quantity.
      *
      * @param SupplierOrderItemInterface $item
      *
      * @return float
      */
-    static public function calculateDeliveredQuantity(SupplierOrderItemInterface $item)
+    static public function calculateReceivedQuantity(SupplierOrderItemInterface $item)
     {
         $quantity = 0;
 
@@ -46,7 +46,7 @@ final class SupplierUtil
     static public function calculateDeliveryRemainingQuantity($item)
     {
         if ($item instanceof SupplierOrderItemInterface) {
-            return $item->getQuantity() - static::calculateDeliveredQuantity($item);
+            return $item->getQuantity() - static::calculateReceivedQuantity($item);
         }
 
         if (!$item instanceof SupplierDeliveryItemInterface) {
@@ -59,7 +59,7 @@ final class SupplierUtil
 
         $orderItem = $item->getOrderItem();
 
-        $result = $orderItem->getQuantity() - static::calculateDeliveredQuantity($orderItem);
+        $result = $orderItem->getQuantity() - static::calculateReceivedQuantity($orderItem);
 
         if (0 < $item->getQuantity()) {
             $result += $item->getQuantity();

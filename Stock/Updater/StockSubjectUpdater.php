@@ -240,9 +240,9 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         // Abort if none of the tracked properties has changed
         if (!(
-            isset($cs['reservedQuantity']) ||
+            isset($cs['soldQuantity']) ||
             isset($cs['orderedQuantity']) ||
-            isset($cs['deliveredQuantity']) ||
+            isset($cs['receivedQuantity']) ||
             isset($cs['estimatedDateOfArrival'])
         )) {
             return false;
@@ -255,22 +255,22 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // Gather old and new quantities
         $newOrdered = $stockUnit->getOrderedQuantity();
         $oldOrdered = isset($cs['orderedQuantity']) ? ((float)$cs['orderedQuantity'][0]) : $newOrdered;
-        $newDelivered = $stockUnit->getDeliveredQuantity();
-        $oldDelivered = isset($cs['deliveredQuantity']) ? ((float)$cs['deliveredQuantity'][0]) : $newDelivered;
-        $newReserved = $stockUnit->getReservedQuantity();
-        $oldReserved = isset($cs['reservedQuantity']) ? ((float)$cs['reservedQuantity'][0]) : $newReserved;
+        $newReceived = $stockUnit->getReceivedQuantity();
+        $oldReceived = isset($cs['receivedQuantity']) ? ((float)$cs['receivedQuantity'][0]) : $newReceived;
+        $newSold = $stockUnit->getSoldQuantity();
+        $oldSold = isset($cs['soldQuantity']) ? ((float)$cs['soldQuantity'][0]) : $newSold;
 
 
         // In stock change
-        $oldInStock = StockUtil::calculateInStock($oldDelivered, $oldReserved);
-        $newInStock = StockUtil::calculateInStock($newDelivered, $newReserved);
+        $oldInStock = StockUtil::calculateInStock($oldReceived, $oldSold);
+        $newInStock = StockUtil::calculateInStock($newReceived, $newSold);
         if (0 != $deltaInStock = $newInStock - $oldInStock) {
             $changed |= $this->updateInStock($subject, $deltaInStock);
         }
 
         // Virtual stock change
-        $oldVirtualStock = StockUtil::calculateVirtualStock($oldOrdered, $oldDelivered, $oldReserved);
-        $newVirtualStock = StockUtil::calculateVirtualStock($newOrdered, $newDelivered, $newReserved);
+        $oldVirtualStock = StockUtil::calculateVirtualStock($oldOrdered, $oldReceived, $oldSold);
+        $newVirtualStock = StockUtil::calculateVirtualStock($newOrdered, $newReceived, $newSold);
         if (0 != $deltaVirtualStock = $newVirtualStock - $oldVirtualStock) {
             $changed |= $this->updateVirtualStock($subject, $deltaVirtualStock);
         }
@@ -297,7 +297,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $changed = false;
 
         // This (in stock) should never happen as stock unit removal is prevented when
-        // delivered, reserved or shipped quantities are greater than zero.
+        // received, sold or shipped quantities are greater than zero.
         if (0 < $inStock = $stockUnit->getInStockQuantity()) {
             $changed |= $this->updateInStock($subject, -$inStock);
         }

@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Invoice\Entity;
 
 use Ekyna\Component\Commerce\Invoice\Model;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 
 /**
  * Class AbstractInvoiceLine
@@ -12,8 +11,6 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
  */
 abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
 {
-    use SubjectRelativeTrait;
-
     /**
      * @var int
      */
@@ -60,8 +57,6 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
      */
     public function __construct()
     {
-        $this->initializeSubjectIdentity();
-
         $this->netPrice = 0;
         $this->taxesDetails = [];
         $this->quantity = 1;

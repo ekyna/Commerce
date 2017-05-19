@@ -22,7 +22,6 @@ class OrderShipmentItemEventSubscriber extends OrderShipmentItemListener impleme
             OrderShipmentItemEvents::INSERT     => ['onInsert', 0],
             OrderShipmentItemEvents::UPDATE     => ['onUpdate', 0],
             OrderShipmentItemEvents::DELETE     => ['onDelete', 0],
-            OrderShipmentItemEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }
 }

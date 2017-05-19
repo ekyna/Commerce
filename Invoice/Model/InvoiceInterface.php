@@ -33,6 +33,8 @@ interface InvoiceInterface extends
      * Sets the type.
      *
      * @param string $type
+     *
+     * @return $this|InvoiceInterface
      */
     public function setType($type);
 
@@ -63,6 +65,8 @@ interface InvoiceInterface extends
      * Sets the customer data.
      *
      * @param array $data
+     *
+     * @return $this|InvoiceInterface
      */
     public function setCustomer(array $data);
 
@@ -77,6 +81,8 @@ interface InvoiceInterface extends
      * Sets the invoice address data.
      *
      * @param array $data
+     *
+     * @return $this|InvoiceInterface
      */
     public function setInvoiceAddress(array $data);
 
@@ -91,6 +97,8 @@ interface InvoiceInterface extends
      * Sets the delivery address data.
      *
      * @param array|null $data
+     *
+     * @return $this|InvoiceInterface
      */
     public function setDeliveryAddress(array $data = null);
 

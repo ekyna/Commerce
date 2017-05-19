@@ -182,7 +182,7 @@ class ViewBuilder
         $gross = !$item->hasChildren() && $item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT);
 
         $lineNumber = $this->lineNumber++;
-        $amounts = $this->calculator->calculateSaleItem($item, $gross);
+        $amounts = $this->calculator->calculateSaleItem($item, $gross)->multiply($item->getQuantity());
 
         $lines = [];
         if ($item->hasChildren()) {

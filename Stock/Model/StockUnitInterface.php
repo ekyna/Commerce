@@ -12,7 +12,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, StockAssignmentsInterface
+interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
 {
     /**
      * Sets the subject.
@@ -95,36 +95,36 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, S
     public function setEstimatedDateOfArrival(\DateTime $date = null);
 
     /**
-     * Returns the delivered quantity.
+     * Returns the received quantity.
      *
      * @return float
      */
-    public function getDeliveredQuantity();
+    public function getReceivedQuantity();
 
     /**
-     * Sets the delivered quantity.
+     * Sets the received quantity.
      *
      * @param float $quantity
      *
      * @return $this|StockUnitInterface
      */
-    public function setDeliveredQuantity($quantity);
+    public function setReceivedQuantity($quantity);
 
     /**
-     * Returns the reserved quantity.
+     * Returns the sold quantity.
      *
      * @return float
      */
-    public function getReservedQuantity();
+    public function getSoldQuantity();
 
     /**
-     * Sets the reserved quantity.
+     * Sets the sold quantity.
      *
      * @param float $quantity
      *
      * @return $this|StockUnitInterface
      */
-    public function setReservedQuantity($quantity);
+    public function setSoldQuantity($quantity);
 
     /**
      * Returns the shipped quantity.
@@ -191,7 +191,7 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, S
     public function setClosedAt(\DateTime $date = null);
 
     /**
-     * Returns whether the stock unit is empty (regarding to the ordered and reserved quantities).
+     * Returns whether the stock unit is empty (regarding to the ordered and sold quantities).
      *
      * @return bool
      */

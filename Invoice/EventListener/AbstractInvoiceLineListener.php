@@ -4,8 +4,6 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
-use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -21,11 +19,6 @@ abstract class AbstractInvoiceLineListener
      */
     protected $persistenceHelper;
 
-    /**
-     * @var StockUnitAssignerInterface
-     */
-    protected $stockUnitAssigner;
-
 
     /**
      * Sets the persistence helper.
@@ -38,16 +31,6 @@ abstract class AbstractInvoiceLineListener
     }
 
     /**
-     * Sets the stock assigner.
-     *
-     * @param StockUnitAssignerInterface $stockUnitAssigner
-     */
-    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner)
-    {
-        $this->stockUnitAssigner = $stockUnitAssigner;
-    }
-
-    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -56,17 +39,7 @@ abstract class AbstractInvoiceLineListener
     {
         $line = $this->getInvoiceLineFromEvent($event);
 
-        if ($this->synchronizeSubjectIdentity($line)) {
-            $this->persistenceHelper->persistAndRecompute($line, false);
-        }
-
-        $invoice = $line->getInvoice();
-        // Assign invoice item to stock units
-        if ($invoice->getType() === Model\InvoiceTypes::TYPE_CREDIT) {
-            $this->stockUnitAssigner->assignInvoiceLine($line);
-        }
-
-        $this->scheduleInvoiceContentChangeEvent($invoice);
+        $this->scheduleInvoiceContentChangeEvent($line->getInvoice());
     }
 
     /**
@@ -77,41 +50,12 @@ abstract class AbstractInvoiceLineListener
     public function onUpdate(ResourceEventInterface $event)
     {
         $line = $this->getInvoiceLineFromEvent($event);
-        $invoice = $line->getInvoice();
 
         $this->preventForbiddenChange($line);
 
-        if ($this->synchronizeSubjectIdentity($line)) {
-            $this->persistenceHelper->persistAndRecompute($line, false);
-        }
-
-        $sale = $invoice->getSale();
-
-        $doApply = false;
-        if ($invoice->getType() === Model\InvoiceTypes::TYPE_CREDIT) {
-            $doApply = true;
-            if ($this->persistenceHelper->isChanged($sale, 'state')) {
-                $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
-
-                // If order just did a stockable state transition
-                if (
-                    OrderStates::hasChangedToStockable($stateCs) ||
-                    OrderStates::hasChangedFromStockable($stateCs)
-                ) {
-                    // Prevent assignments update (handled by the order listener)
-                    $doApply = false;
-                }
-            }
-        }
-
         // If invoice item quantity has changed
         if ($this->persistenceHelper->isChanged($line, 'quantity')) {
-            // If order is in stockable state
-            if ($doApply && OrderStates::isStockableState($sale->getState())) {
-                $this->stockUnitAssigner->applyInvoiceLine($line);
-            }
-
-            $this->scheduleInvoiceContentChangeEvent($invoice);
+            $this->scheduleInvoiceContentChangeEvent($line->getInvoice());
         }
     }
 
@@ -127,38 +71,7 @@ abstract class AbstractInvoiceLineListener
 
         // TODO get invoice from change set if null ?
 
-        // Detach invoice item to stock units
-        if ($invoice->getType() === Model\InvoiceTypes::TYPE_CREDIT) {
-            $this->stockUnitAssigner->detachInvoiceLine($item);
-        }
-
         $this->scheduleInvoiceContentChangeEvent($invoice);
-    }
-
-    /**
-     * Synchronizes the subject identities.
-     *
-     * @param Model\InvoiceLineInterface $line
-     *
-     * @return bool
-     */
-    private function synchronizeSubjectIdentity(Model\InvoiceLineInterface $line)
-    {
-        if (null === $item = $line->getSaleItem()) {
-            return false;
-        }
-
-        if (!$item->hasIdentity()) {
-            return false;
-        }
-
-        if (!$item->getSubjectIdentity()->equals($line->getSubjectIdentity())) {
-            $line->getSubjectIdentity()->copy($item->getSubjectIdentity());
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -170,7 +83,7 @@ abstract class AbstractInvoiceLineListener
     {
         if ($this->persistenceHelper->isChanged($line, 'type')) {
             list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'type');
-            if ($old != $new) {
+            if ($old !== $new) {
                 throw new Exception\RuntimeException("Changing the invoice line's type is not supported.");
             }
         }

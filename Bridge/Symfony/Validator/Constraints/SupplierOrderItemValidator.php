@@ -31,10 +31,10 @@ class SupplierOrderItemValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SupplierOrderItem::class);
         }
 
-        if ($item->getId() && ($item->getQuantity() < $min = SupplierUtil::calculateDeliveredQuantity($item))) {
+        if ($item->getId() && ($item->getQuantity() < $min = SupplierUtil::calculateReceivedQuantity($item))) {
             $this
                 ->context
-                ->buildViolation($constraint->quantity_must_be_greater_than_or_equal_delivered, [
+                ->buildViolation($constraint->quantity_must_be_greater_than_or_equal_received, [
                     '%min%' => $min
                 ])
                 ->atPath('quantity')

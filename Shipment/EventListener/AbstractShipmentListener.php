@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
@@ -179,40 +178,6 @@ abstract class AbstractShipmentListener
         $shipment = $this->getShipmentFromEvent($event);
 
         $this->scheduleSaleContentChangeEvent($shipment->getSale());
-    }
-
-    /**
-     * Pre update event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
-     */
-    public function onPreUpdate(ResourceEventInterface $event)
-    {
-        /*$shipment = $this->getShipmentFromEvent($event);
-        // TODO assert updateable states
-        if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
-            throw new IllegalOperationException();
-        }*/
-    }
-
-    /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
-     */
-    public function onPreDelete(ResourceEventInterface $event)
-    {
-        $shipment = $this->getShipmentFromEvent($event);
-
-        // TODO look for returns ?
-
-        if (!in_array($shipment->getState(), ShipmentStates::getDeletableStates())) {
-            throw new IllegalOperationException(); // TODO reason message
-        }
     }
 
     /**

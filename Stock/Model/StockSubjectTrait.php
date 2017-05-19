@@ -119,7 +119,7 @@ trait StockSubjectTrait
     }
 
     /**
-     * Returns the virtualStock.
+     * Returns the virtual stock quantity.
      *
      * @return float
      */
@@ -129,7 +129,7 @@ trait StockSubjectTrait
     }
 
     /**
-     * Sets the virtualStock.
+     * Sets the virtual stock quantity.
      *
      * @param float $virtualStock
      *

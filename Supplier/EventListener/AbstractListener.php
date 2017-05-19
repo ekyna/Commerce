@@ -110,7 +110,7 @@ abstract class AbstractListener
         }
 
         $stockUnit->setSupplierOrderItem(null);
-        if (0 < $stockUnit->getReservedQuantity()) {
+        if (0 < $stockUnit->getSoldQuantity()) {
             $this->persistenceHelper->persistAndRecompute($stockUnit);
         } else {
             $this->persistenceHelper->remove($stockUnit, true);
@@ -130,10 +130,10 @@ abstract class AbstractListener
     {
         if ($resource instanceof Model\SupplierOrderItemInterface) {
             $stockUnit = $resource->getStockUnit();
-            if (0 < $stockUnit->getShippedQuantity() || 0 < $stockUnit->getReservedQuantity()) {
+            if (0 < $stockUnit->getShippedQuantity() || 0 < $stockUnit->getSoldQuantity()) {
                 throw new Exception\IllegalOperationException(
                     "Supplier delivery can't be removed as at least one ".
-                    "of its items is linked to a shipped stock unit or reserved order."
+                    "of its items is linked to a shipped stock unit or sold order."
                 ); // TODO message as translation id
             }
         } elseif ($resource instanceof Model\SupplierOrderInterface) {

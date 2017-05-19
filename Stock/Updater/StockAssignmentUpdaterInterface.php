@@ -12,7 +12,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 interface StockAssignmentUpdaterInterface
 {
     /**
-     * Updates the assignment's reserved quantity.
+     * Updates the assignment's sold quantity.
      *
      * @param StockAssignmentInterface $assignment
      * @param float                    $quantity
@@ -20,7 +20,7 @@ interface StockAssignmentUpdaterInterface
      *
      * @return float The resulting updated quantity (relative or absolute).
      */
-    public function updateReserved(StockAssignmentInterface $assignment, $quantity, $relative = true);
+    public function updateSold(StockAssignmentInterface $assignment, $quantity, $relative = true);
 
     /**
      * Updates the assignment's shipped quantity.

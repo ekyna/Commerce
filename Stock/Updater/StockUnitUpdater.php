@@ -41,9 +41,9 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             throw new InvalidArgumentException("Unexpected ordered quantity.");
         }
 
-        // Prevent ordered quantity to be set as lower than the delivered quantity
-        if ($quantity < $stockUnit->getDeliveredQuantity()) {
-            throw new InvalidArgumentException("The ordered quantity can't be lower than the delivered quantity.");
+        // Prevent ordered quantity to be set as lower than the received quantity
+        if ($quantity < $stockUnit->getReceivedQuantity()) {
+            throw new InvalidArgumentException("The ordered quantity can't be lower than the received quantity.");
         }
 
         $stockUnit->setOrderedQuantity($quantity);
@@ -54,21 +54,21 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateDelivered(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    public function updateReceived(StockUnitInterface $stockUnit, $quantity, $relative = true)
     {
         if ($relative) {
-            $quantity = $stockUnit->getDeliveredQuantity() + $quantity;
+            $quantity = $stockUnit->getReceivedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected delivered quantity.");
+            throw new InvalidArgumentException("Unexpected received quantity.");
         }
 
-        // Prevent delivered quantity to be set as greater than the ordered quantity
+        // Prevent received quantity to be set as greater than the ordered quantity
         if ($quantity > $stockUnit->getOrderedQuantity()) {
-            throw new InvalidArgumentException("The delivered quantity can't be greater than the ordered quantity.");
+            throw new InvalidArgumentException("The received quantity can't be greater than the ordered quantity.");
         }
 
-        $stockUnit->setDeliveredQuantity($quantity);
+        $stockUnit->setReceivedQuantity($quantity);
 
         $this->persistOrRemove($stockUnit);
     }
@@ -76,21 +76,21 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateReserved(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    public function updateSold(StockUnitInterface $stockUnit, $quantity, $relative = true)
     {
         if ($relative) {
-            $quantity = $stockUnit->getReservedQuantity() + $quantity;
+            $quantity = $stockUnit->getSoldQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected reserved quantity.");
+            throw new InvalidArgumentException("Unexpected sold quantity.");
         }
 
-        // Prevent reserved quantity to be set as lower than the shipped quantity
+        // Prevent sold quantity to be set as lower than the shipped quantity
         if ($quantity < $stockUnit->getShippedQuantity()) {
-            throw new InvalidArgumentException("The reserved quantity can't be lower than the shipped quantity.");
+            throw new InvalidArgumentException("The sold quantity can't be lower than the shipped quantity.");
         }
 
-        $stockUnit->setReservedQuantity($quantity);
+        $stockUnit->setSoldQuantity($quantity);
 
         $this->persistOrRemove($stockUnit);
     }
@@ -107,12 +107,12 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             throw new InvalidArgumentException("Unexpected shipped quantity.");
         }
 
-        // Prevent shipped quantity to be set as greater than the reserved or delivered quantity
-        if ($quantity > $stockUnit->getReservedQuantity()) {
-            throw new InvalidArgumentException("The shipped quantity can't be greater than the reserved quantity.");
+        // Prevent shipped quantity to be set as greater than the sold or received quantity
+        if ($quantity > $stockUnit->getSoldQuantity()) {
+            throw new InvalidArgumentException("The shipped quantity can't be greater than the sold quantity.");
         }
-        if ($quantity > $stockUnit->getDeliveredQuantity()) {
-            throw new InvalidArgumentException("The shipped quantity can't be greater than the delivered quantity.");
+        if ($quantity > $stockUnit->getReceivedQuantity()) {
+            throw new InvalidArgumentException("The shipped quantity can't be greater than the received quantity.");
         }
 
         $stockUnit->setShippedQuantity($quantity);

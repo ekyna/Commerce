@@ -32,10 +32,10 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
                 $resolvedState = StockUnitStates::STATE_CLOSED;
             }
 
-            // If quantity has been delivered (by supplier)
-            elseif (0 < $stockUnit->getDeliveredQuantity()) {
-                // If delivered (from supplier) quantity has been entirely shipped (to customers)
-                if ($stockUnit->getDeliveredQuantity() == $stockUnit->getShippedQuantity()) {
+            // If quantity has been received (by supplier)
+            elseif (0 < $stockUnit->getReceivedQuantity()) {
+                // If received (from supplier) quantity has been entirely shipped (to customers)
+                if ($stockUnit->getReceivedQuantity() == $stockUnit->getShippedQuantity()) {
                     // Waiting for another delivery (from suppliers)
                     $resolvedState = StockUnitStates::STATE_PENDING;
                 } else {

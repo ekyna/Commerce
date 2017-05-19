@@ -42,11 +42,11 @@ class SupplierOrderStateResolver implements StateResolverInterface
         }
 
         // TODO Use packaging format
-        $orderedQuantity = $deliveredQuantity = 0;
+        $orderedQuantity = $receivedQuantity = 0;
 
         // If the order has deliveries
         if ($subject->hasDeliveries()) {
-            // Gather ordered quantity and delivered quantities.
+            // Gather ordered quantity and received quantities.
             foreach ($subject->getItems() as $orderItem) {
                 $orderedQuantity += $orderItem->getQuantity();
                 // For each deliveries
@@ -55,8 +55,8 @@ class SupplierOrderStateResolver implements StateResolverInterface
                     foreach ($delivery->getItems() as $deliveryItem) {
                         // If delivery item concerns current order item
                         if ($orderItem === $deliveryItem->getOrderItem()) {
-                            // Increment delivered quantity
-                            $deliveredQuantity += $deliveryItem->getQuantity();
+                            // Increment received quantity
+                            $receivedQuantity += $deliveryItem->getQuantity();
                             // Found: go to next delivery
                             continue 2;
                         }
@@ -65,10 +65,10 @@ class SupplierOrderStateResolver implements StateResolverInterface
             }
         }
 
-        if (0 < $deliveredQuantity ) {
+        if (0 < $receivedQuantity ) {
             $resolvedState = SupplierOrderStates::STATE_PARTIAL;
 
-            if ($orderedQuantity == $deliveredQuantity) {
+            if ($orderedQuantity == $receivedQuantity) {
                 $resolvedState = SupplierOrderStates::STATE_COMPLETED;
             }
         }

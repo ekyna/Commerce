@@ -24,7 +24,7 @@ interface StockUnitUpdaterInterface
     public function updateOrdered(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
     /**
-     * Updates the delivered quantity (from supplier).
+     * Updates the received quantity (from supplier).
      *
      * @param StockUnitInterface $stockUnit
      * @param float              $quantity
@@ -32,10 +32,10 @@ interface StockUnitUpdaterInterface
      *
      * @throws InvalidArgumentException
      */
-    public function updateDelivered(StockUnitInterface $stockUnit, $quantity, $relative = true);
+    public function updateReceived(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
     /**
-     * Updates the reserved quantity (from customers).
+     * Updates the sold quantity (from customers).
      *
      * @param StockUnitInterface $stockUnit
      * @param float              $quantity
@@ -43,7 +43,7 @@ interface StockUnitUpdaterInterface
      *
      * @throws InvalidArgumentException
      */
-    public function updateReserved(StockUnitInterface $stockUnit, $quantity, $relative = true);
+    public function updateSold(StockUnitInterface $stockUnit, $quantity, $relative = true);
 
     /**
      * Updates the shipped quantity (to customers).

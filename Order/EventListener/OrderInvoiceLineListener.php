@@ -29,7 +29,7 @@ class OrderInvoiceLineListener extends AbstractInvoiceLineListener
 
         if ($this->persistenceHelper->isChanged($line, 'orderItem')) {
             list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'orderItem');
-            if ($old != $new) {
+            if ($old !== $new) {
                 throw new Exception\RuntimeException("Changing the invoice line's sale item is not yet supported.");
             }
         }

@@ -103,13 +103,13 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return;
         }
 
-        if (0 == $quantity = $this->resolveReservedDeltaQuantity($item)) {
+        if (0 == $quantity = $this->resolveSoldDeltaQuantity($item)) {
             return;
         }
 
         /** @var StockAssignmentsInterface $item */
 
-        // Determine on which stock units the reserved quantity change should be dispatched
+        // Determine on which stock units the sold quantity change should be dispatched
         $assignments = $this->sortAssignments($assignments);
 
         // Debit case : reverse the sorted assignments
@@ -119,42 +119,42 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         /** @var StockAssignmentInterface $assignment */
         foreach ($assignments as $assignment) {
-            $stockUnit = $assignment->getStockUnit();
+//            $stockUnit = $assignment->getStockUnit();
+//
+//            $delta = $quantity;
+//            // Debit case
+//            if (0 > $delta) {
+//                // If we're about to debit more than the assignment quantity, just remove the assignment
+//                if ($assignment->getSoldQuantity() <= abs($delta)) {
+//                    $item->removeStockAssignment($assignment);
+//                    $this->removeAssignment($assignment);
+//
+//                    $quantity += $assignment->getSoldQuantity();
+//                    continue;
+//                }
+//
+//                // Sold quantity can't be lower than shipped
+//                if (0 < $stockUnit->getShippedQuantity() && $stockUnit->getShippedQuantity() <= abs($delta)) {
+//                    $delta = -$stockUnit->getShippedQuantity();
+//                }
+//            } // Credit case
+//            elseif (0 < $delta) {
+//                if ($delta > $limit = $stockUnit->getReservableQuantity()) {
+//                    $delta = $limit;
+//                }
+//            }
+//            if (0 == $delta) {
+//                continue;
+//            }
+//
+//            // Apply delta to stock unit
+//            $this->unitUpdater->updateSold($stockUnit, $delta, true);
+//
+//            // Apply delta to assignment
+//            $assignment->setSoldQuantity($assignment->getSoldQuantity() + $delta);
+//            $this->persistenceHelper->persistAndRecompute($assignment);
 
-            $delta = $quantity;
-            // Debit case
-            if (0 > $delta) {
-                // If we're about to debit more than the assignment quantity, just remove the assignment
-                if ($assignment->getReservedQuantity() <= abs($delta)) {
-                    $item->removeStockAssignment($assignment);
-                    $this->removeAssignment($assignment);
-
-                    $quantity += $assignment->getReservedQuantity();
-                    continue;
-                }
-
-                // Reserved quantity can't be lower than shipped
-                if (0 < $stockUnit->getShippedQuantity() && $stockUnit->getShippedQuantity() <= abs($delta)) {
-                    $delta = -$stockUnit->getShippedQuantity();
-                }
-            } // Credit case
-            elseif (0 < $delta) {
-                if ($delta > $limit = $stockUnit->getReservableQuantity()) {
-                    $delta = $limit;
-                }
-            }
-            if (0 == $delta) {
-                continue;
-            }
-
-            // Apply delta to stock unit
-            $this->unitUpdater->updateReserved($stockUnit, $delta, true);
-
-            // Apply delta to assignment
-            $assignment->setReservedQuantity($assignment->getReservedQuantity() + $delta);
-            $this->persistenceHelper->persistAndRecompute($assignment);
-
-            $quantity -= $delta;
+            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity, true);
             if (0 == $quantity) {
                 return;
             }
@@ -188,95 +188,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         foreach ($assignments as $assignment) {
             $item->removeStockAssignment($assignment);
             $this->removeAssignment($assignment);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function assignInvoiceLine(InvoiceLineInterface $line)
-    {
-        // Abort if not supported
-        if (null === $assignments = $this->getAssignments($line)) {
-            return;
-        }
-
-        // TODO sort assignments ?
-
-        $quantity = $line->getQuantity();
-
-        // TODO Use packaging format
-
-        foreach ($assignments as $assignment) {
-            $quantity += $this->assignmentUpdater->updateReserved($assignment, -$quantity, true);
-        }
-
-        // Remaining quantity
-        if (0 < $quantity) {
-            throw new InvalidArgumentException('Failed to assign invoice item.');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function applyInvoiceLine(InvoiceLineInterface $line)
-    {
-        // Abort if not supported
-        if (null === $assignments = $this->getAssignments($line)) {
-            return;
-        }
-
-        // Resolve quantity change
-        if (!$this->persistenceHelper->isChanged($line, 'quantity')) {
-            return;
-        }
-        list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'quantity');
-        if (0 == $quantity = $new - $old) {
-            return;
-        }
-
-        // TODO sort assignments ? (reverse for debit)
-
-
-        // Update assignments
-        foreach ($assignments as $assignment) {
-            $quantity += $this->assignmentUpdater->updateReserved($assignment, -$quantity, true);
-
-            if (0 == $quantity) {
-                return;
-            }
-        }
-
-        // Remaining quantity
-        if (0 != $quantity) {
-            throw new InvalidArgumentException('Failed to assign invoice item.');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function detachInvoiceLine(InvoiceLineInterface $line)
-    {
-        // Abort if not supported
-        if (null === $assignments = $this->getAssignments($line)) {
-            return;
-        }
-
-        // TODO sort assignments ?
-
-        $quantity = $line->getQuantity();
-
-        // TODO Use packaging format
-
-        foreach ($assignments as $assignment) {
-            $quantity -= $this->assignmentUpdater->updateReserved($assignment, $quantity, true);
-        }
-
-        // Remaining quantity
-        if (0 < $quantity) {
-            throw new InvalidArgumentException('Failed to detach invoice item.');
         }
     }
 
@@ -433,7 +344,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     protected function removeAssignment(StockAssignmentInterface $assignment)
     {
-        $this->unitUpdater->updateReserved($assignment->getStockUnit(), -$assignment->getReservedQuantity(), true);
+        $this->unitUpdater->updateSold($assignment->getStockUnit(), -$assignment->getSoldQuantity(), true);
 
         $this->persistenceHelper->remove($assignment);
     }
@@ -446,34 +357,33 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     protected function createAssignmentsForQuantity(SaleItemInterface $item, $quantity)
     {
+        if (0 >= $quantity) {
+            return;
+        }
+
         // Find enough available stock units
-
-        // TODO Stock units created during the flush event are not fetched by repository methods.
-        // We need to cache them to be able to use them right here.
-
         $stockUnits = $this->sortStockUnits($this->unitResolver->findAssignable($item));
 
         foreach ($stockUnits as $stockUnit) {
             $assignment = $this->saleFactory->createStockAssignmentForItem($item);
 
-            $delta = $quantity;
-            if ($delta > $limit = $stockUnit->getReservableQuantity()) {
-                $delta = $limit;
-            }
-            if (0 == $delta) {
-                continue;
-            }
-
-            $this->unitUpdater->updateReserved($stockUnit, $delta, true);
+//            $delta = $quantity;
+//            if ($delta > $limit = $stockUnit->getReservableQuantity()) {
+//                $delta = $limit;
+//            }
+//            if (0 == $delta) {
+//                continue;
+//            }
+//
+//            $this->unitUpdater->updateSold($stockUnit, $delta, true);
 
             $assignment
                 ->setSaleItem($item)
-                ->setStockUnit($stockUnit)
-                ->setReservedQuantity($delta);
+                ->setStockUnit($stockUnit);
 
-            $this->persistenceHelper->persistAndRecompute($assignment);
+            //$this->persistenceHelper->persistAndRecompute($assignment);
 
-            $quantity -= $delta;
+            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
 
             if (0 == $quantity) {
                 return;
@@ -483,15 +393,21 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // Remaining quantity
         if (0 < $quantity) {
             $stockUnit = $this->unitResolver->createBySubjectRelative($item);
-            $this->unitUpdater->updateReserved($stockUnit, $quantity, false);
+            //$this->unitUpdater->updateSold($stockUnit, $quantity, false);
 
             $assignment = $this->saleFactory->createStockAssignmentForItem($item);
             $assignment
                 ->setSaleItem($item)
-                ->setStockUnit($stockUnit)
-                ->setReservedQuantity($quantity);
+                ->setStockUnit($stockUnit);
+                //->setSoldQuantity($quantity);
 
-            $this->persistenceHelper->persistAndRecompute($assignment);
+            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
+
+            //$this->persistenceHelper->persistAndRecompute($assignment);
+        }
+
+        if (0 < $quantity) {
+            throw new InvalidArgumentException('Failed to create assignments.');
         }
     }
 
@@ -502,7 +418,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @return float
      */
-    protected function resolveReservedDeltaQuantity(SaleItemInterface $item)
+    protected function resolveSoldDeltaQuantity(SaleItemInterface $item)
     {
         $old = $new = $item->getQuantity();
 
@@ -558,7 +474,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     }
 
     /**
-     * Sorts the stock units for credit case (reserved quantity).
+     * Sorts the stock units for credit case (sold quantity).
      *
      * @param StockUnitInterface $u1
      * @param StockUnitInterface $u2
@@ -571,13 +487,13 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Sorting is made for credit case
 
-        // Prefer stock units with delivered quantities
-        if (0 < $u1->getDeliveredQuantity() && 0 == $u2->getDeliveredQuantity()) {
+        // Prefer stock units with received quantities
+        if (0 < $u1->getReceivedQuantity() && 0 == $u2->getReceivedQuantity()) {
             return -1;
-        } elseif (0 == $u1->getDeliveredQuantity() && 0 < $u2->getDeliveredQuantity()) {
+        } elseif (0 == $u1->getReceivedQuantity() && 0 < $u2->getReceivedQuantity()) {
             return 1;
-        } elseif (0 < $u1->getDeliveredQuantity() && 0 < $u2->getDeliveredQuantity()) {
-            // If both have delivered quantities, prefer cheapest
+        } elseif (0 < $u1->getReceivedQuantity() && 0 < $u2->getReceivedQuantity()) {
+            // If both have received quantities, prefer cheapest
             if (0 != $result = $this->compareStockUnitByPrice($u1, $u2)) {
                 return $result;
             }

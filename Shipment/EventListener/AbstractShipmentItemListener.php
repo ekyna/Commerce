@@ -137,24 +137,6 @@ abstract class AbstractShipmentItemListener
     }
 
     /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws Exception\IllegalOperationException
-     */
-    public function onPreDelete(ResourceEventInterface $event)
-    {
-        $shipmentItem = $this->getShipmentItemFromEvent($event);
-
-        $shipment = $shipmentItem->getShipment();
-
-        if (!in_array($shipment->getState(), Model\ShipmentStates::getDeletableStates())) {
-            throw new Exception\IllegalOperationException(); // TODO reason message
-        }
-    }
-
-    /**
      * Prevents the sale item from changing.
      *
      * @param Model\ShipmentItemInterface $item

@@ -35,30 +35,6 @@ interface StockUnitAssignerInterface
     public function detachSaleItem(SaleItemInterface $item);
 
     /**
-     * Assigns the invoice line to stock units by updating the
-     * stock assignment's reserved quantities of the related sale item.
-     *
-     * @param InvoiceLineInterface $line
-     */
-    public function assignInvoiceLine(InvoiceLineInterface $line);
-
-    /**
-     * Applies the invoice line quantity change to stock units by updating the
-     * stock assignment's reserved quantities of the related sale item.
-     *
-     * @param InvoiceLineInterface $line
-     */
-    public function applyInvoiceLine(InvoiceLineInterface $line);
-
-    /**
-     * Detaches the invoice line from stock units by updating
-     * stock assignment's reserved quantities of the related sale item.
-     *
-     * @param InvoiceLineInterface $line
-     */
-    public function detachInvoiceLine(InvoiceLineInterface $line);
-
-    /**
      * Assigns the shipment item to stock units
      * by updating the stock assignments's shipped quantities.
      *

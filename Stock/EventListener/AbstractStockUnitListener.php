@@ -93,8 +93,8 @@ abstract class AbstractStockUnitListener
 
         $trackProperties = [
             'orderedQuantity',
-            'deliveredQuantity',
-            'reservedQuantity',
+            'receivedQuantity',
+            'soldQuantity',
             'shippedQuantity',
             'estimatedDateOfArrival'
         ];
@@ -130,7 +130,7 @@ abstract class AbstractStockUnitListener
 
         if (!StockUtil::isDeletableStockUnit($stockUnit)) {
             throw new IllegalOperationException(
-                "The stock unit can't be deleted as it has been delivered, reserved or shipped."
+                "The stock unit can't be deleted as it has been received, sold or shipped."
             ); // TODO message as translation id
         }
 

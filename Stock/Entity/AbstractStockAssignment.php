@@ -24,7 +24,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @var float
      */
-    protected $reservedQuantity = 0;
+    protected $soldQuantity = 0;
 
     /**
      * @var float
@@ -53,18 +53,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
      */
     public function setStockUnit(Stock\StockUnitInterface $stockUnit = null)
     {
-        if ($this->stockUnit !== $stockUnit) {
-            $previous = $this->stockUnit;
-            $this->stockUnit = $stockUnit;
-
-            if ($previous) {
-                $previous->removeStockAssignment($this);
-            }
-
-            if ($this->stockUnit) {
-                $this->stockUnit->addStockAssignment($this);
-            }
-        }
+        $this->stockUnit = $stockUnit;
 
         return $this;
     }
@@ -72,17 +61,17 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function getReservedQuantity()
+    public function getSoldQuantity()
     {
-        return $this->reservedQuantity;
+        return $this->soldQuantity;
     }
 
     /**
      * @inheritdoc
      */
-    public function setReservedQuantity($quantity)
+    public function setSoldQuantity($quantity)
     {
-        $this->reservedQuantity = (float)$quantity;
+        $this->soldQuantity = (float)$quantity;
 
         return $this;
     }
@@ -114,7 +103,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
             return 0;
         }
 
-        $quantity = $this->reservedQuantity - $this->shippedQuantity;
+        $quantity = $this->soldQuantity - $this->shippedQuantity;
         if (0 > $quantity) $quantity = 0;
 
         return min($quantity, $this->stockUnit->getShippableQuantity());

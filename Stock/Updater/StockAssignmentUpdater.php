@@ -39,50 +39,60 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateReserved(StockAssignmentInterface $assignment, $quantity, $relative = true)
+    public function updateSold(StockAssignmentInterface $assignment, $quantity, $relative = true)
     {
         $stockUnit = $assignment->getStockUnit();
 
         $delta = $quantity;
         if (!$relative) {
-            $delta -= $assignment->getReservedQuantity();
+            $delta -= $assignment->getSoldQuantity();
         }
 
         // TODO use Packaging format
 
+        // Credit case
         if (0 < $delta) {
-            // Credit case
             if ($delta > $limit = $stockUnit->getReservableQuantity()) {
                 $delta = $limit;
             }
-        } elseif (0 > $delta) {
-            // Debit case
-            if ($stockUnit->getReservedQuantity() < abs($delta)) {
-                $delta = -$stockUnit->getReservedQuantity();
+        }
+        // Debit case
+        elseif (0 > $delta) {
+            // Sold quantity can't be lower than shipped quantity
+            if (0 < $assignment->getShippedQuantity() && $assignment->getShippedQuantity() <= abs($delta)) {
+                $delta = -$assignment->getShippedQuantity();
             }
-            if ($assignment->getReservedQuantity() < abs($delta)) {
-                $delta = -$assignment->getReservedQuantity();
+            elseif (0 < $stockUnit->getShippedQuantity() && $stockUnit->getShippedQuantity() <= abs($delta)) {
+                $delta = -$stockUnit->getShippedQuantity();
+            }
+            // Sold quantity can't be lower than zero
+            if ($assignment->getSoldQuantity() < abs($delta)) {
+                $delta = -$assignment->getSoldQuantity();
+            }
+            elseif ($stockUnit->getSoldQuantity() < abs($delta)) {
+                $delta = -$stockUnit->getSoldQuantity();
             }
         }
         if (0 == $delta) {
             return 0;
         }
 
-        $quantity = $assignment->getReservedQuantity() + $delta;
+        $quantity = $assignment->getSoldQuantity() + $delta;
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected reserved quantity.");
+            throw new InvalidArgumentException("Unexpected sold quantity.");
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateReserved($assignment->getStockUnit(), $delta, true);
+        $this->stockUnitUpdater->updateSold($assignment->getStockUnit(), $delta, true);
 
         // Assignment update
         if (0 == $quantity) {
+            // Clear association
+            $assignment->getSaleItem()->removeStockAssignment($assignment);
             // TODO Check if removal is safe
-            // TODO Clear association
             $this->persistenceHelper->remove($assignment);
         } else {
-            $assignment->setReservedQuantity($quantity);
+            $assignment->setSoldQuantity($quantity);
             $this->persistenceHelper->persistAndRecompute($assignment);
         }
 

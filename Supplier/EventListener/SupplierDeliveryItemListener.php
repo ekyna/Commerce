@@ -27,14 +27,14 @@ class SupplierDeliveryItemListener extends AbstractListener
     {
         $item = $this->getSupplierDeliveryItemFromEvent($event);
 
-        // Credit stock unit delivered quantity
+        // Credit stock unit received quantity
         if (null === $orderItem = $item->getOrderItem()) {
             throw new RuntimeException("OrderItem must be set.");
         }
         if (null === $stockUnit = $orderItem->getStockUnit()) {
             throw new RuntimeException("StockUnit must be set.");
         }
-        $this->stockUnitUpdater->updateDelivered($stockUnit, $item->getQuantity(), true);
+        $this->stockUnitUpdater->updateReceived($stockUnit, $item->getQuantity(), true);
 
         // Dispatch supplier order content change event
         if (null === $order = $orderItem->getOrder()) {
@@ -85,14 +85,14 @@ class SupplierDeliveryItemListener extends AbstractListener
         if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
             $this->handleQuantityChange($item);
         } else {
-            // Debit stock unit delivered quantity
+            // Debit stock unit received quantity
             if (null === $orderItem = $item->getOrderItem()) {
                 throw new RuntimeException("OrderItem must be set.");
             }
             if (null === $stockUnit = $orderItem->getStockUnit()) {
                 throw new RuntimeException("StockUnit must be set.");
             }
-            $this->stockUnitUpdater->updateDelivered($stockUnit, -$item->getQuantity(), true);
+            $this->stockUnitUpdater->updateReceived($stockUnit, -$item->getQuantity(), true);
 
             // Trigger the supplier order update
             if (null === $order = $orderItem->getOrder()) {
@@ -122,8 +122,8 @@ class SupplierDeliveryItemListener extends AbstractListener
             throw new RuntimeException("StockUnit must be set.");
         }
         if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
-            // Update stock unit delivered quantity
-            $this->stockUnitUpdater->updateDelivered($stockUnit, $deltaQuantity, true);
+            // Update stock unit received quantity
+            $this->stockUnitUpdater->updateReceived($stockUnit, $deltaQuantity, true);
         }
 
         // Trigger the supplier order update
