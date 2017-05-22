@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Customer\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Customer\Validator\VatNumberValidatorInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -26,19 +27,27 @@ class CustomerListener
      */
     protected $numberGenerator;
 
+    /**
+     * @var VatNumberValidatorInterface
+     */
+    protected $vatNumberValidator;
+
 
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param NumberGeneratorInterface   $numberGenerator
+     * @param PersistenceHelperInterface  $persistenceHelper
+     * @param NumberGeneratorInterface    $numberGenerator
+     * @param VatNumberValidatorInterface $vatNumberValidator
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        NumberGeneratorInterface $numberGenerator
+        NumberGeneratorInterface $numberGenerator,
+        VatNumberValidatorInterface $vatNumberValidator
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->numberGenerator = $numberGenerator;
+        $this->vatNumberValidator = $vatNumberValidator;
     }
 
     /**
@@ -55,6 +64,13 @@ class CustomerListener
         $changed = $this->generateNumber($customer);
 
         $changed |= $this->updateCompanyNameFromParent($customer);
+
+        $changed |= $this->validateVatNumber($customer);
+
+        // TODO
+        // - Must have an invoice address
+        // - Prevent vat valid from being 'true' if vat number if empty
+        // - If vat number is not empty, validate it with soap API
 
         /**
          * TODO Resource behaviors.
@@ -97,6 +113,8 @@ class CustomerListener
             }
         }
 
+        $changed |= $this->validateVatNumber($customer);
+
         /**
          * TODO Resource behaviors.
          */
@@ -129,6 +147,38 @@ class CustomerListener
     {
         if (0 == strlen($customer->getNumber())) {
             $this->numberGenerator->generate($customer);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Validates the vat number.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return bool
+     */
+    protected function validateVatNumber(CustomerInterface $customer)
+    {
+        $valid = $customer->isVatValid();
+
+        if (0 < strlen($number = $customer->getVatNumber()) && !$valid) {
+            if ($this->vatNumberValidator) {
+                if (null !== $result = $this->vatNumberValidator->validate($number)) {
+                    if ($valid = $result->isValid()) {
+                        $customer->setVatDetails($result->getDetails());
+                    }
+                }
+            }
+        } else {
+            $valid = false;
+        }
+
+        if ($valid != $customer->isVatValid()) {
+            $customer->setVatValid($valid);
 
             return true;
         }

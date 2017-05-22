@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Order\EventListener;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
@@ -72,6 +71,7 @@ class OrderListener extends AbstractSaleListener
 
         // Stop if order has valid shipments
         if (null !== $shipments = $order->getShipments()) {
+            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface $shipment */
             foreach ($shipments as $shipment) {
                 if (!ShipmentStates::isDeletableState($shipment->getState())) {
                     throw new IllegalOperationException(); // TODO reason message
@@ -102,9 +102,6 @@ class OrderListener extends AbstractSaleListener
                 foreach ($sale->getItems() as $item) {
                     $this->assignSaleItemRecursively($item);
                 }
-                foreach ($sale->getInvoices() as $invoice) {
-                    $this->assignInvoice($invoice);
-                }
             }
             // If order state has changed from stockable to non stockable
             elseif (OrderStates::hasChangedFromStockable($stateCs)) {
@@ -133,18 +130,6 @@ class OrderListener extends AbstractSaleListener
         }
 
         return false;
-    }
-
-    /**
-     * Assigns the invoice's item to stock units.
-     *
-     * @param InvoiceInterface $invoice
-     */
-    protected function assignInvoice(InvoiceInterface $invoice)
-    {
-        foreach ($invoice->getLines() as $line) {
-            $this->stockAssigner->assignInvoiceLine($line);
-        }
     }
 
     /**

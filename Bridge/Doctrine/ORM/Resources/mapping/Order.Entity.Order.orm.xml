@@ -29,8 +29,7 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceOrder" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
             <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
         </one-to-one>
@@ -38,8 +37,7 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
                     field="deliveryAddress" inversed-by="deliveryOrder" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
@@ -47,8 +45,7 @@
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderAttachment"
                      field="attachments" mapped-by="order" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
         </one-to-many>
 
@@ -75,7 +72,7 @@
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderPayment"
                      field="payments" mapped-by="order" orphan-removal="true">
             <cascade>
-                <!--<cascade-persist/>-->
+                <cascade-persist/>
                 <cascade-remove/>
             </cascade>
             <order-by>
@@ -86,7 +83,7 @@
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipment"
                      field="shipments" mapped-by="order" orphan-removal="true">
             <cascade>
-                <!--<cascade-persist/>-->
+                <cascade-persist/>
                 <cascade-remove/>
             </cascade>
             <order-by>
@@ -96,10 +93,10 @@
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoice"
                      field="invoices" mapped-by="order" orphan-removal="true">
-            <!--<cascade>
+            <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
-            </cascade>-->
+            </cascade>
             <order-by>
                 <order-by-field name="createdAt" direction="ASC"/>
             </order-by>

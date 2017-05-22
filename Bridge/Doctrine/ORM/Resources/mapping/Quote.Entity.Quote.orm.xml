@@ -26,8 +26,7 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceQuote" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
             <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
         </one-to-one>
@@ -35,8 +34,7 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"
                     field="deliveryAddress" inversed-by="deliveryQuote" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
@@ -44,8 +42,7 @@
         <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteAttachment"
                      field="attachments" mapped-by="quote" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
         </one-to-many>
 

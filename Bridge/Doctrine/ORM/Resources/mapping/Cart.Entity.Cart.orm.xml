@@ -28,8 +28,7 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceCart" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
             <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
@@ -37,8 +36,7 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartAddressInterface"
                     field="deliveryAddress" inversed-by="deliveryCart" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
         </one-to-one>
@@ -46,8 +44,7 @@
         <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartAttachment"
                      field="attachments" mapped-by="cart" orphan-removal="true">
             <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
+                <cascade-all/>
             </cascade>
         </one-to-many>
 

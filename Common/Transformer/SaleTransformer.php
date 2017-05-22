@@ -123,7 +123,7 @@ class SaleTransformer implements SaleTransformerInterface
     public function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target)
     {
         $this->copy($source, $target, [
-            'path', 'size', 'internal', 'createdAt', 'updatedAt',
+            'path', 'title', 'size', 'internal', 'createdAt', 'updatedAt',
         ]);
     }
 

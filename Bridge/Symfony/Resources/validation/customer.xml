@@ -84,6 +84,14 @@
                 </option>
             </constraint>
         </property>
+        <property name="vatNumber">
+            <constraint name="Antalaron\Component\VatNumberValidator\VatNumber">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                </option>
+            </constraint>
+        </property>
         <property name="creditBalance">
             <constraint name="GreaterThanOrEqual">
                 <option name="groups">

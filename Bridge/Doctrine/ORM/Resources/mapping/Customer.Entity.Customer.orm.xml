@@ -21,7 +21,7 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="number" column="number" type="string" length="16" />
+        <field name="number" column="number" type="string" length="16"/>
 
         <field name="email" column="email" type="string" length="255" unique="true"/>
         <field name="company" column="company" type="string" length="64" nullable="true"/>
@@ -31,14 +31,18 @@
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
 
+        <field name="vatNumber" column="vat_number" type="string" length="32" nullable="true"/>
+        <field name="vatDetails" column="vat_details" type="json_array" nullable="true"/>
+        <field name="vatValid" column="vat_valid" type="boolean"/>
+
         <field name="creditBalance" column="credit_balance" type="decimal" precision="12" scale="3"/>
         <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="3"/>
         <field name="outstandingBalance" column="outstanding_balance" type="decimal" precision="12" scale="3"/>
 
         <field name="description" column="description" type="text" nullable="true"/>
 
-        <field name="createdAt" column="created_at" type="datetime" />
-        <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
+        <field name="createdAt" column="created_at" type="datetime"/>
+        <field name="updatedAt" column="updated_at" type="datetime" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
                      mapped-by="parent" field="children" orphan-removal="true">
