@@ -4,9 +4,9 @@ namespace Ekyna\Component\Commerce\Customer\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Customer\Validator\VatNumberValidatorInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Pricing\Api\PricingApiInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -28,26 +28,26 @@ class CustomerListener
     protected $numberGenerator;
 
     /**
-     * @var VatNumberValidatorInterface
+     * @var PricingApiInterface
      */
-    protected $vatNumberValidator;
+    protected $pricingApi;
 
 
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface  $persistenceHelper
-     * @param NumberGeneratorInterface    $numberGenerator
-     * @param VatNumberValidatorInterface $vatNumberValidator
+     * @param PersistenceHelperInterface $persistenceHelper
+     * @param NumberGeneratorInterface   $numberGenerator
+     * @param PricingApiInterface        $pricingApi
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         NumberGeneratorInterface $numberGenerator,
-        VatNumberValidatorInterface $vatNumberValidator
+        PricingApiInterface $pricingApi
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->numberGenerator = $numberGenerator;
-        $this->vatNumberValidator = $vatNumberValidator;
+        $this->pricingApi = $pricingApi;
     }
 
     /**
@@ -166,8 +166,8 @@ class CustomerListener
         $valid = $customer->isVatValid();
 
         if (0 < strlen($number = $customer->getVatNumber()) && !$valid) {
-            if ($this->vatNumberValidator) {
-                if (null !== $result = $this->vatNumberValidator->validate($number)) {
+            if ($this->pricingApi) {
+                if (null !== $result = $this->pricingApi->validateVatNumber($number)) {
                     if ($valid = $result->isValid()) {
                         $customer->setVatDetails($result->getDetails());
                     }

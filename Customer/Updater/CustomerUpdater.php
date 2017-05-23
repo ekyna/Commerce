@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Customer\Updater;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**

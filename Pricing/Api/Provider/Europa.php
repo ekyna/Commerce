@@ -1,18 +1,18 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Customer\Validator\Provider;
+namespace Ekyna\Component\Commerce\Pricing\Api\Provider;
 
-use Ekyna\Component\Commerce\Customer\Validator\VatResult;
+use Ekyna\Component\Commerce\Pricing\Api\VatNumberResult;
 
 /**
  * Class Europa
- * @package Ekyna\Component\Commerce\Customer\Validator\Provider
+ * @package Ekyna\Component\Commerce\Pricing\Api\Provider
  * @author  Etienne Dauvergne <contact@ekyna.com>
  * @see http://ec.europa.eu/taxation_customs/vies/?locale=fr
  */
-class Europa implements ProviderInterface
+class Europa implements VatNumberValidatorInterface
 {
-    const SERVICE_ID = 'ekyna_commerce.customer.validator.vat_number.provider.europa';
+    const SERVICE_ID = 'ekyna_commerce.pricing.api.provider.europa';
 
     const ENDPOINT = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
 
@@ -45,7 +45,7 @@ class Europa implements ProviderInterface
     /**
      * @inheritDoc
      */
-    public function validate($vatNumber)
+    public function validateVatNumber($vatNumber)
     {
         $vatNumber = preg_replace('~[^A-Z0-9]+~', '', strtoupper($vatNumber));
 
@@ -63,7 +63,7 @@ class Europa implements ProviderInterface
                     'vatNumber'   => substr($vatNumber, 2),
                 ]);
 
-                return new VatResult(
+                return new VatNumberResult(
                     $response->valid,
                     $response->countryCode,
                     $response->vatNumber,
@@ -85,7 +85,7 @@ class Europa implements ProviderInterface
      *
      * @return \SoapClient
      */
-    public function getClient()
+    private function getClient()
     {
         if (null !== $this->client) {
             return $this->client;

@@ -1,13 +1,13 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Customer\Validator;
+namespace Ekyna\Component\Commerce\Pricing\Api;
 
 /**
- * Class VatResult
+ * Class VatNumberResult
  * @package Ekyna\Component\Commerce\Customer\Validator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class VatResult
+class VatNumberResult
 {
     /**
      * @var bool
