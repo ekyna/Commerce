@@ -28,14 +28,14 @@ interface TaxGroupInterface extends ResourceInterface
     public function setName($name);
 
     /**
-     * Returns whether this is the default tax group or not.
+     * Returns whether this is the default tax group.
      *
      * @return boolean
      */
     public function isDefault();
 
     /**
-     * Sets whether this is the default tax group or not.
+     * Sets whether this is the default tax group.
      *
      * @param boolean $default
      *
@@ -44,51 +44,52 @@ interface TaxGroupInterface extends ResourceInterface
     public function setDefault($default);
 
     /**
-     * Returns whether the tax group has tax rules or not.
+     * Returns whether the tax group has taxes.
      *
      * @return bool
      */
-    public function hasTaxRules();
+    public function hasTaxes();
 
     /**
-     * Returns the taxRules.
+     * Returns the taxes.
      *
-     * @return ArrayCollection|TaxRuleInterface[]
+     * @return ArrayCollection|TaxInterface[]
      */
-    public function getTaxRules();
+    public function getTaxes();
 
     /**
-     * Returns whether the tax group has the tax rule or not.
+     * Returns whether the tax group has the given tax.
      *
-     * @param TaxRuleInterface $taxRule
+     * @param TaxInterface $tax
      *
      * @return bool
      */
-    public function hasTaxRule(TaxRuleInterface $taxRule);
+    public function hasTax(TaxInterface $tax);
 
     /**
-     * Adds the tax rule.
+     * Adds the tax.
      *
-     * @param TaxRuleInterface $taxRule
+     * @param TaxInterface $tax
      *
      * @return $this|TaxGroupInterface
      */
-    public function addTaxRule(TaxRuleInterface $taxRule);
+    public function addTax(TaxInterface $tax);
 
     /**
-     * Removes the tax rule.
+     * Removes the tax.
      *
-     * @param TaxRuleInterface $taxRule
+     * @param TaxInterface $tax
      *
      * @return $this|TaxGroupInterface
      */
-    public function removeTaxRule(TaxRuleInterface $taxRule);
+    public function removeTax(TaxInterface $tax);
 
     /**
-     * Sets the taxRules.
+     * Sets the taxes.
      *
-     * @param ArrayCollection|TaxRuleInterface[] $taxRules
+     * @param TaxInterface[] $taxes
+     *
      * @return $this|TaxGroupInterface
      */
-    public function setTaxRules(ArrayCollection $taxRules);
+    public function setTaxes(array $taxes);
 }

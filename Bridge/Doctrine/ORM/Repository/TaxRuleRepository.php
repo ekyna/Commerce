@@ -3,8 +3,6 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
-use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
@@ -18,51 +16,97 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
     /**
      * @var \Doctrine\ORM\Query
      */
-    private $byTaxGroupAndCustomerGroupsQuery;
+    private $byCountryAndCustomerQuery;
+
+    /**
+     * @var \Doctrine\ORM\Query
+     */
+    private $byCountryAndBusinessQuery;
 
 
     /**
      * @inheritdoc
      */
-    public function findByTaxGroupAndCustomerGroupAndCountry(
-        TaxGroupInterface $taxGroup,
-        CustomerGroupInterface $customerGroup,
+    public function findOneByCountryForCustomer(
         CountryInterface $country
     ) {
         return $this
-            ->getByTaxGroupAndCustomerGroupsQuery()
-            ->setParameters([
-                'tax_group'      => $taxGroup,
-                'customer_group' => $customerGroup,
-                'country'        => $country,
-            ])
-            ->getResult();
+            ->getByCountryAndCustomerQuery()
+            ->setParameter('country', $country)
+            ->getOneOrNullResult();
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function findOneByCountryForBusiness(
+        CountryInterface $country
+    ) {
+        return $this
+            ->getByCountryAndBusinessQuery()
+            ->setParameter('country', $country)
+            ->getOneOrNullResult();
     }
 
     /**
-     * Returns the "find by tax group and customer groups" query.
+     * Returns the "find one by country and customer" query.
      *
      * @return \Doctrine\ORM\Query
      */
-    private function getByTaxGroupAndCustomerGroupsQuery()
+    private function getByCountryAndCustomerQuery()
     {
-        if (null === $this->byTaxGroupAndCustomerGroupsQuery) {
-            $qb = $this->getQueryBuilder();
-            $this->byTaxGroupAndCustomerGroupsQuery = $qb
-                ->leftJoin('o.taxes', 't')
-                ->andWhere($qb->expr()->isMemberOf(':tax_group', 'o.taxGroups'))
-                ->andWhere($qb->expr()->isMemberOf(':customer_group', 'o.customerGroups'))
-                ->andWhere(
-                    $qb->expr()->orX(
-                        $qb->expr()->isNull('t.id'),
-                        $qb->expr()->eq('t.country', ':country')
-                    )
-                )
-                ->addOrderBy('o.priority', 'DESC')
-                ->addGroupBy('o.id')
-                ->getQuery();
+        if (null === $this->byCountryAndCustomerQuery) {
+            $qb = $this->getBaseQueryBuilder();
+
+            $this->byCountryAndCustomerQuery = $qb
+                ->andWhere($qb->expr()->eq('r.customer', ':customer'))
+                ->getQuery()
+                ->setParameter('customer', true)
+                ->setMaxResults(1);
         }
 
-        return $this->byTaxGroupAndCustomerGroupsQuery;
+        return $this->byCountryAndCustomerQuery;
+    }
+
+    /**
+     * Returns the "find one by country and business" query.
+     *
+     * @return \Doctrine\ORM\Query
+     */
+    private function getByCountryAndBusinessQuery()
+    {
+        if (null === $this->byCountryAndBusinessQuery) {
+            $qb = $this->getBaseQueryBuilder();
+
+            $this->byCountryAndBusinessQuery = $qb
+                ->andWhere($qb->expr()->eq('r.business', ':business'))
+                ->getQuery()
+                ->setParameter('business', true)
+                ->setMaxResults(1);
+        }
+
+        return $this->byCountryAndBusinessQuery;
+    }
+
+    /**
+     * Returns the base query builder.
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    private function getBaseQueryBuilder()
+    {
+        $qb = $this->getQueryBuilder('r', 'r.id');
+
+        return $qb
+            ->select('r', 't')
+            ->join('r.taxes', 't')
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->isMemberOf(':country', 'r.countries'),
+                    'r.countries IS EMPTY'
+                )
+            )
+            ->addOrderBy('r.priority', 'DESC');
     }
 }

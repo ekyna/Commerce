@@ -1,0 +1,12 @@
+-
+    name: 'TVA 20%'
+    rate: 20
+-
+    name: 'TVA 10%'
+    rate: 10
+-
+    name: 'TVA 5,5%'
+    rate: 5.5
+-
+    name: 'TVA 2,1%'
+    rate: 2,1

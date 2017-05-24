@@ -23,40 +23,35 @@
         </id>
 
         <field name="name" column="name" type="string" length="64"/>
+
+        <field name="customer" column="customer" type="boolean"/>
+        <field name="business" column="business" type="boolean"/>
+
+        <field name="notices" column="notices" type="json_array"/>
+
         <field name="priority" column="priority" type="smallint"/>
         <field name="position" column="position" type="smallint"/>
 
-        <many-to-many target-entity="Ekyna\Component\Commerce\Customer\Entity\CustomerGroup" field="customerGroups">
-            <join-table name="commerce_tax_rule_customer_group">
+        <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country"
+                      field="countries">
+            <join-table name="commerce_tax_rule_country">
                 <join-columns>
                     <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE" />
                 </join-columns>
                 <inverse-join-columns>
-                    <join-column name="customer_group_id" referenced-column-name="id" on-delete="CASCADE" />
-                </inverse-join-columns>
-            </join-table>
-        </many-to-many>
-
-        <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\TaxGroup"
-                      field="taxGroups" inversed-by="taxRules">
-            <join-table name="commerce_tax_rule_tax_group">
-                <join-columns>
-                    <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE" />
-                </join-columns>
-                <inverse-join-columns>
-                    <join-column name="tax_group_id" referenced-column-name="id" on-delete="CASCADE" />
+                    <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT" />
                 </inverse-join-columns>
             </join-table>
         </many-to-many>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\Tax"
-                      field="taxes" inversed-by="taxRules">
+                      field="taxes">
             <join-table name="commerce_tax_rule_tax">
                 <join-columns>
                     <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE" />
                 </join-columns>
                 <inverse-join-columns>
-                    <join-column name="tax_id" referenced-column-name="id" on-delete="CASCADE" />
+                    <join-column name="tax_id" referenced-column-name="id" on-delete="RESTRICT" />
                 </inverse-join-columns>
             </join-table>
         </many-to-many>

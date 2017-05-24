@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Customer\Model;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
+use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -17,7 +18,8 @@ interface CustomerInterface extends
     ResourceModel\TimestampableInterface,
     Common\IdentityInterface,
     Common\NumberSubjectInterface,
-    PaymentTermSubjectInterface
+    PaymentTermSubjectInterface,
+    VatNumberSubjectInterface
 {
     /**
      * Returns the company.
@@ -210,54 +212,6 @@ interface CustomerInterface extends
      * @return CustomerAddressInterface|null
      */
     public function getDefaultDeliveryAddress();
-
-    /**
-     * Returns the vat number.
-     *
-     * @return string
-     */
-    public function getVatNumber();
-
-    /**
-     * Sets the vat number.
-     *
-     * @param string $vatNumber
-     *
-     * @return $this|CustomerInterface
-     */
-    public function setVatNumber($vatNumber);
-
-    /**
-     * Returns the vat details.
-     *
-     * @return array
-     */
-    public function getVatDetails();
-
-    /**
-     * Sets the vat details.
-     *
-     * @param array $details
-     *
-     * @return $this|CustomerInterface
-     */
-    public function setVatDetails(array $details = null);
-
-    /**
-     * Returns the vat valid.
-     *
-     * @return bool
-     */
-    public function isVatValid();
-
-    /**
-     * Sets whether the vat number is valid.
-     *
-     * @param bool $valid
-     *
-     * @return $this|CustomerInterface
-     */
-    public function setVatValid($valid);
 
     /**
      * Returns the credit balance.

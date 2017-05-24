@@ -42,11 +42,6 @@ class Tax implements TaxInterface
     protected $state;
 
     /**
-     * @var string
-     */
-    protected $postalCodeMatch;
-
-    /**
      * @var ArrayCollection|TaxRuleInterface[]
      */
     protected $taxRules;
@@ -58,7 +53,6 @@ class Tax implements TaxInterface
     public function __construct()
     {
         $this->rate = 0;
-        $this->postalCodeMatch = '*';
         $this->taxRules = new ArrayCollection();
     }
 
@@ -148,86 +142,6 @@ class Tax implements TaxInterface
     public function setState(StateInterface $state = null)
     {
         $this->state = $state;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPostalCodeMatch()
-    {
-        return $this->postalCodeMatch;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPostalCodeMatch($postalCodeMatch)
-    {
-        $this->postalCodeMatch = $postalCodeMatch;
-
-        return $this;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public function hasTaxRules()
-    {
-        return 0 < $this->taxRules->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxRules()
-    {
-        return $this->taxRules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasTaxRule(TaxRuleInterface $taxRule)
-    {
-        return $this->taxRules->contains($taxRule);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function addTaxRule(TaxRuleInterface $taxRule)
-    {
-        if (!$this->hasTaxRule($taxRule)) {
-            $this->taxRules->add($taxRule);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeTaxRule(TaxRuleInterface $taxRule)
-    {
-        if ($this->hasTaxRule($taxRule)) {
-            $this->taxRules->removeElement($taxRule);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxRules(ArrayCollection $taxRules)
-    {
-        /** @var \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface $taxRule */
-        foreach ($taxRules as $taxRule) {
-            $taxRule->addTax($this);
-        }
 
         return $this;
     }

@@ -9,6 +9,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -25,6 +26,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
         Common\StateSubjectTrait,
         Common\CurrencySubjectTrait,
         Payment\PaymentTermSubjectTrait,
+        VatNumberSubjectTrait,
         TimestampableTrait;
 
     /**

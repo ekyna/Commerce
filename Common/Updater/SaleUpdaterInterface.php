@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Updater;
 
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
 /**
  * Interface SaleUpdaterInterface

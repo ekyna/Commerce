@@ -265,6 +265,9 @@
                 <option name="max">255</option>
             </constraint>
         </property>
+        <property name="vatNumber">
+            <constraint name="Antalaron\Component\VatNumberValidator\VatNumber"/>
+        </property>
         <property name="invoiceAddress">
             <constraint name="Valid" />
         </property>

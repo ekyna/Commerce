@@ -134,7 +134,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         // For now, we assume that sale's taxation adjustments are only related to shipment.
         if (null !== $taxable = $sale->getPreferredShipmentMethod()) {
             // Resolve taxes
-            $taxes = $this->taxResolver->resolveTaxesBySale($taxable, $sale);
+            $taxes = $this->taxResolver->resolveTaxes($taxable, $sale);
         }
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $sale, $taxes, $persistence);
@@ -171,10 +171,9 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
+        $taxes = [];
         if (null !== $sale = $item->getSale()) {
-            $taxes = $this->taxResolver->resolveTaxesBySale($item, $sale);
-        } else {
-            $taxes = $this->taxResolver->resolveDefaultTaxes($item);
+            $taxes = $this->taxResolver->resolveTaxes($item, $sale);
         }
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $item, $taxes, $persistence);

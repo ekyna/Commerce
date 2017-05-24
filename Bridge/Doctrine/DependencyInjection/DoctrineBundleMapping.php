@@ -54,8 +54,6 @@ class DoctrineBundleMapping
             Payment\Model\PaymentMethodInterface::class      => Payment\Entity\PaymentMethod::class,
             Payment\Model\PaymentTermInterface::class        => Payment\Entity\PaymentTerm::class,
 
-            Pricing\Model\TaxGroupInterface::class           => Pricing\Entity\TaxGroup::class,
-
             Quote\Model\QuoteInterface::class                => Quote\Entity\Quote::class,
             Quote\Model\QuoteAddressInterface::class         => Quote\Entity\QuoteAddress::class,
 

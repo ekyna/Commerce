@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Pricing\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 
 /**
  * Class TaxGroup
@@ -29,9 +29,9 @@ class TaxGroup implements TaxGroupInterface
     protected $default;
 
     /**
-     * @var ArrayCollection|TaxRuleInterface[]
+     * @var ArrayCollection|TaxInterface[]
      */
-    protected $taxRules;
+    protected $taxes;
 
 
     /**
@@ -39,8 +39,8 @@ class TaxGroup implements TaxGroupInterface
      */
     public function __construct()
     {
-        $this->taxRules = new ArrayCollection();
         $this->default = false;
+        $this->taxes = new ArrayCollection();
     }
 
     /**
@@ -79,9 +79,7 @@ class TaxGroup implements TaxGroupInterface
     }
 
     /**
-     * Returns whether this is the default tax group or not.
-     *
-     * @return boolean
+     * @inheritdoc
      */
     public function isDefault()
     {
@@ -89,11 +87,7 @@ class TaxGroup implements TaxGroupInterface
     }
 
     /**
-     * Sets whether this is the default tax group or not.
-     *
-     * @param boolean $default
-     *
-     * @return TaxGroup
+     * @inheritdoc
      */
     public function setDefault($default)
     {
@@ -104,57 +98,62 @@ class TaxGroup implements TaxGroupInterface
     /**
      * @inheritdoc
      */
-    public function hasTaxRules()
+    public function hasTaxes()
     {
-        return 0 < $this->taxRules->count();
+        return 0 < $this->taxes->count();
     }
 
     /**
      * @inheritdoc
      */
-    public function getTaxRules()
+    public function getTaxes()
     {
-        return $this->taxRules;
+        return $this->taxes;
     }
 
     /**
      * @inheritdoc
      */
-    public function hasTaxRule(TaxRuleInterface $taxRule)
+    public function hasTax(TaxInterface $tax)
     {
-        return $this->taxRules->contains($taxRule);
+        return $this->taxes->contains($tax);
     }
 
     /**
      * @inheritdoc
      */
-    public function addTaxRule(TaxRuleInterface $taxRule)
+    public function addTax(TaxInterface $tax)
     {
-        if (!$this->hasTaxRule($taxRule)) {
-            $this->taxRules->add($taxRule);
+        if (!$this->hasTax($tax)) {
+            $this->taxes->add($tax);
         }
+
         return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function removeTaxRule(TaxRuleInterface $taxRule)
+    public function removeTax(TaxInterface $tax)
     {
-        if ($this->hasTaxRule($taxRule)) {
-            $this->taxRules->removeElement($taxRule);
+        if ($this->hasTax($tax)) {
+            $this->taxes->removeElement($tax);
         }
+
         return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function setTaxRules(ArrayCollection $taxRules)
+    public function setTaxes(array $taxes)
     {
-        /** @var \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface $taxRule */
-        foreach ($taxRules as $taxRule) {
-            $taxRule->addTaxGroup($this);
+        foreach ($this->taxes as $tax) {
+            $this->removeTax($tax);
+        }
+
+        foreach ($taxes as $tax) {
+            $this->addTax($tax);
         }
 
         return $this;

@@ -1,0 +1,32 @@
+-
+    name: 'Ventes en France'
+    priority: 1024
+    customer: true
+    business: true
+    countries: [FR]
+    taxes: ['TVA 20%', 'TVA 10%', 'TVA 5,5%']
+    notices: {  }
+-
+    name: 'Ventes intracommunautaires B2B'
+    priority: 768
+    customer: false
+    business: true
+    countries: [AT, BE, BG, HR, CY, CZ, DK, EE, FI, DE, EL, HU, IE, IT, LV, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE, BG]
+    taxes: {  }
+    notices: ['Exonération de TVA - Article 262 ter-I du code général des impôts']
+-
+    name: 'Ventes intracommunautaires B2C'
+    priority: 512
+    customer: true
+    business: false
+    countries: [AT, BE, BG, HR, CY, CZ, DK, EE, FI, DE, EL, HU, IE, IT, LV, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE, BG]
+    taxes: ['TVA 20%', 'TVA 10%', 'TVA 5,5%']
+    notices: {  }
+-
+    name: 'Ventes à l''étranger'
+    priority: 256
+    customer: true
+    business: true
+    countries: {  }
+    taxes: {  }
+    notices: ['Exonération de TVA - Article 262 1° du code général des impôts']

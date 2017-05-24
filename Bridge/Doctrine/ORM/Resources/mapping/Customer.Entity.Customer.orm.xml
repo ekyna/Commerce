@@ -31,10 +31,6 @@
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
 
-        <field name="vatNumber" column="vat_number" type="string" length="32" nullable="true"/>
-        <field name="vatDetails" column="vat_details" type="json_array" nullable="true"/>
-        <field name="vatValid" column="vat_valid" type="boolean"/>
-
         <field name="creditBalance" column="credit_balance" type="decimal" precision="12" scale="3"/>
         <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="3"/>
         <field name="outstandingBalance" column="outstanding_balance" type="decimal" precision="12" scale="3"/>

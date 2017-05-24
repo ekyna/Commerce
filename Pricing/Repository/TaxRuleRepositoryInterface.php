@@ -3,9 +3,6 @@
 namespace Ekyna\Component\Commerce\Pricing\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
-use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
@@ -16,17 +13,24 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface TaxRuleRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
-     * Finds tax rules by tax group, customer group and country.
+     * Finds the tax rule by country for customer.
      *
-     * @param TaxGroupInterface      $taxGroup
-     * @param CustomerGroupInterface $customerGroup
-     * @param CountryInterface       $country
+     * @param CountryInterface  $country
      *
-     * @return array|TaxRuleInterface[]
+     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
      */
-    public function findByTaxGroupAndCustomerGroupAndCountry(
-        TaxGroupInterface $taxGroup,
-        CustomerGroupInterface $customerGroup,
+    public function findOneByCountryForCustomer(
+        CountryInterface $country
+    );
+
+    /**
+     * Finds the tax rule by country for business.
+     *
+     * @param CountryInterface  $country
+     *
+     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
+     */
+    public function findOneByCountryForBusiness(
         CountryInterface $country
     );
 }

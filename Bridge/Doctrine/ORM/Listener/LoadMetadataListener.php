@@ -8,7 +8,7 @@ use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
-use Ekyna\Component\Commerce\Pricing\Model as Tax;
+use Ekyna\Component\Commerce\Pricing as Pricing;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
@@ -37,6 +37,11 @@ class LoadMetadataListener implements EventSubscriber
      * @var array
      */
     private $paymentTermSubjectClassCache = [];
+
+    /**
+     * @var array
+     */
+    private $vatNumberSubjectClassCache = [];
 
     /**
      * @var array
@@ -76,8 +81,12 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        if (is_subclass_of($class, Tax\TaxableInterface::class)) {
+        if (is_subclass_of($class, Pricing\Model\TaxableInterface::class)) {
             $this->configureTaxableMapping($eventArgs);
+        }
+
+        if (is_subclass_of($class, Pricing\Model\VatNumberSubjectInterface::class)) {
+            $this->configureVatNumberSubjectMapping($eventArgs);
         }
 
         if (is_subclass_of($class, Payment\PaymentTermSubjectInterface::class)) {
@@ -109,7 +118,7 @@ class LoadMetadataListener implements EventSubscriber
         $class = $metadata->getName();
 
         // Check class
-        if (!is_subclass_of($class, Tax\TaxableInterface::class)) {
+        if (!is_subclass_of($class, Pricing\Model\TaxableInterface::class)) {
             return;
         }
 
@@ -126,7 +135,7 @@ class LoadMetadataListener implements EventSubscriber
         if (!$metadata->hasAssociation('taxGroup')) {
             $metadata->mapManyToOne([
                 'fieldName'    => 'taxGroup',
-                'targetEntity' => Tax\TaxGroupInterface::class,
+                'targetEntity' => Pricing\Entity\TaxGroup::class,
                 'joinColumns'  => [
                     [
                         'name'                 => 'tax_group_id',
@@ -140,6 +149,39 @@ class LoadMetadataListener implements EventSubscriber
 
         // Cache class
         $this->taxableClassCache[] = $class;
+    }
+
+    /**
+     * Configures the vat number subject mapping.
+     *
+     * @param LoadClassMetadataEventArgs $eventArgs
+     */
+    private function configureVatNumberSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
+    {
+        /** @var ClassMetadata $metadata */
+        $metadata = $eventArgs->getClassMetadata();
+        $class = $metadata->getName();
+
+        // Check class
+        if (!is_subclass_of($class, Pricing\Model\VatNumberSubjectInterface::class)) {
+            return;
+        }
+
+        // Skip abstract classes.
+        if ((new \ReflectionClass($class))->isAbstract()) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->vatNumberSubjectClassCache)) {
+            return;
+        }
+
+        // Add mappings
+        $this->addMappings($metadata, $this->getVatNUmberSubjectMappings());
+
+        // Cache class
+        $this->vatNumberSubjectClassCache[] = $class;
     }
 
     /**
@@ -325,6 +367,35 @@ class LoadMetadataListener implements EventSubscriber
     }
 
     /**
+     * Returns the vat number subject mappings.
+     *
+     * @return array
+     */
+    private function getVatNUmberSubjectMappings()
+    {
+        return [
+            [
+                'fieldName'  => 'vatNumber',
+                'columnName' => 'vat_number',
+                'type'       => 'string',
+                'length'     => 32,
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'vatDetails',
+                'columnName' => 'vat_details',
+                'type'       => 'json_array',
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'vatValid',
+                'columnName' => 'vat_valid',
+                'type'       => 'boolean',
+            ],
+        ];
+    }
+
+    /**
      * Returns the subject relative mappings.
      *
      * @return array
@@ -332,20 +403,6 @@ class LoadMetadataListener implements EventSubscriber
     private function getSubjectRelativeMappings()
     {
         return [
-            /*[
-                'fieldName'  => 'subjectProvider',
-                'columnName' => 'subject_provider',
-                'type'       => 'string',
-                'length'     => 16,
-                'nullable'   => true,
-            ],
-            [
-                'fieldName'  => 'subjectIdentifier',
-                'columnName' => 'subject_identifier',
-                'type'       => 'string',
-                'length'     => 16,
-                'nullable'   => true,
-            ],*/
             [
                 'fieldName'  => 'subjectData',
                 'columnName' => 'subject_data',

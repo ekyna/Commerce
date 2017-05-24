@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -36,6 +37,11 @@ abstract class AbstractSaleListener
     protected $keyGenerator;
 
     /**
+     * @var PricingUpdaterInterface
+     */
+    protected $pricingUpdater;
+
+    /**
      * @var SaleUpdaterInterface
      */
     protected $saleUpdater;
@@ -49,51 +55,61 @@ abstract class AbstractSaleListener
     /**
      * Sets the persistence helper.
      *
-     * @param PersistenceHelperInterface $persistenceHelper
+     * @param PersistenceHelperInterface $helper
      */
-    public function setPersistenceHelper(PersistenceHelperInterface $persistenceHelper)
+    public function setPersistenceHelper(PersistenceHelperInterface $helper)
     {
-        $this->persistenceHelper = $persistenceHelper;
+        $this->persistenceHelper = $helper;
     }
 
     /**
      * Sets the number generator.
      *
-     * @param NumberGeneratorInterface $numberGenerator
+     * @param NumberGeneratorInterface $generator
      */
-    public function setNumberGenerator(NumberGeneratorInterface $numberGenerator)
+    public function setNumberGenerator(NumberGeneratorInterface $generator)
     {
-        $this->numberGenerator = $numberGenerator;
+        $this->numberGenerator = $generator;
     }
 
     /**
      * Sets the key generator.
      *
-     * @param KeyGeneratorInterface $keyGenerator
+     * @param KeyGeneratorInterface $generator
      */
-    public function setKeyGenerator(KeyGeneratorInterface $keyGenerator)
+    public function setKeyGenerator(KeyGeneratorInterface $generator)
     {
-        $this->keyGenerator = $keyGenerator;
+        $this->keyGenerator = $generator;
+    }
+
+    /**
+     * Sets the pricingUpdater.
+     *
+     * @param PricingUpdaterInterface $updater
+     */
+    public function setPricingUpdater(PricingUpdaterInterface $updater)
+    {
+        $this->pricingUpdater = $updater;
     }
 
     /**
      * Sets the sale updater.
      *
-     * @param SaleUpdaterInterface $saleUpdater
+     * @param SaleUpdaterInterface $updater
      */
-    public function setSaleUpdater(SaleUpdaterInterface $saleUpdater)
+    public function setSaleUpdater(SaleUpdaterInterface $updater)
     {
-        $this->saleUpdater = $saleUpdater;
+        $this->saleUpdater = $updater;
     }
 
     /**
      * Sets the state resolver.
      *
-     * @param StateResolverInterface $stateResolver
+     * @param StateResolverInterface $resolver
      */
-    public function setStateResolver(StateResolverInterface $stateResolver)
+    public function setStateResolver(StateResolverInterface $resolver)
     {
-        $this->stateResolver = $stateResolver;
+        $this->stateResolver = $resolver;
     }
 
     /**
@@ -113,6 +129,9 @@ abstract class AbstractSaleListener
 
         // Handle customer information
         $changed |= $this->handleInformation($sale);
+
+        // Update pricing
+        $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
 
         // Update outstanding
         $changed |= $this->saleUpdater->updateOutstandingAndTerm($sale);
@@ -159,6 +178,9 @@ abstract class AbstractSaleListener
 
         // Handle customer information
         $changed |= $this->handleInformation($sale);
+
+        // Update pricing
+        $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
 
         // If customer has changed
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
@@ -342,8 +364,8 @@ abstract class AbstractSaleListener
 
         $saleCs = $this->persistenceHelper->getChangeSet($sale);
 
-        // Watch for tax exempt, customer group or customer change
-        if (isset($saleCs['taxExempt']) || isset($saleCs['customerGroup']) || isset($saleCs['customer'])) {
+        // Watch for tax exempt, customer or vatValid change
+        if (isset($saleCs['taxExempt']) || isset($saleCs['customer']) || isset($saleCs['vatValid'])) {
             return true;
         }
 
@@ -448,10 +470,6 @@ abstract class AbstractSaleListener
             }
 
             // Identity
-            if (0 == strlen($sale->getCompany())) {
-                $sale->setCompany($customer->getCompany());
-                $changed = true;
-            }
             if (0 == strlen($sale->getGender())) {
                 $sale->setGender($customer->getGender());
                 $changed = true;
@@ -462,6 +480,26 @@ abstract class AbstractSaleListener
             }
             if (0 == strlen($sale->getLastName())) {
                 $sale->setLastName($customer->getLastName());
+                $changed = true;
+            }
+
+            // Company
+            if (0 == strlen($sale->getCompany()) && 0 < strlen($customer->getCompany())) {
+                $sale->setCompany($customer->getCompany());
+                $changed = true;
+            }
+
+            // Vat number
+            if (0 == strlen($sale->getVatNumber()) && 0 < strlen($customer->getVatNumber())) {
+                $sale->setVatNumber($customer->getVatNumber());
+                $changed = true;
+            }
+            if (empty($sale->getVatDetails()) && !empty($customer->getVatDetails())) {
+                $sale->setVatDetails($customer->getVatDetails());
+                $changed = true;
+            }
+            if (!$sale->isVatValid() && $customer->isVatValid()) {
+                $sale->setVatValid(true);
                 $changed = true;
             }
 

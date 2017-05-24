@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model as Model;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectTrait;
+use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -19,6 +20,7 @@ class Customer implements Model\CustomerInterface
     use Common\IdentityTrait,
         Common\NumberSubjectTrait,
         PaymentTermSubjectTrait,
+        VatNumberSubjectTrait,
         TimestampableTrait;
 
     /**
@@ -67,21 +69,6 @@ class Customer implements Model\CustomerInterface
     protected $addresses;
 
     /**
-     * @var string
-     */
-    protected $vatNumber; // TODO
-
-    /**
-     * @var array
-     */
-    protected $vatDetails;
-
-    /**
-     * @var bool
-     */
-    protected $vatValid;
-
-    /**
      * @var float
      */
     protected $creditBalance;
@@ -107,8 +94,6 @@ class Customer implements Model\CustomerInterface
      */
     public function __construct()
     {
-        $this->vatValid = false;
-
         $this->creditBalance = 0;
         $this->outstandingLimit = 0;
         $this->outstandingBalance = 0;
@@ -400,60 +385,6 @@ class Customer implements Model\CustomerInterface
         }
 
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getVatNumber()
-    {
-        return $this->vatNumber;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setVatNumber($vatNumber)
-    {
-        $this->vatNumber = $vatNumber;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getVatDetails()
-    {
-        return $this->vatDetails;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setVatDetails(array $details = null)
-    {
-        $this->vatDetails = $details;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isVatValid()
-    {
-        return $this->vatValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setVatValid($valid)
-    {
-        $this->vatValid = (bool)$valid;
-
-        return $this;
     }
 
     /**

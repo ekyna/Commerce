@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -24,104 +24,95 @@ interface TaxRuleInterface extends ResourceInterface
      * Sets the name.
      *
      * @param string $name
+     *
      * @return $this|TaxRuleInterface
      */
     public function setName($name);
 
     /**
-     * Returns whether the tax rule has customer groups or not.
+     * Returns the customer.
      *
      * @return bool
      */
-    public function hasCustomerGroups();
+    public function isCustomer();
 
     /**
-     * Returns the customerGroups.
+     * Sets the customer.
      *
-     * @return ArrayCollection|CustomerGroupInterface[]
-     */
-    public function getCustomerGroups();
-
-    /**
-     * Returns whether the tax rule has the customer group or not.
+     * @param bool $customer
      *
-     * @param CustomerGroupInterface $customerGroup
-     * @return bool
-     */
-    public function hasCustomerGroup(CustomerGroupInterface $customerGroup);
-
-    /**
-     * Adds the customer group.
-     *
-     * @param CustomerGroupInterface $customerGroup
      * @return $this|TaxRuleInterface
      */
-    public function addCustomerGroup(CustomerGroupInterface $customerGroup);
+    public function setCustomer($customer);
 
     /**
-     * Removes the customer group.
-     *
-     * @param CustomerGroupInterface $customerGroup
-     * @return $this|TaxRuleInterface
-     */
-    public function removeCustomerGroup(CustomerGroupInterface $customerGroup);
-
-    /**
-     * Sets the customerGroups.
-     *
-     * @param ArrayCollection|CustomerGroupInterface[] $customerGroups
-     * @return $this|TaxRuleInterface
-     */
-    public function setCustomerGroups(ArrayCollection $customerGroups);
-
-    /**
-     * Returns whether the tax rule has tax groups.
+     * Returns the business.
      *
      * @return bool
      */
-    public function hasTaxGroups();
+    public function isBusiness();
 
     /**
-     * Returns the taxGroups.
+     * Sets the business.
      *
-     * @return ArrayCollection|TaxGroupInterface[]
+     * @param bool $business
+     *
+     * @return $this|TaxRuleInterface
      */
-    public function getTaxGroups();
+    public function setBusiness($business);
 
     /**
-     * Returns whether the tax rule has the tax group or not.
+     * Returns whether the tax rule has countries.
      *
-     * @param TaxGroupInterface $taxGroup
      * @return bool
      */
-    public function hasTaxGroup(TaxGroupInterface $taxGroup);
+    public function hasCountries();
 
     /**
-     * Adds the tax group.
+     * Returns the countries.
      *
-     * @param TaxGroupInterface $taxGroup
+     * @return ArrayCollection|CountryInterface[]
+     */
+    public function getCountries();
+
+    /**
+     * Returns whether the tax rule has the given country.
+     *
+     * @param CountryInterface $country
+     *
+     * @return bool
+     */
+    public function hasCountry(CountryInterface $country);
+
+    /**
+     * Adds the country.
+     *
+     * @param CountryInterface $country
+     *
      * @return $this|TaxRuleInterface
      */
-    public function addTaxGroup(TaxGroupInterface $taxGroup);
+    public function addCountry(CountryInterface $country);
 
     /**
-     * Removes the tax group.
+     * Removes the country.
      *
-     * @param TaxGroupInterface $taxGroup
+     * @param CountryInterface $country
+     *
      * @return $this|TaxRuleInterface
      */
-    public function removeTaxGroup(TaxGroupInterface $taxGroup);
+    public function removeCountry(CountryInterface $country);
 
     /**
-     * Sets the taxGroups.
+     * Sets the countries.
      *
-     * @param ArrayCollection|TaxGroupInterface[] $taxGroups
+     * @param CountryInterface[] $countries
+     *
      * @return $this|TaxRuleInterface
      */
-    public function setTaxGroups(ArrayCollection $taxGroups);
+    public function setCountries(array $countries);
 
     /**
-     * Returns whether the tax rule has taxes or not.
+     * Returns whether the tax rule has taxes.
      *
      * @return bool
      */
@@ -135,9 +126,10 @@ interface TaxRuleInterface extends ResourceInterface
     public function getTaxes();
 
     /**
-     * Returns whether the tax rule has the tax or not.
+     * Returns whether the tax rule has the given tax.
      *
      * @param TaxInterface $tax
+     *
      * @return bool
      */
     public function hasTax(TaxInterface $tax);
@@ -146,6 +138,7 @@ interface TaxRuleInterface extends ResourceInterface
      * Adds the tax.
      *
      * @param TaxInterface $tax
+     *
      * @return $this|TaxRuleInterface
      */
     public function addTax(TaxInterface $tax);
@@ -154,6 +147,7 @@ interface TaxRuleInterface extends ResourceInterface
      * Removes the tax.
      *
      * @param TaxInterface $tax
+     *
      * @return $this|TaxRuleInterface
      */
     public function removeTax(TaxInterface $tax);
@@ -161,10 +155,27 @@ interface TaxRuleInterface extends ResourceInterface
     /**
      * Sets the taxes.
      *
-     * @param ArrayCollection|TaxInterface[] $taxes
+     * @param TaxInterface[] $taxes
+     *
      * @return $this|TaxRuleInterface
      */
-    public function setTaxes(ArrayCollection $taxes);
+    public function setTaxes(array $taxes);
+
+    /**
+     * Returns the notices.
+     *
+     * @return array
+     */
+    public function getNotices();
+
+    /**
+     * Sets the notices.
+     *
+     * @param array $notices
+     *
+     * @return $this|TaxRuleInterface
+     */
+    public function setNotices(array $notices);
 
     /**
      * Returns the priority.
@@ -177,6 +188,7 @@ interface TaxRuleInterface extends ResourceInterface
      * Sets the priority.
      *
      * @param int $priority
+     *
      * @return $this|TaxRuleInterface
      */
     public function setPriority($priority);
@@ -192,6 +204,7 @@ interface TaxRuleInterface extends ResourceInterface
      * Sets the position.
      *
      * @param int $position
+     *
      * @return $this|TaxRuleInterface
      */
     public function setPosition($position);

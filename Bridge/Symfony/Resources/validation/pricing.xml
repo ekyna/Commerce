@@ -6,9 +6,6 @@
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
     <class name="Ekyna\Component\Commerce\Pricing\Entity\PriceList">
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">name</option>
-        </constraint>
         <property name="name">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -16,12 +13,12 @@
                 <option name="max">64</option>
             </constraint>
         </property>
-    </class>
-
-    <class name="Ekyna\Component\Commerce\Pricing\Entity\Tax">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
         </constraint>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\Tax">
         <property name="name">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -42,15 +39,12 @@
         <!--<property name="state">
             <constraint name="NotNull"/>
         </property>-->
-        <!--TODO<property name="taxRules">
-            <constraint name="Valid"/>
-        </property>-->
-    </class>
-
-    <class name="Ekyna\Component\Commerce\Pricing\Entity\TaxGroup">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
         </constraint>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\TaxGroup">
         <property name="name">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -58,15 +52,12 @@
                 <option name="max">64</option>
             </constraint>
         </property>
-        <!--TODO<property name="taxRules">
-            <constraint name="Valid"/>
-        </property>-->
-    </class>
-
-    <class name="Ekyna\Component\Commerce\Pricing\Entity\TaxRule">
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
         </constraint>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Pricing\Entity\TaxRule">
         <property name="name">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -86,15 +77,22 @@
                 <option name="value">0</option>
             </constraint>
         </property>
-        <!--TODO<property name="customerGroups">
-            <constraint name="Valid"/>
-        </property>-->
-        <!--TODO<property name="taxGroups">
-            <constraint name="Valid"/>
-        </property>-->
-        <!--TODO<property name="taxes">
-            <constraint name="Valid"/>
-        </property>-->
+        <property name="notices">
+            <constraint name="All">
+                <constraint name="NotBlank"/>
+                <constraint name="Type">
+                    <option name="type">string</option>
+                </constraint>
+                <constraint name="Length">
+                    <option name="min">2</option>
+                    <option name="max">256</option>
+                </constraint>
+            </constraint>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\TaxRule"/>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
     </class>
 
 </constraint-mapping>

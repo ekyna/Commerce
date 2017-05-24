@@ -20,7 +20,7 @@
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="country" fetch="EAGER">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="country">
             <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 

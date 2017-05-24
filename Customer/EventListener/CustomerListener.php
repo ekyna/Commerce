@@ -6,7 +6,7 @@ use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Pricing\Api\PricingApiInterface;
+use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -28,9 +28,9 @@ class CustomerListener
     protected $numberGenerator;
 
     /**
-     * @var PricingApiInterface
+     * @var PricingUpdaterInterface
      */
-    protected $pricingApi;
+    protected $pricingUpdater;
 
 
     /**
@@ -38,16 +38,16 @@ class CustomerListener
      *
      * @param PersistenceHelperInterface $persistenceHelper
      * @param NumberGeneratorInterface   $numberGenerator
-     * @param PricingApiInterface        $pricingApi
+     * @param PricingUpdaterInterface    $pricingUpdater
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         NumberGeneratorInterface $numberGenerator,
-        PricingApiInterface $pricingApi
+        PricingUpdaterInterface $pricingUpdater
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->numberGenerator = $numberGenerator;
-        $this->pricingApi = $pricingApi;
+        $this->pricingUpdater = $pricingUpdater;
     }
 
     /**
@@ -65,7 +65,7 @@ class CustomerListener
 
         $changed |= $this->updateCompanyNameFromParent($customer);
 
-        $changed |= $this->validateVatNumber($customer);
+        $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
 
         // TODO
         // - Must have an invoice address
@@ -113,7 +113,7 @@ class CustomerListener
             }
         }
 
-        $changed |= $this->validateVatNumber($customer);
+        $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
 
         /**
          * TODO Resource behaviors.
@@ -127,58 +127,16 @@ class CustomerListener
     }
 
     /**
-     * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onDelete(ResourceEventInterface $event)
-    {
-        //$customer = $this->getCustomerFromEvent($event);
-    }
-
-    /**
      * Generates the number.
      *
      * @param CustomerInterface $customer
      *
      * @return bool Whether the customer number has been generated or not.
      */
-    protected function generateNumber(CustomerInterface $customer)
+    private function generateNumber(CustomerInterface $customer)
     {
         if (0 == strlen($customer->getNumber())) {
             $this->numberGenerator->generate($customer);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Validates the vat number.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return bool
-     */
-    protected function validateVatNumber(CustomerInterface $customer)
-    {
-        $valid = $customer->isVatValid();
-
-        if (0 < strlen($number = $customer->getVatNumber()) && !$valid) {
-            if ($this->pricingApi) {
-                if (null !== $result = $this->pricingApi->validateVatNumber($number)) {
-                    if ($valid = $result->isValid()) {
-                        $customer->setVatDetails($result->getDetails());
-                    }
-                }
-            }
-        } else {
-            $valid = false;
-        }
-
-        if ($valid != $customer->isVatValid()) {
-            $customer->setVatValid($valid);
 
             return true;
         }

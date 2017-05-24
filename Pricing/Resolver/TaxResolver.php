@@ -2,17 +2,13 @@
 
 namespace Ekyna\Component\Commerce\Pricing\Resolver;
 
-use Doctrine\Common\Collections\Criteria;
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
-use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
+use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 
 /**
@@ -22,11 +18,6 @@ use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
  */
 class TaxResolver implements TaxResolverInterface
 {
-    /**
-     * @var CustomerGroupRepositoryInterface
-     */
-    protected $customerGroupRepository;
-
     /**
      * @var CountryRepositoryInterface
      */
@@ -38,230 +29,91 @@ class TaxResolver implements TaxResolverInterface
     protected $taxRuleRepository;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $mode;
+    protected $cache;
 
-    /**
-     * @var AddressInterface
-     */
-    protected $originAddress;
-
-
-    /**
-     * @inheritdoc
-     */
-    public static function getAvailableModes()
-    {
-        return [static::BY_INVOICE, static::BY_DELIVERY, static::BY_ORIGIN];
-    }
 
     /**
      * Constructor.
      *
-     * @param CustomerGroupRepositoryInterface $customerGroupRepository
-     * @param CountryRepositoryInterface       $countryRepository
-     * @param TaxRuleRepositoryInterface       $taxRuleRepository
-     * @param string                           $mode
+     * @param CountryRepositoryInterface $countryRepository
+     * @param TaxRuleRepositoryInterface $taxRuleRepository
      */
     public function __construct(
-        CustomerGroupRepositoryInterface $customerGroupRepository,
         CountryRepositoryInterface $countryRepository,
-        TaxRuleRepositoryInterface $taxRuleRepository,
-        $mode = TaxResolverInterface::BY_DELIVERY
+        TaxRuleRepositoryInterface $taxRuleRepository
     ) {
-        $this->customerGroupRepository = $customerGroupRepository;
         $this->countryRepository = $countryRepository;
         $this->taxRuleRepository = $taxRuleRepository;
 
-        $this->setMode($mode);
+        $this->cache = new ResolvedTaxesCache();
     }
 
     /**
      * @inheritdoc
      */
-    public function setMode($mode)
+    public function resolveTaxes(TaxableInterface $taxable, $target = null)
     {
-        if (!in_array($mode, static::getAvailableModes(), true)) {
-            throw new InvalidArgumentException("Unexpected mode '{$mode}'.");
-        }
-
-        $this->mode = $mode;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOriginAddress(AddressInterface $address)
-    {
-        $this->originAddress = $address;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resolveTaxesBySale(TaxableInterface $taxable, SaleInterface $sale)
-    {
-        // Abort if taxable has no tax group
+        // Abort if taxable does not have tax group
         if (null === $taxGroup = $taxable->getTaxGroup()) {
             return [];
         }
 
-        // Abort if sale is tax exempt
-        if ($sale->isTaxExempt()) {
+        // Abort if tax group does not have taxes
+        if (!$taxGroup->hasTaxes()) {
             return [];
         }
 
-        // Resolve customer group (sale customer group has precedence)
-        // TODO Remove this block as sale customer group is always set.
-        $customer = $sale->getCustomer();
-        if ((null === $customerGroup = $sale->getCustomerGroup()) && null !== $customer) {
-            $customerGroup = $customer->getCustomerGroup();
+        $country = $this->resolveTargetCountry($target);
+        $business = $target instanceof VatNumberSubjectInterface
+            ? $target->isBusiness()
+            : false;
+
+        // Use cached resolved taxes if any
+        if (null !== $taxes = $this->cache->get($taxGroup, $country, $business)) {
+            return $taxes;
         }
 
-        // Resolve the taxation target country
-        $country = $address = null;
-        if (null === $address && $this->mode != static::BY_ORIGIN) {
-            // Resolve sale's taxation target address
-            if ($this->mode === static::BY_DELIVERY) {
-                $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
-            } elseif ($this->mode === static::BY_INVOICE) {
-                $address = $sale->getInvoiceAddress();
-            }
-            // Customer fallback address
-            if (null === $address && null !== $customer) {
-                $address = $this->getCustomerFallbackAddress($customer);
-            }
-        }
-        // Get the country from the resolved address
-        if (null !== $address) {
-            $country = $address->getCountry();
-        }
-
-        // Resolve taxes
-        return $this->getTaxesByTaxGroupAndCustomerGroupAndCountry(
-            $taxGroup,
-            $customerGroup,
-            $country
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resolveTaxesByCustomerAndAddress(
-        TaxableInterface $taxable,
-        CustomerInterface $customer,
-        AddressInterface $address = null
-    ) {
-        // Abort if taxable has no tax group
-        if (null === $taxGroup = $taxable->getTaxGroup()) {
+        // Abort if no matching tax rule
+        if (null === $taxRule = $this->resolveTaxRule($country, $business)) {
             return [];
         }
 
-        // Resolve the taxation target country
-        $country = null;
-        // If address is null, get the customer fallback address
-        if (null === $address && $this->mode != static::BY_ORIGIN) {
-            $address = $this->getCustomerFallbackAddress($customer);
-        }
-        if (null !== $address) {
-            $country = $address->getCountry();
-        }
-
-        // Resolve taxes
-        return $this->getTaxesByTaxGroupAndCustomerGroupAndCountry(
-            $taxGroup,
-            $customer->getCustomerGroup(),
-            $country
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resolveDefaultTaxes(TaxableInterface $taxable)
-    {
-        if (null === $taxGroup = $taxable->getTaxGroup()) {
+        // Abort if tax rule does not have taxes
+        if (!$taxRule->hasTaxes()) {
             return [];
         }
 
-        return $this->getTaxesByTaxGroupAndCustomerGroupAndCountry($taxGroup);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxesByTaxGroupAndCustomerGroupAndCountry(
-        TaxGroupInterface $taxGroup,
-        CustomerGroupInterface $customerGroup = null,
-        CountryInterface $country = null
-    ) {
-        // Resolves taxation target country
-        if ($this->mode === static::BY_ORIGIN) {
-            if (null === $this->originAddress) {
-                throw new \RuntimeException("Mode is set to 'origin' but origin address is not set.");
-            }
-            $country = $this->originAddress->getCountry();
-        } elseif (null === $country) {
-            $country = $this->getFallbackCountry();
-        }
-
-        // Fallback customer group
-        if (null === $customerGroup) {
-            $customerGroup = $this->getFallbackCustomerGroup();
-        }
-
-        // Find tax rules
-        $taxes = [];
-        $rules = $this
-            ->taxRuleRepository
-            ->findByTaxGroupAndCustomerGroupAndCountry($taxGroup, $customerGroup, $country);
-
-        // Extract the taxes that matches the country from the tax rules
-        foreach ($rules as $rule) {
-            foreach ($rule->getTaxes() as $tax) {
-                if ($tax->getCountry() === $country && !in_array($tax, $taxes, true)) {
-                    array_push($taxes, $tax);
-                }
+        // Resolves the taxes
+        $applicableTaxes = $taxRule->getTaxes()->toArray();
+        $resolvedTaxes = [];
+        foreach ($taxGroup->getTaxes() as $tax) {
+            if (in_array($tax, $applicableTaxes, true)) {
+                $resolvedTaxes[] = $tax;
             }
         }
 
-        return $taxes;
+        // Caches the resolved taxes
+        $this->cache->set($taxGroup, $country, $business, $resolvedTaxes);
+
+        return $resolvedTaxes;
     }
 
     /**
-     * Returns the customer's fallback address.
+     * Resolves the sale's tax rule.
      *
-     * @param CustomerInterface $customer
+     * @param SaleInterface $sale
      *
-     * @return AddressInterface|null
+     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
      */
-    private function getCustomerFallbackAddress(CustomerInterface $customer)
+    public function resolveSaleTaxRule(SaleInterface $sale)
     {
-        $criteria = new Criteria(null, [], 0, 1);
-        if ($this->mode === static::BY_INVOICE) {
-            $criteria->where(Criteria::expr()->eq('invoiceDefault', true));
-        } elseif ($this->mode === static::BY_DELIVERY) {
-            $criteria->where(Criteria::expr()->eq('deliveryDefault', true));
+        if (null === $country = $this->resolveSaleTargetCountry($sale)) {
+            return null;
         }
 
-        $results = $customer->getAddresses()->matching($criteria);
-        if (1 == $results->count()) {
-            return $results->first();
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the fallback customer group.
-     *
-     * @return \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface
-     */
-    private function getFallbackCustomerGroup()
-    {
-        return $this->customerGroupRepository->findDefault();
+        return $this->resolveTaxRule($country, $sale->isBusiness());
     }
 
     /**
@@ -269,8 +121,103 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface
      */
-    private function getFallbackCountry()
+    protected function getFallbackCountry()
     {
         return $this->countryRepository->findDefault();
+    }
+
+    /**
+     * Resolves the target country.
+     *
+     * @param mixed $target
+     *
+     * @return CountryInterface
+     */
+    private function resolveTargetCountry($target)
+    {
+        if ($target instanceof CountryInterface) {
+            return $target;
+        }
+
+        if ($target instanceof SaleInterface) {
+            $country = $this->resolveSaleTargetCountry($target);
+        } elseif ($target instanceof CustomerInterface) {
+            $country = $this->resolveCustomerTargetCountry($target);
+        } elseif(is_string($target) && 2 == strlen($target)) {
+            $country = $this->getCountryByCode($target);
+        } else {
+            throw new InvalidArgumentException("Unexpected taxation target.");
+        }
+
+        return $country ?: $this->getFallbackCountry();
+    }
+
+    /**
+     * Resolves the tax rule for the given sale.
+     *
+     * @param CountryInterface $country
+     * @param bool             $business
+     *
+     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
+     */
+    private function resolveTaxRule(CountryInterface $country, $business = false)
+    {
+        if ($business) {
+            return $this->taxRuleRepository->findOneByCountryForBusiness($country);
+        }
+
+        return $this->taxRuleRepository->findOneByCountryForCustomer($country);
+    }
+
+    /**
+     * Resolves the sales's taxation target country.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return CountryInterface|null
+     */
+    private function resolveSaleTargetCountry(SaleInterface $sale)
+    {
+        $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
+
+        // Get the country from the delivery address
+        if (null !== $address) {
+            return $address->getCountry();
+        }
+
+        // If none, resolves the customer's taxation target address
+        if (null !== $customer = $sale->getCustomer()) {
+            return $this->resolveCustomerTargetCountry($customer);
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves the customer's taxation target country.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return CountryInterface|null
+     */
+    private function resolveCustomerTargetCountry(CustomerInterface $customer)
+    {
+        if (null !== $address = $customer->getDefaultDeliveryAddress()) {
+            return $address->getCountry();
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the country by its code.
+     *
+     * @param string $code
+     *
+     * @return CountryInterface|null
+     */
+    private function getCountryByCode($code)
+    {
+        return $this->countryRepository->findOneByCode($code);
     }
 }

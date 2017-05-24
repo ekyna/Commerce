@@ -21,7 +21,6 @@ class CustomerEventSubscriber extends CustomerListener implements EventSubscribe
         return [
             CustomerEvents::INSERT  => ['onInsert', 0],
             CustomerEvents::UPDATE  => ['onUpdate', 0],
-            CustomerEvents::DELETE  => ['onDelete', 0],
         ];
     }
 }

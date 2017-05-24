@@ -3,8 +3,7 @@
 namespace Ekyna\Component\Commerce\Pricing\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 
@@ -26,19 +25,29 @@ class TaxRule implements TaxRuleInterface
     protected $name;
 
     /**
-     * @var ArrayCollection|CustomerGroupInterface[]
+     * @var bool
      */
-    protected $customerGroups;
+    protected $customer;
 
     /**
-     * @var ArrayCollection|TaxGroupInterface[]
+     * @var bool
      */
-    protected $taxGroups;
+    protected $business;
+
+    /**
+     * @var ArrayCollection|CountryInterface[]
+     */
+    protected $countries;
 
     /**
      * @var ArrayCollection|TaxInterface[]
      */
     protected $taxes;
+
+    /**
+     * @var array
+     */
+    protected $notices;
 
     /**
      * @var int
@@ -56,9 +65,12 @@ class TaxRule implements TaxRuleInterface
      */
     public function __construct()
     {
-        $this->customerGroups = new ArrayCollection();
-        $this->taxGroups = new ArrayCollection();
+        $this->customer = false;
+        $this->business = false;
+
+        $this->countries = new ArrayCollection();
         $this->taxes = new ArrayCollection();
+        $this->notices = [];
 
         $this->priority = 0;
         $this->position = 0;
@@ -101,36 +113,84 @@ class TaxRule implements TaxRuleInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the customer.
+     *
+     * @return bool
      */
-    public function hasCustomerGroups()
+    public function isCustomer()
     {
-        return 0 < $this->customerGroups->count();
+        return $this->customer;
+    }
+
+    /**
+     * Sets the customer.
+     *
+     * @param bool $customer
+     *
+     * @return TaxRule
+     */
+    public function setCustomer($customer)
+    {
+        $this->customer = (bool)$customer;
+
+        return $this;
+    }
+
+    /**
+     * Returns the business.
+     *
+     * @return bool
+     */
+    public function isBusiness()
+    {
+        return $this->business;
+    }
+
+    /**
+     * Sets the business.
+     *
+     * @param bool $business
+     *
+     * @return TaxRule
+     */
+    public function setBusiness($business)
+    {
+        $this->business = (bool)$business;
+
+        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function getCustomerGroups()
+    public function hasCountries()
     {
-        return $this->customerGroups;
+        return 0 < $this->countries->count();
     }
 
     /**
      * @inheritdoc
      */
-    public function hasCustomerGroup(CustomerGroupInterface $customerGroup)
+    public function getCountries()
     {
-        return $this->customerGroups->contains($customerGroup);
+        return $this->countries;
     }
 
     /**
      * @inheritdoc
      */
-    public function addCustomerGroup(CustomerGroupInterface $customerGroup)
+    public function hasCountry(CountryInterface $country)
     {
-        if (!$this->hasCustomerGroup($customerGroup)) {
-            $this->customerGroups->add($customerGroup);
+        return $this->countries->contains($country);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addCountry(CountryInterface $country)
+    {
+        if (!$this->hasCountry($country)) {
+            $this->countries->add($country);
         }
 
         return $this;
@@ -139,10 +199,10 @@ class TaxRule implements TaxRuleInterface
     /**
      * @inheritdoc
      */
-    public function removeCustomerGroup(CustomerGroupInterface $customerGroup)
+    public function removeCountry(CountryInterface $country)
     {
-        if ($this->hasCustomerGroup($customerGroup)) {
-            $this->customerGroups->removeElement($customerGroup);
+        if ($this->hasCountry($country)) {
+            $this->countries->removeElement($country);
         }
 
         return $this;
@@ -151,80 +211,14 @@ class TaxRule implements TaxRuleInterface
     /**
      * @inheritdoc
      */
-    public function setCustomerGroups(ArrayCollection $customerGroups)
+    public function setCountries(array $countries)
     {
-        foreach ($this->customerGroups as $group) {
-            $this->removeCustomerGroup($group);
+        foreach ($this->countries as $country) {
+            $this->removeCountry($country);
         }
 
-        foreach ($customerGroups as $group) {
-            $this->addCustomerGroup($group);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasTaxGroups()
-    {
-        return 0 < $this->taxGroups->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxGroups()
-    {
-        return $this->taxGroups;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasTaxGroup(TaxGroupInterface $taxGroup)
-    {
-        return $this->taxGroups->contains($taxGroup);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function addTaxGroup(TaxGroupInterface $taxGroup)
-    {
-        if (!$this->hasTaxGroup($taxGroup)) {
-            $taxGroup->addTaxRule($this);
-            $this->taxGroups->add($taxGroup);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeTaxGroup(TaxGroupInterface $taxGroup)
-    {
-        if ($this->hasTaxGroup($taxGroup)) {
-            $taxGroup->removeTaxRule($this);
-            $this->taxGroups->removeElement($taxGroup);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxGroups(ArrayCollection $taxGroups)
-    {
-        foreach ($this->taxGroups as $group) {
-            $this->removeTaxGroup($group);
-        }
-
-        foreach ($taxGroups as $group) {
-            $this->addTaxGroup($group);
+        foreach ($countries as $country) {
+            $this->addCountry($country);
         }
 
         return $this;
@@ -260,7 +254,6 @@ class TaxRule implements TaxRuleInterface
     public function addTax(TaxInterface $tax)
     {
         if (!$this->hasTax($tax)) {
-            $tax->addTaxRule($this);
             $this->taxes->add($tax);
         }
 
@@ -273,7 +266,6 @@ class TaxRule implements TaxRuleInterface
     public function removeTax(TaxInterface $tax)
     {
         if ($this->hasTax($tax)) {
-            $tax->removeTaxRule($this);
             $this->taxes->removeElement($tax);
         }
 
@@ -283,7 +275,7 @@ class TaxRule implements TaxRuleInterface
     /**
      * @inheritdoc
      */
-    public function setTaxes(ArrayCollection $taxes)
+    public function setTaxes(array $taxes)
     {
         foreach ($this->taxes as $tax) {
             $this->removeTax($tax);
@@ -292,6 +284,24 @@ class TaxRule implements TaxRuleInterface
         foreach ($taxes as $tax) {
             $this->addTax($tax);
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNotices()
+    {
+        return $this->notices;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNotices(array $notices)
+    {
+        $this->notices = $notices;
 
         return $this;
     }
