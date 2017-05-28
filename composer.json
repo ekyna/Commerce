@@ -29,11 +29,7 @@
         "behat/behat": "~3.0",
         "doctrine/orm": "~2.5",
         "doctrine/data-fixtures": "~1.0",
-        "symfony/property-access": "~3.0"
-    },
-    "suggest": {
-        "symfony/form": "~2.8|~3.0",
-        "symfony/validator": "~2.8|~3.0",
+        "symfony/property-access": "~3.0",
         "misd/phone-number-bundle": "^1.2"
     },
     "autoload": {
