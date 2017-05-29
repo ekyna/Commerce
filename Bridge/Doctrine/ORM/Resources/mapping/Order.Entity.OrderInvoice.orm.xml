@@ -2,6 +2,7 @@
 <doctrine-mapping
         xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
@@ -9,16 +10,23 @@
             table="commerce_order_invoice">
 
         <indexes>
-            <index columns="number" name="idx_commerce_order_invoice_number" />
+            <index columns="number" name="idx_commerce_order_invoice_number"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_commerce_order_invoice_number" />
+            <unique-constraint columns="number" name="unique_commerce_order_invoice_number"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
+
+        <field name="createdAt" type="datetime" column="created_at">
+            <gedmo:timestampable on="create"/>
+        </field>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoiceLine"
                      field="lines" mapped-by="invoice" orphan-removal="true">

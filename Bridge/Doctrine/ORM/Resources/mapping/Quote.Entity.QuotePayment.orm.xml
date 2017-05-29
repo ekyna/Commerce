@@ -9,11 +9,11 @@
             table="commerce_quote_payment">
 
         <indexes>
-            <index columns="number" name="idx_commerce_quote_payment_number" />
+            <index columns="number" name="idx_commerce_quote_payment_number"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_commerce_quote_payment_number" />
+            <unique-constraint columns="number" name="unique_commerce_quote_payment_number"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

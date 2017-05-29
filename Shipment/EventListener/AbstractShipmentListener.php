@@ -78,14 +78,7 @@ abstract class AbstractShipmentListener
 
         $changed |= $this->handleCompletedState($shipment);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $shipment
-            ->setCreatedAt(new \DateTime())
-            ->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($shipment);
         }
 
@@ -111,12 +104,7 @@ abstract class AbstractShipmentListener
             $changed = $this->handleCompletedState($shipment) || $changed;
         }
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $shipment->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($shipment);
 
             $this->scheduleSaleContentChangeEvent($shipment->getSale());

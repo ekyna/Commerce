@@ -2,13 +2,14 @@
 <doctrine-mapping
         xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">
 
-        <field name="key" column="secret" type="string" length="32" />
-        <field name="number" column="number" type="string" length="16" />
+        <field name="key" column="secret" type="string" length="32"/>
+        <field name="number" column="number" type="string" length="16"/>
 
         <field name="company" column="company" type="string" length="64" nullable="true"/>
         <field name="gender" column="gender" type="string" length="8" nullable="true"/>
@@ -16,20 +17,20 @@
         <field name="lastName" column="last_name" type="string" length="64" nullable="true"/>
         <field name="email" column="email" type="string" length="255" nullable="true"/>
 
-        <field name="sameAddress" column="same_address" type="boolean" />
+        <field name="sameAddress" column="same_address" type="boolean"/>
 
         <field name="weightTotal" column="weight_total" type="decimal" precision="10" scale="3"/>
         <field name="shipmentAmount" column="shipment_amount" type="decimal" precision="10" scale="5" nullable="true"/>
 
-        <field name="taxExempt" column="tax_exempt" type="boolean" />
+        <field name="taxExempt" column="tax_exempt" type="boolean"/>
 
         <field name="netTotal" column="net_total" type="decimal" precision="12" scale="5"/>
         <field name="adjustmentTotal" column="adjustment_total" type="decimal" precision="10" scale="5"/>
         <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
         <field name="paidTotal" column="paid_total" type="decimal" precision="12" scale="5"/>
 
-        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="5" />
-        <field name="outstandingDate" column="outstanding_date" type="datetime" nullable="true" />
+        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="5"/>
+        <field name="outstandingDate" column="outstanding_date" type="datetime" nullable="true"/>
 
         <field name="state" column="state" type="string" length="16"/>
         <field name="paymentState" column="payment_state" type="string" length="16"/>
@@ -39,23 +40,29 @@
         <field name="description" column="description" type="text" nullable="true"/>
         <field name="comment" column="comment" type="text" nullable="true"/>
 
-        <field name="createdAt" column="created_at" type="datetime" />
-        <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
+        <field name="createdAt" type="datetime" column="created_at">
+            <gedmo:timestampable on="create"/>
+        </field>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="customer">
-            <join-column name="customer_id" referenced-column-name="id" on-delete="SET NULL" nullable="true" />
+            <join-column name="customer_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Entity\CustomerGroup" field="customerGroup">
             <join-column name="customer_group_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface" field="preferredShipmentMethod">
-            <join-column name="preferred_shipment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
+        <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface"
+                     field="preferredShipmentMethod">
+            <join-column name="preferred_shipment_method_id" referenced-column-name="id" on-delete="RESTRICT"
+                         nullable="true"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
-            <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
+            <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
     </mapped-superclass>

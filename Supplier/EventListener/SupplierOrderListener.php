@@ -67,14 +67,7 @@ class SupplierOrderListener extends AbstractListener
 
         $changed |= $this->updateTotal($order);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $order
-            ->setCreatedAt(new \DateTime())
-            ->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
         }
     }
@@ -97,12 +90,7 @@ class SupplierOrderListener extends AbstractListener
         // Update state
         $changed |= $this->updateTotal($order);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $order->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
         }
 

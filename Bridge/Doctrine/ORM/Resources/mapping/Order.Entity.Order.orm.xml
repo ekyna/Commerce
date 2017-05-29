@@ -10,13 +10,13 @@
             table="commerce_order">
 
         <indexes>
-            <index columns="number" name="idx_commerce_order_number" />
-            <index columns="secret" name="idx_commerce_order_secret" />
+            <index columns="number" name="idx_commerce_order_number"/>
+            <index columns="secret" name="idx_commerce_order_secret"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_commerce_order_number" />
-            <unique-constraint columns="secret" name="unique_commerce_order_secret" />
+            <unique-constraint columns="number" name="unique_commerce_order_number"/>
+            <unique-constraint columns="secret" name="unique_commerce_order_secret"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
@@ -24,14 +24,14 @@
         </id>
 
         <field name="shipmentState" column="shipment_state" type="string" length="16"/>
-        <field name="completedAt" column="completed_at" type="datetime" nullable="true" />
+        <field name="completedAt" column="completed_at" type="datetime" nullable="true"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceOrder" orphan-removal="true">
             <cascade>
                 <cascade-all/>
             </cascade>
-            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
+            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </one-to-one>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
@@ -39,7 +39,7 @@
             <cascade>
                 <cascade-all/>
             </cascade>
-            <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
+            <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </one-to-one>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderAttachment"

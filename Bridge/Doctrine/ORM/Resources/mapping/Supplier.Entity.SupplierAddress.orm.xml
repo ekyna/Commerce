@@ -12,7 +12,8 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier" mapped-by="address"/>
+        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier"
+                    mapped-by="address"/>
 
     </entity>
 

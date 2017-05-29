@@ -72,18 +72,6 @@ class CustomerListener
         // - Prevent vat valid from being 'true' if vat number if empty
         // - If vat number is not empty, validate it with soap API
 
-        /**
-         * TODO Resource behaviors.
-         */
-        if (null === $customer->getCreatedAt()) {
-            $customer->setCreatedAt(new \DateTime());
-            $changed = true;
-        }
-        if (null === $customer->getUpdatedAt()) {
-            $customer->setUpdatedAt(new \DateTime());
-            $changed = true;
-        }
-
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer);
         }
@@ -114,12 +102,6 @@ class CustomerListener
         }
 
         $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
-
-        /**
-         * TODO Resource behaviors.
-         */
-        $customer->setUpdatedAt(new \DateTime());
-        $changed = true;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer);

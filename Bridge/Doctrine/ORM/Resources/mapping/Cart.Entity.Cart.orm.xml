@@ -10,27 +10,27 @@
             table="commerce_cart">
 
         <indexes>
-            <index columns="number" name="idx_commerce_cart_number" />
-            <index columns="secret" name="idx_commerce_cart_secret" />
+            <index columns="number" name="idx_commerce_cart_number"/>
+            <index columns="secret" name="idx_commerce_cart_secret"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="number" name="unique_commerce_cart_number" />
-            <unique-constraint columns="secret" name="unique_commerce_cart_secret" />
+            <unique-constraint columns="number" name="unique_commerce_cart_number"/>
+            <unique-constraint columns="secret" name="unique_commerce_cart_secret"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="expiresAt" column="expires_at" type="datetime" />
+        <field name="expiresAt" column="expires_at" type="datetime"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceCart" orphan-removal="true">
             <cascade>
                 <cascade-all/>
             </cascade>
-            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
+            <join-column name="invoice_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </one-to-one>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartAddressInterface"
@@ -38,7 +38,7 @@
             <cascade>
                 <cascade-all/>
             </cascade>
-            <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
+            <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </one-to-one>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartAttachment"

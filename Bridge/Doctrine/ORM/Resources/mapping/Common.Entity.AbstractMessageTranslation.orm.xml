@@ -7,7 +7,7 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractMessageTranslation">
 
-        <field name="content" column="content" type="text" />
+        <field name="content" column="content" type="text"/>
 
     </mapped-superclass>
 

@@ -7,8 +7,8 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractMethodTranslation">
 
-        <field name="title" column="title" type="string" length="255" />
-        <field name="description" column="description" type="text" />
+        <field name="title" column="title" type="string" length="255"/>
+        <field name="description" column="description" type="text"/>
 
     </mapped-superclass>
 

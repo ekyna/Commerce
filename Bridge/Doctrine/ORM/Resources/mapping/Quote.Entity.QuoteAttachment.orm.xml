@@ -10,7 +10,7 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface"
                      field="quote" inversed-by="attachments">
-            <join-column name="quote_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
+            <join-column name="quote_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 
     </entity>

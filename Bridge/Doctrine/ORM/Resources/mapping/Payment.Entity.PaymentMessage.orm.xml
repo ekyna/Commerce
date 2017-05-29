@@ -14,7 +14,7 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface"
                      field="method" inversed-by="messages">
-            <join-column name="method_id" referenced-column-name="id" nullable="false" />
+            <join-column name="method_id" referenced-column-name="id" nullable="false"/>
         </many-to-one>
 
     </entity>

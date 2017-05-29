@@ -21,16 +21,16 @@
         </id>
 
         <field name="name" column="name" type="string" length="64"/>
-        <field name="default" column="is_default" type="boolean" />
+        <field name="default" column="is_default" type="boolean"/>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\Tax"
                       field="taxes">
             <join-table name="commerce_tax_group_tax">
                 <join-columns>
-                    <join-column name="tax_group_id" referenced-column-name="id" on-delete="CASCADE" />
+                    <join-column name="tax_group_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>
                 <inverse-join-columns>
-                    <join-column name="tax_id" referenced-column-name="id" on-delete="RESTRICT" />
+                    <join-column name="tax_id" referenced-column-name="id" on-delete="RESTRICT"/>
                 </inverse-join-columns>
             </join-table>
         </many-to-many>

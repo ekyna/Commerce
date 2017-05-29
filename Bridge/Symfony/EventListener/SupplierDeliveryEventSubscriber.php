@@ -19,8 +19,6 @@ class SupplierDeliveryEventSubscriber extends SupplierDeliveryListener implement
     public static function getSubscribedEvents()
     {
         return [
-            SupplierDeliveryEvents::INSERT     => ['onInsert', 0],
-            SupplierDeliveryEvents::UPDATE     => ['onUpdate', 0],
             SupplierDeliveryEvents::DELETE     => ['onDelete', 0],
             SupplierDeliveryEvents::PRE_DELETE => ['onPreDelete', 0],
         ];

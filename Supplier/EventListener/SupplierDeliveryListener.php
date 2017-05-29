@@ -14,46 +14,6 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class SupplierDeliveryListener extends AbstractListener
 {
     /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInsert(ResourceEventInterface $event)
-    {
-        $delivery = $this->getSupplierDeliveryFromEvent($event);
-
-        /**
-         * TODO Resource behaviors.
-         */
-        $delivery
-            ->setCreatedAt(new \DateTime())
-            ->setUpdatedAt(new \DateTime());
-
-        if (true) {
-            $this->persistenceHelper->persistAndRecompute($delivery);
-        }
-    }
-
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onUpdate(ResourceEventInterface $event)
-    {
-        $delivery = $this->getSupplierDeliveryFromEvent($event);
-
-        /**
-         * TODO Resource behaviors.
-         */
-        $delivery->setUpdatedAt(new \DateTime());
-
-        if (true) {
-            $this->persistenceHelper->persistAndRecompute($delivery);
-        }
-    }
-
-    /**
      * Delete event handler.
      *
      * @param ResourceEventInterface $event

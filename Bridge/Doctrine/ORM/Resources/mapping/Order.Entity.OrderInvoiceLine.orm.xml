@@ -9,11 +9,11 @@
             table="commerce_order_invoice_line">
 
         <indexes>
-            <index columns="invoice_id,order_item_id" name="idx_commerce_order_invoice_order_item_id" />
+            <index columns="invoice_id,order_item_id" name="idx_commerce_order_invoice_order_item_id"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="invoice_id,order_item_id" name="unique_commerce_order_invoice_order_item_id" />
+            <unique-constraint columns="invoice_id,order_item_id" name="unique_commerce_order_invoice_order_item_id"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

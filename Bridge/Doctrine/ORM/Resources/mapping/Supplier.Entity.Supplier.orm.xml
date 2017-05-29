@@ -10,11 +10,11 @@
             table="commerce_supplier">
 
         <indexes>
-            <index columns="name" name="idx_commerce_supplier_name" />
+            <index columns="name" name="idx_commerce_supplier_name"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="name" name="unique_commerce_supplier_name" />
+            <unique-constraint columns="name" name="unique_commerce_supplier_name"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
@@ -27,16 +27,17 @@
         <field name="lastName" column="last_name" type="string" length="64" nullable="true"/>
         <field name="email" column="email" type="string" length="255" nullable="true"/>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress" field="address" inversed-by="supplier">
+        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress" field="address"
+                    inversed-by="supplier">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
             </cascade>
-            <join-column name="address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true" />
+            <join-column name="address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </one-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
-            <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false" />
+            <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
     </mapped-superclass>

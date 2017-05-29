@@ -2,6 +2,7 @@
 <doctrine-mapping
         xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
@@ -9,20 +10,25 @@
             table="commerce_cart_adjustment">
 
         <indexes>
-            <index columns="position" name="idx_commerce_cart_adjustment_position" />
+            <index columns="position" name="idx_commerce_cart_adjustment_position"/>
         </indexes>
 
-        <!-- TODO <unique-constraints>
+        <unique-constraints>
             <unique-constraint columns="cart_id,position" name="unique_cart_adjustment_position"/>
-        </unique-constraints>-->
+        </unique-constraints>
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="position" column="position" type="smallint">
+            <gedmo:sortable-position/>
+        </field>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartInterface"
                      field="cart" inversed-by="adjustments">
-            <join-column name="cart_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
+            <join-column name="cart_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
+            <gedmo:sortable-group/>
         </many-to-one>
 
     </entity>

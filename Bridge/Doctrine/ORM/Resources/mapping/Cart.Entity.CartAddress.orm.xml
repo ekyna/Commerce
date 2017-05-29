@@ -14,7 +14,7 @@
         </id>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartInterface"
-                    field="invoiceCart" mapped-by="invoiceAddress" />
+                    field="invoiceCart" mapped-by="invoiceAddress"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Cart\Model\CartInterface"
                     field="deliveryCart" mapped-by="deliveryAddress"/>

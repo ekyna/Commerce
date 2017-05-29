@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
+use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
  * Class TaxRule
@@ -14,6 +15,8 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
  */
 class TaxRule implements TaxRuleInterface
 {
+    use SortableTrait;
+
     /**
      * @var int
      */
@@ -54,11 +57,6 @@ class TaxRule implements TaxRuleInterface
      */
     protected $priority;
 
-    /**
-     * @var int
-     */
-    protected $position;
-
 
     /**
      * Constructor.
@@ -73,7 +71,6 @@ class TaxRule implements TaxRuleInterface
         $this->notices = [];
 
         $this->priority = 0;
-        $this->position = 0;
     }
 
     /**
@@ -320,24 +317,6 @@ class TaxRule implements TaxRuleInterface
     public function setPriority($priority)
     {
         $this->priority = $priority;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPosition()
-    {
-        return $this->position;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPosition($position)
-    {
-        $this->position = $position;
 
         return $this;
     }

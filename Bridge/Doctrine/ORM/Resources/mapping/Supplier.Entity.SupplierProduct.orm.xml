@@ -10,11 +10,11 @@
             table="commerce_supplier_product">
 
         <indexes>
-            <index columns="reference" name="idx_commerce_supplier_product_reference" />
+            <index columns="reference" name="idx_commerce_supplier_product_reference"/>
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="supplier_id,reference" name="unique_commerce_supplier_product_reference" />
+            <unique-constraint columns="supplier_id,reference" name="unique_commerce_supplier_product_reference"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">

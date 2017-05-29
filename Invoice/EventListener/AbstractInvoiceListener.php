@@ -94,14 +94,7 @@ abstract class AbstractInvoiceListener
         // Updates the invoice data
         $changed |= $this->updater->updateData($invoice);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $invoice
-            ->setCreatedAt(new \DateTime())
-            ->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
         }
 
@@ -128,12 +121,7 @@ abstract class AbstractInvoiceListener
         // Updates the invoice data
         $changed |= $this->updater->updateData($invoice);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $invoice->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
 
             $this->scheduleSaleContentChangeEvent($invoice->getSale());

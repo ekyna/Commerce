@@ -148,14 +148,6 @@ abstract class AbstractSaleListener
         // Update state
         $changed |= $this->updateState($sale);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        if (null === $sale->getUpdatedAt()) {
-            $sale->setUpdatedAt(new \DateTime());
-            $changed = true;
-        }
-
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
@@ -191,13 +183,8 @@ abstract class AbstractSaleListener
             // If payment is paid or has changed from paid state
         }
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $sale->setUpdatedAt(new \DateTime());
-
         // Recompute to get an up-to-date change set.
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);
         }
 

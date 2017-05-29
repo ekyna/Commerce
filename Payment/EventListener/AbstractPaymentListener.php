@@ -94,14 +94,7 @@ abstract class AbstractPaymentListener
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $payment
-            ->setCreatedAt(new \DateTime())
-            ->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($payment);
         }
 
@@ -129,12 +122,7 @@ abstract class AbstractPaymentListener
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
 
-        /**
-         * TODO Resource behaviors.
-         */
-        $payment->setUpdatedAt(new \DateTime());
-
-        if (true || $changed) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($payment);
         }
 

@@ -8,8 +8,8 @@ ekyna_commerce:
         entity: Ekyna\Component\Commerce\Cart\Entity\CartAdjustment
     cart_item:
         entity: Ekyna\Component\Commerce\Cart\Entity\CartItem
-#    cart_item_adjustment:
-#        entity: Ekyna\Component\Commerce\Cart\Entity\CartItemAdjustment
+    cart_item_adjustment:
+        entity: Ekyna\Component\Commerce\Cart\Entity\CartItemAdjustment
     cart_payment:
         entity: Ekyna\Component\Commerce\Cart\Entity\CartPayment
         repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CartPaymentRepository
@@ -46,8 +46,8 @@ ekyna_commerce:
         entity: Ekyna\Component\Commerce\Order\Entity\OrderInvoiceLine
     order_item:
         entity: Ekyna\Component\Commerce\Order\Entity\OrderItem
-#    order_item_adjustment:
-#        entity: Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment
+    order_item_adjustment:
+        entity: Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment
     order_payment:
         entity: Ekyna\Component\Commerce\Order\Entity\OrderPayment
         repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\OrderPaymentRepository
@@ -82,8 +82,8 @@ ekyna_commerce:
     quote_payment:
         entity: Ekyna\Component\Commerce\Quote\Entity\QuotePayment
         repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\QuotePaymentRepository
-#    quote_item_adjustment:
-#        entity: Ekyna\Component\Commerce\Quote\Entity\QuoteItemAdjustment
+    quote_item_adjustment:
+        entity: Ekyna\Component\Commerce\Quote\Entity\QuoteItemAdjustment
 
 # TODO   stock_unit:
 #        entity: Ekyna\Component\Commerce\Stock\Entity\StockUnit

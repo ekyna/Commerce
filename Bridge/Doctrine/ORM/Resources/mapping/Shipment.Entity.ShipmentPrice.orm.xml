@@ -17,12 +17,12 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentZone"
                      field="zone" inversed-by="prices" orphan-removal="true">
-            <join-column name="zone_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
+            <join-column name="zone_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface"
                      field="method" inversed-by="prices" orphan-removal="true">
-            <join-column name="method_id" referenced-column-name="id" on-delete="CASCADE" nullable="true" />
+            <join-column name="method_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 
     </entity>
