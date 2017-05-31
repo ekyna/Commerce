@@ -20,56 +20,19 @@ interface SubjectRelativeInterface
      *
      * @return bool
      */
-    public function hasIdentity();
+    public function hasSubjectIdentity();
 
     /**
-     * Returns the subjectIdentity.
+     * Returns the subject identity.
      *
      * @return SubjectIdentity
      */
     public function getSubjectIdentity();
 
     /**
-     * Returns whether the relative has subject data or not.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function hasSubjectData($key = null);
-
-    /**
-     * Returns the subject data, optionally filtered by key.
-     *
-     * @param string $key
-     *
-     * @return mixed
-     */
-    public function getSubjectData($key = null);
-
-    /**
-     * Sets the subject data.
-     *
-     * @param array|string $keyOrData The key of the data or the whole subject data.
-     * @param mixed        $data      The data assigned to the key (must be null if $keyOrData is the whole subject data).
+     * Clears the subject identity.
      *
      * @return $this|SubjectRelativeInterface
      */
-    public function setSubjectData($keyOrData, $data = null);
-
-    /**
-     * Unset the subject data by key.
-     *
-     * @param string $key
-     *
-     * @return $this|SubjectRelativeInterface
-     */
-    public function unsetSubjectData($key);
-
-    /**
-     * Clears the subject (identity and data).
-     *
-     * @return $this|SubjectRelativeInterface
-     */
-    public function clearSubject();
+    public function clearSubjectIdentity();
 }

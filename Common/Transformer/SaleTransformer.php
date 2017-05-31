@@ -154,8 +154,8 @@ class SaleTransformer implements SaleTransformerInterface
     public function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target)
     {
         $this->copy($source, $target, [
-            'designation', 'reference', 'netPrice', 'weight', 'quantity',
-            'position', 'immutable', 'configurable', 'taxGroup', 'subjectData',
+            'designation', 'reference', 'netPrice', 'weight', 'taxGroup', 'quantity',
+            'position', 'compound', 'immutable', 'configurable', 'data',
         ]);
 
         // SubjectIdentity

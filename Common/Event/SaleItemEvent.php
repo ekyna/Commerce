@@ -17,21 +17,15 @@ class SaleItemEvent extends Event
      */
     private $item;
 
-    /**
-     * @var array
-     */
-    private $data;
 
     /**
      * Constructor.
      *
      * @param SaleItemInterface $item
-     * @param array             $data
      */
-    public function __construct(SaleItemInterface $item, array $data = [])
+    public function __construct(SaleItemInterface $item)
     {
         $this->item = $item;
-        $this->data = $data;
     }
 
     /**
@@ -42,15 +36,5 @@ class SaleItemEvent extends Event
     public function getItem()
     {
         return $this->item;
-    }
-
-    /**
-     * Returns the data.
-     *
-     * @return array
-     */
-    public function getData()
-    {
-        return $this->data;
     }
 }

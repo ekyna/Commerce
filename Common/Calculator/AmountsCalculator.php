@@ -103,22 +103,13 @@ class AmountsCalculator implements AmountsCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSaleItem(SaleItemInterface $item, $gross = false)
+    public function calculateSaleItem(SaleItemInterface $item, $gross = false, $single = false)
     {
         // TODO don't calculate twice
 
         $result = new Result();
 
-        if ($item->hasChildren()) { // Calculate as a "parent" item
-
-            // Merge children results
-            foreach ($item->getChildren() as $child) {
-                // Item result must take account of child's discounts, so not gross
-                $result->merge($this->calculateSaleItem($child)->multiply($child->getQuantity()));
-            }
-
-        } else { // Calculate as a "child" item
-
+        if (!$item->isCompound()) {
             $base = $this->mode === self::MODE_NET
                 ? $this->round($item->getNetPrice())
                 : $item->getNetPrice();
@@ -126,52 +117,60 @@ class AmountsCalculator implements AmountsCalculatorInterface
             $result
                 ->addBase($base)
                 ->merge($this->calculateTaxationAdjustments($item, $base));
+        }
 
-            /*switch ($this->mode) {
-                case self::MODE_NET :
-                    $base = $this->round($item->getNetPrice()) * $item->getTotalQuantity();
+        /*switch ($this->mode) {
+            case self::MODE_NET :
+                $base = $this->round($item->getNetPrice()) * $item->getTotalQuantity();
 
-                    $result->addBase($base);
+                $result->addBase($base);
 
-                    // Taxes
-                    if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
-                        $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
-                        foreach ($adjustments as $adjustment) {
-                            $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
+                // Taxes
+                if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
+                    $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
+                    foreach ($adjustments as $adjustment) {
+                        $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
 
-                            $result->addTax(
-                                $adjustment->getDesignation(),
-                                $adjustment->getAmount(),
-                                $this->round($base * $adjustment->getAmount() / 100)
-                            );
-                        }
+                        $result->addTax(
+                            $adjustment->getDesignation(),
+                            $adjustment->getAmount(),
+                            $this->round($base * $adjustment->getAmount() / 100)
+                        );
                     }
-                    break;
+                }
+                break;
 
-                case self::MODE_GROSS :
-                    $base = $item->getNetPrice() * $item->getTotalQuantity();
-                    $roundedBase = $this->round($base);
+            case self::MODE_GROSS :
+                $base = $item->getNetPrice() * $item->getTotalQuantity();
+                $roundedBase = $this->round($base);
 
-                    $result->addBase($roundedBase);
+                $result->addBase($roundedBase);
 
-                    // Taxes
-                    if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
-                        $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
-                        foreach ($adjustments as $adjustment) {
-                            $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
+                // Taxes
+                if ($item->hasAdjustments(AdjustmentTypes::TYPE_TAXATION)) {
+                    $adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION);
+                    foreach ($adjustments as $adjustment) {
+                        $this->assertAdjustmentMode($adjustment, AdjustmentModes::MODE_PERCENT);
 
-                            $result->addTax(
-                                $adjustment->getDesignation(),
-                                $adjustment->getAmount(),
-                                $this->round($base * (1 + $adjustment->getAmount() / 100)) - $roundedBase
-                            );
-                        }
+                        $result->addTax(
+                            $adjustment->getDesignation(),
+                            $adjustment->getAmount(),
+                            $this->round($base * (1 + $adjustment->getAmount() / 100)) - $roundedBase
+                        );
                     }
-                    break;
+                }
+                break;
 
-                default:
-                    throw new InvalidArgumentException('Unexpected mode.');
-            }*/
+            default:
+                throw new InvalidArgumentException('Unexpected mode.');
+        }*/
+
+        if ($item->hasChildren() && !$single) { // Calculate as a "parent" item
+            // Merge children results
+            foreach ($item->getChildren() as $child) {
+                // Item result must take account of child's discounts, so not gross
+                $result->merge($this->calculateSaleItem($child)->multiply($child->getQuantity()));
+            }
         }
 
         // Discount adjustments

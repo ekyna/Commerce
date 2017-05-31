@@ -59,7 +59,7 @@ interface AmountsCalculatorInterface
      *
      * @return Result
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item, $gross = false);
+    public function calculateSaleItem(Model\SaleItemInterface $item, $gross = false, $single = false);
 
     /**
      * Calculates the discount adjustment amounts.

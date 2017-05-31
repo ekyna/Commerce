@@ -255,9 +255,6 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        // Add mappings
-        $this->addMappings($metadata, $this->getSubjectRelativeMappings());
-
         // Map embedded
         $this
             ->getSubjectIdentityMapper($eventArgs->getEntityManager())
@@ -391,23 +388,6 @@ class LoadMetadataListener implements EventSubscriber
                 'fieldName'  => 'vatValid',
                 'columnName' => 'vat_valid',
                 'type'       => 'boolean',
-            ],
-        ];
-    }
-
-    /**
-     * Returns the subject relative mappings.
-     *
-     * @return array
-     */
-    private function getSubjectRelativeMappings()
-    {
-        return [
-            [
-                'fieldName'  => 'subjectData',
-                'columnName' => 'subject_data',
-                'type'       => 'json_array',
-                'nullable'   => true,
             ],
         ];
     }

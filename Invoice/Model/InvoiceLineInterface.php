@@ -94,6 +94,22 @@ interface InvoiceLineInterface extends ResourceInterface
     public function setDesignation($designation);
 
     /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return $this|InvoiceLineInterface
+     */
+    public function setDescription($description);
+
+    /**
      * Returns the reference.
      *
      * @return string

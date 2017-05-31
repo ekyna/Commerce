@@ -15,7 +15,6 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class SupplierDeliveryItemListener extends AbstractListener
 {
-    // TODO refactor assertions : if (null === ...
     // TODO assert that order is at least at ordered state (in delivery listener too ...)
 
     /**

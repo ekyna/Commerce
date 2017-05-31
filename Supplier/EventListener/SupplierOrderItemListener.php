@@ -198,7 +198,7 @@ class SupplierOrderItemListener extends AbstractListener
             if (0 == $item->getNetPrice()) {
                 $item->setNetPrice($product->getNetPrice());
             }
-        } elseif ($item->getSubjectIdentity()->hasIdentity()) {
+        } elseif ($item->hasSubjectIdentity()) {
             // TODO Specific exception
             throw new InvalidArgumentException(
                 'Desynchronizing supplier order item and supplier product subject data is not supported.'

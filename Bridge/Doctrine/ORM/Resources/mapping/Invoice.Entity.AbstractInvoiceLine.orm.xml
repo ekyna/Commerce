@@ -9,6 +9,7 @@
 
         <field name="type" column="type" type="string" length="16"/>
         <field name="designation" column="designation" type="string" length="255"/>
+        <field name="description" column="description" type="string" length="255" nullable="true"/>
         <field name="reference" column="reference" type="string" length="32" nullable="true"/>
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5"/>
         <field name="taxesDetails" column="taxes_details" type="json_array"/>

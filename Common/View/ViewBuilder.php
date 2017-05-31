@@ -182,7 +182,10 @@ class ViewBuilder
         $gross = !$item->hasChildren() && $item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT);
 
         $lineNumber = $this->lineNumber++;
-        $amounts = $this->calculator->calculateSaleItem($item, $gross)->multiply($item->getTotalQuantity());
+        $amounts = $this
+            ->calculator
+            ->calculateSaleItem($item, $gross, true)
+            ->multiply($item->getTotalQuantity());
 
         $lines = [];
         if ($item->hasChildren()) {
@@ -217,7 +220,7 @@ class ViewBuilder
             $amounts->getTaxTotal(),
             $amounts->getTotal(),
             $lines,
-            $item->hasChildren()
+            $item->isCompound()
         );
 
         foreach ($this->types as $type) {

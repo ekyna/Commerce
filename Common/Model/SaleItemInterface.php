@@ -164,14 +164,30 @@ interface SaleItemInterface extends
     public function setQuantity($quantity);
 
     /**
-     * Returns whether the item is immutable or not.
+     * Returns whether the item is compound.
+     *
+     * @return bool
+     */
+    public function isCompound();
+
+    /**
+     * Sets whether the item is compound.
+     *
+     * @param bool $compound
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function setCompound($compound);
+
+    /**
+     * Returns whether the item is immutable.
      *
      * @return boolean
      */
     public function isImmutable();
 
     /**
-     * Sets the immutable.
+     * Sets whether the item is immutable.
      *
      * @param boolean $immutable
      *
@@ -180,20 +196,57 @@ interface SaleItemInterface extends
     public function setImmutable($immutable);
 
     /**
-     * Returns the configurable.
+     * Returns whether the item is configurable.
      *
      * @return boolean
      */
     public function isConfigurable();
 
     /**
-     * Sets the configurable.
+     * Sets whether the item is configurable.
      *
      * @param boolean $configurable
      *
      * @return $this|SaleItemInterface
      */
     public function setConfigurable($configurable);
+
+    /**
+     * Returns whether the item has data (optionally for the given key).
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function hasData($key = null);
+
+    /**
+     * Returns the data, optionally filtered by key.
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    public function getData($key = null);
+
+    /**
+     * Sets the data.
+     *
+     * @param array|string $keyOrData The key of the data or the whole data as array.
+     * @param mixed        $data      The data assigned to the key (must be null if $keyOrData is the whole data).
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setData($keyOrData, $data = null);
+
+    /**
+     * Unset the data by key.
+     *
+     * @param string $key
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function unsetData($key);
 
     /**
      * Returns the parents total quantity.

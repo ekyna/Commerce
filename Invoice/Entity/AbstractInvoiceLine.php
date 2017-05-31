@@ -34,6 +34,11 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
     /**
      * @var string
      */
+    protected $description;
+
+    /**
+     * @var string
+     */
     protected $reference;
 
     /**
@@ -131,6 +136,24 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
     public function setDesignation($designation)
     {
         $this->designation = $designation;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
 
         return $this;
     }

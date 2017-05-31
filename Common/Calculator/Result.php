@@ -46,6 +46,18 @@ class Result
     }
 
     /**
+     * @inheritDoc
+     */
+    public function __clone()
+    {
+        $taxes = $this->taxes;
+        $this->taxes = [];
+        foreach ($taxes as $tax) {
+            $this->taxes[] = clone $tax;
+        }
+    }
+
+    /**
      * Clear the amounts.
      */
     public function clear()

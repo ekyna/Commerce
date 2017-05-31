@@ -75,12 +75,20 @@ class InvoiceBuilder implements InvoiceBuilderInterface
      */
     protected function buildGoodLine(InvoiceInterface $invoice, SaleItemInterface $item)
     {
+        $description = null;
         if ($item->hasChildren()) {
-            foreach ($item->getChildren() as $child) {
-                $this->buildGoodLine($invoice, $child);
-            }
+            if ($item->isCompound()) {
+                foreach ($item->getChildren() as $child) {
+                    $this->buildGoodLine($invoice, $child);
+                }
 
-            return;
+                return;
+            }
+            $designations = [];
+            foreach ($item->getChildren() as $child) {
+                $designations[] = $child->getDesignation();
+            }
+            $description = implode("\n", $designations);
         }
 
         $line = $this->factory->createLineForInvoice($invoice);
@@ -88,6 +96,7 @@ class InvoiceBuilder implements InvoiceBuilderInterface
             ->setType(InvoiceLineTypes::TYPE_GOOD)
             ->setSaleItem($item)
             ->setDesignation($item->getDesignation())
+            ->setDescription($description)
             ->setReference($item->getReference());
 
         $invoice->addLine($line);

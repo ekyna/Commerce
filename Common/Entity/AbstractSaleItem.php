@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
@@ -62,12 +63,22 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     /**
      * @var bool
      */
+    protected $compound = false;
+
+    /**
+     * @var bool
+     */
     protected $immutable = false;
 
     /**
      * @var bool
      */
     protected $configurable = false;
+
+    /**
+     * @var array
+     */
+    protected $data = [];
 
 
     /**
@@ -217,6 +228,24 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     /**
      * @inheritdoc
      */
+    public function isCompound()
+    {
+        return $this->compound;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCompound($compound)
+    {
+        $this->compound = (bool)$compound;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function isImmutable()
     {
         return $this->immutable;
@@ -250,6 +279,69 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
         return $this;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function hasData($key = null)
+    {
+        if (!empty($key)) {
+            return array_key_exists($key, (array)$this->data) && !empty($this->data[$key]);
+        }
+
+        return !empty($this->data);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getData($key = null)
+    {
+        if (!empty($key)) {
+            if (array_key_exists($key, (array)$this->data)) {
+                return $this->data[$key];
+            }
+
+            return null;
+        }
+
+        return $this->data;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setData($keyOrData, $data = null)
+    {
+        if (is_array($keyOrData) && null === $data) {
+            $this->data = $keyOrData;
+        } elseif (is_string($keyOrData) && !empty($keyOrData)) {
+            $this->data[$keyOrData] = $data;
+        } else {
+            throw new InvalidArgumentException(sprintf("Bad usage of %s::setData", static::class));
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unsetData($key)
+    {
+        if (is_string($key) && !empty($key)) {
+            if (array_key_exists($key, (array)$this->data)) {
+                unset($this->data[$key]);
+            }
+        } else {
+            throw new InvalidArgumentException('Expected key as string.');
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getParentsQuantity()
     {
         $modifier = 1;
