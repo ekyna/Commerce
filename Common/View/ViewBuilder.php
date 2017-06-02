@@ -179,7 +179,7 @@ class ViewBuilder
      */
     private function buildSaleItemLineView(Model\SaleItemInterface $item, $level = 0)
     {
-        $gross = !$item->hasChildren() && $item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT);
+        $gross = !$item->isCompound() && $item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT);
 
         $lineNumber = $this->lineNumber++;
         $amounts = $this
@@ -246,6 +246,11 @@ class ViewBuilder
 
         $lineNumber = $this->lineNumber++;
         $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
+
+        $adjustable = $adjustment->getAdjustable();
+        if ($adjustable instanceof Model\SaleItemInterface) {
+            $amounts->multiply($adjustable->getQuantity());
+        }
 
         $view = new LineView(
             'adjustment_' . ($lineNumber-1),
