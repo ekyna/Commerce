@@ -162,6 +162,18 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function createChild()
+    {
+        $child = new static;
+
+        $this->addChild($child);
+
+        return $child;
+    }
+
+    /**
      * @inheritdoc
      */
     public function addChild(SaleItemInterface $child)

@@ -111,6 +111,18 @@ class CartItem extends AbstractSaleItem implements CartItemInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function createChild()
+    {
+        $child = new static;
+
+        $this->addChild($child);
+
+        return $child;
+    }
+
+    /**
      * @inheritdoc
      */
     public function addChild(SaleItemInterface $child)

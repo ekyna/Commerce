@@ -59,6 +59,13 @@ interface SaleItemInterface extends
     public function hasChildren();
 
     /**
+     * Creates a child item.
+     *
+     * @return SaleItemInterface
+     */
+    public function createChild();
+
+    /**
      * Adds the child item.
      *
      * @param SaleItemInterface $child
