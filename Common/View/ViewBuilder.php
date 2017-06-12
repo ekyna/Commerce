@@ -249,7 +249,7 @@ class ViewBuilder
 
         $adjustable = $adjustment->getAdjustable();
         if ($adjustable instanceof Model\SaleItemInterface) {
-            $amounts->multiply($adjustable->getQuantity());
+            $amounts->multiply($adjustable->getTotalQuantity());
         }
 
         $view = new LineView(

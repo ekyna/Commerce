@@ -115,11 +115,18 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
-        $event = new SaleItemAdjustmentEvent($item);
+        $parent = $item->getParent();
 
-        $this->eventDispatcher->dispatch(SaleItemEvents::ADJUSTMENTS, $event);
+        // Don't apply discount(s) to both parent and children
+        if (null !== $parent && $parent->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
+            $data = [];
+        } else {
+            $event = new SaleItemAdjustmentEvent($item);
 
-        $data = $event->getAdjustmentsData();
+            $this->eventDispatcher->dispatch(SaleItemEvents::ADJUSTMENTS, $event);
+
+            $data = $event->getAdjustmentsData();
+        }
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }

@@ -56,7 +56,11 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
-        if ($this->updateTaxation($item)) {
+        $change = $this->updateTaxation($item);
+
+        $change |= $this->updateDiscount($item);
+
+        if ($change) {
             $this->persistenceHelper->persistAndRecompute($item);
         }
 
