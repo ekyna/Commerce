@@ -114,12 +114,8 @@ class Customer implements Model\CustomerInterface
         $sign = '';
         if ($this->hasParent()) {
             $sign = '&loz;';
-        } elseif ($this->hasChildren()) {
+        } elseif ($this->hasChildren()) { // TODO Greedy : triggers collection initialization
             $sign = '&diams;';
-        }
-
-        if (0 < strlen($this->company)) {
-            return sprintf('%s [%s] %s %s', $sign, $this->company, $this->firstName, $this->lastName);
         }
 
         return sprintf('%s %s %s', $sign, $this->firstName, $this->lastName);

@@ -8,10 +8,11 @@ use Ekyna\Component\Commerce\Common\Entity\Country;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Customer\Entity\CustomerGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\Tax;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxRule;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Yaml\Yaml;
 
@@ -20,8 +21,10 @@ use Symfony\Component\Yaml\Yaml;
  * @package Ekyna\Component\Commerce\Install
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Installer
+class Installer implements ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     /**
      * @var ObjectManager
      */
@@ -300,7 +303,9 @@ class Installer
     public function installCustomerGroups()
     {
         /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
-        $repository = $this->manager->getRepository(CustomerGroup::class);
+        $repository = $this->manager->getRepository(
+            $this->container->getParameter('ekyna_commerce.customer_group.class')
+        );
 
         $name = 'Default customer group';
 
