@@ -49,6 +49,11 @@ class Customer implements Model\CustomerInterface
     protected $mobile;
 
     /**
+     * @var \DateTime
+     */
+    protected $birthday;
+
+    /**
      * @var Model\CustomerInterface
      */
     protected $parent;
@@ -199,6 +204,30 @@ class Customer implements Model\CustomerInterface
     public function setMobile($mobile)
     {
         $this->mobile = $mobile;
+
+        return $this;
+    }
+
+    /**
+     * Returns the birthday.
+     *
+     * @return \DateTime
+     */
+    public function getBirthday()
+    {
+        return $this->birthday;
+    }
+
+    /**
+     * Sets the birthday.
+     *
+     * @param \DateTime $birthday
+     *
+     * @return Customer
+     */
+    public function setBirthday(\DateTime $birthday = null)
+    {
+        $this->birthday = $birthday;
 
         return $this;
     }

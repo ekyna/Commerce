@@ -75,6 +75,7 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
     public function setCustomer(CustomerInterface $customer)
     {
         $this->customer = $customer;
+
         return $this;
     }
 
@@ -91,7 +92,7 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
      */
     public function setInvoiceDefault($invoiceDefault)
     {
-        $this->invoiceDefault = (bool) $invoiceDefault;
+        $this->invoiceDefault = (bool)$invoiceDefault;
 
         return $this;
     }
@@ -109,7 +110,7 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
      */
     public function setDeliveryDefault($deliveryDefault)
     {
-        $this->deliveryDefault = (bool) $deliveryDefault;
+        $this->deliveryDefault = (bool)$deliveryDefault;
 
         return $this;
     }

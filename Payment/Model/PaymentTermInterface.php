@@ -8,6 +8,8 @@ use Ekyna\Component\Resource\Model\TranslatableInterface;
  * Interface PaymentTermInterface
  * @package Ekyna\Component\Commerce\Payment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method PaymentTermTranslationInterface translate($locale = null, $create = false)
  */
 interface PaymentTermInterface extends TranslatableInterface
 {

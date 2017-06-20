@@ -86,6 +86,22 @@ interface CustomerInterface extends
     public function setMobile($mobile);
 
     /**
+     * Returns the birthday.
+     *
+     * @return \DateTime
+     */
+    public function getBirthday();
+
+    /**
+     * Sets the birthday.
+     *
+     * @param \DateTime $birthday
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setBirthday(\DateTime $birthday = null);
+
+    /**
      * Returns whether the customer has a parent or not.
      *
      * @return bool

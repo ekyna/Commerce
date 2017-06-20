@@ -11,12 +11,14 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
             <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender">
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
         </property>
@@ -27,6 +29,7 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
         </property>
@@ -35,6 +38,7 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
             <constraint name="Length">
@@ -43,6 +47,7 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
         </property>
@@ -51,6 +56,7 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
             <constraint name="Length">
@@ -59,6 +65,7 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
         </property>
@@ -67,12 +74,34 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
             <constraint name="Email">
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="phone">
+            <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
+                <option name="type">fixed_line</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                    <value>Profile</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="mobile">
+            <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
+                <option name="type">mobile</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
         </property>
@@ -81,6 +110,7 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
         </property>
@@ -89,24 +119,17 @@
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>
+                    <value>Profile</value>
                 </option>
             </constraint>
         </property>
         <property name="creditBalance">
             <constraint name="GreaterThanOrEqual">
-                <option name="groups">
-                    <value>Default</value>
-                    <value>Registration</value>
-                </option>
                 <option name="value">0</option>
             </constraint>
         </property>
         <property name="outstandingLimit">
             <constraint name="GreaterThanOrEqual">
-                <option name="groups">
-                    <value>Default</value>
-                    <value>Registration</value>
-                </option>
                 <option name="value">0</option>
             </constraint>
         </property>
@@ -118,12 +141,14 @@
             <option name="groups">
                 <value>Default</value>
                 <value>Registration</value>
+                <value>Profile</value>
             </option>
         </constraint>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Customer">
             <option name="groups">
                 <value>Default</value>
                 <value>Registration</value>
+                <value>Profile</value>
             </option>
         </constraint>
     </class>

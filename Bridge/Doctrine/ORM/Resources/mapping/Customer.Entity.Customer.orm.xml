@@ -29,6 +29,7 @@
         <field name="gender" column="gender" type="string" length="8"/>
         <field name="firstName" column="first_name" type="string" length="64"/>
         <field name="lastName" column="last_name" type="string" length="64"/>
+        <field name="birthday" column="birthday" type="date" nullable="true"/>
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
 
