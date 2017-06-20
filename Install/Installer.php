@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Install;
 
 use Doctrine\Common\Persistence\ObjectManager;
-
 use Ekyna\Component\Commerce\Common\Entity\Country;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
@@ -11,8 +10,6 @@ use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Pricing\Entity\Tax;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxRule;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Yaml\Yaml;
 
@@ -21,14 +18,17 @@ use Symfony\Component\Yaml\Yaml;
  * @package Ekyna\Component\Commerce\Install
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Installer implements ContainerAwareInterface
+class Installer
 {
-    use ContainerAwareTrait;
-
     /**
      * @var ObjectManager
      */
     private $manager;
+
+    /**
+     * @var string
+     */
+    private $groupClass;
 
     /**
      * @var callable
@@ -40,11 +40,13 @@ class Installer implements ContainerAwareInterface
      * Constructor.
      *
      * @param ObjectManager $manager
+     * @param string        $groupClass
      * @param mixed         $logger
      */
-    public function __construct(ObjectManager $manager, $logger = null)
+    public function __construct(ObjectManager $manager, $groupClass, $logger = null)
     {
         $this->manager = $manager;
+        $this->groupClass = $groupClass;
 
         if (in_array('Symfony\Component\Console\Output\OutputInterface', class_implements($logger))) {
             $this->log = function ($name, $result) use ($logger) {
@@ -303,9 +305,7 @@ class Installer implements ContainerAwareInterface
     public function installCustomerGroups()
     {
         /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
-        $repository = $this->manager->getRepository(
-            $this->container->getParameter('ekyna_commerce.customer_group.class')
-        );
+        $repository = $this->manager->getRepository($this->groupClass);
 
         $name = 'Default customer group';
 
