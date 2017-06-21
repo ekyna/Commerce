@@ -46,6 +46,7 @@ class DoctrineBundleMapping
             Cart\Model\CartAddressInterface::class           => Cart\Entity\CartAddress::class,
 
             Customer\Model\CustomerInterface::class          => Customer\Entity\Customer::class,
+            Customer\Model\CustomerGroupInterface::class     => Customer\Entity\CustomerGroup::class,
             Customer\Model\CustomerAddressInterface::class   => Customer\Entity\CustomerAddress::class,
 
             Order\Model\OrderInterface::class                => Order\Entity\Order::class,

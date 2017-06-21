@@ -66,7 +66,7 @@
             <join-column name="parent_id" referenced-column-name="id" nullable="true" on-delete="RESTRICT"/>
         </many-to-one>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Entity\CustomerGroup" field="customerGroup">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface" field="customerGroup">
             <join-column name="customer_group_id" referenced-column-name="id" on-delete="RESTRICT"/>
         </many-to-one>
 
