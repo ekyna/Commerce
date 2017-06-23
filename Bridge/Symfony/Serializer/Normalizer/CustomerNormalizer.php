@@ -2,31 +2,32 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
-use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
 /**
- * Class SupplierProductNormalizer
+ * Class CustomerNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierProductNormalizer extends AbstractResourceNormalizer
+class CustomerNormalizer extends AbstractResourceNormalizer
 {
     /**
      * @inheritdoc
      */
-    public function normalize($product, $format = null, array $context = [])
+    public function normalize($customer, $format = null, array $context = [])
     {
-        $data = parent::normalize($product, $format, $context);
+        $data = parent::normalize($customer, $format, $context);
 
-        /** @var SupplierProductInterface $product */
+        /** @var CustomerInterface $customer */
         $groups = isset($context['groups']) ? (array)$context['groups'] : [];
 
         if (in_array('Default', $groups) || in_array('Search', $groups)) {
             $data = array_replace($data, [
-                'designation' => $product->getDesignation(),
-                'reference'   => $product->getReference(),
-                'net_price'   => $product->getNetPrice(),
+                'company'    => $customer->getCompany(),
+                'email'      => $customer->getEmail(),
+                'first_name' => $customer->getFirstName(),
+                'last_name'  => $customer->getLastName(),
             ]);
         }
 
@@ -48,7 +49,7 @@ class SupplierProductNormalizer extends AbstractResourceNormalizer
      */
     public function supportsNormalization($data, $format = null)
     {
-        return $data instanceof SupplierProductInterface;
+        return $data instanceof CustomerInterface;
     }
 
     /**
@@ -56,6 +57,6 @@ class SupplierProductNormalizer extends AbstractResourceNormalizer
      */
     public function supportsDenormalization($data, $type, $format = null)
     {
-        return class_exists($type) && is_subclass_of($type, SupplierProductInterface::class);
+        return class_exists($type) && is_subclass_of($type, CustomerInterface::class);
     }
 }

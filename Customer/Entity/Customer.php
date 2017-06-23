@@ -116,14 +116,17 @@ class Customer implements Model\CustomerInterface
      */
     public function __toString()
     {
-        $sign = '';
-        if ($this->hasParent()) {
-            $sign = '&loz;';
-        } elseif ($this->hasChildren()) { // TODO Greedy : triggers collection initialization
-            $sign = '&diams;';
+        if ($this->company) {
+            $sign = '';
+            if ($this->hasParent()) {
+                $sign = '♦'; //'&loz;';
+            } elseif ($this->hasChildren()) { // TODO Greedy : triggers collection initialization
+                $sign = '◊';//'&diams;';
+            }
+            return sprintf('%s [%s] %s %s', $sign, $this->company, $this->lastName, $this->firstName);
         }
 
-        return sprintf('%s %s %s', $sign, $this->firstName, $this->lastName);
+        return sprintf('%s %s', $this->lastName, $this->firstName);
     }
 
     /**
