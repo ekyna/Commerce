@@ -26,6 +26,6 @@ class DateNumberGenerator extends DefaultNumberGenerator
             $number = intval(substr($number, strlen($datePrefix)));
         }
 
-        return $datePrefix . str_pad($number + 1, 10 - strlen($datePrefix), '0', STR_PAD_LEFT);
+        return $datePrefix . str_pad($number + 1, $this->length - strlen($datePrefix), '0', STR_PAD_LEFT);
     }
 }

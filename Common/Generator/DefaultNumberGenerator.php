@@ -86,7 +86,7 @@ class DefaultNumberGenerator implements NumberGeneratorInterface
             $number = intval($number);
         }
 
-        return $this->prefix . str_pad($number + 1, 10 - strlen($this->prefix), '0', STR_PAD_LEFT);
+        return $this->prefix . str_pad($number + 1, $this->length - strlen($this->prefix), '0', STR_PAD_LEFT);
     }
 
     /**
