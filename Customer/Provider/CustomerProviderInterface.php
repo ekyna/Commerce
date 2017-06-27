@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\Provider;
 
-use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Customer\Model;
 
 /**
  * Interface CustomerProviderInterface
@@ -21,9 +21,16 @@ interface CustomerProviderInterface
     /**
      * Returns the customer if available.
      *
-     * @return CustomerInterface|null
+     * @return Model\CustomerInterface|null
      */
     public function getCustomer();
+
+    /**
+     * Returns the customer's group.
+     *
+     * @return Model\CustomerGroupInterface
+     */
+    public function getCustomerGroup();
 
     /**
      * Resets the customer provider.

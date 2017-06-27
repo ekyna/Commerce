@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Customer\Provider;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 
 /**
  * Class AbstractCustomerProvider
@@ -12,10 +13,25 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 abstract class AbstractCustomerProvider implements CustomerProviderInterface
 {
     /**
+     * @var CustomerGroupRepositoryInterface
+     */
+    protected $customerGroupRepository;
+
+    /**
      * @var CustomerInterface
      */
     protected $customer;
 
+
+    /**
+     * Constructor.
+     *
+     * @param CustomerGroupRepositoryInterface $customerGroupRepository
+     */
+    public function __construct(CustomerGroupRepositoryInterface $customerGroupRepository)
+    {
+        $this->customerGroupRepository = $customerGroupRepository;
+    }
 
     /**
      * @inheritdoc
@@ -31,6 +47,18 @@ abstract class AbstractCustomerProvider implements CustomerProviderInterface
     public function getCustomer()
     {
         return $this->customer;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCustomerGroup()
+    {
+        if ($this->hasCustomer()) {
+            return $this->getCustomer()->getCustomerGroup();
+        }
+
+        return $this->customerGroupRepository->findDefault();
     }
 
     /**
