@@ -71,12 +71,6 @@
                 <option name="value">0</option>
             </constraint>
         </property>
-        <property name="position">
-            <constraint name="NotBlank"/>
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
-            </constraint>
-        </property>
         <property name="notices">
             <constraint name="All">
                 <constraint name="NotBlank"/>
