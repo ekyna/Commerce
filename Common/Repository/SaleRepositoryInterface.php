@@ -31,13 +31,14 @@ interface SaleRepositoryInterface
     public function findOneByKey($key);
 
     /**
-     * Finds the sales by customer.
+     * Finds the sales by customer, optionally filtered by states.
      *
      * @param CustomerInterface $customer
+     * @param array             $states
      *
      * @return array|SaleInterface[]
      */
-    public function findByCustomer(CustomerInterface $customer);
+    public function findByCustomer(CustomerInterface $customer, array $states = []);
 
     /**
      * Finds the sale by customer and number.

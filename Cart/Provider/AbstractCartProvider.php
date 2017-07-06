@@ -144,6 +144,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
         if ($this->hasCart()) {
             $this->cart
                 ->setCustomer(null)
+                ->setCustomerGroup(null)
                 ->setEmail(null)
                 ->setCompany(null)
                 ->setGender(null)

@@ -183,6 +183,11 @@ abstract class AbstractSaleListener
             // If payment is paid or has changed from paid state
         }
 
+        // Update discounts
+        if ($this->isDiscountUpdateNeeded($sale)) {
+            $changed |= $this->saleUpdater->updateDiscounts($sale, true);
+        }
+
         // Recompute to get an up-to-date change set.
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($sale);

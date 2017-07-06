@@ -69,8 +69,6 @@ class CustomerListener
 
         // TODO
         // - Must have an invoice address
-        // - Prevent vat valid from being 'true' if vat number if empty
-        // - If vat number is not empty, validate it with soap API
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer);

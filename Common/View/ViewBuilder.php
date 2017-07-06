@@ -97,7 +97,7 @@ class ViewBuilder
             $this->buildSaleItemsLinesViews($sale),
             $this->buildSaleDiscountsLinesViews($sale),
             $this->buildShipmentLine($sale),
-            $this->buildSaleTaxesViews($sale)
+            $this->options['taxes_view'] ? $this->buildSaleTaxesViews($sale) : []
         );
 
         foreach ($this->types as $type) {
@@ -207,7 +207,7 @@ class ViewBuilder
         }
 
         $view = new LineView(
-            'item_' . ($lineNumber-1),
+            'item_' . ($lineNumber - 1),
             'item_' . $item->getId(),
             $lineNumber,
             $level,
@@ -253,7 +253,7 @@ class ViewBuilder
         }
 
         $view = new LineView(
-            'adjustment_' . ($lineNumber-1),
+            'adjustment_' . ($lineNumber - 1),
             'adjustment_' . $adjustment->getId(),
             $lineNumber,
             $level,
@@ -265,8 +265,8 @@ class ViewBuilder
             [],
             $amounts->getTaxTotal(),
             $amounts->getTotal()
-            // lines
-            // node
+        // lines
+        // node
         );
 
         foreach ($this->types as $type) {
@@ -314,8 +314,8 @@ class ViewBuilder
             $amounts->getTaxRates(),
             $amounts->getTaxTotal(),
             $amounts->getTotal()
-            // lines
-            // node
+        // lines
+        // node
         );
 
         foreach ($this->types as $type) {
@@ -339,9 +339,10 @@ class ViewBuilder
         $resolver = new OptionsResolver();
         $resolver
             ->setDefaults([
-                'private'  => false,
-                'editable' => false,
-                'template' => function (Options $options) {
+                'private'    => false,
+                'editable'   => false,
+                'taxes_view' => true,
+                'template'   => function (Options $options) {
                     if (true === $options['editable']) {
                         return 'EkynaCommerceBundle:Common:sale_view_editable.html.twig';
                     }

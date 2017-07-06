@@ -72,7 +72,7 @@ class InvoiceUpdater implements InvoiceUpdaterInterface
         }
 
         // Invoice goods base (after discounts)
-        if ($invoice->getGoodsBase() != $result->getBase()) {
+        if ($invoice->getGoodsBase() !== $result->getBase()) {
             $invoice->setGoodsBase($result->getBase());
             $changed = true;
         }
@@ -89,21 +89,21 @@ class InvoiceUpdater implements InvoiceUpdaterInterface
         }
 
         // Invoice shipment base.
-        if ($invoice->getShipmentBase() != $shipmentBase) {
+        if ($invoice->getShipmentBase() !== $shipmentBase) {
             $invoice->setShipmentBase($shipmentBase);
             $changed = true;
         }
 
         // Invoice taxes total
         $taxesTotal = $result->getTaxTotal();
-        if ($invoice->getTaxesTotal() != $taxesTotal) {
+        if ($invoice->getTaxesTotal() !== $taxesTotal) {
             $invoice->setTaxesTotal($taxesTotal);
             $changed = true;
         }
 
         // Invoice grand total
         $grandTotal = $result->getTotal();
-        if ($invoice->getGrandTotal() != $grandTotal) {
+        if ($invoice->getGrandTotal() !== $grandTotal) {
             $invoice->setGrandTotal($grandTotal);
             $changed = true;
         }

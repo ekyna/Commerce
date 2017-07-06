@@ -15,6 +15,7 @@ interface SaleStepValidatorInterface
     const SHIPMENT_STEP = 'shipment';
     const PAYMENT_STEP  = 'payment';
 
+
     /**
      * Returns whether the cart is valid for the given step.
      *

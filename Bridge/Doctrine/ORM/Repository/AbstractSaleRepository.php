@@ -63,15 +63,24 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
-    public function findByCustomer(CustomerInterface $customer)
+    public function findByCustomer(CustomerInterface $customer, array $states = [])
     {
         $qb = $this->createQueryBuilder('o');
+        $qb
+            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->addOrderBy('o.createdAt', 'DESC');
+
+        $parameters = ['customer' => $customer];
+
+        if (!empty($states)) {
+            $qb->andWhere($qb->expr()->in('o.state', ':states'));
+
+            $parameters['states'] = $states;
+        }
 
         return $qb
-            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
-            ->addOrderBy('o.createdAt', 'DESC')
             ->getQuery()
-            ->setParameter('customer', $customer)
+            ->setParameters($parameters)
             ->getResult();
     }
 
