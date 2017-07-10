@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Comparable;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
@@ -17,7 +18,8 @@ interface SaleItemInterface extends
     ResourceModel\SortableInterface,
     SubjectRelativeInterface,
     TaxableInterface,
-    AdjustableInterface
+    AdjustableInterface,
+    Comparable
 {
     /**
      * Sets the sale.

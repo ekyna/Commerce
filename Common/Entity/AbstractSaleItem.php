@@ -361,4 +361,18 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     {
         return $this->getQuantity() * $this->getParentsQuantity();
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function compareTo($other)
+    {
+        // TODO
+        /** @see https://github.com/Atlantic18/DoctrineExtensions/issues/1726 */
+        // return 1 if this object is considered greater than the compare value
+        // return -1 if this object is considered less than the compare value
+        // return 0 if this object is considered equal to the compare value
+
+        return 0;
+    }
 }
