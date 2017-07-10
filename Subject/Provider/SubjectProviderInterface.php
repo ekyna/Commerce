@@ -14,6 +14,9 @@ interface SubjectProviderInterface
 {
     const DATA_KEY = 'provider';
 
+    const CONTEXT_SALE     = 'sale';
+    const CONTEXT_SUPPLIER = 'supplier';
+
 
     /**
      * Sets the subject int the relative.
@@ -97,6 +100,20 @@ interface SubjectProviderInterface
      * @return string
      */
     public function getSubjectClass();
+
+    /**
+     * Returns the search url for the given context.
+     *
+     * [
+     *     'route'      => <string>,
+     *     'parameters' => <array>,
+     * ]
+     *
+     * @param string $context
+     *
+     * @return array
+     */
+    public function getSearchRouteAndParameters($context);
 
     /**
      * Returns the provider name.
