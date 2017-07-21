@@ -40,22 +40,22 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @var float
      */
-    protected $netPrice;
+    protected $netPrice = 0;
 
     /**
      * @var float
      */
-    protected $weight;
+    protected $weight = 0;
 
     /**
      * @var float
      */
-    protected $availableStock;
+    protected $availableStock = 0;
 
     /**
      * @var float
      */
-    protected $orderedStock;
+    protected $orderedStock = 0;
 
     /**
      * @var \DateTime

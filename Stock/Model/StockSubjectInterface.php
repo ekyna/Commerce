@@ -44,6 +44,22 @@ interface StockSubjectInterface extends ResourceInterface
     public function setStockState($state);
 
     /**
+     * Returns the stock floor.
+     *
+     * @return float
+     */
+    public function getStockFloor();
+
+    /**
+     * Sets the stock floor.
+     *
+     * @param float $floor
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setStockFloor($floor);
+
+    /**
      * Returns the in stock quantity.
      *
      * @return float

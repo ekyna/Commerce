@@ -30,6 +30,11 @@ trait StockSubjectTrait
     protected $virtualStock;
 
     /**
+     * @var float
+     */
+    protected $stockFloor;
+
+    /**
      * @var \DateTime
      */
     protected $estimatedDateOfArrival;
@@ -90,6 +95,30 @@ trait StockSubjectTrait
     public function setStockState($state)
     {
         $this->stockState = $state;
+
+        return $this;
+    }
+
+    /**
+     * Returns the stock floor.
+     *
+     * @return float
+     */
+    public function getStockFloor()
+    {
+        return $this->stockFloor;
+    }
+
+    /**
+     * Sets the stock floor.
+     *
+     * @param float $floor
+     *
+     * @return StockSubjectTrait
+     */
+    public function setStockFloor($floor)
+    {
+        $this->stockFloor = $floor;
 
         return $this;
     }
