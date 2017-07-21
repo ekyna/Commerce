@@ -113,6 +113,9 @@
                 <option name="value">0</option>
             </constraint>
         </property>
+        <getter property="subjectIdentity">
+            <constraint name="Valid"/>
+        </getter>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierOrderItem"/>
     </class>
 
@@ -150,6 +153,54 @@
         </property>
         <!-- TODO unique orderItem by delivery -->
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierDeliveryItem"/>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierProduct">
+        <property name="supplier">
+            <constraint name="NotNull" />
+        </property>
+        <property name="designation">
+            <constraint name="NotBlank" />
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="reference">
+            <constraint name="NotBlank" />
+            <constraint name="Length">
+                <option name="min">2</option>
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="netPrice">
+            <constraint name="NotBlank" />
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="weight">
+            <constraint name="NotBlank" />
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="availableStock">
+            <constraint name="NotBlank" />
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="orderedStock">
+            <constraint name="NotBlank" />
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <getter property="subjectIdentity">
+            <constraint name="NotNull"/>
+            <constraint name="Valid"/>
+        </getter>
     </class>
 
 </constraint-mapping>
