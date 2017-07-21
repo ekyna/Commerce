@@ -3,7 +3,10 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
@@ -14,6 +17,8 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class AddressValidator extends ConstraintValidator
 {
+    private $propertyAccessor;
+
     /**
      * {@inheritdoc}
      */
@@ -30,50 +35,86 @@ class AddressValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, Address::class);
         }
 
-        /**
-         * @var AddressInterface $address
-         * @var Address $constraint
-         */
+        $config = [
+            'street' => [
+                new Assert\NotBlank(),
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 128,
+                ]),
+            ],
+            'supplement' => [
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 128,
+                ]),
+            ],
+            'postalCode' => [
+                new Assert\NotBlank(),
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 16,
+                ]),
+            ],
+            'city' => [
+                new Assert\NotBlank(),
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 64,
+                ]),
+            ],
+            'country' => [
+                new Assert\NotNull(),
+            ],
+        ];
+
+        if ($constraint->company) {
+            $config['company'] = [
+                new Assert\NotBlank(),
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 64,
+                ]),
+            ];
+        }
+        if ($constraint->phone) {
+            $config['phone'] = [
+                new Assert\NotBlank(),
+                new PhoneNumber([
+                    'type' => 'fixed_line',
+                ]),
+            ];
+        }
+        if ($constraint->mobile) {
+            $config['mobile'] = [
+                new Assert\NotBlank(),
+                new PhoneNumber([
+                    'type' => 'mobile',
+                ]),
+            ];
+        }
+
+        if (null === $this->propertyAccessor) {
+            $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
+        }
+
+        foreach ($config as $field => $constraints) {
+            $violationList = $this
+                ->context
+                ->getValidator()
+                ->validate($this->propertyAccessor->getValue($address, $field), $constraints);
+
+            /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
+            foreach ($violationList as $violation) {
+                $this->context
+                    ->buildViolation($violation->getMessage())
+                    ->atPath($field)
+                    ->addViolation();
+            }
+        }
+
         if ($constraint->identity) {
-            if (0 === strlen($address->getGender())) {
-                $this->context
-                    ->buildViolation($constraint->gender_is_mandatory)
-                    ->atPath('gender')
-                    ->addViolation();
-            }
-            if (0 === strlen($address->getFirstName())) {
-                $this->context
-                    ->buildViolation($constraint->first_name_is_mandatory)
-                    ->atPath('firstName')
-                    ->addViolation();
-            }
-            if (0 === strlen($address->getLastName())) {
-                $this->context
-                    ->buildViolation($constraint->last_name_is_mandatory)
-                    ->atPath('lastName')
-                    ->addViolation();
-            }
-        }
-
-        if (0 === strlen($address->getCompany()) && $constraint->company) {
-            $this->context
-                ->buildViolation($constraint->company_is_mandatory)
-                ->atPath('company')
-                ->addViolation();
-        }
-
-        if (0 === strlen($address->getPhone()) && $constraint->phone) {
-            $this->context
-                ->buildViolation($constraint->phone_is_mandatory)
-                ->atPath('phone')
-                ->addViolation();
-        }
-
-        if (0 === strlen($address->getMobile()) && $constraint->mobile) {
-            $this->context
-                ->buildViolation($constraint->mobile_is_mandatory)
-                ->atPath('mobile')
-                ->addViolation();
+            IdentityValidator::validateIdentity($this->context, $address);
         }
     }
 }

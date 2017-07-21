@@ -16,10 +16,7 @@
         </property>
     </class>
 
-    <!--<class name="Ekyna\Component\Commerce\Cart\Entity\CartAddress">
-
-    </class>
-
+    <!--
     <class name="Ekyna\Component\Commerce\Cart\Entity\AbstractAdjustment">
 
     </class>

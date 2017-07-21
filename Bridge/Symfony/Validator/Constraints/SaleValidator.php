@@ -79,30 +79,8 @@ class SaleValidator extends ConstraintValidator
                     ->atPath('email')
                     ->addViolation();
             }
-            if (0 == strlen($sale->getGender())) {
-                $this->context
-                    ->buildViolation($constraint->identity_is_required_if_no_customer)
-                    ->atPath('gender')
-                    ->addViolation();
 
-                return;
-            }
-            if (0 == strlen($sale->getFirstName())) {
-                $this->context
-                    ->buildViolation($constraint->identity_is_required_if_no_customer)
-                    ->atPath('firstName')
-                    ->addViolation();
-
-                return;
-            }
-            if (0 == strlen($sale->getLastName())) {
-                $this->context
-                    ->buildViolation($constraint->identity_is_required_if_no_customer)
-                    ->atPath('lastName')
-                    ->addViolation();
-
-                return;
-            }
+            IdentityValidator::validateIdentity($this->context, $sale);
         }
     }
 }

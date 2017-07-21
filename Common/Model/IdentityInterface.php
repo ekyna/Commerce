@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 /**
  * Interface IdentityInterface
  * @package Ekyna\Component\Commerce\Common\Model
- * @author Étienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 interface IdentityInterface
 {
@@ -13,6 +13,7 @@ interface IdentityInterface
      * Set gender
      *
      * @param string $gender
+     *
      * @return IdentityInterface|$this
      */
     public function setGender($gender);
@@ -28,6 +29,7 @@ interface IdentityInterface
      * Set firstName
      *
      * @param string $firstName
+     *
      * @return IdentityInterface|$this
      */
     public function setFirstName($firstName);
@@ -43,6 +45,7 @@ interface IdentityInterface
      * Set lastName
      *
      * @param string $lastName
+     *
      * @return IdentityInterface|$this
      */
     public function setLastName($lastName);

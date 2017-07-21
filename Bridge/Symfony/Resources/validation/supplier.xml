@@ -12,24 +12,6 @@
                 <option name="max">64</option>
             </constraint>
         </property>
-        <property name="gender">
-            <constraint name="NotBlank"/>
-            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Gender" />
-        </property>
-        <property name="firstName">
-            <constraint name="NotBlank"/>
-            <constraint name="Length">
-                <option name="min">2</option>
-                <option name="max">32</option>
-            </constraint>
-        </property>
-        <property name="lastName">
-            <constraint name="NotBlank"/>
-            <constraint name="Length">
-                <option name="min">2</option>
-                <option name="max">32</option>
-            </constraint>
-        </property>
         <property name="email">
             <constraint name="NotBlank"/>
             <constraint name="Email"/>
@@ -40,6 +22,15 @@
         <property name="address">
             <constraint name="Valid"/>
         </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Identity">
+            <!--<option name="required">false</option>-->
+        </constraint>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress">
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Address">
+            <option name="identity">false</option>
+        </constraint>
     </class>
 
     <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder">

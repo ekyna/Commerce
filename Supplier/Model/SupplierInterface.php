@@ -46,6 +46,22 @@ interface SupplierInterface extends ResourceInterface, IdentityInterface
     public function setEmail($email);
 
     /**
+     * Returns the customer code.
+     *
+     * @return string
+     */
+    public function getCustomerCode();
+
+    /**
+     * Sets the customer code.
+     *
+     * @param string $code
+     *
+     * @return $this|SupplierInterface
+     */
+    public function setCustomerCode($code);
+
+    /**
      * Returns the address.
      *
      * @return SupplierAddressInterface

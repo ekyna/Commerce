@@ -32,6 +32,11 @@ class Supplier implements SupplierInterface
     protected $email;
 
     /**
+     * @var string
+     */
+    protected $customerCode;
+
+    /**
      * @var SupplierAddress
      */
     protected $address;
@@ -90,6 +95,24 @@ class Supplier implements SupplierInterface
     public function setEmail($email)
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCustomerCode()
+    {
+        return $this->customerCode;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCustomerCode($code)
+    {
+        $this->customerCode = $code;
 
         return $this;
     }

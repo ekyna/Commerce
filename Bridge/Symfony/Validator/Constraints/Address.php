@@ -22,4 +22,13 @@ class Address extends Constraint
     public $company                 = false;
     public $phone                   = false;
     public $mobile                  = false;
+
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTargets()
+    {
+        return self::CLASS_CONSTRAINT;
+    }
 }

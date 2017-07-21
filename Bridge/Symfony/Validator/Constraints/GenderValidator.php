@@ -39,7 +39,7 @@ class GenderValidator extends ConstraintValidator
         }
 
         if (!$constraint instanceof Gender) {
-            throw new UnexpectedTypeException($constraint, __NAMESPACE__.'\Gender');
+            throw new UnexpectedTypeException($constraint, Gender::class);
         }
 
         if (!call_user_func($this->genderClass.'::isValid', $gender)) {
