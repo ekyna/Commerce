@@ -201,6 +201,12 @@
             <constraint name="NotNull"/>
             <constraint name="Valid"/>
         </getter>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">
+                <value>supplier</value>
+                <value>reference</value>
+            </option>
+        </constraint>
     </class>
 
 </constraint-mapping>
