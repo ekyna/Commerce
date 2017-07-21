@@ -74,8 +74,12 @@ class LoadMetadataListener implements EventSubscriber
     {
         /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
-        $class = $metadata->getName();
+        // Skip mapped super classes
+        if ($metadata->isMappedSuperclass) {
+            return;
+        }
 
+        $class = $metadata->getName();
         // Skip abstract classes.
         if ((new \ReflectionClass($class))->isAbstract()) {
             return;
@@ -122,11 +126,6 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        // Skip abstract classes.
-        if ((new \ReflectionClass($class))->isAbstract()) {
-            return;
-        }
-
         // Don't add twice
         if (in_array($class, $this->taxableClassCache)) {
             return;
@@ -167,11 +166,6 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        // Skip abstract classes.
-        if ((new \ReflectionClass($class))->isAbstract()) {
-            return;
-        }
-
         // Don't add twice
         if (in_array($class, $this->vatNumberSubjectClassCache)) {
             return;
@@ -197,11 +191,6 @@ class LoadMetadataListener implements EventSubscriber
 
         // Check class
         if (!is_subclass_of($class, Payment\PaymentTermSubjectInterface::class)) {
-            return;
-        }
-
-        // Skip abstract classes.
-        if ((new \ReflectionClass($class))->isAbstract()) {
             return;
         }
 
@@ -245,11 +234,6 @@ class LoadMetadataListener implements EventSubscriber
             return;
         }
 
-        // Skip abstract classes.
-        if ((new \ReflectionClass($class))->isAbstract()) {
-            return;
-        }
-
         // Don't add twice
         if (in_array($class, $this->relativeClassCache)) {
             return;
@@ -277,11 +261,6 @@ class LoadMetadataListener implements EventSubscriber
 
         // Check class
         if (!is_subclass_of($class, Stock\StockSubjectInterface::class)) {
-            return;
-        }
-
-        // Skip abstract classes.
-        if ((new \ReflectionClass($class))->isAbstract()) {
             return;
         }
 
