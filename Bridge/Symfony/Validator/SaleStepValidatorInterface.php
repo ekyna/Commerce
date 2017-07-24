@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
  */
 interface SaleStepValidatorInterface
 {
+    const CHECKOUT_STEP = 'checkout';
     const SHIPMENT_STEP = 'shipment';
     const PAYMENT_STEP  = 'payment';
 

@@ -5,6 +5,17 @@
         xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
+    <!-- Address -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Address">
+            <option name="groups">
+                <value>Default</value>
+                <value>Address</value>
+            </option>
+        </constraint>
+    </class>
+
     <!-- Adjustable -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAdjustable">
@@ -17,34 +28,73 @@
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment">
         <property name="designation">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">255</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="type">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
+            </constraint>
             <constraint name="Callback">
-                <value>Ekyna\Component\Commerce\Common\Model\AdjustmentTypes</value>
-                <value>isValidType</value>
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Common\Model\AdjustmentTypes</value>
+                    <value>isValidType</value>
+                </option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="mode">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
+            </constraint>
             <constraint name="Callback">
-                <value>Ekyna\Component\Commerce\Common\Model\AdjustmentModes</value>
-                <value>isValidMode</value>
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Common\Model\AdjustmentModes</value>
+                    <value>isValidMode</value>
+                </option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="amount">
             <constraint name="GreaterThan">
                 <option name="value">0</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="position">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
     </class>
@@ -52,6 +102,7 @@
     <!-- Attachment -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAttachment">
+
         <constraint name="Ekyna\Bundle\CoreBundle\Validator\Constraints\Uploadable" />
         <property name="file">
             <constraint name="File" />
@@ -109,15 +160,31 @@
             <constraint name="Valid" />
         </property>
         <property name="email">
-            <constraint name="Email"/>
+            <constraint name="Email">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Identity</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="max">255</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Identity</value>
+                    <value>Checkout</value>
+                </option>
             </constraint>
         </property>
         <property name="vatNumber">
             <constraint name="Antalaron\Component\VatNumberValidator\VatNumber"/>
         </property>
         <property name="invoiceAddress">
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Checkout</value>
+                </option>
+            </constraint>
             <constraint name="Valid" />
         </property>
         <property name="deliveryAddress">
@@ -165,44 +232,85 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">key</option>
         </constraint>
-        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Sale"/>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Sale">
+            <option name="groups">
+                <value>Default</value>
+                <value>Identity</value>
+                <value>Address</value>
+                <value>Checkout</value>
+            </option>
+        </constraint>
     </class>
 
     <!-- Sale Item -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem">
         <property name="designation">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">255</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="reference">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">16</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="netPrice">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="weight">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="quantity">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">1</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <property name="position">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Calculation</value>
+                </option>
             </constraint>
         </property>
         <getter property="subjectIdentity">
@@ -214,7 +322,12 @@
         <!--<property name="adjustments">
             TODO Not with mode == FLAT
         </property>-->
-        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SaleItem"/>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SaleItem">
+            <option name="groups">
+                <value>Default</value>
+                <value>Calculation</value>
+            </option>
+        </constraint>
     </class>
 
     <!-- Country -->

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -21,7 +22,7 @@ class SaleStepValidator implements SaleStepValidatorInterface
     /**
      * @var \Symfony\Component\Validator\ConstraintViolationListInterface
      */
-    private $violationList;
+    protected $violationList;
 
 
     /**
@@ -39,7 +40,13 @@ class SaleStepValidator implements SaleStepValidatorInterface
      */
     public function validate(SaleInterface $sale, $step)
     {
-        $this->violationList = $this->validator->validate($sale, $this->getConstraintsForStep($step));
+        $this->validateStep($step);
+
+        $this->violationList = $this->validator->validate(
+            $sale,
+            $this->getConstraintsForStep($step),
+            $this->getGroupsForStep($step)
+        );
 
         return 0 == $this->violationList->count();
     }
@@ -53,7 +60,7 @@ class SaleStepValidator implements SaleStepValidatorInterface
     }
 
     /**
-     * Returns the constraints to validate for the given step.
+     * Returns the validation constraints for the given step.
      *
      * @param string $step
      *
@@ -61,22 +68,37 @@ class SaleStepValidator implements SaleStepValidatorInterface
      */
     protected function getConstraintsForStep($step)
     {
-        $this->validateStep($step);
+        $constraints = [new Valid()];
 
         if ($step === static::SHIPMENT_STEP) {
-            return [
-                new Constraints\SaleShipmentStep(),
-            ];
+            $constraints[] = new Constraints\SaleShipmentStep();
         }
 
         if ($step === static::PAYMENT_STEP) {
-            return [
-                new Constraints\SaleShipmentStep(),
-                new Constraints\SalePaymentStep(),
-            ];
+            $constraints[] = new Constraints\SaleShipmentStep();
+            $constraints[] = new Constraints\SalePaymentStep();
         }
 
-        return [];
+        return $constraints;
+    }
+
+    /**
+     * Returns the validation groups for the given step.
+     *
+     * @param string $step
+     *
+     * @return array
+     */
+    protected function getGroupsForStep($step)
+    {
+        $groups = ['Default'];
+
+        if ($step === static::CHECKOUT_STEP) {
+            $groups[] = 'Checkout';
+            $groups[] = 'Identity';
+        }
+
+        return $groups;
     }
 
     /**
@@ -86,7 +108,7 @@ class SaleStepValidator implements SaleStepValidatorInterface
      */
     protected function validateStep($step)
     {
-        if (!in_array($step, [static::SHIPMENT_STEP, static::PAYMENT_STEP])) {
+        if (!in_array($step, [static::CHECKOUT_STEP, static::SHIPMENT_STEP, static::PAYMENT_STEP])) {
             throw new InvalidArgumentException('Invalid step.');
         }
     }

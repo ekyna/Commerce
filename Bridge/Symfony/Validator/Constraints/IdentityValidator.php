@@ -43,6 +43,7 @@ class IdentityValidator extends ConstraintValidator
             if ($constraint->required) {
                 $this->context
                     ->buildViolation($constraint->mandatory)
+                    ->atPath('gender')
                     ->addViolation();
             }
         } else {
