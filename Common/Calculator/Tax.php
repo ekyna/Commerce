@@ -22,7 +22,7 @@ class Tax
     /**
      * @var float
      */
-    private $amount = 0;
+    private $base = 0;
 
     /**
      * @var float
@@ -35,16 +35,16 @@ class Tax
      *
      * @param string $name
      * @param float  $rate
-     * @param float  $amount
+     * @param float  $base
      * @param int    $precision
      */
-    public function __construct($name, $rate, $amount = .0, $precision = 2)
+    public function __construct($name, $rate, $base = .0, $precision = 2)
     {
         $this->name = $name;
         $this->rate = (float)$rate;
         $this->precision = $precision;
 
-        $this->addAmount($amount);
+        $this->addBase($base);
     }
 
     /**
@@ -68,31 +68,31 @@ class Tax
     }
 
     /**
-     * Returns the amount.
+     * Returns the base.
      *
      * @return float
      */
-    public function getAmount()
+    public function getBase()
     {
-        return $this->amount;
+        return $this->base;
     }
 
     /**
-     * Adds the amount.
+     * Adds the base.
      *
-     * @param float $amount
+     * @param float $base
      *
      * @return Tax
      */
-    public function addAmount($amount)
+    public function addBase($base)
     {
-        $this->amount += (float)$amount;
+        $this->base += (float)$base;
 
         return $this;
     }
 
     /**
-     * Multiply the amount.
+     * Multiply the tax (base).
      *
      * @param float $quantity
      *
@@ -100,8 +100,30 @@ class Tax
      */
     public function multiply($quantity)
     {
-        $this->amount = round($this->amount * $quantity, $this->precision);
+        $this->base = round($this->base * $quantity, $this->precision);
 
         return $this;
+    }
+
+    /**
+     * Returns the tax amount.
+     *
+     * @return float
+     */
+    public function getAmount()
+    {
+        return $this->round($this->base * $this->rate / 100);
+    }
+
+    /**
+     * Rounds the given amount.
+     *
+     * @param float $amount
+     *
+     * @return float
+     */
+    private function round($amount)
+    {
+        return round($amount, $this->precision);
     }
 }

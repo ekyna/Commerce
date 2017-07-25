@@ -116,17 +116,12 @@ class ViewBuilder
      */
     private function buildSaleTaxesViews(Model\SaleInterface $sale)
     {
-        // TODO unnecessary recalculation (see calculator "don't build amounts twice")
         $amounts = $this->calculator->calculateSale($sale);
 
         $taxes = [];
         foreach ($amounts->getTaxes() as $tax) {
             $taxes[] = new TaxView($tax->getName(), $tax->getAmount());
         }
-
-        /*foreach ($this->types as $type) {
-            $type->buildSaleTaxesView($sale, $view, $options);
-        }*/
 
         return $taxes;
     }
@@ -199,13 +194,6 @@ class ViewBuilder
             }
         }
 
-        // Item total quantity
-        $quantity = $item->getQuantity();
-        $parent = $item;
-        while (null !== $parent = $parent->getParent()) {
-            $quantity *= $parent->getQuantity();
-        }
-
         $view = new LineView(
             'item_' . ($lineNumber - 1),
             'item_' . $item->getId(),
@@ -214,7 +202,7 @@ class ViewBuilder
             $item->getDesignation(),
             $item->getReference(),
             $item->getNetPrice(),
-            $quantity,
+            $item->getTotalQuantity(),
             $amounts->getBase(),
             $amounts->getTaxRates(),
             $amounts->getTaxTotal(),
@@ -265,8 +253,6 @@ class ViewBuilder
             [],
             $amounts->getTaxTotal(),
             $amounts->getTotal()
-        // lines
-        // node
         );
 
         foreach ($this->types as $type) {
@@ -314,8 +300,6 @@ class ViewBuilder
             $amounts->getTaxRates(),
             $amounts->getTaxTotal(),
             $amounts->getTotal()
-        // lines
-        // node
         );
 
         foreach ($this->types as $type) {

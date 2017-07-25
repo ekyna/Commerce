@@ -88,7 +88,7 @@ class Result
         $this->addBase($result->getBase());
 
         foreach ($result->getTaxes() as $taxAmount) {
-            $this->addTax($taxAmount->getName(), $taxAmount->getRate(), $taxAmount->getAmount());
+            $this->addTax($taxAmount->getName(), $taxAmount->getRate(), $taxAmount->getBase());
         }
 
         return $this;
@@ -125,24 +125,24 @@ class Result
      *
      * @param string $name
      * @param float  $rate
-     * @param float  $amount
+     * @param float  $base
      *
      * @return Result
      */
-    public function addTax($name, $rate, $amount)
+    public function addTax($name, $rate, $base)
     {
         $this->clearTotal();
 
         $taxAmount = null;
         foreach ($this->taxes as $tax) {
-            if (0 === bccomp($tax->getRate(), $rate, 3)) {
-                $tax->addAmount($amount);
+            if ($name === $tax->getName()) {
+                $tax->addBase($base);
 
                 return $this;
             }
         }
 
-        $this->taxes[] = new Tax($name, $rate, $amount, $this->precision);
+        $this->taxes[] = new Tax($name, $rate, $base, $this->precision);
 
         return $this;
     }

@@ -76,19 +76,12 @@ class InvoiceBuilder implements InvoiceBuilderInterface
     protected function buildGoodLine(InvoiceInterface $invoice, SaleItemInterface $item)
     {
         $description = null;
-        if ($item->hasChildren()) {
-            if ($item->isCompound()) {
-                foreach ($item->getChildren() as $child) {
-                    $this->buildGoodLine($invoice, $child);
-                }
-
-                return;
-            }
-            $designations = [];
+        if ($item->isCompound() && $item->hasChildren()) {
             foreach ($item->getChildren() as $child) {
-                $designations[] = $child->getDesignation();
+                $this->buildGoodLine($invoice, $child);
             }
-            $description = implode("\n", $designations);
+
+            return;
         }
 
         $line = $this->factory->createLineForInvoice($invoice);
@@ -112,8 +105,12 @@ class InvoiceBuilder implements InvoiceBuilderInterface
 
         if (0 >= $max) {
             $invoice->removeLine($line);
+        }
 
-            return;
+        if (!$item->isCompound() && $item->hasChildren()) {
+            foreach ($item->getChildren() as $child) {
+                $this->buildGoodLine($invoice, $child);
+            }
         }
     }
 

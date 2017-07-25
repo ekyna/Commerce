@@ -241,7 +241,7 @@ class InvoiceUpdater implements InvoiceUpdaterInterface
         $result->addBase($line->getNetPrice());
 
         foreach ($line->getTaxesDetails() as $detail) {
-            $result->addTax($detail['name'], $detail['rate'], $detail['amount']);
+            $result->addTax($detail['name'], $detail['rate'], $detail['base']);
         }
 
         $result->multiply($line->getQuantity());
@@ -272,7 +272,7 @@ class InvoiceUpdater implements InvoiceUpdaterInterface
             throw new LogicException("Invoice can't be recalculated.");
         }
 
-        $result = $this->amountsCalculator->calculateSaleItem($item);
+        $result = $this->amountsCalculator->calculateSaleItem($item, false , true);
 
         $netUnit = $result->getBase();
         if ($line->getNetPrice() != $netUnit) {
@@ -383,6 +383,7 @@ class InvoiceUpdater implements InvoiceUpdaterInterface
             $taxes[] = [
                 'name'   => $tax->getName(),
                 'rate'   => $tax->getRate(),
+                'base'   => $tax->getBase(),
                 'amount' => $tax->getAmount(),
             ];
         }
