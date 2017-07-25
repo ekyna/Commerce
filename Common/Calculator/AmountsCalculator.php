@@ -43,7 +43,7 @@ class AmountsCalculator implements AmountsCalculatorInterface
         // Items result
         if ($sale->hasItems()) {
             foreach ($sale->getItems() as $item) {
-                $result->merge($this->calculateSaleItem($item)->multiply($item->getQuantity()));
+                $result->merge($this->calculateSaleItem($item));
             }
         }
 
@@ -70,9 +70,10 @@ class AmountsCalculator implements AmountsCalculatorInterface
     {
         $result = new Result();
 
-        if (0 < $sale->getShipmentAmount()) {
-            // TODO round base regarding to calculator mode ?
-            $result->addBase($base = $sale->getShipmentAmount());
+        if (0 < $base = $sale->getShipmentAmount()) {
+            $base = $this->round($base);
+
+            $result->addBase($base);
 
             $this->addTaxation($result, $sale, $base);
         }
@@ -95,13 +96,15 @@ class AmountsCalculator implements AmountsCalculatorInterface
             $result->addBase($base);
 
             $this->addTaxation($result, $item, $base);
+
+            $result->multiply($item->getTotalQuantity());
         }
 
         if ($item->hasChildren() && !$single) { // Calculate as a "parent" item
             // Merge children results
             foreach ($item->getChildren() as $child) {
                 // Item result must take account of child's discounts, so not gross
-                $result->merge($this->calculateSaleItem($child)->multiply($child->getQuantity()));
+                $result->merge($this->calculateSaleItem($child));
             }
         }
 
@@ -143,29 +146,23 @@ class AmountsCalculator implements AmountsCalculatorInterface
         if (AdjustmentModes::MODE_PERCENT === $mode) {
             $adjustmentRate = $adjustment->getAmount() / 100;
 
+            // Apply discount rate to base
             $result->addBase(-$this->round($parentResult->getBase() * $adjustmentRate));
 
+            // Apply discount rate to taxes
             foreach ($parentResult->getTaxes() as $tax) {
-                $result->addTax(
-                    $tax->getName(),
-                    $tax->getRate(),
-                    -$this->round($tax->getBase() * $adjustmentRate)
-                );
+                $taxBase = -$this->round($tax->getBase() * $adjustmentRate);
+                $result->addTax($tax->getName(), $tax->getRate(), $taxBase);
             }
         } elseif (AdjustmentModes::MODE_FLAT === $mode) {
+            // Apply discount amount to base
             $result->addBase(-$this->round($adjustment->getAmount()));
 
-            // TODO calculate per tax discount (dispatch regarding to each tax total)
-
-            /*$rate = $adjustment->getAmount() / $parentResult->getBase();
+            // Dispatch the discount amount over taxes
             foreach ($parentResult->getTaxes() as $tax) {
-                $result->addTax(
-                    $tax->getName(),
-                    $tax->getRate(),
-                    -$this->round($tax->getBase() * $rate)
-                );
-            }*/
-
+                $taxBase = -$this->round($adjustment->getAmount() * $tax->getBase() / $parentResult->getBase());
+                $result->addTax($tax->getName(), $tax->getRate(), $taxBase);
+            }
         } else {
             throw new InvalidArgumentException("Unexpected adjustment mode '$mode'.");
         }

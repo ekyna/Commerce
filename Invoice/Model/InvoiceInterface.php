@@ -217,6 +217,22 @@ interface InvoiceInterface extends
     public function setTaxesTotal($total);
 
     /**
+     * Returns the taxes details.
+     *
+     * @return array
+     */
+    public function getTaxesDetails();
+
+    /**
+     * Sets the taxes details.
+     *
+     * @param array $details
+     *
+     * @return $this|InvoiceInterface
+     */
+    public function setTaxesDetails(array $details);
+
+    /**
      * Returns the grand total.
      *
      * @return float
@@ -231,11 +247,4 @@ interface InvoiceInterface extends
      * @return $this|InvoiceInterface
      */
     public function setGrandTotal($total);
-
-    /**
-     * Returns the taxes details.
-     *
-     * @return array
-     */
-    public function getTaxesDetails();
 }

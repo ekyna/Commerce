@@ -19,6 +19,7 @@
         <field name="goodsBase" column="goods_base" type="decimal" precision="12" scale="5"/>
         <field name="shipmentBase" column="shipment_base" type="decimal" precision="12" scale="5"/>
         <field name="taxesTotal" column="taxes_total" type="decimal" precision="12" scale="5"/>
+        <field name="taxesDetails" column="taxes_details" type="json_array"/>
         <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
 
         <field name="description" column="description" type="string" length="255" nullable="true"/>

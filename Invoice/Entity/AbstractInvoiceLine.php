@@ -47,14 +47,24 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
     protected $netPrice;
 
     /**
-     * @var array
+     * @var float
      */
-    protected $taxesDetails;
+    protected $quantity;
 
     /**
      * @var float
      */
-    protected $quantity;
+    protected $discountTotal;
+
+    /**
+     * @var float
+     */
+    protected $netTotal;
+
+    /**
+     * @var array
+     */
+    protected $taxRates;
 
 
     /**
@@ -63,8 +73,10 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
     public function __construct()
     {
         $this->netPrice = 0;
-        $this->taxesDetails = [];
         $this->quantity = 1;
+        $this->discountTotal = 0;
+        $this->netTotal = 0;
+        $this->taxRates = [];
     }
 
     /**
@@ -197,24 +209,6 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
     /**
      * @inheritdoc
      */
-    public function getTaxesDetails()
-    {
-        return $this->taxesDetails;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxesDetails(array $details)
-    {
-        $this->taxesDetails = $details;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getQuantity()
     {
         return $this->quantity;
@@ -233,30 +227,54 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
     /**
      * @inheritdoc
      */
-    public function getBaseTotal()
+    public function getDiscountTotal()
     {
-        return $this->netPrice * $this->quantity;
+        return $this->discountTotal;
     }
 
     /**
      * @inheritdoc
      */
-    public function getTaxesTotal()
+    public function setDiscountTotal($total)
     {
-        $total = 0;
+        $this->discountTotal = $total;
 
-        foreach ($this->taxesDetails as $tax) {
-            $total += $tax['amount'] * $this->quantity;
-        }
-
-        return $total;
+        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function getTotal()
+    public function getNetTotal()
     {
-        return $this->getBaseTotal() + $this->getTaxesTotal();
+        return $this->netTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNetTotal($total)
+    {
+        $this->netTotal = $total;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTaxRates()
+    {
+        return $this->taxRates;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTaxRates(array $taxRates)
+    {
+        $this->taxRates = $taxRates;
+
+        return $this;
     }
 }

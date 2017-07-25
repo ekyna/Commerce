@@ -154,6 +154,19 @@ class InvoiceBuilder implements InvoiceBuilderInterface
             ->setDesignation($adjustment->getDesignation());
 
         $invoice->addLine($line);
+
+        if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
+            $max = InvoiceUtil::calculateMaxInvoiceQuantity($line);
+            $line->setQuantity($max);
+        } elseif ($invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+            $max = InvoiceUtil::calculateMaxCreditQuantity($line);
+        } else {
+            throw new InvalidArgumentException("Unexpected invoice type.");
+        }
+
+        if (0 >= $max) {
+            $invoice->removeLine($line);
+        }
     }
 
     /**
@@ -175,5 +188,18 @@ class InvoiceBuilder implements InvoiceBuilderInterface
             ->setDesignation($sale->getPreferredShipmentMethod()->getTitle());
 
         $invoice->addLine($line);
+
+        if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
+            $max = InvoiceUtil::calculateMaxInvoiceQuantity($line);
+            $line->setQuantity($max);
+        } elseif ($invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+            $max = InvoiceUtil::calculateMaxCreditQuantity($line);
+        } else {
+            throw new InvalidArgumentException("Unexpected invoice type.");
+        }
+
+        if (0 >= $max) {
+            $invoice->removeLine($line);
+        }
     }
 }

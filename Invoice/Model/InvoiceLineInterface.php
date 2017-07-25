@@ -142,22 +142,6 @@ interface InvoiceLineInterface extends ResourceInterface
     public function setNetPrice($price);
 
     /**
-     * Returns the taxes details.
-     *
-     * @return array
-     */
-    public function getTaxesDetails();
-
-    /**
-     * Sets the taxes details.
-     *
-     * @param array $details
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setTaxesDetails(array $details);
-
-    /**
      * Returns the quantity.
      *
      * @return float
@@ -174,23 +158,50 @@ interface InvoiceLineInterface extends ResourceInterface
     public function setQuantity($quantity);
 
     /**
-     * Returns the base total.
+     * Returns the discount total.
      *
      * @return float
      */
-    public function getBaseTotal();
+    public function getDiscountTotal();
 
     /**
-     * Returns the tax total.
+     * Sets the discount total.
      *
-     * @return float
+     * @param float $total
+     *
+     * @return $this|InvoiceLineInterface
      */
-    public function getTaxesTotal();
+    public function setDiscountTotal($total);
 
     /**
-     * Returns the total.
+     * Returns the net total.
      *
      * @return float
      */
-    public function getTotal();
+    public function getNetTotal();
+
+    /**
+     * Sets the net total.
+     *
+     * @param float $total
+     *
+     * @return $this|InvoiceLineInterface
+     */
+    public function setNetTotal($total);
+
+    /**
+     * Returns the tax rates.
+     *
+     * @return array
+     */
+    public function getTaxRates();
+
+    /**
+     * Sets the tax rates.
+     *
+     * @param array $taxRates
+     *
+     * @return $this|InvoiceLineInterface
+     */
+    public function setTaxRates(array $taxRates);
 }

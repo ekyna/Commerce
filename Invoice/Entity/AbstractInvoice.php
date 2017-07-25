@@ -74,6 +74,11 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
     protected $taxesTotal;
 
     /**
+     * @var array
+     */
+    protected $taxesDetails;
+
+    /**
      * @var float
      */
     protected $grandTotal;
@@ -339,6 +344,24 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
     /**
      * @inheritdoc
      */
+    public function getTaxesDetails()
+    {
+        return $this->taxesDetails;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTaxesDetails(array $details)
+    {
+        $this->taxesDetails = $details;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getGrandTotal()
     {
         return $this->grandTotal;
@@ -352,27 +375,5 @@ abstract class AbstractInvoice implements Invoice\InvoiceInterface
         $this->grandTotal = (float)$total;
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxesDetails()
-    {
-        $taxes = [];
-
-        foreach ($this->lines as $line) {
-            foreach ($line->getTaxesDetails() as $data) {
-                $amount = $data['amount'] * $line->getQuantity();
-
-                if (isset($taxes[$data['name']])) {
-                    $taxes[$data['name']] += $amount;
-                } else {
-                    $taxes[$data['name']] = $amount;
-                }
-            }
-        }
-
-        return $taxes;
     }
 }

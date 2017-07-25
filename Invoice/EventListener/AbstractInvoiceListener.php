@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Invoice\Updater\InvoiceUpdaterInterface;
@@ -38,6 +39,11 @@ abstract class AbstractInvoiceListener
      */
     protected $updater;
 
+    /**
+     * @var InvoiceCalculatorInterface
+     */
+    protected $calculator;
+
 
     /**
      * Sets the persistence helper.
@@ -54,7 +60,7 @@ abstract class AbstractInvoiceListener
      *
      * @param NumberGeneratorInterface $generator
      */
-    public function setInvoiceNumberGenerator($generator)
+    public function setInvoiceNumberGenerator(NumberGeneratorInterface $generator)
     {
         $this->invoiceNumberGenerator = $generator;
     }
@@ -64,7 +70,7 @@ abstract class AbstractInvoiceListener
      *
      * @param NumberGeneratorInterface $generator
      */
-    public function setCreditNumberGenerator($generator)
+    public function setCreditNumberGenerator(NumberGeneratorInterface $generator)
     {
         $this->creditNumberGenerator = $generator;
     }
@@ -80,6 +86,16 @@ abstract class AbstractInvoiceListener
     }
 
     /**
+     * Sets the invoice calculator.
+     *
+     * @param InvoiceCalculatorInterface $calculator
+     */
+    public function setCalculator(InvoiceCalculatorInterface $calculator)
+    {
+        $this->calculator = $calculator;
+    }
+
+    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -92,7 +108,7 @@ abstract class AbstractInvoiceListener
         $changed = $this->generateNumber($invoice);
 
         // Updates the invoice data
-        $changed |= $this->updater->updateData($invoice);
+        $changed |= $this->updater->update($invoice);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
@@ -119,7 +135,7 @@ abstract class AbstractInvoiceListener
         $changed = $this->generateNumber($invoice);
 
         // Updates the invoice data
-        $changed |= $this->updater->updateData($invoice);
+        $changed |= $this->updater->update($invoice);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
@@ -150,8 +166,7 @@ abstract class AbstractInvoiceListener
         $invoice = $this->getInvoiceFromEvent($event);
 
         if (!$this->persistenceHelper->isScheduledForRemove($invoice)) {
-            // Calculate the total.
-            $changed = $this->updater->updatePricing($invoice);
+            $changed = $this->calculator->calculate($invoice);
 
             if ($changed) {
                 $this->persistenceHelper->persistAndRecompute($invoice, false);

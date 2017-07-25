@@ -2,8 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Updater;
 
-use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
-use Ekyna\Component\Commerce\Common\Calculator\Result;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
@@ -20,12 +18,7 @@ use Symfony\Component\Intl\Intl;
  */
 class InvoiceUpdater implements InvoiceUpdaterInterface
 {
-    /**
-     * @var AmountsCalculatorInterface
-     */
-    private $amountsCalculator;
-
-    /**
+     /**
      * @var PhoneNumberUtil
      */
     private $phoneNumberUtil;
@@ -34,87 +27,17 @@ class InvoiceUpdater implements InvoiceUpdaterInterface
     /**
      * Constructor.
      *
-     * @param AmountsCalculatorInterface $amountsCalculator
      * @param PhoneNumberUtil            $phoneNumberUtil
      */
-    public function __construct(AmountsCalculatorInterface $amountsCalculator, PhoneNumberUtil $phoneNumberUtil = null)
+    public function __construct(PhoneNumberUtil $phoneNumberUtil = null)
     {
-        $this->amountsCalculator = $amountsCalculator;
         $this->phoneNumberUtil = $phoneNumberUtil ?: PhoneNumberUtil::getInstance();
     }
 
     /**
      * @inheritdoc
      */
-    public function updatePricing(Model\InvoiceInterface $invoice)
-    {
-        if (null === $sale = $invoice->getSale()) {
-            throw new LogicException("Invoice's sale must be set at this point.");
-        }
-
-        $changed = false;
-
-        $result = new Result();
-
-        // Goods lines
-        foreach ($invoice->getLinesByType(Model\InvoiceLineTypes::TYPE_GOOD) as $line) {
-            $changed |= $this->updateGoodLine($line);
-
-            $result->merge($this->buildResultFromLine($line));
-        }
-
-        // Discount lines
-        $goodsResult = clone $result;
-        foreach ($invoice->getLinesByType(Model\InvoiceLineTypes::TYPE_DISCOUNT) as $line) {
-            $changed |= $this->updateDiscountLine($line, $goodsResult);
-
-            $result->merge($this->buildResultFromLine($line));
-        }
-
-        // Invoice goods base (after discounts)
-        if ($invoice->getGoodsBase() !== $result->getBase()) {
-            $invoice->setGoodsBase($result->getBase());
-            $changed = true;
-        }
-
-        // Shipment lines
-        $shipmentBase = 0;
-        foreach ($invoice->getLinesByType(Model\InvoiceLineTypes::TYPE_SHIPMENT) as $line) {
-            $changed |= $this->updateShipmentLine($line);
-
-            $shipmentResult = $this->buildResultFromLine($line);
-            $shipmentBase += $shipmentResult->getBase();
-
-            $result->merge($shipmentResult);
-        }
-
-        // Invoice shipment base.
-        if ($invoice->getShipmentBase() !== $shipmentBase) {
-            $invoice->setShipmentBase($shipmentBase);
-            $changed = true;
-        }
-
-        // Invoice taxes total
-        $taxesTotal = $result->getTaxTotal();
-        if ($invoice->getTaxesTotal() !== $taxesTotal) {
-            $invoice->setTaxesTotal($taxesTotal);
-            $changed = true;
-        }
-
-        // Invoice grand total
-        $grandTotal = $result->getTotal();
-        if ($invoice->getGrandTotal() !== $grandTotal) {
-            $invoice->setGrandTotal($grandTotal);
-            $changed = true;
-        }
-
-        return $changed;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateData(Model\InvoiceInterface $invoice)
+    public function update(Model\InvoiceInterface $invoice)
     {
         if (null === $sale = $invoice->getSale()) {
             throw new LogicException("Invoice's sale must be set at this point.");
@@ -225,169 +148,5 @@ class InvoiceUpdater implements InvoiceUpdaterInterface
         }
 
         return null;
-    }
-
-    /**
-     * Builds a result form the given line.
-     *
-     * @param Model\InvoiceLineInterface $line
-     *
-     * @return Result
-     */
-    protected function buildResultFromLine(Model\InvoiceLineInterface $line)
-    {
-        $result = new Result();
-
-        $result->addBase($line->getNetPrice());
-
-        foreach ($line->getTaxesDetails() as $detail) {
-            $result->addTax($detail['name'], $detail['rate'], $detail['base']);
-        }
-
-        $result->multiply($line->getQuantity());
-
-        return $result;
-    }
-
-    /**
-     * Updates the given 'good' line.
-     *
-     * @param Model\InvoiceLineInterface $line
-     *
-     * @return bool
-     * @throws LogicException
-     */
-    protected function updateGoodLine(Model\InvoiceLineInterface $line)
-    {
-        if ($line->getType() !== Model\InvoiceLineTypes::TYPE_GOOD) {
-            throw new LogicException(sprintf(
-                "Expected invoice line with type '%s'.",
-                Model\InvoiceLineTypes::TYPE_GOOD
-            ));
-        }
-
-        $changed = false;
-
-        if (null === $item = $line->getSaleItem()) {
-            throw new LogicException("Invoice can't be recalculated.");
-        }
-
-        $result = $this->amountsCalculator->calculateSaleItem($item, false , true);
-
-        $netUnit = $result->getBase();
-        if ($line->getNetPrice() != $netUnit) {
-            $line->setNetPrice($netUnit);
-            $changed = true;
-        }
-
-        $taxesDetails = $this->buildTaxesDetails($result);
-        if ($line->getTaxesDetails() !== $taxesDetails) {
-            $line->setTaxesDetails($taxesDetails);
-            $changed = true;
-        }
-
-        return $changed;
-    }
-
-    /**
-     * Updates the given 'discount' line.
-     *
-     * @param Model\InvoiceLineInterface $line
-     * @param Result                     $goodsResult
-     *
-     * @return bool
-     * @throws LogicException
-     */
-    protected function updateDiscountLine(Model\InvoiceLineInterface $line, Result $goodsResult)
-    {
-        if ($line->getType() !== Model\InvoiceLineTypes::TYPE_DISCOUNT) {
-            throw new LogicException(sprintf(
-                "Expected invoice line with type '%s'.",
-                Model\InvoiceLineTypes::TYPE_DISCOUNT
-            ));
-        }
-
-        $changed = false;
-
-        if (null === $adjustment = $line->getSaleAdjustment()) {
-            throw new LogicException("Invoice can't be recalculated.");
-        }
-
-        $result = $this->amountsCalculator->calculateDiscountAdjustment($adjustment, $goodsResult);
-
-        $netUnit = $result->getBase();
-        if ($line->getNetPrice() != $netUnit) {
-            $line->setNetPrice($netUnit);
-            $changed = true;
-        }
-
-        $taxesDetails = $this->buildTaxesDetails($result);
-        if ($line->getTaxesDetails() !== $taxesDetails) {
-            $line->setTaxesDetails($taxesDetails);
-            $changed = true;
-        }
-
-        return $changed;
-    }
-
-    /**
-     * Updates the given 'shipment' line.
-     *
-     * @param Model\InvoiceLineInterface $line
-     *
-     * @return bool
-     * @throws LogicException
-     */
-    protected function updateShipmentLine(Model\InvoiceLineInterface $line)
-    {
-        if ($line->getType() !== Model\InvoiceLineTypes::TYPE_SHIPMENT) {
-            throw new LogicException(sprintf(
-                "Expected invoice line with type '%s'.",
-                Model\InvoiceLineTypes::TYPE_SHIPMENT
-            ));
-        }
-
-        $changed = false;
-
-        $sale = $line->getInvoice()->getSale();
-
-        $result = $this->amountsCalculator->calculateShipment($sale);
-
-        $netUnit = $result->getBase();
-        if ($line->getNetPrice() != $netUnit) {
-            $line->setNetPrice($netUnit);
-            $changed = true;
-        }
-
-        $taxesDetails = $this->buildTaxesDetails($result);
-        if ($line->getTaxesDetails() !== $taxesDetails) {
-            $line->setTaxesDetails($taxesDetails);
-            $changed = true;
-        }
-
-        return $changed;
-    }
-
-    /**
-     * Builds the taxes details array from the given result.
-     *
-     * @param Result $result
-     *
-     * @return array
-     */
-    protected function buildTaxesDetails(Result $result)
-    {
-        $taxes = [];
-
-        foreach ($result->getTaxes() as $tax) {
-            $taxes[] = [
-                'name'   => $tax->getName(),
-                'rate'   => $tax->getRate(),
-                'base'   => $tax->getBase(),
-                'amount' => $tax->getAmount(),
-            ];
-        }
-
-        return $taxes;
     }
 }

@@ -37,4 +37,36 @@ class InvoiceTypes
     {
         return in_array($type, static::getTypes(), true);
     }
+
+    /**
+     * Returns whether the given invoice or type is of type 'invoice'.
+     *
+     * @param InvoiceInterface|string $invoiceOrType
+     *
+     * @return bool
+     */
+    static public function isInvoice($invoiceOrType)
+    {
+        if ($invoiceOrType instanceof InvoiceInterface) {
+            $invoiceOrType = $invoiceOrType->getType();
+        }
+
+        return $invoiceOrType === static::TYPE_INVOICE;
+    }
+
+    /**
+     * Returns whether the given invoice or type is of type 'credit'.
+     *
+     * @param InvoiceInterface|string $invoiceOrType
+     *
+     * @return bool
+     */
+    static public function isCredit($invoiceOrType)
+    {
+        if ($invoiceOrType instanceof InvoiceInterface) {
+            $invoiceOrType = $invoiceOrType->getType();
+        }
+
+        return $invoiceOrType === static::TYPE_CREDIT;
+    }
 }
