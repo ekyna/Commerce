@@ -28,6 +28,13 @@ interface StockAssignmentsInterface
     public function removeStockAssignment(StockAssignmentInterface $assignment);
 
     /**
+     * Returns whether there is stock assignment.
+     *
+     * @return bool
+     */
+    public function hasStockAssignments();
+
+    /**
      * Returns the the stock assignment.
      *
      * @return \Doctrine\Common\Collections\Collection|StockAssignmentInterface[]

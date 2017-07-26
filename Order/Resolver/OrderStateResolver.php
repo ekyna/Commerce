@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates as Pay;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates as Ship;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 
@@ -69,14 +70,28 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
         }
 
-        // If the new order state is not stockable and order has at least one stockable shipment
+        // If the new order state is not stockable and
+        // - order has at least one stockable shipment
+        // - order has at least one accepted payment
         // Set the new state as ACCEPTED
-        if (!OrderStates::isStockableState($newState) && $order->hasShipments()) {
+        if (!OrderStates::isStockableState($newState) && ($order->hasShipments() || $order->hasPayments())) {
+            $accepted = false;
             foreach ($order->getShipments() as $shipment) {
                 if (ShipmentStates::isStockableState($shipment->getState())) {
-                    $newState = OrderStates::STATE_ACCEPTED;
+                    $accepted = true;
                     break;
                 }
+            }
+            if (!$accepted) {
+                foreach ($order->getPayments() as $payment) {
+                    if (PaymentStates::isPaidState($payment->getState())) {
+                        $accepted = true;
+                        break;
+                    }
+                }
+            }
+            if ($accepted) {
+                $newState = OrderStates::STATE_ACCEPTED;
             }
         }
 

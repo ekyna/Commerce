@@ -119,41 +119,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         /** @var StockAssignmentInterface $assignment */
         foreach ($assignments as $assignment) {
-//            $stockUnit = $assignment->getStockUnit();
-//
-//            $delta = $quantity;
-//            // Debit case
-//            if (0 > $delta) {
-//                // If we're about to debit more than the assignment quantity, just remove the assignment
-//                if ($assignment->getSoldQuantity() <= abs($delta)) {
-//                    $item->removeStockAssignment($assignment);
-//                    $this->removeAssignment($assignment);
-//
-//                    $quantity += $assignment->getSoldQuantity();
-//                    continue;
-//                }
-//
-//                // Sold quantity can't be lower than shipped
-//                if (0 < $stockUnit->getShippedQuantity() && $stockUnit->getShippedQuantity() <= abs($delta)) {
-//                    $delta = -$stockUnit->getShippedQuantity();
-//                }
-//            } // Credit case
-//            elseif (0 < $delta) {
-//                if ($delta > $limit = $stockUnit->getReservableQuantity()) {
-//                    $delta = $limit;
-//                }
-//            }
-//            if (0 == $delta) {
-//                continue;
-//            }
-//
-//            // Apply delta to stock unit
-//            $this->unitUpdater->updateSold($stockUnit, $delta, true);
-//
-//            // Apply delta to assignment
-//            $assignment->setSoldQuantity($assignment->getSoldQuantity() + $delta);
-//            $this->persistenceHelper->persistAndRecompute($assignment);
-
             $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity, true);
             if (0 == $quantity) {
                 return;
@@ -366,22 +331,9 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         foreach ($stockUnits as $stockUnit) {
             $assignment = $this->saleFactory->createStockAssignmentForItem($item);
-
-//            $delta = $quantity;
-//            if ($delta > $limit = $stockUnit->getReservableQuantity()) {
-//                $delta = $limit;
-//            }
-//            if (0 == $delta) {
-//                continue;
-//            }
-//
-//            $this->unitUpdater->updateSold($stockUnit, $delta, true);
-
             $assignment
                 ->setSaleItem($item)
                 ->setStockUnit($stockUnit);
-
-            //$this->persistenceHelper->persistAndRecompute($assignment);
 
             $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
 
@@ -393,17 +345,13 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // Remaining quantity
         if (0 < $quantity) {
             $stockUnit = $this->unitResolver->createBySubjectRelative($item);
-            //$this->unitUpdater->updateSold($stockUnit, $quantity, false);
 
             $assignment = $this->saleFactory->createStockAssignmentForItem($item);
             $assignment
                 ->setSaleItem($item)
                 ->setStockUnit($stockUnit);
-                //->setSoldQuantity($quantity);
 
             $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
-
-            //$this->persistenceHelper->persistAndRecompute($assignment);
         }
 
         if (0 < $quantity) {

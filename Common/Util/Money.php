@@ -34,9 +34,9 @@ class Money
      *
      * @see bccomp()
      *
-     * @return int -1 if $a &gt; $b<br>
+     * @return int  1 if $a &gt; $b<br>
      *              0 if $a == $b<br>
-     *              1 if $a &lt; $b
+     *             -1 if $a &lt; $b
      */
     static function compare($a, $b, $precision)
     {
@@ -74,8 +74,12 @@ class Money
         // TODO cache precision or store it in the currencies
 
         if ($currencyOrPrecision instanceof CurrencyInterface) {
+            $currencyOrPrecision = $currencyOrPrecision->getCode();
+        }
+
+        if (is_string($currencyOrPrecision) && !is_numeric($currencyOrPrecision)) {
             /** @var \Payum\ISO4217\Currency $currency */
-            $currency = static::getIso()->findByCode($currencyOrPrecision->getCode());
+            $currency = static::getIso()->findByCode($currencyOrPrecision);
 
             return $currency->getExp();
         }

@@ -22,7 +22,7 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
      */
     protected function resolvePaymentsState(Model\SaleInterface $sale)
     {
-        $capturedTotal = $authorizedTotal = $refundTotal = $failedTotal = $outstandingAmount = $offlinePendingAmount = 0;
+        $paidTotal = $refundTotal = $failedTotal = $outstandingAmount = $offlinePendingAmount = 0;
 
         $payments = $sale->getPayments();
         if (0 < $payments->count()) {
@@ -30,12 +30,12 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
             foreach ($payments as $payment) {
                 // TODO Deal with payment currency conversion ...
                 if ($payment->getState() === PaymentStates::STATE_CAPTURED) {
-                    $capturedTotal += $payment->getAmount();
+                    $paidTotal += $payment->getAmount();
                     if ($payment->getMethod()->isOutstanding()) {
                         $outstandingAmount += $payment->getAmount();
                     }
                 } else if ($payment->getState() === PaymentStates::STATE_AUTHORIZED) {
-                    $authorizedTotal += $payment->getAmount();
+                    $paidTotal += $payment->getAmount();
                     if ($payment->getMethod()->isOutstanding()) {
                         $outstandingAmount += $payment->getAmount();
                     }
@@ -49,26 +49,34 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
             }
 
             $granTotal = $sale->getGrandTotal();
-
-            $currency = $sale->getCurrency(); // TODO from sale's currency
+            $currency = $sale->getCurrency();
 
             // Outstanding case
-            //
             if (0 < $outstandingAmount && null !== $date = $sale->getOutstandingDate()) {
                 $today = new \DateTime();
+                // If payment limit date is past
                 if ($today > $date) {
-                    return PaymentStates::STATE_OUTSTANDING;
+                    $paidTotal -= $outstandingAmount;
+                } else {
+                    $outstandingAmount = 0;
                 }
             }
 
             // State by amounts
-            if (0 <= Money::compare($authorizedTotal + $capturedTotal, $granTotal, $currency)) {
+            if (0 <= Money::compare($paidTotal, $granTotal, $currency)) {
+                // PAID total is greater than or equal the sale total
                 return PaymentStates::STATE_CAPTURED;
-            } elseif (0 <= Money::compare($authorizedTotal + $capturedTotal + $offlinePendingAmount, $granTotal, $currency)) {
+            } elseif (0 < $outstandingAmount) {
+                // OUTSTANDING total is greater than zero
+                return PaymentStates::STATE_OUTSTANDING;
+            } elseif (0 < $paidTotal + $offlinePendingAmount) {
+                // PENDING total is greater than zero
                 return PaymentStates::STATE_PENDING;
             } elseif (0 <= Money::compare($refundTotal, $granTotal, $currency)) {
+                // REFUNDED total is greater than or equal the sale total
                 return PaymentStates::STATE_REFUNDED;
             } elseif (0 <= Money::compare($failedTotal, $granTotal, $currency)) {
+                // FAILED total is greater than or equal the sale total
                 return PaymentStates::STATE_FAILED;
             }
         }

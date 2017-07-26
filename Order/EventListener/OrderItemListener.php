@@ -79,7 +79,7 @@ class OrderItemListener extends AbstractSaleItemListener
 
         // If order is in stockable state and order item quantity has changed
         if ($doApply && OrderStates::isStockableState($sale->getState())) {
-            if ($this->persistenceHelper->isChanged($item, 'quantity')) {
+            if ($this->persistenceHelper->isChanged($item, ['quantity', 'subjectIdentity.identifier'])) {
                 $this->applySaleItemRecursively($item);
             }
         }
@@ -98,9 +98,8 @@ class OrderItemListener extends AbstractSaleItemListener
             throw new RuntimeException('Failed to retrieve the sale.');
         }
 
-        // If order is in stockable state
-        // TODO Or order was in stockable state (watch state change set) ?
-        if (OrderStates::isStockableState($sale->getState())) {
+        /** @var OrderItemInterface $item */
+        if ($item->hasStockAssignments()) {
             $this->stockAssigner->detachSaleItem($item);
         }
     }
@@ -164,12 +163,21 @@ class OrderItemListener extends AbstractSaleItemListener
      */
     protected function applySaleItemRecursively(Model\SaleItemInterface $item)
     {
-        $this->stockAssigner->applySaleItem($item);
+        // If subject has changed
+        if ($this->persistenceHelper->isChanged($item, 'subjectIdentity.identifier')) {
+            $this->stockAssigner->detachSaleItem($item);
+            $this->stockAssigner->assignSaleItem($item);
+        } else {
+            $this->stockAssigner->applySaleItem($item);
+        }
 
         foreach ($item->getChildren() as $child) {
             if (
-                $this->persistenceHelper->isScheduledForInsert($child) ||
-                $this->persistenceHelper->isScheduledForUpdate($child)
+                $this->persistenceHelper->isScheduledForInsert($child)
+                || (
+                    $this->persistenceHelper->isScheduledForUpdate($child)
+                    && $this->persistenceHelper->isChanged($child, ['quantity', 'subjectIdentity.identifier'])
+                )
             ) {
                 // Skip this item as the listener will be called on it.
                 continue;

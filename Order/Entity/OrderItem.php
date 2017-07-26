@@ -131,6 +131,14 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     /**
      * @inheritdoc
      */
+    public function hasStockAssignments()
+    {
+        return 0 < $this->stockAssignments->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getStockAssignments()
     {
         return $this->stockAssignments;
