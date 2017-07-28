@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
@@ -45,7 +46,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     {
         if ($nameOrRelativeOrSubject instanceof SubjectRelativeInterface) {
             return $this->getProviderByRelative($nameOrRelativeOrSubject);
-        } elseif (is_object($nameOrRelativeOrSubject)) {
+        } elseif ($nameOrRelativeOrSubject instanceof SubjectInterface) {
             return $this->getProviderBySubject($nameOrRelativeOrSubject);
         } elseif (is_string($nameOrRelativeOrSubject)) {
             return $this->getProviderByName($nameOrRelativeOrSubject);
@@ -75,7 +76,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProviderBySubject($subject)
+    public function getProviderBySubject(SubjectInterface $subject)
     {
         foreach ($this->providers as $provider) {
             if ($provider->supportsSubject($subject)) {

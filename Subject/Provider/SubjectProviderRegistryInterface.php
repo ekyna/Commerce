@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
@@ -39,11 +40,11 @@ interface SubjectProviderRegistryInterface
     /**
      * Returns the provider supporting the subject.
      *
-     * @param object $subject
+     * @param SubjectInterface $subject
      *
      * @return SubjectProviderInterface|null
      */
-    public function getProviderBySubject($subject);
+    public function getProviderBySubject(SubjectInterface $subject);
 
     /**
      * Returns the provider by name.
