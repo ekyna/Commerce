@@ -6,9 +6,8 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
-use Ekyna\Component\Commerce\Stock\Util\StockUtil;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -44,114 +43,92 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * @inheritdoc
+     * Updates the subjects stock data and state.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return bool
      */
-    public function updateInStock(StockSubjectInterface $subject, $quantity = null)
+    public function update(StockSubjectInterface $subject)
     {
-        // TODO Check usages
+        $ordered = $received = $sold = $shipped = 0;
+        $eda = null; $changed = false;
 
-        $stock = 0;
-        if (null !== $quantity) {
-            // Relative update
-            $stock = $subject->getInStock() + (float)$quantity;
-        } else {
-            // Resolve the in stock quantity
-            $stockUnits = $this->stockUnitResolver->findNotClosed($subject);
-            foreach ($stockUnits as $stockUnit) {
-                $stock += $stockUnit->getInStockQuantity();
-            }
-        }
+        // Loop over the 'not closed' stock units.
+        // We don't use a dql query to get sums, because database may not reflect
+        // real/current data of theses stock units (during a flush event).
+        $stockUnits = $this->stockUnitResolver->findNotClosed($subject);
+        foreach ($stockUnits as $stockUnit) {
+            $sold += $stockUnit->getSoldQuantity();
 
-        if ($stock != $subject->getInStock()) { // TODO use packaging format (bccomp for float)
-            $subject->setInStock($stock);
+            if ($stockUnit->getState() !== StockUnitStates::STATE_NEW) {
+                $ordered += $stockUnit->getOrderedQuantity();
+                $received += $stockUnit->getReceivedQuantity();
+                $shipped += $stockUnit->getShippedQuantity();
 
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateVirtualStock(StockSubjectInterface $subject, $quantity = null)
-    {
-        $virtual = 0;
-        if (null !== $quantity) {
-            //  Relative update
-            $virtual = $subject->getVirtualStock() + (float)$quantity;
-        } else {
-            // Resolve the virtual stock
-            $stockUnits = $this->stockUnitResolver->findPendingOrReady($subject);
-            foreach ($stockUnits as $stockUnit) {
-                $virtual += $stockUnit->getVirtualStockQuantity();
-            }
-        }
-
-        if ($virtual != $subject->getVirtualStock()) { // TODO use packaging format (bccomp for float)
-            $subject->setVirtualStock($virtual);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject, \DateTime $eda = null)
-    {
-        $currentDate = $subject->getEstimatedDateOfArrival();
-
-        // Abort if subject does not have virtual stock
-        if (0 >= $subject->getVirtualStock()) {
-            if (null !== $currentDate) {
-                $subject->setEstimatedDateOfArrival(null);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        $date = null;
-
-        // If estimated date of arrival is specified
-        if (null !== $eda) {
-            if (null === $currentDate || $eda <= $currentDate) {
-                $date = $eda;
-            }
-        }
-        // Else resolve the minimum estimated date of arrival
-        else {
-            // Warning : stock units created during the flush event are not fetched here.
-            $stockUnits = $this->stockUnitResolver->findPending($subject);
-            foreach ($stockUnits as $stockUnit) {
-                $unitEDA = $stockUnit->getEstimatedDateOfArrival();
-
-                if (null === $date || $date > $unitEDA) {
-                    $date = $unitEDA;
+                if (null !== $date = $stockUnit->getEstimatedDateOfArrival()) {
+                    if (null === $eda || $eda > $date) {
+                        $eda = $date;
+                    }
                 }
             }
         }
 
-        // ETA must be greater than today's first second
-        $today = new \DateTime();
-        $today->setTime(0, 0, 0);
-        if ($date && $today < $date) {
-            if ($date != $currentDate) {
-                $subject->setEstimatedDateOfArrival($date);
-
-                return true;
-            }
-        } elseif (null !== $currentDate) {
-            $subject->setEstimatedDateOfArrival(null);
-
-            return true;
+        // In stock
+        $inStock = $received - $shipped;
+        if (0 > $inStock) {
+            $inStock = 0;
+        }
+        if ($inStock != $subject->getInStock()) { // TODO use packaging format (bccomp for float)
+            $subject->setInStock($inStock);
+            $changed = true;
         }
 
-        return false;
+        // Available stock
+        $availableStock = $received - $sold;
+        if (0 > $availableStock) {
+            $availableStock = 0;
+        }
+        if ($availableStock != $subject->getAvailableStock()) { // TODO use packaging format (bccomp for float)
+            $subject->setAvailableStock($availableStock);
+            $changed = true;
+        }
+
+        // Virtual stock
+        $virtualStock = $ordered - $sold;
+        if ($virtualStock != $subject->getVirtualStock()) { // TODO use packaging format (bccomp for float)
+            $subject->setVirtualStock($virtualStock);
+            $changed = true;
+        }
+
+        // Estimated date of arrival
+        $currentDate = $subject->getEstimatedDateOfArrival();
+        // Set null if no virtual stock
+        if (0 >= $virtualStock) {
+            if (null !== $currentDate) {
+                $subject->setEstimatedDateOfArrival(null);
+                $changed = true;
+            }
+        } else {
+            // EDA must be greater than today's first second
+            $today = new \DateTime();
+            $today->setTime(0, 0, 0);
+            if ($eda && $today < $eda) {
+                if ($eda != $currentDate) {
+                    $subject->setEstimatedDateOfArrival($eda);
+                    $changed = true;
+                }
+            } elseif (null !== $currentDate) {
+                $subject->setEstimatedDateOfArrival(null);
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $changed |= $this->updateStockState($subject);
+        }
+
+        return $changed;
     }
 
     /**
@@ -183,8 +160,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // Current subject stock state
         $currentState = $subject->getStockState();
 
-        // "In stock" resolved state
-        if (0 < $subject->getInStock()) {
+        // "Available stock" resolved state
+        if (0 < $subject->getAvailableStock()) {
             if ($currentState != StockSubjectStates::STATE_IN_STOCK) {
                 $subject->setStockState(StockSubjectStates::STATE_IN_STOCK);
 
@@ -213,102 +190,5 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function update(StockSubjectInterface $subject)
-    {
-        $changed = $this->updateInStock($subject);
-
-        $changed |= $this->updateVirtualStock($subject);
-
-        $changed |= $this->updateEstimatedDateOfArrival($subject);
-
-        return $this->updateStockState($subject) || $changed;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateFromStockUnitChange(StockSubjectInterface $subject, StockUnitInterface $stockUnit)
-    {
-        // TODO prevent call while not in a persistence phase (flush).
-
-        $cs = $this->persistenceHelper->getChangeSet($stockUnit);
-
-        // Abort if none of the tracked properties has changed
-        if (!(
-            isset($cs['soldQuantity']) ||
-            isset($cs['orderedQuantity']) ||
-            isset($cs['receivedQuantity']) ||
-            isset($cs['estimatedDateOfArrival'])
-        )) {
-            return false;
-        }
-
-        // TODO use packaging format (bccomp for float)
-
-        $changed = false;
-
-        // Gather old and new quantities
-        $newOrdered = $stockUnit->getOrderedQuantity();
-        $oldOrdered = isset($cs['orderedQuantity']) ? ((float)$cs['orderedQuantity'][0]) : $newOrdered;
-        $newReceived = $stockUnit->getReceivedQuantity();
-        $oldReceived = isset($cs['receivedQuantity']) ? ((float)$cs['receivedQuantity'][0]) : $newReceived;
-        $newSold = $stockUnit->getSoldQuantity();
-        $oldSold = isset($cs['soldQuantity']) ? ((float)$cs['soldQuantity'][0]) : $newSold;
-
-
-        // In stock change
-        $oldInStock = StockUtil::calculateInStock($oldReceived, $oldSold);
-        $newInStock = StockUtil::calculateInStock($newReceived, $newSold);
-        if (0 != $deltaInStock = $newInStock - $oldInStock) {
-            $changed |= $this->updateInStock($subject, $deltaInStock);
-        }
-
-        // Virtual stock change
-        $oldVirtualStock = StockUtil::calculateVirtualStock($oldOrdered, $oldReceived, $oldSold);
-        $newVirtualStock = StockUtil::calculateVirtualStock($newOrdered, $newReceived, $newSold);
-        if (0 != $deltaVirtualStock = $newVirtualStock - $oldVirtualStock) {
-            $changed |= $this->updateVirtualStock($subject, $deltaVirtualStock);
-        }
-
-        // EDA change
-        if ($changed || isset($cs['estimatedDateOfArrival'])) {
-            $eda = null;
-            if (0 < $stockUnit->getVirtualStockQuantity() && null !== $stockUnit->getEstimatedDateOfArrival()) {
-                $eda = $stockUnit->getEstimatedDateOfArrival();
-            }
-            $changed |= $this->updateEstimatedDateOfArrival($subject, $eda);
-        }
-
-        return $this->updateStockState($subject) || $changed;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateFromStockUnitRemoval(StockSubjectInterface $subject, StockUnitInterface $stockUnit)
-    {
-        // TODO prevent call while not in a persistence phase (flush).
-
-        $changed = false;
-
-        // This (in stock) should never happen as stock unit removal is prevented when
-        // received, sold or shipped quantities are greater than zero.
-        if (0 < $inStock = $stockUnit->getInStockQuantity()) {
-            $changed |= $this->updateInStock($subject, -$inStock);
-        }
-
-        if (0 < $virtualStock = $stockUnit->getVirtualStockQuantity()) {
-            $changed |= $this->updateVirtualStock($subject, -$virtualStock);
-        }
-
-        // Update the estimated date of arrival
-        $changed |= $this->updateEstimatedDateOfArrival($subject);
-
-        return $this->updateStockState($subject) || $changed;
     }
 }

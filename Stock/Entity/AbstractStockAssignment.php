@@ -17,7 +17,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     protected $id;
 
     /**
-     * @var AbstractStockUnit
+     * @var Stock\StockUnitInterface
      */
     protected $stockUnit;
 
@@ -53,7 +53,17 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
      */
     public function setStockUnit(Stock\StockUnitInterface $stockUnit = null)
     {
-        $this->stockUnit = $stockUnit;
+        if ($stockUnit !== $previous = $this->stockUnit) {
+            if ($previous) {
+                $previous->removeStockAssignment($this);
+            }
+
+            $this->stockUnit = $stockUnit;
+
+            if ($this->stockUnit) {
+                $this->stockUnit->addStockAssignment($this);
+            }
+        }
 
         return $this;
     }

@@ -105,11 +105,11 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     /**
      * @inheritdoc
      */
-    public function addStockAssignment(StockAssignmentInterface $unit)
+    public function addStockAssignment(StockAssignmentInterface $assignment)
     {
-        if (!$this->stockAssignments->contains($unit)) {
-            $this->stockAssignments->add($unit);
-            $unit->setSaleItem($this);
+        if (!$this->stockAssignments->contains($assignment)) {
+            $this->stockAssignments->add($assignment);
+            $assignment->setSaleItem($this);
         }
 
         return $this;
@@ -118,11 +118,11 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
     /**
      * @inheritdoc
      */
-    public function removeStockAssignment(StockAssignmentInterface $unit)
+    public function removeStockAssignment(StockAssignmentInterface $assignment)
     {
-        if ($this->stockAssignments->contains($unit)) {
-            $this->stockAssignments->removeElement($unit);
-            $unit->setSaleItem(null);
+        if ($this->stockAssignments->contains($assignment)) {
+            $this->stockAssignments->removeElement($assignment);
+            $assignment->setSaleItem(null);
         }
 
         return $this;

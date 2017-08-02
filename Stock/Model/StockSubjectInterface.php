@@ -76,6 +76,22 @@ interface StockSubjectInterface extends ResourceInterface
     public function setInStock($quantity);
 
     /**
+     * Returns the available stock quantity.
+     *
+     * @return float
+     */
+    public function getAvailableStock();
+
+    /**
+     * Sets the available stock quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setAvailableStock($quantity);
+
+    /**
      * Returns the virtual stock quantity.
      *
      * @return float
@@ -85,11 +101,11 @@ interface StockSubjectInterface extends ResourceInterface
     /**
      * Sets the virtual stock quantity.
      *
-     * @param float $virtualStock
+     * @param float $quantity
      *
      * @return $this|StockSubjectInterface
      */
-    public function setVirtualStock($virtualStock);
+    public function setVirtualStock($quantity);
 
     /**
      * Returns the estimated date of arrival.
@@ -101,11 +117,11 @@ interface StockSubjectInterface extends ResourceInterface
     /**
      * Sets the estimated date of arrival.
      *
-     * @param \DateTime $eta
+     * @param \DateTime $eda
      *
      * @return $this|StockSubjectInterface
      */
-    public function setEstimatedDateOfArrival(\DateTime $eta);
+    public function setEstimatedDateOfArrival(\DateTime $eda);
 
     /**
      * Returns the stock unit class.

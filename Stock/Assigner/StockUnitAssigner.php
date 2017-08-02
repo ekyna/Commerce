@@ -22,6 +22,8 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  * Class StockUnitAssigner
  * @package Ekyna\Component\Commerce\Stock\Assigner
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * This class is responsible for assigning sale items to stock units.
  */
 class StockUnitAssigner implements StockUnitAssignerInterface
 {

@@ -12,41 +12,6 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 final class StockUtil
 {
     /**
-     * Calculates the "in" stock quantity.
-     *
-     * (received - sold, 0 or greater)
-     *
-     * @param float $receivedQty
-     * @param float $soldQty
-     *
-     * @return float
-     */
-    static public function calculateInStock($receivedQty, $soldQty)
-    {
-        $result = $receivedQty - $soldQty;
-
-        return 0 < $result ? $result : 0;
-    }
-
-    /**
-     * Calculates the "virtual" stock quantity.
-     *
-     * (ordered - max(received or sold), 0 or greater)
-     *
-     * @param float $orderedQty
-     * @param float $receivedQty
-     * @param float $soldQty
-     *
-     * @return float
-     */
-    static public function calculateVirtualStock($orderedQty, $receivedQty, $soldQty)
-    {
-        $result = $orderedQty - max($receivedQty, $soldQty);
-
-        return 0 < $result ? $result : 0;
-    }
-
-    /**
      * Calculates the "reservable" stock quantity.
      *
      * (ordered - sold, 0 or greater)

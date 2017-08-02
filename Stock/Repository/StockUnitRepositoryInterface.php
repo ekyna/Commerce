@@ -51,11 +51,20 @@ interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
     public function findNotClosedBySubject(Stock\StockSubjectInterface $subject);
 
     /**
-     * Finds the subject's not fully assigned stock units.
+     * Finds the subject's not fully assigned (to sale items) stock units.
      *
      * @param Stock\StockSubjectInterface $subject
      *
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
     public function findAssignableBySubject(Stock\StockSubjectInterface $subject);
+
+    /**
+     * Finds the subject's not linked (to supplier order item) stock unit.
+     *
+     * @param Stock\StockSubjectInterface $subject
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface|null
+     */
+    public function findLinkableBySubject(Stock\StockSubjectInterface $subject);
 }

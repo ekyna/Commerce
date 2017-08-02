@@ -12,8 +12,7 @@
         <discriminator-column name="type" type="string"/>
 
         <discriminator-map>
-            <discriminator-mapping value="order_item"
-                                   class="Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment"/>
+            <discriminator-mapping value="order_item" class="Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment"/>
         </discriminator-map>
 
         <id name="id" type="integer" column="id">
@@ -21,11 +20,10 @@
         </id>
 
         <field name="soldQuantity" column="sold_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3"
-               nullable="false"/>
+        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit"
-                     field="stockUnit">
+                     field="stockUnit" inversed-by="stockAssignments">
             <join-column name="stock_unit_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 

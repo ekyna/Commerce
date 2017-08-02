@@ -82,6 +82,8 @@ abstract class AbstractListener
             return;
         }
 
+        // TODO use stock unit linker
+
         $stockUnit = $this
             ->stockUnitResolver
             ->createBySupplierOrderItem($item);
@@ -108,6 +110,8 @@ abstract class AbstractListener
                 "Stock unit can't be deleted as it has been partially or fully shipped."
             );
         }
+
+        // TODO use stock unit linker
 
         $stockUnit->setSupplierOrderItem(null);
         if (0 < $stockUnit->getSoldQuantity()) {

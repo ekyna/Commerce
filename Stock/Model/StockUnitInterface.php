@@ -191,29 +191,36 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function setClosedAt(\DateTime $date = null);
 
     /**
+     * Adds the stock assignments.
+     *
+     * @param StockAssignmentInterface $assignment
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function addStockAssignment(StockAssignmentInterface $assignment);
+
+    /**
+     * Removes the stock assignments.
+     *
+     * @param StockAssignmentInterface $assignment
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function removeStockAssignment(StockAssignmentInterface $assignment);
+
+    /**
+     * Returns the stock assignments.
+     *
+     * @return \Doctrine\Common\Collections\Collection|StockAssignmentInterface[]
+     */
+    public function getStockAssignments();
+
+    /**
      * Returns whether the stock unit is empty (regarding to the ordered and sold quantities).
      *
      * @return bool
      */
     public function isEmpty();
-
-    /**
-     * Returns the in stock quantity.
-     *
-     * @see StockUtil::calculateInStock()
-     *
-     * @return float
-     */
-    public function getInStockQuantity();
-
-    /**
-     * Returns the virtual stock quantity.
-     *
-     * @see StockUtil::calculateVirtualStock()
-     *
-     * @return float
-     */
-    public function getVirtualStockQuantity();
 
     /**
      * Returns the reservable stock quantity.

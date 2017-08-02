@@ -27,6 +27,11 @@ trait StockSubjectTrait
     /**
      * @var float
      */
+    protected $availableStock;
+
+    /**
+     * @var float
+     */
     protected $virtualStock;
 
     /**
@@ -48,6 +53,7 @@ trait StockSubjectTrait
         $this->stockMode = StockSubjectModes::MODE_DISABLED;
         $this->stockState = StockSubjectStates::STATE_OUT_OF_STOCK;
         $this->inStock = 0;
+        $this->availableStock = 0;
         $this->virtualStock = 0;
     }
 
@@ -148,6 +154,30 @@ trait StockSubjectTrait
     }
 
     /**
+     * Returns the available stock quantity.
+     *
+     * @return float
+     */
+    public function getAvailableStock()
+    {
+        return $this->availableStock;
+    }
+
+    /**
+     * Sets the available stock quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setAvailableStock($quantity)
+    {
+        $this->availableStock = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
      * Returns the virtual stock quantity.
      *
      * @return float
@@ -160,13 +190,13 @@ trait StockSubjectTrait
     /**
      * Sets the virtual stock quantity.
      *
-     * @param float $virtualStock
+     * @param float $quantity
      *
      * @return $this|StockSubjectInterface
      */
-    public function setVirtualStock($virtualStock)
+    public function setVirtualStock($quantity)
     {
-        $this->virtualStock = (float)$virtualStock;
+        $this->virtualStock = (float)$quantity;
 
         return $this;
     }

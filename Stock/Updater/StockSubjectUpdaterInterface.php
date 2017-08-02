@@ -13,33 +13,13 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 interface StockSubjectUpdaterInterface
 {
     /**
-     * 1. Updates the subject's "in stock" quantity.
-     *
-     * @param StockSubjectInterface $subject
-     * @param float                 $quantity
-     *
-     * @return bool Whether or not the subject has been updated.
-     */
-    public function updateInStock(StockSubjectInterface $subject, $quantity = null);
-
-    /**
-     * 2. Updates the subject's "virtual stock" quantity.
-     *
-     * @param StockSubjectInterface $subject
-     * @param float                 $quantity
-     *
-     * @return bool Whether or not the subject has been updated.
-     */
-    public function updateVirtualStock(StockSubjectInterface $subject, $quantity = null);
-
-    /**
-     * 3. Updates the subject's estimated date of arrival date.
+     * Updates the subject's stocks and state.
      *
      * @param StockSubjectInterface $subject
      *
      * @return bool Whether or not the subject has been updated.
      */
-    public function updateEstimatedDateOfArrival(StockSubjectInterface $subject);
+    public function update(StockSubjectInterface $subject);
 
     /**
      * 4. Updates the subject's stock state.
@@ -51,13 +31,39 @@ interface StockSubjectUpdaterInterface
     public function updateStockState(StockSubjectInterface $subject);
 
     /**
-     * Updates the subject's stocks and state.
+     * 1. Updates the subject's "in stock" quantity.
+     *
+     * @param StockSubjectInterface $subject
+     * @param float                 $quantity
+     *
+     * @return bool Whether or not the subject has been updated.
+     *
+     * @deprecated
+     */
+    //public function updateInStock(StockSubjectInterface $subject, $quantity = null);
+
+    /**
+     * 2. Updates the subject's "virtual stock" quantity.
+     *
+     * @param StockSubjectInterface $subject
+     * @param float                 $quantity
+     *
+     * @return bool Whether or not the subject has been updated.
+     *
+     * @deprecated
+     */
+    //public function updateVirtualStock(StockSubjectInterface $subject, $quantity = null);
+
+    /**
+     * 3. Updates the subject's estimated date of arrival date.
      *
      * @param StockSubjectInterface $subject
      *
      * @return bool Whether or not the subject has been updated.
+     *
+     * @deprecated
      */
-    public function update(StockSubjectInterface $subject);
+    //public function updateEstimatedDateOfArrival(StockSubjectInterface $subject);
 
     /**
      * Updates the subject's stocks and state regarding to the stock unit changes (persistence event).
@@ -66,8 +72,10 @@ interface StockSubjectUpdaterInterface
      * @param StockUnitInterface    $stockUnit
      *
      * @return bool
+     *
+     * @deprecated
      */
-    public function updateFromStockUnitChange(StockSubjectInterface $subject, StockUnitInterface $stockUnit);
+    //public function updateFromStockUnitChange(StockSubjectInterface $subject, StockUnitInterface $stockUnit);
 
     /**
      * Updates the subject's stocks and state regarding to the stock unit removal (persistence event).
@@ -76,6 +84,8 @@ interface StockSubjectUpdaterInterface
      * @param StockUnitInterface    $stockUnit
      *
      * @return bool
+     *
+     * @deprecated
      */
-    public function updateFromStockUnitRemoval(StockSubjectInterface $subject, StockUnitInterface $stockUnit);
+    //public function updateFromStockUnitRemoval(StockSubjectInterface $subject, StockUnitInterface $stockUnit);
 }

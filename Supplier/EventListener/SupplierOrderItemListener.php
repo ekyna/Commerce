@@ -116,7 +116,6 @@ class SupplierOrderItemListener extends AbstractListener
 
         $this->assertDeletable($item);
 
-
         // TODO If not made by the supplierOrderListener ?
         $this->deleteSupplierOrderItemStockUnit($item);
 

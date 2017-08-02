@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Stock\Util\StockUtil;
@@ -81,6 +82,11 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     protected $closedAt;
 
+    /**
+     * @var ArrayCollection|Model\StockAssignmentInterface[]
+     */
+    protected $stockAssignments;
+
 
     /**
      * Constructor.
@@ -89,6 +95,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     {
         $this->state = Model\StockUnitStates::STATE_NEW;
         $this->createdAt = new \DateTime();
+        $this->stockAssignments = new ArrayCollection();
     }
 
     /**
@@ -147,13 +154,12 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null)
     {
-        if ($this->supplierOrderItem !== $item) {
-            $previous = $this->supplierOrderItem;
-            $this->supplierOrderItem = $item;
-
+        if ($item !== $previous = $this->supplierOrderItem) {
             if ($previous) {
                 $previous->setStockUnit(null);
             }
+
+            $this->supplierOrderItem = $item;
 
             if ($this->supplierOrderItem) {
                 $this->supplierOrderItem->setStockUnit($this);
@@ -310,32 +316,43 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
+    public function addStockAssignment(Model\StockAssignmentInterface $assignment)
+    {
+        if (!$this->stockAssignments->contains($assignment)) {
+            $this->stockAssignments->add($assignment);
+            $assignment->setStockUnit($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeStockAssignment(Model\StockAssignmentInterface $assignment)
+    {
+        if ($this->stockAssignments->contains($assignment)) {
+            $this->stockAssignments->removeElement($assignment);
+            $assignment->setStockUnit(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStockAssignments()
+    {
+        return $this->stockAssignments;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function isEmpty()
     {
         return 0 == $this->orderedQuantity && 0 == $this->soldQuantity;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getInStockQuantity()
-    {
-        return StockUtil::calculateInStock(
-            $this->receivedQuantity,
-            $this->soldQuantity
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getVirtualStockQuantity()
-    {
-        return StockUtil::calculateVirtualStock(
-            $this->orderedQuantity,
-            $this->receivedQuantity,
-            $this->soldQuantity
-        );
     }
 
     /**

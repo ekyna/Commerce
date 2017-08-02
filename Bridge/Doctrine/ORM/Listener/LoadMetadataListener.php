@@ -410,6 +410,14 @@ class LoadMetadataListener implements EventSubscriber
                 'nullable'   => true,
             ],
             [
+                'fieldName'  => 'availableStock',
+                'columnName' => 'available_stock',
+                'type'       => 'decimal',
+                'precision'  => 10,
+                'scale'      => 3,
+                'nullable'   => true,
+            ],
+            [
                 'fieldName'  => 'virtualStock',
                 'columnName' => 'virtual_stock',
                 'type'       => 'decimal',

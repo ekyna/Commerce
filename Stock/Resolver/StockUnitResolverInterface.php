@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
@@ -13,6 +14,13 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
  */
 interface StockUnitResolverInterface
 {
+    /**
+     * Purges the given stock unit from cache.
+     *
+     * @param StockUnitInterface $stockUnit
+     */
+    public function purge(StockUnitInterface $stockUnit);
+
     /**
      * Creates a stock unit for the given subject relative.
      *
@@ -59,11 +67,20 @@ interface StockUnitResolverInterface
     public function findNotClosed($subjectOrRelative);
 
     /**
-     * Finds the not fully assigned stock units by subject or relative.
+     * Finds the not fully assigned (to sale items) stock units by subject or relative.
      *
      * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
      *
      * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
     public function findAssignable($subjectOrRelative);
+
+    /**
+     * Finds the not linked (to supplier order item) stock unit by subject or relative.
+     *
+     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface|null
+     */
+    public function findLinkable($subjectOrRelative);
 }

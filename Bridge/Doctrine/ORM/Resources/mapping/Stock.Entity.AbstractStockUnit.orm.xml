@@ -23,13 +23,10 @@
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
 
-        <field name="orderedQuantity" column="ordered_quantity" type="decimal" precision="10" scale="3"
-               nullable="false"/>
-        <field name="receivedQuantity" column="received_quantity" type="decimal" precision="10" scale="3"
-               nullable="false"/>
+        <field name="orderedQuantity" column="ordered_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="receivedQuantity" column="received_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="soldQuantity" column="sold_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3"
-               nullable="false"/>
+        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
@@ -38,9 +35,11 @@
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem"
                     field="supplierOrderItem" inversed-by="stockUnit">
-            <join-column name="supplier_order_item_id" referenced-column-name="id" on-delete="SET NULL"
-                         nullable="true"/>
+            <join-column name="supplier_order_item_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
         </one-to-one>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment"
+                     mapped-by="stockUnit" field="stockAssignments"/>
 
     </entity>
 

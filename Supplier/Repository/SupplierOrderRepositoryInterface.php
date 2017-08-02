@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Repository;
 
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 
@@ -13,6 +12,13 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
  */
 interface SupplierOrderRepositoryInterface
 {
+    /**
+     * Creates a new supplier order instance.
+     *
+     * @return SupplierOrderInterface
+     */
+    public function createNew();
+
     /**
      * Finds the supplier orders with state 'new' by supplier.
      *

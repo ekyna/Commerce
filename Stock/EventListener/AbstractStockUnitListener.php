@@ -119,9 +119,9 @@ abstract class AbstractStockUnitListener
     {
         $stockUnit = $this->getStockUnitFromEvent($event);
 
-        if (null !== $orderItem = $stockUnit->getSupplierOrderItem()) {
+        if (null !== $item = $stockUnit->getSupplierOrderItem()) {
             // Prevent deletion if the supplier order has a stockable state
-            if (SupplierOrderStates::isStockableState($orderItem->getOrder()->getState())) {
+            if (SupplierOrderStates::isStockableState($item->getOrder()->getState())) {
                 throw new IllegalOperationException(
                     "The stock unit can't be deleted as it is linked to a supplier order with a stockable state."
                 ); // TODO message as translation id
@@ -158,7 +158,7 @@ abstract class AbstractStockUnitListener
     protected function scheduleSubjectStockUnitRemovalEvent(StockUnitInterface $stockUnit)
     {
         $this->persistenceHelper->scheduleEvent(
-            $this->getSubjectStockUnitRemovalEventName(),
+            $this->getSubjectStockUnitRemoveEventName(),
             new SubjectStockUnitEvent($stockUnit)
         );
     }
@@ -181,11 +181,9 @@ abstract class AbstractStockUnitListener
     abstract protected function getSubjectStockUnitChangeEventName();
 
     /**
-     * Returns the subject's "stock unit removal" event name.
+     * Returns the subject's "stock unit remove" event name.
      *
      * @return string
-     *
-     * TODO rename to getSubjectStockUnitRemoveEventName
      */
-    abstract protected function getSubjectStockUnitRemovalEventName();
+    abstract protected function getSubjectStockUnitRemoveEventName();
 }
