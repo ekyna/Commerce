@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Tests\Common\Util;
 
+use PHPUnit\Framework\TestCase;
 use Ekyna\Component\Commerce\Common\Util\Money;
 
 /**
@@ -9,7 +10,7 @@ use Ekyna\Component\Commerce\Common\Util\Money;
  * @package Ekyna\Component\Commerce\Tests\Common\Util
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class MoneyTest extends \PHPUnit_Framework_TestCase
+class MoneyTest extends TestCase
 {
     public function testRound()
     {

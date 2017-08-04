@@ -75,6 +75,7 @@ class StockUnitLinker
         }
 
         $stockUnit
+            ->setSupplierOrderItem($supplierOrderItem)
             ->setNetPrice($supplierOrderItem->getNetPrice())
             ->setOrderedQuantity($supplierOrderItem->getQuantity())
             ->setEstimatedDateOfArrival($supplierOrderItem->getOrder()->getEstimatedDateOfArrival());
@@ -92,8 +93,6 @@ class StockUnitLinker
         if (0 >= $overflow) {
             return;
         }
-
-        $stockUnit->setSoldQuantity($stockUnit->getOrderedQuantity());
 
         // New 'unlinked' stock unit for the sold quantity overflow
         $newStockUnit = $this->unitResolver->createBySubjectRelative($supplierOrderItem);
@@ -138,6 +137,8 @@ class StockUnitLinker
         if (0 < $overflow) {
             throw new LogicException("Failed to dispatch assignments.");
         }
+
+        $stockUnit->setSoldQuantity($stockUnit->getOrderedQuantity());
 
         // TODO resolve the new stock unit's state
 
@@ -193,7 +194,7 @@ class StockUnitLinker
                         continue;
                     }
 
-                    $targetQuantity = $targetStockUnit->getSoldQuantity() - $targetStockUnit->getOrderedQuantity();
+                    $targetQuantity = $targetStockUnit->getOrderedQuantity() - $targetStockUnit->getSoldQuantity();
                     if (0 >= $targetQuantity) {
                         // Skip balanced target stock unit, as we would just move the problem
                         continue;
@@ -221,6 +222,24 @@ class StockUnitLinker
                     }
 
                     $targetStockUnit->setSoldQuantity($targetStockUnit->getSoldQuantity() + $targetQuantity);
+                    // Persist without scheduling event
+
+                    // TODO resolve the target stock unit's state
+                    $this->persistenceHelper->persistAndRecompute($targetStockUnit, false);
+                    $this->persistenceHelper->persistAndRecompute($targetAssignment, false);
+
+                    $assignment->setSoldQuantity($assignment->getSoldQuantity() - $targetQuantity);
+                    $stockUnit->setSoldQuantity($stockUnit->getSoldQuantity() - $targetQuantity);
+
+                    // TODO resolve the stock unit's state
+                    $this->persistenceHelper->persistAndRecompute($stockUnit, false);
+                    if (0 == $assignment->getSoldQuantity()) {
+                        $assignment->setStockUnit(null);
+                        $this->persistenceHelper->remove($assignment, false);
+                    } else {
+                        $this->persistenceHelper->persistAndRecompute($assignment, false);
+                    }
+
 
                     $overflow -= $targetQuantity;
                     $deltaQuantity -= $targetQuantity;
@@ -229,6 +248,8 @@ class StockUnitLinker
                         break 2; // We're done dispatching sold quantity
                     }
                 }
+
+                // TODO same with new stock unit
             }
         } elseif (0 > $overflow) {
             // Negative case : not enough sold quantity
@@ -239,7 +260,8 @@ class StockUnitLinker
             }
         }
 
-        if (0 != $deltaQuantity) {
+        // TODO May happen / Not necessarily a bug
+        if (0 != $deltaQuantity || 0 != $overflow) {
             throw new LogicException("Failed to apply supplier order item.");
         }
     }

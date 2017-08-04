@@ -19,7 +19,7 @@ use Ekyna\Component\Commerce\Supplier;
 class DoctrineBundleMapping
 {
     /**
-     * Returns the config to may be append to doctrine.orm.mappings
+     * Returns the doctrine ORM mapping config for the doctrine bundle (doctrine.orm.mappings)
      *
      * @return array
      */

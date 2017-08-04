@@ -35,7 +35,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Ekyna\\Component\\Commerce\\": ""
+            "Ekyna\\Component\\Commerce\\": "",
+            "Acme\\Commerce\\": "Tests/app/Acme/Commerce/"
         }
     },
     "config": {
