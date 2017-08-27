@@ -3,7 +3,8 @@
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
-use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
+use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinkerInterface;
+//use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
 use Ekyna\Component\Commerce\Supplier\Model;
@@ -23,9 +24,14 @@ abstract class AbstractListener
     protected $persistenceHelper;
 
     /**
+     * @var StockUnitLinkerInterface
+     */
+    protected $stockUnitLinker;
+
+    /**
      * @var StockUnitResolverInterface
      */
-    protected $stockUnitResolver;
+    //protected $stockUnitResolver;
 
     /**
      * @var StockUnitUpdaterInterface
@@ -44,14 +50,24 @@ abstract class AbstractListener
     }
 
     /**
+     * Sets the stock unit linker.
+     *
+     * @param StockUnitLinkerInterface $stockUnitLinker
+     */
+    public function setStockUnitLinker(StockUnitLinkerInterface $stockUnitLinker)
+    {
+        $this->stockUnitLinker = $stockUnitLinker;
+    }
+
+    /**
      * Sets the stock unit resolver.
      *
      * @param StockUnitResolverInterface $resolver
      */
-    public function setStockUnitResolver(StockUnitResolverInterface $resolver)
+    /*public function setStockUnitResolver(StockUnitResolverInterface $resolver)
     {
         $this->stockUnitResolver = $resolver;
-    }
+    }*/
 
     /**
      * Sets the stock unit updater.
@@ -69,8 +85,9 @@ abstract class AbstractListener
      * @param Model\SupplierOrderItemInterface $item
      *
      * @throws Exception\InvalidArgumentException
+     * @deprecated
      */
-    protected function createSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
+    /*protected function createSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
     {
         if (null !== $stockUnit = $item->getStockUnit()) {
             if ($stockUnit->getOrderedQuantity() != $item->getQuantity()) {
@@ -90,7 +107,7 @@ abstract class AbstractListener
 
         $this->persistenceHelper->persistAndRecompute($stockUnit, true);
         $this->persistenceHelper->persistAndRecompute($item);
-    }
+    }*/
 
     /**
      * Deletes the stock unit from the given supplier order item.
@@ -98,8 +115,9 @@ abstract class AbstractListener
      * @param Model\SupplierOrderItemInterface $item
      *
      * @throws Exception\IllegalOperationException
+     * @deprecated
      */
-    protected function deleteSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
+    /*protected function deleteSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
     {
         if (null === $stockUnit = $item->getStockUnit()) {
             return;
@@ -121,7 +139,7 @@ abstract class AbstractListener
         }
 
         $this->persistenceHelper->persistAndRecompute($item);
-    }
+    }*/
 
     /**
      * Asserts that the resource can be safely deleted.

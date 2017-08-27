@@ -9,8 +9,6 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
  * Interface StockUnitRepositoryInterface
  * @package Ekyna\Component\Commerce\Stock\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
- *
- * @method Stock\StockUnitInterface createNew()
  */
 interface StockUnitRepositoryInterface extends ResourceRepositoryInterface
 {

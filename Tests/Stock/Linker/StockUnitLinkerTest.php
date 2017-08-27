@@ -471,7 +471,7 @@ class StockUnitLinkerTest extends BaseTestCase
         (new OrderItemStockAssignment())
             ->setOrderItem($orderItemB)
             ->setStockUnit($newStockUnit)
-            ->setSoldQuantity(20);
+            ->setSoldQuantity(10);
 
         // Given the supplier order item's quantity has changed from 20 to 30
         $this->getPersistenceHelper()
@@ -484,15 +484,14 @@ class StockUnitLinkerTest extends BaseTestCase
             ->willReturn([20, 30]);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
-        $this->getUnitResolver()
-            ->method('findPendingOrReady')
-            ->with($supplierOrderItem)
-            ->willReturn([]);
+//        $this->getUnitResolver()
+//            ->method('findPendingOrReady')
+//            ->with($supplierOrderItem)
+//            ->willReturn([]);
 
         // Given the stock unit resolver will return a new stock unit
-        $newStockUnit = new StockUnit();
         $this->getUnitResolver()
-            ->method('createBySubjectRelative')
+            ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
@@ -500,16 +499,16 @@ class StockUnitLinkerTest extends BaseTestCase
         $linker = $this->createStockUnitLinker();
         $linker->applyItem($supplierOrderItem);
 
-        // Order item A ans his assignment should be moved into the new stock unit
+        // Order item B ans his assignment should be moved from the new stock unit
 
         // Then the supplier order item should be linked to the stock unit
         $this->assertEquals($stockUnit, $supplierOrderItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
         $this->assertEquals($supplierOrderItem, $stockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
-        $this->assertEquals(20, $stockUnit->getOrderedQuantity());
+        $this->assertEquals(30, $stockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 20
-        $this->assertEquals(20, $stockUnit->getSoldQuantity());
+        $this->assertEquals(30, $stockUnit->getSoldQuantity());
         // Then the stock unit's net price should equal 12
         $this->assertEquals(12, $stockUnit->getNetPrice());
         // Then the stock unit's state should equal 'pending'
@@ -517,16 +516,22 @@ class StockUnitLinkerTest extends BaseTestCase
         /** @var OrderItemStockAssignment[] $assignments */
         $assignments = array_values($stockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have one assignment
-        $this->assertCount(1, $assignments);
-        // Then the assignment should be associated with the order item B
-        $this->assertEquals($orderItemB, $assignments[0]->getOrderItem());
-        // Then the assignment's sold quantity should equal 20
+        $this->assertCount(2, $assignments);
+        // Then the first assignment should be associated with the order item A
+        $this->assertEquals($orderItemA, $assignments[0]->getOrderItem());
+        // Then the first assignment's sold quantity should equal 20
         $this->assertEquals(20, $assignments[0]->getSoldQuantity());
+        // Then the second assignment should be associated with the order item B
+        $this->assertEquals($orderItemB, $assignments[1]->getOrderItem());
+        // Then the second assignment's sold quantity should equal 10
+        $this->assertEquals(10, $assignments[1]->getSoldQuantity());
+
+        // TODO Assert that stock unit B has been removed
 
         // Then the new stock unit's ordered quantity should equal 0
         $this->assertEquals(0, $newStockUnit->getOrderedQuantity());
         // Then the new stock unit's sold quantity should equal 10
-        $this->assertEquals(10, $newStockUnit->getSoldQuantity());
+        $this->assertEquals(0, $newStockUnit->getSoldQuantity());
         // Then the new stock unit's net price should equal 0
         $this->assertEquals(0, $newStockUnit->getNetPrice());
         // Then the new stock unit's state should equal 'new'
@@ -534,11 +539,7 @@ class StockUnitLinkerTest extends BaseTestCase
         /** @var OrderItemStockAssignment[] $newAssignments */
         $newAssignments = array_values($newStockUnit->getStockAssignments()->toArray());
         // Then the new stock unit should have one assignment
-        $this->assertCount(1, $newAssignments);
-        // Then the assignment should be associated with the order item A
-        $this->assertEquals($orderItemA, $newAssignments[0]->getOrderItem());
-        // Then the new assignment's sold quantity should equal 10
-        $this->assertEquals(10, $newAssignments[0]->getSoldQuantity());
+        $this->assertCount(0, $newAssignments);
     }
 
     /**
@@ -612,7 +613,6 @@ class StockUnitLinkerTest extends BaseTestCase
         $linker = $this->createStockUnitLinker();
         $linker->applyItem($supplierOrderItem);
 
-
         // Order item A ans his assignment should be moved into the new stock unit
 
         // Then the supplier order item should be linked to the stock unit
@@ -627,12 +627,14 @@ class StockUnitLinkerTest extends BaseTestCase
         $this->assertEquals(12, $stockUnit->getNetPrice());
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $stockUnit->getState());
+        /** @var OrderItemStockAssignment[] $assignments */
+        $assignments = array_values($stockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have one assignment
-        $this->assertCount(1, $stockUnit->getStockAssignments());
-        // Then the assignment should be associated with the order item A
-        $this->assertEquals($orderItemA, $stockUnit->getStockAssignments()[0]->getOrderItem());
+        $this->assertCount(1, $assignments);
+        // Then the assignment should be associated with the order item B
+        $this->assertEquals($orderItemB, $assignments[0]->getOrderItem());
         // Then the assignment's sold quantity should equal 20
-        $this->assertEquals(20, $stockUnit->getStockAssignments()[0]->getSoldQuantity());
+        $this->assertEquals(20, $assignments[0]->getSoldQuantity());
 
         // Then the new stock unit's ordered quantity should equal 0
         $this->assertEquals(0, $newStockUnit->getOrderedQuantity());
@@ -644,12 +646,71 @@ class StockUnitLinkerTest extends BaseTestCase
         $this->assertEquals(StockUnitStates::STATE_NEW, $newStockUnit->getState());
         // Then the new stock unit should have one assignment
         $this->assertCount(1, $newStockUnit->getStockAssignments());
-        // Then the assignment should be associated with the order item B
-        $this->assertEquals($orderItemB, $newStockUnit->getStockAssignments()[0]->getOrderItem());
+        // Then the assignment should be associated with the order item A
+        $this->assertEquals($orderItemA, $newStockUnit->getStockAssignments()[0]->getOrderItem());
         // Then the new assignment's sold quantity should equal 10
         $this->assertEquals(10, $newStockUnit->getStockAssignments()[0]->getSoldQuantity());
+    }
 
-        $this->markTestIncomplete('Not yet implemented');
+    public function test_it_unlinks_item()
+    {
+        // Given the supplier order is submitted
+        $supplierOrder = new SupplierOrder();
+        $supplierOrder->setOrderedAt(new \DateTime());
+
+        // Given the subject is ordered for 20 quantity (30 before change) with a cost of 12 euros
+        $supplierOrderItem = (new SupplierOrderItem())
+            ->setNetPrice(12)
+            ->setQuantity(20)
+            ->setOrder($supplierOrder);
+
+        // Given the subject has been sold for 20 quantity and 10 quantity
+        $orderItemA = (new OrderItem())
+            ->setQuantity(10)
+            ->setOrder((new Order())->setCreatedAt($date = new \DateTime()));
+        $orderItemB = (new OrderItem())
+            ->setQuantity(20)
+            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+        $stockUnit = (new StockUnit())
+            ->setOrderedQuantity(30)
+            ->setSoldQuantity(30)
+            ->setNetPrice(12)
+            ->setSupplierOrderItem($supplierOrderItem);
+        (new OrderItemStockAssignment())
+            ->setOrderItem($orderItemA)
+            ->setStockUnit($stockUnit)
+            ->setSoldQuantity(10);
+        (new OrderItemStockAssignment())
+            ->setOrderItem($orderItemB)
+            ->setStockUnit($stockUnit)
+            ->setSoldQuantity(20);
+
+        // Given the supplier order item's quantity has changed from 30 to 20
+        $this->getPersistenceHelper()
+            ->method('isChanged')
+            ->with($supplierOrderItem, 'quantity')
+            ->willReturn(true);
+        $this->getPersistenceHelper()
+            ->method('getChangeSet')
+            ->with($supplierOrderItem, 'quantity')
+            ->willReturn([30, 20]);
+
+        // Given the stock unit resolver will return no 'pending or ready' stock unit
+        $this->getUnitResolver()
+            ->method('findPendingOrReady')
+            ->with($supplierOrderItem)
+            ->willReturn([]);
+
+        // Given the stock unit resolver will return a new stock unit
+        $newStockUnit = new StockUnit();
+        $this->getUnitResolver()
+            ->method('createBySubjectRelative')
+            ->with($supplierOrderItem)
+            ->willReturn($newStockUnit);
+
+        // Test
+        $linker = $this->createStockUnitLinker();
+        $linker->applyItem($supplierOrderItem);
     }
 
     /**

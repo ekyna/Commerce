@@ -17,7 +17,7 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  * @package Ekyna\Component\Commerce\Stock\Linker
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitLinker
+class StockUnitLinker implements StockUnitLinkerInterface
 {
     /**
      * @var PersistenceHelperInterface
@@ -179,10 +179,12 @@ class StockUnitLinker
         }
 
         // Negative case : not enough sold quantity
+        // TODO rename 'findLinkable' to 'unlinkedBySubject'
+        if (null !== $sourceUnit = $this->unitResolver->findLinkable($supplierOrderItem)) {
+            $this->moveAssignments($sourceUnit, $stockUnit, -$overflow);
+        }
 
-        // TODO Try to move from assignments from new (not linked) stock units
-
-        throw new LogicException("Not yet implemented.");
+        // Overflow may remain here, as we won't always get a source unit
     }
 
     /**
@@ -224,6 +226,8 @@ class StockUnitLinker
             if ($targetStockUnit === $stockUnit) {
                 continue;
             }
+
+            // TODO use moveAssignments()
 
             $available = $targetStockUnit->getSoldQuantity() - $targetStockUnit->getOrderedQuantity();
             if (0 >= $available) {
@@ -384,7 +388,7 @@ class StockUnitLinker
         // If the target stock unit is linked to a supplier order item,
         // don't create overflow on it.
         if (null !== $targetUnit->getSupplierOrderItem()) {
-            $available = $targetUnit->getSoldQuantity() - $targetUnit->getOrderedQuantity();
+            $available = $targetUnit->getOrderedQuantity() - $targetUnit->getSoldQuantity();
             if (0 >= $available) {
                 // Abort because sold quantity would become greater than ordered
                 return $moved;
@@ -524,23 +528,5 @@ class StockUnitLinker
         });
 
         return $assignments;
-    }
-
-    /**
-     * Returns the most ancient assignment.
-     *
-     * @param StockAssignmentInterface[] $assignments
-     *
-     * @return StockAssignmentInterface|null
-     */
-    private function getLastAssignment(array $assignments)
-    {
-        if (empty($assignments)) {
-            return null;
-        }
-
-        $assignments = $this->sortAssignments($assignments);
-
-        return reset($assignments);
     }
 }

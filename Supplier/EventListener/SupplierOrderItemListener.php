@@ -35,10 +35,12 @@ class SupplierOrderItemListener extends AbstractListener
         // If supplier order state is 'ordered', 'partial' or 'completed'
         if (SupplierOrderStates::isStockableState($item->getOrder()->getState())) {
             // Associated stock unit (if not exists) must be created (absolute ordered quantity).
-            $this->createSupplierOrderItemStockUnit($item);
+            $this->stockUnitLinker->linkItem($item);
+            //$this->createSupplierOrderItemStockUnit($item);
         } else { // Supplier order state is 'new' or 'cancelled'
             // Associated stock unit (if exists) must be deleted.
-            $this->deleteSupplierOrderItemStockUnit($item);
+            $this->stockUnitLinker->unlinkItem($item);
+            //$this->deleteSupplierOrderItemStockUnit($item);
         }
     }
 
@@ -83,13 +85,16 @@ class SupplierOrderItemListener extends AbstractListener
 
         if (SupplierOrderStates::isStockableState($order->getState())) {
             $scheduleContentChange = false;
+            // TODO This test appends twice (StockUnitLinker::applyItem)
             if ($this->persistenceHelper->isChanged($item, 'quantity')) {
                 // Updates the ordered quantity
-                $this->stockUnitUpdater->updateOrdered($item->getStockUnit(), $item->getQuantity(), false);
+                $this->stockUnitLinker->applyItem($item);
+                //$this->stockUnitUpdater->updateOrdered($item->getStockUnit(), $item->getQuantity(), false);
 
                 $scheduleContentChange = true;
             }
 
+            // TODO Do this in the StockUnitLinker::applyItem() method ?
             if ($this->persistenceHelper->isChanged($item, 'netPrice')) {
                 // Updates the net price
                 $this->stockUnitUpdater->updateNetPrice($item->getStockUnit(), $item->getNetPrice());
@@ -117,7 +122,8 @@ class SupplierOrderItemListener extends AbstractListener
         $this->assertDeletable($item);
 
         // TODO If not made by the supplierOrderListener ?
-        $this->deleteSupplierOrderItemStockUnit($item);
+        //$this->deleteSupplierOrderItemStockUnit($item);
+        $this->stockUnitLinker->unlinkItem($item);
 
         // Supplier order has been set to null by the removeItem method.
         // Retrieve it from the change set.

@@ -102,13 +102,15 @@ class SupplierOrderListener extends AbstractListener
             if (SupplierOrderStates::hasChangedFromStockable($stateCs)) {
                 // Delete stock unit (if exists) for each supplier order items.
                 foreach ($order->getItems() as $item) {
-                    $this->deleteSupplierOrderItemStockUnit($item);
+                    $this->stockUnitLinker->unlinkItem($item);
+                    //$this->deleteSupplierOrderItemStockUnit($item);
                 }
             } // Else if order state's has changed to a stockable state
             elseif (SupplierOrderStates::hasChangedToStockable($stateCs)) {
                 // Create stock unit (if not exists) for each supplier order items.
                 foreach ($order->getItems() as $item) {
-                    $this->createSupplierOrderItemStockUnit($item);
+                    $this->stockUnitLinker->linkItem($item);
+                    //$this->createSupplierOrderItemStockUnit($item);
                 }
             }
         }
