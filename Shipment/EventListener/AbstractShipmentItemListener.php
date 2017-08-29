@@ -58,13 +58,15 @@ abstract class AbstractShipmentItemListener
 
         // If shipment state is stockable (TODO take care of returned state)
         if (Model\ShipmentStates::isStockableState($shipment->getState())) {
-            if ($shipment->isReturn()) {
+            // Assign shipment item to stock units
+            $this->stockUnitAssigner->assignShipmentItem($item);
+            /*if ($shipment->isReturn()) {
                 // Detach shipment item to stock units
                 $this->stockUnitAssigner->detachShipmentItem($item);
             } else {
                 // Assign shipment item to stock units
                 $this->stockUnitAssigner->assignShipmentItem($item);
-            }
+            }*/
         }
 
         $this->scheduleShipmentContentChangeEvent($shipment);
@@ -124,13 +126,15 @@ abstract class AbstractShipmentItemListener
         // If shipment is in a stockable state and quantity has changed
         // TODO Or shipment was in stockable state (watch state change set) ?
         if (Model\ShipmentStates::isStockableState($shipment->getState())) {
-            if ($shipment->isReturn()) {
+            // Detach shipment item to stock units
+            $this->stockUnitAssigner->detachShipmentItem($item);
+            /*if ($shipment->isReturn()) {
                 // Assign shipment item to stock units
                 $this->stockUnitAssigner->assignShipmentItem($item);
             } else {
                 // Detach shipment item to stock units
                 $this->stockUnitAssigner->detachShipmentItem($item);
-            }
+            }*/
         }
 
         $this->scheduleShipmentContentChangeEvent($shipment);

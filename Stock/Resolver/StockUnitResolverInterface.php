@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
@@ -14,13 +13,6 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
  */
 interface StockUnitResolverInterface
 {
-    /**
-     * Purges the given stock unit from cache.
-     *
-     * @param StockUnitInterface $stockUnit
-     */
-    public function purge(StockUnitInterface $stockUnit);
-
     /**
      * Creates a stock unit for the given subject relative.
      *

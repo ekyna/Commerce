@@ -106,7 +106,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
             ->andWhere($qb->expr()->isNull($alias . '.supplierOrderItem')) // Not yet linked to a supplier order
             ->setParameter('product', $subject)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
     }
 
     /**

@@ -103,8 +103,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         // Estimated date of arrival
         $currentDate = $subject->getEstimatedDateOfArrival();
-        // Set null if no virtual stock
-        if (0 >= $virtualStock) {
+        // Set null if we do not expect supplier deliveries
+        if ($ordered <= $received) {
             if (null !== $currentDate) {
                 $subject->setEstimatedDateOfArrival(null);
                 $changed = true;

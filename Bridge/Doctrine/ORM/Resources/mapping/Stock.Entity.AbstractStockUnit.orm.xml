@@ -39,7 +39,13 @@
         </one-to-one>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment"
-                     mapped-by="stockUnit" field="stockAssignments"/>
+                     mapped-by="stockUnit" field="stockAssignments">
+            <cascade>
+                <cascade-persist/>
+                <cascade-detach/>
+                <cascade-merge/>
+            </cascade>
+        </one-to-many>
 
     </entity>
 

@@ -171,16 +171,22 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // TODO sort assignments ?
 
         $quantity = $item->getQuantity();
+        $return = $item->getShipment()->isReturn();
 
         // TODO Use packaging format
 
         foreach ($assignments as $assignment) {
+            if ($return) {
+                $quantity += $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+            } else {
+                $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+            }
             // TODO Should be relative ? (multiple shipment items may point to the same sale item)
-            $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, false);
+            //$quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, false);
         }
 
         // Remaining quantity
-        if (0 < $quantity) {
+        if (0 != $quantity) {
             throw new InvalidArgumentException('Failed to assign shipment item.');
         }
     }
@@ -240,16 +246,22 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // TODO sort assignments ? (reverse for debit)
 
         // TODO Use packaging format
+        $quantity = $item->getQuantity();
+        $return = $item->getShipment()->isReturn();
 
         // Update assignments
-        $result = 0;
         foreach ($assignments as $assignment) {
+            if ($return) {
+                $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+            } else {
+                $quantity += $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+            }
             // TODO Should be relative ? (multiple shipment items may point to the same sale item)
-            $result += $this->assignmentUpdater->updateShipped($assignment, 0, false);
+            //$result += $this->assignmentUpdater->updateShipped($assignment, 0, false);
         }
 
         // Remaining quantity
-        if (0 != $result) {
+        if (0 != $quantity) {
             throw new InvalidArgumentException('Failed to detach shipment item.');
         }
     }

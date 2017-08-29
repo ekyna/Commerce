@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinkerInterface;
-//use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
 use Ekyna\Component\Commerce\Supplier\Model;
@@ -27,11 +26,6 @@ abstract class AbstractListener
      * @var StockUnitLinkerInterface
      */
     protected $stockUnitLinker;
-
-    /**
-     * @var StockUnitResolverInterface
-     */
-    //protected $stockUnitResolver;
 
     /**
      * @var StockUnitUpdaterInterface
@@ -60,16 +54,6 @@ abstract class AbstractListener
     }
 
     /**
-     * Sets the stock unit resolver.
-     *
-     * @param StockUnitResolverInterface $resolver
-     */
-    /*public function setStockUnitResolver(StockUnitResolverInterface $resolver)
-    {
-        $this->stockUnitResolver = $resolver;
-    }*/
-
-    /**
      * Sets the stock unit updater.
      *
      * @param StockUnitUpdaterInterface $updater
@@ -78,68 +62,6 @@ abstract class AbstractListener
     {
         $this->stockUnitUpdater = $updater;
     }
-
-    /**
-     * Creates the stock unit for the given supplier order item.
-     *
-     * @param Model\SupplierOrderItemInterface $item
-     *
-     * @throws Exception\InvalidArgumentException
-     * @deprecated
-     */
-    /*protected function createSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
-    {
-        if (null !== $stockUnit = $item->getStockUnit()) {
-            if ($stockUnit->getOrderedQuantity() != $item->getQuantity()) {
-                throw new Exception\InvalidArgumentException(
-                    "Stock unit's ordered quantity does not match the supplier order item quantity."
-                );
-            }
-
-            return;
-        }
-
-        // TODO use stock unit linker
-
-        $stockUnit = $this
-            ->stockUnitResolver
-            ->createBySupplierOrderItem($item);
-
-        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
-        $this->persistenceHelper->persistAndRecompute($item);
-    }*/
-
-    /**
-     * Deletes the stock unit from the given supplier order item.
-     *
-     * @param Model\SupplierOrderItemInterface $item
-     *
-     * @throws Exception\IllegalOperationException
-     * @deprecated
-     */
-    /*protected function deleteSupplierOrderItemStockUnit(Model\SupplierOrderItemInterface $item)
-    {
-        if (null === $stockUnit = $item->getStockUnit()) {
-            return;
-        }
-
-        if (0 < $stockUnit->getShippedQuantity()) {
-            throw new Exception\IllegalOperationException(
-                "Stock unit can't be deleted as it has been partially or fully shipped."
-            );
-        }
-
-        // TODO use stock unit linker
-
-        $stockUnit->setSupplierOrderItem(null);
-        if (0 < $stockUnit->getSoldQuantity()) {
-            $this->persistenceHelper->persistAndRecompute($stockUnit);
-        } else {
-            $this->persistenceHelper->remove($stockUnit, true);
-        }
-
-        $this->persistenceHelper->persistAndRecompute($item);
-    }*/
 
     /**
      * Asserts that the resource can be safely deleted.

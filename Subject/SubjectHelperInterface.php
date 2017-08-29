@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Subject;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
@@ -24,32 +25,35 @@ class StockUnitResolver implements StockUnitResolverInterface
     protected $subjectHelper;
 
     /**
+     * @var StockUnitCacheInterface
+     */
+    protected $stockUnitCache;
+
+    /**
      * @var EntityManagerInterface
      */
     protected $entityManager;
 
     /**
-     * @var array (class => $repository)
+     * @var array [class => $repository]
      */
     protected $repositoryCache;
-
-    /**
-     * @var array (identity => $stockUnit)
-     */
-    protected $newStockUnitCache;
 
 
     /**
      * Constructor.
      *
      * @param SubjectHelperInterface $subjectHelper
+     * @param StockUnitCacheInterface $stockUnitCache
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         SubjectHelperInterface $subjectHelper,
+        StockUnitCacheInterface $stockUnitCache,
         EntityManagerInterface $entityManager
     ) {
         $this->subjectHelper = $subjectHelper;
+        $this->stockUnitCache = $stockUnitCache;
         $this->entityManager = $entityManager;
 
         $this->clear();
@@ -61,22 +65,6 @@ class StockUnitResolver implements StockUnitResolverInterface
     public function clear()
     {
         $this->repositoryCache = [];
-        $this->newStockUnitCache = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function purge(StockUnitInterface $stockUnit)
-    {
-        foreach ($this->newStockUnitCache as $oid => $su) {
-            if ($su === $stockUnit) {
-                unset($this->newStockUnitCache[$oid]);
-                return;
-            }
-        }
-
-        throw new InvalidArgumentException("Stock unit is not cached.");
     }
 
     /**
@@ -87,20 +75,21 @@ class StockUnitResolver implements StockUnitResolverInterface
         /** @var StockSubjectInterface $subject */
         $subject = $this->subjectHelper->resolve($relative);
 
-        $oid = spl_object_hash($subject);
-        if (!isset($this->newStockUnitCache[$oid])) {
-            return $this->newStockUnitCache[$oid];
+        // TODO Cache 'new' stock units created by sales
+        if (!empty($stockUnits = $this->stockUnitCache->findNewBySubject($subject))) {
+            return reset($stockUnits);
         }
 
-        // TODO Use 'new' stock units created by sales
-
+        /** @var StockUnitInterface $stockUnit */
         $stockUnit = $this
             ->getRepositoryBySubject($subject)
             ->createNew();
 
         $stockUnit->setSubject($subject);
 
-        return $this->newStockUnitCache[$oid] = $stockUnit;
+        $this->stockUnitCache->add($stockUnit);
+
+        return $stockUnit;
     }
 
     /**
@@ -128,7 +117,10 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $repository->findPendingBySubject($subject);
+        return $this->merge(
+            $this->stockUnitCache->findPendingBySubject($subject),
+            $repository->findPendingBySubject($subject)
+        );
     }
 
     /**
@@ -142,7 +134,10 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $repository->findPendingOrReadyBySubject($subject);
+        return $this->merge(
+            $this->stockUnitCache->findPendingOrReadyBySubject($subject),
+            $repository->findPendingOrReadyBySubject($subject)
+        );
     }
 
     /**
@@ -156,11 +151,10 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        $stockUnits = $repository->findNotClosedBySubject($subject);
-
-        if (null !== $cached = $this->getCachedStockUnitBySubject($subject)) {
-            $stockUnits[] = $cached;
-        }
+        $stockUnits = $this->merge(
+            $this->stockUnitCache->findNotClosedBySubject($subject),
+            $repository->findNotClosedBySubject($subject)
+        );
 
         return $stockUnits;
     }
@@ -176,14 +170,10 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        $stockUnits = $repository->findAssignableBySubject($subject);
-
-        // TODO check if assignable
-        if (null !== $cached = $this->getCachedStockUnitBySubject($subject)) {
-            $stockUnits[] = $cached;
-        }
-
-        return $stockUnits;
+        return $this->merge(
+            $this->stockUnitCache->findAssignableBySubject($subject),
+            $repository->findAssignableBySubject($subject)
+        );
     }
 
     /**
@@ -197,30 +187,41 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        // TODO check if linkable
-        if (null !== $cached = $this->getCachedStockUnitBySubject($subject)) {
-            return $cached;
+        if (!empty($stockUnits = $this->stockUnitCache->findLinkableBySubject($subject))) {
+            return reset($stockUnits);
         }
 
-        return $repository->findLinkableBySubject($subject);
-    }
-
-    /**
-     * Returns the cached new stock unit by subject.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return StockUnitInterface|null
-     */
-    protected function getCachedStockUnitBySubject(StockSubjectInterface $subject)
-    {
-        $oid = spl_object_hash($subject);
-
-        if (isset($this->newStockUnitCache[$oid])) {
-            return $this->newStockUnitCache[$oid];
+        if (!empty($stockUnits = $repository->findLinkableBySubject($subject))) {
+            return reset($stockUnits);
         }
 
         return null;
+    }
+
+    /**
+     * Merges the fetched units with the cached units.
+     *
+     * @param StockUnitInterface[] $cachedUnits
+     * @param StockUnitInterface[] $fetchedUnits
+     *
+     * @return array
+     */
+    protected function merge(array $cachedUnits, array $fetchedUnits)
+    {
+        $cachedIds = [];
+        foreach ($cachedUnits as $cachedUnit) {
+            if (null !== $id = $cachedUnit->getId()) {
+                $cachedIds[] = $cachedUnit->getId();
+            }
+        }
+
+        foreach ($fetchedUnits as $fetchedUnit) {
+            if (!in_array($fetchedUnit->getId(), $cachedIds)) {
+                $cachedUnits[] = $fetchedUnit;
+            }
+        }
+
+        return $cachedUnits;
     }
 
     /**
@@ -248,7 +249,11 @@ class StockUnitResolver implements StockUnitResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the subject and his stock unit repository.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return StockUnitRepositoryInterface
      */
     protected function getRepositoryBySubject(StockSubjectInterface $subject)
     {

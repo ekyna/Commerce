@@ -82,9 +82,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
             ->setOrderedQuantity($supplierOrderItem->getQuantity())
             ->setEstimatedDateOfArrival($supplierOrderItem->getOrder()->getEstimatedDateOfArrival());
 
-        // Removes this stock unit from the resolver's cache
-        $this->unitResolver->purge($stockUnit);
-
         // We want the sold quantity to be equal to the ordered quantity.
         // We don't care about shipped quantity as 'new' stock units can't be shipped.
         $overflow = $stockUnit->getSoldQuantity() - $stockUnit->getOrderedQuantity();
@@ -146,7 +143,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
             return;
         }
 
-        // Positive case : too much sold quantity
+        // Negative case : too much sold quantity
         if (0 < $overflow) {
             // Try to move sold overflow to other pending/ready stock units
             $targetStockUnits = $this->unitResolver->findPendingOrReady($supplierOrderItem);
@@ -178,8 +175,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
             return;
         }
 
-        // Negative case : not enough sold quantity
-        // TODO rename 'findLinkable' to 'unlinkedBySubject'
+        // Positive case : not enough sold quantity
         if (null !== $sourceUnit = $this->unitResolver->findLinkable($supplierOrderItem)) {
             $this->moveAssignments($sourceUnit, $stockUnit, -$overflow);
         }
@@ -196,7 +192,10 @@ class StockUnitLinker implements StockUnitLinkerInterface
      */
     public function unlinkItem(SupplierOrderItemInterface $supplierOrderItem)
     {
-        $stockUnit = $supplierOrderItem->getStockUnit();
+        if (null === $stockUnit = $supplierOrderItem->getStockUnit()) {
+            return;
+        }
+
         if (0 < $stockUnit->getReceivedQuantity() || 0 < $stockUnit->getShippedQuantity()) {
             throw new LogicException("Can't unlink supplier order item as it has been partially or fully received or shipped.");
         }
@@ -204,19 +203,16 @@ class StockUnitLinker implements StockUnitLinkerInterface
         // Unlink stock unit by setting supplier order item to null and ordered quantity to zero
         $stockUnit
             ->setSupplierOrderItem(null)
-            ->setOrderedQuantity(0);
+            ->setOrderedQuantity(0)
+            ->setNetPrice(0);
 
         if (0 === $soldQty = $stockUnit->getSoldQuantity()) {
             // Stock has no assignment
             // Remove the stock unit without scheduling event
-            // (we don't want to trigger product's stock unit change listener)
-            $this->persistenceHelper->remove($stockUnit, false);
+            $this->persistenceHelper->remove($stockUnit, true);
 
             return;
         }
-
-        // Assignments are sorted from the more recent to the most ancient
-        $assignments = $this->sortAssignments($stockUnit->getStockAssignments()->toArray());
 
         // Try to move assignments to not closed stock units
         // TODO stock unit sort/priority
@@ -227,83 +223,10 @@ class StockUnitLinker implements StockUnitLinkerInterface
                 continue;
             }
 
-            // TODO use moveAssignments()
+            $soldQty -= $this->moveAssignments($stockUnit, $targetStockUnit, $soldQty);
 
-            $available = $targetStockUnit->getSoldQuantity() - $targetStockUnit->getOrderedQuantity();
-            if (0 >= $available) {
-                continue;
-            }
-
-            foreach ($assignments as $assignment) {
-                $saleItem = $assignment->getSaleItem();
-
-                // Look for a target assignment with the same sale item
-                $targetAssignment = null;
-                $targetAssignments = $this->sortAssignments($targetStockUnit->getStockAssignments()->toArray());
-                foreach ($targetAssignments as $ta) {
-                    if ($ta->getSaleItem() === $saleItem) {
-                        $targetAssignment = $ta;
-                        break;
-                    }
-                }
-
-                // If there is not enough available sold quantity
-                // to fully move the assignment to the target stock unit,
-                // split the assignment
-                if ($available < $assignment->getSoldQuantity()) {
-                    // New assignment for the available sold quantity
-                    if (null !== $targetAssignment) {
-                        $targetAssignment->setSoldQuantity($targetAssignment->getSoldQuantity() + $available);
-                    } else {
-                        $targetAssignment = $this->saleFactory->createStockAssignmentForItem($saleItem);
-                        $targetAssignment
-                            ->setSaleItem($saleItem)
-                            ->setStockUnit($targetStockUnit)
-                            ->setSoldQuantity($available);
-                    }
-
-                    // Persist without scheduling event
-                    $this->persistenceHelper->persistAndRecompute($targetAssignment, false);
-                    $this->persistenceHelper->persistAndRecompute($assignment, false);
-
-                    // Update the assignment's sold quantity
-                    $assignment->setSoldQuantity($assignment->getSoldQuantity() - $available);
-
-                    $soldQty -= $available;
-                    $available = 0;
-                } else {
-                    if ($targetAssignment) {
-                        // Add sold quantity to the target assignment
-                        $targetAssignment->setSoldQuantity($targetAssignment->getSoldQuantity() + $assignment->getSoldQuantity());
-
-                        // Persist without scheduling event
-                        $this->persistenceHelper->persistAndRecompute($targetAssignment, false);
-
-                        // Removes the stock unit without scheduling event
-                        $assignment->setStockUnit(null);
-                        $this->persistenceHelper->remove($assignment, false);
-                    } else {
-                        // There is enough available sold quantity to move the assignment to the target stock unit
-                        $assignment->setStockUnit($targetStockUnit);
-
-                        // Persist without scheduling event
-                        $this->persistenceHelper->persistAndRecompute($assignment, false);
-                    }
-
-                    $available -= $assignment->getSoldQuantity();
-                    $soldQty -= $assignment->getSoldQuantity();
-                }
-
-                // TODO resolve the target stock unit's state
-
-                // Persist without scheduling event (we don't want to trigger product's stock unit change listener)
-                $this->persistenceHelper->persistAndRecompute($targetStockUnit, false);
-
-                if (0 == $soldQty) {
-                    break 2; // We're done with re-assignment
-                } elseif (0 == $available) {
-                    continue 2; // Next stock unit
-                }
+            if (0 == $soldQty) {
+                break; // We're done with re-assignment
             }
         }
 
@@ -311,60 +234,11 @@ class StockUnitLinker implements StockUnitLinkerInterface
             // Try to merge assignments with a linkable stock unit's assignments
             $targetStockUnit = $this->unitResolver->findLinkable($supplierOrderItem);
             if (null !== $targetStockUnit && $stockUnit !== $targetStockUnit) {
-                $assignments = $this->sortAssignments($stockUnit->getStockAssignments()->toArray());
-                foreach ($assignments as $assignment) {
-                    $saleItem = $assignment->getSaleItem();
-
-                    $targetAssignments = $this->sortAssignments($targetStockUnit->getStockAssignments()->toArray());
-                    foreach ($targetAssignments as $targetAssignment) {
-                        if ($targetAssignment->getSaleItem() === $saleItem) {
-                            $targetAssignment->setSoldQuantity(
-                                $targetAssignment->getSoldQuantity() + $assignment->getSoldQuantity()
-                            );
-
-                            // Persist without scheduling event
-                            $this->persistenceHelper->persistAndRecompute($targetAssignment, false);
-
-                            // Removes the stock unit without scheduling event
-                            $assignment->setStockUnit(null);
-                            $this->persistenceHelper->remove($assignment, false);
-
-                            $soldQty -= $assignment->getSoldQuantity();
-
-                            continue 2;
-                        }
-                    }
-
-                    // Move the assignment to the target stock unit
-                    $assignment->setStockUnit($targetStockUnit);
-
-                    // Persist without scheduling event
-                    $this->persistenceHelper->persistAndRecompute($assignment, false);
-
-                    $soldQty -= $assignment->getSoldQuantity();
-                }
+                $this->moveAssignments($stockUnit, $targetStockUnit, $soldQty);
             }
         }
 
-        if (empty($stockUnit->getStockAssignments())) {
-            if (0 < $soldQty) {
-                throw new LogicException("Failed to unlink supplier order item.");
-            }
-
-            $this->persistenceHelper->remove($stockUnit, false);
-        }
-
-        if (0 == $soldQty) {
-            throw new LogicException("Failed to unlink supplier order item.");
-        }
-
-        $stockUnit->setSoldQuantity($soldQty);
-
-        // TODO resolve the target stock unit's state
-
-        // Persist the stock unit without scheduling event
-        // (we don't want to trigger product's stock unit change listener)
-        $this->persistenceHelper->persistAndRecompute($stockUnit, false);
+        $this->persistStockUnit($stockUnit);
     }
 
     /**
@@ -405,8 +279,20 @@ class StockUnitLinker implements StockUnitLinkerInterface
         $targetAssignments = $targetUnit->getStockAssignments();
 
         foreach ($sourceAssignments as $sourceAssignment) {
-            // Move assignment
-            if ($quantity >= $sourceAssignment->getSoldQuantity()) {
+            // Split assignment
+            $saleItem = $sourceAssignment->getSaleItem();
+
+            // Look for a target assignment with the same sale item
+            $targetAssignment = null;
+            foreach ($targetAssignments as $ta) {
+                if ($ta->getSaleItem() === $saleItem) {
+                    $targetAssignment = $ta;
+                    break;
+                }
+            }
+
+            // If no target assignment to merge into, move assignment
+            if (null === $targetAssignment && $quantity >= $sourceAssignment->getSoldQuantity()) {
                 $delta = $sourceAssignment->getSoldQuantity();
                 $sourceAssignment->setStockUnit($targetUnit);
                 $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $delta);
@@ -423,17 +309,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
                 continue;
             }
 
-            // Split assignment
-            $saleItem = $sourceAssignment->getSaleItem();
-
-            // Look for a target assignment with the same sale item
-            $targetAssignment = null;
-            foreach ($targetAssignments as $ta) {
-                if ($ta->getSaleItem() === $saleItem) {
-                    $targetAssignment = $ta;
-                    break;
-                }
-            }
             // If not found, create a new assignment
             if (null === $targetAssignment) {
                 $targetAssignment = $this->saleFactory->createStockAssignmentForItem($saleItem);
@@ -472,20 +347,23 @@ class StockUnitLinker implements StockUnitLinkerInterface
      */
     private function persistStockUnit(StockUnitInterface $stockUnit)
     {
+        // TODO add/remove from/to stock unit cache ?
+
         // If empty, remove without scheduling event
         if ($stockUnit->isEmpty()) {
             // TODO Test if assignments is empty too ?
             $stockUnit->setSupplierOrderItem(null);
-            $this->persistenceHelper->remove($stockUnit, false);
+            $this->persistenceHelper->remove($stockUnit, true);
 
             return;
         }
 
         // Resolve the target stock unit's state
+        // TODO Remove as it will be done by the stock unit listener (adapt test).
         $this->stateResolver->resolve($stockUnit);
 
         // Persist without scheduling event
-        $this->persistenceHelper->persistAndRecompute($stockUnit, false);
+        $this->persistenceHelper->persistAndRecompute($stockUnit, true);
     }
 
     /**
@@ -498,13 +376,13 @@ class StockUnitLinker implements StockUnitLinkerInterface
         // Remove if empty
         if (0 == $assignment->getSoldQuantity()) {
             $assignment->setStockUnit(null);
-            $this->persistenceHelper->remove($assignment, false);
+            $this->persistenceHelper->remove($assignment, true);
 
             return;
         }
 
         // Persist without scheduling event
-        $this->persistenceHelper->persistAndRecompute($assignment, false);
+        $this->persistenceHelper->persistAndRecompute($assignment, true);
     }
 
     /**

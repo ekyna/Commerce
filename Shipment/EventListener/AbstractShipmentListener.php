@@ -115,31 +115,31 @@ abstract class AbstractShipmentListener
             // If shipment state has changed from non stockable to stockable
             if (ShipmentStates::hasChangedToStockable($stateCs)) {
                 // For each shipment item
-                if ($shipment->isReturn()) {
+                /*if ($shipment->isReturn()) {
                     foreach ($shipment->getItems() as $item) {
                         // Credit sale item stock units shipped quantity through assignments
                         $this->stockUnitAssigner->detachShipmentItem($item);
                     }
-                } else {
+                } else {*/
                     foreach ($shipment->getItems() as $item) {
                         // Credit sale item stock units shipped quantity through assignments
                         $this->stockUnitAssigner->assignShipmentItem($item);
                     }
-                }
+                //}
             } // Else if shipment state has changed from stockable to non stockable
             elseif (ShipmentStates::hasChangedFromStockable($stateCs)) {
                 // For each shipment item
-                if ($shipment->isReturn()) {
+                /*if ($shipment->isReturn()) {
                     foreach ($shipment->getItems() as $item) {
                         // Debit sale item stock units shipped quantity through assignments
                         $this->stockUnitAssigner->assignShipmentItem($item);
                     }
-                } else {
+                } else {*/
                     foreach ($shipment->getItems() as $item) {
                         // Debit sale item stock units shipped quantity through assignments
                         $this->stockUnitAssigner->detachShipmentItem($item);
                     }
-                }
+                //}
             }
         }
     }

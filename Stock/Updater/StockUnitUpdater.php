@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -18,15 +19,23 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
      */
     private $persistenceHelper;
 
+    /**
+     * @var StockUnitCacheInterface
+     */
+    private $stockUnitCache;
 
     /**
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
+     * @param StockUnitCacheInterface    $stockUnitCache
      */
-    public function __construct(PersistenceHelperInterface $persistenceHelper)
-    {
+    public function __construct(
+        PersistenceHelperInterface $persistenceHelper,
+        StockUnitCacheInterface $stockUnitCache
+    ) {
         $this->persistenceHelper = $persistenceHelper;
+        $this->stockUnitCache = $stockUnitCache;
     }
 
     /**
@@ -169,8 +178,11 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             // TODO Check if removal is safe
             // TODO Clear association
             $this->persistenceHelper->remove($stockUnit, true);
+            $this->stockUnitCache->remove($stockUnit);
         } else {
             $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+            // Caches the stock unit to make it available for the StockSubjectUpdater.
+            $this->stockUnitCache->add($stockUnit);
         }
     }
 }
