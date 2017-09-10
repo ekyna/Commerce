@@ -449,7 +449,7 @@ class StockUnitLinkerTest extends BaseTestCase
         $this->getPersistenceHelper()
             ->expects($this->once())
             ->method('remove')
-            ->with($newStockUnit, false);
+            ->with($newStockUnit, true);
 
         // Test
         $linker = $this->createStockUnitLinker();

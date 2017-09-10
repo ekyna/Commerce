@@ -187,11 +187,12 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         list($subject, $repository) = $this->getSubjectAndRepository($subjectOrRelative);
 
-        if (!empty($stockUnits = $this->stockUnitCache->findLinkableBySubject($subject))) {
-            return reset($stockUnits);
-        }
+        $stockUnits = $this->merge(
+            $this->stockUnitCache->findLinkableBySubject($subject),
+            $repository->findLinkableBySubject($subject)
+        );
 
-        if (!empty($stockUnits = $repository->findLinkableBySubject($subject))) {
+        if (!empty($stockUnits)) {
             return reset($stockUnits);
         }
 

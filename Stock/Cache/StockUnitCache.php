@@ -146,8 +146,8 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
         // Filter by :
         // - Not yet linked to a supplier order
         // - Sold lower than ordered
-        if (!empty($stockUnits) && !empty($states)) {
-            $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) use ($states) {
+        if (!empty($stockUnits)) {
+            $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) {
                 return null === $stockUnit->getSupplierOrderItem()
                     && $stockUnit->getSoldQuantity() < $stockUnit->getOrderedQuantity();
             });
@@ -171,8 +171,8 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
 
         // Filter by :
         // - Not yet linked to a supplier order
-        if (!empty($stockUnits) && !empty($states)) {
-            $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) use ($states) {
+        if (!empty($stockUnits)) {
+            $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) {
                 return null === $stockUnit->getSupplierOrderItem();
             });
         }

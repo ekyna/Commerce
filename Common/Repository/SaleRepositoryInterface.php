@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 
 /**
  * Interface SaleRepositoryInterface
@@ -49,4 +50,14 @@ interface SaleRepositoryInterface
      * @return SaleInterface|null
      */
     public function findOneByCustomerAndNumber(CustomerInterface $customer, $number);
+
+    /**
+     * Finds the sales by subject, optionally filtered by states.
+     *
+     * @param SubjectInterface $subject
+     * @param array            $states
+     *
+     * @return array|SaleInterface[]
+     */
+    public function findBySubject(SubjectInterface $subject, array $states = []);
 }

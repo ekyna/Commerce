@@ -40,7 +40,13 @@
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment"
-                     field="stockAssignments" mapped-by="orderItem"/>
+                     field="stockAssignments" mapped-by="orderItem">
+            <cascade>
+                <cascade-persist/>
+                <cascade-detach/>
+                <cascade-merge/>
+            </cascade>
+        </one-to-many>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem"
                      field="parent" inversed-by="children">

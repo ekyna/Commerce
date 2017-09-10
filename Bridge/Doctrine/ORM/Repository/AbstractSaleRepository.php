@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
 /**
@@ -108,6 +109,48 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
         }
 
         return $sale;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findBySubject(SubjectInterface  $subject, array $states = [])
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb
+            ->join('o.items', 'i')
+            ->leftJoin('i.children', 'c')
+            ->leftJoin('c.children', 'sc')
+            ->andWhere($qb->expr()->orX(
+                $qb->expr()->andX(
+                    $qb->expr()->eq('i.subjectIdentity.provider', ':provider'),
+                    $qb->expr()->eq('i.subjectIdentity.identifier', ':identifier')
+                ),
+                $qb->expr()->andX(
+                    $qb->expr()->eq('c.subjectIdentity.provider', ':provider'),
+                    $qb->expr()->eq('c.subjectIdentity.identifier', ':identifier')
+                ),
+                $qb->expr()->andX(
+                    $qb->expr()->eq('sc.subjectIdentity.provider', ':provider'),
+                    $qb->expr()->eq('sc.subjectIdentity.identifier', ':identifier')
+                )
+            ));
+
+        $parameters = [
+            'provider'   => $subject::getProviderName(),
+            'identifier' => $subject->getId(),
+        ];
+
+        if (!empty($states)) {
+            $qb->andWhere($qb->expr()->in('o.state', ':states'));
+
+            $parameters['states'] = $states;
+        }
+
+        return $qb
+            ->getQuery()
+            ->setParameters($parameters)
+            ->getResult();
     }
 
     /**
