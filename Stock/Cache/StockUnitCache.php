@@ -64,7 +64,9 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
             $this->stockUnits[$oid] = [];
         }
 
-        $this->stockUnits[$oid][] = $stockUnit;
+        if (!in_array($stockUnit, $this->stockUnits[$oid], true)) {
+            $this->stockUnits[$oid][] = $stockUnit;
+        }
     }
 
     /**

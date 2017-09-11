@@ -66,9 +66,11 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
                 $received += $stockUnit->getReceivedQuantity();
                 $shipped += $stockUnit->getShippedQuantity();
 
-                if (null !== $date = $stockUnit->getEstimatedDateOfArrival()) {
-                    if (null === $eda || $eda > $date) {
-                        $eda = $date;
+                if ($stockUnit->getState() !== StockUnitStates::STATE_CLOSED) {
+                    if (null !== $date = $stockUnit->getEstimatedDateOfArrival()) {
+                        if (null === $eda || $eda > $date) {
+                            $eda = $date;
+                        }
                     }
                 }
             }
