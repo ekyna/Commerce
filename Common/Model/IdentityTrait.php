@@ -96,4 +96,14 @@ trait IdentityTrait
 
         return $this;
     }
+
+    /**
+     * Returns whether or not the identity is empty.
+     *
+     * @return bool
+     */
+    public function isIdentityEmpty()
+    {
+        return empty($this->gender) && empty($this->firstName) && empty($this->lastName);
+    }
 }

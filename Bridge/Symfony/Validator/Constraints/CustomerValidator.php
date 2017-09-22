@@ -34,12 +34,14 @@ class CustomerValidator extends ConstraintValidator
         /* @var Customer $constraint */
 
         // Prevent setting a parent to a customer that is already a parent (has children)
-        if ($customer->hasChildren() && $customer->hasParent()) {
-            $this
-                ->context
-                ->buildViolation($constraint->hierarchy_overflow)
-                ->atPath('parent')
-                ->addViolation();
+        if ($customer->hasParent()) {
+            if ($customer->hasChildren() || $customer->getParent()->hasParent()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->hierarchy_overflow)
+                    ->atPath('parent')
+                    ->addViolation();
+            }
         }
 
         // A parent must have a company name.

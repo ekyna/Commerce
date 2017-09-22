@@ -56,4 +56,11 @@ interface IdentityInterface
      * @return string
      */
     public function getLastName();
+
+    /**
+     * Returns whether or not the identity is empty.
+     *
+     * @return bool
+     */
+    public function isIdentityEmpty();
 }

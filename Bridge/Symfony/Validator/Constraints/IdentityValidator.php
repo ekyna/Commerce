@@ -80,16 +80,22 @@ class IdentityValidator extends ConstraintValidator
      *
      * @param ExecutionContextInterface $context
      * @param IdentityInterface         $identity
+     * @param array                     $config
+     * @param string                    $pathPrefix
      */
-    static public function validateIdentity(ExecutionContextInterface $context, IdentityInterface $identity)
-    {
-        $violationList = $context->getValidator()->validate($identity, [new Identity()]);
+    static public function validateIdentity(
+        ExecutionContextInterface $context,
+        IdentityInterface $identity,
+        array $config = [],
+        $pathPrefix = null
+    ) {
+        $violationList = $context->getValidator()->validate($identity, [new Identity($config)]);
 
         /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
         foreach ($violationList as $violation) {
             $context
                 ->buildViolation($violation->getMessage())
-                ->atPath($violation->getPropertyPath())
+                ->atPath($pathPrefix . $violation->getPropertyPath())
                 ->addViolation();
         }
     }

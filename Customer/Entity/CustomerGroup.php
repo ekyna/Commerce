@@ -26,6 +26,16 @@ class CustomerGroup implements CustomerGroupInterface
      */
     protected $default;
 
+    /**
+     * @var boolean
+     */
+    protected $business;
+
+    /**
+     * @var boolean
+     */
+    protected $registration;
+
 
     /**
      * Constructor.
@@ -33,6 +43,8 @@ class CustomerGroup implements CustomerGroupInterface
     public function __construct()
     {
         $this->default = false;
+        $this->business = false;
+        $this->registration = false;
     }
 
     /**
@@ -69,6 +81,7 @@ class CustomerGroup implements CustomerGroupInterface
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -86,6 +99,51 @@ class CustomerGroup implements CustomerGroupInterface
     public function setDefault($default)
     {
         $this->default = (bool)$default;
+
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isBusiness()
+    {
+        return $this->business;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setBusiness($business)
+    {
+        $this->business = (bool)$business;
+
+        return $this;
+    }
+
+    /**
+     * Returns the registration.
+     *
+     * @return bool
+     */
+    public function isRegistration()
+    {
+        return $this->registration;
+    }
+
+    /**
+     * Sets the registration.
+     *
+     * @param bool $registration
+     *
+     * @return CustomerGroup
+     */
+    public function setRegistration($registration)
+    {
+        $this->registration = (bool)$registration;
+
+        return $this;
+    }
+
+
 }

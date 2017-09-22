@@ -13,11 +13,22 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 interface CustomerAddressRepositoryInterface
 {
     /**
-     * Returns the customer address (including the parent's ones).
+     * Returns the customer addresses including the parent's ones.
      *
-     * @param CustomerInterface $customer
+     * @param CustomerInterface        $customer
+     * @param CustomerAddressInterface $exclude
      *
      * @return CustomerAddressInterface[]
      */
-    public function findByCustomer(CustomerInterface $customer);
+    public function findByCustomerAndParents(CustomerInterface $customer);
+
+    /**
+     * Returns the customer addresses.
+     *
+     * @param CustomerInterface        $customer
+     * @param CustomerAddressInterface $exclude
+     *
+     * @return CustomerAddressInterface[]
+     */
+    public function findByCustomer(CustomerInterface $customer, CustomerAddressInterface $exclude = null);
 }
