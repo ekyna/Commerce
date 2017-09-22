@@ -21,6 +21,9 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="factoryName" column="factory_name" type="string" length="32" nullable="false"/>
+        <field name="gatewayConfig" column="gateway_config" type="json_array" nullable="true"/>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage"
                      mapped-by="method" field="messages" fetch="EXTRA_LAZY">
             <cascade>

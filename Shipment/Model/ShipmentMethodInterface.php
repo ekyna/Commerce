@@ -14,6 +14,45 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 interface ShipmentMethodInterface extends MethodInterface, TaxableInterface
 {
     /**
+     * Returns the factory name.
+     *
+     * @return string
+     */
+    public function getFactoryName();
+
+    /**
+     * Sets the factory name.
+     *
+     * @param string $name
+     *
+     * @return $this|ShipmentMethodInterface
+     */
+    public function setFactoryName($name);
+
+    /**
+     * Returns the gateway name.
+     *
+     * @return array
+     */
+    public function getGatewayName();
+
+    /**
+     * Returns the gatewayConfig.
+     *
+     * @return array
+     */
+    public function getGatewayConfig();
+
+    /**
+     * Sets the gateway config.
+     *
+     * @param array $config
+     *
+     * @return $this|ShipmentMethodInterface
+     */
+    public function setGatewayConfig(array $config);
+
+    /**
      * Returns the prices.
      *
      * @return ArrayCollection|ShipmentPriceInterface[]

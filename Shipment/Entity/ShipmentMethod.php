@@ -19,6 +19,21 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
     use Pricing\TaxableTrait;
 
     /**
+     * @var string
+     */
+    protected $factoryName;
+
+    /**
+     * @var array
+     */
+    protected $gatewayName;
+
+    /**
+     * @var array
+     */
+    protected $gatewayConfig;
+
+    /**
      * @var ArrayCollection|Shipment\ShipmentPriceInterface[]
      */
     protected $prices;
@@ -32,6 +47,50 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
         parent::__construct();
 
         $this->prices = new ArrayCollection();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFactoryName()
+    {
+        return $this->factoryName;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFactoryName($name)
+    {
+        $this->factoryName = $name;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGatewayName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGatewayConfig()
+    {
+        return $this->gatewayConfig;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGatewayConfig(array $config)
+    {
+        $this->gatewayConfig = $config;
+
+        return $this;
     }
 
     /**

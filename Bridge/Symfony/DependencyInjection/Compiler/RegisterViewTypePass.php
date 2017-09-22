@@ -27,7 +27,6 @@ class RegisterViewTypePass implements CompilerPassInterface
         $builders = $container->findTaggedServiceIds('ekyna_commerce.view_type');
 
         foreach ($builders as $id => $attributes) {
-            // TODO name / priority as attributes ?
             // Register the view type
             $registryDefinition->addMethodCall('addType', [new Reference($id)]);
         }
