@@ -46,16 +46,16 @@ abstract class AbstractSaleAddressListener
     /**
      * Schedules the sale address change event.
      *
-     * @param Model\AddressInterface $address
+     * @param Model\SaleAddressInterface $address
      */
-    abstract protected function scheduleSaleAddressChangeEvent(Model\AddressInterface $address);
+    abstract protected function scheduleSaleAddressChangeEvent(Model\SaleAddressInterface $address);
 
     /**
      * Returns the sale address from the resource event.
      *
      * @param ResourceEventInterface $event
      *
-     * @return Model\AddressInterface
+     * @return Model\SaleAddressInterface
      */
     abstract protected function getAddressFromEvent(ResourceEventInterface $event);
 }

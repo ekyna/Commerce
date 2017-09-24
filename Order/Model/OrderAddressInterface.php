@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Order\Model;
 
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
 
 /**
  * Interface OrderAddressInterface
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderAddressInterface extends AddressInterface
+interface OrderAddressInterface extends SaleAddressInterface
 {
     /**
      * Returns the order this address is the invoice one.

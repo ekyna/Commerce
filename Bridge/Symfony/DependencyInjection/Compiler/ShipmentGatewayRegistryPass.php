@@ -7,11 +7,11 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Class RegisterShipmentGatewayFactoryPass
+ * Class ShipmentGatewayRegistryPass
  * @package Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection\Compiler
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class RegisterShipmentGatewayFactoryPass implements CompilerPassInterface
+class ShipmentGatewayRegistryPass implements CompilerPassInterface
 {
     /**
      * @inheritDoc
@@ -24,11 +24,16 @@ class RegisterShipmentGatewayFactoryPass implements CompilerPassInterface
 
         $registryDefinition = $container->getDefinition('ekyna_commerce.shipment.gateway_registry');
 
-        $factories = $container->findTaggedServiceIds('ekyna_commerce.shipment_gateway_factory');
+        // Registers the platforms
+        $platforms = $container->findTaggedServiceIds('ekyna_commerce.shipment.gateway_platform');
+        foreach ($platforms as $id => $attributes) {
+            $registryDefinition->addMethodCall('registerPlatform', [new Reference($id)]);
+        }
 
-        foreach ($factories as $id => $attributes) {
-            // Registers the factory
-            $registryDefinition->addMethodCall('registerFactory', [new Reference($id)]);
+        // Registers the providers
+        $providers = $container->findTaggedServiceIds('ekyna_commerce.shipment.gateway_provider');
+        foreach ($providers as $id => $attributes) {
+            $registryDefinition->addMethodCall('registerProvider', [new Reference($id)]);
         }
     }
 }

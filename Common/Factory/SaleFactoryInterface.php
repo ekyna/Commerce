@@ -33,11 +33,11 @@ interface SaleFactoryInterface
      * Creates an address regarding to the sale type.
      *
      * @param Model\SaleInterface    $sale
-     * @param Model\AddressInterface $source
+     * @param Model\SaleAddressInterface $source
      *
-     * @return Model\AddressInterface
+     * @return Model\SaleAddressInterface
      */
-    public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null);
+    public function createAddressForSale(Model\SaleInterface $sale, Model\SaleAddressInterface $source = null);
 
     /**
      * Creates an adjustment for the given adjustable.

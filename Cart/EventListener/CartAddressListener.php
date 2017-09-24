@@ -19,7 +19,7 @@ class CartAddressListener extends AbstractSaleAddressListener
     /**
      * @inheritdoc
      */
-    protected function scheduleSaleAddressChangeEvent(Model\AddressInterface $address)
+    protected function scheduleSaleAddressChangeEvent(Model\SaleAddressInterface $address)
     {
         /** @var CartAddressInterface $address */
         $this->persistenceHelper->scheduleEvent(CartEvents::ADDRESS_CHANGE, $address->getCart());

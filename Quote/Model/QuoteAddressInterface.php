@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Quote\Model;
 
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
 
 /**
  * Interface QuoteAddressInterface
  * @package Ekyna\Component\Commerce\Quote\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface QuoteAddressInterface extends AddressInterface
+interface QuoteAddressInterface extends SaleAddressInterface
 {
     /**
      * Returns the quote this address is the invoice one.

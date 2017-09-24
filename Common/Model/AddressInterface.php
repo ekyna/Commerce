@@ -2,14 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Component\Resource\Model\ResourceInterface;
-
 /**
  * Interface AddressInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface AddressInterface extends ResourceInterface, IdentityInterface
+interface AddressInterface extends IdentityInterface
 {
     /**
      * Returns the company.
@@ -22,6 +20,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
      * Sets the company.
      *
      * @param string $company
+     *
      * @return $this|AddressInterface
      */
     public function setCompany($company);
@@ -37,6 +36,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
      * Sets the street.
      *
      * @param string $street
+     *
      * @return $this|AddressInterface
      */
     public function setStreet($street);
@@ -52,6 +52,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
      * Sets the supplement.
      *
      * @param string $supplement
+     *
      * @return $this|AddressInterface
      */
     public function setSupplement($supplement);
@@ -67,6 +68,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
      * Sets the postalCode.
      *
      * @param string $postalCode
+     *
      * @return $this|AddressInterface
      */
     public function setPostalCode($postalCode);
@@ -82,6 +84,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
      * Sets the city.
      *
      * @param string $city
+     *
      * @return $this|AddressInterface
      */
     public function setCity($city);
@@ -113,6 +116,7 @@ interface AddressInterface extends ResourceInterface, IdentityInterface
      * Sets the state.
      *
      * @param StateInterface $state
+     *
      * @return $this|AddressInterface
      */
     public function setState(StateInterface $state = null);

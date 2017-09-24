@@ -75,9 +75,9 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null)
+    public function createAddressForSale(Model\SaleInterface $sale, Model\SaleAddressInterface $source = null)
     {
-        /** @var Model\AddressInterface $address */
+        /** @var Model\SaleAddressInterface $address */
         $address = $this->resolveClassAndCreateObject('address', $sale);
 
         if (null !== $source) {

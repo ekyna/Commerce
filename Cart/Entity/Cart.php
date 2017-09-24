@@ -45,7 +45,7 @@ class Cart extends AbstractSale implements Model\CartInterface
     /**
      * @inheritdoc
      */
-    public function setInvoiceAddress(Common\AddressInterface $address = null)
+    public function setInvoiceAddress(Common\SaleAddressInterface $address = null)
     {
         if (null !== $address && !$address instanceof Model\CartAddressInterface) {
             throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
@@ -80,7 +80,7 @@ class Cart extends AbstractSale implements Model\CartInterface
     /**
      * @inheritdoc
      */
-    public function setDeliveryAddress(Common\AddressInterface $address = null)
+    public function setDeliveryAddress(Common\SaleAddressInterface $address = null)
     {
         if (null !== $address && !$address instanceof Model\CartAddressInterface) {
             throw new InvalidArgumentException('Expected instance of CartAddressInterface.');

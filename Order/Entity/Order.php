@@ -84,7 +84,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function setInvoiceAddress(Common\AddressInterface $address = null)
+    public function setInvoiceAddress(Common\SaleAddressInterface $address = null)
     {
         if (null !== $address & !$address instanceof Model\OrderAddressInterface) {
             throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');
@@ -119,7 +119,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function setDeliveryAddress(Common\AddressInterface $address = null)
+    public function setDeliveryAddress(Common\SaleAddressInterface $address = null)
     {
         if (null !== $address && !$address instanceof Model\OrderAddressInterface) {
             throw new InvalidArgumentException('Expected instance of OrderAddressInterface.');

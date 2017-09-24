@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Shipment\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -49,9 +50,24 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $trackingNumber;
 
     /**
+     * @var array
+     */
+    protected $gatewayData;
+
+    /**
      * @var \DateTime
      */
     protected $completedAt;
+
+    /**
+     * @var array
+     */
+    protected $senderAddress;
+
+    /**
+     * @var array
+     */
+    protected $receiverAddress;
 
 
     /**
@@ -211,6 +227,48 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     /**
      * @inheritdoc
      */
+    public function getPlatformName()
+    {
+        if ($this->method) {
+            return $this->method->getPlatformName();
+        }
+
+        throw new LogicException("Shipment method is not set.");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGatewayName()
+    {
+        if ($this->method) {
+            return $this->method->getGatewayName();
+        }
+
+        throw new LogicException("Shipment method is not set.");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGatewayData()
+    {
+        return $this->gatewayData;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGatewayData(array $data)
+    {
+        $this->gatewayData = $data;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCompletedAt()
     {
         return $this->completedAt;
@@ -222,6 +280,54 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function setCompletedAt(\DateTime $completedAt = null)
     {
         $this->completedAt = $completedAt;
+
+        return $this;
+    }
+
+    /**
+     * Returns the sender address data.
+     *
+     * @return array
+     */
+    public function getSenderAddress()
+    {
+        return $this->senderAddress;
+    }
+
+    /**
+     * Sets the sender address data.
+     *
+     * @param array $data
+     *
+     * @return AbstractShipment
+     */
+    public function setSenderAddress($data)
+    {
+        $this->senderAddress = $data;
+
+        return $this;
+    }
+
+    /**
+     * Returns the receiver address data.
+     *
+     * @return array
+     */
+    public function getReceiverAddress()
+    {
+        return $this->receiverAddress;
+    }
+
+    /**
+     * Sets the receiver address data.
+     *
+     * @param array $data
+     *
+     * @return AbstractShipment
+     */
+    public function setReceiverAddress($data)
+    {
+        $this->receiverAddress = $data;
 
         return $this;
     }

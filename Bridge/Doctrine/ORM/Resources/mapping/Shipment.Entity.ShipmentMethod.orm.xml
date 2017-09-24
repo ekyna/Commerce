@@ -11,17 +11,20 @@
 
         <indexes>
             <index columns="name" name="idx_commerce_shipment_method_name"/>
+            <index columns="name" name="idx_commerce_shipment_method_gateway_name"/>
         </indexes>
 
         <unique-constraints>
             <unique-constraint columns="name" name="unique_commerce_shipment_method_name"/>
+            <unique-constraint columns="name" name="unique_commerce_shipment_method_gateway_name"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="factoryName" column="factory_name" type="string" length="32" nullable="false"/>
+        <field name="platformName" column="platform_name" type="string" length="64" nullable="false"/>
+        <field name="gatewayName" column="gateway_name" type="string" length="64" nullable="false"/>
         <field name="gatewayConfig" column="gateway_config" type="json_array" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage"

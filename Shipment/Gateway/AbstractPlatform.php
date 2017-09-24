@@ -2,14 +2,15 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
+use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
 use Symfony\Component\Config\Definition;
 
 /**
- * Class AbstractFactory
+ * Class AbstractPlatform
  * @package Ekyna\Component\Commerce\Shipment\Gateway
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractFactory implements FactoryInterface
+abstract class AbstractPlatform implements PlatformInterface
 {
     /**
      * @var Definition\ArrayNode
@@ -40,7 +41,7 @@ abstract class AbstractFactory implements FactoryInterface
     {
         $processor = new Definition\Processor();
 
-        return $processor->process($this->getConfigDefinition(), $config);
+        return $processor->process($this->getConfigDefinition(), ['config' => $config]);
     }
 
     /**
@@ -48,5 +49,24 @@ abstract class AbstractFactory implements FactoryInterface
      *
      * @param Definition\Builder\NodeDefinition $rootNode
      */
-    abstract protected function createConfigDefinition(Definition\Builder\NodeDefinition $rootNode);
+    protected function createConfigDefinition(Definition\Builder\NodeDefinition $rootNode)
+    {
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function execute(ActionInterface $action)
+    {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getActions()
+    {
+        return [];
+    }
 }

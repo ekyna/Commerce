@@ -108,7 +108,7 @@ class SaleTransformer implements SaleTransformerInterface
     /**
      * @inheritdoc
      */
-    public function copyAddress(Model\AddressInterface $source, Model\AddressInterface $target)
+    public function copyAddress(Model\SaleAddressInterface $source, Model\SaleAddressInterface $target)
     {
         $this->copy($source, $target, [
             'company', 'gender', 'firstName', 'lastName',

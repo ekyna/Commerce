@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
+use Ekyna\Component\Commerce\Shipment\Gateway\Action\GatewayActionInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -20,37 +22,20 @@ interface GatewayInterface
     public function getName();
 
     /**
-     * Processes the shipment.
+     * Executes the given action.
      *
-     * @param ShipmentInterface      $shipment
-     * @param ServerRequestInterface $request
+     * @param ActionInterface $action
      *
-     * @return \Psr\Http\Message\ResponseInterface|bool
+     * @return \Psr\Http\Message\ResponseInterface|null
      */
-    public function process(ShipmentInterface $shipment, ServerRequestInterface $request);
+    public function execute(ActionInterface $action);
 
     /**
-     * Returns the actions available on a single shipment.
+     * Returns the FQCN of the supported actions (optionally filtered regarding to the given shipment).
      *
      * @param ShipmentInterface $shipment
      *
-     * @return mixed
+     * @return array
      */
-    public function getActions(ShipmentInterface $shipment);
-
-    /**
-     * Returns the mass actions available on shipments.
-     *
-     * @return mixed
-     */
-    public function getMassActions();
-
-    /**
-     * Returns whether the gateway supports the given shipment.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return bool
-     */
-    public function supports(ShipmentInterface $shipment);
+    public function getActions(ShipmentInterface $shipment = null);
 }

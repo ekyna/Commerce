@@ -21,10 +21,10 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
     /**
      * @var string
      */
-    protected $factoryName;
+    protected $platformName;
 
     /**
-     * @var array
+     * @var string
      */
     protected $gatewayName;
 
@@ -52,17 +52,17 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
     /**
      * @inheritdoc
      */
-    public function getFactoryName()
+    public function getPlatformName()
     {
-        return $this->factoryName;
+        return $this->platformName;
     }
 
     /**
      * @inheritdoc
      */
-    public function setFactoryName($name)
+    public function setPlatformName($name)
     {
-        $this->factoryName = $name;
+        $this->platformName = $name;
 
         return $this;
     }
@@ -72,7 +72,17 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
      */
     public function getGatewayName()
     {
-        return $this->name;
+        return $this->gatewayName;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGatewayName($name)
+    {
+        $this->gatewayName = $name;
+
+        return $this;
     }
 
     /**

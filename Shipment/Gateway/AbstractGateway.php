@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
+use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
@@ -45,24 +46,16 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @inheritDoc
      */
-    public function getActions(ShipmentInterface $shipment)
+    public function execute(ActionInterface $action)
     {
-        return [];
+        return null;
     }
 
     /**
      * @inheritDoc
      */
-    public function getMassActions()
+    public function getActions(ShipmentInterface $shipment = null)
     {
         return [];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supports(ShipmentInterface $shipment)
-    {
-        return $shipment->getMethod()->getGatewayName() === $this->getName();
     }
 }

@@ -39,7 +39,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
-    public function setInvoiceAddress(Common\AddressInterface $address = null)
+    public function setInvoiceAddress(Common\SaleAddressInterface $address = null)
     {
         if (null !== $address && !$address instanceof Model\QuoteAddressInterface) {
             throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');
@@ -74,7 +74,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
-    public function setDeliveryAddress(Common\AddressInterface $address = null)
+    public function setDeliveryAddress(Common\SaleAddressInterface $address = null)
     {
         if (null !== $address && !$address instanceof Model\QuoteAddressInterface) {
             throw new InvalidArgumentException('Expected instance of QuoteAddressInterface.');

@@ -13,11 +13,5 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class NoopGateway extends AbstractGateway
 {
-    /**
-     * @inheritDoc
-     */
-    public function process(ShipmentInterface $shipment, ServerRequestInterface $request)
-    {
-        return null;
-    }
+
 }

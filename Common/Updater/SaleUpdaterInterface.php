@@ -25,14 +25,14 @@ interface SaleUpdaterInterface
      * Sets the sale invoice address from the given address.
      *
      * @param Model\SaleInterface    $sale
-     * @param Model\AddressInterface $source
+     * @param Model\SaleAddressInterface $source
      * @param bool                   $persistence
      *
      * @return bool Whether the sale has been changed or not.
      */
     public function updateInvoiceAddressFromAddress(
         Model\SaleInterface $sale,
-        Model\AddressInterface $source,
+        Model\SaleAddressInterface $source,
         $persistence = false
     );
 
@@ -40,14 +40,14 @@ interface SaleUpdaterInterface
      * Sets the sale invoice address from the given address.
      *
      * @param Model\SaleInterface    $sale
-     * @param Model\AddressInterface $source
+     * @param Model\SaleAddressInterface $source
      * @param bool                   $persistence
      *
      * @return bool Whether the sale has been changed or not.
      */
     public function updateDeliveryAddressFromAddress(
         Model\SaleInterface $sale,
-        Model\AddressInterface $source,
+        Model\SaleAddressInterface $source,
         $persistence = false
     );
 

@@ -3,13 +3,14 @@
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface CustomerAddressInterface
  * @package Ekyna\Component\Commerce\Customer\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CustomerAddressInterface extends AddressInterface
+interface CustomerAddressInterface extends ResourceInterface, AddressInterface
 {
     /**
      * Returns the customer.

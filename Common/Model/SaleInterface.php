@@ -95,34 +95,34 @@ interface SaleInterface extends
     /**
      * Returns the invoice address.
      *
-     * @return AddressInterface
+     * @return SaleAddressInterface
      */
     public function getInvoiceAddress();
 
     /**
      * Sets the invoice address.
      *
-     * @param AddressInterface $address
+     * @param SaleAddressInterface $address
      *
      * @return $this|SaleInterface
      */
-    public function setInvoiceAddress(AddressInterface $address = null);
+    public function setInvoiceAddress(SaleAddressInterface $address = null);
 
     /**
      * Returns the delivery address.
      *
-     * @return AddressInterface
+     * @return SaleAddressInterface
      */
     public function getDeliveryAddress();
 
     /**
      * Sets the delivery address.
      *
-     * @param AddressInterface $address
+     * @param SaleAddressInterface $address
      *
      * @return $this|SaleInterface
      */
-    public function setDeliveryAddress(AddressInterface $address = null);
+    public function setDeliveryAddress(SaleAddressInterface $address = null);
 
     /**
      * Returns whether the invoice address is used as delivery address or not.

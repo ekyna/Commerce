@@ -3,13 +3,14 @@
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface SupplierAddressInterface
  * @package Ekyna\Component\Commerce\Supplier\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SupplierAddressInterface extends AddressInterface
+interface SupplierAddressInterface extends ResourceInterface, AddressInterface
 {
     /**
      * Returns the supplier.

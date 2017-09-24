@@ -129,6 +129,36 @@ interface ShipmentInterface extends
     public function setTrackingNumber($number);
 
     /**
+     * Returns the platform name.
+     *
+     * @return string
+     */
+    public function getPlatformName();
+
+    /**
+     * Returns the gateway name.
+     *
+     * @return string
+     */
+    public function getGatewayName();
+
+    /**
+     * Returns the gateway data.
+     *
+     * @return array
+     */
+    public function getGatewayData();
+
+    /**
+     * Sets the gateway data.
+     *
+     * @param array $data
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setGatewayData(array $data);
+
+    /**
      * Returns the completedAt.
      *
      * @return \DateTime
@@ -143,4 +173,36 @@ interface ShipmentInterface extends
      * @return $this|ShipmentInterface
      */
     public function setCompletedAt(\DateTime $completedAt = null);
+
+    /**
+     * Returns the sender address data.
+     *
+     * @return array
+     */
+    public function getSenderAddress();
+
+    /**
+     * Sets the sender address data.
+     *
+     * @param array $data
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setSenderAddress($data);
+
+    /**
+     * Returns the receiver address data.
+     *
+     * @return array
+     */
+    public function getReceiverAddress();
+
+    /**
+     * Sets the receiver address data.
+     *
+     * @param array $data
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setReceiverAddress($data);
 }

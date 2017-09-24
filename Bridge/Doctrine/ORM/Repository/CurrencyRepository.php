@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;

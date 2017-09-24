@@ -23,10 +23,10 @@ interface SaleTransformerInterface
     /**
      * Copy the source adjustment into the target adjustment.
      *
-     * @param Model\AddressInterface $source
-     * @param Model\AddressInterface $target
+     * @param Model\SaleAddressInterface $source
+     * @param Model\SaleAddressInterface $target
      */
-    public function copyAddress(Model\AddressInterface $source, Model\AddressInterface $target);
+    public function copyAddress(Model\SaleAddressInterface $source, Model\SaleAddressInterface $target);
 
     /**
      * Copy the source adjustment into the target adjustment.

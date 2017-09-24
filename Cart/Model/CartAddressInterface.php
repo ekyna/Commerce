@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Cart\Model;
 
-use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
 
 /**
  * Interface CartAddressInterface
  * @package Ekyna\Component\Commerce\Cart\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CartAddressInterface extends AddressInterface
+interface CartAddressInterface extends SaleAddressInterface
 {
     /**
      * Returns the cart this address is the invoice one.

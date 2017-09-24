@@ -3,13 +3,14 @@
 namespace Ekyna\Component\Commerce\Common\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
  * Interface CurrencyRepositoryInterface
  * @package Ekyna\Component\Commerce\Common\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CurrencyRepositoryInterface
+interface CurrencyRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Returns the default currency.

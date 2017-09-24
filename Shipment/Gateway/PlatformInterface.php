@@ -2,17 +2,18 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
+use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
 use Symfony\Component\Config\Definition\NodeInterface;
 
 /**
- * Interface FactoryInterface
+ * Interface PlatformInterface
  * @package Ekyna\Component\Commerce\Shipment\Gateway
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface FactoryInterface
+interface PlatformInterface
 {
     /**
-     * Returns the factory name.
+     * Returns the platform name.
      *
      * @return string
      */
@@ -43,4 +44,20 @@ interface FactoryInterface
      * @return GatewayInterface
      */
     public function createGateway($name, array $config = []);
+
+    /**
+     * Executes the given action.
+     *
+     * @param ActionInterface $action
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     */
+    public function execute(ActionInterface $action);
+
+    /**
+     * Returns the FQCN of the supported actions.
+     *
+     * @return array
+     */
+    public function getActions();
 }
