@@ -97,6 +97,22 @@ interface ShipmentInterface extends
     public function setReturn($return);
 
     /**
+     * Returns the weight.
+     *
+     * @return float
+     */
+    public function getWeight();
+
+    /**
+     * Sets the weight.
+     *
+     * @param float $weight
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setWeight($weight);
+
+    /**
      * Returns the description.
      *
      * @return string
@@ -156,7 +172,7 @@ interface ShipmentInterface extends
      *
      * @return $this|ShipmentInterface
      */
-    public function setGatewayData(array $data);
+    public function setGatewayData(array $data = null);
 
     /**
      * Returns the completedAt.

@@ -36,6 +36,12 @@ class AddressValidator extends ConstraintValidator
         }
 
         $config = [
+            'company' => [
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 64,
+                ]),
+            ],
             'street' => [
                 new Assert\NotBlank(),
                 new Assert\Length([
@@ -66,32 +72,26 @@ class AddressValidator extends ConstraintValidator
             'country' => [
                 new Assert\NotNull(),
             ],
-        ];
-
-        if ($constraint->company) {
-            $config['company'] = [
-                new Assert\NotBlank(),
-                new Assert\Length([
-                    'min' => 2,
-                    'max' => 64,
-                ]),
-            ];
-        }
-        if ($constraint->phone) {
-            $config['phone'] = [
-                new Assert\NotBlank(),
+            'phone' => [
                 new PhoneNumber([
                     'type' => 'fixed_line',
                 ]),
-            ];
-        }
-        if ($constraint->mobile) {
-            $config['mobile'] = [
-                new Assert\NotBlank(),
+            ],
+            'mobile' => [
                 new PhoneNumber([
                     'type' => 'mobile',
                 ]),
-            ];
+            ]
+        ];
+
+        if ($constraint->company) {
+            $config['company'][] = new Assert\NotBlank();
+        }
+        if ($constraint->phone) {
+            $config['phone'][] = new Assert\NotBlank();
+        }
+        if ($constraint->mobile) {
+            $config['mobile'][] = new Assert\NotBlank();
         }
 
         if (null === $this->propertyAccessor) {

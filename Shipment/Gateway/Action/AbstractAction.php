@@ -61,5 +61,5 @@ abstract class AbstractAction implements ActionInterface
     /**
      * @inheritDoc
      */
-    abstract static public function getScope();
+    abstract static public function getScopes();
 }

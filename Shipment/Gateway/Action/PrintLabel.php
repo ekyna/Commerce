@@ -14,9 +14,9 @@ class PrintLabel extends AbstractAction
     /**
      * @inheritDoc
      */
-    static public function getScope()
+    static public function getScopes()
     {
-        return static::SCOPE_GATEWAY;
+        return [static::SCOPE_PLATFORM, static::SCOPE_GATEWAY];
     }
 
     /**

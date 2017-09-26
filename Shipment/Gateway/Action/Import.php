@@ -14,9 +14,9 @@ class Import extends AbstractAction
     /**
      * @inheritDoc
      */
-    static public function getScope()
+    static public function getScopes()
     {
-        return static::SCOPE_PLATFORM;
+        return [static::SCOPE_GLOBAL];
     }
 
     /**

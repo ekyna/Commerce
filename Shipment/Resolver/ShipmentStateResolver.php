@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
  * Class ShipmentStateResolver
  * @package Ekyna\Component\Commerce\Shipment\Resolver
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ * @todo    remove : Shipments do not need state resolution
  */
 class ShipmentStateResolver implements StateResolverInterface
 {

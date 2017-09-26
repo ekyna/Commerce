@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareInterface;
+use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareTrait;
 
 /**
  * Class GatewayRegistry
@@ -11,6 +13,8 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 class Registry implements RegistryInterface
 {
+    use AddressResolverAwareTrait;
+
     /**
      * @var array|ProviderInterface[]
      */
@@ -58,6 +62,12 @@ class Registry implements RegistryInterface
     {
         if ($this->hasPlatform($name = $platform->getName())) {
             throw new InvalidArgumentException(sprintf("A shipment platform is registered for the name '%s'.", $name));
+        }
+
+        $platform->setRegistry($this);
+
+        if ($platform instanceof AddressResolverAwareInterface) {
+            $platform->setAddressResolver($this->addressResolver);
         }
 
         $this->platforms[$name] = $platform;

@@ -9,6 +9,7 @@ namespace Ekyna\Component\Commerce\Shipment\Gateway\Action;
  */
 interface ActionInterface
 {
+    const SCOPE_GLOBAL   = 'scope_global';
     const SCOPE_CHECKOUT = 'scope_checkout';
     const SCOPE_PLATFORM = 'scope_platform';
     const SCOPE_GATEWAY  = 'scope_gateway';
@@ -30,9 +31,9 @@ interface ActionInterface
     /**
      * Returns the scope of the request.
      *
-     * @return string
+     * @return array
      */
-    static public function getScope();
+    static public function getScopes();
 
     /**
      * Returns the name of the request.

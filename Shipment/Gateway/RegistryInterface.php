@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
+use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareInterface;
+
 /**
  * Interface GatewayRegistryInterface
  * @package Ekyna\Component\Commerce\Shipment\Gateway
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface RegistryInterface
+interface RegistryInterface extends AddressResolverAwareInterface
 {
     /**
      * Registers the provider.

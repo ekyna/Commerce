@@ -2,10 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
-use Ekyna\Component\Commerce\Shipment\Gateway\Action\GatewayActionInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Interface GatewayInterface

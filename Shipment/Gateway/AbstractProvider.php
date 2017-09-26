@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareInterface;
+use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareTrait;
 
 /**
  * Class AbstractProvider
@@ -85,7 +87,13 @@ abstract class AbstractProvider implements ProviderInterface
     {
         $platform = $this->registry->getPlatform($platformName);
 
-        $this->gateways[$name] = $platform->createGateway($name, $config);
+        $gateway = $platform->createGateway($name, $config);
+
+        if ($gateway instanceof AddressResolverAwareInterface) {
+            $gateway->setAddressResolver($this->registry->getAddressResolver());
+        }
+
+        $this->gateways[$name] = $gateway;
     }
 
     /**

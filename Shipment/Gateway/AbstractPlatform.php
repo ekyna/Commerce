@@ -13,10 +13,23 @@ use Symfony\Component\Config\Definition;
 abstract class AbstractPlatform implements PlatformInterface
 {
     /**
+     * @var RegistryInterface
+     */
+    protected $registry;
+
+    /**
      * @var Definition\ArrayNode
      */
     private $configDefinition;
 
+
+    /**
+     * @inheritDoc
+     */
+    public function setRegistry(RegistryInterface $registry)
+    {
+        $this->registry = $registry;
+    }
 
     /**
      * @inheritdoc

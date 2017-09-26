@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Shipment\EventListener;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
@@ -27,6 +28,11 @@ abstract class AbstractShipmentListener
      * @var NumberGeneratorInterface
      */
     protected $numberGenerator;
+
+    /**
+     * @var WeightCalculatorInterface
+     */
+    protected $weightCalculator;
 
     /**
      * @var StockUnitAssignerInterface
@@ -55,6 +61,16 @@ abstract class AbstractShipmentListener
     }
 
     /**
+     * Sets the weight calculator.
+     *
+     * @param WeightCalculatorInterface $calculator
+     */
+    public function setWeightCalculator(WeightCalculatorInterface $calculator)
+    {
+        $this->weightCalculator = $calculator;
+    }
+
+    /**
      * Sets the stock assigner.
      *
      * @param StockUnitAssignerInterface $stockUnitAssigner
@@ -76,6 +92,10 @@ abstract class AbstractShipmentListener
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
+        // Total weight
+        $changed |= $this->calculateWeight($shipment);
+
+        // Completed state
         $changed |= $this->handleCompletedState($shipment);
 
         if ($changed) {
@@ -99,6 +119,9 @@ abstract class AbstractShipmentListener
 
         // Generate number and key
         $changed = $this->generateNumber($shipment);
+
+        // Total weight
+        $changed |= $this->calculateWeight($shipment);
 
         if ($this->persistenceHelper->isChanged($shipment, 'state')) {
             $changed = $this->handleCompletedState($shipment) || $changed;
@@ -179,6 +202,30 @@ abstract class AbstractShipmentListener
     {
         if (0 == strlen($shipment->getNumber())) {
             $this->numberGenerator->generate($shipment);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Calculates the weight.
+     *
+     * @param ShipmentInterface $shipment
+     *
+     * @return bool Whether the shipment has been generated or not.
+     */
+    protected function calculateWeight(ShipmentInterface $shipment)
+    {
+        if (0 < $shipment->getWeight()) {
+            return false;
+        }
+
+        $weight = $this->weightCalculator->calculateShipment($shipment);
+
+        if ($weight !== $shipment->getWeight()) {
+            $shipment->setWeight($weight);
 
             return true;
         }

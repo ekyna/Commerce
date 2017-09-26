@@ -13,6 +13,15 @@ use Symfony\Component\Config\Definition\NodeInterface;
 interface PlatformInterface
 {
     /**
+     * Sets the registry.
+     *
+     * @param RegistryInterface $registry
+     *
+     * @return mixed
+     */
+    public function setRegistry(RegistryInterface $registry);
+
+    /**
      * Returns the platform name.
      *
      * @return string

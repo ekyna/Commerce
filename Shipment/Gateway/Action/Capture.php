@@ -14,9 +14,9 @@ class Capture extends AbstractAction
     /**
      * @inheritDoc
      */
-    static public function getScope()
+    static public function getScopes()
     {
-        return static::SCOPE_CHECKOUT;
+        return [static::SCOPE_CHECKOUT];
     }
 
     /**

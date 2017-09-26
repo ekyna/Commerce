@@ -40,6 +40,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $return;
 
     /**
+     * @var float
+     */
+    protected $weight;
+
+    /**
      * @var string
      */
     protected $description;
@@ -189,6 +194,30 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
+     * Returns the weight.
+     *
+     * @return float
+     */
+    public function getWeight()
+    {
+        return $this->weight;
+    }
+
+    /**
+     * Sets the weight.
+     *
+     * @param float $weight
+     *
+     * @return AbstractShipment
+     */
+    public function setWeight($weight)
+    {
+        $this->weight = (float)$weight;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getDescription()
@@ -259,7 +288,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function setGatewayData(array $data)
+    public function setGatewayData(array $data = null)
     {
         $this->gatewayData = $data;
 
@@ -303,7 +332,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
      */
     public function setSenderAddress($data)
     {
-        $this->senderAddress = $data;
+        $this->senderAddress = empty($data) ? null : $data;
 
         return $this;
     }
@@ -327,7 +356,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
      */
     public function setReceiverAddress($data)
     {
-        $this->receiverAddress = $data;
+        $this->receiverAddress = empty($data) ? null : $data;
 
         return $this;
     }

@@ -61,6 +61,7 @@ class DoctrineBundleMapping
             Shipment\Model\ShipmentMethodInterface::class    => Shipment\Entity\ShipmentMethod::class,
 
             Supplier\Model\SupplierInterface::class          => Supplier\Entity\Supplier::class,
+            Supplier\Model\SupplierAddressInterface::class   => Supplier\Entity\SupplierAddress::class,
             Supplier\Model\SupplierDeliveryInterface::class  => Supplier\Entity\SupplierDelivery::class,
             Supplier\Model\SupplierOrderInterface::class     => Supplier\Entity\SupplierOrder::class,
             Supplier\Model\SupplierProductInterface::class   => Supplier\Entity\SupplierProduct::class,

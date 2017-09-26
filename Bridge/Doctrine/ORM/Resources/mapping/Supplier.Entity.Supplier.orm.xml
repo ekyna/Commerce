@@ -28,8 +28,8 @@
         <field name="email" column="email" type="string" length="255" nullable="true"/>
         <field name="customerCode" column="customer_code" type="string" length="32" nullable="true"/>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress" field="address"
-                    inversed-by="supplier">
+        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierAddressInterface"
+                    field="address" inversed-by="supplier">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
