@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
@@ -43,15 +44,36 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
     /**
      * @inheritDoc
      */
-    public function findBySubjectAndSupplier(SubjectInterface $subject, SupplierInterface $supplier)
-    {
-        return $this
-            ->getFindBySubjectAndSupplierQuery()
-            ->setParameters([
-                'provider'   => $subject->getProviderName(),
-                'identifier' => $subject->getId(),
-                'supplier'   => $supplier,
-            ])
+    public function findBySubjectAndSupplier(
+        SubjectInterface $subject,
+        SupplierInterface $supplier,
+        SupplierProductInterface $exclude = null
+    ) {
+        $parameters = [
+            'provider'   => $subject->getProviderName(),
+            'identifier' => $subject->getId(),
+            'supplier'   => $supplier,
+        ];
+
+        if (null === $exclude) {
+            return $this
+                ->getFindBySubjectAndSupplierQuery()
+                ->setParameters([
+                    'provider'   => $subject->getProviderName(),
+                    'identifier' => $subject->getId(),
+                    'supplier'   => $supplier,
+                ])
+                ->getOneOrNullResult();
+        }
+
+        $qb = $this->getFindBySubjectQueryBuilder();
+
+        $parameters['exclude'] = $exclude->getId();
+
+        return $qb
+            ->andWhere($qb->expr()->eq('sp.supplier', ':supplier'))
+            ->andWhere($qb->expr()->neq('sp.id', ':exclude'))
+            ->getQuery()
             ->getOneOrNullResult();
     }
 

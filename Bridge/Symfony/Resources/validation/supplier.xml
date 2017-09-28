@@ -207,6 +207,7 @@
                 <value>reference</value>
             </option>
         </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierProduct"/>
     </class>
 
 </constraint-mapping>
