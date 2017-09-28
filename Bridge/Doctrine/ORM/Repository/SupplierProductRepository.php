@@ -58,11 +58,7 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
         if (null === $exclude) {
             return $this
                 ->getFindBySubjectAndSupplierQuery()
-                ->setParameters([
-                    'provider'   => $subject->getProviderName(),
-                    'identifier' => $subject->getId(),
-                    'supplier'   => $supplier,
-                ])
+                ->setParameters($parameters)
                 ->getOneOrNullResult();
         }
 
@@ -74,6 +70,7 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
             ->andWhere($qb->expr()->eq('sp.supplier', ':supplier'))
             ->andWhere($qb->expr()->neq('sp.id', ':exclude'))
             ->getQuery()
+            ->setParameters($parameters)
             ->getOneOrNullResult();
     }
 
