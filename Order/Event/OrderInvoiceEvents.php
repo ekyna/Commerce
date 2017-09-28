@@ -18,6 +18,8 @@ final class OrderInvoiceEvents
     const STATE_CHANGE   = 'ekyna_commerce.order_invoice.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.order_invoice.content_change';
 
+    const INITIALIZE     = 'ekyna_commerce.order_invoice.initialize';
+
     const PRE_CREATE     = 'ekyna_commerce.order_invoice.pre_create';
     const POST_CREATE    = 'ekyna_commerce.order_invoice.post_create';
 

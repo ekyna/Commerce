@@ -10,11 +10,13 @@ namespace Ekyna\Component\Commerce\Order\Event;
 final class OrderShipmentItemEvents
 {
     // Persistence
-    const INSERT = 'ekyna_commerce.order_shipment_item.insert';
-    const UPDATE = 'ekyna_commerce.order_shipment_item.update';
-    const DELETE = 'ekyna_commerce.order_shipment_item.delete';
+    const INSERT         = 'ekyna_commerce.order_shipment_item.insert';
+    const UPDATE         = 'ekyna_commerce.order_shipment_item.update';
+    const DELETE         = 'ekyna_commerce.order_shipment_item.delete';
 
     // Domain
+    const INITIALIZE     = 'ekyna_commerce.order_shipment_item.initialize';
+
     const PRE_CREATE     = 'ekyna_commerce.order_shipment_item.pre_create';
     const POST_CREATE    = 'ekyna_commerce.order_shipment_item.post_create';
 

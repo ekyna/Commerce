@@ -17,6 +17,8 @@ class SupplierOrderItemEvents
     // Domain
     const CONTENT_CHANGE = 'ekyna_commerce.supplier_order_item.content_change';
 
+    const INITIALIZE     = 'ekyna_commerce.supplier_order_item.initialize';
+
     const PRE_CREATE     = 'ekyna_commerce.supplier_order_item.pre_create';
     const POST_CREATE    = 'ekyna_commerce.supplier_order_item.post_create';
 

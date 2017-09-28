@@ -10,13 +10,15 @@ namespace Ekyna\Component\Commerce\Cart\Event;
 final class CartPaymentEvents
 {
     // Persistence
-    const INSERT = 'ekyna_commerce.cart_payment.insert';
-    const UPDATE = 'ekyna_commerce.cart_payment.update';
-    const DELETE = 'ekyna_commerce.cart_payment.delete';
+    const INSERT         = 'ekyna_commerce.cart_payment.insert';
+    const UPDATE         = 'ekyna_commerce.cart_payment.update';
+    const DELETE         = 'ekyna_commerce.cart_payment.delete';
 
     // Domain
     const STATE_CHANGE   = 'ekyna_commerce.cart_payment.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.cart_payment.content_change';
+
+    const INITIALIZE     = 'ekyna_commerce.cart_payment.initialize';
 
     const PRE_CREATE     = 'ekyna_commerce.cart_payment.pre_create';
     const POST_CREATE    = 'ekyna_commerce.cart_payment.post_create';

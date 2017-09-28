@@ -18,6 +18,8 @@ final class QuotePaymentEvents
     const STATE_CHANGE   = 'ekyna_commerce.quote_payment.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.quote_payment.content_change';
 
+    const INITIALIZE     = 'ekyna_commerce.quote_payment.initialize';
+
     const PRE_CREATE     = 'ekyna_commerce.quote_payment.pre_create';
     const POST_CREATE    = 'ekyna_commerce.quote_payment.post_create';
 

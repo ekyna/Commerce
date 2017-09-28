@@ -19,6 +19,8 @@ final class QuoteEvents
     const CONTENT_CHANGE = 'ekyna_commerce.quote.content_change';
     const ADDRESS_CHANGE = 'ekyna_commerce.quote.address_change';
 
+    const INITIALIZE     = 'ekyna_commerce.quote.initialize';
+
     const PRE_CREATE     = 'ekyna_commerce.quote.pre_create';
     const POST_CREATE    = 'ekyna_commerce.quote.post_create';
 

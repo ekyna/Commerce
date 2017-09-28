@@ -15,6 +15,8 @@ final class ShipmentMethodEvents
     const DELETE      = 'ekyna_commerce.shipment_method.delete';
 
     // Domain
+    const INITIALIZE  = 'ekyna_commerce.shipment_method.initialize';
+
     const PRE_CREATE  = 'ekyna_commerce.shipment_method.pre_create';
     const POST_CREATE = 'ekyna_commerce.shipment_method.post_create';
 

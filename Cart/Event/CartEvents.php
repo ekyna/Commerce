@@ -19,6 +19,8 @@ final class CartEvents
     const CONTENT_CHANGE = 'ekyna_commerce.cart.content_change';
     const ADDRESS_CHANGE = 'ekyna_commerce.cart.address_change';
 
+    const INITIALIZE     = 'ekyna_commerce.cart.initialize';
+
     const PRE_CREATE     = 'ekyna_commerce.cart.pre_create';
     const POST_CREATE    = 'ekyna_commerce.cart.post_create';
 

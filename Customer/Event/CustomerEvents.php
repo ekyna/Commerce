@@ -15,6 +15,8 @@ final class CustomerEvents
     const DELETE      = 'ekyna_commerce.customer.delete';
 
     // Domain
+    const INITIALIZE  = 'ekyna_commerce.customer.initialize';
+
     const PRE_CREATE  = 'ekyna_commerce.customer.pre_create';
     const POST_CREATE = 'ekyna_commerce.customer.post_create';
 

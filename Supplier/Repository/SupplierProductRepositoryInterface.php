@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Supplier\Repository;
 
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
 
 /**
@@ -13,11 +14,21 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
 interface SupplierProductRepositoryInterface
 {
     /**
-     * Finds the supplier product related to the given subject.
+     * Finds the supplier products by subject.
      *
      * @param SubjectInterface $subject
      *
      * @return SupplierProductInterface[]
      */
     public function findBySubject(SubjectInterface $subject);
+
+    /**
+     * Finds the supplier product by subject and supplier.
+     *
+     * @param SubjectInterface  $subject
+     * @param SupplierInterface $supplier
+     *
+     * @return SupplierProductInterface
+     */
+    public function findBySubjectAndSupplier(SubjectInterface $subject, SupplierInterface $supplier);
 }

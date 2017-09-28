@@ -18,6 +18,8 @@ class SupplierOrderEvents
     //const STATE_CHANGE   = 'ekyna_commerce.supplier_order.state_change';
     const CONTENT_CHANGE = 'ekyna_commerce.supplier_order.content_change';
 
+    const INITIALIZE     = 'ekyna_commerce.supplier_order.initialize';
+
     const PRE_CREATE     = 'ekyna_commerce.supplier_order.pre_create';
     const POST_CREATE    = 'ekyna_commerce.supplier_order.post_create';
 
