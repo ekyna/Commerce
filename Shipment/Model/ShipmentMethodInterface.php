@@ -59,7 +59,7 @@ interface ShipmentMethodInterface extends MethodInterface, TaxableInterface
      *
      * @return $this|ShipmentMethodInterface
      */
-    public function setGatewayConfig(array $config);
+    public function setGatewayConfig(array $config = null);
 
     /**
      * Returns the prices.

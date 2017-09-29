@@ -96,7 +96,7 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
     /**
      * @inheritdoc
      */
-    public function setGatewayConfig(array $config)
+    public function setGatewayConfig(array $config = null)
     {
         $this->gatewayConfig = $config;
 

@@ -109,7 +109,7 @@ class SaleStepValidator implements SaleStepValidatorInterface
     protected function validateStep($step)
     {
         if (!in_array($step, [static::CHECKOUT_STEP, static::SHIPMENT_STEP, static::PAYMENT_STEP])) {
-            throw new InvalidArgumentException('Invalid step.');
+            throw new InvalidArgumentException("Unexpected step name");
         }
     }
 }

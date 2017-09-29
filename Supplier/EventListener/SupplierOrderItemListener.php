@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -164,6 +165,9 @@ class SupplierOrderItemListener extends AbstractListener
      * @param SupplierOrderItemInterface $item
      *
      * @return bool Whether or not the item has been changed.
+     *
+     * @throws LogicException If breaking synchronization between supplier order item and supplier product.
+     * @throws InvalidArgumentException If supplier product subject data is not set.
      */
     protected function synchronizeWithProduct(SupplierOrderItemInterface $item)
     {
@@ -178,9 +182,8 @@ class SupplierOrderItemListener extends AbstractListener
 
                 if ($itemSID->hasIdentity()) {
                     if (!$itemSID->equals($productSID)) {
-                        // TODO Specific exception
-                        throw new InvalidArgumentException(
-                            'Desynchronizing supplier order item and supplier product subject data is not supported.'
+                        throw new LogicException(
+                            'Breaking synchronization between supplier order item and supplier product is not supported.'
                         );
                     }
                     $changed = false;
@@ -204,9 +207,8 @@ class SupplierOrderItemListener extends AbstractListener
                 $item->setNetPrice($product->getNetPrice());
             }
         } elseif ($item->hasSubjectIdentity()) {
-            // TODO Specific exception
-            throw new InvalidArgumentException(
-                'Desynchronizing supplier order item and supplier product subject data is not supported.'
+            throw new LogicException(
+                'Breaking synchronization between supplier order item and supplier product is not supported.'
             );
         }
 

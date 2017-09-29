@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Repository;
 
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
@@ -11,5 +12,12 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
  */
 interface ShipmentZoneRepositoryInterface extends ResourceRepositoryInterface
 {
-
+    /**
+     * Returns the shipment zone having shipment prices, optionally filtered by method.
+     *
+     * @param ShipmentMethodInterface $method
+     *
+     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface[]
+     */
+    public function findHavingPrices(ShipmentMethodInterface $method = null);
 }

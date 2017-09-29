@@ -4,8 +4,8 @@ namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
@@ -129,7 +129,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining debit
         if (0 > $quantity) {
-            throw new InvalidArgumentException(
+            throw new StockLogicException(
                 'Failed to dispatch sale item changed quantity debit over assigned stock units.'
             );
         }
@@ -187,7 +187,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new InvalidArgumentException('Failed to assign shipment item.');
+            throw new StockLogicException('Failed to assign shipment item.');
         }
     }
 
@@ -229,7 +229,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new InvalidArgumentException('Failed to assign shipment item.');
+            throw new StockLogicException('Failed to assign shipment item.');
         }
     }
 
@@ -262,7 +262,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new InvalidArgumentException('Failed to detach shipment item.');
+            throw new StockLogicException('Failed to detach shipment item.');
         }
     }
 
@@ -333,6 +333,8 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @param SaleItemInterface $item
      * @param float             $quantity
+     *
+     * @throws StockLogicException If assignment creation fails.
      */
     protected function createAssignmentsForQuantity(SaleItemInterface $item, $quantity)
     {
@@ -369,7 +371,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         if (0 < $quantity) {
-            throw new InvalidArgumentException('Failed to create assignments.');
+            throw new StockLogicException('Failed to create assignments.');
         }
     }
 

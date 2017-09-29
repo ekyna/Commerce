@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentMethodRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
 
@@ -35,6 +36,29 @@ class ShipmentMethodRepository extends TranslatableResourceRepository implements
         }
 
         return $method;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findHavingPrices(ShipmentZoneInterface $zone = null)
+    {
+        $qb = $this->getCollectionQueryBuilder();
+        $qb
+            ->join('o.prices', 'p')
+            ->addGroupBy('o.id');
+
+        $parameters = [];
+
+        if (null !== $zone) {
+            $qb->andWhere($qb->expr()->eq('p.zone', ':zone'));
+            $parameters['zone'] = $zone;
+        }
+
+        return $qb
+            ->getQuery()
+            ->setParameters($parameters)
+            ->getResult();
     }
 
     /**

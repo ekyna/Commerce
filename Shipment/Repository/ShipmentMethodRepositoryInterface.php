@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepositoryInterface;
 
 /**
@@ -18,6 +19,15 @@ interface ShipmentMethodRepositoryInterface extends TranslatableResourceReposito
      * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface
      */
     public function createNew();
+
+    /**
+     * Returns the shipment methods having shipment prices, optionally filtered by zone.
+     *
+     * @param ShipmentZoneInterface $zone
+     *
+     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface[]
+     */
+    public function findHavingPrices(ShipmentZoneInterface $zone = null);
 
     /**
      * Returns the available methods by country and weight.

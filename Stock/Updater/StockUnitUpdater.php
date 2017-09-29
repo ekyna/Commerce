@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -47,12 +47,12 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $quantity = $stockUnit->getOrderedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected ordered quantity.");
+            throw new StockLogicException("Unexpected ordered quantity.");
         }
 
         // Prevent ordered quantity to be set as lower than the received quantity
         if ($quantity < $stockUnit->getReceivedQuantity()) {
-            throw new InvalidArgumentException("The ordered quantity can't be lower than the received quantity.");
+            throw new StockLogicException("The ordered quantity can't be lower than the received quantity.");
         }
 
         $stockUnit->setOrderedQuantity($quantity);
@@ -69,12 +69,12 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $quantity = $stockUnit->getReceivedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected received quantity.");
+            throw new StockLogicException("Unexpected received quantity.");
         }
 
         // Prevent received quantity to be set as greater than the ordered quantity
         if ($quantity > $stockUnit->getOrderedQuantity()) {
-            throw new InvalidArgumentException("The received quantity can't be greater than the ordered quantity.");
+            throw new StockLogicException("The received quantity can't be greater than the ordered quantity.");
         }
 
         $stockUnit->setReceivedQuantity($quantity);
@@ -91,12 +91,12 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $quantity = $stockUnit->getSoldQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected sold quantity.");
+            throw new StockLogicException("Unexpected sold quantity.");
         }
 
         // Prevent sold quantity to be set as lower than the shipped quantity
         if ($quantity < $stockUnit->getShippedQuantity()) {
-            throw new InvalidArgumentException("The sold quantity can't be lower than the shipped quantity.");
+            throw new StockLogicException("The sold quantity can't be lower than the shipped quantity.");
         }
 
         $stockUnit->setSoldQuantity($quantity);
@@ -113,15 +113,15 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $quantity = $stockUnit->getShippedQuantity() + $quantity;
         }
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected shipped quantity.");
+            throw new StockLogicException("Unexpected shipped quantity.");
         }
 
         // Prevent shipped quantity to be set as greater than the sold or received quantity
         if ($quantity > $stockUnit->getSoldQuantity()) {
-            throw new InvalidArgumentException("The shipped quantity can't be greater than the sold quantity.");
+            throw new StockLogicException("The shipped quantity can't be greater than the sold quantity.");
         }
         if ($quantity > $stockUnit->getReceivedQuantity()) {
-            throw new InvalidArgumentException("The shipped quantity can't be greater than the received quantity.");
+            throw new StockLogicException("The shipped quantity can't be greater than the received quantity.");
         }
 
         $stockUnit->setShippedQuantity($quantity);
@@ -135,7 +135,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     public function updateNetPrice(StockUnitInterface $stockUnit, $netPrice)
     {
         if (0 > $netPrice) {
-            throw new InvalidArgumentException("Unexpected net price.");
+            throw new StockLogicException("Unexpected net price.");
         }
 
         if ($netPrice != $stockUnit->getNetPrice()) {

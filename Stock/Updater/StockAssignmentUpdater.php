@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -79,7 +79,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 
         $quantity = $assignment->getSoldQuantity() + $delta;
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected sold quantity.");
+            throw new StockLogicException("Failed to update stock assignment's sold quantity.");
         }
 
         // Stock unit update
@@ -133,7 +133,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 
         $quantity = $assignment->getShippedQuantity() + $delta;
         if (0 > $quantity) {
-            throw new InvalidArgumentException("Unexpected shipped quantity.");
+            throw new StockLogicException("Failed to update stock assignment's shipped quantity.");
         }
 
         // Stock unit update

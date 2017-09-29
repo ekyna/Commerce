@@ -3,8 +3,8 @@
 namespace Ekyna\Component\Commerce\Stock\Linker;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
@@ -250,11 +250,13 @@ class StockUnitLinker implements StockUnitLinkerInterface
      * @param float              $quantity
      *
      * @return float The quantity indeed moved
+     *
+     * @throws StockLogicException
      */
     private function moveAssignments(StockUnitInterface $sourceUnit, StockUnitInterface $targetUnit, $quantity)
     {
         if (0 >= $quantity) {
-            throw new InvalidArgumentException("Quantity must be greater than zero.");
+            throw new StockLogicException("Quantity must be greater than zero.");
         }
 
         $moved = 0;
