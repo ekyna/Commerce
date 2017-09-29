@@ -7,7 +7,7 @@ use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
+use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Releaser\ReleaserInterface;
@@ -102,7 +102,7 @@ class SaleUpdater implements SaleUpdaterInterface
      */
     public function updateInvoiceAddressFromAddress(
         SaleInterface $sale,
-        SaleAddressInterface $source,
+        AddressInterface $source,
         $persistence = false
     ) {
         return $this->addressBuilder->buildSaleInvoiceAddressFromAddress($sale, $source, true);
@@ -113,7 +113,7 @@ class SaleUpdater implements SaleUpdaterInterface
      */
     public function updateDeliveryAddressFromAddress(
         SaleInterface $sale,
-        SaleAddressInterface $source,
+        AddressInterface $source,
         $persistence = false
     ) {
         return $this->addressBuilder->buildSaleDeliveryAddressFromAddress($sale, $source, true);

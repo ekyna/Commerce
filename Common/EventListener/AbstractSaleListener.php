@@ -128,7 +128,7 @@ abstract class AbstractSaleListener
         $changed |= $this->generateKey($sale);
 
         // Handle customer information
-        $changed |= $this->handleInformation($sale);
+        $changed |= $this->handleInformation($sale, true);
 
         // Update pricing
         $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
@@ -169,10 +169,12 @@ abstract class AbstractSaleListener
         $changed |= $this->generateKey($sale);
 
         // Handle customer information
-        $changed |= $this->handleInformation($sale);
+        $changed |= $this->handleInformation($sale, true);
 
         // Update pricing
-        $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
+        if ($this->persistenceHelper->isChanged($sale, 'vatNumber')) {
+            $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
+        }
 
         // If customer has changed
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
@@ -186,6 +188,11 @@ abstract class AbstractSaleListener
         // Update discounts
         if ($this->isDiscountUpdateNeeded($sale)) {
             $changed |= $this->saleUpdater->updateDiscounts($sale, true);
+        }
+
+        // Update taxation
+        if ($this->isTaxationUpdateNeeded($sale)) {
+            $changed |= $this->saleUpdater->updateTaxation($sale, true);
         }
 
         // Recompute to get an up-to-date change set.
@@ -215,6 +222,7 @@ abstract class AbstractSaleListener
 
         if ($this->persistenceHelper->isScheduledForRemove($sale)) {
             $event->stopPropagation();
+
             return;
         }
 
@@ -250,6 +258,7 @@ abstract class AbstractSaleListener
 
         if ($this->persistenceHelper->isScheduledForRemove($sale)) {
             $event->stopPropagation();
+
             return;
         }
 
@@ -275,8 +284,25 @@ abstract class AbstractSaleListener
 
         if ($this->persistenceHelper->isScheduledForRemove($sale)) {
             $event->stopPropagation();
+
             return;
         }
+    }
+
+    /**
+     * Pre create event handler.
+     *
+     * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
+     */
+    public function onPreCreate(ResourceEventInterface $event)
+    {
+        $sale = $this->getSaleFromEvent($event);
+
+        $this->handleInformation($sale);
+
+        $this->pricingUpdater->updateVatNumberSubject($sale);
     }
 
     /**
@@ -350,7 +376,7 @@ abstract class AbstractSaleListener
      */
     protected function isTaxationUpdateNeeded(SaleInterface $sale)
     {
-        // TODO Abort if completed (order) ?
+        // TODO (Order) Abort if "completed" and not "has changed for completed"
 
         // TODO Get tax resolution mode. (by invoice/delivery/origin).
 
@@ -441,10 +467,11 @@ abstract class AbstractSaleListener
      * Handles the customer information.
      *
      * @param SaleInterface $sale
+     * @param bool          $persistence
      *
      * @return bool Whether the sale has been changed or not.
      */
-    protected function handleInformation(SaleInterface $sale)
+    protected function handleInformation(SaleInterface $sale, $persistence = false)
     {
         $changed = false;
 
@@ -481,7 +508,43 @@ abstract class AbstractSaleListener
                 $changed = true;
             }
 
-            // Vat number
+            // Vat data
+            $changed |= $this->handleVatData($sale);
+
+            // Invoice address
+            if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress()) {
+                $changed |= $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address, $persistence);
+            }
+
+            // Delivery address
+            if ($sale->isSameAddress()) {
+                // Remove unused address
+                if (null !== $address = $sale->getDeliveryAddress()) {
+                    $sale->setDeliveryAddress(null);
+                    if ($persistence) {
+                        $this->persistenceHelper->remove($address, true);
+                    }
+                }
+            } else if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
+                $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address, $persistence);
+            }
+        }
+
+        return $changed;
+    }
+
+    /**
+     * Handle the vat data.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function handleVatData(SaleInterface $sale)
+    {
+        $changed = false;
+
+        if (null !== $customer = $sale->getCustomer()) {
             if (0 == strlen($sale->getVatNumber()) && 0 < strlen($customer->getVatNumber())) {
                 $sale->setVatNumber($customer->getVatNumber());
                 $changed = true;
@@ -493,22 +556,6 @@ abstract class AbstractSaleListener
             if (!$sale->isVatValid() && $customer->isVatValid()) {
                 $sale->setVatValid(true);
                 $changed = true;
-            }
-
-            // Invoice address
-            if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress()) {
-                $changed |= $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address);
-            }
-
-            // Delivery address
-            if ($sale->isSameAddress()) {
-                // Remove unused address
-                if (null !== $address = $sale->getDeliveryAddress()) {
-                    $sale->setDeliveryAddress(null);
-                    $this->persistenceHelper->remove($address, true);
-                }
-            } else if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
-                $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address);
             }
         }
 

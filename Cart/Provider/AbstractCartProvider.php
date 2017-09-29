@@ -2,12 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Cart\Provider;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
 
 /**
  * Class AbstractCartProvider
@@ -22,9 +22,9 @@ abstract class AbstractCartProvider implements CartProviderInterface
     protected $cartRepository;
 
     /**
-     * @var ObjectManager
+     * @var ResourceOperatorInterface
      */
-    protected $cartManager;
+    protected $cartOperator;
 
     /**
      * @var SaleFactoryInterface
@@ -53,13 +53,13 @@ abstract class AbstractCartProvider implements CartProviderInterface
     }
 
     /**
-     * Sets the cart manager.
+     * Sets the cart operator.
      *
-     * @param ObjectManager $manager
+     * @param ResourceOperatorInterface $operator
      */
-    public function setCartManager(ObjectManager $manager)
+    public function setCartOperator(ResourceOperatorInterface $operator)
     {
-        $this->cartManager = $manager;
+        $this->cartOperator = $operator;
     }
 
     /**
@@ -113,8 +113,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
         $expiresAt->modify('+1 month'); // TODO parameter
         $this->cart->setExpiresAt($expiresAt);
 
-        $this->cartManager->persist($this->cart);
-        $this->cartManager->flush();
+        $this->cartOperator->persist($this->cart);
 
         return $this;
     }
@@ -126,8 +125,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
     {
         // TODO Prevent clearing if there is a processing payment
         if ($this->hasCart()) {
-            $this->cartManager->remove($this->cart);
-            $this->cartManager->flush();
+            $this->cartOperator->delete($this->cart);
         }
 
         $this->cart = null;
