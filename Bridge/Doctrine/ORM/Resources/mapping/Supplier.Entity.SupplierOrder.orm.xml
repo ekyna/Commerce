@@ -25,6 +25,9 @@
         <field name="number" column="number" type="string" length="16"/>
         <field name="state" column="state" type="string" length="16"/>
         <field name="shippingCost" column="shipping_cost" type="decimal" precision="10" scale="5"/>
+        <field name="customsDuty" column="customs_duty" type="decimal" precision="10" scale="5"/>
+        <field name="customsVat" column="customs_vat" type="decimal" precision="10" scale="5"/>
+        <field name="administrativeFee" column="administrative_fee" type="decimal" precision="10" scale="5"/>
         <field name="paymentTotal" column="payment_total" type="decimal" precision="12" scale="5"/>
         <field name="paymentDate" column="payment_date" type="datetime" nullable="true"/>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
@@ -54,8 +57,20 @@
             </cascade>
         </one-to-many>
 
+        <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderAttachment"
+                     field="attachments" mapped-by="supplierOrder" orphan-removal="true">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-many>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
             <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+        </many-to-one>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierCarrier" field="carrier">
+            <join-column name="carrier_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier">

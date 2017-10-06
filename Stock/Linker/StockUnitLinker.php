@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Linker;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
@@ -39,6 +40,11 @@ class StockUnitLinker implements StockUnitLinkerInterface
      */
     private $saleFactory;
 
+    /**
+     * @var CurrencyConverterInterface
+     */
+    private $currencyConverter;
+
 
     /**
      * Constructor.
@@ -47,25 +53,24 @@ class StockUnitLinker implements StockUnitLinkerInterface
      * @param StockUnitResolverInterface      $unitResolver
      * @param StockUnitStateResolverInterface $stateResolver
      * @param SaleFactoryInterface            $saleFactory
+     * @param CurrencyConverterInterface      $currencyConverter
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         StockUnitResolverInterface $unitResolver,
         StockUnitStateResolverInterface $stateResolver,
-        SaleFactoryInterface $saleFactory
+        SaleFactoryInterface $saleFactory,
+        CurrencyConverterInterface $currencyConverter
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->unitResolver = $unitResolver;
         $this->stateResolver = $stateResolver;
         $this->saleFactory = $saleFactory;
+        $this->currencyConverter = $currencyConverter;
     }
 
     /**
-     * Link the given supplier order item to new stock unit.
-     *
-     * @param SupplierOrderItemInterface $supplierOrderItem
-     *
-     * @throws LogicException
+     * @inheritdoc
      */
     public function linkItem(SupplierOrderItemInterface $supplierOrderItem)
     {
@@ -78,9 +83,10 @@ class StockUnitLinker implements StockUnitLinkerInterface
 
         $stockUnit
             ->setSupplierOrderItem($supplierOrderItem)
-            ->setNetPrice($supplierOrderItem->getNetPrice())
             ->setOrderedQuantity($supplierOrderItem->getQuantity())
             ->setEstimatedDateOfArrival($supplierOrderItem->getOrder()->getEstimatedDateOfArrival());
+
+        $this->updatePrice($stockUnit);
 
         // We want the sold quantity to be equal to the ordered quantity.
         // We don't care about shipped quantity as 'new' stock units can't be shipped.
@@ -104,11 +110,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
     }
 
     /**
-     * Dispatches the ordered quantity change over assignments.
-     *
-     * @param SupplierOrderItemInterface $supplierOrderItem
-     *
-     * @throws LogicException
+     * @inheritdoc
      */
     public function applyItem(SupplierOrderItemInterface $supplierOrderItem)
     {
@@ -184,11 +186,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
     }
 
     /**
-     * Unlink the given supplier order item from its stock unit.
-     *
-     * @param SupplierOrderItemInterface $supplierOrderItem
-     *
-     * @throws LogicException
+     * @inheritdoc
      */
     public function unlinkItem(SupplierOrderItemInterface $supplierOrderItem)
     {
@@ -204,9 +202,10 @@ class StockUnitLinker implements StockUnitLinkerInterface
         $stockUnit
             ->setSupplierOrderItem(null)
             ->setOrderedQuantity(0)
-            ->setNetPrice(0);
+            ->setNetPrice(null)
+            ->setEstimatedDateOfArrival(null);
 
-        if (0 === $soldQty = $stockUnit->getSoldQuantity()) {
+        if (0 == $soldQty = $stockUnit->getSoldQuantity()) {
             // Stock has no assignment
             // Remove the stock unit without scheduling event
             $this->persistenceHelper->remove($stockUnit, true);
@@ -239,6 +238,35 @@ class StockUnitLinker implements StockUnitLinkerInterface
         }
 
         $this->persistStockUnit($stockUnit);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updatePrice(StockUnitInterface $stockUnit)
+    {
+        $price = null;
+
+        if (null !== $item = $stockUnit->getSupplierOrderItem()) {
+            if (null === $order = $item->getOrder()) {
+                throw new LogicException("Supplier order item's order must be set at this point.");
+            }
+
+            $currency = $order->getCurrency()->getCode();
+            $date = $order->getPaymentDate();
+            if ($date > new \DateTime()) {
+                $date = null;
+            }
+
+            $price = $this->currencyConverter->convert($item->getNetPrice(), $currency, null, $date);
+        }
+
+        // TODO Use Money::compare() ?
+        if ($stockUnit->getNetPrice() !== $price) {
+            $stockUnit->setNetPrice($price);
+
+            $this->persistStockUnit($stockUnit);
+        }
     }
 
     /**

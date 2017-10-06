@@ -4,13 +4,14 @@ namespace Ekyna\Component\Commerce\Supplier\Repository;
 
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
  * Interface SupplierOrderRepositoryInterface
  * @package Ekyna\Component\Commerce\Supplier\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SupplierOrderRepositoryInterface
+interface SupplierOrderRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Creates a new supplier order instance.

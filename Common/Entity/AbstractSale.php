@@ -113,6 +113,11 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     /**
      * @var float
      */
+    protected $outstandingTotal;
+
+    /**
+     * @var float
+     */
     protected $outstandingLimit;
 
     /**
@@ -179,6 +184,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
         $this->adjustmentTotal = 0;
         $this->grandTotal = 0;
         $this->paidTotal = 0;
+        $this->outstandingTotal = 0;
         $this->outstandingLimit = 0;
 
         $this->paymentState = Payment\PaymentStates::STATE_NEW;
@@ -197,7 +203,7 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
      */
     public function __toString()
     {
-        return $this->getNumber();
+        return empty($this->number) ? 'New sale' : $this->number;
     }
 
     /**
@@ -451,6 +457,24 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     /**
      * @inheritdoc
      */
+    public function getOutstandingTotal()
+    {
+        return $this->outstandingTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOutstandingTotal($total)
+    {
+        $this->outstandingTotal = $total;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOutstandingLimit()
     {
         return $this->outstandingLimit;
@@ -637,7 +661,13 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
      */
     public function getRemainingAmount()
     {
-        return $this->grandTotal - $this->paidTotal;
+        $paid = $this->paidTotal - $this->outstandingTotal;
+
+        if ($paid >= $this->grandTotal) {
+            return 0;
+        }
+
+        return $this->grandTotal - $paid;
     }
 
     /**

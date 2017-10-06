@@ -75,7 +75,7 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
-    public function createAddressForSale(Model\SaleInterface $sale, Model\SaleAddressInterface $source = null)
+    public function createAddressForSale(Model\SaleInterface $sale, Model\AddressInterface $source = null)
     {
         /** @var Model\SaleAddressInterface $address */
         $address = $this->resolveClassAndCreateObject('address', $sale);
@@ -167,7 +167,7 @@ class SaleFactory implements SaleFactoryInterface
 
         $payment
             ->setCurrency($sale->getCurrency())
-            ->setAmount($sale->getGrandTotal() - $sale->getPaidTotal());
+            ->setAmount($sale->getRemainingAmount());
 
         return $payment;
     }

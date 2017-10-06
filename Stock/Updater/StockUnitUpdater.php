@@ -132,26 +132,6 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateNetPrice(StockUnitInterface $stockUnit, $netPrice)
-    {
-        if (0 > $netPrice) {
-            throw new StockLogicException("Unexpected net price.");
-        }
-
-        if ($netPrice != $stockUnit->getNetPrice()) {
-            $stockUnit->setNetPrice($netPrice);
-
-            $this->persistenceHelper->persistAndRecompute($stockUnit, true);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date)
     {
         if ($date != $stockUnit->getEstimatedDateOfArrival()) {

@@ -5,13 +5,14 @@ namespace Ekyna\Component\Commerce\Common\Repository;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
  * Interface SaleRepositoryInterface
  * @package Ekyna\Component\Commerce\Common\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleRepositoryInterface
+interface SaleRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the sale by its id.

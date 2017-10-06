@@ -22,6 +22,12 @@
         <property name="address">
             <constraint name="Valid"/>
         </property>
+        <property name="currency">
+            <constraint name="NotNull" />
+        </property>
+        <property name="carrier">
+            <constraint name="NotNull" />
+        </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Identity">
             <!--<option name="required">false</option>-->
         </constraint>
@@ -39,6 +45,12 @@
                 <option name="max">16</option>
             </constraint>
         </property>
+        <property name="supplier">
+            <constraint name="NotNull" />
+        </property>
+        <property name="carrier">
+            <constraint name="NotNull" />
+        </property>
         <property name="currency">
             <constraint name="NotNull" />
         </property>
@@ -55,6 +67,11 @@
             </constraint>
         </property>
         <property name="shippingCost">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="customsDuty">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
             </constraint>
@@ -117,6 +134,12 @@
             <constraint name="Valid"/>
         </getter>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierOrderItem"/>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderAttachment">
+        <property name="supplierOrder">
+            <constraint name="NotNull" />
+        </property>
     </class>
 
     <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierDelivery">

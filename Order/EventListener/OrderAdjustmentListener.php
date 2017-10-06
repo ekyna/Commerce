@@ -96,6 +96,8 @@ class OrderAdjustmentListener extends AbstractAdjustmentListener
         /** @var \Ekyna\Component\Commerce\Order\Model\OrderInterface $order */
         $order = $adjustment->getAdjustable();
 
+        // TODO if null, retrieve order from change set
+
         $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $order);
     }
 

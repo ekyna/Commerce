@@ -10,51 +10,110 @@
             <constraint name="Length">
                 <option name="min">8</option>
                 <option name="max">16</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
             </constraint>
         </property>
         <property name="key">
             <constraint name="Length">
                 <option name="min">32</option>
                 <option name="max">32</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
             </constraint>
         </property>
         <property name="currency">
-            <constraint name="NotNull" />
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
         </property>
         <property name="method">
-            <constraint name="NotNull" />
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
         </property>
         <property name="amount">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
             <constraint name="GreaterThan">
                 <option name="value">0</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
             </constraint>
         </property>
         <property name="state">
-            <constraint name="NotBlank"/>
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
             <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
                     <value>getStates</value>
+                </option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
                 </option>
             </constraint>
         </property>
         <property name="description">
             <constraint name="Length">
                 <option name="max">255</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
             </constraint>
         </property>
         <property name="createdAt">
-            <constraint name="DateTime"/>
+            <constraint name="DateTime">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
         </property>
         <property name="updatedAt">
-            <constraint name="DateTime"/>
+            <constraint name="DateTime">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
         </property>
         <property name="completedAt">
-            <constraint name="DateTime"/>
+            <constraint name="DateTime">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
         </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
+            <option name="groups">
+                <value>Default</value>
+                <value>Checkout</value>
+            </option>
         </constraint>
     </class>
 

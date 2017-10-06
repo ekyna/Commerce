@@ -2,14 +2,16 @@
 
 namespace Ekyna\Component\Commerce\Customer\Model;
 
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\TranslatableInterface;
 
 /**
  * Interface GroupInterface
  * @package Ekyna\Component\Commerce\Customer\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method CustomerGroupTranslationInterface translate($locale = null, $create = false)
  */
-interface CustomerGroupInterface extends ResourceInterface
+interface CustomerGroupInterface extends TranslatableInterface
 {
     /**
      * Returns the name.
@@ -74,4 +76,11 @@ interface CustomerGroupInterface extends ResourceInterface
      * @return $this|CustomerGroupInterface
      */
     public function setRegistration($registration);
+
+    /**
+     * Returns the (translated) title.
+     *
+     * @return string
+     */
+    public function getTitle();
 }

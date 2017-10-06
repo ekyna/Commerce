@@ -123,9 +123,8 @@ abstract class AbstractCartProvider implements CartProviderInterface
      */
     public function clearCart()
     {
-        // TODO Prevent clearing if there is a processing payment
-        if ($this->hasCart()) {
-            $this->cartOperator->delete($this->cart);
+        if ($this->hasCart() && null !== $this->cart->getId()) {
+            $this->cartOperator->delete($this->cart, true);
         }
 
         $this->cart = null;

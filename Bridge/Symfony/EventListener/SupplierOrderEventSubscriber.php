@@ -23,6 +23,7 @@ class SupplierOrderEventSubscriber extends SupplierOrderListener implements Even
             SupplierOrderEvents::UPDATE         => ['onUpdate', 0],
 //            SupplierOrderEvents::DELETE     => ['onDelete', 0],
             SupplierOrderEvents::CONTENT_CHANGE => ['onContentChange', 0],
+            SupplierOrderEvents::INITIALIZE     => ['onInitialize', 0],
             SupplierOrderEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }

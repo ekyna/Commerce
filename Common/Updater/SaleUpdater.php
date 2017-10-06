@@ -105,7 +105,7 @@ class SaleUpdater implements SaleUpdaterInterface
         AddressInterface $source,
         $persistence = false
     ) {
-        return $this->addressBuilder->buildSaleInvoiceAddressFromAddress($sale, $source, true);
+        return $this->addressBuilder->buildSaleInvoiceAddressFromAddress($sale, $source, $persistence);
     }
 
     /**
@@ -116,7 +116,7 @@ class SaleUpdater implements SaleUpdaterInterface
         AddressInterface $source,
         $persistence = false
     ) {
-        return $this->addressBuilder->buildSaleDeliveryAddressFromAddress($sale, $source, true);
+        return $this->addressBuilder->buildSaleDeliveryAddressFromAddress($sale, $source, $persistence);
     }
 
     /**
@@ -242,6 +242,31 @@ class SaleUpdater implements SaleUpdaterInterface
     /**
      * @inheritdoc
      */
+    public function updateOutstandingTotal(SaleInterface $sale)
+    {
+        $total = 0;
+
+        foreach ($sale->getPayments() as $payment) {
+            if (!$payment->getMethod()->isOutstanding()) {
+                continue;
+            }
+            if (PaymentStates::isPaidState($payment->getState())) {
+                $total += $payment->getAmount();
+            }
+        }
+
+        if ($total != $sale->getOutstandingTotal()) {
+            $sale->setOutstandingTotal($total);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function updateTotalAmounts(SaleInterface $sale)
     {
         $changed = false;
@@ -271,6 +296,8 @@ class SaleUpdater implements SaleUpdaterInterface
         $changed |= $this->updateTotalWeight($sale);
 
         $changed |= $this->updatePaidTotal($sale);
+
+        $changed |= $this->updateOutstandingTotal($sale);
 
         return $changed;
     }

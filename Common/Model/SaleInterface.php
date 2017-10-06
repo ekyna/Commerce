@@ -271,6 +271,22 @@ interface SaleInterface extends
     public function setPaidTotal($total);
 
     /**
+     * Returns the outstanding total.
+     *
+     * @return float
+     */
+    public function getOutstandingTotal();
+
+    /**
+     * Sets the outstanding total.
+     *
+     * @param float $total
+     *
+     * @return $this|SaleInterface
+     */
+    public function setOutstandingTotal($total);
+
+    /**
      * Returns the outstanding limit.
      *
      * @return float

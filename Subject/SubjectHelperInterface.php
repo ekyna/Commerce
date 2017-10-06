@@ -13,6 +13,15 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 interface SubjectHelperInterface
 {
     /**
+     * Returns whether or the subject relative has subject.
+     *
+     * @param SubjectRelativeInterface $relative
+     *
+     * @return bool
+     */
+    public function hasSubject(SubjectRelativeInterface $relative);
+
+    /**
      * Resolves the subject from the relative.
      *
      * @param SubjectRelativeInterface $relative

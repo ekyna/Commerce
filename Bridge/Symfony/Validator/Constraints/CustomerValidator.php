@@ -58,5 +58,13 @@ class CustomerValidator extends ConstraintValidator
                 ->atPath('company')
                 ->addViolation();
         }
+
+        if (0 < $customer->getOutstandingLimit() && null === $customer->getPaymentTerm()) {
+            $this
+                ->context
+                ->buildViolation($constraint->term_required_for_outstanding)
+                ->atPath('paymentTerm')
+                ->addViolation();
+        }
     }
 }

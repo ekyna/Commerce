@@ -3,8 +3,10 @@
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Supplier\Model;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderAttachmentInterface;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -22,52 +24,77 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @var int
      */
-    private $id;
+    protected $id;
 
     /**
      * @var Model\SupplierInterface
      */
-    private $supplier;
+    protected $supplier;
+
+    /**
+     * @var Model\SupplierCarrierInterface
+     */
+    protected $carrier;
 
     /**
      * @var ArrayCollection|Model\SupplierOrderItemInterface[]
      */
-    private $items;
+    protected $items;
 
     /**
      * @var ArrayCollection|Model\SupplierDeliveryInterface[]
      */
-    private $deliveries;
+    protected $deliveries;
 
     /**
      * @var float
      */
-    private $shippingCost = 0;
+    protected $shippingCost = 0;
 
     /**
      * @var float
      */
-    private $paymentTotal = 0;
+    protected $customsDuty = 0;
+
+    /**
+     * @var float
+     */
+    protected $customsVat = 0;
+
+    /**
+     * @var float
+     */
+    protected $administrativeFee = 0;
+
+    /**
+     * @var float
+     */
+    protected $paymentTotal = 0;
 
     /**
      * @var \DateTime
      */
-    private $paymentDate;
+    protected $paymentDate;
 
     /**
      * @var \DateTime
      */
-    private $estimatedDateOfArrival;
+    protected $estimatedDateOfArrival;
 
     /**
      * @var \DateTime
      */
-    private $orderedAt;
+    protected $orderedAt;
 
     /**
      * @var \DateTime
      */
-    private $completedAt;
+    protected $completedAt;
+
+    /**
+     * @var ArrayCollection|Model\SupplierOrderAttachmentInterface[]
+     */
+    protected $attachments;
 
 
     /**
@@ -111,6 +138,24 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function setSupplier(Model\SupplierInterface $supplier)
     {
         $this->supplier = $supplier;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCarrier()
+    {
+        return $this->carrier;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCarrier(Model\SupplierCarrierInterface $carrier)
+    {
+        $this->carrier = $carrier;
 
         return $this;
     }
@@ -228,9 +273,75 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
-    public function setShippingCost($shippingCost)
+    public function setShippingCost($amount)
     {
-        $this->shippingCost = (float)$shippingCost;
+        $this->shippingCost = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCustomsDuty()
+    {
+        return $this->customsDuty;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCustomsDuty($amount)
+    {
+        $this->customsDuty = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the customs VAT amount.
+     *
+     * @return float
+     */
+    public function getCustomsVat()
+    {
+        return $this->customsVat;
+    }
+
+    /**
+     * Sets the customs VAT amount.
+     *
+     * @param float $amount
+     *
+     * @return SupplierOrder
+     */
+    public function setCustomsVat($amount)
+    {
+        $this->customsVat = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the "administrative fee" amount.
+     *
+     * @return float
+     */
+    public function getAdministrativeFee()
+    {
+        return $this->administrativeFee;
+    }
+
+    /**
+     * Sets the "administrative fee" amount.
+     *
+     * @param float $amount
+     *
+     * @return SupplierOrder
+     */
+    public function setAdministrativeFee($amount)
+    {
+        $this->administrativeFee = (float)$amount;
 
         return $this;
     }
@@ -246,9 +357,9 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
-    public function setPaymentTotal($paymentTotal)
+    public function setPaymentTotal($amount)
     {
-        $this->paymentTotal = (float)$paymentTotal;
+        $this->paymentTotal = (float)$amount;
 
         return $this;
     }
@@ -323,5 +434,65 @@ class SupplierOrder implements Model\SupplierOrderInterface
         $this->completedAt = $completedAt;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasAttachments()
+    {
+        return 0 < $this->attachments->count();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasAttachment(SupplierOrderAttachmentInterface $attachment)
+    {
+        return $this->attachments->contains($attachment);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addAttachment(SupplierOrderAttachmentInterface $attachment)
+    {
+        if (!$this->hasAttachment($attachment)) {
+            $this->attachments->add($attachment);
+            $attachment->setSupplierOrder($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeAttachment(SupplierOrderAttachmentInterface $attachment)
+    {
+        if ($this->hasAttachment($attachment)) {
+            $this->attachments->removeElement($attachment);
+            $attachment->setSupplierOrder(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSupplierAttachments()
+    {
+        return $this->attachments->matching(
+            Criteria::create()->where(Criteria::expr()->eq('internal', false))
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
     }
 }

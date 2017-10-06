@@ -147,6 +147,25 @@ class SupplierOrderListener extends AbstractListener
     }
 
     /**
+     * Initialize event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onInitialize(ResourceEventInterface $event)
+    {
+        $order = $this->getSupplierOrderFromEvent($event);
+
+        if (null !== $supplier = $order->getSupplier()) {
+            if ($order->getCurrency() !== $supplier->getCurrency()) {
+                $order->setCurrency($supplier->getCurrency());
+            }
+            if (null === $order->getCarrier()) {
+                $order->setCarrier($supplier->getCarrier());
+            }
+        }
+    }
+
+    /**
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event

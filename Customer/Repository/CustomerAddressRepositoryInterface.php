@@ -4,19 +4,19 @@ namespace Ekyna\Component\Commerce\Customer\Repository;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
  * Interface CustomerAddressRepositoryInterface
  * @package Ekyna\Component\Commerce\Customer\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CustomerAddressRepositoryInterface
+interface CustomerAddressRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Returns the customer addresses including the parent's ones.
      *
      * @param CustomerInterface        $customer
-     * @param CustomerAddressInterface $exclude
      *
      * @return CustomerAddressInterface[]
      */

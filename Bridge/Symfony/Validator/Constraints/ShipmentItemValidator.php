@@ -2,9 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Shipment\Calculator\QuantityCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Commerce\Shipment\Util\ShipmentUtil;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -16,6 +16,22 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class ShipmentItemValidator extends ConstraintValidator
 {
+    /**
+     * @var QuantityCalculatorInterface
+     */
+    private $quantityCalculator;
+
+
+    /**
+     * Constructor.
+     *
+     * @param QuantityCalculatorInterface $quantityCalculator
+     */
+    public function __construct(QuantityCalculatorInterface $quantityCalculator)
+    {
+        $this->quantityCalculator = $quantityCalculator;
+    }
+
     /**
      * @inheritDoc
      */
@@ -34,7 +50,7 @@ class ShipmentItemValidator extends ConstraintValidator
 
         // Return shipment case
         if ($item->getShipment()->isReturn()) {
-            $returnable = ShipmentUtil::calculateReturnableQuantity($item);
+            $returnable = $this->quantityCalculator->calculateReturnableQuantity($item);
 
             if ($item->getQuantity() > $returnable) {
                 $this
@@ -54,8 +70,8 @@ class ShipmentItemValidator extends ConstraintValidator
 
         // Regular shipment case
 
-        $expected = ShipmentUtil::calculateShippableQuantity($item);
-        $available = ShipmentUtil::calculateAvailableQuantity($item);
+        $expected = $this->quantityCalculator->calculateShippableQuantity($item);
+        $available = $this->quantityCalculator->calculateAvailableQuantity($item);
 
         if (ShipmentStates::isStockableState($item->getShipment()->getState()) && $available < $expected) {
             // Shipment item's quantity must be lower than or equals the shipment item's available quantity

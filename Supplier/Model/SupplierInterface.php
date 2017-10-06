@@ -92,4 +92,20 @@ interface SupplierInterface extends ResourceInterface, IdentityInterface
      * @return $this|SupplierInterface
      */
     public function setCurrency(CurrencyInterface $currency);
+
+    /**
+     * Returns the carrier.
+     *
+     * @return SupplierCarrierInterface
+     */
+    public function getCarrier();
+
+    /**
+     * Sets the carrier.
+     *
+     * @param SupplierCarrierInterface $carrier
+     *
+     * @return $this|SupplierInterface
+     */
+    public function setCarrier(SupplierCarrierInterface $carrier);
 }

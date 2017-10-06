@@ -117,22 +117,4 @@ class Currency implements CurrencyInterface
 
         return $this;
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function isDefault()
-    {
-        return $this->default;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setDefault($default)
-    {
-        $this->default = (bool)$default;
-
-        return $this;
-    }
 }

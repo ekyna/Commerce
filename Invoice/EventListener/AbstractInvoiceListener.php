@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
@@ -37,12 +38,17 @@ abstract class AbstractInvoiceListener
     /**
      * @var InvoiceUpdaterInterface
      */
-    protected $updater;
+    protected $invoiceUpdater;
 
     /**
      * @var InvoiceCalculatorInterface
      */
-    protected $calculator;
+    protected $invoiceCalculator;
+
+    /**
+     * @var CustomerUpdaterInterface
+     */
+    protected $customerUpdater;
 
 
     /**
@@ -78,21 +84,31 @@ abstract class AbstractInvoiceListener
     /**
      * Sets the invoice updater.
      *
-     * @param InvoiceUpdaterInterface $updater
+     * @param InvoiceUpdaterInterface $invoiceUpdater
      */
-    public function setUpdater(InvoiceUpdaterInterface $updater)
+    public function setInvoiceUpdater(InvoiceUpdaterInterface $invoiceUpdater)
     {
-        $this->updater = $updater;
+        $this->invoiceUpdater = $invoiceUpdater;
     }
 
     /**
      * Sets the invoice calculator.
      *
-     * @param InvoiceCalculatorInterface $calculator
+     * @param InvoiceCalculatorInterface $invoiceCalculator
      */
-    public function setCalculator(InvoiceCalculatorInterface $calculator)
+    public function setInvoiceCalculator(InvoiceCalculatorInterface $invoiceCalculator)
     {
-        $this->calculator = $calculator;
+        $this->invoiceCalculator = $invoiceCalculator;
+    }
+
+    /**
+     * Sets the customerUpdater.
+     *
+     * @param CustomerUpdaterInterface $customerUpdater
+     */
+    public function setCustomerUpdater(CustomerUpdaterInterface $customerUpdater)
+    {
+        $this->customerUpdater = $customerUpdater;
     }
 
     /**
@@ -108,11 +124,13 @@ abstract class AbstractInvoiceListener
         $changed = $this->generateNumber($invoice);
 
         // Updates the invoice data
-        $changed |= $this->updater->update($invoice);
+        $changed |= $this->invoiceUpdater->update($invoice);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
         }
+
+        //$this->updateCustomerCreditBalance($invoice);
 
         $sale = $invoice->getSale();
         $sale->addInvoice($invoice); // TODO wtf ?
@@ -135,9 +153,11 @@ abstract class AbstractInvoiceListener
         $changed = $this->generateNumber($invoice);
 
         // Updates the invoice data
-        $changed |= $this->updater->update($invoice);
+        $changed |= $this->invoiceUpdater->update($invoice);
 
         if ($changed) {
+            //$this->updateCustomerCreditBalance($invoice);
+
             $this->persistenceHelper->persistAndRecompute($invoice, false);
 
             $this->scheduleSaleContentChangeEvent($invoice->getSale());
@@ -153,6 +173,8 @@ abstract class AbstractInvoiceListener
     {
         $invoice = $this->getInvoiceFromEvent($event);
 
+        //$this->updateCustomerCreditBalance($invoice);
+
         $this->scheduleSaleContentChangeEvent($invoice->getSale());
     }
 
@@ -166,7 +188,7 @@ abstract class AbstractInvoiceListener
         $invoice = $this->getInvoiceFromEvent($event);
 
         if (!$this->persistenceHelper->isScheduledForRemove($invoice)) {
-            $changed = $this->calculator->calculate($invoice);
+            $changed = $this->invoiceCalculator->calculate($invoice);
 
             if ($changed) {
                 $this->persistenceHelper->persistAndRecompute($invoice, false);
@@ -177,7 +199,41 @@ abstract class AbstractInvoiceListener
             }
         }
 
+        $this->updateCustomerCreditBalance($invoice);
+
         $this->scheduleSaleContentChangeEvent($invoice->getSale());
+    }
+
+    /**
+     * Updates the customer credit balance
+     *
+     * @param InvoiceInterface $invoice
+     */
+    protected function updateCustomerCreditBalance(InvoiceInterface $invoice)
+    {
+        // Abort if not credit
+        if (!InvoiceTypes::isCredit($invoice)) {
+            return;
+        }
+
+        // Abort if no customer
+        if (null === $customer = $invoice->getSale()->getCustomer()) {
+            return;
+        }
+
+        if ($this->persistenceHelper->isScheduledForRemove($invoice)) {
+            $this->customerUpdater->updateCreditBalance($customer, -$invoice->getGrandTotal(), true);
+
+            return;
+        }
+
+        if (empty($cs = $this->persistenceHelper->getChangeSet($invoice, 'grandTotal'))) {
+            return;
+        }
+
+        if (0 != $amount = $cs[1] - $cs[0]) { // old - new
+            $this->customerUpdater->updateCreditBalance($customer, $amount, true);
+        }
     }
 
     /**
@@ -190,9 +246,9 @@ abstract class AbstractInvoiceListener
     protected function generateNumber(InvoiceInterface $invoice)
     {
         if (0 == strlen($invoice->getNumber())) {
-            if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
+            if (InvoiceTypes::isInvoice($invoice)) {
                 $this->invoiceNumberGenerator->generate($invoice);
-            } elseif ($invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+            } elseif (InvoiceTypes::isCredit($invoice)) {
                 $this->creditNumberGenerator->generate($invoice);
             } else {
                 throw new Exception\InvalidArgumentException("Unexpected invoice type.");

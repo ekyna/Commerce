@@ -102,7 +102,6 @@
     <!-- Attachment -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAttachment">
-
         <constraint name="Ekyna\Bundle\CoreBundle\Validator\Constraints\Uploadable" />
         <property name="file">
             <constraint name="File" />

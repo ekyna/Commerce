@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
@@ -9,6 +10,9 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  * Class CartRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method CartInterface|null findOneById($id)
+ * @method CartInterface|null findOneByKey($key)
  */
 class CartRepository extends AbstractSaleRepository implements CartRepositoryInterface
 {

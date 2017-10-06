@@ -73,7 +73,9 @@ abstract class AbstractListener
     protected function assertDeletable(ResourceInterface $resource)
     {
         if ($resource instanceof Model\SupplierOrderItemInterface) {
-            $stockUnit = $resource->getStockUnit();
+            if (null === $stockUnit = $resource->getStockUnit()) {
+                return;
+            }
             if (0 < $stockUnit->getShippedQuantity() || 0 < $stockUnit->getSoldQuantity()) {
                 throw new Exception\IllegalOperationException(
                     "Supplier delivery can't be removed as at least one ".

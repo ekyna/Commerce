@@ -117,6 +117,8 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
+        $dispatchSaleContentChange = false;
+
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
@@ -124,13 +126,13 @@ abstract class AbstractShipmentListener
         $changed |= $this->calculateWeight($shipment);
 
         if ($this->persistenceHelper->isChanged($shipment, 'state')) {
-            $changed = $this->handleCompletedState($shipment) || $changed;
+            $dispatchSaleContentChange = true;
+            $changed |= $this->handleCompletedState($shipment);
         }
 
         if ($changed) {
+            $dispatchSaleContentChange = true;
             $this->persistenceHelper->persistAndRecompute($shipment);
-
-            $this->scheduleSaleContentChangeEvent($shipment->getSale());
         }
 
         if ($this->persistenceHelper->isChanged($shipment, 'state')) {
@@ -164,6 +166,10 @@ abstract class AbstractShipmentListener
                     }
                 //}
             }
+        }
+
+        if ($dispatchSaleContentChange) {
+            $this->scheduleSaleContentChangeEvent($shipment->getSale());
         }
     }
 

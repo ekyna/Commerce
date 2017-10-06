@@ -50,12 +50,21 @@ final class PaymentStates
      * Returns whether or not the given state is valid.
      *
      * @param string $state
+     * @param bool   $throwException
      *
      * @return bool
      */
-    static public function isValidState($state)
+    static public function isValidState($state, $throwException = true)
     {
-        return in_array($state, static::getStates(), true);
+        if (in_array($state, static::getStates(), true)) {
+            return true;
+        }
+
+        if ($throwException) {
+            throw new InvalidArgumentException("Invalid payment states '$state'.");
+        }
+
+        return false;
     }
 
     /**
@@ -181,8 +190,8 @@ final class PaymentStates
         if (
             array_key_exists(0, $cs) &&
             array_key_exists(1, $cs) &&
-            (is_null($cs[0]) || static::isValidState($cs[0])) &&
-            (is_null($cs[1]) || static::isValidState($cs[1]))
+            (is_null($cs[0]) || in_array($cs[0], static::getStates(), true)) &&
+            (is_null($cs[1]) || in_array($cs[1], static::getStates(), true))
         ) {
             return true;
         }

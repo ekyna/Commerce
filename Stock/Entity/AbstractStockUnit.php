@@ -236,7 +236,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function setSoldQuantity($quantity)
     {
-        $this->soldQuantity = $quantity;
+        $this->soldQuantity = (float)$quantity;
 
         return $this;
     }
@@ -272,7 +272,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function setNetPrice($price)
     {
-        $this->netPrice = $price;
+        $this->netPrice = (float)$price;
 
         return $this;
     }

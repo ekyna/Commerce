@@ -73,7 +73,7 @@ abstract class AbstractInvoiceLine implements Model\InvoiceLineInterface
     public function __construct()
     {
         $this->netPrice = 0;
-        $this->quantity = 1;
+        $this->quantity = 0;
         $this->discountTotal = 0;
         $this->netTotal = 0;
         $this->taxRates = [];

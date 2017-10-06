@@ -109,6 +109,15 @@ interface SaleUpdaterInterface
     public function updatePaidTotal(Model\SaleInterface $sale);
 
     /**
+     * Updates the outstanding total.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    public function updateOutstandingTotal(Model\SaleInterface $sale);
+
+    /**
      * Updates the total amounts.
      *
      * @param Model\SaleInterface $sale

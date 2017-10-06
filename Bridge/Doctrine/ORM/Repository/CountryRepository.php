@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
@@ -14,12 +15,37 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 class CountryRepository extends ResourceRepository implements CountryRepositoryInterface
 {
     /**
+     * @var string
+     */
+    private $defaultCode;
+
+    /**
+     * @var CountryInterface
+     */
+    private $defaultCountry;
+
+
+    /**
+     * Sets the default code.
+     *
+     * @param string $code
+     */
+    public function setDefaultCode($code)
+    {
+        $this->defaultCode = $code;
+    }
+
+    /**
      * @inheritdoc
      */
     public function findDefault()
     {
-        if (null !== $defaultCountry = $this->findOneBy(['default' => true])) {
-            return $defaultCountry;
+        if (null !== $this->defaultCountry) {
+            return $this->defaultCountry;
+        }
+
+        if (null !== $country = $this->findOneByCode($this->defaultCode)) {
+            return $this->defaultCountry = $country;
         }
 
         throw new RuntimeException('Default country not found.');

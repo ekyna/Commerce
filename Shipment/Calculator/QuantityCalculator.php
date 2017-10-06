@@ -1,36 +1,51 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Shipment\Util;
+namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Shipment\Model;
+use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
+use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
 /**
- * Class ShipmentUtil
- * @package Ekyna\Component\Commerce\Shipment\Util
+ * Class QuantityCalculator
+ * @package Ekyna\Component\Commerce\Shipment\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class ShipmentUtil
+class QuantityCalculator implements QuantityCalculatorInterface
 {
     /**
-     * Calculate the shipment item available quantity.
-     *
-     * @param Model\ShipmentItemInterface $item
-     *
-     * @return float
+     * @var SubjectHelperInterface
      */
-    static public function calculateAvailableQuantity(Model\ShipmentItemInterface $item)
+    private $subjectHelper;
+
+
+    /**
+     * Constructor.
+     *
+     * @param SubjectHelperInterface $subjectHelper
+     */
+    public function __construct(SubjectHelperInterface $subjectHelper)
+    {
+        $this->subjectHelper = $subjectHelper;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateAvailableQuantity(Shipment\ShipmentItemInterface $item)
     {
         $saleItem = $item->getSaleItem();
 
-        if (!$saleItem instanceof StockAssignmentsInterface) {
-            return 0;
+        if (!$this->hasStockableSubject($saleItem)) {
+            return INF;
         }
 
         $quantity = 0;
 
+        /** @var StockAssignmentsInterface $saleItem */
         foreach ($saleItem->getStockAssignments() as $assignment) {
             $quantity += $assignment->getShippableQuantity();
         }
@@ -38,7 +53,7 @@ abstract class ShipmentUtil
         // If shipment is in stockable state, this shipment item's quantity
         // is considered as shipped.
         // TODO Test. Multiple shipment items can point to the same subject ...
-        if (Model\ShipmentStates::isStockableState($item->getShipment()->getState())) {
+        if (Shipment\ShipmentStates::isStockableState($item->getShipment()->getState())) {
             $quantity += $item->getQuantity();
         }
 
@@ -46,19 +61,15 @@ abstract class ShipmentUtil
     }
 
     /**
-     * Calculates the shipment item shippable quantity.
-     *
-     * @param Model\ShipmentItemInterface $item
-     *
-     * @return float
+     * @inheritdoc
      */
-    static public function calculateShippableQuantity(Model\ShipmentItemInterface $item)
+    public function calculateShippableQuantity(Shipment\ShipmentItemInterface $item)
     {
         $saleItem = $item->getSaleItem();
 
         $quantity = $saleItem->getTotalQuantity();
 
-        /** @var Model\ShipmentSubjectInterface $sale */
+        /** @var Shipment\ShipmentSubjectInterface $sale */
         $sale = $saleItem->getSale();
 
         foreach ($sale->getShipments() as $shipment) {
@@ -68,7 +79,7 @@ abstract class ShipmentUtil
             }
 
             // Skip if shipment is cancelled
-            if ($shipment->getState() === Model\ShipmentStates::STATE_CANCELLED) {
+            if ($shipment->getState() === Shipment\ShipmentStates::STATE_CANCELLED) {
                 continue;
             }
 
@@ -90,7 +101,7 @@ abstract class ShipmentUtil
         // is considered as shipped.
         // TODO Test. Multiple shipment items can point to the same subject ...
         /*$shipment = $item->getShipment();
-        if (Model\ShipmentStates::isStockableState($shipment->getState())) {
+        if (Shipment\ShipmentStates::isStockableState($shipment->getState())) {
             if ($shipment->isReturn()) {
                 $quantity -= $item->getQuantity();
             } else {
@@ -102,19 +113,15 @@ abstract class ShipmentUtil
     }
 
     /**
-     * Calculates the shipment item returnable quantity.
-     *
-     * @param Model\ShipmentItemInterface $item
-     *
-     * @return float
+     * @inheritdoc
      */
-    static public function calculateReturnableQuantity(Model\ShipmentItemInterface $item)
+    public function calculateReturnableQuantity(Shipment\ShipmentItemInterface $item)
     {
         $saleItem = $item->getSaleItem();
 
         $quantity = 0;
 
-        /** @var Model\ShipmentSubjectInterface $sale */
+        /** @var Shipment\ShipmentSubjectInterface $sale */
         $sale = $saleItem->getSale();
 
         foreach ($sale->getShipments() as $shipment) {
@@ -124,7 +131,7 @@ abstract class ShipmentUtil
             }
 
             // Skip if shipment is cancelled
-            if (!Model\ShipmentStates::isShippedState($shipment->getState())) {
+            if (!Shipment\ShipmentStates::isShippedState($shipment->getState())) {
                 continue;
             }
 
@@ -143,7 +150,7 @@ abstract class ShipmentUtil
         // If shipment is in stockable state, this shipment item's quantity
         // is considered as shipped.
         // TODO Test. Multiple shipment items can point to the same subject ...
-        if (Model\ShipmentStates::isStockableState($item->getShipment())) {
+        if (Shipment\ShipmentStates::isStockableState($item->getShipment())) {
             if ($item->getShipment()->isReturn()) {
                 $quantity += $item->getQuantity();
             } else {
@@ -155,25 +162,21 @@ abstract class ShipmentUtil
     }
 
     /**
-     * Calculates the shipped quantity for the given sale item.
-     *
-     * @param SaleItemInterface $saleItem
-     *
-     * @return float
+     * @inheritdoc
      */
-    static public function calculateShippedQuantity(SaleItemInterface $saleItem)
+    public function calculateShippedQuantity(Common\SaleItemInterface $saleItem)
     {
-        /** @var SaleInterface $sale */
+        /** @var Common\SaleInterface $sale */
         $sale = $saleItem->getSale();
 
-        if (!$sale instanceof Model\ShipmentSubjectInterface) {
+        if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
             return 0;
         }
 
         $quantity = 0;
 
         foreach ($sale->getShipments() as $shipment) {
-            if (!Model\ShipmentStates::isShippedState($shipment->getState())) {
+            if (!Shipment\ShipmentStates::isShippedState($shipment->getState())) {
                 continue;
             }
 
@@ -192,25 +195,21 @@ abstract class ShipmentUtil
     }
 
     /**
-     * Calculates the returned quantity for the given sale item.
-     *
-     * @param SaleItemInterface $saleItem
-     *
-     * @return float
+     * @inheritdoc
      */
-    static public function calculateReturnedQuantity(SaleItemInterface $saleItem)
+    public function calculateReturnedQuantity(Common\SaleItemInterface $saleItem)
     {
-        /** @var SaleInterface $sale */
+        /** @var Common\SaleInterface $sale */
         $sale = $saleItem->getSale();
 
-        if (!$sale instanceof Model\ShipmentSubjectInterface) {
+        if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
             return 0;
         }
 
         $quantity = 0;
 
         foreach ($sale->getShipments() as $shipment) {
-            if (!Model\ShipmentStates::isShippedState($shipment->getState())) {
+            if (!Shipment\ShipmentStates::isShippedState($shipment->getState())) {
                 continue;
             }
 
@@ -226,5 +225,33 @@ abstract class ShipmentUtil
         }
 
         return $quantity;
+    }
+
+    /**
+     * Returns whether or not the sale item has a stockable subject.
+     *
+     * @param Common\SaleItemInterface $saleItem
+     *
+     * @return bool
+     */
+    private function hasStockableSubject(Common\SaleItemInterface $saleItem)
+    {
+        if (!$saleItem instanceof StockAssignmentsInterface) {
+            return false;
+        }
+
+        if (null === $subject = $this->subjectHelper->resolve($saleItem)) {
+            return false;
+        }
+
+        if (!$subject instanceof StockSubjectInterface) {
+            return false;
+        }
+
+        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+            return false;
+        }
+
+        return true;
     }
 }

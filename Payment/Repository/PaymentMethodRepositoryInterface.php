@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Payment\Repository;
 
+use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepositoryInterface;
+
 /**
  * Interface PaymentMethodRepositoryInterface
  * @package Ekyna\Component\Commerce\Payment\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface PaymentMethodRepositoryInterface
+interface PaymentMethodRepositoryInterface extends TranslatableResourceRepositoryInterface
 {
     /**
      * Create a new payment method with pre-populated messages (one by notifiable state).

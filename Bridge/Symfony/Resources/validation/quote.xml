@@ -17,30 +17,27 @@
     </class>
 
     <!--<class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAddress">
-
-    </class>
-
-    <class name="Ekyna\Component\Commerce\Quote\Entity\AbstractAdjustment">
-
-    </class>
-
-    <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAddress">
-
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment">
+        TODO
+    </class>
 
+    <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAttachment">
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteItem">
-
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteItemAdjustment">
-
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Quote\Entity\QuotePayment">
+        TODO
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
         </constraint>

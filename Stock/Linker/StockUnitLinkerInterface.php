@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Linker;
 
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
 /**
@@ -37,4 +38,13 @@ interface StockUnitLinkerInterface
      * @throws \Ekyna\Component\Commerce\Exception\LogicException
      */
     public function unlinkItem(SupplierOrderItemInterface $supplierOrderItem);
+
+    /**
+     * Updates the stock unit price.
+     *
+     * @param StockUnitInterface $stockUnit
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\LogicException
+     */
+    public function updatePrice(StockUnitInterface $stockUnit);
 }

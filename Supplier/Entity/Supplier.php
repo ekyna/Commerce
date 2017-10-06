@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Supplier\Entity;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\IdentityTrait;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierAddressInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierCarrierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 
 /**
@@ -45,6 +46,11 @@ class Supplier implements SupplierInterface
      * @var CurrencyInterface
      */
     protected $currency;
+
+    /**
+     * @var SupplierCarrierInterface
+     */
+    protected $carrier;
 
 
     /**
@@ -151,6 +157,24 @@ class Supplier implements SupplierInterface
     public function setCurrency(CurrencyInterface $currency)
     {
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCarrier()
+    {
+        return $this->carrier;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCarrier(SupplierCarrierInterface $carrier)
+    {
+        $this->carrier = $carrier;
 
         return $this;
     }

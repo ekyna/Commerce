@@ -23,7 +23,6 @@
         <field name="name" column="name" type="string" length="64"/>
         <field name="code" column="code" type="string" length="4"/>
         <field name="enabled" column="is_enabled" type="boolean"/>
-        <field name="default" column="is_default" type="boolean"/>
 
         <!-- TODO <one-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\State" mapped-by="country" field="states" fetch="EXTRA_LAZY">
             <cascade>

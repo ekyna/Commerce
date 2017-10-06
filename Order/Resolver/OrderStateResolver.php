@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates as Pay;
@@ -199,16 +200,54 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
      */
     private function buildOrderedQuantities(SaleItemInterface $item, array &$quantities)
     {
-        if ($item->hasChildren()) {
-            foreach ($item->getChildren() as $child) {
-                $this->buildOrderedQuantities($child, $quantities);
-            }
-        } else {
+        if (!$item->isCompound()) {
             $quantities[$item->getId()] = array(
-                'ordered' => $item->getTotalQuantity(),
+                'ordered' => $this->getOrderedQuantity($item),
                 'shipped' => 0,
                 'returned' => 0,
             );
         }
+
+        if ($item->hasChildren()) {
+            foreach ($item->getChildren() as $child) {
+                $this->buildOrderedQuantities($child, $quantities);
+            }
+        }
+    }
+
+    /**
+     * Returns the ordered quantity (minus refund by credit documents).
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return SaleItemInterface|float
+     */
+    private function getOrderedQuantity(SaleItemInterface $item)
+    {
+        $quantity = $item->getTotalQuantity();
+
+        $sale = $item->getSale();
+        if (!$sale instanceof OrderInterface) {
+            return $quantity;
+        }
+
+        foreach ($sale->getInvoices() as $invoice) {
+            if (!InvoiceTypes::isCredit($invoice)) {
+                continue;
+            }
+
+            foreach ($invoice->getLines() as $line) {
+                if ($item === $line->getSaleItem()) {
+                    $quantity -= $line->getQuantity();
+                    break;
+                }
+            }
+        }
+
+        if (0 < $quantity) {
+            return $quantity;
+        }
+
+        return 0;
     }
 }

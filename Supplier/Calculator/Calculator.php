@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Calculator;
 
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 
 /**
@@ -19,10 +20,9 @@ class Calculator implements CalculatorInterface
         $total = $order->getShippingCost();
 
         foreach ($order->getItems() as $item) {
-            // TODO precision based on currency
-            $total += round($item->getNetPrice(), 2) * $item->getQuantity();
+            $total += $item->getNetPrice() * $item->getQuantity();
         }
 
-        return $total;
+        return Money::round($total, $order->getCurrency()->getCode());
     }
 }

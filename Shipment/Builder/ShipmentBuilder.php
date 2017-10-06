@@ -4,8 +4,8 @@ namespace Ekyna\Component\Commerce\Shipment\Builder;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\QuantityCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Commerce\Shipment\Util\ShipmentUtil;
 
 /**
  * Class ShipmentBuilder
@@ -19,15 +19,22 @@ class ShipmentBuilder implements ShipmentBuilderInterface
      */
     private $factory;
 
+    /**
+     * @var QuantityCalculatorInterface
+     */
+    private $quantityCalculator;
+
 
     /**
      * Constructor.
      *
-     * @param SaleFactoryInterface $factory
+     * @param SaleFactoryInterface        $factory
+     * @param QuantityCalculatorInterface $calculator
      */
-    public function __construct(SaleFactoryInterface $factory)
+    public function __construct(SaleFactoryInterface $factory, QuantityCalculatorInterface $calculator)
     {
         $this->factory = $factory;
+        $this->quantityCalculator = $calculator;
     }
 
     /**
@@ -67,14 +74,15 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         $shipment->addItem($item);
 
         $expected = $shipment->isReturn()
-            ? ShipmentUtil::calculateReturnableQuantity($item)
-            : ShipmentUtil::calculateShippableQuantity($item);
+            ? $this->quantityCalculator->calculateReturnableQuantity($item)
+            : $this->quantityCalculator->calculateShippableQuantity($item);
 
         if (0 >= $expected) {
             $shipment->removeItem($item);
+
             return;
         } elseif (!$shipment->isReturn()) {
-            $item->setQuantity(min($expected, ShipmentUtil::calculateAvailableQuantity($item)));
+            $item->setQuantity(min($expected, $this->quantityCalculator->calculateAvailableQuantity($item)));
         }
 
         if (!$saleItem->isCompound() && $saleItem->hasChildren()) {

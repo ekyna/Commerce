@@ -90,7 +90,6 @@ class SupplierOrderItemListener extends AbstractListener
             if ($this->persistenceHelper->isChanged($item, 'quantity')) {
                 // Updates the ordered quantity
                 $this->stockUnitLinker->applyItem($item);
-                //$this->stockUnitUpdater->updateOrdered($item->getStockUnit(), $item->getQuantity(), false);
 
                 $scheduleContentChange = true;
             }
@@ -98,7 +97,7 @@ class SupplierOrderItemListener extends AbstractListener
             // TODO Do this in the StockUnitLinker::applyItem() method ?
             if ($this->persistenceHelper->isChanged($item, 'netPrice')) {
                 // Updates the net price
-                $this->stockUnitUpdater->updateNetPrice($item->getStockUnit(), $item->getNetPrice());
+                $this->stockUnitLinker->updatePrice($item->getStockUnit());
 
                 $scheduleContentChange = true;
             }

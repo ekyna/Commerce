@@ -15,6 +15,15 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
+     * Finds the supplier product by supplier.
+     *
+     * @param SupplierInterface $supplier
+     *
+     * @return SupplierProductInterface[]
+     */
+    public function findBySupplier(SupplierInterface $supplier);
+
+    /**
      * Finds the supplier products by subject.
      *
      * @param SubjectInterface $subject

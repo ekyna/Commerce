@@ -17,27 +17,28 @@
     </class>
 
     <!--
-    <class name="Ekyna\Component\Commerce\Cart\Entity\AbstractAdjustment">
-
-    </class>
-
     <class name="Ekyna\Component\Commerce\Cart\Entity\CartAddress">
-
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Cart\Entity\CartAdjustment">
+        TODO
+    </class>
 
+    <class name="Ekyna\Component\Commerce\Cart\Entity\CartAttachment">
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Cart\Entity\CartItem">
-
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Cart\Entity\CartItemAdjustment">
-
+        TODO
     </class>
 
     <class name="Ekyna\Component\Commerce\Cart\Entity\CartPayment">
+        TODO
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
         </constraint>

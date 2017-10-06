@@ -29,6 +29,14 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
     /**
      * @inheritDoc
      */
+    public function findBySupplier(SupplierInterface $supplier)
+    {
+        return $this->findBy(['supplier' => $supplier]);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findBySubject(SubjectInterface $subject)
     {
         return $this

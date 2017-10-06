@@ -3,13 +3,15 @@
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerGroupTranslationInterface;
+use Ekyna\Component\Resource\Model\AbstractTranslatable;
 
 /**
  * Class Group
  * @package Ekyna\Component\Commerce\Customer\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerGroup implements CustomerGroupInterface
+class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterface
 {
     /**
      * @var int
@@ -42,6 +44,8 @@ class CustomerGroup implements CustomerGroupInterface
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->default = false;
         $this->business = false;
         $this->registration = false;
@@ -122,9 +126,7 @@ class CustomerGroup implements CustomerGroupInterface
     }
 
     /**
-     * Returns the registration.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function isRegistration()
     {
@@ -132,11 +134,7 @@ class CustomerGroup implements CustomerGroupInterface
     }
 
     /**
-     * Sets the registration.
-     *
-     * @param bool $registration
-     *
-     * @return CustomerGroup
+     * @inheritdoc
      */
     public function setRegistration($registration)
     {
@@ -145,5 +143,11 @@ class CustomerGroup implements CustomerGroupInterface
         return $this;
     }
 
-
+    /**
+     * @inheritdoc
+     */
+    public function getTitle()
+    {
+        return $this->translate()->getTitle();
+    }
 }

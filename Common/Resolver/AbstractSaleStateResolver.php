@@ -29,12 +29,7 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
             // Gather state amounts
             foreach ($payments as $payment) {
                 // TODO Deal with payment currency conversion ...
-                if ($payment->getState() === PaymentStates::STATE_CAPTURED) {
-                    $paidTotal += $payment->getAmount();
-                    if ($payment->getMethod()->isOutstanding()) {
-                        $outstandingAmount += $payment->getAmount();
-                    }
-                } else if ($payment->getState() === PaymentStates::STATE_AUTHORIZED) {
+                if (PaymentStates::isPaidState($payment->getState())) {
                     $paidTotal += $payment->getAmount();
                     if ($payment->getMethod()->isOutstanding()) {
                         $outstandingAmount += $payment->getAmount();
@@ -48,9 +43,6 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
                 }
             }
 
-            $granTotal = $sale->getGrandTotal();
-            $currency = $sale->getCurrency();
-
             // Outstanding case
             if (0 < $outstandingAmount && null !== $date = $sale->getOutstandingDate()) {
                 $today = new \DateTime();
@@ -61,6 +53,9 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
                     $outstandingAmount = 0;
                 }
             }
+
+            $granTotal = $sale->getGrandTotal();
+            $currency = $sale->getCurrency()->getCode();
 
             // State by amounts
             if (0 <= Money::compare($paidTotal, $granTotal, $currency)) {

@@ -30,7 +30,15 @@ class SubjectHelper implements SubjectHelperInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
+     */
+    public function hasSubject(SubjectRelativeInterface $relative)
+    {
+        return null !== $this->resolve($relative, false);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function resolve(SubjectRelativeInterface $relative, $throw = true)
     {
@@ -50,7 +58,7 @@ class SubjectHelper implements SubjectHelperInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function assign(SubjectRelativeInterface $relative, $subject)
     {

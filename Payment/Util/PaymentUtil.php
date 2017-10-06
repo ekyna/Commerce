@@ -52,11 +52,15 @@ class PaymentUtil
             return false;
         }
 
-        if ($method->isManual() && $payment->getState() === PaymentStates::STATE_PENDING) {
+        if ($method->isOutstanding()) {
+            return false;
+        }
+
+        if ($method->isCredit()) {
             return true;
         }
 
-        if ($method->isCredit() || $method->isOutstanding()) {
+        if ($method->isManual() && $payment->getState() === PaymentStates::STATE_PENDING) {
             return true;
         }
 

@@ -27,6 +27,7 @@ class SupplierProductNormalizer extends AbstractResourceNormalizer
                 'designation' => $product->getDesignation(),
                 'reference'   => $product->getReference(),
                 'net_price'   => $product->getNetPrice(),
+                'currency'    => $product->getSupplier()->getCurrency()->getCode(),
             ]);
         }
 

@@ -7,6 +7,8 @@ use Ekyna\Component\Commerce\Common\Entity\Country;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Entity\Tax;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxRule;
@@ -28,7 +30,7 @@ class Installer
     /**
      * @var string
      */
-    private $groupClass;
+    private $customerGroupRepository;
 
     /**
      * @var callable
@@ -39,14 +41,14 @@ class Installer
     /**
      * Constructor.
      *
-     * @param ObjectManager $manager
-     * @param string        $groupClass
-     * @param mixed         $logger
+     * @param ObjectManager                    $manager
+     * @param CustomerGroupRepositoryInterface $repository
+     * @param mixed                            $logger
      */
-    public function __construct(ObjectManager $manager, $groupClass, $logger = null)
+    public function __construct(ObjectManager $manager, CustomerGroupRepositoryInterface $repository, $logger = null)
     {
         $this->manager = $manager;
-        $this->groupClass = $groupClass;
+        $this->customerGroupRepository = $repository;
 
         if (in_array('Symfony\Component\Console\Output\OutputInterface', class_implements($logger))) {
             $this->log = function ($name, $result) use ($logger) {
@@ -67,57 +69,59 @@ class Installer
     /**
      * Installs the given countries and currencies by codes.
      *
-     * @param array $countries  An array of country codes
-     * @param array $currencies An array of currency codes
+     * @param string $country  The default country code
+     * @param string $currency The default currency code
      *
      * @throws \Exception
      */
-    public function install($countries = ['FR'], $currencies = ['EUR'])
+    public function install($country = 'US', $currency = 'USD')
     {
-        $this->installCountries($countries);
-        $this->installCurrencies($currencies);
-        $this->installTaxes($countries);
-        $this->installTaxGroups($countries);
-        $this->installTaxRules($countries);
+        $this->installCountries($country);
+        $this->installCurrencies($currency);
+        $this->installTaxes($country);
+        $this->installTaxGroups($country);
+        $this->installTaxRules($country);
         $this->installCustomerGroups();
     }
 
     /**
-     * Installs the given countries by codes.
+     * Installs the countries.
      *
-     * @param array $codes The enabled country codes (the first will be set as default)
+     * @param string $code The default country's code
      *
      * @throws \Exception
      */
-    public function installCountries($codes = ['FR'])
+    public function installCountries($code = 'US')
     {
-        if (empty($codes)) {
-            throw new \Exception("Expected non empty array of enabled country codes.");
+        $countryNames = Intl::getRegionBundle()->getCountryNames();
+
+        if (!isset($countryNames[$code])) {
+            throw new InvalidArgumentException("Invalid default country code '$code'.");
         }
 
-        $countryNames = Intl::getRegionBundle()->getCountryNames();
         asort($countryNames);
 
-        $this->generate(Country::class, $countryNames, $codes, $codes[0]);
+        $this->generate(Country::class, $countryNames, $code);
     }
 
     /**
-     * Installs the given currencies by codes.
+     * Installs the currencies.
      *
-     * @param array $codes The enabled currency codes (the first will be set as default)
+     * @param string $code The default currency's code
      *
      * @throws \Exception
      */
-    public function installCurrencies($codes = ['EUR'])
+    public function installCurrencies($code = 'USD')
     {
-        if (empty($codes)) {
-            throw new \Exception("Expected non empty array of currency codes.");
+        $currencyNames = Intl::getCurrencyBundle()->getCurrencyNames();
+
+        if (!isset($currencyNames[$code])) {
+            throw new InvalidArgumentException("Invalid default currency code '$code'.");
         }
 
-        $currencyNames = Intl::getCurrencyBundle()->getCurrencyNames();
         asort($currencyNames);
 
-        $this->generate(Currency::class, $currencyNames, $codes, $codes[0]);
+        $this->generate(Currency::class, $currencyNames, $code);
     }
 
     /**
@@ -125,8 +129,10 @@ class Installer
      *
      * @param array $codes The country codes to load the taxes for
      */
-    public function installTaxes($codes = ['FR'])
+    public function installTaxes($codes = ['US'])
     {
+        $codes = (array)$codes;
+
         if (empty($codes)) {
             return;
         }
@@ -181,8 +187,10 @@ class Installer
      *
      * @param array $codes The country codes to load the taxes for
      */
-    public function installTaxGroups($codes = ['FR'])
+    public function installTaxGroups($codes = ['US'])
     {
+        $codes = (array)$codes;
+
         if (empty($codes)) {
             return;
         }
@@ -244,8 +252,10 @@ class Installer
      *
      * @param array $codes The country codes to load the tax rules for
      */
-    public function installTaxRules($codes = ['FR'])
+    public function installTaxRules($codes = ['US'])
     {
+        $codes = (array)$codes;
+
         if (empty($codes)) {
             return;
         }
@@ -304,26 +314,47 @@ class Installer
      */
     public function installCustomerGroups()
     {
-        /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
-        $repository = $this->manager->getRepository($this->groupClass);
-
-        $name = 'Default customer group';
-
-        $result = 'already exists';
-        if (null === $repository->findOneBy(['default' => true])) {
-            /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface $customerGroup */
-            $customerGroup = $repository->createNew();
-            $customerGroup
-                ->setName($name)
-                ->setDefault(true);
-
-            $this->manager->persist($customerGroup);
-            $this->manager->flush();
-
-            $result = 'done';
+        $groups = (array) $this->customerGroupRepository->findBy([], [], 1)->getIterator();
+        if (!empty($groups)) {
+            call_user_func($this->log, 'All', 'skipped');
+            return;
         }
 
-        call_user_func($this->log, $name, $result);
+        $groups = [
+            'Particuliers' => [
+                'default'      => true,
+                'business'     => false,
+                'registration' => true,
+            ],
+            'Entreprise'   => [
+                'default'      => false,
+                'business'     => true,
+                'registration' => true,
+            ],
+        ];
+
+        foreach ($groups as $name => $config) {
+            $result = 'already exists';
+            if (null === $this->customerGroupRepository->findOneBy(['name' => $name])) {
+                /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface $customerGroup */
+                $customerGroup = $this->customerGroupRepository->createNew();
+                $customerGroup
+                    ->setName($name)
+                    ->setDefault($config['default'])
+                    ->setBusiness($config['business'])
+                    ->setRegistration($config['registration'])
+                    ->translate()
+                    ->setTitle($name);
+
+                $this->manager->persist($customerGroup);
+
+                $result = 'done';
+            }
+
+            call_user_func($this->log, $name, $result);
+        }
+
+        $this->manager->flush();
     }
 
     /**
@@ -331,17 +362,12 @@ class Installer
      *
      * @param string $class
      * @param array  $names
-     * @param array  $enabledCodes
      * @param string $defaultCode
      */
-    private function generate($class, array $names, array $enabledCodes, $defaultCode)
+    private function generate($class, array $names, $defaultCode)
     {
         /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
         $repository = $this->manager->getRepository($class);
-
-        $enabledCodes = array_map(function ($code) {
-            return strtoupper($code);
-        }, $enabledCodes);
 
         foreach ($names as $code => $name) {
             $result = 'already exists';
@@ -351,8 +377,7 @@ class Installer
                 $entity
                     ->setName($name)
                     ->setCode($code)
-                    ->setEnabled(in_array($code, $enabledCodes))
-                    ->setDefault($defaultCode === $code);
+                    ->setEnabled($defaultCode === $code);
 
                 $this->manager->persist($entity);
 
