@@ -174,7 +174,12 @@ class SaleUpdater implements SaleUpdaterInterface
 
         // Payment term
         if (null !== $customer = $sale->getCustomer()) {
-            $term = $customer->getPaymentTerm();
+            // From parent if available
+            if ($customer->hasParent()) {
+                $term = $customer->getParent()->getPaymentTerm();
+            } else {
+                $term = $customer->getPaymentTerm();
+            }
         }
         if ($term !== $sale->getPaymentTerm()) {
             $sale->setPaymentTerm($term);

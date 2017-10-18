@@ -33,7 +33,7 @@ interface CustomerAddressInterface extends ResourceInterface, AddressInterface
      *
      * @return boolean
      */
-    public function getInvoiceDefault();
+    public function isInvoiceDefault();
 
     /**
      * Sets the invoice default.
@@ -49,7 +49,7 @@ interface CustomerAddressInterface extends ResourceInterface, AddressInterface
      *
      * @return boolean
      */
-    public function getDeliveryDefault();
+    public function isDeliveryDefault();
 
     /**
      * Sets the deliveryDefault.

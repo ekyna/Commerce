@@ -51,6 +51,11 @@ class CustomerUpdater implements CustomerUpdaterInterface
      */
     public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false)
     {
+        // Switch to parent if available
+        if ($customer->hasParent()) {
+            $customer = $customer->getParent();
+        }
+
         $old = $customer->getOutstandingBalance();
         $new = $relative ? $old + $amount : $amount;
 

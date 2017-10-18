@@ -21,19 +21,21 @@ class CustomerAddressRepository extends ResourceRepository implements CustomerAd
     {
         $qb = $this->getCollectionQueryBuilder('a', 'a.id');
 
+        $qb->andWhere($qb->expr()->in('a.customer', ':customers'));
+
+        $customers = [$customer];
+        if ($customer->hasParent()) {
+            $customers[] = $customer->getParent();
+        }
+
         return $qb
-            ->join('a.customer', 'c')
-            ->leftJoin('c.parent', 'p')
-            ->orWhere($qb->expr()->in('a.customer', ':customer'))
-            ->orWhere($qb->expr()->in('c.parent', ':customer'))
-            ->orWhere($qb->expr()->in('p.parent', ':customer'))
             ->groupBy('a.id')
             ->addOrderBy('a.invoiceDefault', 'DESC')
             ->addOrderBy('a.deliveryDefault', 'DESC')
             ->addOrderBy('a.id', 'DESC')
             ->getQuery()
             ->useQueryCache(true)
-            ->setParameter('customer', $customer)
+            ->setParameter('customers', $customers)
             ->getResult();
     }
 
@@ -44,8 +46,7 @@ class CustomerAddressRepository extends ResourceRepository implements CustomerAd
     {
         $qb = $this->getCollectionQueryBuilder('a', 'a.id');
         $qb
-            ->join('a.customer', 'c')
-            ->orWhere($qb->expr()->in('a.customer', ':customer'))
+            ->orWhere($qb->expr()->eq('a.customer', ':customer'))
             ->groupBy('a.id')
             ->addOrderBy('a.invoiceDefault', 'DESC')
             ->addOrderBy('a.deliveryDefault', 'DESC')

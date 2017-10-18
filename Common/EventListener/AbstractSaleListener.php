@@ -512,7 +512,7 @@ abstract class AbstractSaleListener
             $changed |= $this->handleVatData($sale);
 
             // Invoice address
-            if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress()) {
+            if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress(true)) {
                 $changed |= $this->saleUpdater->updateInvoiceAddressFromAddress($sale, $address, $persistence);
             }
 

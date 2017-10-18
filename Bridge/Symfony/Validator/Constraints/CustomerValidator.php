@@ -59,11 +59,20 @@ class CustomerValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        if (0 < $customer->getOutstandingLimit() && null === $customer->getPaymentTerm()) {
+        // Outstanding / Payment term
+        $hasOutstanding = 0 < $customer->getOutstandingLimit();
+        $hasPaymentTerm = null !== $customer->getPaymentTerm();
+        if ($hasOutstanding && !$hasPaymentTerm) {
             $this
                 ->context
                 ->buildViolation($constraint->term_required_for_outstanding)
                 ->atPath('paymentTerm')
+                ->addViolation();
+        } else if ($hasPaymentTerm && !$hasOutstanding) {
+            $this
+                ->context
+                ->buildViolation($constraint->outstanding_required_for_term)
+                ->atPath('outstandingLimit')
                 ->addViolation();
         }
     }

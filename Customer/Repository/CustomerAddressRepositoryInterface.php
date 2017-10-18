@@ -16,7 +16,7 @@ interface CustomerAddressRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Returns the customer addresses including the parent's ones.
      *
-     * @param CustomerInterface        $customer
+     * @param CustomerInterface $customer
      *
      * @return CustomerAddressInterface[]
      */

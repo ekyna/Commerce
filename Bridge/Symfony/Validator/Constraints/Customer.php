@@ -15,6 +15,7 @@ class Customer extends Constraint
     public $parent_company_is_mandatory   = 'ekyna_commerce.customer.parent_company_is_mandatory';
     public $company_is_mandatory          = 'ekyna_commerce.customer.company_is_mandatory';
     public $term_required_for_outstanding = 'ekyna_commerce.customer.term_required_for_outstanding';
+    public $outstanding_required_for_term = 'ekyna_commerce.customer.outstanding_required_for_term';
 
 
     /**

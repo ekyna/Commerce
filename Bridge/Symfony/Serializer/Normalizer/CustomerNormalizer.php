@@ -23,11 +23,15 @@ class CustomerNormalizer extends AbstractResourceNormalizer
         $groups = isset($context['groups']) ? (array)$context['groups'] : [];
 
         if (in_array('Default', $groups) || in_array('Search', $groups)) {
+            $parent = $customer->getParent();
+
             $data = array_replace($data, [
                 'company'    => $customer->getCompany(),
                 'email'      => $customer->getEmail(),
                 'first_name' => $customer->getFirstName(),
                 'last_name'  => $customer->getLastName(),
+                'parent'     => $parent ? $parent->getId() : null,
+                'vatValid'   => $customer->isVatValid(),
             ]);
         }
 

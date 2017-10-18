@@ -82,7 +82,7 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
     /**
      * @inheritdoc
      */
-    public function getInvoiceDefault()
+    public function isInvoiceDefault()
     {
         return $this->invoiceDefault;
     }
@@ -100,7 +100,7 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
     /**
      * @inheritdoc
      */
-    public function getDeliveryDefault()
+    public function isDeliveryDefault()
     {
         return $this->deliveryDefault;
     }

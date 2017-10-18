@@ -175,11 +175,11 @@ interface CustomerInterface extends
     /**
      * Sets the customer group.
      *
-     * @param CustomerGroupInterface $customerGroup
+     * @param CustomerGroupInterface $group
      *
      * @return $this|CustomerInterface
      */
-    public function setCustomerGroup(CustomerGroupInterface $customerGroup);
+    public function setCustomerGroup(CustomerGroupInterface $group = null);
 
     /**
      * Returns the addresses.
@@ -214,20 +214,6 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function removeAddress(CustomerAddressInterface $address);
-
-    /**
-     * Returns the default invoice address.
-     *
-     * @return CustomerAddressInterface|null
-     */
-    public function getDefaultInvoiceAddress();
-
-    /**
-     * Returns the default delivery address.
-     *
-     * @return CustomerAddressInterface|null
-     */
-    public function getDefaultDeliveryAddress();
 
     /**
      * Returns the credit balance.
@@ -292,4 +278,22 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function setDescription($description);
+
+    /**
+     * Returns the default invoice address.
+     *
+     * @param bool $allowParentAddress
+     *
+     * @return CustomerAddressInterface|null
+     */
+    public function getDefaultInvoiceAddress($allowParentAddress = false);
+
+    /**
+     * Returns the default delivery address.
+     *
+     * @param bool $allowParentAddress
+     *
+     * @return CustomerAddressInterface|null
+     */
+    public function getDefaultDeliveryAddress($allowParentAddress = false);
 }

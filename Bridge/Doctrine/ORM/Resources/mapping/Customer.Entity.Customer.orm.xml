@@ -47,7 +47,7 @@
         </field>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
-                     mapped-by="parent" field="children" orphan-removal="true">
+                     mapped-by="parent" field="children">
             <cascade>
                 <cascade-persist/>
             </cascade>

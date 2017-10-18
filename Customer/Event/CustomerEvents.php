@@ -25,4 +25,6 @@ final class CustomerEvents
 
     const PRE_DELETE  = 'ekyna_commerce.customer.pre_delete';
     const POST_DELETE = 'ekyna_commerce.customer.post_delete';
+
+    const PARENT_CHANGE = 'ekyna_commerce.customer.parent_change';
 }

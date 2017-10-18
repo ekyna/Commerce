@@ -121,7 +121,7 @@ class Customer implements Model\CustomerInterface
             if ($this->hasParent()) {
                 $sign = '♦'; //'&loz;';
             } elseif ($this->hasChildren()) { // TODO Greedy : triggers collection initialization
-                $sign = '◊';//'&diams;';
+                $sign = '◊'; //'&diams;';
             }
             return sprintf('%s [%s] %s %s', $sign, $this->company, $this->lastName, $this->firstName);
         }
@@ -328,9 +328,9 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setCustomerGroup(Model\CustomerGroupInterface $customerGroup)
+    public function setCustomerGroup(Model\CustomerGroupInterface $group = null)
     {
-        $this->customerGroup = $customerGroup;
+        $this->customerGroup = $group;
 
         return $this;
     }
@@ -375,44 +375,6 @@ class Customer implements Model\CustomerInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultInvoiceAddress()
-    {
-        if (0 < $this->addresses->count()) {
-            $criteria = Criteria::create()
-                ->where(Criteria::expr()->eq('invoiceDefault', true))
-                ->setMaxResults(1);
-
-            $matches = $this->addresses->matching($criteria);
-            if ($matches->count() == 1) {
-                return $matches->first();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultDeliveryAddress()
-    {
-        if (0 < $this->addresses->count()) {
-            $criteria = Criteria::create()
-                ->where(Criteria::expr()->eq('deliveryDefault', true))
-                ->setMaxResults(1);
-
-            $matches = $this->addresses->matching($criteria);
-            if ($matches->count() == 1) {
-                return $matches->first();
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -485,5 +447,62 @@ class Customer implements Model\CustomerInterface
         $this->description = $description;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultInvoiceAddress($allowParentAddress = false)
+    {
+        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('invoiceDefault', true))) {
+            return $address;
+        }
+
+        if ($allowParentAddress && $this->hasParent()) {
+            if (null !== $address = $this->parent->getDefaultInvoiceAddress()) {
+                return $address;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultDeliveryAddress($allowParentAddress = false)
+    {
+        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('deliveryDefault', true))) {
+            return $address;
+        }
+
+        if ($allowParentAddress && $this->hasParent()) {
+            return $this->parent->getDefaultDeliveryAddress($allowParentAddress);
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds one address by expression.
+     *
+     * @param mixed $expression
+     *
+     * @return Model\CustomerAddressInterface|null
+     */
+    protected function findOneAddressBy($expression)
+    {
+        if (0 < $this->addresses->count()) {
+            $criteria = Criteria::create()
+                ->where($expression)
+                ->setMaxResults(1);
+
+            $matches = $this->addresses->matching($criteria);
+            if ($matches->count() == 1) {
+                return $matches->first();
+            }
+        }
+
+        return null;
     }
 }
