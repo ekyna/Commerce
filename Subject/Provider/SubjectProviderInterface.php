@@ -86,13 +86,11 @@ interface SubjectProviderInterface
     public function supportsSubject($subject);
 
     /**
-     * Returns the productRepository.
+     * Returns the subject repository.
      *
      * @return Subject\Repository\SubjectRepositoryInterface
-     *
-     * @deprecated Retrieve from subject class
      */
-    public function getProductRepository();
+    public function getRepository();
 
     /**
      * Returns the subject class.
