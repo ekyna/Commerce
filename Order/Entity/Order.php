@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model;
@@ -18,6 +19,11 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
  */
 class Order extends AbstractSale implements Model\OrderInterface
 {
+    /**
+     * @var CustomerInterface
+     */
+    protected $originCustomer;
+
     /**
      * @var string
      */
@@ -53,7 +59,25 @@ class Order extends AbstractSale implements Model\OrderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
+     */
+    public function getOriginCustomer()
+    {
+        return $this->originCustomer;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOriginCustomer(CustomerInterface $customer = null)
+    {
+        $this->originCustomer = $customer;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function setShipmentState($shipmentState)
     {
@@ -63,7 +87,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getShipmentState()
     {

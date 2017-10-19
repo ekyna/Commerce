@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 
@@ -13,6 +14,22 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
  */
 interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface, InvoiceSubjectInterface
 {
+    /**
+     * Returns the origin customer.
+     *
+     * @return CustomerInterface
+     */
+    public function getOriginCustomer();
+
+    /**
+     * Sets the origin customer.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return $this|OrderInterface
+     */
+    public function setOriginCustomer(CustomerInterface $customer = null);
+
     /**
      * Returns the "completed at" datetime.
      *
