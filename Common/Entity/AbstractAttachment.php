@@ -25,6 +25,11 @@ abstract class AbstractAttachment implements AttachmentInterface
     protected $title;
 
     /**
+     * @var string
+     */
+    protected $type;
+
+    /**
      * @var boolean
      */
     protected $internal = false;
@@ -62,6 +67,24 @@ abstract class AbstractAttachment implements AttachmentInterface
     public function setTitle($title)
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
 
         return $this;
     }

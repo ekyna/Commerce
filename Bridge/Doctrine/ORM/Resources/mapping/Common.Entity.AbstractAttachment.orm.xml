@@ -19,6 +19,7 @@
         <field name="path" column="path" type="string" length="255"/>
         <field name="size" column="size" type="integer"/>
         <field name="title" column="title" type="string" length="255" nullable="true"/>
+        <field name="type" column="type" type="string" length="32" nullable="true"/>
         <field name="internal" column="internal" type="boolean"/>
 
         <field name="createdAt" type="datetime" column="created_at">

@@ -5,11 +5,12 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
+use Ekyna\Component\Commerce\Document\Builder\DocumentBuilderInterface;
+use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Exception;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
-use Ekyna\Component\Commerce\Invoice\Updater\InvoiceUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -36,12 +37,12 @@ abstract class AbstractInvoiceListener
     protected $creditNumberGenerator;
 
     /**
-     * @var InvoiceUpdaterInterface
+     * @var DocumentBuilderInterface
      */
-    protected $invoiceUpdater;
+    protected $invoiceBuilder;
 
     /**
-     * @var InvoiceCalculatorInterface
+     * @var DocumentCalculatorInterface
      */
     protected $invoiceCalculator;
 
@@ -84,19 +85,19 @@ abstract class AbstractInvoiceListener
     /**
      * Sets the invoice updater.
      *
-     * @param InvoiceUpdaterInterface $invoiceUpdater
+     * @param DocumentBuilderInterface $invoiceBuilder
      */
-    public function setInvoiceUpdater(InvoiceUpdaterInterface $invoiceUpdater)
+    public function setInvoiceBuilder(DocumentBuilderInterface $invoiceBuilder)
     {
-        $this->invoiceUpdater = $invoiceUpdater;
+        $this->invoiceBuilder = $invoiceBuilder;
     }
 
     /**
      * Sets the invoice calculator.
      *
-     * @param InvoiceCalculatorInterface $invoiceCalculator
+     * @param DocumentCalculatorInterface $invoiceCalculator
      */
-    public function setInvoiceCalculator(InvoiceCalculatorInterface $invoiceCalculator)
+    public function setInvoiceCalculator(DocumentCalculatorInterface $invoiceCalculator)
     {
         $this->invoiceCalculator = $invoiceCalculator;
     }
@@ -124,7 +125,7 @@ abstract class AbstractInvoiceListener
         $changed = $this->generateNumber($invoice);
 
         // Updates the invoice data
-        $changed |= $this->invoiceUpdater->update($invoice);
+        $changed |= $this->invoiceBuilder->update($invoice);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
@@ -133,7 +134,9 @@ abstract class AbstractInvoiceListener
         //$this->updateCustomerCreditBalance($invoice);
 
         $sale = $invoice->getSale();
-        $sale->addInvoice($invoice); // TODO wtf ?
+        if ($sale instanceof InvoiceSubjectInterface) {
+            $sale->addInvoice($invoice); // TODO wtf ?
+        }
 
         $this->scheduleSaleContentChangeEvent($sale);
     }
@@ -153,7 +156,7 @@ abstract class AbstractInvoiceListener
         $changed = $this->generateNumber($invoice);
 
         // Updates the invoice data
-        $changed |= $this->invoiceUpdater->update($invoice);
+        $changed |= $this->invoiceBuilder->update($invoice);
 
         if ($changed) {
             //$this->updateCustomerCreditBalance($invoice);

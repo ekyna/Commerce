@@ -6,7 +6,7 @@ use Symfony\Component\Validator\Constraint;
 
 /**
  * Class Address
- * @package Ekyna\Bundle\UserBundle\Validator\Constraints
+ * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 class Address extends Constraint

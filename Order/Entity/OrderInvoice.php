@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice;
 use Ekyna\Component\Commerce\Order\Model;
 
@@ -24,13 +25,21 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
 
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      *
      * @return Model\OrderInterface
      */
     public function getSale()
     {
         return $this->getOrder();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSale(SaleInterface $sale)
+    {
+        return $this->setOrder($sale);
     }
 
     /**

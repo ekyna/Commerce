@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
  * @package Ekyna\Component\Commerce\Invoice\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceTypes
+final class InvoiceTypes
 {
     const TYPE_INVOICE = 'invoice';
     const TYPE_CREDIT  = 'credit';

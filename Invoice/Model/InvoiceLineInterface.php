@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Document\Model\DocumentLineInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -11,7 +10,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Invoice\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface InvoiceLineInterface extends ResourceInterface
+interface InvoiceLineInterface extends DocumentLineInterface, ResourceInterface
 {
     /**
      * Returns the invoice.
@@ -28,180 +27,4 @@ interface InvoiceLineInterface extends ResourceInterface
      * @return $this|InvoiceLineInterface
      */
     public function setInvoice(InvoiceInterface $invoice = null);
-
-    /**
-     * Returns the sale item.
-     *
-     * @return SaleItemInterface|null
-     */
-    public function getSaleItem();
-
-    /**
-     * Sets the sale item.
-     *
-     * @param SaleItemInterface $item
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setSaleItem(SaleItemInterface $item = null);
-
-    /**
-     * Returns the sale adjustment.
-     *
-     * @return AdjustmentInterface|null
-     */
-    public function getSaleAdjustment();
-
-    /**
-     * Sets the sale adjustment.
-     *
-     * @param AdjustmentInterface $adjustment
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setSaleAdjustment(AdjustmentInterface $adjustment = null);
-
-    /**
-     * Returns the type.
-     *
-     * @return string
-     */
-    public function getType();
-
-    /**
-     * Sets the type.
-     *
-     * @param string $type
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setType($type);
-
-    /**
-     * Returns the designation.
-     *
-     * @return string
-     */
-    public function getDesignation();
-
-    /**
-     * Sets the designation.
-     *
-     * @param string $designation
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setDesignation($designation);
-
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
-    public function getDescription();
-
-    /**
-     * Sets the description.
-     *
-     * @param string $description
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setDescription($description);
-
-    /**
-     * Returns the reference.
-     *
-     * @return string
-     */
-    public function getReference();
-
-    /**
-     * Sets the reference.
-     *
-     * @param string $reference
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setReference($reference);
-
-    /**
-     * Returns the unit net price.
-     *
-     * @return float
-     */
-    public function getNetPrice();
-
-    /**
-     * Sets the unit net price.
-     *
-     * @param float $price
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setNetPrice($price);
-
-    /**
-     * Returns the quantity.
-     *
-     * @return float
-     */
-    public function getQuantity();
-
-    /**
-     * Sets the quantity.
-     *
-     * @param float $quantity
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setQuantity($quantity);
-
-    /**
-     * Returns the discount total.
-     *
-     * @return float
-     */
-    public function getDiscountTotal();
-
-    /**
-     * Sets the discount total.
-     *
-     * @param float $total
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setDiscountTotal($total);
-
-    /**
-     * Returns the net total.
-     *
-     * @return float
-     */
-    public function getNetTotal();
-
-    /**
-     * Sets the net total.
-     *
-     * @param float $total
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setNetTotal($total);
-
-    /**
-     * Returns the tax rates.
-     *
-     * @return array
-     */
-    public function getTaxRates();
-
-    /**
-     * Sets the tax rates.
-     *
-     * @param array $taxRates
-     *
-     * @return $this|InvoiceLineInterface
-     */
-    public function setTaxRates(array $taxRates);
 }

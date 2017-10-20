@@ -29,6 +29,22 @@ interface AttachmentInterface extends UploadableInterface, ResourceInterface
     public function setTitle($title);
 
     /**
+     * Returns the type.
+     *
+     * @return string
+     */
+    public function getType();
+
+    /**
+     * Sets the type.
+     *
+     * @param string $type
+     *
+     * @return $this|AttachmentInterface
+     */
+    public function setType($type);
+
+    /**
      * Returns whether the attachment is internal or not.
      *
      * @return boolean

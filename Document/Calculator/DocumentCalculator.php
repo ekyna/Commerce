@@ -1,78 +1,73 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Invoice\Calculator;
+namespace Ekyna\Component\Commerce\Document\Calculator;
 
 use Ekyna\Component\Commerce\Common\Calculator\Result;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Document\Model;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Invoice\Model;
+use InvalidArgumentException;
 
 /**
- * Class InvoiceCalculator
- * @package Ekyna\Component\Commerce\Invoice\Calculator
+ * Class DocumentCalculator
+ * @package Ekyna\Component\Commerce\Document\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceCalculator implements InvoiceCalculatorInterface
+class DocumentCalculator implements DocumentCalculatorInterface
 {
     /**
-     * @var int
+     * @var string
      */
-    protected $precision = 2;
+    protected $currency;
 
 
     /**
      * @inheritdoc
      */
-    public function calculate(Model\InvoiceInterface $invoice)
+    public function calculate(Model\DocumentInterface $document)
     {
-        if (null === $sale = $invoice->getSale()) {
-            throw new LogicException("Invoice's sale must be set at this point.");
-        }
-
-        // TODO set precision from sale's currency
+        $this->currency = $document->getCurrency();
 
         $changed = false;
 
         $result = new Result();
 
         // Goods lines
-        foreach ($invoice->getLinesByType(Model\InvoiceLineTypes::TYPE_GOOD) as $line) {
+        foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_GOOD) as $line) {
             $changed |= $this->calculateGoodLine($line, $result);
         }
 
         // Discount lines
         $goodsResult = clone $result;
-        foreach ($invoice->getLinesByType(Model\InvoiceLineTypes::TYPE_DISCOUNT) as $line) {
+        foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_DISCOUNT) as $line) {
             $changed |= $this->calculateDiscountLine($line, $goodsResult, $result);
         }
 
-        // Invoice goods base (after discounts)
-        if ($result->getBase() !== $invoice->getGoodsBase()) {
-            $invoice->setGoodsBase($result->getBase());
+        // Document goods base (after discounts)
+        if ($result->getBase() !== $document->getGoodsBase()) {
+            $document->setGoodsBase($result->getBase());
             $changed = true;
         }
 
         // Shipment lines
         $shipmentBase = 0;
-        foreach ($invoice->getLinesByType(Model\InvoiceLineTypes::TYPE_SHIPMENT) as $line) {
+        foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_SHIPMENT) as $line) {
             $changed |= $this->calculateShipmentLine($line, $result);
 
             $shipmentBase += $line->getNetTotal();
         }
 
-        // Invoice shipment base.
-        if ($shipmentBase !== $invoice->getShipmentBase()) {
-            $invoice->setShipmentBase($shipmentBase);
+        // Document shipment base.
+        if ($shipmentBase !== $document->getShipmentBase()) {
+            $document->setShipmentBase($shipmentBase);
             $changed = true;
         }
 
-        // Invoice taxes total
+        // Document taxes total
         $taxesTotal = $result->getTaxTotal();
-        if ($taxesTotal !== $invoice->getTaxesTotal()) {
-            $invoice->setTaxesTotal($taxesTotal);
+        if ($taxesTotal !== $document->getTaxesTotal()) {
+            $document->setTaxesTotal($taxesTotal);
             $changed = true;
         }
 
@@ -85,15 +80,15 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 'amount' => $tax->getAmount(),
             ];
         }
-        if ($invoice->getTaxesDetails() !== $taxesDetails) {
-            $invoice->setTaxesDetails($taxesDetails);
+        if ($document->getTaxesDetails() !== $taxesDetails) {
+            $document->setTaxesDetails($taxesDetails);
             $changed = true;
         }
 
-        // Invoice grand total
+        // Document grand total
         $grandTotal = $result->getTotal();
-        if ($grandTotal !== $invoice->getGrandTotal()) {
-            $invoice->setGrandTotal($grandTotal);
+        if ($grandTotal !== $document->getGrandTotal()) {
+            $document->setGrandTotal($grandTotal);
             $changed = true;
         }
 
@@ -103,28 +98,28 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * Calculate the good line.
      *
-     * @param Model\InvoiceLineInterface $line
+     * @param Model\DocumentLineInterface $line
      * @param Result                     $result
      *
      * @return bool
      * @throws LogicException
      */
-    protected function calculateGoodLine(Model\InvoiceLineInterface $line, Result $result)
+    protected function calculateGoodLine(Model\DocumentLineInterface $line, Result $result)
     {
-        if ($line->getType() !== Model\InvoiceLineTypes::TYPE_GOOD) {
+        if ($line->getType() !== Model\DocumentLineTypes::TYPE_GOOD) {
             throw new LogicException(sprintf(
-                "Expected invoice line with type '%s'.",
-                Model\InvoiceLineTypes::TYPE_GOOD
+                "Expected document line with type '%s'.",
+                Model\DocumentLineTypes::TYPE_GOOD
             ));
         }
 
         $changed = false;
 
         if (null === $item = $line->getSaleItem()) {
-            throw new LogicException("Invoice can't be recalculated.");
+            throw new LogicException("Document can't be recalculated.");
         }
 
-        $netUnit = $this->round($item->getNetPrice());
+        $netUnit = $this->round($item->getNetPrice()); // TODO Price conversion
         if ($line->getNetPrice() != $netUnit) {
             $line->setNetPrice($netUnit);
             $changed = true;
@@ -137,9 +132,9 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         $discountTotal = 0;
         if (!empty($adjustments = $this->getSaleItemDiscountAdjustments($item))) {
             foreach ($adjustments as $adjustment) {
-                if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+                if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
                     $discountTotal -= $this->round($netTotal * $adjustment->getAmount() / 100);
-                } elseif ($adjustment->getMode() === AdjustmentModes::MODE_FLAT) {
+                } elseif ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
                     $discountTotal -= $this->round($netTotal * $adjustment->getAmount() * ($quantity / $item->getTotalQuantity()));
                 } else {
                     throw new InvalidArgumentException("Unexpected adjustment mode '{$adjustment->getMode()}'.");
@@ -163,11 +158,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
         // Taxes
         $taxRates = [];
-        if (!empty($adjustments = $item->getAdjustments(AdjustmentTypes::TYPE_TAXATION)->toArray())) {
-            /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface $adjustment */
+        if (!empty($adjustments = $item->getAdjustments(Common\AdjustmentTypes::TYPE_TAXATION)->toArray())) {
+            /** @var Common\AdjustmentInterface $adjustment */
             foreach ($adjustments as $adjustment) {
                 // Only percent type is allowed for taxation
-                if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+                if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
                     $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $netTotal);
                     $taxRates[] = $adjustment->getAmount();
                 } else {
@@ -188,29 +183,29 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * Calculate the discount line.
      *
-     * @param Model\InvoiceLineInterface $line
+     * @param Model\DocumentLineInterface $line
      * @param Result                     $goodsResult
      * @param Result                     $result
      *
      * @return bool
      * @throws LogicException
      */
-    protected function calculateDiscountLine(Model\InvoiceLineInterface $line, Result $goodsResult, Result $result)
+    protected function calculateDiscountLine(Model\DocumentLineInterface $line, Result $goodsResult, Result $result)
     {
-        if ($line->getType() !== Model\InvoiceLineTypes::TYPE_DISCOUNT) {
+        if ($line->getType() !== Model\DocumentLineTypes::TYPE_DISCOUNT) {
             throw new LogicException(sprintf(
-                "Expected invoice line with type '%s'.",
-                Model\InvoiceLineTypes::TYPE_DISCOUNT
+                "Expected document line with type '%s'.",
+                Model\DocumentLineTypes::TYPE_DISCOUNT
             ));
         }
 
         $changed = false;
 
         if (null === $adjustment = $line->getSaleAdjustment()) {
-            throw new LogicException("Invoice can't be recalculated.");
+            throw new LogicException("Document can't be recalculated.");
         }
 
-        if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+        if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
             $rate = $adjustment->getAmount() / 100;
 
             $discountAmount = -$this->round($goodsResult->getBase() * $rate);
@@ -223,8 +218,8 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 $taxBase = -$this->round($goodsResult->getBase() * $tax->getRate() / 100);
                 $result->addTax($tax->getName(), $tax->getRate(), $taxBase);
             }
-        } elseif ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
-            $discountAmount = -$adjustment->getAmount();
+        } elseif ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
+            $discountAmount = -$adjustment->getAmount(); // TODO Price conversion
 
             // Apply discount amount to base
             $result->addBase($discountAmount);
@@ -257,24 +252,24 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * Calculate the shipment line.
      *
-     * @param Model\InvoiceLineInterface $line
+     * @param Model\DocumentLineInterface $line
      * @param Result                     $result
      *
      * @return bool
      * @throws LogicException
      */
-    protected function calculateShipmentLine(Model\InvoiceLineInterface $line, Result $result)
+    protected function calculateShipmentLine(Model\DocumentLineInterface $line, Result $result)
     {
-        if ($line->getType() !== Model\InvoiceLineTypes::TYPE_SHIPMENT) {
+        if ($line->getType() !== Model\DocumentLineTypes::TYPE_SHIPMENT) {
             throw new LogicException(sprintf(
-                "Expected invoice line with type '%s'.",
-                Model\InvoiceLineTypes::TYPE_SHIPMENT
+                "Expected document line with type '%s'.",
+                Model\DocumentLineTypes::TYPE_SHIPMENT
             ));
         }
 
         $changed = false;
 
-        $sale = $line->getInvoice()->getSale();
+        $sale = $line->getDocument()->getSale();
 
         if (0 < $base = $sale->getShipmentAmount()) {
             $base = $this->round($base);
@@ -282,11 +277,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             $result->addBase($base);
 
             // Taxes
-            if (!empty($adjustments = $sale->getAdjustments(AdjustmentTypes::TYPE_TAXATION)->toArray())) {
+            if (!empty($adjustments = $sale->getAdjustments(Common\AdjustmentTypes::TYPE_TAXATION)->toArray())) {
                 /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface $adjustment */
                 foreach ($adjustments as $adjustment) {
                     // Only percent type is allowed for taxation
-                    if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+                    if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
                         $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $base);
                     } else {
                         throw new InvalidArgumentException("Unexpected adjustment mode '{$adjustment->getMode()}'.");
@@ -295,7 +290,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             }
         }
 
-        if ($base !== $line->getNetPrice()) {
+        if ($base !== $line->getNetPrice()) { // TODO Price conversion
             $line->setNetPrice($base);
             $changed = true;
         }
@@ -314,15 +309,15 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * Returns the discount adjustments for the given sale item.
      *
-     * @param SaleItemInterface $item
+     * @param Common\SaleItemInterface $item
      *
      * @return \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[]
      */
-    protected function getSaleItemDiscountAdjustments(SaleItemInterface $item)
+    protected function getSaleItemDiscountAdjustments(Common\SaleItemInterface $item)
     {
         $parent = $item;
         do {
-            $adjustments = $parent->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+            $adjustments = $parent->getAdjustments(Common\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
             if (!empty($adjustments)) {
                 return $adjustments;
             }
@@ -341,6 +336,6 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
      */
     protected function round($amount)
     {
-        return round($amount, $this->precision);
+        return Money::round($amount, $this->currency);
     }
 }

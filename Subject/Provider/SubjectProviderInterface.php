@@ -7,7 +7,7 @@ use Ekyna\Component\Commerce\Subject;
 
 /**
  * Interface SubjectProviderInterface
- * @package Ekyna\Bundle\CommerceBundle\Form
+ * @package Ekyna\Component\Commerce\Subject\Provider
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 interface SubjectProviderInterface

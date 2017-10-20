@@ -1,17 +1,17 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Invoice\Model;
+namespace Ekyna\Component\Commerce\Document\Model;
 
 /**
- * Class InvoiceLineTypes
+ * Class DocumentLineTypes
  * @package Ekyna\Component\Commerce\Invoice\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceLineTypes
+class DocumentLineTypes
 {
-    const TYPE_GOOD = 'good';
-    const TYPE_DISCOUNT  = 'discount';
-    const TYPE_SHIPMENT  = 'shipment';
+    const TYPE_GOOD     = 'good';
+    const TYPE_DISCOUNT = 'discount';
+    const TYPE_SHIPMENT = 'shipment';
 
 
     /**

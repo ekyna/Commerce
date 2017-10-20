@@ -88,7 +88,7 @@
             <constraint name="NotBlank"/>
             <constraint name="Choice">
                 <option name="callback">
-                    <value>Ekyna\Component\Commerce\Invoice\Model\InvoiceLineTypes</value>
+                    <value>Ekyna\Component\Commerce\Document\Model\DocumentLineTypes</value>
                     <value>getTypes</value>
                 </option>
             </constraint>

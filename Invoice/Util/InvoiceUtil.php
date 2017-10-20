@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Util;
 
+use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Invoice\Model;
@@ -28,13 +29,17 @@ abstract class InvoiceUtil
             throw new LogicException(sprintf("Expected invoice with type '%s'.", Model\InvoiceTypes::TYPE_CREDIT));
         }
 
-        if (null === $sale = $line->getInvoice()->getSale()) {
+        if (null === $sale = $line->getSale()) {
             throw new LogicException("Invoice's sale must be set.");
+        }
+
+        if (!$sale instanceof Model\InvoiceSubjectInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Model\InvoiceSubjectInterface::class);
         }
 
         $quantity = 0;
 
-        if ($line->getType() === Model\InvoiceLineTypes::TYPE_GOOD) {
+        if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
             if (null === $saleItem = $line->getSaleItem()) {
                 throw new LogicException("Invoice line's sale item must be set.");
             }
@@ -46,7 +51,7 @@ abstract class InvoiceUtil
                 }
 
                 foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== Model\InvoiceLineTypes::TYPE_GOOD) {
+                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_GOOD) {
                         continue;
                     }
 
@@ -59,7 +64,7 @@ abstract class InvoiceUtil
                     }
                 }
             }
-        } elseif ($line->getType() === Model\InvoiceLineTypes::TYPE_DISCOUNT) {
+        } elseif ($line->getType() === DocumentLineTypes::TYPE_DISCOUNT) {
             if (null === $adjustment = $line->getSaleAdjustment()) {
                 throw new LogicException("Invoice line's sale adjustment must be set.");
             }
@@ -71,7 +76,7 @@ abstract class InvoiceUtil
                 }
 
                 foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== Model\InvoiceLineTypes::TYPE_DISCOUNT) {
+                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_DISCOUNT) {
                         continue;
                     }
 
@@ -84,7 +89,7 @@ abstract class InvoiceUtil
                     }
                 }
             }
-        } elseif ($line->getType() === Model\InvoiceLineTypes::TYPE_SHIPMENT) {
+        } elseif ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
             foreach ($sale->getInvoices() as $invoice) {
                 // Ignore the current item's invoice
                 if ($invoice === $line->getInvoice()) {
@@ -92,7 +97,7 @@ abstract class InvoiceUtil
                 }
 
                 foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== Model\InvoiceLineTypes::TYPE_SHIPMENT) {
+                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_SHIPMENT) {
                         continue;
                     }
 
@@ -125,11 +130,15 @@ abstract class InvoiceUtil
             throw new LogicException(sprintf("Expected invoice with type '%s'.", Model\InvoiceTypes::TYPE_INVOICE));
         }
 
-        if (null === $sale = $line->getInvoice()->getSale()) {
+        if (null === $sale = $line->getSale()) {
             throw new LogicException("Invoice's sale must be set.");
         }
 
-        if ($line->getType() === Model\InvoiceLineTypes::TYPE_GOOD) {
+        if (!$sale instanceof Model\InvoiceSubjectInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Model\InvoiceSubjectInterface::class);
+        }
+
+        if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
             if (null === $saleItem = $line->getSaleItem()) {
                 throw new LogicException("Invoice line's sale item must be set.");
             }
@@ -145,7 +154,7 @@ abstract class InvoiceUtil
                 }
 
                 foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== Model\InvoiceLineTypes::TYPE_GOOD) {
+                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_GOOD) {
                         continue;
                     }
 
@@ -158,7 +167,7 @@ abstract class InvoiceUtil
                     }
                 }
             }
-        } elseif ($line->getType() === Model\InvoiceLineTypes::TYPE_DISCOUNT) {
+        } elseif ($line->getType() === DocumentLineTypes::TYPE_DISCOUNT) {
             if (null === $adjustment = $line->getSaleAdjustment()) {
                 throw new LogicException("Invoice line's sale adjustment must be set.");
             }
@@ -172,7 +181,7 @@ abstract class InvoiceUtil
                 }
 
                 foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== Model\InvoiceLineTypes::TYPE_DISCOUNT) {
+                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_DISCOUNT) {
                         continue;
                     }
 
@@ -185,7 +194,7 @@ abstract class InvoiceUtil
                     }
                 }
             }
-        } elseif ($line->getType() === Model\InvoiceLineTypes::TYPE_SHIPMENT) {
+        } elseif ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
             $quantity = 1;
 
             foreach ($sale->getInvoices() as $invoice) {
@@ -195,7 +204,7 @@ abstract class InvoiceUtil
                 }
 
                 foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== Model\InvoiceLineTypes::TYPE_SHIPMENT) {
+                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_SHIPMENT) {
                         continue;
                     }
 

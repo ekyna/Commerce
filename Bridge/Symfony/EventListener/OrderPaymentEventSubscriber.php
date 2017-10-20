@@ -8,7 +8,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class OrderPaymentEventSubscriber
- * @package Ekyna\Bundle\CommerceBundle\EventListener
+ * @package Ekyna\Component\Commerce\Bridge\Symfony\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class OrderPaymentEventSubscriber extends OrderPaymentListener implements EventSubscriberInterface

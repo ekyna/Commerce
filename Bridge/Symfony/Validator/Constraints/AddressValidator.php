@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Class AddressValidator
- * @package Ekyna\Bundle\UserBundle\Validator\Constraints
+ * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author Étienne Dauvergne <contact@ekyna.com>
  */
 class AddressValidator extends ConstraintValidator

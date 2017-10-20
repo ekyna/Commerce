@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineTypes;
+use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Invoice\Util\InvoiceUtil;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -32,7 +32,7 @@ class InvoiceLineValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, InvoiceLine::class);
         }
 
-        if ($item->getType() === InvoiceLineTypes::TYPE_GOOD) {
+        if ($item->getType() === DocumentLineTypes::TYPE_GOOD) {
             if (null === $item->getSaleItem()) {
                 $this
                     ->context
