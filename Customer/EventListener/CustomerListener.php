@@ -102,10 +102,12 @@ class CustomerListener
     /**
      * "Parent has changed" event handler.
      *
-     * @param CustomerInterface $customer
+     * @param ResourceEventInterface $event
      */
-    public function onParentChange(CustomerInterface $customer)
+    public function onParentChange(ResourceEventInterface $event)
     {
+        $customer = $this->getCustomerFromEvent($event);
+
         if ($this->updateFromParent($customer)) {
             $this->persistenceHelper->persistAndRecompute($customer, true);
         }
