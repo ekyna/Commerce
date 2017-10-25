@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
 /**
@@ -29,6 +30,7 @@ class AddressNormalizer extends AbstractResourceNormalizer
                 'first_name'  => $address->getFirstName(),
                 'last_name'   => $address->getLastName(),
                 'street'      => $address->getStreet(),
+                'complement'  => $address->getComplement(),
                 'supplement'  => $address->getSupplement(),
                 'postal_code' => $address->getPostalCode(),
                 'city'        => $address->getCity(),
@@ -37,6 +39,11 @@ class AddressNormalizer extends AbstractResourceNormalizer
                 'phone'       => $this->normalizeObject($address->getPhone(), $format, $context),
                 'mobile'      => $this->normalizeObject($address->getMobile(), $format, $context),
             ]);
+
+            if ($address instanceof CustomerAddressInterface) {
+                $data['invoice_default'] = $address->isInvoiceDefault() ? 1 : 0;
+                $data['delivery_default'] = $address->isDeliveryDefault() ? 1 : 0;
+            }
         }
 
         return $data;
@@ -47,7 +54,7 @@ class AddressNormalizer extends AbstractResourceNormalizer
      */
     public function denormalize($data, $class, $format = null, array $context = [])
     {
-        $object = parent::denormalize($data, $class, $format, $context);
+        //$object = parent::denormalize($data, $class, $format, $context);
 
         throw new \Exception('Not yet implemented');
     }

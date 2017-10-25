@@ -39,7 +39,7 @@ class SupplierProductNormalizer extends AbstractResourceNormalizer
      */
     public function denormalize($data, $class, $format = null, array $context = [])
     {
-        $object = parent::denormalize($data, $class, $format, $context);
+        //$object = parent::denormalize($data, $class, $format, $context);
 
         throw new \Exception('Not yet implemented');
     }

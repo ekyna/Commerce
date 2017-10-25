@@ -26,6 +26,11 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @var string
      */
+    protected $complement;
+
+    /**
+     * @var string
+     */
     protected $supplement;
 
     /**
@@ -91,6 +96,24 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setStreet($street)
     {
         $this->street = $street;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getComplement()
+    {
+        return $this->complement;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setComplement($complement)
+    {
+        $this->complement = $complement;
 
         return $this;
     }

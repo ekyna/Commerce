@@ -42,6 +42,22 @@ interface AddressInterface extends IdentityInterface
     public function setStreet($street);
 
     /**
+     * Returns the complement.
+     *
+     * @return string
+     */
+    public function getComplement();
+
+    /**
+     * Sets the complement.
+     *
+     * @param string $complement
+     *
+     * @return $this|AddressInterface
+     */
+    public function setComplement($complement);
+
+    /**
      * Returns the supplement.
      *
      * @return string

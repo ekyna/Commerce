@@ -24,6 +24,7 @@ class CartEventSubscriber extends CartListener implements EventSubscriberInterfa
             CartEvents::CONTENT_CHANGE => ['onContentChange', 0],
             CartEvents::ADDRESS_CHANGE => ['onAddressChange', 0],
             CartEvents::STATE_CHANGE   => ['onStateChange', 0],
+            CartEvents::INITIALIZE     => ['onInitialize', 0],
             CartEvents::PRE_CREATE     => ['onPreCreate', 0],
             CartEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];

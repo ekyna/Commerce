@@ -23,6 +23,8 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="expiresAt" column="expires_at" type="datetime"/>
+
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceQuote" orphan-removal="true">
             <cascade>

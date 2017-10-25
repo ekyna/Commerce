@@ -49,6 +49,12 @@ class AddressValidator extends ConstraintValidator
                     'max' => 128,
                 ]),
             ],
+            'complement' => [
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 128,
+                ]),
+            ],
             'supplement' => [
                 new Assert\Length([
                     'min' => 2,

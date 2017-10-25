@@ -113,7 +113,7 @@ class DocumentBuilder implements DocumentBuilderInterface
             return [
                 'number'    => $customer->getNumber(),
                 'company'   => $customer->getCompany(),
-                'full_name' => $customer->getFirstName() . ' ' . $customer->getLastName(),
+                'full_name' => trim($customer->getFirstName() . ' ' . $customer->getLastName()),
                 'email'     => $customer->getEmail(),
                 'phone'     => $this->formatPhoneNumber($customer->getPhone()),
                 'mobile'    => $this->formatPhoneNumber($customer->getMobile()),
@@ -122,7 +122,7 @@ class DocumentBuilder implements DocumentBuilderInterface
             return [
                 'number'    => null,
                 'company'   => $sale->getCompany(),
-                'full_name' => $sale->getFirstName() . ' ' . $sale->getLastName(),
+                'full_name' => trim($sale->getFirstName() . ' ' . $sale->getLastName()),
                 'email'     => $sale->getEmail(),
                 'phone'     => null,
                 'mobile'    => null,
@@ -142,10 +142,15 @@ class DocumentBuilder implements DocumentBuilderInterface
         // TODO localize
         $country = Intl::getRegionBundle()->getCountryName($address->getCountry()->getCode());
 
+        $fullName = trim($address->getFirstName() . ' ' . $address->getLastName());
+
+        // TODO if empty full customer name
+
         return [
             'company'     => $address->getCompany(),
-            'full_name'   => $address->getFirstName() . ' ' . $address->getLastName(),
+            'full_name'   => $fullName,
             'street'      => $address->getStreet(),
+            'complement'  => $address->getComplement(),
             'supplement'  => $address->getSupplement(),
             'postal_code' => $address->getPostalCode(),
             'city'        => $address->getCity(),

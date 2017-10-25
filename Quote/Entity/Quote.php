@@ -16,6 +16,12 @@ use Ekyna\Component\Commerce\Payment\Model as Payment;
 class Quote extends AbstractSale implements Model\QuoteInterface
 {
     /**
+     * @var \DateTime
+     */
+    protected $expiresAt;
+
+
+    /**
      * Constructor.
      */
     public function __construct()
@@ -275,6 +281,24 @@ class Quote extends AbstractSale implements Model\QuoteInterface
             $this->payments->removeElement($payment);
             //$payment->setQuote(null);
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExpiresAt()
+    {
+        return $this->expiresAt;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setExpiresAt(\DateTime $expiresAt = null)
+    {
+        $this->expiresAt = $expiresAt;
 
         return $this;
     }

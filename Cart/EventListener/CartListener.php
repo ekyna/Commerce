@@ -16,7 +16,65 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class CartListener extends AbstractSaleListener
 {
-    // TODO expiresAt updates
+    /**
+     * @var string
+     */
+    protected $expirationDelay;
+
+
+    /**
+     * Sets the delay.
+     *
+     * @param string $delay
+     */
+    public function setExpirationDelay($delay)
+    {
+        $this->expirationDelay = $delay;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param CartInterface $sale
+     */
+    protected function handleInsert(SaleInterface $sale)
+    {
+        $changed = parent::handleInsert($sale);
+
+        $changed |= $this->updateExpiresAt($sale);
+
+        return $changed;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param CartInterface $sale
+     */
+    protected function handleUpdate(SaleInterface $sale)
+    {
+        $changed = parent::handleUpdate($sale);
+
+        $changed |= $this->updateExpiresAt($sale);
+
+        return $changed;
+    }
+
+    /**
+     * Updates the cart expiration date.
+     *
+     * @param CartInterface $cart
+     *
+     * @return bool
+     */
+    protected function updateExpiresAt(CartInterface $cart)
+    {
+        $date = new \DateTime();
+        $date->modify($this->expirationDelay);
+        $cart->setExpiresAt($date);
+
+        return true;
+    }
 
     /**
      * @inheritdoc

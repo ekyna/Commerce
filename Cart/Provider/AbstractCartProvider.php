@@ -107,12 +107,6 @@ abstract class AbstractCartProvider implements CartProviderInterface
             throw new RuntimeException('Cart has not been initialized yet.');
         }
 
-        // TODO this should be done by a listener (on persist)
-        // Refresh the "expires at date" time.
-        $expiresAt = new \DateTime();
-        $expiresAt->modify('+1 month'); // TODO parameter
-        $this->cart->setExpiresAt($expiresAt);
-
         $this->cartOperator->persist($this->cart);
 
         return $this;
@@ -186,6 +180,8 @@ abstract class AbstractCartProvider implements CartProviderInterface
         if (null === $cart->getCurrency()) {
             $cart->setCurrency($this->saleFactory->getDefaultCurrency());
         }
+
+        $this->cartOperator->initialize($cart);
 
         $this->setCart($cart);
 

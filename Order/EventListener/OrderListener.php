@@ -82,17 +82,12 @@ class OrderListener extends AbstractSaleListener
 
     /**
      * @inheritDoc
+     *
+     * @param OrderInterface $sale
      */
-    public function onStateChange(ResourceEventInterface $event)
+    public function handleStateChange(SaleInterface $sale)
     {
-        parent::onStateChange($event);
-
-        if ($event->isPropagationStopped()) {
-            return;
-        }
-
-        /** @var OrderInterface $sale */
-        $sale = $this->getSaleFromEvent($event);
+        $changed = parent::handleStateChange($sale);
 
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
@@ -111,6 +106,8 @@ class OrderListener extends AbstractSaleListener
                 // We don't need to handle invoices as they are detached with sale items.
             }
         }
+
+        return $changed;
     }
 
     /**

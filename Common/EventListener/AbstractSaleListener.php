@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
+use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -40,6 +41,11 @@ abstract class AbstractSaleListener
      * @var PricingUpdaterInterface
      */
     protected $pricingUpdater;
+
+    /**
+     * @var SaleFactoryInterface
+     */
+    protected $saleFactory;
 
     /**
      * @var SaleUpdaterInterface
@@ -93,6 +99,16 @@ abstract class AbstractSaleListener
     }
 
     /**
+     * Sets the sale factory.
+     *
+     * @param SaleFactoryInterface $saleFactory
+     */
+    public function setSaleFactory(SaleFactoryInterface $saleFactory)
+    {
+        $this->saleFactory = $saleFactory;
+    }
+
+    /**
      * Sets the sale updater.
      *
      * @param SaleUpdaterInterface $updater
@@ -121,14 +137,28 @@ abstract class AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
+        if ($this->handleInsert($sale)) {
+            $this->persistenceHelper->persistAndRecompute($sale);
+        }
+    }
+
+    /**
+     * Handles the sale insertion.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed.
+     */
+    protected function handleInsert(SaleInterface $sale)
+    {
         $changed = false;
 
         // Generate number and key
-        $changed |= $this->generateNumber($sale);
-        $changed |= $this->generateKey($sale);
+        $changed |= $this->updateNumber($sale);
+        $changed |= $this->updateKey($sale);
 
         // Handle customer information
-        $changed |= $this->handleInformation($sale, true);
+        $changed |= $this->updateInformation($sale, true);
 
         // Update pricing
         $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
@@ -148,9 +178,7 @@ abstract class AbstractSaleListener
         // Update state
         $changed |= $this->updateState($sale);
 
-        if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($sale);
-        }
+        return $changed;
     }
 
     /**
@@ -162,14 +190,38 @@ abstract class AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
+        if ($this->handleUpdate($sale)) {
+            $this->persistenceHelper->persistAndRecompute($sale);
+        }
+
+        // Schedule content change
+        if ($this->persistenceHelper->isChanged($sale, 'paymentTerm')) {
+            $this->scheduleContentChangeEvent($sale);
+        }
+
+        // Handle addresses changes
+        /* TODO ? if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
+            $this->scheduleAddressChangeEvent($sale);
+        }*/
+    }
+
+    /**
+     * Handles the sale update.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed.
+     */
+    protected function handleUpdate(SaleInterface $sale)
+    {
         $changed = false;
 
         // Generate number and key
-        $changed |= $this->generateNumber($sale);
-        $changed |= $this->generateKey($sale);
+        $changed |= $this->updateNumber($sale);
+        $changed |= $this->updateKey($sale);
 
         // Handle customer information
-        $changed |= $this->handleInformation($sale, true);
+        $changed |= $this->updateInformation($sale, true);
 
         // Update pricing
         if ($this->persistenceHelper->isChanged($sale, 'vatNumber')) {
@@ -195,20 +247,7 @@ abstract class AbstractSaleListener
             $changed |= $this->saleUpdater->updateTaxation($sale, true);
         }
 
-        // Recompute to get an up-to-date change set.
-        if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($sale);
-        }
-
-        // Schedule content change
-        if ($this->persistenceHelper->isChanged($sale, 'paymentTerm')) {
-            $this->scheduleContentChangeEvent($sale);
-        }
-
-        // Handle addresses changes
-        /* TODO ? if ($this->persistenceHelper->isChanged($sale, ['deliveryAddress', 'sameAddress'])) {
-            $this->scheduleAddressChangeEvent($sale);
-        }*/
+        return $changed;
     }
 
     /**
@@ -226,6 +265,22 @@ abstract class AbstractSaleListener
             return;
         }
 
+        if ($this->handleAddressChange($sale)) {
+            $this->persistenceHelper->persistAndRecompute($sale);
+
+            $this->scheduleContentChangeEvent($sale);
+        }
+    }
+
+    /**
+     * Handles the address change.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function handleAddressChange(SaleInterface $sale)
+    {
         $changed = false;
 
         // Update discounts
@@ -240,11 +295,7 @@ abstract class AbstractSaleListener
             $changed |= $this->saleUpdater->updateShipmentTaxation($sale, true);
         }
 
-        if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($sale);
-
-            $this->scheduleContentChangeEvent($sale);
-        }
+        return $changed;
     }
 
     /**
@@ -262,15 +313,27 @@ abstract class AbstractSaleListener
             return;
         }
 
+        if ($this->handleContentChange($sale)) {
+            $this->persistenceHelper->persistAndRecompute($sale);
+        }
+    }
+
+    /**
+     * Handles the content change.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function handleContentChange(SaleInterface $sale)
+    {
         // Update totals
         $changed = $this->saleUpdater->updateTotals($sale);
 
         // Update state
         $changed |= $this->updateState($sale);
 
-        if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($sale);
-        }
+        return $changed;
     }
 
     /**
@@ -287,6 +350,53 @@ abstract class AbstractSaleListener
 
             return;
         }
+
+        if ($this->handleStateChange($sale)) {
+            $this->persistenceHelper->persistAndRecompute($sale);
+        }
+    }
+
+    /**
+     * Handles the state change.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function handleStateChange(SaleInterface $sale)
+    {
+        return false;
+    }
+
+    /**
+     * Initialize event handler.
+     *
+     * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
+     */
+    public function onInitialize(ResourceEventInterface $event)
+    {
+        $sale = $this->getSaleFromEvent($event);
+
+        if (null !== $customer = $sale->getCustomer()) {
+            $invoiceDefault = $customer->getDefaultInvoiceAddress(true);
+            $deliveryDefault = $customer->getDefaultDeliveryAddress(true);
+
+            if (null === $sale->getInvoiceAddress() && null !== $invoiceDefault) {
+                $sale->setInvoiceAddress(
+                    $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
+                );
+            }
+
+            if (null === $sale->getDeliveryAddress() && null !== $deliveryDefault && $deliveryDefault !== $invoiceDefault) {
+                $sale
+                    ->setSameAddress(false)
+                    ->setDeliveryAddress(
+                        $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
+                    );
+            }
+        }
     }
 
     /**
@@ -300,7 +410,7 @@ abstract class AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
-        $this->handleInformation($sale);
+        $this->updateInformation($sale);
 
         $this->pricingUpdater->updateVatNumberSubject($sale);
     }
@@ -428,13 +538,13 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Generates the number.
+     * Updates the number.
      *
      * @param SaleInterface $sale
      *
-     * @return bool Whether the sale number has been generated or not.
+     * @return bool Whether the sale number has been update.
      */
-    protected function generateNumber(SaleInterface $sale)
+    protected function updateNumber(SaleInterface $sale)
     {
         if (0 == strlen($sale->getNumber())) {
             $this->numberGenerator->generate($sale);
@@ -446,13 +556,13 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Generates the key.
+     * Updates the key.
      *
      * @param SaleInterface $sale
      *
-     * @return bool Whether the sale key has been generated or not.
+     * @return bool Whether the sale key has been updated.
      */
-    protected function generateKey(SaleInterface $sale)
+    protected function updateKey(SaleInterface $sale)
     {
         if (0 == strlen($sale->getKey())) {
             $this->keyGenerator->generate($sale);
@@ -464,14 +574,14 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Handles the customer information.
+     * Updates the customer information.
      *
      * @param SaleInterface $sale
      * @param bool          $persistence
      *
      * @return bool Whether the sale has been changed or not.
      */
-    protected function handleInformation(SaleInterface $sale, $persistence = false)
+    protected function updateInformation(SaleInterface $sale, $persistence = false)
     {
         $changed = false;
 
@@ -509,7 +619,7 @@ abstract class AbstractSaleListener
             }
 
             // Vat data
-            $changed |= $this->handleVatData($sale);
+            $changed |= $this->updateVatData($sale);
 
             // Invoice address
             if (null === $sale->getInvoiceAddress() && null !== $address = $customer->getDefaultInvoiceAddress(true)) {
@@ -534,13 +644,13 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Handle the vat data.
+     * Updates the vat data.
      *
      * @param SaleInterface $sale
      *
-     * @return bool
+     * @return bool Whether the sale has been changed.
      */
-    protected function handleVatData(SaleInterface $sale)
+    protected function updateVatData(SaleInterface $sale)
     {
         $changed = false;
 
