@@ -19,6 +19,22 @@ class QuoteListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
+    public function onInitialize(ResourceEventInterface $event)
+    {
+        parent::onInitialize($event);
+
+        /** @var \Ekyna\Bundle\CommerceBundle\Entity\Quote $quote */
+        $quote = $this->getSaleFromEvent($event);
+
+        // Set default expires at
+        $date = new \DateTime();
+        $date->modify('+2 months'); // TODO parameter
+        $quote->setExpiresAt($date);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function getSaleFromEvent(ResourceEventInterface $event)
     {
         $resource = $event->getResource();
