@@ -50,7 +50,7 @@ final class StockSubjectStates
      */
     static public function isBetterState($stateA, $stateB)
     {
-        // TODO Find somehting more explicit than 'better' (availability ?)
+        // TODO Find something more explicit than 'better' (availability ?)
 
         // TODO assert valid states ?
 

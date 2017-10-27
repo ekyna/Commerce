@@ -63,7 +63,7 @@ class IdentityValidator extends ConstraintValidator
             ];
 
             foreach ($config as $field => $constraints) {
-                $violationList = $this->context->getValidator()->validate($$field, $constraints);
+                $violationList = $this->context->getValidator()->validate($field, $constraints);
                 /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
                 foreach ($violationList as $violation) {
                     $this->context

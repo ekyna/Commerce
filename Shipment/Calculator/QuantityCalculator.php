@@ -248,7 +248,7 @@ class QuantityCalculator implements QuantityCalculatorInterface
             return false;
         }
 
-        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+        if ($subject->getStockMode() === StockSubjectModes::MODE_INHERITED) {
             return false;
         }
 

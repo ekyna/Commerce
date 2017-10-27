@@ -19,50 +19,6 @@
         </property>
     </class>
 
-    <class name="Ekyna\Component\Commerce\Stock\Entity\AbstractStockSubject">
-        <property name="stockMode">
-            <constraint name="NotBlank"/>
-            <constraint name="Choice">
-                <option name="callback">
-                    <value>Ekyna\Component\Commerce\Stock\Model\StockSubjectModes</value>
-                    <value>getModes</value>
-                </option>
-            </constraint>
-        </property>
-        <property name="stockState">
-            <constraint name="NotBlank"/>
-            <constraint name="Choice">
-                <option name="callback">
-                    <value>Ekyna\Component\Commerce\Stock\Model\StockSubjectStates</value>
-                    <value>getStates</value>
-                </option>
-            </constraint>
-        </property>
-        <property name="inStock">
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
-            </constraint>
-        </property>
-        <property name="orderedStock">
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
-            </constraint>
-        </property>
-        <property name="soldStock">
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
-            </constraint>
-        </property>
-        <property name="shippedStock">
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">0</option>
-            </constraint>
-        </property>
-        <property name="estimatedDateOfArrival">
-            <constraint name="DateTime"/>
-        </property>
-    </class>
-
     <class name="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit">
         <property name="state">
             <constraint name="NotBlank"/>

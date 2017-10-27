@@ -60,6 +60,22 @@ interface StockSubjectInterface extends ResourceInterface
     public function setStockFloor($floor);
 
     /**
+     * Returns the minimum order quantity.
+     *
+     * @return float
+     */
+    public function getMinimumOrderQuantity();
+
+    /**
+     * Sets the minimum order quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setMinimumOrderQuantity($quantity);
+
+    /**
      * Returns the in stock quantity.
      *
      * @return float
@@ -106,6 +122,22 @@ interface StockSubjectInterface extends ResourceInterface
      * @return $this|StockSubjectInterface
      */
     public function setVirtualStock($quantity);
+
+    /**
+     * Returns the replenishment time.
+     *
+     * @return int
+     */
+    public function getReplenishmentTime();
+
+    /**
+     * Sets the replenishment time.
+     *
+     * @param int $days
+     *
+     * @return StockSubjectTrait
+     */
+    public function setReplenishmentTime($days);
 
     /**
      * Returns the estimated date of arrival.

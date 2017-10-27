@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing as Pricing;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
@@ -37,6 +38,11 @@ class LoadMetadataListener implements EventSubscriber
      * @var array
      */
     private $paymentTermSubjectClassCache = [];
+
+    /**
+     * @var array
+     */
+    private $identityClassCache = [];
 
     /**
      * @var array
@@ -83,6 +89,10 @@ class LoadMetadataListener implements EventSubscriber
         // Skip abstract classes.
         if ((new \ReflectionClass($class))->isAbstract()) {
             return;
+        }
+
+        if (is_subclass_of($class, IdentityInterface::class)) {
+            $this->configureIdentityMapping($eventArgs);
         }
 
         if (is_subclass_of($class, Pricing\Model\TaxableInterface::class)) {
@@ -151,6 +161,34 @@ class LoadMetadataListener implements EventSubscriber
     }
 
     /**
+     * Configures the identity mapping.
+     *
+     * @param LoadClassMetadataEventArgs $eventArgs
+     */
+    private function configureIdentityMapping(LoadClassMetadataEventArgs $eventArgs)
+    {
+        /** @var ClassMetadata $metadata */
+        $metadata = $eventArgs->getClassMetadata();
+        $class = $metadata->getName();
+
+        // Check class
+        if (!is_subclass_of($class, IdentityInterface::class)) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->identityClassCache)) {
+            return;
+        }
+
+        // Add mappings
+        $this->addMappings($metadata, $this->getIdentityMappings());
+
+        // Cache class
+        $this->identityClassCache[] = $class;
+    }
+
+    /**
      * Configures the vat number subject mapping.
      *
      * @param LoadClassMetadataEventArgs $eventArgs
@@ -172,7 +210,7 @@ class LoadMetadataListener implements EventSubscriber
         }
 
         // Add mappings
-        $this->addMappings($metadata, $this->getVatNUmberSubjectMappings());
+        $this->addMappings($metadata, $this->getVatNumberSubjectMappings());
 
         // Cache class
         $this->vatNumberSubjectClassCache[] = $class;
@@ -347,7 +385,39 @@ class LoadMetadataListener implements EventSubscriber
      *
      * @return array
      */
-    private function getVatNUmberSubjectMappings()
+    private function getIdentityMappings()
+    {
+        return [
+            [
+                'fieldName'  => 'gender',
+                'columnName' => 'gender',
+                'type'       => 'string',
+                'length'     => 8,
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'firstName',
+                'columnName' => 'first_name',
+                'type'       => 'string',
+                'length'     => 64,
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'lastName',
+                'columnName' => 'last_name',
+                'type'       => 'string',
+                'length'     => 64,
+                'nullable'   => true,
+            ],
+        ];
+    }
+
+    /**
+     * Returns the vat number subject mappings.
+     *
+     * @return array
+     */
+    private function getVatNumberSubjectMappings()
     {
         return [
             [
@@ -384,18 +454,26 @@ class LoadMetadataListener implements EventSubscriber
                 'columnName' => 'stock_mode',
                 'type'       => 'string',
                 'length'     => 16,
-                'nullable'   => true,
+                'nullable'   => false,
             ],
             [
                 'fieldName'  => 'stockState',
                 'columnName' => 'stock_state',
                 'type'       => 'string',
                 'length'     => 16,
-                'nullable'   => true,
+                'nullable'   => false,
             ],
             [
                 'fieldName'  => 'stockFloor',
                 'columnName' => 'stock_floor',
+                'type'       => 'decimal',
+                'precision'  => 10,
+                'scale'      => 3,
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'minimumOrderQuantity',
+                'columnName' => 'minimum_order_quantity',
                 'type'       => 'decimal',
                 'precision'  => 10,
                 'scale'      => 3,
@@ -407,7 +485,7 @@ class LoadMetadataListener implements EventSubscriber
                 'type'       => 'decimal',
                 'precision'  => 10,
                 'scale'      => 3,
-                'nullable'   => true,
+                'nullable'   => false,
             ],
             [
                 'fieldName'  => 'availableStock',
@@ -415,7 +493,7 @@ class LoadMetadataListener implements EventSubscriber
                 'type'       => 'decimal',
                 'precision'  => 10,
                 'scale'      => 3,
-                'nullable'   => true,
+                'nullable'   => false,
             ],
             [
                 'fieldName'  => 'virtualStock',
@@ -423,7 +501,13 @@ class LoadMetadataListener implements EventSubscriber
                 'type'       => 'decimal',
                 'precision'  => 10,
                 'scale'      => 3,
-                'nullable'   => true,
+                'nullable'   => false,
+            ],
+            [
+                'fieldName'  => 'replenishmentTime',
+                'columnName' => 'replenishment_time',
+                'type'       => 'smallint',
+                'nullable'   => false,
             ],
             [
                 'fieldName'  => 'estimatedDateOfArrival',

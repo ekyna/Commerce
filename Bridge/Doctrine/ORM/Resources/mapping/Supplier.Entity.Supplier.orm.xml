@@ -22,9 +22,6 @@
         </id>
 
         <field name="name" column="name" type="string" length="64" unique="true"/>
-        <field name="gender" column="gender" type="string" length="8" nullable="true"/>
-        <field name="firstName" column="first_name" type="string" length="64" nullable="true"/>
-        <field name="lastName" column="last_name" type="string" length="64" nullable="true"/>
         <field name="email" column="email" type="string" length="255" nullable="true"/>
         <field name="customerCode" column="customer_code" type="string" length="32" nullable="true"/>
 

@@ -22,6 +22,16 @@ trait StockSubjectTrait
     /**
      * @var float
      */
+    protected $stockFloor;
+
+    /**
+     * @var float
+     */
+    protected $minimumOrderQuantity;
+
+    /**
+     * @var float
+     */
     protected $inStock;
 
     /**
@@ -35,9 +45,9 @@ trait StockSubjectTrait
     protected $virtualStock;
 
     /**
-     * @var float
+     * @var int
      */
-    protected $stockFloor;
+    protected $replenishmentTime;
 
     /**
      * @var \DateTime
@@ -50,11 +60,12 @@ trait StockSubjectTrait
      */
     protected function initializeStock()
     {
-        $this->stockMode = StockSubjectModes::MODE_DISABLED;
+        $this->stockMode = StockSubjectModes::MODE_INHERITED;
         $this->stockState = StockSubjectStates::STATE_OUT_OF_STOCK;
         $this->inStock = 0;
         $this->availableStock = 0;
         $this->virtualStock = 0;
+        $this->replenishmentTime = 2;
     }
 
     /**
@@ -130,6 +141,30 @@ trait StockSubjectTrait
     }
 
     /**
+     * Returns the minimum order quantity.
+     *
+     * @return float
+     */
+    public function getMinimumOrderQuantity()
+    {
+        return $this->minimumOrderQuantity;
+    }
+
+    /**
+     * Sets the minimum order quantity.
+     *
+     * @param float $quantity
+     *
+     * @return StockSubjectTrait
+     */
+    public function setMinimumOrderQuantity($quantity)
+    {
+        $this->minimumOrderQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
      * Returns the in stock quantity.
      *
      * @return float
@@ -197,6 +232,30 @@ trait StockSubjectTrait
     public function setVirtualStock($quantity)
     {
         $this->virtualStock = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * Returns the replenishment time.
+     *
+     * @return int
+     */
+    public function getReplenishmentTime()
+    {
+        return $this->replenishmentTime;
+    }
+
+    /**
+     * Sets the replenishment time.
+     *
+     * @param int $days
+     *
+     * @return StockSubjectTrait
+     */
+    public function setReplenishmentTime($days)
+    {
+        $this->replenishmentTime = (int)$days;
 
         return $this;
     }

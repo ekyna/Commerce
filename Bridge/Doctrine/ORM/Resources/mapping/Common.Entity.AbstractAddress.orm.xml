@@ -8,10 +8,6 @@
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">
 
         <field name="company" column="company" type="string" length="64" nullable="true"/>
-        <field name="gender" column="gender" type="string" length="8" nullable="true"/>
-        <field name="firstName" column="first_name" type="string" length="64" nullable="true"/>
-        <field name="lastName" column="last_name" type="string" length="64" nullable="true"/>
-
         <field name="street" column="street" type="string" length="128"/>
         <field name="complement" column="complement" type="string" length="128" nullable="true"/>
         <field name="supplement" column="supplement" type="string" length="128" nullable="true"/>

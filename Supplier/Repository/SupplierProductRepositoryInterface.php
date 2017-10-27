@@ -33,10 +33,28 @@ interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
     public function findBySubject(SubjectInterface $subject);
 
     /**
+     * Returns the estimated date of arrival by subject.
+     *
+     * @param SubjectInterface $subject
+     *
+     * @return \DateTime|null
+     */
+    public function getMinEstimatedDateOfArrivalBySubject(SubjectInterface $subject);
+
+    /**
+     * Returns the available quantity sum by subject.
+     *
+     * @param SubjectInterface $subject
+     *
+     * @return \DateTime|null
+     */
+    public function getAvailableQuantitySumBySubject(SubjectInterface $subject);
+
+    /**
      * Finds the supplier product by subject and supplier.
      *
-     * @param SubjectInterface  $subject
-     * @param SupplierInterface $supplier
+     * @param SubjectInterface         $subject
+     * @param SupplierInterface        $supplier
      * @param SupplierProductInterface $exclude
      *
      * @return SupplierProductInterface

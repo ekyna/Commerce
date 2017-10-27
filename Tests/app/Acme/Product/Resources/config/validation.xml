@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Acme\Product\Entity\Product">
+        <property name="reference">
+            <constraint name="Length">
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="designation">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">3</option>
+                <option name="max">128</option>
+            </constraint>
+        </property>
+        <property name="netPrice">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="weight">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\StockSubject"/>
+    </class>
+
+</constraint-mapping>

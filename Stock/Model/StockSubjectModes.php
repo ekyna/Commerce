@@ -9,8 +9,9 @@ namespace Ekyna\Component\Commerce\Stock\Model;
  */
 final class StockSubjectModes
 {
-    const MODE_DISABLED     = 'disabled';
-    const MODE_ENABLED      = 'enabled';
+    const MODE_INHERITED    = 'inherited';
+    const MODE_MANUAL       = 'manual';
+    const MODE_AUTO         = 'auto';
     const MODE_JUST_IN_TIME = 'just_in_time';
 
 
@@ -22,8 +23,9 @@ final class StockSubjectModes
     static public function getModes()
     {
         return [
-            static::MODE_DISABLED,
-            static::MODE_ENABLED,
+            static::MODE_INHERITED,
+            static::MODE_MANUAL,
+            static::MODE_AUTO,
             static::MODE_JUST_IN_TIME,
         ];
     }

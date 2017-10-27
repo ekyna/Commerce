@@ -23,6 +23,16 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
     /**
      * @var \Doctrine\ORM\Query
      */
+    private $getAvailableSumBySubjectQuery;
+
+    /**
+     * @var \Doctrine\ORM\Query
+     */
+    private $getMinEdaBySubjectQuery;
+
+    /**
+     * @var \Doctrine\ORM\Query
+     */
     private $findBySubjectAndSupplierQuery;
 
 
@@ -48,6 +58,35 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
             ->getResult();
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function getMinEstimatedDateOfArrivalBySubject(SubjectInterface $subject)
+    {
+        $result = $this
+            ->getGetMinEdaBySubjectQuery()
+            ->setParameters([
+                'provider'   => $subject->getProviderName(),
+                'identifier' => $subject->getId(),
+            ])
+            ->getSingleScalarResult();
+
+        return null !== $result ? new \DateTime($result) : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAvailableQuantitySumBySubject(SubjectInterface $subject)
+    {
+        return (float)$this
+            ->getGetAvailableSumBySubjectQuery()
+            ->setParameters([
+                'provider'   => $subject->getProviderName(),
+                'identifier' => $subject->getId(),
+            ])
+            ->getSingleScalarResult();
+    }
 
     /**
      * @inheritDoc
@@ -70,20 +109,21 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
                 ->getOneOrNullResult();
         }
 
-        $qb = $this->getFindBySubjectQueryBuilder();
+        $as = $this->getAlias();
+        $qb = $this->createFindBySubjectQueryBuilder();
 
         $parameters['exclude'] = $exclude->getId();
 
         return $qb
-            ->andWhere($qb->expr()->eq('sp.supplier', ':supplier'))
-            ->andWhere($qb->expr()->neq('sp.id', ':exclude'))
+            ->andWhere($qb->expr()->eq($as . '.supplier', ':supplier'))
+            ->andWhere($qb->expr()->neq($as . '.id', ':exclude'))
             ->getQuery()
             ->setParameters($parameters)
             ->getOneOrNullResult();
     }
 
     /**
-     * Returns the find by subject query.
+     * Returns the "find by subject" query.
      *
      * @return \Doctrine\ORM\Query
      */
@@ -93,13 +133,59 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
             return $this->findBySubjectQuery;
         }
 
-        $qb = $this->getFindBySubjectQueryBuilder();
+        $qb = $this->createFindBySubjectQueryBuilder();
 
         return $this->findBySubjectQuery = $qb->getQuery();
     }
 
     /**
-     * Returns the find by subject and supplier query.
+     * Returns the "get available quantity sum by subject" query.
+     *
+     * @return \Doctrine\ORM\Query
+     */
+    protected function getGetAvailableSumBySubjectQuery()
+    {
+        if (null !== $this->getAvailableSumBySubjectQuery) {
+            return $this->getAvailableSumBySubjectQuery;
+        }
+
+        $as = $this->getAlias();
+        $qb = $this->createFindBySubjectQueryBuilder();
+
+        $qb
+            ->andWhere($qb->expr()->gte($as . '.available', 0))
+            ->select('SUM(' . $as . '.available) as available');
+
+        return $this->getAvailableSumBySubjectQuery = $qb->getQuery();
+    }
+
+    /**
+     * Returns the "get estimated date of arrival by subject" query.
+     *
+     * @return \Doctrine\ORM\Query
+     */
+    protected function getGetMinEdaBySubjectQuery()
+    {
+        if (null !== $this->getMinEdaBySubjectQuery) {
+            return $this->getMinEdaBySubjectQuery;
+        }
+
+        $as = $this->getAlias();
+        $qb = $this->createFindBySubjectQueryBuilder();
+
+        $qb
+            ->andWhere($qb->expr()->isNotNull($as . '.estimatedDateOfArrival'))
+            ->andWhere($qb->expr()->orX(
+                $qb->expr()->gte($as . '.ordered', 0),
+                $qb->expr()->gte($as . '.available', 0)
+            ))
+            ->select('MIN(' . $as . '.estimatedDateOfArrival) as eda');
+
+        return $this->getMinEdaBySubjectQuery = $qb->getQuery();
+    }
+
+    /**
+     * Returns the "find by subject and supplier" query.
      *
      * @return \Doctrine\ORM\Query
      */
@@ -109,24 +195,33 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
             return $this->findBySubjectAndSupplierQuery;
         }
 
-        $qb = $this->getFindBySubjectQueryBuilder();
+        $qb = $this->createFindBySubjectQueryBuilder();
 
         return $this->findBySubjectAndSupplierQuery = $qb
-            ->andWhere($qb->expr()->eq('sp.supplier', ':supplier'))
+            ->andWhere($qb->expr()->eq($this->getAlias() . '.supplier', ':supplier'))
             ->getQuery();
     }
 
     /**
-     * Returns the find by subject query.
+     * Creates a "find by subject" query builder.
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    private function getFindBySubjectQueryBuilder()
+    private function createFindBySubjectQueryBuilder()
     {
-        $qb = $this->createQueryBuilder('sp');
+        $as = $this->getAlias();
+        $qb = $this->createQueryBuilder();
 
         return $qb
-            ->andWhere($qb->expr()->eq('sp.subjectIdentity.provider', ':provider'))
-            ->andWhere($qb->expr()->eq('sp.subjectIdentity.identifier', ':identifier'));
+            ->andWhere($qb->expr()->eq($as . '.subjectIdentity.provider', ':provider'))
+            ->andWhere($qb->expr()->eq($as . '.subjectIdentity.identifier', ':identifier'));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getAlias()
+    {
+        return 'sp';
     }
 }
