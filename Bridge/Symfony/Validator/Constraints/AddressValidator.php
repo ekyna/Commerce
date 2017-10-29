@@ -17,7 +17,11 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class AddressValidator extends ConstraintValidator
 {
+    /**
+     * @var \Symfony\Component\PropertyAccess\PropertyAccessor
+     */
     private $propertyAccessor;
+
 
     /**
      * {@inheritdoc}

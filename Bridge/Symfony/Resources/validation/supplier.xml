@@ -33,11 +33,11 @@
         </constraint>
     </class>
 
-    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress">
+    <!--<class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierAddress">
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Address">
             <option name="identity">false</option>
         </constraint>
-    </class>
+    </class>-->
 
     <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder">
         <property name="number">

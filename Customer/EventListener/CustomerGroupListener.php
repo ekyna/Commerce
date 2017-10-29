@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -93,7 +94,12 @@ class CustomerGroupListener
         }
 
         if ($customerGroup->isDefault()) {
-            $previousGroup = $this->customerGroupRepository->findDefault();
+            try {
+                $previousGroup = $this->customerGroupRepository->findDefault();
+            } catch (RuntimeException $e) {
+                return;
+            }
+
             if ($previousGroup === $customerGroup) {
                 return;
             }

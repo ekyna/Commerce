@@ -40,7 +40,7 @@ class LineView extends AbstractView
     private $reference;
 
     /**
-     * @var float
+     * @var string
      */
     private $unit;
 
@@ -50,22 +50,22 @@ class LineView extends AbstractView
     private $quantity;
 
     /**
-     * @var float
+     * @var string
      */
     private $base;
 
     /**
-     * @var array
+     * @var string
      */
     private $taxRates;
 
     /**
-     * @var float
+     * @var string
      */
     private $taxAmount;
 
     /**
-     * @var float
+     * @var string
      */
     private $total;
 
@@ -89,12 +89,12 @@ class LineView extends AbstractView
      * @param int    $level
      * @param string $designation
      * @param string $reference
-     * @param float  $unit
+     * @param string $unit
      * @param float  $quantity
-     * @param float  $base
-     * @param array  $taxRates
-     * @param float  $taxAmount
-     * @param float  $total
+     * @param string $base
+     * @param string $taxRates
+     * @param string $taxAmount
+     * @param string $total
      * @param array  $lines
      * @param bool   $node
      */
@@ -108,7 +108,7 @@ class LineView extends AbstractView
         $unit,
         $quantity,
         $base,
-        array $taxRates,
+        $taxRates,
         $taxAmount,
         $total,
         array $lines = [],
@@ -193,7 +193,7 @@ class LineView extends AbstractView
     /**
      * Returns the unit.
      *
-     * @return float
+     * @return string
      */
     public function getUnit()
     {
@@ -213,7 +213,7 @@ class LineView extends AbstractView
     /**
      * Returns the base.
      *
-     * @return float
+     * @return string
      */
     public function getBase()
     {
@@ -223,7 +223,7 @@ class LineView extends AbstractView
     /**
      * Returns the tax rate.
      *
-     * @return array
+     * @return string
      */
     public function getTaxRates()
     {
@@ -233,7 +233,7 @@ class LineView extends AbstractView
     /**
      * Returns the tax.
      *
-     * @return float
+     * @return string
      */
     public function getTaxAmount()
     {
@@ -243,7 +243,7 @@ class LineView extends AbstractView
     /**
      * Returns the total.
      *
-     * @return float
+     * @return string
      */
     public function getTotal()
     {

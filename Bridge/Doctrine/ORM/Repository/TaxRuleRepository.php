@@ -99,8 +99,6 @@ class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryI
         $qb = $this->getQueryBuilder('r', 'r.id');
 
         return $qb
-            ->select('r', 't')
-            ->join('r.taxes', 't')
             ->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->isMemberOf(':country', 'r.countries'),

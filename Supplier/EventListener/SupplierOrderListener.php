@@ -60,8 +60,7 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        // Generate number and key
-        $changed = $this->generateNumber($order);
+        $changed = $this->updateNumber($order);
 
         $changed |= $this->updateState($order);
 
@@ -81,13 +80,10 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        // Generate number and key
-        $changed = $this->generateNumber($order);
+        $changed = $this->updateNumber($order);
 
-        // Update state
         $changed |= $this->updateState($order);
 
-        // Update state
         $changed |= $this->updateTotal($order);
 
         if ($changed) {
@@ -180,13 +176,13 @@ class SupplierOrderListener extends AbstractListener
     }
 
     /**
-     * Generates the number.
+     * Updates the number.
      *
      * @param SupplierOrderInterface $order
      *
      * @return bool Whether the supplier order has been generated or not.
      */
-    protected function generateNumber(SupplierOrderInterface $order)
+    protected function updateNumber(SupplierOrderInterface $order)
     {
         if (0 == strlen($order->getNumber())) {
             $this->numberGenerator->generate($order);

@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -16,6 +17,12 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class IdentityValidator extends ConstraintValidator
 {
+    /**
+     * @var \Symfony\Component\PropertyAccess\PropertyAccessor
+     */
+    private $propertyAccessor;
+
+
     /**
      * {@inheritdoc}
      */
@@ -62,8 +69,14 @@ class IdentityValidator extends ConstraintValidator
                 ],
             ];
 
+            if (null === $this->propertyAccessor) {
+                $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
+            }
+
             foreach ($config as $field => $constraints) {
-                $violationList = $this->context->getValidator()->validate($field, $constraints);
+                $value = $this->propertyAccessor->getValue($identity, $field);
+                $violationList = $this->context->getValidator()->validate($value, $constraints);
+
                 /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
                 foreach ($violationList as $violation) {
                     $this->context
@@ -90,6 +103,10 @@ class IdentityValidator extends ConstraintValidator
         $pathPrefix = null
     ) {
         $violationList = $context->getValidator()->validate($identity, [new Identity($config)]);
+
+        if (!empty($pathPrefix)) {
+            $pathPrefix = rtrim($pathPrefix, '.') . '.';
+        }
 
         /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
         foreach ($violationList as $violation) {

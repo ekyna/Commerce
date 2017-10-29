@@ -153,8 +153,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
         $qb = $this->createFindBySubjectQueryBuilder();
 
         $qb
-            ->andWhere($qb->expr()->gte($as . '.available', 0))
-            ->select('SUM(' . $as . '.available) as available');
+            ->andWhere($qb->expr()->gte($as . '.availableStock', 0))
+            ->select('SUM(' . $as . '.availableStock) as available');
 
         return $this->getAvailableSumBySubjectQuery = $qb->getQuery();
     }
@@ -176,8 +176,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
         $qb
             ->andWhere($qb->expr()->isNotNull($as . '.estimatedDateOfArrival'))
             ->andWhere($qb->expr()->orX(
-                $qb->expr()->gte($as . '.ordered', 0),
-                $qb->expr()->gte($as . '.available', 0)
+                $qb->expr()->gte($as . '.orderedStock', 0),
+                $qb->expr()->gte($as . '.availableStock', 0)
             ))
             ->select('MIN(' . $as . '.estimatedDateOfArrival) as eda');
 

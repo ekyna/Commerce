@@ -45,6 +45,11 @@ class ViewBuilder
      */
     private $lineNumber;
 
+    /**
+     * @var Formatter
+     */
+    private $formatter;
+
 
     /**
      * Constructor.
@@ -72,6 +77,9 @@ class ViewBuilder
     {
         $this->options = $this->getOptionsResolver()->resolve($options);
 
+        $this->initializeFormatter($sale);
+        //$this->initializeTranslations();
+
         $this->types = $this->registry->getTypesForSale($sale);
         $this->lineNumber = 1;
 
@@ -79,15 +87,15 @@ class ViewBuilder
         $finalResult = $this->calculator->calculateSale($sale);
 
         $grossTotal = new TotalView(
-            $grossResult->getBase(),
-            $grossResult->getTaxTotal(),
-            $grossResult->getTotal()
+            $this->formatter->currency($grossResult->getBase()),
+            $this->formatter->currency($grossResult->getTaxTotal()),
+            $this->formatter->currency($grossResult->getTotal())
         );
 
         $finalTotal = new TotalView(
-            $finalResult->getBase(),
-            $finalResult->getTaxTotal(),
-            $finalResult->getTotal()
+            $this->formatter->currency($finalResult->getBase()),
+            $this->formatter->currency($finalResult->getTaxTotal()),
+            $this->formatter->currency($finalResult->getTotal())
         );
 
         $view = new SaleView(
@@ -108,6 +116,23 @@ class ViewBuilder
     }
 
     /**
+     * Initializes the formatter.
+     *
+     * @param Model\SaleInterface $sale
+     */
+    private function initializeFormatter(Model\SaleInterface $sale)
+    {
+        $currency = $sale->getCurrency()->getCode();
+        $locale = $this->options['locale'];
+
+        if ($this->formatter && $this->formatter->getLocale() === $locale && $this->formatter->getCurrency() !== $currency) {
+            return;
+        }
+
+        $this->formatter = new Formatter($locale, $currency);
+    }
+
+    /**
      * Builds the sale taxes views.
      *
      * @param Model\SaleInterface $sale
@@ -120,7 +145,10 @@ class ViewBuilder
 
         $taxes = [];
         foreach ($amounts->getTaxes() as $tax) {
-            $taxes[] = new TaxView($tax->getName(), $tax->getAmount());
+            $taxes[] = new TaxView(
+                $tax->getName(),
+                $this->formatter->currency($tax->getAmount())
+            );
         }
 
         return $taxes;
@@ -200,12 +228,12 @@ class ViewBuilder
             $level,
             $item->getDesignation(),
             $item->getReference(),
-            $item->getNetPrice(),
-            $item->getTotalQuantity(),
-            $amounts->getBase(),
-            $amounts->getTaxRates(),
-            $amounts->getTaxTotal(),
-            $amounts->getTotal(),
+            $this->formatter->currency($item->getNetPrice()),
+            $item->getTotalQuantity(), // TODO Packaging format
+            $this->formatter->currency($amounts->getBase()),
+            $this->formatter->taxRates($amounts->getTaxRates()),
+            $this->formatter->currency($amounts->getTaxTotal()),
+            $this->formatter->currency($amounts->getTotal()),
             $lines,
             $item->isCompound()
         );
@@ -234,6 +262,8 @@ class ViewBuilder
         $lineNumber = $this->lineNumber++;
         $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
 
+        // TODO designation trans + format
+
         $view = new LineView(
             'adjustment_' . ($lineNumber - 1),
             'adjustment_' . $adjustment->getId(),
@@ -243,10 +273,10 @@ class ViewBuilder
             '',
             null,
             null,
-            $amounts->getBase(),
-            [],
-            $amounts->getTaxTotal(),
-            $amounts->getTotal()
+            $this->formatter->currency($amounts->getBase()),
+            '',
+            $this->formatter->currency($amounts->getTaxTotal()),
+            $this->formatter->currency($amounts->getTotal())
         );
 
         foreach ($this->types as $type) {
@@ -290,10 +320,10 @@ class ViewBuilder
             '',
             null,
             1,
-            $amounts->getBase(),
-            $amounts->getTaxRates(),
-            $amounts->getTaxTotal(),
-            $amounts->getTotal()
+            $this->formatter->currency($amounts->getBase()),
+            $this->formatter->taxRates($amounts->getTaxRates()),
+            $this->formatter->currency($amounts->getTaxTotal()),
+            $this->formatter->currency($amounts->getTotal())
         );
 
         foreach ($this->types as $type) {
@@ -320,6 +350,7 @@ class ViewBuilder
                 'private'    => false,
                 'editable'   => false,
                 'taxes_view' => true,
+                'locale'     => \Locale::getDefault(),
                 'template'   => function (Options $options) {
                     if (true === $options['editable']) {
                         return 'EkynaCommerceBundle:Common:sale_view_editable.html.twig';
@@ -330,6 +361,8 @@ class ViewBuilder
             ])
             ->setAllowedTypes('private', 'bool')
             ->setAllowedTypes('editable', 'bool')
+            ->setAllowedTypes('taxes_view', 'bool')
+            ->setAllowedTypes('locale', 'string')
             ->setAllowedTypes('template', ['null', 'string']);
 
         return $this->optionsResolver = $resolver;

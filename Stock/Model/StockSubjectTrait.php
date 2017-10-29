@@ -66,6 +66,7 @@ trait StockSubjectTrait
         $this->availableStock = 0;
         $this->virtualStock = 0;
         $this->replenishmentTime = 2;
+        $this->minimumOrderQuantity = 1;
     }
 
     /**

@@ -7,7 +7,7 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment">
 
-        <field name="designation" column="designation" type="string" length="255"/>
+        <field name="designation" column="designation" type="string" length="255" nullable="true"/>
         <field name="type" column="type" type="string" length="16"/>
         <field name="mode" column="mode" type="string" length="16"/>
         <field name="amount" column="amount" type="decimal" precision="10" scale="5"/>

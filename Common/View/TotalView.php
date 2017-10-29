@@ -10,17 +10,17 @@ namespace Ekyna\Component\Commerce\Common\View;
 class TotalView extends AbstractView
 {
     /**
-     * @var float
+     * @var string
      */
     private $base;
 
     /**
-     * @var float
+     * @var string
      */
     private $tax;
 
     /**
-     * @var float
+     * @var string
      */
     private $total;
 
@@ -28,9 +28,9 @@ class TotalView extends AbstractView
     /**
      * Constructor.
      *
-     * @param float $base
-     * @param float $tax
-     * @param float $total
+     * @param string $base
+     * @param string $tax
+     * @param string $total
      */
     public function __construct($base, $tax, $total)
     {
@@ -42,7 +42,7 @@ class TotalView extends AbstractView
     /**
      * Returns the base total.
      *
-     * @return float
+     * @return string
      */
     public function getBase()
     {
@@ -52,7 +52,7 @@ class TotalView extends AbstractView
     /**
      * Returns the tax total.
      *
-     * @return float
+     * @return string
      */
     public function getTax()
     {
@@ -62,7 +62,7 @@ class TotalView extends AbstractView
     /**
      * Returns the final total.
      *
-     * @return float
+     * @return string
      */
     public function getTotal()
     {

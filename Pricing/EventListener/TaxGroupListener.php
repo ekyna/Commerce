@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Pricing\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxGroupRepositoryInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -93,8 +94,13 @@ class TaxGroupListener
         }
 
         if ($taxGroup->isDefault()) {
-            $previousTaxGroup = $this->taxGroupRepository->findDefault();
-            if ($previousTaxGroup === $taxGroup) {
+            try {
+                $previousTaxGroup = $this->taxGroupRepository->findDefault();
+            } catch (RuntimeException $e) {
+                return;
+            }
+
+            if (null === $previousTaxGroup || $previousTaxGroup === $taxGroup) {
                 return;
             }
 

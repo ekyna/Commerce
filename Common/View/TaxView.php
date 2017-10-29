@@ -15,7 +15,7 @@ class TaxView extends AbstractView
     private $name;
 
     /**
-     * @var float
+     * @var string
      */
     private $total;
 
@@ -24,7 +24,7 @@ class TaxView extends AbstractView
      * Constructor.
      *
      * @param string $name
-     * @param float  $total
+     * @param string  $total
      */
     public function __construct($name, $total)
     {
@@ -45,7 +45,7 @@ class TaxView extends AbstractView
     /**
      * Returns the total.
      *
-     * @return float
+     * @return string
      */
     public function getTotal()
     {

@@ -78,16 +78,24 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $sold += $stockUnit->getSoldQuantity();
 
             if ($stockUnit->getState() !== StockUnitStates::STATE_NEW) {
-                $ordered += $stockUnit->getOrderedQuantity();
-                $received += $stockUnit->getReceivedQuantity();
-                $shipped += $stockUnit->getShippedQuantity();
+                $ordered += $o = $stockUnit->getOrderedQuantity();
+                $received += $r = $stockUnit->getReceivedQuantity();
+                $shipped += $s= $stockUnit->getShippedQuantity();
 
-                if ($stockUnit->getState() !== StockUnitStates::STATE_CLOSED) {
-                    if (null !== $date = $stockUnit->getEstimatedDateOfArrival()) {
-                        if (null === $eda || $eda > $date) {
-                            $eda = $date;
-                        }
-                    }
+                // Ignore EDA if stock unit his fully received
+                if (0 < $o && 0 < $r && $r >= $o) {
+                //if ($stockUnit->getOrderedQuantity() <= $stockUnit->getReceivedQuantity()) {
+                    continue;
+                }
+
+                // Skip null EDA
+                if (null === $date = $stockUnit->getEstimatedDateOfArrival()) {
+                    continue;
+                }
+
+                // Keep lowest EDA
+                if (null === $eda || $eda > $date) {
+                    $eda = $date;
                 }
             }
         }
@@ -137,7 +145,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $eda = $this->nullDateIfLowerThanToday($eda);
 
         if ($eda !== $subject->getEstimatedDateOfArrival()) {
-            $subject->setEstimatedDateOfArrival(null);
+            $subject->setEstimatedDateOfArrival($eda);
             $changed = true;
         }
 
@@ -167,7 +175,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         // Else if subject has virtual stock and estimated date of arrival -> "Pre order" state
-        elseif (0 < $subject->getVirtualStock() || null !== $subject->getEstimatedDateOfArrival()) {
+        elseif (0 < $subject->getVirtualStock() && null !== $subject->getEstimatedDateOfArrival()) {
             $state = StockSubjectStates::STATE_PRE_ORDER;
         }
 
@@ -211,11 +219,15 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     private function nullDateIfLowerThanToday(\DateTime $eda = null)
     {
+        if (null === $eda) {
+            return null;
+        }
+
         $today = new \DateTime();
         $today->setTime(0, 0, 0);
 
-        if ($eda && $today > $eda) {
-            $eda = null;
+        if ($eda < $today) {
+            return null;
         }
 
         return $eda;

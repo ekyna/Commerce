@@ -113,16 +113,17 @@
             <constraint name="NotNull">
                 <option name="groups">
                     <value>Default</value>
+                    <value>CustomerAddress</value>
                     <value>Registration</value>
                 </option>
             </constraint>
         </property>
-        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Address">
+        <!--<constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Address">
             <option name="groups">
                 <value>Default</value>
                 <value>Registration</value>
             </option>
-        </constraint>
+        </constraint>-->
     </class>
 
     <class name="Ekyna\Component\Commerce\Customer\Entity\CustomerGroup">

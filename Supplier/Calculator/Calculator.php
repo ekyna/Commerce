@@ -19,10 +19,12 @@ class Calculator implements CalculatorInterface
     {
         $total = $order->getShippingCost();
 
+        $currency = $order->getCurrency()->getCode();
+
         foreach ($order->getItems() as $item) {
-            $total += $item->getNetPrice() * $item->getQuantity();
+            $total += Money::round($item->getNetPrice(), $currency) * $item->getQuantity();
         }
 
-        return Money::round($total, $order->getCurrency()->getCode());
+        return $total;
     }
 }

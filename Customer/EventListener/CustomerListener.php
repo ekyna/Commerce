@@ -126,14 +126,14 @@ class CustomerListener
             // Make sure default invoice and delivery address exists.
             if (null === $customer->getDefaultInvoiceAddress()) {
                 /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface $address */
-                if (null !== $address = $customer->getAddresses()->first()) {
+                if (false !== $address = $customer->getAddresses()->first()) {
                     $address->setInvoiceDefault(true);
                     $this->persistenceHelper->persistAndRecompute($address, false);
                 }
             }
             if (null === $customer->getDefaultDeliveryAddress()) {
                 /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface $address */
-                if (null !== $address = $customer->getAddresses()->first()) {
+                if (false !== $address = $customer->getAddresses()->first()) {
                     $address->setDeliveryDefault(true);
                     $this->persistenceHelper->persistAndRecompute($address, false);
                 }

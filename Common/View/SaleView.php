@@ -15,11 +15,6 @@ class SaleView extends AbstractView
     private $mode;
 
     /**
-     * @var string
-     */
-    private $currency; // TODO Currency code for 'localizedcurrency' twig filter
-
-    /**
      * @var TotalView
      */
     private $gross;
