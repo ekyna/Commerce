@@ -1,6 +1,6 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection\Compiler;
+namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Class SubjectProviderPass
- * @package Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection\Compiler
+ * @package Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 class SubjectProviderPass implements CompilerPassInterface

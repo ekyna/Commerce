@@ -26,6 +26,16 @@ class ViewBuilder
     private $calculator;
 
     /**
+     * @var string
+     */
+    private $defaultTemplate;
+
+    /**
+     * @var string
+     */
+    private $editableTemplate;
+
+    /**
      * @var OptionsResolver
      */
     private $optionsResolver;
@@ -34,6 +44,11 @@ class ViewBuilder
      * @var array
      */
     private $options;
+
+    /**
+     * @var SaleView
+     */
+    private $view;
 
     /**
      * @var ViewTypeInterface[]
@@ -56,13 +71,19 @@ class ViewBuilder
      *
      * @param ViewTypeRegistryInterface  $registry
      * @param AmountsCalculatorInterface $calculator
+     * @param string $defaultTemplate
+     * @param string $editableTemplate
      */
     public function __construct(
         ViewTypeRegistryInterface $registry,
-        AmountsCalculatorInterface $calculator
+        AmountsCalculatorInterface $calculator,
+        $defaultTemplate = '@Commerce/Sale/view.html.twig',
+        $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
         $this->registry = $registry;
         $this->calculator = $calculator;
+        $this->defaultTemplate = $defaultTemplate;
+        $this->editableTemplate = $editableTemplate;
     }
 
     /**
@@ -75,121 +96,127 @@ class ViewBuilder
      */
     public function buildSaleView(Model\SaleInterface $sale, array $options = [])
     {
-        $this->options = $this->getOptionsResolver()->resolve($options);
+        $this->initialize($sale, $options);
 
-        $this->initializeFormatter($sale);
-        //$this->initializeTranslations();
+        // TODO Mode should be resolved regarding to the customer group
+        $this->view = new SaleView(
+            AmountsCalculatorInterface::MODE_NET,
+            $this->options['template']
+        );
 
-        $this->types = $this->registry->getTypesForSale($sale);
-        $this->lineNumber = 1;
-
+        // Gross total view
         $grossResult = $this->calculator->calculateSale($sale, true);
-        $finalResult = $this->calculator->calculateSale($sale);
-
-        $grossTotal = new TotalView(
+        $this->view->setGross(new TotalView(
             $this->formatter->currency($grossResult->getBase()),
             $this->formatter->currency($grossResult->getTaxTotal()),
             $this->formatter->currency($grossResult->getTotal())
-        );
+        ));
 
-        $finalTotal = new TotalView(
+        // Final total view
+        $finalResult = $this->calculator->calculateSale($sale);
+        $this->view->setFinal(new TotalView(
             $this->formatter->currency($finalResult->getBase()),
             $this->formatter->currency($finalResult->getTaxTotal()),
             $this->formatter->currency($finalResult->getTotal())
-        );
+        ));
 
-        $view = new SaleView(
-            AmountsCalculatorInterface::MODE_NET, // TODO This should be resolved regarding to the customer group
-            $grossTotal,
-            $finalTotal,
-            $this->buildSaleItemsLinesViews($sale),
-            $this->buildSaleDiscountsLinesViews($sale),
-            $this->buildShipmentLine($sale),
-            $this->options['taxes_view'] ? $this->buildSaleTaxesViews($sale) : []
-        );
+        // Items lines
+        $this->buildSaleItemsLinesViews($sale);
+        // Discounts lines
+        $this->buildSaleDiscountsLinesViews($sale);
+        // Shipment line
+        $this->buildShipmentLine($sale);
+        // Taxes views
+        $this->buildSaleTaxesViews($sale);
 
+        // Extends
         foreach ($this->types as $type) {
-            $type->buildSaleView($sale, $view, $this->options);
+            $type->buildSaleView($sale, $this->view, $this->options);
         }
 
-        return $view;
+        return $this->view;
     }
 
     /**
-     * Initializes the formatter.
+     * Initializes the view builder.
      *
      * @param Model\SaleInterface $sale
+     * @param array               $options
      */
-    private function initializeFormatter(Model\SaleInterface $sale)
+    private function initialize(Model\SaleInterface $sale, array $options = [])
     {
+        $this->options = $this->getOptionsResolver()->resolve($options);
+        $this->lineNumber = 1;
+
         $currency = $sale->getCurrency()->getCode();
         $locale = $this->options['locale'];
 
-        if ($this->formatter && $this->formatter->getLocale() === $locale && $this->formatter->getCurrency() !== $currency) {
-            return;
+        if (!(
+            null !== $this->formatter &&
+            $this->formatter->getLocale() === $locale &&
+            $this->formatter->getCurrency() !== $currency
+        )) {
+            $this->formatter = new Formatter($locale, $currency);
         }
 
-        $this->formatter = new Formatter($locale, $currency);
+        $this->types = $this->registry->getTypesForSale($sale);
+
+        foreach ($this->types as $type) {
+            $type->setFormatter($this->formatter);
+        }
     }
 
     /**
      * Builds the sale taxes views.
      *
      * @param Model\SaleInterface $sale
-     *
-     * @return TaxView[]
      */
     private function buildSaleTaxesViews(Model\SaleInterface $sale)
     {
-        $amounts = $this->calculator->calculateSale($sale);
-
-        $taxes = [];
-        foreach ($amounts->getTaxes() as $tax) {
-            $taxes[] = new TaxView(
-                $tax->getName(),
-                $this->formatter->currency($tax->getAmount())
-            );
+        if (!$this->options['taxes_view']) {
+            return;
         }
 
-        return $taxes;
+        $amounts = $this->calculator->calculateSale($sale);
+
+        foreach ($amounts->getTaxes() as $tax) {
+            $this->view->addTax(new TaxView(
+                $tax->getName(),
+                $this->formatter->currency($tax->getAmount())
+            ));
+        }
     }
 
     /**
      * Builds the sale lines views.
      *
      * @param Model\SaleInterface $sale
-     *
-     * @return LineView[]
      */
     private function buildSaleItemsLinesViews(Model\SaleInterface $sale)
     {
-        $lines = [];
-
-        foreach ($sale->getItems() as $item) {
-            $lines[] = $this->buildSaleItemLineView($item);
+        if (!$sale->hasItems()) {
+            return;
         }
 
-        return $lines;
+        foreach ($sale->getItems() as $item) {
+            $this->view->addItem($this->buildSaleItemLineView($item));
+        }
     }
 
     /**
      * Builds the sale discounts lines views.
      *
      * @param Model\SaleInterface $sale
-     *
-     * @return LineView[]
      */
     private function buildSaleDiscountsLinesViews(Model\SaleInterface $sale)
     {
-        $lines = [];
-
-        if ($sale->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
-            foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-                $lines[] = $this->buildDiscountAdjustmentLine($adjustment);
-            }
+        if (!$sale->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
+            return;
         }
 
-        return $lines;
+        foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
+            $this->view->addDiscount($this->buildDiscountAdjustmentLine($adjustment));
+        }
     }
 
     /**
@@ -202,41 +229,43 @@ class ViewBuilder
      */
     private function buildSaleItemLineView(Model\SaleItemInterface $item, $level = 0)
     {
-        $gross = !$item->isCompound() && $item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT);
-
         $lineNumber = $this->lineNumber++;
-        $amounts = $this
-            ->calculator
-            ->calculateSaleItem($item, $gross, true);
-
-        $lines = [];
-        if ($item->hasChildren()) {
-            foreach ($item->getChildren() as $child) {
-                $lines[] = $this->buildSaleItemLineView($child, $level + 1);
-            }
-        }
-        if ($item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
-            foreach ($item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-                $lines[] = $this->buildDiscountAdjustmentLine($adjustment, $level + 1);
-            }
-        }
 
         $view = new LineView(
             'item_' . ($lineNumber - 1),
             'item_' . $item->getId(),
             $lineNumber,
-            $level,
-            $item->getDesignation(),
-            $item->getReference(),
-            $this->formatter->currency($item->getNetPrice()),
-            $item->getTotalQuantity(), // TODO Packaging format
-            $this->formatter->currency($amounts->getBase()),
-            $this->formatter->taxRates($amounts->getTaxRates()),
-            $this->formatter->currency($amounts->getTaxTotal()),
-            $this->formatter->currency($amounts->getTotal()),
-            $lines,
-            $item->isCompound()
+            $level
         );
+
+        $gross = !$item->isCompound() && $item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT);
+
+        $amounts = $this
+            ->calculator
+            ->calculateSaleItem($item, $gross, true);
+
+        $view
+            ->setDesignation($item->getDesignation())
+            ->setReference($item->getReference())
+            ->setUnit($this->formatter->currency($item->getNetPrice()))
+            ->setQuantity($item->getTotalQuantity())
+            ->setBase($this->formatter->currency($amounts->getBase()))
+            ->setTaxRates($this->formatter->taxRates($amounts->getTaxRates()))
+            ->setTaxAmount($this->formatter->currency($amounts->getTaxTotal()))
+            ->setTotal($this->formatter->currency($amounts->getTotal()))
+            ->setNode($item->isCompound());
+
+        if ($item->hasChildren()) {
+            foreach ($item->getChildren() as $child) {
+                $view->addLine($this->buildSaleItemLineView($child, $level + 1));
+            }
+        }
+
+        if ($item->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
+            foreach ($item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
+                $view->addLine($this->buildDiscountAdjustmentLine($adjustment, $level + 1));
+            }
+        }
 
         foreach ($this->types as $type) {
             $type->buildItemView($item, $view, $this->options);
@@ -260,24 +289,28 @@ class ViewBuilder
         }
 
         $lineNumber = $this->lineNumber++;
-        $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
-
-        // TODO designation trans + format
 
         $view = new LineView(
             'adjustment_' . ($lineNumber - 1),
             'adjustment_' . $adjustment->getId(),
             $lineNumber,
-            $level,
-            $adjustment->getDesignation(),
-            '',
-            null,
-            null,
-            $this->formatter->currency($amounts->getBase()),
-            '',
-            $this->formatter->currency($amounts->getTaxTotal()),
-            $this->formatter->currency($amounts->getTotal())
+            $level
         );
+
+        if (empty($designation = $adjustment->getDesignation())) {
+            $designation = 'Discount ';
+            if ($adjustment->getMode() === Model\AdjustmentModes::MODE_PERCENT) {
+                $designation .= $this->formatter->percent($adjustment->getAmount());
+            }
+        }
+
+        $amounts = $this->calculator->calculateDiscountAdjustment($adjustment);
+
+        $view
+            ->setDesignation($designation)
+            ->setBase($this->formatter->currency($amounts->getBase()))
+            ->setTaxAmount($this->formatter->currency($amounts->getTaxTotal()))
+            ->setTotal($this->formatter->currency($amounts->getTotal()));
 
         foreach ($this->types as $type) {
             $type->buildAdjustmentView($adjustment, $view, $this->options);
@@ -290,47 +323,45 @@ class ViewBuilder
      * Builds the shipment adjustment line view.
      *
      * @param Model\SaleInterface $sale
-     *
-     * @return LineView|null
      */
     private function buildShipmentLine(Model\SaleInterface $sale)
     {
         if (!$sale->requiresShipment() && 0 == $sale->getShipmentAmount()) {
-            return null;
+            return;
         }
 
         $amounts = $this->calculator->calculateShipment($sale);
 
         $lineNumber = $this->lineNumber++;
 
-        // Method title
-        $designation = 'Frais de port'; // TODO translate ?
-        if (null !== $method = $sale->getPreferredShipmentMethod()) {
-            $designation = $method->getTitle();
-        }
-        // Total weight
-        $designation .= ' (' . number_format($sale->getWeightTotal(), 3, ',', '') . ' kg)';
-
         $view = new LineView(
             'shipment',
             'shipment',
             $lineNumber,
-            0,
-            $designation,
-            '',
-            null,
-            1,
-            $this->formatter->currency($amounts->getBase()),
-            $this->formatter->taxRates($amounts->getTaxRates()),
-            $this->formatter->currency($amounts->getTaxTotal()),
-            $this->formatter->currency($amounts->getTotal())
+            0
         );
+
+        // Method title
+        $designation = 'Shipping cost';
+        if (null !== $method = $sale->getPreferredShipmentMethod()) {
+            $designation = $method->getTitle();
+        }
+
+        // Total weight
+        $designation .= ' (' . $this->formatter->number($sale->getWeightTotal()) . ' kg)';
+
+        $view
+            ->setDesignation($designation)
+            ->setBase($this->formatter->currency($amounts->getBase()))
+            ->setTaxRates($this->formatter->taxRates($amounts->getTaxRates()))
+            ->setTaxAmount($this->formatter->currency($amounts->getTaxTotal()))
+            ->setTotal($this->formatter->currency($amounts->getTotal()));
 
         foreach ($this->types as $type) {
             $type->buildShipmentView($sale, $view, $this->options);
         }
 
-        return $view;
+        $this->view->setShipment($view);
     }
 
     /**
@@ -353,10 +384,10 @@ class ViewBuilder
                 'locale'     => \Locale::getDefault(),
                 'template'   => function (Options $options) {
                     if (true === $options['editable']) {
-                        return 'EkynaCommerceBundle:Common:sale_view_editable.html.twig';
+                        return $this->editableTemplate;
                     }
 
-                    return 'EkynaCommerceBundle:Common:sale_view.html.twig';
+                    return $this->defaultTemplate;
                 },
             ])
             ->setAllowedTypes('private', 'bool')

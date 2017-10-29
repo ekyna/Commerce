@@ -12,6 +12,20 @@ use Ekyna\Component\Commerce\Common\Model;
 abstract class AbstractViewType implements ViewTypeInterface
 {
     /**
+     * @var Formatter
+     */
+    protected $formatter;
+
+
+    /**
+     * @inheritDoc
+     */
+    public function setFormatter(Formatter $formatter)
+    {
+        $this->formatter = $formatter;
+    }
+
+    /**
      * @inheritDoc
      */
     public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options)

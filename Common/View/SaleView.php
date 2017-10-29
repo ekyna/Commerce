@@ -15,6 +15,11 @@ class SaleView extends AbstractView
     private $mode;
 
     /**
+     * @var string
+     */
+    private $template;
+
+    /**
      * @var TotalView
      */
     private $gross;
@@ -44,34 +49,62 @@ class SaleView extends AbstractView
      */
     private $taxes;
 
+    /**
+     * @var array
+     */
+    private $translations;
+
 
     /**
      * Constructor.
      *
-     * @param string     $mode
-     * @param TotalView  $gross
-     * @param TotalView  $final
-     * @param LineView[] $items
-     * @param LineView[] $discounts
-     * @param LineView   $shipment
-     * @param TaxView[]  $taxes
+     * @param string $mode
+     * @param string $template
      */
-    public function __construct(
-        $mode,
-        TotalView $gross,
-        TotalView $final,
-        array $items,
-        array $discounts,
-        $shipment,
-        array $taxes
-    ) {
+    public function __construct($mode, $template)
+    {
         $this->mode = $mode;
+        $this->template = $template;
+
+        $this->items = [];
+        $this->discounts = [];
+        $this->taxes = [];
+
+        $this->translations = $this->getDefaultTranslations();
+    }
+
+    /**
+     * Returns the mode.
+     *
+     * @return string
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * Returns the template.
+     *
+     * @return string
+     */
+    public function getTemplate()
+    {
+        return $this->template;
+    }
+
+    /**
+     * Sets the gross.
+     *
+     * @param TotalView $gross
+     *
+     * @return SaleView
+     */
+    public function setGross(TotalView $gross)
+    {
         $this->gross = $gross;
-        $this->final = $final;
-        $this->items = $items;
-        $this->discounts = $discounts;
-        $this->shipment = $shipment;
-        $this->taxes = $taxes;
+
+        return $this;
     }
 
     /**
@@ -85,12 +118,40 @@ class SaleView extends AbstractView
     }
 
     /**
+     * Sets the final.
+     *
+     * @param TotalView $final
+     *
+     * @return SaleView
+     */
+    public function setFinal(TotalView $final)
+    {
+        $this->final = $final;
+
+        return $this;
+    }
+
+    /**
      * Returns the final total view.
      * @return TotalView
      */
     public function getFinal()
     {
         return $this->final;
+    }
+
+    /**
+     * Adds the item line.
+     *
+     * @param LineView $line
+     *
+     * @return $this
+     */
+    public function addItem(LineView $line)
+    {
+        $this->items[] = $line;
+
+        return $this;
     }
 
     /**
@@ -104,6 +165,20 @@ class SaleView extends AbstractView
     }
 
     /**
+     * Adds the discount line.
+     *
+     * @param LineView $line
+     *
+     * @return $this
+     */
+    public function addDiscount(LineView $line)
+    {
+        $this->discounts[] = $line;
+
+        return $this;
+    }
+
+    /**
      * Returns the discounts lines views.
      *
      * @return LineView[]
@@ -111,6 +186,16 @@ class SaleView extends AbstractView
     public function getDiscounts()
     {
         return $this->discounts;
+    }
+
+    /**
+     * Sets the shipment line.
+     *
+     * @param LineView $line
+     */
+    public function setShipment(LineView $line)
+    {
+        $this->shipment = $line;
     }
 
     /**
@@ -124,6 +209,20 @@ class SaleView extends AbstractView
     }
 
     /**
+     * Adds the tax view.
+     *
+     * @param TaxView $view
+     *
+     * @return $this
+     */
+    public function addTax(TaxView $view)
+    {
+        $this->taxes[] = $view;
+
+        return $this;
+    }
+
+    /**
      * Returns the taxes views.
      *
      * @return TaxView[]
@@ -131,5 +230,55 @@ class SaleView extends AbstractView
     public function getTaxes()
     {
         return $this->taxes;
+    }
+
+    /**
+     * Returns the translations.
+     *
+     * @return array
+     */
+    public function getTranslations()
+    {
+        return $this->translations;
+    }
+
+    /**
+     * Sets the translations.
+     *
+     * @param array $translations
+     */
+    public function setTranslations(array $translations)
+    {
+        foreach ($translations as $key => $string) {
+            if (!(is_string($string) && !empty($string))) {
+                throw new \InvalidArgumentException("Invalid translation for key '$key'.");
+            }
+        }
+
+        $this->translations = array_replace($this->getDefaultTranslations(), $translations);
+    }
+
+    /**
+     * Returns the default translations.
+     *
+     * @return array
+     */
+    public function getDefaultTranslations()
+    {
+        return [
+            'designation'    => 'Designation',
+            'reference'      => 'Reference',
+            'unit_net_price' => 'Unit net price',
+            'quantity'       => 'Quantity',
+
+            'tax_rate'       => 'Tax rate',
+            'tax_name'       => 'Tax',
+            'tax_amount'     => 'Amount',
+
+            'gross_totals'   => 'Gross totals',
+            'net_total'      => 'Net total',
+            'tax_total'      => 'Tax total',
+            'grand_total'    => 'Grand total',
+        ];
     }
 }

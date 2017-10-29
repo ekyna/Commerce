@@ -1,6 +1,6 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection\Compiler;
+namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Ekyna\Component\Commerce\Pricing\Api\PricingApi;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Class PricingApiPass
- * @package Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection\Compiler
+ * @package Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class PricingApiPass implements CompilerPassInterface

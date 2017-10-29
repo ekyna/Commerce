@@ -1,6 +1,6 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection\Compiler;
+namespace Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Class RegisterViewTypePass
- * @package Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection\Compiler
+ * @package Ekyna\Component\Commerce\Bridge\Symfony\DependencyInjection
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class RegisterViewTypePass implements CompilerPassInterface

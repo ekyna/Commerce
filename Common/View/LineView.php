@@ -10,12 +10,12 @@ namespace Ekyna\Component\Commerce\Common\View;
 class LineView extends AbstractView
 {
     /**
-     * @var int
+     * @var string
      */
     private $id;
 
     /**
-     * @var int
+     * @var string
      */
     private $formId;
 
@@ -72,7 +72,7 @@ class LineView extends AbstractView
     /**
      * @var LineView[]
      */
-    private $lines;
+    private $lines = [];
 
     /**
      * @var bool
@@ -83,51 +83,17 @@ class LineView extends AbstractView
     /**
      * Constructor.
      *
-     * @param int    $id
-     * @param int    $formId
+     * @param string $id
+     * @param string $formId
      * @param int    $number
      * @param int    $level
-     * @param string $designation
-     * @param string $reference
-     * @param string $unit
-     * @param float  $quantity
-     * @param string $base
-     * @param string $taxRates
-     * @param string $taxAmount
-     * @param string $total
-     * @param array  $lines
-     * @param bool   $node
      */
-    public function __construct(
-        $id,
-        $formId,
-        $number,
-        $level,
-        $designation,
-        $reference,
-        $unit,
-        $quantity,
-        $base,
-        $taxRates,
-        $taxAmount,
-        $total,
-        array $lines = [],
-        $node = false
-    ) {
+    public function __construct($id, $formId, $number, $level = 0)
+    {
         $this->id = $id;
         $this->formId = $formId;
         $this->number = $number;
         $this->level = $level;
-        $this->designation = $designation;
-        $this->reference = $reference;
-        $this->unit = $unit;
-        $this->quantity = $quantity;
-        $this->base = $base;
-        $this->taxRates = $taxRates;
-        $this->taxAmount = $taxAmount;
-        $this->total = $total;
-        $this->lines = $lines;
-        $this->node = $node;
     }
 
     /**
@@ -171,6 +137,20 @@ class LineView extends AbstractView
     }
 
     /**
+     * Sets the designation.
+     *
+     * @param string $designation
+     *
+     * @return LineView
+     */
+    public function setDesignation($designation)
+    {
+        $this->designation = $designation;
+
+        return $this;
+    }
+
+    /**
      * Returns the designation.
      *
      * @return string
@@ -178,6 +158,20 @@ class LineView extends AbstractView
     public function getDesignation()
     {
         return $this->designation;
+    }
+
+    /**
+     * Sets the reference.
+     *
+     * @param string $reference
+     *
+     * @return LineView
+     */
+    public function setReference($reference)
+    {
+        $this->reference = $reference;
+
+        return $this;
     }
 
     /**
@@ -191,6 +185,20 @@ class LineView extends AbstractView
     }
 
     /**
+     * Sets the unit.
+     *
+     * @param string $unit
+     *
+     * @return LineView
+     */
+    public function setUnit($unit)
+    {
+        $this->unit = $unit;
+
+        return $this;
+    }
+
+    /**
      * Returns the unit.
      *
      * @return string
@@ -198,6 +206,20 @@ class LineView extends AbstractView
     public function getUnit()
     {
         return $this->unit;
+    }
+
+    /**
+     * Sets the quantity.
+     *
+     * @param float $quantity
+     *
+     * @return LineView
+     */
+    public function setQuantity($quantity)
+    {
+        $this->quantity = $quantity;
+
+        return $this;
     }
 
     /**
@@ -211,6 +233,20 @@ class LineView extends AbstractView
     }
 
     /**
+     * Sets the base.
+     *
+     * @param string $base
+     *
+     * @return LineView
+     */
+    public function setBase($base)
+    {
+        $this->base = $base;
+
+        return $this;
+    }
+
+    /**
      * Returns the base.
      *
      * @return string
@@ -218,6 +254,20 @@ class LineView extends AbstractView
     public function getBase()
     {
         return $this->base;
+    }
+
+    /**
+     * Sets the tax rates.
+     *
+     * @param string $rates
+     *
+     * @return LineView
+     */
+    public function setTaxRates($rates)
+    {
+        $this->taxRates = $rates;
+
+        return $this;
     }
 
     /**
@@ -231,6 +281,20 @@ class LineView extends AbstractView
     }
 
     /**
+     * Sets the taxAmount.
+     *
+     * @param string $amount
+     *
+     * @return LineView
+     */
+    public function setTaxAmount($amount)
+    {
+        $this->taxAmount = $amount;
+
+        return $this;
+    }
+
+    /**
      * Returns the tax.
      *
      * @return string
@@ -238,6 +302,20 @@ class LineView extends AbstractView
     public function getTaxAmount()
     {
         return $this->taxAmount;
+    }
+
+    /**
+     * Sets the total.
+     *
+     * @param string $total
+     *
+     * @return LineView
+     */
+    public function setTotal($total)
+    {
+        $this->total = $total;
+
+        return $this;
     }
 
     /**
@@ -251,6 +329,20 @@ class LineView extends AbstractView
     }
 
     /**
+     * Adds the line.
+     *
+     * @param LineView $line
+     *
+     * @return LineView
+     */
+    public function addLine(LineView $line)
+    {
+        $this->lines[] = $line;
+
+        return $this;
+    }
+
+    /**
      * Returns the lines.
      *
      * @return LineView[]
@@ -258,6 +350,20 @@ class LineView extends AbstractView
     public function getLines()
     {
         return $this->lines;
+    }
+
+    /**
+     * Sets the node.
+     *
+     * @param bool $node
+     *
+     * @return LineView
+     */
+    public function setNode($node)
+    {
+        $this->node = (bool)$node;
+
+        return $this;
     }
 
     /**

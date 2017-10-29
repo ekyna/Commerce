@@ -12,6 +12,13 @@ use Ekyna\Component\Commerce\Common\Model;
 interface ViewTypeInterface
 {
     /**
+     * Sets the formatter.
+     *
+     * @param Formatter $formatter
+     */
+    public function setFormatter(Formatter $formatter);
+
+    /**
      * Builds the sale view.
      *
      * @param Model\SaleInterface $sale
