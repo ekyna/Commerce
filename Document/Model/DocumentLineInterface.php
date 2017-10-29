@@ -163,6 +163,22 @@ interface DocumentLineInterface
     public function setQuantity($quantity);
 
     /**
+     * Returns the base total.
+     *
+     * @return float
+     */
+    public function getBaseTotal();
+
+    /**
+     * Sets the base total.
+     *
+     * @param float $baseTotal
+     *
+     * @return $this|DocumentLineInterface
+     */
+    public function setBaseTotal($baseTotal);
+
+    /**
      * Returns the discount total.
      *
      * @return float

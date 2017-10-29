@@ -107,7 +107,7 @@ class DocumentBuilder implements DocumentBuilderInterface
      *
      * @return array
      */
-    public function buildCustomerData(Common\SaleInterface $sale)
+    protected function buildCustomerData(Common\SaleInterface $sale)
     {
         if (null !== $customer = $sale->getCustomer()) {
             return [
@@ -137,7 +137,7 @@ class DocumentBuilder implements DocumentBuilderInterface
      *
      * @return array
      */
-    public function buildAddressData(Common\AddressInterface $address)
+    protected function buildAddressData(Common\AddressInterface $address)
     {
         // TODO localize
         $country = Intl::getRegionBundle()->getCountryName($address->getCountry()->getCode());

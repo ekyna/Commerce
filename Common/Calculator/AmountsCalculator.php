@@ -38,7 +38,7 @@ class AmountsCalculator implements AmountsCalculatorInterface
      */
     public function calculateSale(SaleInterface $sale, $gross = false)
     {
-        $result = new Result();
+        $result = new Result(); // TODO Currency's precision
 
         // Items result
         if ($sale->hasItems()) {
@@ -68,7 +68,7 @@ class AmountsCalculator implements AmountsCalculatorInterface
      */
     public function calculateShipment(SaleInterface $sale)
     {
-        $result = new Result();
+        $result = new Result(); // TODO Currency's precision
 
         if (0 < $base = $sale->getShipmentAmount()) {
             $base = $this->round($base);

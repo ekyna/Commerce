@@ -49,6 +49,11 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @var float
      */
+    protected $baseTotal;
+
+    /**
+     * @var float
+     */
     protected $discountTotal;
 
     /**
@@ -206,6 +211,24 @@ class DocumentLine implements DocumentLineInterface
     public function setQuantity($quantity)
     {
         $this->quantity = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBaseTotal()
+    {
+        return $this->baseTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setBaseTotal($baseTotal)
+    {
+        $this->baseTotal = $baseTotal;
 
         return $this;
     }

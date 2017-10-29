@@ -119,40 +119,46 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
-        $netUnit = $this->round($item->getNetPrice()); // TODO Price conversion
-        if ($line->getNetPrice() != $netUnit) {
-            $line->setNetPrice($netUnit);
-            $changed = true;
-        }
+        $netUnit = $this->round($item->getNetPrice()); // TODO Currency conversion
 
         $quantity = $line->getQuantity();
-        $netTotal = $netUnit * $quantity;
+        $netTotal = $baseTotal = $netUnit * $quantity;
 
         // Discounts
         $discountTotal = 0;
         if (!empty($adjustments = $this->getSaleItemDiscountAdjustments($item))) {
             foreach ($adjustments as $adjustment) {
                 if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
-                    $discountTotal -= $this->round($netTotal * $adjustment->getAmount() / 100);
+                    $discountTotal -= $this->round($baseTotal * $adjustment->getAmount() / 100);
                 } elseif ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
-                    $discountTotal -= $this->round($netTotal * $adjustment->getAmount() * ($quantity / $item->getTotalQuantity()));
+                    $discountTotal -= $this->round($baseTotal * $adjustment->getAmount() * ($quantity / $item->getTotalQuantity()));
                 } else {
-                    throw new InvalidArgumentException("Unexpected adjustment mode '{$adjustment->getMode()}'.");
+                    throw new InvalidArgumentException("Unexpected discount adjustment mode '{$adjustment->getMode()}'.");
                 }
             }
             $netTotal += $discountTotal;
         }
 
-        // Net total
         $result->addBase($netTotal);
-        if ($netTotal !== $line->getNetTotal()) {
-            $line->setNetTotal($netTotal);
+
+        // Unit net price
+        if ($line->getNetPrice() != $netUnit) {
+            $line->setNetPrice($netUnit);
             $changed = true;
         }
-
+        // Base total
+        if ($baseTotal !== $line->getBaseTotal()) {
+            $line->setBaseTotal($baseTotal);
+            $changed = true;
+        }
         // Discount total
         if ($discountTotal !== $line->getDiscountTotal()) {
             $line->setDiscountTotal($discountTotal);
+            $changed = true;
+        }
+        // Net total
+        if ($netTotal !== $line->getNetTotal()) {
+            $line->setNetTotal($netTotal);
             $changed = true;
         }
 
@@ -166,7 +172,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
                     $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $netTotal);
                     $taxRates[] = $adjustment->getAmount();
                 } else {
-                    throw new InvalidArgumentException("Unexpected adjustment mode '{$adjustment->getMode()}'.");
+                    throw new InvalidArgumentException("Unexpected tax adjustment mode '{$adjustment->getMode()}'.");
                 }
             }
         }
@@ -215,11 +221,11 @@ class DocumentCalculator implements DocumentCalculatorInterface
 
             // Apply discount rate to taxes
             foreach ($goodsResult->getTaxes() as $tax) {
-                $taxBase = -$this->round($goodsResult->getBase() * $tax->getRate() / 100);
+                $taxBase = -$this->round($tax->getBase() * $rate);
                 $result->addTax($tax->getName(), $tax->getRate(), $taxBase);
             }
         } elseif ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
-            $discountAmount = -$adjustment->getAmount(); // TODO Price conversion
+            $discountAmount = -$adjustment->getAmount(); // TODO Currency conversion
 
             // Apply discount amount to base
             $result->addBase($discountAmount);
@@ -233,14 +239,22 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new InvalidArgumentException("Unexpected adjustment mode '{$adjustment->getMode()}'.");
         }
 
+        // Unit net price
         if ($discountAmount !== $line->getNetPrice()) {
             $line->setNetPrice($discountAmount);
             $changed = true;
         }
+        // Base total
+        if ($discountAmount !== $line->getBaseTotal()) {
+            $line->setBaseTotal($discountAmount);
+            $changed = true;
+        }
+        // Discount total
         if (0 !== $line->getDiscountTotal()) {
             $line->setDiscountTotal(0);
             $changed = true;
         }
+        // Net total
         if ($discountAmount !== $line->getNetTotal()) {
             $line->setNetTotal($discountAmount);
             $changed = true;
@@ -290,14 +304,22 @@ class DocumentCalculator implements DocumentCalculatorInterface
             }
         }
 
-        if ($base !== $line->getNetPrice()) { // TODO Price conversion
+        // Unit net price
+        if ($base !== $line->getNetPrice()) { // TODO Currency conversion
             $line->setNetPrice($base);
             $changed = true;
         }
+        // Base total
+        if ($base !== $line->getBaseTotal()) {
+            $line->setBaseTotal($base);
+            $changed = true;
+        }
+        // Discount total
         if (0 !== $line->getDiscountTotal()) {
             $line->setDiscountTotal(0);
             $changed = true;
         }
+        // Net total
         if ($base !== $line->getNetTotal()) {
             $line->setNetTotal($base);
             $changed = true;

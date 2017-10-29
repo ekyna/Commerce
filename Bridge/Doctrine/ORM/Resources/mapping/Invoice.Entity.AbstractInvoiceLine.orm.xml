@@ -12,9 +12,10 @@
         <field name="description" column="description" type="string" length="255" nullable="true"/>
         <field name="reference" column="reference" type="string" length="32" nullable="true"/>
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5"/>
-        <field name="quantity" column="quantity" type="decimal" precision="10" scale="5"/>
-        <field name="discountTotal" column="discount_total" type="decimal" precision="10" scale="5"/>
-        <field name="netTotal" column="net_total" type="decimal" precision="10" scale="5"/>
+        <field name="quantity" column="quantity" type="decimal" precision="10" scale="3"/>
+        <field name="baseTotal" column="base_total" type="decimal" precision="10" scale="2"/>
+        <field name="discountTotal" column="discount_total" type="decimal" precision="10" scale="2"/>
+        <field name="netTotal" column="net_total" type="decimal" precision="10" scale="2"/>
         <field name="taxRates" column="tax_rates" type="json_array"/>
 
     </mapped-superclass>

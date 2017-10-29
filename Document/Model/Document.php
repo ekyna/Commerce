@@ -372,4 +372,30 @@ class Document implements DocumentInterface
 
         return $this;
     }
+
+    /**
+     * Returns whether the document has at least one line discount.
+     *
+     * @return bool
+     */
+    public function hasLineDiscount()
+    {
+        foreach ($this->lines as $line) {
+            if (0 < $line->getDiscountTotal()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the document has multiple taxes.
+     *
+     * @return bool
+     */
+    public function hasMultipleTaxes()
+    {
+        return 1 < count($this->taxesDetails);
+    }
 }
