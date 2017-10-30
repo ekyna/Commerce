@@ -455,6 +455,7 @@ class LoadMetadataListener implements EventSubscriber
                 'type'       => 'string',
                 'length'     => 16,
                 'nullable'   => false,
+                'default'    => Stock\StockSubjectModes::MODE_AUTO,
             ],
             [
                 'fieldName'  => 'stockState',
@@ -462,6 +463,7 @@ class LoadMetadataListener implements EventSubscriber
                 'type'       => 'string',
                 'length'     => 16,
                 'nullable'   => false,
+                'default'    => Stock\StockSubjectStates::STATE_OUT_OF_STOCK,
             ],
             [
                 'fieldName'  => 'stockFloor',
@@ -477,7 +479,8 @@ class LoadMetadataListener implements EventSubscriber
                 'type'       => 'decimal',
                 'precision'  => 10,
                 'scale'      => 3,
-                'nullable'   => true,
+                'nullable'   => false,
+                'default'    => 1,
             ],
             [
                 'fieldName'  => 'inStock',
@@ -486,6 +489,7 @@ class LoadMetadataListener implements EventSubscriber
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => false,
+                'default'    => 0,
             ],
             [
                 'fieldName'  => 'availableStock',
@@ -494,6 +498,7 @@ class LoadMetadataListener implements EventSubscriber
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => false,
+                'default'    => 0,
             ],
             [
                 'fieldName'  => 'virtualStock',
@@ -502,12 +507,14 @@ class LoadMetadataListener implements EventSubscriber
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => false,
+                'default'    => 0,
             ],
             [
                 'fieldName'  => 'replenishmentTime',
                 'columnName' => 'replenishment_time',
                 'type'       => 'smallint',
                 'nullable'   => false,
+                'default'    => 7,
             ],
             [
                 'fieldName'  => 'estimatedDateOfArrival',

@@ -109,6 +109,22 @@ interface SaleItemInterface extends
     public function setDesignation($designation);
 
     /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function setDescription($description);
+
+    /**
      * Returns the reference.
      *
      * @return string

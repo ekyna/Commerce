@@ -66,6 +66,7 @@
                     "></i>
                 {%- endfor %}
             {%- endif %}
+            <span>
             {%- if line.vars.link_path is defined -%}
                 <a href="{{ line.vars.link_path }}"
                     {% if line.vars.link_title is defined %} title="{{ line.vars.link_title }}"{% endif %}>
@@ -74,6 +75,10 @@
             {%- else -%}
                 {{ line.designation }}
             {%- endif -%}
+            {%- if line.description is not empty -%}
+                <br><em>{{ line.description }}</em>
+            {%- endif -%}
+            </span>
         </td>
         <td id="{{ line.id }}_reference">{{ line.reference }}</td>
         {%- if line.node -%}
@@ -144,7 +149,12 @@
 {% spaceless %}
     <td class="sale-detail-number">{#{{ line.number }}#}</td>
     <td class="sale-detail-designation" id="{{ line.id }}_designation">
-        {{- line.designation -}}
+        <span>
+            {{- line.designation -}}
+            {%- if line.description is not empty -%}
+                <br><em>{{ line.description }}</em>
+            {%- endif -%}
+        </span>
     </td>
     <td class="line-reference" id="{{ line.id }}_reference">
         {{- line.reference -}}
@@ -177,7 +187,12 @@
     <tr>
         <td class="sale-detail-number">{#{{ line.number }}#}</td>
         <td class="sale-detail-designation" id="{{ line.id }}_designation">
-            {{- line.designation -}}
+            <span>
+                {{- line.designation -}}
+                {%- if line.description is not empty -%}
+                    <br><em>{{ line.description }}</em>
+                {%- endif -%}
+            </span>
         </td>
         <td class="text-right" colspan="2">&nbsp;</td>
         {{ block('line_tax_rates') }}

@@ -8,6 +8,7 @@
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem">
 
         <field name="designation" column="designation" type="string" length="255" nullable="false"/>
+        <field name="description" column="description" type="string" length="255" nullable="true"/>
         <field name="reference" column="reference" type="string" length="16" nullable="false"/>
 
         <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5"/>

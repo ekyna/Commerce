@@ -246,6 +246,7 @@ class ViewBuilder
 
         $view
             ->setDesignation($item->getDesignation())
+            ->setDescription($item->getDescription())
             ->setReference($item->getReference())
             ->setUnit($this->formatter->currency($item->getNetPrice()))
             ->setQuantity($item->getTotalQuantity())

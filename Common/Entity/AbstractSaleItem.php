@@ -43,6 +43,11 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     /**
      * @var string
      */
+    protected $description;
+
+    /**
+     * @var string
+     */
     protected $reference;
 
     /**
@@ -149,6 +154,24 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     public function setDesignation($designation)
     {
         $this->designation = $designation;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
 
         return $this;
     }

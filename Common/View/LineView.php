@@ -37,6 +37,11 @@ class LineView extends AbstractView
     /**
      * @var string
      */
+    private $description;
+
+    /**
+     * @var string
+     */
     private $reference;
 
     /**
@@ -158,6 +163,30 @@ class LineView extends AbstractView
     public function getDesignation()
     {
         return $this->designation;
+    }
+
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return LineView
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+
+        return $this;
     }
 
     /**
