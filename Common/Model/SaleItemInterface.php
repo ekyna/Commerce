@@ -286,4 +286,11 @@ interface SaleItemInterface extends
      * @return float
      */
     public function getTotalQuantity();
+
+    /**
+     * Returns the sold quantity.
+     *
+     * @return float
+     */
+    public function getSoldQuantity();
 }

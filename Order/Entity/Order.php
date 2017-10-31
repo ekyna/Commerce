@@ -19,20 +19,12 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
  */
 class Order extends AbstractSale implements Model\OrderInterface
 {
+    use Shipment\ShipmentSubjectTrait;
+
     /**
      * @var CustomerInterface
      */
     protected $originCustomer;
-
-    /**
-     * @var string
-     */
-    protected $shipmentState;
-
-    /**
-     * @var ArrayCollection|Shipment\ShipmentInterface[]
-     */
-    protected $shipments;
 
     /**
      * @var ArrayCollection|Invoice\InvoiceInterface[]
@@ -51,9 +43,9 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function __construct()
     {
         $this->state = Model\OrderStates::STATE_NEW;
-        $this->shipmentState = Shipment\ShipmentStates::STATE_NONE;
-        $this->shipments = new ArrayCollection();
         $this->invoices = new ArrayCollection();
+
+        $this->initializeShipmentSubject();
 
         parent::__construct();
     }
@@ -74,24 +66,6 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->originCustomer = $customer;
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setShipmentState($shipmentState)
-    {
-        $this->shipmentState = $shipmentState;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShipmentState()
-    {
-        return $this->shipmentState;
     }
 
     /**
@@ -346,22 +320,6 @@ class Order extends AbstractSale implements Model\OrderInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasShipments()
-    {
-        return 0 < $this->shipments->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShipments()
-    {
-        return $this->shipments;
     }
 
     /**

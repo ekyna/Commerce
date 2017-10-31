@@ -67,15 +67,13 @@ class BaseTestCase extends \PHPUnit_Framework_TestCase
         $euro
             ->setName('Euro')
             ->setCode('EUR')
-            ->setEnabled(true)
-            ->setDefault(true);
+            ->setEnabled(true);
 
         $dollar = new Currency();
         $dollar
             ->setName('US Dollar')
             ->setCode('USD')
-            ->setEnabled(true)
-            ->setDefault(false);
+            ->setEnabled(true);
 
 
         return $this->currencies = [$euro, $dollar];

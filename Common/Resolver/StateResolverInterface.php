@@ -1,9 +1,6 @@
 <?php
 
-
 namespace Ekyna\Component\Commerce\Common\Resolver;
-
-use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 
 /**
  * Interface StateResolverInterface
@@ -15,10 +12,11 @@ interface StateResolverInterface
     /**
      * Resolves the subject state.
      *
-     * @param StateSubjectInterface $subject
+     * @param mixed $subject
      *
      * @return bool Whether or not the state(s) has been changed.
+     *
      * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
-    public function resolve(StateSubjectInterface $subject);
+    public function resolve($subject);
 }

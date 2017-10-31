@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentSubjectInterface
+interface ShipmentSubjectInterface extends ShipmentDataInterface
 {
     /**
      * Returns the shipment state.
@@ -19,11 +19,11 @@ interface ShipmentSubjectInterface
     /**
      * Sets the shipment state.
      *
-     * @param string $shipmentState
+     * @param string $state
      *
      * @return $this|ShipmentSubjectInterface
      */
-    public function setShipmentState($shipmentState);
+    public function setShipmentState($state);
 
     /**
      * Returns whether the order has shipments or not.

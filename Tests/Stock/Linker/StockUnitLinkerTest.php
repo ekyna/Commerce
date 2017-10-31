@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Tests\Stock\Linker;
 
 use Acme\Product\Entity\StockUnit;
+use Ekyna\Component\Commerce\Common\Converter\ArrayCurrencyConverter;
+use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
 use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
@@ -29,7 +31,9 @@ class StockUnitLinkerTest extends BaseTestCase
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
+        $supplierOrder
+            ->setCurrency($this->getDefaultCurrency())
+            ->setOrderedAt(new \DateTime());
 
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
         $supplierOrderItem = (new SupplierOrderItem())
@@ -77,7 +81,9 @@ class StockUnitLinkerTest extends BaseTestCase
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
+        $supplierOrder
+            ->setCurrency($this->getDefaultCurrency())
+            ->setOrderedAt(new \DateTime());
 
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
         $supplierOrderItem = (new SupplierOrderItem())
@@ -140,7 +146,9 @@ class StockUnitLinkerTest extends BaseTestCase
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
+        $supplierOrder
+            ->setCurrency($this->getDefaultCurrency())
+            ->setOrderedAt(new \DateTime());
 
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
         $supplierOrderItem = (new SupplierOrderItem())
@@ -152,10 +160,16 @@ class StockUnitLinkerTest extends BaseTestCase
         $date = new \DateTime();
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-2 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-2 day'))
+            );
         $orderItemB = (new OrderItem())
             ->setQuantity(10)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-1 day'))
+            );
         $linkableStockUnit = (new StockUnit())->setSoldQuantity(30);
         (new OrderItemStockAssignment())
             ->setOrderItem($orderItemA)
@@ -233,7 +247,9 @@ class StockUnitLinkerTest extends BaseTestCase
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
+        $supplierOrder
+            ->setCurrency($this->getDefaultCurrency())
+            ->setOrderedAt(new \DateTime());
 
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
         $supplierOrderItem = (new SupplierOrderItem())
@@ -245,10 +261,16 @@ class StockUnitLinkerTest extends BaseTestCase
         $date = new \DateTime();
         $orderItemA = (new OrderItem())
             ->setQuantity(15)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-2 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-2 day'))
+            );
         $orderItemB = (new OrderItem())
             ->setQuantity(15)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-1 day'))
+            );
         $linkableStockUnit = (new StockUnit())->setSoldQuantity(30);
         (new OrderItemStockAssignment())
             ->setOrderItem($orderItemA)
@@ -348,7 +370,10 @@ class StockUnitLinkerTest extends BaseTestCase
 
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt(new \DateTime()));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt(new \DateTime())
+            );
         (new OrderItemStockAssignment())
             ->setOrderItem($orderItemA)
             ->setStockUnit($linkedStockUnit)
@@ -406,10 +431,16 @@ class StockUnitLinkerTest extends BaseTestCase
         // Given the subject has been sold for 30 quantity
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-2 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-2 day'))
+            );
         $orderItemB = (new OrderItem())
             ->setQuantity(10)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-1 day'))
+            );
 
         $linkedStockUnit = (new StockUnit())
             ->setOrderedQuantity(20)
@@ -516,10 +547,16 @@ class StockUnitLinkerTest extends BaseTestCase
         // Given the subject has been sold for 40 quantity
         $orderItemA = (new OrderItem())
             ->setQuantity(15)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-2 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-2 day'))
+            );
         $orderItemB = (new OrderItem())
             ->setQuantity(25)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-1 day'))
+            );
 
         $linkedStockUnit = (new StockUnit())
             ->setOrderedQuantity(20)
@@ -628,7 +665,10 @@ class StockUnitLinkerTest extends BaseTestCase
         // Given the subject has been ordered for 20 quantity
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt(new \DateTime()));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt(new \DateTime())
+            );
 
         $linkedStockUnit = (new StockUnit())
             ->setSupplierOrderItem($supplierOrderItem)
@@ -697,10 +737,16 @@ class StockUnitLinkerTest extends BaseTestCase
         $date = new \DateTime();
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-2 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-2 day'))
+            );
         $orderItemB = (new OrderItem())
             ->setQuantity(10)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-1 day'))
+            );
         $linkedStockUnit = (new StockUnit())
             ->setOrderedQuantity(30)
             ->setSoldQuantity(30)
@@ -801,10 +847,16 @@ class StockUnitLinkerTest extends BaseTestCase
         $date = new \DateTime();
         $orderItemA = (new OrderItem())
             ->setQuantity(15)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-2 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-2 day'))
+            );
         $orderItemB = (new OrderItem())
             ->setQuantity(15)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-1 day'))
+            );
         $linkedStockUnit = (new StockUnit())
             ->setOrderedQuantity(30)
             ->setSoldQuantity(30)
@@ -909,10 +961,16 @@ class StockUnitLinkerTest extends BaseTestCase
         $date = new \DateTime();
         $orderItemA = (new OrderItem())
             ->setQuantity(15)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-2 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-2 day'))
+            );
         $orderItemB = (new OrderItem())
             ->setQuantity(15)
-            ->setOrder((new Order())->setCreatedAt((clone $date)->modify('-1 day')));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt((clone $date)->modify('-1 day'))
+            );
         $linkedStockUnit = (new StockUnit())
             ->setOrderedQuantity(30)
             ->setSoldQuantity(30)
@@ -1053,7 +1111,10 @@ class StockUnitLinkerTest extends BaseTestCase
         // Given the subject has been sold for 20 quantity
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt($date = new \DateTime()));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt($date = new \DateTime())
+            );
         $stockUnit = (new StockUnit())
             ->setOrderedQuantity(25)
             ->setSoldQuantity(20)
@@ -1122,7 +1183,10 @@ class StockUnitLinkerTest extends BaseTestCase
         // Given the subject has been sold for 20 quantity
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt($date = new \DateTime()));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt($date = new \DateTime())
+            );
         $stockUnit = (new StockUnit())
             ->setOrderedQuantity(25)
             ->setSoldQuantity(20)
@@ -1216,7 +1280,10 @@ class StockUnitLinkerTest extends BaseTestCase
         // Given the subject has been sold for 20 quantity
         $orderItemA = (new OrderItem())
             ->setQuantity(20)
-            ->setOrder((new Order())->setCreatedAt($date = new \DateTime()));
+            ->setOrder((new Order())
+                ->setCurrency($this->getDefaultCurrency())
+                ->setCreatedAt($date = new \DateTime())
+            );
         $stockUnit = (new StockUnit())
             ->setOrderedQuantity(25)
             ->setSoldQuantity(20)
@@ -1299,14 +1366,20 @@ class StockUnitLinkerTest extends BaseTestCase
     }
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject|PersistenceHelperInterface
+     * @var PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $persistenceHelper;
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject|StockUnitResolverInterface
+     * @var StockUnitResolverInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $unitResolver;
+
+    /**
+     * @var CurrencyConverterInterface
+     */
+    private $currencyConverter;
+
 
     /**
      * Returns the persistence helper.
@@ -1337,6 +1410,23 @@ class StockUnitLinkerTest extends BaseTestCase
     }
 
     /**
+     * Returns the currency converter.
+     *
+     * @return CurrencyConverterInterface
+     */
+    private function getCurrencyConverter()
+    {
+        if (null !== $this->currencyConverter) {
+            return $this->currencyConverter;
+        }
+
+        return $this->currencyConverter = new ArrayCurrencyConverter([
+            'EUR/USD' => 1.0,
+            'USD/EUR' => 1.0,
+        ], 'EUR');
+    }
+
+    /**
      * Creates a stock unit linker.
      *
      * @return StockUnitLinker
@@ -1349,7 +1439,8 @@ class StockUnitLinkerTest extends BaseTestCase
             $this->getPersistenceHelper(),
             $this->getUnitResolver(),
             $unitStateResolver,
-            $this->createSaleFactory()
+            $this->createSaleFactory(),
+            $this->getCurrencyConverter()
         );
     }
 }

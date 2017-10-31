@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Cart\Resolver;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartStates;
-use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -20,37 +19,29 @@ class CartStateResolver extends AbstractSaleStateResolver implements StateResolv
     /**
      * @inheritdoc
      */
-    public function resolve(StateSubjectInterface $cart)
+    public function resolve($cart)
     {
         if (!$cart instanceof CartInterface) {
-            throw new InvalidArgumentException("Expected instance of CartInterface.");
+            throw new InvalidArgumentException("Expected instance of " . CartInterface::class);
         }
 
-        $oldState = $cart->getState();
-        $newState = CartStates::STATE_NEW;
+        $changed = parent::resolve($cart);
 
-        $paymentState = $this->resolvePaymentsState($cart);
+        $paymentState = $cart->getPaymentState();
+
+        $state = CartStates::STATE_NEW;
 
         if ($cart->hasItems()) {
             if (
-                PaymentStates::isPaidState($paymentState)
-                || $paymentState === PaymentStates::STATE_PENDING
+                PaymentStates::isPaidState($paymentState) ||
+                $paymentState === PaymentStates::STATE_PENDING
             ) {
-                $newState = CartStates::STATE_ACCEPTED;
-            } else {
-                $newState = CartStates::STATE_NEW;
+                $state = CartStates::STATE_ACCEPTED;
             }
         }
 
-        $changed = false;
-
-        if ($paymentState != $cart->getPaymentState()) {
-            $cart->setPaymentState($paymentState);
-            $changed = true;
-        }
-
-        if ($oldState != $newState) {
-            $cart->setState($newState);
+        if ($state !== $cart->getState()) {
+            $cart->setState($state);
             $changed = true;
         }
 

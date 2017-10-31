@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Resolver;
 
-use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
@@ -18,7 +17,7 @@ class SupplierOrderStateResolver implements StateResolverInterface
     /**
      * @inheritDoc
      */
-    public function resolve(StateSubjectInterface $subject)
+    public function resolve($subject)
     {
         if (!$subject instanceof SupplierOrderInterface) {
             throw new InvalidArgumentException("Expected instance of SupplierOrderInterface.");

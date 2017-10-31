@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Quote\Resolver;
 
-use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -20,42 +19,36 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
     /**
      * @inheritdoc
      */
-    public function resolve(StateSubjectInterface $quote)
+    public function resolve($quote)
     {
         if (!$quote instanceof QuoteInterface) {
             throw new InvalidArgumentException("Expected instance of QuoteInterface.");
         }
 
-        $oldState = $quote->getState();
-        $newState = QuoteStates::STATE_NEW;
+        $changed = parent::resolve($quote);
 
-        $paymentState = $this->resolvePaymentsState($quote);
+        $paymentState = $quote->getPaymentState();
+
+        $state = QuoteStates::STATE_NEW;
 
         if ($quote->hasItems()) {
             if (PaymentStates::isPaidState($paymentState)) {
-                $newState = QuoteStates::STATE_ACCEPTED;
+                $state = QuoteStates::STATE_ACCEPTED;
             } elseif ($paymentState == PaymentStates::STATE_PENDING) {
-                $newState = QuoteStates::STATE_PENDING;
+                $state = QuoteStates::STATE_PENDING;
             } elseif ($paymentState == PaymentStates::STATE_FAILED) {
-                $newState = QuoteStates::STATE_REFUSED;
+                $state = QuoteStates::STATE_REFUSED;
             } elseif ($paymentState == PaymentStates::STATE_REFUNDED) {
-                $newState = QuoteStates::STATE_REFUNDED;
+                $state = QuoteStates::STATE_REFUNDED;
             } elseif ($paymentState == PaymentStates::STATE_CANCELLED) {
-                $newState = QuoteStates::STATE_CANCELLED;
+                $state = QuoteStates::STATE_CANCELLED;
             } else {
-                $newState = QuoteStates::STATE_NEW;
+                $state = QuoteStates::STATE_NEW;
             }
         }
 
-        $changed = false;
-
-        if ($paymentState != $quote->getPaymentState()) {
-            $quote->setPaymentState($paymentState);
-            $changed = true;
-        }
-
-        if ($oldState != $newState) {
-            $quote->setState($newState);
+        if ($state !== $quote->getState()) {
+            $quote->setState($state);
             $changed = true;
         }
 

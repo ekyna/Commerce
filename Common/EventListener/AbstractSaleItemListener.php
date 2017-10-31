@@ -130,6 +130,7 @@ abstract class AbstractSaleItemListener
         $item = $this->getSaleItemFromEvent($event);
 
         if (null === $sale = $this->getSaleFromItem($item)) {
+            // TODO Not working in case ([item ->]+ -> item -> sale)
             throw new RuntimeException('Failed to retrieve the sale.');
         }
 

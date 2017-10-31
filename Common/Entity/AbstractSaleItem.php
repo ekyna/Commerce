@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Model\AdjustableTrait;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
@@ -14,9 +15,10 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemInterface
+abstract class AbstractSaleItem implements SaleItemInterface
 {
-    use SubjectRelativeTrait,
+    use AdjustableTrait,
+        SubjectRelativeTrait,
         TaxableTrait,
         SortableTrait;
 
@@ -91,8 +93,7 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
      */
     public function __construct()
     {
-        parent::__construct();
-
+        $this->initializeAdjustments();
         $this->initializeSubjectIdentity();
 
         $this->children = new ArrayCollection();
@@ -383,6 +384,14 @@ abstract class AbstractSaleItem extends AbstractAdjustable implements SaleItemIn
     public function getTotalQuantity()
     {
         return $this->getQuantity() * $this->getParentsQuantity();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSoldQuantity()
+    {
+        return $this->getTotalQuantity();
     }
 
     /**

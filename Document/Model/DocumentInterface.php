@@ -243,4 +243,19 @@ interface DocumentInterface
      * @return $this|DocumentInterface
      */
     public function setGrandTotal($total);
+
+    /**
+     * Returns whether the document has at least one line discount.
+     *
+     * @return bool
+     */
+    public function hasLineDiscount();
+
+    /**
+     * Returns whether the document has multiple taxes.
+     *
+     * @return bool
+     */
+    public function hasMultipleTaxes();
+
 }

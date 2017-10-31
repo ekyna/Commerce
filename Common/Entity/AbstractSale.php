@@ -18,14 +18,16 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInterface
+abstract class AbstractSale implements Common\SaleInterface
 {
     use Common\IdentityTrait,
         Common\KeySubjectTrait,
         Common\NumberSubjectTrait,
         Common\StateSubjectTrait,
-        Common\CurrencySubjectTrait,
+        Common\AdjustableTrait,
+        Payment\PaymentSubjectTrait,
         Payment\PaymentTermSubjectTrait,
+        Shipment\ShipmentDataTrait,
         VatNumberSubjectTrait,
         TimestampableTrait;
 
@@ -70,20 +72,9 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     protected $sameAddress;
 
     /**
-     * @var Shipment\ShipmentMethodInterface
-     * TODO rename to shipmentMethod
-     */
-    protected $preferredShipmentMethod;
-
-    /**
      * @var bool
      */
     protected $taxExempt;
-
-    /**
-     * @var float
-     */
-    protected $weightTotal;
 
     /**
      * @var float
@@ -94,41 +85,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
      * @var float
      */
     protected $adjustmentTotal;
-
-    /**
-     * @var float
-     */
-    protected $shipmentAmount;
-
-    /**
-     * @var float
-     */
-    protected $grandTotal;
-
-    /**
-     * @var float
-     */
-    protected $paidTotal;
-
-    /**
-     * @var float
-     */
-    protected $outstandingTotal;
-
-    /**
-     * @var float
-     */
-    protected $outstandingLimit;
-
-    /**
-     * @var \DateTime
-     */
-    protected $outstandingDate;
-
-    /**
-     * @var string
-     */
-    protected $paymentState;
 
     /**
      * @var string
@@ -160,18 +116,12 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
      */
     protected $items;
 
-    /**
-     * @var ArrayCollection|Payment\PaymentInterface[]
-     */
-    protected $payments;
 
     /**
      * Constructor.
      */
     public function __construct()
     {
-        parent::__construct();
-
         if (null === $this->state) {
             throw new RuntimeException("Initial state must be defined.");
         }
@@ -179,21 +129,17 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
         $this->sameAddress = true;
         $this->taxExempt = false;
 
-        $this->weightTotal = 0;
         $this->netTotal = 0;
         $this->adjustmentTotal = 0;
-        $this->grandTotal = 0;
-        $this->paidTotal = 0;
-        $this->outstandingTotal = 0;
-        $this->outstandingLimit = 0;
-
-        $this->paymentState = Payment\PaymentStates::STATE_NEW;
 
         $this->createdAt = new \DateTime();
 
         $this->attachments = new ArrayCollection();
         $this->items = new ArrayCollection();
-        $this->payments = new ArrayCollection();
+
+        $this->initializeAdjustments();
+        $this->initializePaymentSubject();
+        $this->initializeShipmentData();
     }
 
     /**
@@ -305,24 +251,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getPreferredShipmentMethod()
-    {
-        return $this->preferredShipmentMethod;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPreferredShipmentMethod(Shipment\ShipmentMethodInterface $method = null)
-    {
-        $this->preferredShipmentMethod = $method;
-
-        return $this;
-    }
-
-    /**
      * Returns whether the sale is tax exempt.
      *
      * @return boolean
@@ -342,24 +270,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     public function setTaxExempt($exempt)
     {
         $this->taxExempt = $exempt;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getWeightTotal()
-    {
-        return $this->weightTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setWeightTotal($total)
-    {
-        $this->weightTotal = $total;
 
         return $this;
     }
@@ -398,132 +308,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
         $this->adjustmentTotal = $total;
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShipmentAmount()
-    {
-        return $this->shipmentAmount;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setShipmentAmount($amount)
-    {
-        $this->shipmentAmount = $amount;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getGrandTotal()
-    {
-        return $this->grandTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setGrandTotal($total)
-    {
-        $this->grandTotal = $total;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPaidTotal()
-    {
-        return $this->paidTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPaidTotal($total)
-    {
-        $this->paidTotal = $total;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOutstandingTotal()
-    {
-        return $this->outstandingTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOutstandingTotal($total)
-    {
-        $this->outstandingTotal = $total;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOutstandingLimit()
-    {
-        return $this->outstandingLimit;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOutstandingLimit($amount)
-    {
-        $this->outstandingLimit = $amount;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOutstandingDate()
-    {
-        return $this->outstandingDate;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOutstandingDate(\DateTime $date = null)
-    {
-        $this->outstandingDate = $date;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPaymentState($state)
-    {
-        $this->paymentState = $state;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPaymentState()
-    {
-        return $this->paymentState;
     }
 
     /**
@@ -643,36 +427,6 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
     /**
      * @inheritdoc
      */
-    public function hasPayments()
-    {
-        return 0 < $this->payments->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPayments()
-    {
-        return $this->payments;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRemainingAmount()
-    {
-        $paid = $this->paidTotal - $this->outstandingTotal;
-
-        if ($paid >= $this->grandTotal) {
-            return 0;
-        }
-
-        return $this->grandTotal - $paid;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function requiresShipment()
     {
         foreach ($this->items as $item) {
@@ -688,5 +442,42 @@ abstract class AbstractSale extends AbstractAdjustable implements Common\SaleInt
         }
 
         return false;
+    }
+
+    /**
+     * Builds the ordered quantities.
+     *
+     * [(int) itemId => (float) quantity,]
+     *
+     * @return array
+     */
+    public function getSoldQuantities()
+    {
+        $quantities = [];
+
+        foreach ($this->getItems() as $item) {
+            $this->buildItemSoldQuantities($item, $quantities);
+        }
+
+        return $quantities;
+    }
+
+    /**
+     * Builds the sold quantity array recursively.
+     *
+     * @param Common\SaleItemInterface $item
+     * @param array                    $quantities
+     */
+    private function buildItemSoldQuantities(Common\SaleItemInterface $item, array &$quantities)
+    {
+        if (!$item->isCompound()) {
+            $quantities[$item->getId()] = $item->getSoldQuantity();
+        }
+
+        if ($item->hasChildren()) {
+            foreach ($item->getChildren() as $child) {
+                $this->buildItemSoldQuantities($child, $quantities);
+            }
+        }
     }
 }

@@ -5,10 +5,10 @@ namespace Ekyna\Component\Commerce\Common\Model;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentDataInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -24,8 +24,9 @@ interface SaleInterface extends
     NumberSubjectInterface,
     KeySubjectInterface,
     StateSubjectInterface,
-    CurrencySubjectInterface,
+    PaymentSubjectInterface,
     PaymentTermSubjectInterface,
+    ShipmentDataInterface,
     VatNumberSubjectInterface
 {
     /**
@@ -141,22 +142,6 @@ interface SaleInterface extends
     public function setSameAddress($same);
 
     /**
-     * Returns the preferred shipment method.
-     *
-     * @return ShipmentMethodInterface
-     */
-    public function getPreferredShipmentMethod();
-
-    /**
-     * Sets the preferred shipment method.
-     *
-     * @param ShipmentMethodInterface $method
-     *
-     * @return $this|SaleInterface
-     */
-    public function setPreferredShipmentMethod(ShipmentMethodInterface $method = null);
-
-    /**
      * Returns whether the sale is tax exempt.
      *
      * @return boolean
@@ -173,22 +158,6 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setTaxExempt($exempt);
-
-    /**
-     * Returns the weight total (kilograms).
-     *
-     * @return float
-     */
-    public function getWeightTotal();
-
-    /**
-     * Sets the weight total (kilograms).
-     *
-     * @param float $total
-     *
-     * @return $this|SaleInterface
-     */
-    public function setWeightTotal($total);
 
     /**
      * Returns the net total.
@@ -221,119 +190,6 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setAdjustmentTotal($total);
-
-    /**
-     * Returns the shipment amount.
-     *
-     * @return float
-     */
-    public function getShipmentAmount();
-
-    /**
-     * Sets the shipment amount.
-     *
-     * @param float $amount
-     *
-     * @return $this|SaleInterface
-     */
-    public function setShipmentAmount($amount);
-
-    /**
-     * Returns the total.
-     *
-     * @return float
-     */
-    public function getGrandTotal();
-
-    /**
-     * Sets the total.
-     *
-     * @param float $total
-     *
-     * @return $this|SaleInterface
-     */
-    public function setGrandTotal($total);
-
-    /**
-     * Returns the paid total.
-     *
-     * @return float
-     */
-    public function getPaidTotal();
-
-    /**
-     * Sets the paid total.
-     *
-     * @param float $total
-     *
-     * @return $this|SaleInterface
-     */
-    public function setPaidTotal($total);
-
-    /**
-     * Returns the outstanding total.
-     *
-     * @return float
-     */
-    public function getOutstandingTotal();
-
-    /**
-     * Sets the outstanding total.
-     *
-     * @param float $total
-     *
-     * @return $this|SaleInterface
-     */
-    public function setOutstandingTotal($total);
-
-    /**
-     * Returns the outstanding limit.
-     *
-     * @return float
-     */
-    public function getOutstandingLimit();
-
-    /**
-     * Sets the outstanding amount.
-     *
-     * @param float $amount
-     *
-     * @return $this|SaleInterface
-     */
-    public function setOutstandingLimit($amount);
-
-    /**
-     * Returns the outstanding date.
-     *
-     * @return \DateTime
-     */
-    public function getOutstandingDate();
-
-    /**
-     * Sets the outstanding date.
-     *
-     * @param \DateTime $date
-     *
-     * @return $this|SaleInterface
-     */
-    public function setOutstandingDate(\DateTime $date = null);
-
-    /**
-     * Returns the payment state.
-     *
-     * @return string
-     */
-    public function getPaymentState();
-
-    /**
-     * Sets the payment state.
-     *
-     * @param string $state
-     *
-     * @return $this|SaleInterface
-     */
-    public function setPaymentState($state);
-
 
     /**
      * Returns the voucher number.
@@ -487,59 +343,4 @@ interface SaleInterface extends
      * @return Collection|SaleItemInterface[]
      */
     public function getItems();
-
-    /**
-     * Returns whether the order has payments or not.
-     *
-     * @return bool
-     */
-    public function hasPayments();
-
-    /**
-     * Returns whether the order has the payment or not.
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return bool
-     */
-    public function hasPayment(PaymentInterface $payment);
-
-    /**
-     * Adds the payment.
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return $this|SaleInterface
-     */
-    public function addPayment(PaymentInterface $payment);
-
-    /**
-     * Removes the payment.
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return $this|SaleInterface
-     */
-    public function removePayment(PaymentInterface $payment);
-
-    /**
-     * Returns the payments.
-     *
-     * @return Collection|PaymentInterface[]
-     */
-    public function getPayments();
-
-    /**
-     * Returns the payment remaining amount.
-     *
-     * @return float
-     */
-    public function getRemainingAmount();
-
-    /**
-     * Returns whether or not the sale has a weight greater that zero.
-     *
-     * @return bool
-     */
-    public function requiresShipment();
 }

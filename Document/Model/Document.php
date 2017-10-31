@@ -374,14 +374,12 @@ class Document implements DocumentInterface
     }
 
     /**
-     * Returns whether the document has at least one line discount.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function hasLineDiscount()
     {
         foreach ($this->lines as $line) {
-            if (0 < $line->getDiscountTotal()) {
+            if (0 != $line->getDiscountTotal()) {
                 return true;
             }
         }
@@ -390,9 +388,7 @@ class Document implements DocumentInterface
     }
 
     /**
-     * Returns whether the document has multiple taxes.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function hasMultipleTaxes()
     {
