@@ -301,8 +301,8 @@
             </constraint>
         </property>
         <property name="quantity">
-            <constraint name="GreaterThanOrEqual">
-                <option name="value">1</option>
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
                 <option name="groups">
                     <value>Default</value>
                     <value>Calculation</value>

@@ -55,7 +55,7 @@ final class StockSubjectStates
         // TODO assert valid states ?
 
         if ($stateA === static::STATE_IN_STOCK) {
-            return in_array($stateB, [static::STATE_PRE_ORDER, static::STATE_OUT_OF_STOCK]);
+            return $stateB !== static::STATE_IN_STOCK;
         } elseif ($stateA === static::STATE_PRE_ORDER) {
             return $stateB === static::STATE_OUT_OF_STOCK;
         }

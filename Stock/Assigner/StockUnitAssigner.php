@@ -287,7 +287,11 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return false;
         }
 
-        if ($subject->getStockMode() === StockSubjectModes::MODE_INHERITED) {
+        if ($subject->isStockCompound()) {
+            return false;
+        }
+
+        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
             return false;
         }
 

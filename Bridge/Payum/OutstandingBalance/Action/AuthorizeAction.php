@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Action;
 
 use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Constants;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;

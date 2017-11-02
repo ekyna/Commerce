@@ -60,7 +60,7 @@ trait StockSubjectTrait
      */
     protected function initializeStock()
     {
-        $this->stockMode = StockSubjectModes::MODE_INHERITED;
+        $this->stockMode = StockSubjectModes::MODE_AUTO;
         $this->stockState = StockSubjectStates::STATE_OUT_OF_STOCK;
         $this->inStock = 0;
         $this->availableStock = 0;
@@ -279,5 +279,15 @@ trait StockSubjectTrait
     public function setEstimatedDateOfArrival(\DateTime $estimatedDateOfArrival = null)
     {
         $this->estimatedDateOfArrival = $estimatedDateOfArrival;
+    }
+
+    /**
+     * Returns whether the subject is compound (ie stock is resolved regarding to children).
+     *
+     * @return bool
+     */
+    public function isStockCompound()
+    {
+        return false;
     }
 }
