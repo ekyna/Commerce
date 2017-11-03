@@ -10,7 +10,8 @@ namespace Ekyna\Component\Commerce\Payment\Event;
 final class PaymentEvents
 {
     const CAPTURE = 'ekyna_commerce.payment.capture';
-    const DONE    = 'ekyna_commerce.payment.done';
-    const NOTIFY  = 'ekyna_commerce.payment.notify';
     const CANCEL  = 'ekyna_commerce.payment.cancel';
+    const REFUND  = 'ekyna_commerce.payment.refund';
+    const NOTIFY  = 'ekyna_commerce.payment.notify';
+    const DONE    = 'ekyna_commerce.payment.done';
 }

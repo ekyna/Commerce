@@ -81,9 +81,7 @@ class CustomerListener
 
         $changed = $this->generateNumber($customer);
 
-        $changeSet = $this->persistenceHelper->getChangeSet($customer);
-
-        if (array_key_exists('parent', $changeSet)) {
+        if ($this->persistenceHelper->isChanged($customer, 'parent')) {
             $changed |= $this->updateFromParent($customer);
         }
 

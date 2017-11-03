@@ -78,6 +78,14 @@ abstract class AbstractPlatform implements PlatformInterface
     /**
      * @inheritDoc
      */
+    public function supports(ActionInterface $action)
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getActions()
     {
         return [];

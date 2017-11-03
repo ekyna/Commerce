@@ -274,11 +274,11 @@ trait StockSubjectTrait
     /**
      * Sets the estimated date of arrival.
      *
-     * @param \DateTime $estimatedDateOfArrival
+     * @param \DateTime $date
      */
-    public function setEstimatedDateOfArrival(\DateTime $estimatedDateOfArrival = null)
+    public function setEstimatedDateOfArrival(\DateTime $date = null)
     {
-        $this->estimatedDateOfArrival = $estimatedDateOfArrival;
+        $this->estimatedDateOfArrival = $date;
     }
 
     /**

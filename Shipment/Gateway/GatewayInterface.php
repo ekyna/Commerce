@@ -29,6 +29,15 @@ interface GatewayInterface
     public function execute(ActionInterface $action);
 
     /**
+     * Returns whether the given action is supported.
+     *
+     * @param ActionInterface $action
+     *
+     * @return bool
+     */
+    public function supports(ActionInterface $action);
+
+    /**
      * Returns the FQCN of the supported actions (optionally filtered regarding to the given shipment).
      *
      * @param ShipmentInterface $shipment

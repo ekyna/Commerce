@@ -54,6 +54,14 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @inheritDoc
      */
+    public function supports(ActionInterface $action)
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getActions(ShipmentInterface $shipment = null)
     {
         return [];

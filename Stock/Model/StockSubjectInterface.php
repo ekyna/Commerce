@@ -153,7 +153,7 @@ interface StockSubjectInterface extends ResourceInterface
      *
      * @return $this|StockSubjectInterface
      */
-    public function setEstimatedDateOfArrival(\DateTime $eda);
+    public function setEstimatedDateOfArrival(\DateTime $eda = null);
 
     /**
      * Returns whether the subject is compound (ie stock is resolved regarding to children).
