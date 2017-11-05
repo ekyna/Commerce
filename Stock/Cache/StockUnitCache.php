@@ -6,7 +6,6 @@ use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
-use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Resource\Event\EventQueueInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -18,26 +17,17 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterface
 {
     /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
-
-    /**
      * @var StockUnitInterface[][]
      * [identity => StockUnitInterface]
      */
-    private $stockUnits;
+    protected $stockUnits;
 
 
     /**
      * Constructor.
-     *
-     * @param SubjectHelperInterface $subjectHelper
      */
-    public function __construct(SubjectHelperInterface $subjectHelper)
+    public function __construct()
     {
-        $this->subjectHelper = $subjectHelper;
-
         $this->clear();
     }
 
@@ -86,6 +76,10 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
 
         if (false !== $index = array_search($stockUnit, $this->stockUnits[$oid], true)) {
             unset($this->stockUnits[$oid][$index]);
+
+            if (empty($this->stockUnits[$oid])) {
+                unset($this->stockUnits[$oid]);
+            }
         }
     }
 
@@ -151,7 +145,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
         if (!empty($stockUnits)) {
             $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) {
                 return null === $stockUnit->getSupplierOrderItem()
-                    && $stockUnit->getSoldQuantity() < $stockUnit->getOrderedQuantity();
+                    || $stockUnit->getSoldQuantity() < $stockUnit->getOrderedQuantity();
             });
         }
 

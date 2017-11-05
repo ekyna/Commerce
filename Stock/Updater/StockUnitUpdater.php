@@ -132,7 +132,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date)
+    public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date = null)
     {
         if ($date != $stockUnit->getEstimatedDateOfArrival()) {
             $stockUnit->setEstimatedDateOfArrival($date);

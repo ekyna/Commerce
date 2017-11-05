@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Tests\Customer;
 
 use Ekyna\Component\Commerce\Customer\Entity\Customer;
+use Ekyna\Component\Commerce\Customer\Entity\CustomerGroup;
 use Ekyna\Component\Commerce\Tests\OrmTestCase;
 
 /**
@@ -30,9 +31,9 @@ class CustomerManagerTest extends OrmTestCase
 
     public function testFindCustomerByEmail()
     {
-        /** @var \Ekyna\Component\Commerce\Customer\Entity\CustomerGroup $group */
+        /** @var CustomerGroup $group */
         $group = $this->getCustomerGroupRepository()->find(1);
-        /** @var \Ekyna\Component\Commerce\Customer\Entity\Customer $customer */
+        /** @var Customer $customer */
         $customer = $this->getCustomerRepository()->find(1);
 
         $this->assertNotNull($group);
@@ -44,13 +45,13 @@ class CustomerManagerTest extends OrmTestCase
     {
         return $this
             ->getEntityManager()
-            ->getRepository('Ekyna\Component\Commerce\Customer\Entity\Customer');
+            ->getRepository(Customer::class);
     }
 
     private function getCustomerGroupRepository()
     {
         return $this
             ->getEntityManager()
-            ->getRepository('Ekyna\Component\Commerce\Customer\Entity\CustomerGroup');
+            ->getRepository(CustomerGroup::class);
     }
 }

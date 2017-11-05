@@ -2,30 +2,59 @@
 
 namespace Ekyna\Component\Commerce\Tests;
 
+use Ekyna\Component\Commerce\Common\Converter\ArrayCurrencyConverter;
+use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactory;
+use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Entity\CustomerGroup;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class BaseTestCase
  * @package Ekyna\Component\Commerce\Tests
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class BaseTestCase extends \PHPUnit_Framework_TestCase
+abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var CustomerGroupInterface[]
      */
-    private $customerGroups;
+    private $customerGroups; # TODO move to fixtures
+
+    /**
+     * @var CustomerGroupRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $customerGroupRepositoryMock;
 
     /**
      * @var CurrencyInterface[]
      */
-    private $currencies;
+    private $currencies; # TODO move to fixtures
+
+    /**
+     * @var CurrencyRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $currencyRepositoryMock;
+
+    /**
+     * @var CurrencyConverterInterface
+     */
+    private $currencyConverter;
+
+    /**
+     * @var SaleFactoryInterface
+     */
+    private $saleFactory;
+
+    /**
+     * @var PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $persistenceHelper;
 
 
     /**
@@ -120,43 +149,86 @@ class BaseTestCase extends \PHPUnit_Framework_TestCase
     /**
      * Returns a customer group repository mock.
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|CustomerGroupRepositoryInterface
+     * @return CustomerGroupRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected function createCustomerGroupRepositoryMock()
+    protected function getCustomerGroupRepositoryMock()
     {
+        if (null !== $this->customerGroupRepositoryMock) {
+            return $this->customerGroupRepositoryMock;
+        }
+
         $mock = $this->createMock(CustomerGroupRepositoryInterface::class);
 
         $mock->method('findDefault')->willReturn($this->getDefaultCustomerGroup());
 
-        return $mock;
+        return $this->customerGroupRepositoryMock = $mock;
     }
 
     /**
      * Returns a currency repository mock.
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|CurrencyRepositoryInterface
+     * @return CurrencyRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected function createCurrencyRepositoryMock()
+    protected function getCurrencyRepositoryMock()
     {
+        if (null !== $this->currencyRepositoryMock) {
+            return $this->currencyRepositoryMock;
+        }
+
         $mock = $this->createMock(CurrencyRepositoryInterface::class);
 
         $mock->method('findDefault')->willReturn($this->getDefaultCurrency());
         $mock->method('findOneByCode')->with('EUR')->willReturn($this->getCurrencyByCode('EUR'));
         $mock->method('findOneByCode')->with('USD')->willReturn($this->getCurrencyByCode('USD'));
 
-        return $mock;
+        return $this->currencyRepositoryMock = $mock;
+    }
+
+    /**
+     * Returns the currency converter.
+     *
+     * @return CurrencyConverterInterface
+     */
+    protected function getCurrencyConverter()
+    {
+        if (null !== $this->currencyConverter) {
+            return $this->currencyConverter;
+        }
+
+        return $this->currencyConverter = new ArrayCurrencyConverter([
+            'EUR/USD' => 1.0,
+            'USD/EUR' => 1.0,
+        ], 'EUR');
     }
 
     /**
      * Returns a sale factory.
      *
-     * @return SaleFactory
+     * @return SaleFactoryInterface
      */
-    protected function createSaleFactory()
+    protected function getSaleFactory()
     {
-        return new SaleFactory(
-            $this->createCustomerGroupRepositoryMock(),
-            $this->createCurrencyRepositoryMock()
+        if (null !== $this->saleFactory) {
+            return $this->saleFactory;
+        }
+
+        return $this->saleFactory = new SaleFactory(
+            $this->getCustomerGroupRepositoryMock(),
+            $this->getCurrencyRepositoryMock()
         );
+    }
+
+    /**
+     * Returns the persistence helper.
+     *
+     * @return PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getPersistenceHelperMock()
+    {
+        if (null !== $this->persistenceHelper) {
+            return $this->persistenceHelper;
+        }
+
+        return $this->persistenceHelper = $this->createMock(PersistenceHelperInterface::class);
     }
 }

@@ -3,31 +3,61 @@
 namespace Ekyna\Component\Commerce\Tests\Stock\Linker;
 
 use Acme\Product\Entity\StockUnit;
-use Ekyna\Component\Commerce\Common\Converter\ArrayCurrencyConverter;
-use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
 use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
 use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinker;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
-use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
 use Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder;
 use Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem;
-use Ekyna\Component\Commerce\Tests\BaseTestCase;
-use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
 
 /**
  * Class StockUnitLinkerTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Linker
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * TODO use Fixtures / Rename test methods
  */
-class StockUnitLinkerTest extends BaseTestCase
+class StockUnitLinkerTest extends BaseStockTestCase
 {
+    /**
+     * @var StockUnitLinker
+     */
+    private $linker;
+
+
+    /**
+     * @inheritDoc
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $this->linker = new StockUnitLinker(
+            $this->getPersistenceHelperMock(),
+            $this->getStockUnitResolverMock(),
+            new StockUnitStateResolver(),
+            $this->getSaleFactory(),
+            $this->getCurrencyConverter()
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function tearDown()
+    {
+        parent::tearDown();
+
+        unset($this->linker);
+    }
+
     /**
      * @covers StockUnitLinker::linkItem()
      */
-    public function test_links_item()
+    public function test_link_item()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -42,21 +72,20 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setOrder($supplierOrder);
 
         // Given the stock unit resolver will not find an available stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn(null);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->linkItem($supplierOrderItem);
+        $this->linker->linkItem($supplierOrderItem);
 
         // Then the supplier order item should be linked to a stock unit
         $this->assertNotNull($supplierOrderItem->getStockUnit());
@@ -77,7 +106,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::linkItem()
      */
-    public function test_it_links_item_while_no_overflow()
+    public function test_link_item_while_no_overflow()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -100,7 +129,7 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(10);
 
         // Given the stock unit resolver will find the available stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn($linkableStockUnit);
@@ -112,9 +141,7 @@ class StockUnitLinkerTest extends BaseTestCase
 //            ->willReturn(new StockUnit());
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->linkItem($supplierOrderItem);
-        $linkableStockUnit = $supplierOrderItem->getStockUnit();
+        $this->linker->linkItem($supplierOrderItem);
 
         // Then the supplier order item should be linked to the stock unit
         $this->assertEquals($linkableStockUnit, $supplierOrderItem->getStockUnit());
@@ -142,7 +169,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::linkItem()
      */
-    public function test_it_links_item_by_moving_assignment()
+    public function test_link_item_by_moving_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -181,21 +208,20 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(10);
 
         // Given the stock unit resolver will find the available stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn($linkableStockUnit);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->linkItem($supplierOrderItem);
+        $this->linker->linkItem($supplierOrderItem);
 
         // Order item B and his assignment should be moved from the new stock unit to the linkable stock unit
 
@@ -243,7 +269,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::linkItem()
      */
-    public function test_it_links_item_by_splitting_assignment()
+    public function test_link_item_by_splitting_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -282,21 +308,20 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(15);
 
         // Given the stock unit resolver will find the available stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn($linkableStockUnit);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Tests
-        $linker = $this->createStockUnitLinker();
-        $linker->linkItem($supplierOrderItem);
+        $this->linker->linkItem($supplierOrderItem);
 
         // Order item B's assignment should be split into the new stock unit for 10 quantity
 
@@ -348,7 +373,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::applyItem()
      */
-    public function test_it_applies_item_with_positive_change()
+    public function test_apply_item_with_positive_change()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -380,11 +405,11 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(20);
 
         // Given the supplier order item's quantity has changed from 20 to 25 (+8)
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('isChanged')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn(true);
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('getChangeSet')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn([20, 25]);
@@ -392,8 +417,7 @@ class StockUnitLinkerTest extends BaseTestCase
         // TODO test price change
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierOrderItem);
 
         // Then the supplier order item should be linked to the stock unit
         $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
@@ -414,7 +438,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::applyItem()
      */
-    public function test_it_applies_item_with_positive_change_by_moving_assignment()
+    public function test_apply_item_with_positive_change_by_moving_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -461,30 +485,29 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(10);
 
         // Given the supplier order item's quantity has changed from 20 to 30
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('isChanged')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn(true);
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('getChangeSet')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn([20, 30]);
 
         // Given the stock unit resolver will return a new stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Assert that stock unit B will be removed
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->expects($this->once())
             ->method('remove')
             ->with($newStockUnit, true);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierOrderItem);
 
         // Order item B ans his assignment should be moved from the new stock unit into the linked stock unit
 
@@ -530,7 +553,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::applyItem()
      */
-    public function test_it_applies_item_with_positive_change_by_splitting_assignment()
+    public function test_apply_item_with_positive_change_by_splitting_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -581,24 +604,23 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(20);
 
         // Given the supplier order item's quantity has changed from 20 to 30
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('isChanged')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn(true);
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('getChangeSet')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn([20, 30]);
 
         // Given the stock unit resolver will return a new stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierOrderItem);
 
         // Order item B ans his assignment should be split from the new stock unit into the linked stock unit
 
@@ -650,7 +672,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::applyItem()
      */
-    public function test_it_applies_item_with_negative_change()
+    public function test_apply_item_with_negative_change()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -682,18 +704,17 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(20);
 
         // Given the supplier order item's quantity has changed from 20 to 18 (-2)
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('isChanged')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn(true);
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('getChangeSet')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn([25, 20]);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierOrderItem);
 
         // Then the supplier order item should be linked to the stock unit
         $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
@@ -721,7 +742,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::applyItem()
      */
-    public function test_it_applies_item_with_negative_change_by_moving_assignment()
+    public function test_apply_item_with_negative_change_by_moving_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -762,31 +783,30 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(10);
 
         // Given the supplier order item's quantity has changed from 30 to 20
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('isChanged')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn(true);
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('getChangeSet')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn([30, 20]);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
             ->with($supplierOrderItem)
             ->willReturn([]);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierOrderItem);
 
         // Order item B ans his assignment should be moved from the linked stock unit into the new stock unit
 
@@ -831,7 +851,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::applyItem()
      */
-    public function test_it_applies_item_with_negative_change_by_splitting_assignment()
+    public function test_apply_item_with_negative_change_by_splitting_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -872,31 +892,30 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(15);
 
         // Given the supplier order item's quantity has changed from 30 to 20
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('isChanged')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn(true);
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('getChangeSet')
             ->with($supplierOrderItem, 'quantity')
             ->willReturn([30, 20]);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
             ->with($supplierOrderItem)
             ->willReturn([]);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierOrderItem);
 
         // Order item B ans his assignment should be split from the linked stock unit into the new stock unit
 
@@ -945,7 +964,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::applyItem()
      */
-    public function test_it_applies_item_with_negative_change_by_moving_and_splitting_assignment()
+    public function test_apply_item_with_negative_change_by_moving_and_splitting_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrderA = new SupplierOrder();
@@ -986,11 +1005,11 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(15);
 
         // Given the supplier order item's quantity has changed from 30 to 20
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('isChanged')
             ->with($supplierOrderItemA, 'quantity')
             ->willReturn(true);
-        $this->getPersistenceHelper()
+        $this->getPersistenceHelperMock()
             ->method('getChangeSet')
             ->with($supplierOrderItemA, 'quantity')
             ->willReturn([30, 20]);
@@ -1010,21 +1029,20 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setOrderItem($orderItemB)
             ->setStockUnit($pendingStockUnit)
             ->setSoldQuantity(10);
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
             ->with($supplierOrderItemA)
             ->willReturn([$pendingStockUnit]);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
             ->with($supplierOrderItemA)
             ->willReturn($newStockUnit);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->applyItem($supplierOrderItemA);
+        $this->linker->applyItem($supplierOrderItemA);
 
         // Order item B ans his assignment should be
         // split from the linked stock unit into the pending stock unit for 5 quantity and
@@ -1096,7 +1114,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::unlinkItem()
      */
-    public function test_it_unlinks_item()
+    public function test_unlink_item()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -1126,21 +1144,20 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(20);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
             ->with($supplierOrderItem)
             ->willReturn([]);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
             ->with($supplierOrderItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->unlinkItem($supplierOrderItem);
+        $this->linker->unlinkItem($supplierOrderItem);
 
         // Then the supplier order item should be unlinked
         $this->assertNull($supplierOrderItem->getStockUnit());
@@ -1168,7 +1185,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::unlinkItem()
      */
-    public function test_it_unlinks_item_by_moving_assignment()
+    public function test_unlink_item_by_moving_assignment()
     {
         // Given the supplier order is submitted
         $supplierOrder = new SupplierOrder();
@@ -1198,7 +1215,7 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(20);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
             ->with($supplierOrderItem)
             ->willReturn([]);
@@ -1210,7 +1227,7 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setOrderItem($orderItemA)
             ->setStockUnit($linkableStockUnit)
             ->setSoldQuantity(10);
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItem)
             ->willReturn($linkableStockUnit);
@@ -1222,8 +1239,7 @@ class StockUnitLinkerTest extends BaseTestCase
             ->with($stockUnit, false);*/
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->unlinkItem($supplierOrderItem);
+        $this->linker->unlinkItem($supplierOrderItem);
 
         // Then the supplier order item should be unlinked
         $this->assertNull($supplierOrderItem->getStockUnit());
@@ -1265,7 +1281,7 @@ class StockUnitLinkerTest extends BaseTestCase
     /**
      * @covers StockUnitLinker::unlinkItem()
      */
-    public function test_it_unlinks_item_by_splitting_assignment()
+    public function test_unlink_item_by_splitting_assignment()
     {
         // Given the supplier A order is submitted
         $supplierOrderA = new SupplierOrder();
@@ -1310,19 +1326,18 @@ class StockUnitLinkerTest extends BaseTestCase
             ->setSoldQuantity(10);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
             ->with($supplierOrderItemA)
             ->willReturn([$pendingStockUnit]);
 
-        $this->getUnitResolver()
+        $this->getStockUnitResolverMock()
             ->method('findLinkable')
             ->with($supplierOrderItemA)
             ->willReturn(null);
 
         // Test
-        $linker = $this->createStockUnitLinker();
-        $linker->unlinkItem($supplierOrderItemA);
+        $this->linker->unlinkItem($supplierOrderItemA);
 
         // Then the supplier order item should be unlinked
         $this->assertNull($supplierOrderItemA->getStockUnit());
@@ -1363,84 +1378,5 @@ class StockUnitLinkerTest extends BaseTestCase
         $this->assertEquals($orderItemA, $assignments[0]->getOrderItem());
         // Then the assignment's sold quantity should equal 20
         $this->assertEquals(20, $assignments[0]->getSoldQuantity());
-    }
-
-    /**
-     * @var PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $persistenceHelper;
-
-    /**
-     * @var StockUnitResolverInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $unitResolver;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
-
-
-    /**
-     * Returns the persistence helper.
-     *
-     * @return PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getPersistenceHelper()
-    {
-        if (null !== $this->persistenceHelper) {
-            return $this->persistenceHelper;
-        }
-
-        return $this->persistenceHelper = $this->createMock(PersistenceHelperInterface::class);
-    }
-
-    /**
-     * Returns the unit resolver.
-     *
-     * @return StockUnitResolverInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getUnitResolver()
-    {
-        if (null !== $this->unitResolver) {
-            return $this->unitResolver;
-        }
-
-        return $this->unitResolver = $this->createMock(StockUnitResolverInterface::class);
-    }
-
-    /**
-     * Returns the currency converter.
-     *
-     * @return CurrencyConverterInterface
-     */
-    private function getCurrencyConverter()
-    {
-        if (null !== $this->currencyConverter) {
-            return $this->currencyConverter;
-        }
-
-        return $this->currencyConverter = new ArrayCurrencyConverter([
-            'EUR/USD' => 1.0,
-            'USD/EUR' => 1.0,
-        ], 'EUR');
-    }
-
-    /**
-     * Creates a stock unit linker.
-     *
-     * @return StockUnitLinker
-     */
-    private function createStockUnitLinker()
-    {
-        $unitStateResolver = new StockUnitStateResolver();
-
-        return new StockUnitLinker(
-            $this->getPersistenceHelper(),
-            $this->getUnitResolver(),
-            $unitStateResolver,
-            $this->createSaleFactory(),
-            $this->getCurrencyConverter()
-        );
     }
 }

@@ -41,62 +41,53 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
      */
     public function updateSold(StockAssignmentInterface $assignment, $quantity, $relative = true)
     {
-        $stockUnit = $assignment->getStockUnit();
-
-        $delta = $quantity;
-        if (!$relative) {
-            $delta -= $assignment->getSoldQuantity();
-        }
-
         // TODO use Packaging format
 
-        // Credit case
-        if (0 < $delta) {
-            if ($delta > $limit = $stockUnit->getReservableQuantity()) {
-                $delta = $limit;
+        $stockUnit = $assignment->getStockUnit();
+
+        if (!$relative) {
+            $quantity -= $assignment->getSoldQuantity();
+        }
+
+        // Positive update
+        if (0 < $quantity) {
+            // Sold quantity can't be greater than stock unit ordered
+            if ($quantity > $limit = $stockUnit->getReservableQuantity()) {
+                $quantity = $limit;
             }
         }
-        // Debit case
-        elseif (0 > $delta) {
-            // Sold quantity can't be lower than shipped quantity
-            if (0 < $assignment->getShippedQuantity() && $assignment->getShippedQuantity() <= abs($delta)) {
-                $delta = -$assignment->getShippedQuantity();
-            }
-            elseif (0 < $stockUnit->getShippedQuantity() && $stockUnit->getShippedQuantity() <= abs($delta)) {
-                $delta = -$stockUnit->getShippedQuantity();
-            }
-            // Sold quantity can't be lower than zero
-            if ($assignment->getSoldQuantity() < abs($delta)) {
-                $delta = -$assignment->getSoldQuantity();
-            }
-            elseif ($stockUnit->getSoldQuantity() < abs($delta)) {
-                $delta = -$stockUnit->getSoldQuantity();
+        // Negative update
+        elseif (0 > $quantity) {
+            // Sold quantity can't be lower than shipped quantity or zero
+            $limit = max(
+                $assignment->getShippedQuantity() - $assignment->getSoldQuantity(),
+                $stockUnit->getShippedQuantity() - $stockUnit->getSoldQuantity()
+            );
+            if ($quantity < $limit) {
+                $quantity = $limit;
             }
         }
-        if (0 == $delta) {
+        // No update
+        if (0 == $quantity) {
             return 0;
         }
 
-        $quantity = $assignment->getSoldQuantity() + $delta;
-        if (0 > $quantity) {
-            throw new StockLogicException("Failed to update stock assignment's sold quantity.");
-        }
-
         // Stock unit update
-        $this->stockUnitUpdater->updateSold($assignment->getStockUnit(), $delta, true);
+        $this->stockUnitUpdater->updateSold($stockUnit, $quantity, true);
 
         // Assignment update
-        if (0 == $quantity) {
+        $result = $assignment->getSoldQuantity() + $quantity;
+        if (0 == $result) {
             // Clear association
             $assignment->getSaleItem()->removeStockAssignment($assignment);
             // TODO Check if removal is safe
-            $this->persistenceHelper->remove($assignment);
+            $this->persistenceHelper->remove($assignment, false);
         } else {
-            $assignment->setSoldQuantity($quantity);
-            $this->persistenceHelper->persistAndRecompute($assignment);
+            $assignment->setSoldQuantity($result);
+            $this->persistenceHelper->persistAndRecompute($assignment, false);
         }
 
-        return $relative ? $delta : $quantity;
+        return $quantity;
     }
 
     /**
@@ -104,45 +95,40 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
      */
     public function updateShipped(StockAssignmentInterface $assignment, $quantity, $relative = true)
     {
-        $stockUnit = $assignment->getStockUnit();
-
-        $delta = $quantity;
-        if (!$relative) {
-            $delta -= $assignment->getShippedQuantity();
-        }
-
         // TODO use Packaging format
 
-        if (0 < $delta) {
-            // Credit case
-            if ($delta > $limit = $assignment->getShippableQuantity()) {
-                $delta = $limit;
-            }
-        } elseif (0 > $delta) {
-            // Debit case
-            if ($stockUnit->getShippedQuantity() < abs($delta)) {
-                $delta = -$stockUnit->getShippedQuantity();
-            }
-            if ($assignment->getShippedQuantity() < abs($delta)) {
-                $delta = -$assignment->getShippedQuantity();
+        $stockUnit = $assignment->getStockUnit();
+
+        if (!$relative) {
+            $quantity -= $assignment->getShippedQuantity();
+        }
+
+        // Positive update
+        if (0 < $quantity) {
+            // Shipped quantity can't be greater than received or sold quantity
+            if ($quantity > $limit = $assignment->getShippableQuantity()) {
+                $quantity = $limit;
             }
         }
-        if (0 == $delta) {
+        // Negative update
+        elseif (0 > $quantity) {
+            // Shipped quantity can't be lower than zero
+            if ($quantity < $limit = max(-$assignment->getShippedQuantity(), -$stockUnit->getShippedQuantity())) {
+                $quantity = $limit;
+            }
+        }
+        // No update
+        if (0 == $quantity) {
             return 0;
         }
 
-        $quantity = $assignment->getShippedQuantity() + $delta;
-        if (0 > $quantity) {
-            throw new StockLogicException("Failed to update stock assignment's shipped quantity.");
-        }
-
         // Stock unit update
-        $this->stockUnitUpdater->updateShipped($assignment->getStockUnit(), $delta, true);
+        $this->stockUnitUpdater->updateShipped($stockUnit, $quantity, true);
 
         // Assignment update
-        $assignment->setShippedQuantity($quantity);
-        $this->persistenceHelper->persistAndRecompute($assignment);
+        $assignment->setShippedQuantity($assignment->getShippedQuantity() + $quantity);
+        $this->persistenceHelper->persistAndRecompute($assignment, false);
 
-        return $relative ? $delta : $quantity;
+        return $quantity;
     }
 }
