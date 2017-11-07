@@ -165,7 +165,7 @@ abstract class AbstractPaymentListener
         $payment = $this->getPaymentFromEvent($event);
 
         // Update the customer balance
-        $payment->setState(PaymentStates::STATE_CANCELLED);
+        $payment->setState(PaymentStates::STATE_CANCELED);
         $this->updateCustomerBalance($payment);
 
         $this->scheduleSaleContentChangeEvent($payment->getSale());

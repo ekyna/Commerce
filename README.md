@@ -5,7 +5,7 @@ Commerce component
 
 # TODO
 
-- Remove Bundles dependency (Core/Commerce).
+- Remove Bundles dependency (Core/Commerce/LibPhoneNumber).
 - rename boolean getters from **get**XXX() ot **is**XXX().
 - phpdoc property types (int/integer, bool/boolean).
 - hasXXXs (at least one) method.

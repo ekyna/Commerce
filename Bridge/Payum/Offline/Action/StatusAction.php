@@ -1,8 +1,8 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Action;
+namespace Ekyna\Component\Commerce\Bridge\Payum\Offline\Action;
 
-use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants;
+use Ekyna\Component\Commerce\Bridge\Payum\Offline\Constants;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
@@ -10,41 +10,42 @@ use Payum\Core\Request\GetStatusInterface;
 
 /**
  * Class StatusAction
- * @package Ekyna\Component\Commerce\Bridge\Payum\CustomerBalance\Action
+ * @package Ekyna\Component\Commerce\Bridge\Payum\Offline\Action
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class StatusAction implements ActionInterface
 {
     /**
      * {@inheritDoc}
+     *
+     * @param GetStatusInterface $request
      */
     public function execute($request)
     {
-        /** @var GetStatusInterface $request  */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        if (!isset($model[Constants::FIELD_STATUS])) {
+        if (false == $model[Constants::FIELD_STATUS]) {
             $request->markNew();
 
             return;
         }
 
-        if (Constants::STATUS_AUTHORIZED == $model[Constants::FIELD_STATUS]) {
-            $request->markAuthorized();
+        if (Constants::STATUS_PENDING == $model[Constants::FIELD_STATUS]) {
+            $request->markPending();
 
             return;
         }
 
-        if (Constants::STATUS_CAPTURED == $model[Constants::FIELD_STATUS]) {
+        if (Constants::STATUS_ACCEPTED == $model[Constants::FIELD_STATUS]) {
             $request->markCaptured();
 
             return;
         }
 
-        if (Constants::STATUS_FAILED == $model[Constants::FIELD_STATUS]) {
-            $request->markFailed();
+        if (Constants::STATUS_REFUND == $model[Constants::FIELD_STATUS]) {
+            $request->markRefunded();
 
             return;
         }
@@ -63,8 +64,7 @@ class StatusAction implements ActionInterface
      */
     public function supports($request)
     {
-        return
-            $request instanceof GetStatusInterface &&
-            $request->getModel() instanceof \ArrayAccess;
+        return $request instanceof GetStatusInterface
+            && $request->getModel() instanceof \ArrayAccess;
     }
 }

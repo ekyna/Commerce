@@ -11,11 +11,11 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class SupplierOrderStates
 {
-    const STATE_NEW         = 'new';
-    const STATE_ORDERED     = 'ordered';
-    const STATE_PARTIAL     = 'partial';
-    const STATE_COMPLETED   = 'completed';
-    const STATE_CANCELLED   = 'cancelled';
+    const STATE_NEW       = 'new';
+    const STATE_ORDERED   = 'ordered';
+    const STATE_PARTIAL   = 'partial';
+    const STATE_COMPLETED = 'completed';
+    const STATE_CANCELED  = 'canceled';
 
 
     /**
@@ -30,7 +30,7 @@ final class SupplierOrderStates
             static::STATE_ORDERED,
             static::STATE_PARTIAL,
             static::STATE_COMPLETED,
-            static::STATE_CANCELLED,
+            static::STATE_CANCELED,
         ];
     }
 
@@ -55,7 +55,7 @@ final class SupplierOrderStates
     {
         return [
             static::STATE_NEW,
-            static::STATE_CANCELLED,
+            static::STATE_CANCELED,
         ];
     }
 

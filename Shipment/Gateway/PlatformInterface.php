@@ -36,6 +36,13 @@ interface PlatformInterface
     public function getConfigDefinition();
 
     /**
+     * Returns gateway config defaults.
+     *
+     * @return array
+     */
+    public function getConfigDefaults();
+
+    /**
      * Processes the given gateway configuration.
      *
      * @param array $config The gateway config

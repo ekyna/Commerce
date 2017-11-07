@@ -3,8 +3,6 @@
 namespace Ekyna\Component\Commerce\Shipment\Gateway\Noop;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\AbstractPlatform;
-use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
-use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 
 /**
  * Class NullPlatform

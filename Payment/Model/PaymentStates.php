@@ -15,7 +15,7 @@ final class PaymentStates
     const STATE_PENDING     = 'pending';
     const STATE_CAPTURED    = 'captured';
     const STATE_FAILED      = 'failed';
-    const STATE_CANCELLED   = 'cancelled';
+    const STATE_CANCELED    = 'canceled';
     const STATE_REFUNDED    = 'refunded';
     const STATE_AUTHORIZED  = 'authorized';
     const STATE_OUTSTANDING = 'outstanding';
@@ -36,7 +36,7 @@ final class PaymentStates
             static::STATE_PENDING,
             static::STATE_CAPTURED,
             static::STATE_FAILED,
-            static::STATE_CANCELLED,
+            static::STATE_CANCELED,
             static::STATE_REFUNDED,
             static::STATE_AUTHORIZED,
             static::STATE_OUTSTANDING,
@@ -104,7 +104,7 @@ final class PaymentStates
     {
         return [
             static::STATE_NEW,
-            static::STATE_CANCELLED,
+            static::STATE_CANCELED,
         ];
     }
 

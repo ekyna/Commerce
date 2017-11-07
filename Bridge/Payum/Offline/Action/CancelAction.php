@@ -1,8 +1,8 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Action;
+namespace Ekyna\Component\Commerce\Bridge\Payum\Offline\Action;
 
-use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants;
+use Ekyna\Component\Commerce\Bridge\Payum\Offline\Constants;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
@@ -10,8 +10,8 @@ use Payum\Core\Request\Cancel;
 
 /**
  * Class CancelAction
- * @package Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Action
- * @author  Etienne Dauvergne <contact@ekyna.com>
+ * @package Ekyna\Component\Commerce\Bridge\Payum\Offline\Action
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 class CancelAction implements ActionInterface
 {
@@ -26,15 +26,7 @@ class CancelAction implements ActionInterface
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        if (!isset($model[Constants::FIELD_STATUS])) {
-            return;
-        }
-
-        $cancellableStates = [Constants::STATUS_CAPTURED, Constants::STATUS_AUTHORIZED];
-
-        if (in_array($model[Constants::FIELD_STATUS], $cancellableStates, true)) {
-            $model[Constants::FIELD_STATUS] = Constants::STATUS_CANCELED;
-        }
+        $model[Constants::FIELD_STATUS] = Constants::STATUS_CANCELED;
     }
 
     /**

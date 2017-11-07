@@ -33,7 +33,7 @@ class CancelAction implements ActionInterface
         $cancellableStates = [Constants::STATUS_CAPTURED, Constants::STATUS_AUTHORIZED];
 
         if (in_array($model[Constants::FIELD_STATUS], $cancellableStates, true)) {
-            $model[Constants::FIELD_STATUS] = Constants::STATUS_CANCELLED;
+            $model[Constants::FIELD_STATUS] = Constants::STATUS_CANCELED;
         }
     }
 

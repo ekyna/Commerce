@@ -17,12 +17,12 @@ final class ShipmentStates
 //    const STATE_ONHOLD      = 'onhold';
     const STATE_PENDING     = 'pending';
 //    const STATE_BACKORDERED = 'backordered';
-    const STATE_READY       = 'ready';
-    const STATE_SHIPPED     = 'shipped';
-    const STATE_PARTIAL     = 'partial';
-    const STATE_COMPLETED   = 'completed';
-    const STATE_RETURNED    = 'returned';
-    const STATE_CANCELLED   = 'cancelled';
+    const STATE_READY     = 'ready';
+    const STATE_SHIPPED   = 'shipped';
+    const STATE_PARTIAL   = 'partial';
+    const STATE_COMPLETED = 'completed';
+    const STATE_RETURNED  = 'returned';
+    const STATE_CANCELED  = 'canceled';
 
 
     /**
@@ -44,7 +44,7 @@ final class ShipmentStates
             static::STATE_PARTIAL,
             static::STATE_COMPLETED,
             static::STATE_RETURNED,
-            static::STATE_CANCELLED,
+            static::STATE_CANCELED,
         ];
     }
 
@@ -121,7 +121,7 @@ final class ShipmentStates
         return [
             static::STATE_NONE,
             static::STATE_NEW,
-            static::STATE_CANCELLED,
+            static::STATE_CANCELED,
         ];
     }
 

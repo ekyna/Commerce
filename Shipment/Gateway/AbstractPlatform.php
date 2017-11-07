@@ -50,6 +50,14 @@ abstract class AbstractPlatform implements PlatformInterface
     /**
      * @inheritDoc
      */
+    public function getConfigDefaults()
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function processGatewayConfig(array $config)
     {
         $processor = new Definition\Processor();

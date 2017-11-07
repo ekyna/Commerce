@@ -47,8 +47,8 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 $state = OrderStates::STATE_REFUSED;
             } elseif ($paymentState == PaymentStates::STATE_REFUNDED) {
                 $state = OrderStates::STATE_REFUNDED;
-            } elseif ($paymentState == PaymentStates::STATE_CANCELLED) {
-                $state = OrderStates::STATE_CANCELLED;
+            } elseif ($paymentState == PaymentStates::STATE_CANCELED) {
+                $state = OrderStates::STATE_CANCELED;
             } else {
                 $state = OrderStates::STATE_NEW;
             }

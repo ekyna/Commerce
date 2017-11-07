@@ -229,6 +229,16 @@ trait PaymentSubjectTrait
     }
 
     /**
+     * Returns whether or not the subject requires payment.
+     *
+     * @return bool
+     */
+    public function requiresPayment()
+    {
+        return $this->paidTotal < $this->grandTotal;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getRemainingAmount()

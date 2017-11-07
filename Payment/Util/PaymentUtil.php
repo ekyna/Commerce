@@ -36,7 +36,7 @@ class PaymentUtil
     }
 
     /**
-     * Returns whether the payment can be cancelled by the user.
+     * Returns whether the payment can be canceled by the user.
      *
      * @param PaymentInterface $payment
      *
@@ -48,7 +48,7 @@ class PaymentUtil
             return false;
         }
 
-        if ($payment->getState() === PaymentStates::STATE_CANCELLED) {
+        if ($payment->getState() === PaymentStates::STATE_CANCELED) {
             return false;
         }
 

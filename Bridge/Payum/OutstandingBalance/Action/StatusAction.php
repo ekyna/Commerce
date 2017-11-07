@@ -49,7 +49,7 @@ class StatusAction implements ActionInterface
             return;
         }
 
-        if (Constants::STATUS_CANCELLED == $model[Constants::FIELD_STATUS]) {
+        if (Constants::STATUS_CANCELED == $model[Constants::FIELD_STATUS]) {
             $request->markCanceled();
 
             return;

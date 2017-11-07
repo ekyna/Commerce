@@ -38,7 +38,7 @@ class SupplierOrderItemListener extends AbstractListener
             // Associated stock unit (if not exists) must be created (absolute ordered quantity).
             $this->stockUnitLinker->linkItem($item);
             //$this->createSupplierOrderItemStockUnit($item);
-        } else { // Supplier order state is 'new' or 'cancelled'
+        } else { // Supplier order state is 'new' or 'canceled'
             // Associated stock unit (if exists) must be deleted.
             $this->stockUnitLinker->unlinkItem($item);
             //$this->deleteSupplierOrderItemStockUnit($item);

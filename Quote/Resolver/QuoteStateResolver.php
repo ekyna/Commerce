@@ -40,8 +40,8 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
                 $state = QuoteStates::STATE_REFUSED;
             } elseif ($paymentState == PaymentStates::STATE_REFUNDED) {
                 $state = QuoteStates::STATE_REFUNDED;
-            } elseif ($paymentState == PaymentStates::STATE_CANCELLED) {
-                $state = QuoteStates::STATE_CANCELLED;
+            } elseif ($paymentState == PaymentStates::STATE_CANCELED) {
+                $state = QuoteStates::STATE_CANCELED;
             } else {
                 $state = QuoteStates::STATE_NEW;
             }

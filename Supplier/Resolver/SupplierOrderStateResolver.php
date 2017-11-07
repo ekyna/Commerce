@@ -26,9 +26,9 @@ class SupplierOrderStateResolver implements StateResolverInterface
         // Current state
         $currentState = $subject->getState();
 
-        // If order state is 'cancelled', do nothing
+        // If order state is 'canceled', do nothing
         // TODO really ?
-        if ($currentState === SupplierOrderStates::STATE_CANCELLED) {
+        if ($currentState === SupplierOrderStates::STATE_CANCELED) {
             return false;
         }
 

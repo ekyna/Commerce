@@ -58,7 +58,7 @@ class OutstandingReleaser implements ReleaserInterface
             // If the payment amount is less than or equal the overpaid amount
             if ($payment->getAmount() <= $overpaidAmount) {
                 // Cancel the payment
-                $payment->setState(PaymentStates::STATE_CANCELLED);
+                $payment->setState(PaymentStates::STATE_CANCELED);
 
                 $this->persistenceHelper->persistAndRecompute($payment, true);
 

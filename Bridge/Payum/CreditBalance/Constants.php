@@ -23,5 +23,5 @@ abstract class Constants
 
     const STATUS_FAILED = 'failed';
 
-    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_CANCELED = 'canceled';
 }

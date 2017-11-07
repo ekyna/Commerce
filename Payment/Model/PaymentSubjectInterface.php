@@ -149,6 +149,13 @@ interface PaymentSubjectInterface extends CurrencySubjectInterface
     public function getPayments();
 
     /**
+     * Returns whether or not the subject requires payment.
+     *
+     * @return bool
+     */
+    public function requiresPayment();
+
+    /**
      * Returns the payment remaining amount.
      *
      * @return float

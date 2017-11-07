@@ -78,8 +78,8 @@ class QuantityCalculator implements QuantityCalculatorInterface
                 continue;
             }
 
-            // Skip if shipment is cancelled
-            if ($shipment->getState() === Shipment\ShipmentStates::STATE_CANCELLED) {
+            // Skip if shipment is canceled
+            if ($shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
                 continue;
             }
 
@@ -130,7 +130,7 @@ class QuantityCalculator implements QuantityCalculatorInterface
                 continue;
             }
 
-            // Skip if shipment is cancelled
+            // Skip if shipment is shipped
             if (!Shipment\ShipmentStates::isShippedState($shipment->getState())) {
                 continue;
             }
