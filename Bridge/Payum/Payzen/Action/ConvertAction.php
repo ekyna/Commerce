@@ -41,9 +41,9 @@ class ConvertAction implements ActionInterface, GatewayAwareInterface
                 throw new RuntimeException('Unexpected currency exp.');
             }
 
-            $model['vads_currency'] = $currency->numeric;
+            $model['vads_currency'] = (string)$currency->numeric;
             // Amount in cents
-            $model['vads_amount'] = abs($payment->getAmount() * pow(10, $currency->exp));
+            $model['vads_amount'] = (string)abs($payment->getAmount() * pow(10, $currency->exp));
         }
 
         $sale = $payment->getSale();
