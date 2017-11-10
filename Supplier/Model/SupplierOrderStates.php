@@ -179,4 +179,13 @@ final class SupplierOrderStates
 
         throw new InvalidArgumentException("Unexpected supplier order state change set.");
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

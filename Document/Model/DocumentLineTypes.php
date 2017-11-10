@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Document\Model;
  * @package Ekyna\Component\Commerce\Invoice\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class DocumentLineTypes
+final class DocumentLineTypes
 {
     const TYPE_GOOD     = 'good';
     const TYPE_DISCOUNT = 'discount';
@@ -38,5 +38,14 @@ class DocumentLineTypes
     static public function isValidType($type)
     {
         return in_array($type, static::getTypes(), true);
+    }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
     }
 }

@@ -39,4 +39,13 @@ final class Genders
     {
         return in_array($gender, static::getGenders(), true);
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

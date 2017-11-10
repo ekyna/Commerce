@@ -82,15 +82,6 @@ interface SaleUpdaterInterface
     public function updateShipmentTaxation(Model\SaleInterface $sale, $persistence = false);
 
     /**
-     * Updates the total weight.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     */
-    public function updateTotalWeight(Model\SaleInterface $sale);
-
-    /**
      * Updates the payment terms and outstanding date.
      *
      * @param Model\SaleInterface $sale
@@ -98,33 +89,6 @@ interface SaleUpdaterInterface
      * @return bool Whether or not the sale has been updated.
      */
     public function updateOutstandingAndTerm(Model\SaleInterface $sale);
-
-    /**
-     * Updates the paid total.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     */
-    public function updatePaidTotal(Model\SaleInterface $sale);
-
-    /**
-     * Updates the outstanding total.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     */
-    public function updateOutstandingTotal(Model\SaleInterface $sale);
-
-    /**
-     * Updates the total amounts.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
-     */
-    public function updateTotalAmounts(Model\SaleInterface $sale);
 
     /**
      * Updates the totals (weights and amounts).

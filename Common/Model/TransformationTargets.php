@@ -51,4 +51,13 @@ final class TransformationTargets
     {
         return in_array($target, static::getTargetsForSale($sale), true);
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

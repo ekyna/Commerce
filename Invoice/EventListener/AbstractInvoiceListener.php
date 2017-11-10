@@ -224,6 +224,7 @@ abstract class AbstractInvoiceListener
             return;
         }
 
+        // TODO Multiple call will credit too much !
         if ($this->persistenceHelper->isScheduledForRemove($invoice)) {
             $this->customerUpdater->updateCreditBalance($customer, -$invoice->getGrandTotal(), true);
 

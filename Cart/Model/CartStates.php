@@ -37,4 +37,13 @@ final class CartStates
     {
         return in_array($state, static::getStates(), true);
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

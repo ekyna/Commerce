@@ -47,7 +47,7 @@ class ConvertAction implements ActionInterface
             $customer = $customer->getParent();
         }
 
-        $limit = -max($customer->getOutstandingLimit(), $sale->getOutstandingLimit());
+        $limit = $customer->getOutstandingLimit() + $sale->getOutstandingLimit();
 
         $details->defaults(array(
             Constants::FIELD_STATUS  => null,

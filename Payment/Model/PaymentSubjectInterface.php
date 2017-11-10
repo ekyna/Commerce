@@ -44,20 +44,36 @@ interface PaymentSubjectInterface extends CurrencySubjectInterface
     public function setPaidTotal($total);
 
     /**
-     * Returns the outstanding total.
+     * Returns the accepted outstanding total.
      *
      * @return float
      */
-    public function getOutstandingTotal();
+    public function getOutstandingAccepted();
 
     /**
-     * Sets the outstanding total.
+     * Sets the accepted outstanding total.
      *
      * @param float $total
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingTotal($total);
+    public function setOutstandingAccepted($total);
+
+    /**
+     * Returns the expired outstanding total.
+     *
+     * @return float
+     */
+    public function getOutstandingExpired();
+
+    /**
+     * Sets the expired outstanding total.
+     *
+     * @param float $total
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setOutstandingExpired($total);
 
     /**
      * Returns the outstanding limit.
@@ -149,11 +165,11 @@ interface PaymentSubjectInterface extends CurrencySubjectInterface
     public function getPayments();
 
     /**
-     * Returns whether or not the subject requires payment.
+     * Returns whether or not the subject is fully paid.
      *
      * @return bool
      */
-    public function requiresPayment();
+    public function isPaid();
 
     /**
      * Returns the payment remaining amount.

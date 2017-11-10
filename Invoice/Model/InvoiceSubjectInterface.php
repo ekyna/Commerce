@@ -10,6 +10,38 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
 interface InvoiceSubjectInterface
 {
     /**
+     * Returns the invoice total.
+     *
+     * @return float
+     */
+    public function getInvoiceTotal();
+
+    /**
+     * Sets the invoice total.
+     *
+     * @param float $total
+     *
+     * @return InvoiceSubjectTrait
+     */
+    public function setInvoiceTotal($total);
+
+    /**
+     * Returns the invoice state.
+     *
+     * @return string
+     */
+    public function getInvoiceState();
+
+    /**
+     * Sets the invoice state.
+     *
+     * @param string $state
+     *
+     * @return $this|InvoiceSubjectInterface
+     */
+    public function setInvoiceState($state);
+
+    /**
      * Returns whether the order has invoices or not.
      *
      * @return bool
@@ -49,4 +81,11 @@ interface InvoiceSubjectInterface
      * @return $this|InvoiceSubjectInterface
      */
     public function removeInvoice(InvoiceInterface $invoice);
+
+    /**
+     * Returns the first invoice date.
+     *
+     * @return \DateTime|null
+     */
+    public function getInvoicedAt();
 }

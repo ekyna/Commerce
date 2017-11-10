@@ -327,7 +327,7 @@ class ViewBuilder
      */
     private function buildShipmentLine(Model\SaleInterface $sale)
     {
-        if (!$sale->requiresShipment() && 0 == $sale->getShipmentAmount()) {
+        if (0 >= $sale->getShipmentAmount()) {
             return;
         }
 

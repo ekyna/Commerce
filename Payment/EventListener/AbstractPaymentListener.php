@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -98,13 +99,9 @@ abstract class AbstractPaymentListener
             $this->persistenceHelper->persistAndRecompute($payment);
         }
 
-        $sale = $payment->getSale(); // TODO wtf ?
-        $sale->addPayment($payment);
+        $sale = $payment->getSale();
 
-        // Impact customer balance only for paid payments
-        if (PaymentStates::isPaidState($payment->getState())) {
-            $this->updateCustomerBalance($payment);
-        }
+        $this->customerUpdater->handlePaymentInsert($payment);
 
         $this->scheduleSaleContentChangeEvent($sale);
     }
@@ -113,6 +110,8 @@ abstract class AbstractPaymentListener
      * Update event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws LogicException
      */
     public function onUpdate(ResourceEventInterface $event)
     {
@@ -126,32 +125,24 @@ abstract class AbstractPaymentListener
             $this->persistenceHelper->persistAndRecompute($payment);
         }
 
+        if ($this->persistenceHelper->isChanged($payment, 'method')) {
+            $methodCs = $this->persistenceHelper->getChangeSet($payment, 'method');
+            /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $fromMethod */
+            $fromMethod = $methodCs[0];
+            /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $toMethod */
+            $toMethod = $methodCs[1];
+
+            if ($fromMethod->isManual() && !$toMethod->isManual()) {
+                throw new LogicException("Payment method can't be changed from manual to non manual method.");
+            } elseif (!$fromMethod->isManual()) {
+                throw new LogicException("Payment method can't be changed.");
+            }
+        }
+
         if ($this->persistenceHelper->isChanged($payment, ['amount', 'state'])) {
             $this->scheduleSaleContentChangeEvent($payment->getSale());
 
-            // Abort if not credit/outstanding payment
-            if (!($payment->getMethod()->isCredit() || $payment->getMethod()->isOutstanding())) {
-                return;
-            }
-
-            $stateCs = $this->persistenceHelper->getChangeSet($payment, 'state');
-            $amountCs = $this->persistenceHelper->getChangeSet($payment, 'amount');
-
-            // If payment state has changed from or to a paid state
-            if (PaymentStates::hasChangedFromPaid($stateCs) || PaymentStates::hasChangedToPaid($stateCs)) {
-                // Update the customer balance
-                $this->updateCustomerBalance($payment, isset($amountCs[0]) ? $amountCs[0] : null);
-
-                return;
-            }
-
-            if (!empty($amountCs)) {
-                $amountDelta = $amountCs[0] - $amountCs[1]; // Old - New
-                // If amount changed and payment is paid
-                if (0 != $amountDelta && PaymentStates::isPaidState($payment->getState())) {
-                    $this->updateCustomerBalance($payment, -$amountDelta);
-                }
-            }
+            $this->customerUpdater->handlePaymentUpdate($payment);
         }
     }
 
@@ -164,25 +155,9 @@ abstract class AbstractPaymentListener
     {
         $payment = $this->getPaymentFromEvent($event);
 
-        // Update the customer balance
-        $payment->setState(PaymentStates::STATE_CANCELED);
-        $this->updateCustomerBalance($payment);
+        $this->customerUpdater->handlePaymentDelete($payment);
 
         $this->scheduleSaleContentChangeEvent($payment->getSale());
-    }
-
-    /**
-     * Pre update event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
-     */
-    public function onPreUpdate(ResourceEventInterface $event)
-    {
-        // TODO non offline methods can't be changed
-
-        //$payment = $this->getPaymentFromEvent($event);
     }
 
     /**
@@ -217,30 +192,6 @@ abstract class AbstractPaymentListener
         }
 
         return false;
-    }
-
-    /**
-     * Updates the customer's balance regarding to the payment method.
-     *
-     * @param PaymentInterface $payment
-     * @param float            $amount The previous amount (update case)
-     */
-    protected function updateCustomerBalance(PaymentInterface $payment, $amount = null)
-    {
-        if (null === $customer = $payment->getSale()->getCustomer()) {
-            return;
-        }
-
-        $amount = $amount ?: $payment->getAmount();
-        if (PaymentStates::isPaidState($payment->getState())) {
-            $amount = -$amount;
-        }
-
-        if ($payment->getMethod()->isCredit()) {
-            $this->customerUpdater->updateCreditBalance($customer, $amount, true);
-        } elseif ($payment->getMethod()->isOutstanding()) {
-            $this->customerUpdater->updateOutstandingBalance($customer, $amount, true);
-        }
     }
 
     /**

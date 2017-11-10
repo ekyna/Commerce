@@ -8,7 +8,6 @@ use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
@@ -260,34 +259,5 @@ class OrderItem extends AbstractSaleItem implements OrderItemInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSoldQuantity()
-    {
-        $quantity = $this->getTotalQuantity();
-
-        $order = $this->getSale();
-
-        foreach ($order->getInvoices() as $invoice) {
-            if (!InvoiceTypes::isCredit($invoice)) {
-                continue;
-            }
-
-            foreach ($invoice->getLines() as $line) {
-                if ($this === $line->getSaleItem()) {
-                    $quantity -= $line->getQuantity();
-                    break;
-                }
-            }
-        }
-
-        if (0 < $quantity) {
-            return $quantity;
-        }
-
-        return 0;
     }
 }

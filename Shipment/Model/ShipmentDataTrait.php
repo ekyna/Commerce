@@ -106,14 +106,4 @@ trait ShipmentDataTrait
 
         return $this;
     }
-
-    /**
-     * Returns whether or not the sale has a weight greater that zero.
-     *
-     * @return bool
-     */
-    public function requiresShipment()
-    {
-        return 0 < $this->weightTotal;
-    }
 }

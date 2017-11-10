@@ -33,6 +33,24 @@ class CartRepository extends AbstractSaleRepository implements CartRepositoryInt
     }
 
     /**
+     * @inheritDoc
+     */
+    public function findExpired()
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        $today = new \DateTime();
+        $today->setTime(0, 0, 0);
+
+        return $qb
+            ->andWhere($qb->expr()->lt('c.expiresAt', ':today'))
+            ->andWhere($qb->expr()->lte('c.paidTotal', 0))
+            ->getQuery()
+            ->setParameter('today', $today)
+            ->getResult();
+    }
+
+    /**
      * @inheritdoc
      */
     protected function getAlias()

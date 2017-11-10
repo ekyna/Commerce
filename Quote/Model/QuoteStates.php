@@ -126,4 +126,13 @@ final class QuoteStates
 
         throw new InvalidArgumentException("Unexpected quote state change set.");
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

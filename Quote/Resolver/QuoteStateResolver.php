@@ -25,33 +25,33 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
             throw new InvalidArgumentException("Expected instance of QuoteInterface.");
         }
 
-        $changed = parent::resolve($quote);
-
-        $paymentState = $quote->getPaymentState();
-
-        $state = QuoteStates::STATE_NEW;
+        parent::resolve($quote);
 
         if ($quote->hasItems()) {
-            if (PaymentStates::isPaidState($paymentState)) {
-                $state = QuoteStates::STATE_ACCEPTED;
-            } elseif ($paymentState == PaymentStates::STATE_PENDING) {
-                $state = QuoteStates::STATE_PENDING;
-            } elseif ($paymentState == PaymentStates::STATE_FAILED) {
-                $state = QuoteStates::STATE_REFUSED;
-            } elseif ($paymentState == PaymentStates::STATE_REFUNDED) {
-                $state = QuoteStates::STATE_REFUNDED;
-            } elseif ($paymentState == PaymentStates::STATE_CANCELED) {
-                $state = QuoteStates::STATE_CANCELED;
-            } else {
-                $state = QuoteStates::STATE_NEW;
+            $paymentState = $quote->getPaymentState();
+
+            $acceptedStates = [
+                PaymentStates::STATE_CAPTURED,
+                PaymentStates::STATE_AUTHORIZED,
+                PaymentStates::STATE_PENDING,
+            ];
+            if (in_array($paymentState, $acceptedStates, true)) {
+                return $this->setState($quote, QuoteStates::STATE_ACCEPTED);
+            }
+
+            if (PaymentStates::STATE_REFUNDED === $paymentState) {
+                return $this->setState($quote, QuoteStates::STATE_REFUNDED);
+            }
+
+            if (PaymentStates::STATE_FAILED === $paymentState) {
+                return $this->setState($quote, QuoteStates::STATE_REFUSED);
+            }
+
+            if (PaymentStates::STATE_CANCELED === $paymentState) {
+                return $this->setState($quote, QuoteStates::STATE_CANCELED);
             }
         }
 
-        if ($state !== $quote->getState()) {
-            $quote->setState($state);
-            $changed = true;
-        }
-
-        return $changed;
+        return $this->setState($quote, QuoteStates::STATE_NEW);
     }
 }

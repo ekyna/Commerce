@@ -26,4 +26,6 @@ abstract class Constants
     const STATUS_FAILED = 'failed';
 
     const STATUS_CANCELED = 'canceled';
+
+    const STATUS_EXPIRED = 'expired';
 }

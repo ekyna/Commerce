@@ -14,10 +14,10 @@
         </id>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface"
-                    field="invoiceQuote" mapped-by="invoiceAddress"/>
+                    field="invoiceQuote" mapped-by="invoiceAddress" orphan-removal="true"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface"
-                    field="deliveryQuote" mapped-by="deliveryAddress"/>
+                    field="deliveryQuote" mapped-by="deliveryAddress" orphan-removal="true"/>
 
     </mapped-superclass>
 

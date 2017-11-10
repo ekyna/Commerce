@@ -4,17 +4,15 @@ namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
+use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
 /**
- * Class QuantityCalculator
+ * Class ShipmentCalculator
  * @package Ekyna\Component\Commerce\Shipment\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class QuantityCalculator implements QuantityCalculatorInterface
+class ShipmentCalculator implements ShipmentCalculatorInterface
 {
     /**
      * @var SubjectHelperInterface
@@ -45,7 +43,7 @@ class QuantityCalculator implements QuantityCalculatorInterface
 
         $quantity = 0;
 
-        /** @var StockAssignmentsInterface $saleItem */
+        /** @var Stock\StockAssignmentsInterface $saleItem */
         foreach ($saleItem->getStockAssignments() as $assignment) {
             $quantity += $assignment->getShippableQuantity();
         }
@@ -66,6 +64,8 @@ class QuantityCalculator implements QuantityCalculatorInterface
     public function calculateShippableQuantity(Shipment\ShipmentItemInterface $item)
     {
         $saleItem = $item->getSaleItem();
+
+        // TODO return zero if not shippable
 
         $quantity = $saleItem->getTotalQuantity();
 
@@ -93,8 +93,6 @@ class QuantityCalculator implements QuantityCalculatorInterface
                     }
                 }
             }
-
-            // TODO watch for returned Shipments
         }
 
         // If shipment is in stockable state, this shipment item's quantity
@@ -118,6 +116,8 @@ class QuantityCalculator implements QuantityCalculatorInterface
     public function calculateReturnableQuantity(Shipment\ShipmentItemInterface $item)
     {
         $saleItem = $item->getSaleItem();
+
+        // TODO return zero if not shippable
 
         $quantity = 0;
 
@@ -166,7 +166,6 @@ class QuantityCalculator implements QuantityCalculatorInterface
      */
     public function calculateShippedQuantity(Common\SaleItemInterface $saleItem)
     {
-        /** @var Common\SaleInterface $sale */
         $sale = $saleItem->getSale();
 
         if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
@@ -180,13 +179,9 @@ class QuantityCalculator implements QuantityCalculatorInterface
                 continue;
             }
 
-            foreach ($shipment->getItems() as $shipmentItem) {
-                if ($shipmentItem->getSaleItem() === $saleItem) {
-                    if ($shipment->isReturn()) {
-                        $quantity -= $shipmentItem->getQuantity();
-                    } else {
-                        $quantity += $shipmentItem->getQuantity();
-                    }
+            foreach ($shipment->getItems() as $line) {
+                if ($line->getSaleItem() === $saleItem) {
+                    $quantity += $shipment->isReturn() ? -$line->getQuantity() : $line->getQuantity();
                 }
             }
         }
@@ -199,7 +194,6 @@ class QuantityCalculator implements QuantityCalculatorInterface
      */
     public function calculateReturnedQuantity(Common\SaleItemInterface $saleItem)
     {
-        /** @var Common\SaleInterface $sale */
         $sale = $saleItem->getSale();
 
         if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
@@ -228,6 +222,49 @@ class QuantityCalculator implements QuantityCalculatorInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject)
+    {
+        $quantities = [];
+
+        if ($subject instanceof Common\SaleInterface) {
+            foreach ($subject->getItems() as $item) {
+                $this->buildSaleItemQuantities($item, $quantities);
+            }
+        }
+
+        return $quantities;
+    }
+
+    /**
+     * Builds the sale item quantities recursively.
+     *
+     * @param Common\SaleItemInterface $item
+     * @param array                    $quantities
+     */
+    private function buildSaleItemQuantities(Common\SaleItemInterface $item, array &$quantities)
+    {
+        // TODO Abort if not shippable
+
+        if ($item->isCompound()) {
+            return;
+        }
+
+        $quantities[$item->getId()] = [
+            'sold'     => $item->getTotalQuantity(),
+            'shipped'  => $this->calculateShippedQuantity($item),
+            'returned' => $this->calculateReturnedQuantity($item),
+        ];
+
+        if ($item->hasChildren()) {
+            foreach ($item->getChildren() as $child) {
+                $this->buildSaleItemQuantities($child, $quantities);
+            }
+        }
+    }
+
+    /**
      * Returns whether or not the sale item has a stockable subject.
      *
      * @param Common\SaleItemInterface $saleItem
@@ -236,7 +273,7 @@ class QuantityCalculator implements QuantityCalculatorInterface
      */
     private function hasStockableSubject(Common\SaleItemInterface $saleItem)
     {
-        if (!$saleItem instanceof StockAssignmentsInterface) {
+        if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
             return false;
         }
 
@@ -244,7 +281,7 @@ class QuantityCalculator implements QuantityCalculatorInterface
             return false;
         }
 
-        if (!$subject instanceof StockSubjectInterface) {
+        if (!$subject instanceof Stock\StockSubjectInterface) {
             return false;
         }
 
@@ -252,7 +289,7 @@ class QuantityCalculator implements QuantityCalculatorInterface
             return false;
         }
 
-        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+        if ($subject->getStockMode() === Stock\StockSubjectModes::MODE_DISABLED) {
             return false;
         }
 

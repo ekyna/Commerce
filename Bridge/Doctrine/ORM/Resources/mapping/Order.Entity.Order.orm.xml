@@ -24,10 +24,12 @@
         </id>
 
         <field name="shipmentState" column="shipment_state" type="string" length="16"/>
+        <field name="invoiceTotal" column="invoice_total" type="decimal" precision="12" scale="5"/>
+        <field name="invoiceState" column="invoice_state" type="string" length="16"/>
         <field name="completedAt" column="completed_at" type="datetime" nullable="true"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
-                    field="invoiceAddress" inversed-by="invoiceOrder" orphan-removal="true">
+                    field="invoiceAddress" inversed-by="invoiceOrder">
             <cascade>
                 <cascade-all/>
             </cascade>
@@ -35,7 +37,7 @@
         </one-to-one>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
-                    field="deliveryAddress" inversed-by="deliveryOrder" orphan-removal="true">
+                    field="deliveryAddress" inversed-by="deliveryOrder">
             <cascade>
                 <cascade-all/>
             </cascade>

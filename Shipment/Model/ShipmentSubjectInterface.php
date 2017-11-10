@@ -65,4 +65,11 @@ interface ShipmentSubjectInterface extends ShipmentDataInterface
      * @return $this|ShipmentSubjectInterface
      */
     public function removeShipment(ShipmentInterface $shipment);
+
+    /**
+     * Returns the first shipment date.
+     *
+     * @return \DateTime|null
+     */
+    public function getShippedAt();
 }

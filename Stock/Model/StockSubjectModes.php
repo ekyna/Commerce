@@ -64,4 +64,13 @@ final class StockSubjectModes
 
         return false;
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

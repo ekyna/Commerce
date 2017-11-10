@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
-use Ekyna\Component\Commerce\Shipment\Calculator\QuantityCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Symfony\Component\Validator\Constraint;
@@ -17,19 +17,19 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class ShipmentItemValidator extends ConstraintValidator
 {
     /**
-     * @var QuantityCalculatorInterface
+     * @var ShipmentCalculatorInterface
      */
-    private $quantityCalculator;
+    private $shipmentCalculator;
 
 
     /**
      * Constructor.
      *
-     * @param QuantityCalculatorInterface $quantityCalculator
+     * @param ShipmentCalculatorInterface $calculator
      */
-    public function __construct(QuantityCalculatorInterface $quantityCalculator)
+    public function __construct(ShipmentCalculatorInterface $calculator)
     {
-        $this->quantityCalculator = $quantityCalculator;
+        $this->shipmentCalculator = $calculator;
     }
 
     /**
@@ -50,7 +50,7 @@ class ShipmentItemValidator extends ConstraintValidator
 
         // Return shipment case
         if ($item->getShipment()->isReturn()) {
-            $returnable = $this->quantityCalculator->calculateReturnableQuantity($item);
+            $returnable = $this->shipmentCalculator->calculateReturnableQuantity($item);
 
             if ($item->getQuantity() > $returnable) {
                 $this
@@ -70,8 +70,8 @@ class ShipmentItemValidator extends ConstraintValidator
 
         // Regular shipment case
 
-        $expected = $this->quantityCalculator->calculateShippableQuantity($item);
-        $available = $this->quantityCalculator->calculateAvailableQuantity($item);
+        $expected = $this->shipmentCalculator->calculateShippableQuantity($item);
+        $available = $this->shipmentCalculator->calculateAvailableQuantity($item);
 
         if (ShipmentStates::isStockableState($item->getShipment()->getState()) && $available < $expected) {
             // Shipment item's quantity must be lower than or equals the shipment item's available quantity

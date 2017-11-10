@@ -69,4 +69,13 @@ final class InvoiceTypes
 
         return $invoiceOrType === static::TYPE_CREDIT;
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

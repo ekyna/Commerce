@@ -10,7 +10,7 @@ use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
  * @package Ekyna\Component\Commerce\Document\Util
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SaleDocumentUtil
+final class SaleDocumentUtil
 {
     /**
      * Returns the types of the sale editable documents.
@@ -38,5 +38,14 @@ class SaleDocumentUtil
         }
 
         return $types;
+    }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
     }
 }

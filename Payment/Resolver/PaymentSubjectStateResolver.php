@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Payment\Resolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 
@@ -16,6 +17,22 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 class PaymentSubjectStateResolver implements StateResolverInterface
 {
     /**
+     * @var PaymentCalculatorInterface
+     */
+    protected $paymentCalculator;
+
+
+    /**
+     * Constructor.
+     *
+     * @param PaymentCalculatorInterface $paymentCalculator
+     */
+    public function __construct(PaymentCalculatorInterface $paymentCalculator)
+    {
+        $this->paymentCalculator = $paymentCalculator;
+    }
+
+    /**
      * @inheritDoc
      */
     public function resolve($subject)
@@ -24,65 +41,55 @@ class PaymentSubjectStateResolver implements StateResolverInterface
             throw new InvalidArgumentException("Expected instance of " . PaymentSubjectInterface::class);
         }
 
-        $payments = $subject->getPayments();
-        if (0 === $payments->count()) {
+        if (0 === $subject->getPayments()->count()) {
             return $this->setState($subject, PaymentStates::STATE_NEW);
         }
 
-        $paidTotal = $refundTotal = $failedTotal = $outstandingAmount = $offlinePendingAmount = 0;
+        // This method uses the calculated sale's payment totals.
+        // Makes sure to update them before any call of this method.
 
-        // Gather state amounts
-        foreach ($payments as $payment) {
-            // TODO Deal with payment currency conversion ...
-            if (PaymentStates::isPaidState($payment->getState())) {
-                $paidTotal += $payment->getAmount();
-                if ($payment->getMethod()->isOutstanding()) {
-                    $outstandingAmount += $payment->getAmount();
-                }
-            } elseif ($payment->getState() === PaymentStates::STATE_REFUNDED) {
-                $refundTotal += $payment->getAmount();
-            } elseif ($payment->getState() === PaymentStates::STATE_FAILED) {
-                $failedTotal += $payment->getAmount();
-            } elseif($payment->getState() === PaymentStates::STATE_PENDING && $payment->getMethod()->isManual()) {
-                $offlinePendingAmount += $payment->getAmount();
-            }
-        }
-
-        // Outstanding case
-        if (0 < $outstandingAmount && null !== $date = $subject->getOutstandingDate()) {
-            $today = new \DateTime();
-            $today->setTime(0, 0, 0);
-            // If payment limit date is past
-            if ($today > $date) {
-                $paidTotal -= $outstandingAmount;
-            } else {
-                $outstandingAmount = 0;
-            }
-        }
-
-        $granTotal = $subject->getGrandTotal();
+        $grandTotal = $subject->getGrandTotal();
         $currency = $subject->getCurrency()->getCode();
 
-        // State by amounts
-        if (0 <= Money::compare($paidTotal, $granTotal, $currency)) {
-            // PAID total is greater than or equal the sale total
+        // COMPLETED paid total equals grand total and no accepted/expired outstanding
+        if (
+            0 === Money::compare($subject->getPaidTotal(), $grandTotal, $currency) &&
+            0 == $subject->getOutstandingAccepted() && 0 == $subject->getOutstandingExpired()
+        ) {
+            return $this->setState($subject, PaymentStates::STATE_COMPLETED);
+        }
+
+        $fullFill = function ($amount) use ($grandTotal, $currency) {
+            return 0 <= Money::compare($amount, $grandTotal, $currency);
+        };
+
+        // CAPTURED paid total plus accepted outstanding total is greater than grand total
+        if ($fullFill($subject->getPaidTotal() + $subject->getOutstandingAccepted())) {
             return $this->setState($subject, PaymentStates::STATE_CAPTURED);
-        } elseif (0 < $outstandingAmount) {
-            // OUTSTANDING total is greater than zero
+        }
+
+        // OUTSTANDING expired total is greater than zero
+        if (0 < $subject->getOutstandingExpired()) {
             return $this->setState($subject, PaymentStates::STATE_OUTSTANDING);
-        } elseif (0 < $paidTotal + $offlinePendingAmount) {
-            // PENDING total is greater than zero
+        }
+
+        // PENDING total is greater than zero
+        if ($fullFill($subject->getPaidTotal() + $this->paymentCalculator->calculateOfflinePendingTotal($subject))) {
             return $this->setState($subject, PaymentStates::STATE_PENDING);
-        } elseif (0 <= Money::compare($refundTotal, $granTotal, $currency)) {
-            // REFUNDED total is greater than or equal the sale total
+        }
+
+        // REFUNDED total is greater than or equals the grand total
+        if ($fullFill($this->paymentCalculator->calculateRefundedTotal($subject))) {
             return $this->setState($subject, PaymentStates::STATE_REFUNDED);
-        } elseif (0 <= Money::compare($failedTotal, $granTotal, $currency)) {
-            // FAILED total is greater than or equal the sale total
+        }
+
+        // FAILED total is greater than or equals the grand total
+        if ($fullFill($this->paymentCalculator->calculateFailedTotal($subject))) {
             return $this->setState($subject, PaymentStates::STATE_FAILED);
         }
 
         // NEW (default) state
-        return $this->setState($subject, PaymentStates::STATE_PENDING);
+        return $this->setState($subject, PaymentStates::STATE_NEW);
     }
 
     /**

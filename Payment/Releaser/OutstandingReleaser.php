@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Payment\Releaser;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -14,6 +15,11 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 class OutstandingReleaser implements ReleaserInterface
 {
     /**
+     * @var PaymentCalculatorInterface
+     */
+    private $paymentCalculator;
+
+    /**
      * @var PersistenceHelperInterface
      */
     private $persistenceHelper;
@@ -22,10 +28,14 @@ class OutstandingReleaser implements ReleaserInterface
     /**
      * Constructor.
      *
+     * @param PaymentCalculatorInterface $paymentCalculator
      * @param PersistenceHelperInterface $persistenceHelper
      */
-    public function __construct(PersistenceHelperInterface $persistenceHelper)
-    {
+    public function __construct(
+        PaymentCalculatorInterface $paymentCalculator,
+        PersistenceHelperInterface $persistenceHelper
+    ) {
+        $this->paymentCalculator = $paymentCalculator;
         $this->persistenceHelper = $persistenceHelper;
     }
 
@@ -34,12 +44,14 @@ class OutstandingReleaser implements ReleaserInterface
      */
     public function releaseFund(SaleInterface $sale)
     {
-        $overpaidAmount = $sale->getPaidTotal() - $sale->getGrandTotal();
+        $overpaidAmount = $sale->getPaidTotal() + $sale->getOutstandingAccepted() - $sale->getGrandTotal();
 
         // Abort if the sale is not overpaid
         if (0 >= $overpaidAmount) {
             return false;
         }
+
+        $currency = $sale->getCurrency()->getCode();
 
         $changed = false;
 
@@ -56,7 +68,8 @@ class OutstandingReleaser implements ReleaserInterface
             }
 
             // If the payment amount is less than or equal the overpaid amount
-            if ($payment->getAmount() <= $overpaidAmount) {
+            $amount = $this->paymentCalculator->convertPaymentAmount($payment, $currency);
+            if ($amount <= $overpaidAmount) {
                 // Cancel the payment
                 $payment->setState(PaymentStates::STATE_CANCELED);
 

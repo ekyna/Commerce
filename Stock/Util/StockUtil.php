@@ -69,4 +69,13 @@ final class StockUtil
 
         return true;
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

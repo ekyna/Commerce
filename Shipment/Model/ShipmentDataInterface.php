@@ -56,26 +56,4 @@ interface ShipmentDataInterface
      * @return $this|ShipmentDataInterface
      */
     public function setShipmentAmount($amount);
-
-    /**
-     * Returns whether or not the sale has a weight greater that zero.
-     *
-     * @return bool
-     */
-    public function requiresShipment();
-
-    /**
-     * Builds the sold quantities.
-     *
-     * [
-     *     (int) itemId => [
-     *         'ordered'  => (float) quantity,
-     *         'shipped'  => (float) quantity,
-     *         'returned' => (float) quantity,
-     *     ]
-     * ]
-     *
-     * @return array
-     */
-    public function getSoldQuantities();
 }

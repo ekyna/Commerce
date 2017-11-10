@@ -112,6 +112,31 @@ final class ShipmentStates
     }
 
     /**
+     * Returns the returned states.
+     *
+     * @return array
+     */
+    static public function getReturnedStates()
+    {
+        return [
+            static::STATE_NONE, // TODO why ?
+            static::STATE_RETURNED
+        ];
+    }
+
+    /**
+     * Returns whether the given state is a returned state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isReturnedState($state)
+    {
+        return in_array($state, static::getReturnedStates(), true);
+    }
+
+    /**
      * Returns the deletable states.
      *
      * @return array
@@ -246,5 +271,14 @@ final class ShipmentStates
         }
 
         throw new InvalidArgumentException("Unexpected order state change set.");
+    }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
     }
 }

@@ -26,7 +26,7 @@
         <field name="expiresAt" column="expires_at" type="datetime"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"
-                    field="invoiceAddress" inversed-by="invoiceQuote" orphan-removal="true">
+                    field="invoiceAddress" inversed-by="invoiceQuote">
             <cascade>
                 <cascade-all/>
             </cascade>
@@ -34,7 +34,7 @@
         </one-to-one>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"
-                    field="deliveryAddress" inversed-by="deliveryQuote" orphan-removal="true">
+                    field="deliveryAddress" inversed-by="deliveryQuote">
             <cascade>
                 <cascade-all/>
             </cascade>

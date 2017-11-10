@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Customer\Updater;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 
 /**
  * Interface CustomerUpdaterInterface
@@ -11,6 +12,33 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  */
 interface CustomerUpdaterInterface
 {
+    /**
+     * Handles the payment insertion.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool Whether the customer has been changed.
+     */
+    public function handlePaymentInsert(PaymentInterface $payment);
+
+    /**
+     * Handles the payment update.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool Whether the customer has been changed.
+     */
+    public function handlePaymentUpdate(PaymentInterface $payment);
+
+    /**
+     * Handles the payment delete.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool Whether the customer has been changed.
+     */
+    public function handlePaymentDelete(PaymentInterface $payment);
+
     /**
      * Updates the customer's credit balance.
      *

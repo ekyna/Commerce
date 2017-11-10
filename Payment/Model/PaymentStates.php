@@ -18,10 +18,13 @@ final class PaymentStates
     const STATE_CANCELED    = 'canceled';
     const STATE_REFUNDED    = 'refunded';
     const STATE_AUTHORIZED  = 'authorized';
-    const STATE_OUTSTANDING = 'outstanding';
     const STATE_SUSPENDED   = 'suspended';
     const STATE_EXPIRED     = 'expired';
     const STATE_UNKNOWN     = 'unknown';
+
+    // For sale
+    const STATE_OUTSTANDING = 'outstanding';
+    const STATE_COMPLETED   = 'completed';
 
 
     /**
@@ -39,10 +42,11 @@ final class PaymentStates
             static::STATE_CANCELED,
             static::STATE_REFUNDED,
             static::STATE_AUTHORIZED,
-            static::STATE_OUTSTANDING,
             static::STATE_SUSPENDED,
             static::STATE_EXPIRED,
             static::STATE_UNKNOWN,
+            static::STATE_OUTSTANDING,
+            static::STATE_COMPLETED,
         ];
     }
 
@@ -130,7 +134,6 @@ final class PaymentStates
         return [
             static::STATE_CAPTURED,
             static::STATE_AUTHORIZED,
-            static::STATE_OUTSTANDING,
         ];
     }
 
@@ -197,5 +200,14 @@ final class PaymentStates
         }
 
         throw new InvalidArgumentException("Unexpected order state change set.");
+    }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
     }
 }

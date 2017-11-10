@@ -68,4 +68,13 @@ final class DocumentTypes
     {
         return in_array($type, static::getTypes(), true);
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

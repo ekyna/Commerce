@@ -65,6 +65,7 @@ abstract class OutstandingWatcher implements WatcherInterface
 
         $states = [Model\PaymentStates::STATE_AUTHORIZED, Model\PaymentStates::STATE_CAPTURED];
 
+        // TODO find only outstanding method
         /** @var Model\PaymentMethodInterface[] $methods */
         $methods = $this->methodRepository->findAll();
 
@@ -80,12 +81,15 @@ abstract class OutstandingWatcher implements WatcherInterface
             foreach ($payments as $payment) {
                 $sale = $payment->getSale();
 
+                // Sale may not have a outstanding limit date
                 if (null === $date = $sale->getOutstandingDate()) {
-                    throw new LogicException("Sale's outstanding limit date is not set.");
+                    continue;
                 }
 
-                if ($date < $today) {
-                    $payment->setState(Model\PaymentStates::STATE_OUTSTANDING);
+                // If outstanding limit date is past
+                if (0 < $date->diff($today)->days) {
+
+                    $payment->setState(Model\PaymentStates::STATE_EXPIRED);
 
                     $this->persist($payment);
 

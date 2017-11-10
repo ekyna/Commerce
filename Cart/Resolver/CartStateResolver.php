@@ -25,26 +25,21 @@ class CartStateResolver extends AbstractSaleStateResolver implements StateResolv
             throw new InvalidArgumentException("Expected instance of " . CartInterface::class);
         }
 
-        $changed = parent::resolve($cart);
-
-        $paymentState = $cart->getPaymentState();
-
-        $state = CartStates::STATE_NEW;
+        parent::resolve($cart);
 
         if ($cart->hasItems()) {
-            if (
-                PaymentStates::isPaidState($paymentState) ||
-                $paymentState === PaymentStates::STATE_PENDING
-            ) {
-                $state = CartStates::STATE_ACCEPTED;
+            $paymentState = $cart->getPaymentState();
+
+            $acceptedStates = [
+                PaymentStates::STATE_CAPTURED,
+                PaymentStates::STATE_AUTHORIZED,
+                PaymentStates::STATE_PENDING,
+            ];
+            if (in_array($paymentState, $acceptedStates, true)) {
+                return $this->setState($cart, CartStates::STATE_ACCEPTED);
             }
         }
 
-        if ($state !== $cart->getState()) {
-            $cart->setState($state);
-            $changed = true;
-        }
-
-        return $changed;
+        return $this->setState($cart, CartStates::STATE_NEW);
     }
 }

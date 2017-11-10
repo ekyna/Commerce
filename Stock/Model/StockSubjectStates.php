@@ -62,4 +62,13 @@ final class StockSubjectStates
 
         return false;
     }
+
+    /**
+     * Disabled constructor.
+     *
+     * @codeCoverageIgnore
+     */
+    final private function __construct()
+    {
+    }
 }

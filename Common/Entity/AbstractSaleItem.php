@@ -387,14 +387,6 @@ abstract class AbstractSaleItem implements SaleItemInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getSoldQuantity()
-    {
-        return $this->getTotalQuantity();
-    }
-
-    /**
      * @inheritDoc
      */
     public function compareTo($other)

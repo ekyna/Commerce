@@ -1,18 +1,19 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Stock\Model;
+namespace Ekyna\Component\Commerce\Invoice\Model;
 
 /**
- * Class StockUnitStates
- * @package Ekyna\Component\Commerce\Stock\Model
+ * Class InvoiceStates
+ * @package Ekyna\Component\Commerce\Invoice\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-final class StockUnitStates
+final class InvoiceStates
 {
-    const STATE_NEW     = 'new';
-    const STATE_PENDING = 'pending';
-    const STATE_READY   = 'ready';
-    const STATE_CLOSED  = 'closed';
+    const STATE_NEW      = 'new';      // Subject does not need invoice yet
+    const STATE_PENDING  = 'pending';  // Subject needs invoice but none has been created yet
+    const STATE_PARTIAL  = 'partial';  // Subject has invoices but is not fully invoiced
+    const STATE_INVOICED = 'invoiced'; // Subject is fully invoiced
+    const STATE_CREDITED = 'credited'; // Subject is fully credited
 
 
     /**
@@ -25,8 +26,9 @@ final class StockUnitStates
         return [
             static::STATE_NEW,
             static::STATE_PENDING,
-            static::STATE_READY,
-            static::STATE_CLOSED,
+            static::STATE_PARTIAL,
+            static::STATE_INVOICED,
+            static::STATE_CREDITED,
         ];
     }
 

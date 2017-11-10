@@ -6,8 +6,8 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
-use Ekyna\Component\Commerce\Invoice\Util\InvoiceUtil;
 use libphonenumber\PhoneNumberUtil;
 
 /**
@@ -22,18 +22,28 @@ class InvoiceBuilder extends DocumentBuilder
      */
     private $factory;
 
+    /**
+     * @var InvoiceCalculatorInterface
+     */
+    private $calculator;
+
 
     /**
      * Constructor.
      *
-     * @param PhoneNumberUtil      $phoneNumberUtil
-     * @param SaleFactoryInterface $factory
+     * @param SaleFactoryInterface       $factory
+     * @param InvoiceCalculatorInterface $calculator
+     * @param PhoneNumberUtil            $phoneNumberUtil
      */
-    public function __construct(PhoneNumberUtil $phoneNumberUtil = null, SaleFactoryInterface $factory)
-    {
+    public function __construct(
+        SaleFactoryInterface $factory,
+        InvoiceCalculatorInterface $calculator,
+        PhoneNumberUtil $phoneNumberUtil = null
+    ) {
         parent::__construct($phoneNumberUtil);
 
         $this->factory = $factory;
+        $this->calculator = $calculator;
     }
 
     /**
@@ -45,10 +55,10 @@ class InvoiceBuilder extends DocumentBuilder
 
         /** @var Invoice\InvoiceLineInterface $line */
         if ($invoice->getType() === Invoice\InvoiceTypes::TYPE_INVOICE) {
-            $max = InvoiceUtil::calculateMaxInvoiceQuantity($line);
+            $max = $this->calculator->calculateInvoiceableQuantity($line);
             $line->setQuantity($max);
         } elseif ($invoice->getType() === Invoice\InvoiceTypes::TYPE_CREDIT) {
-            $max = InvoiceUtil::calculateMaxCreditQuantity($line);
+            $max = $this->calculator->calculateCreditableQuantity($line);
             $line->setQuantity(0);
         } else {
             throw new InvalidArgumentException("Unexpected invoice type.");

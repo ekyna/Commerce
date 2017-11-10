@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Payment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\CurrencySubjectTrait;
+use Ekyna\Component\Commerce\Common\Util\Money;
 
 /**
  * Trait PaymentSubjectTrait
@@ -27,7 +28,12 @@ trait PaymentSubjectTrait
     /**
      * @var float
      */
-    protected $outstandingTotal;
+    protected $outstandingAccepted;
+
+    /**
+     * @var float
+     */
+    protected $outstandingExpired;
 
     /**
      * @var float
@@ -57,7 +63,7 @@ trait PaymentSubjectTrait
     {
         $this->grandTotal = 0;
         $this->paidTotal = 0;
-        $this->outstandingTotal = 0;
+        $this->outstandingAccepted = 0;
         $this->outstandingLimit = 0;
 
         $this->paymentState = PaymentStates::STATE_NEW;
@@ -113,25 +119,49 @@ trait PaymentSubjectTrait
     }
 
     /**
-     * Returns the outstanding total.
+     * Returns the accepted outstanding total.
      *
      * @return float
      */
-    public function getOutstandingTotal()
+    public function getOutstandingAccepted()
     {
-        return $this->outstandingTotal;
+        return $this->outstandingAccepted;
     }
 
     /**
-     * Sets the outstanding total.
+     * Sets the accepted outstanding total.
      *
      * @param float $total
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingTotal($total)
+    public function setOutstandingAccepted($total)
     {
-        $this->outstandingTotal = $total;
+        $this->outstandingAccepted = $total;
+
+        return $this;
+    }
+
+    /**
+     * Returns the expired outstanding total.
+     *
+     * @return float
+     */
+    public function getOutstandingExpired()
+    {
+        return $this->outstandingExpired;
+    }
+
+    /**
+     * Sets the expired outstanding total.
+     *
+     * @param float $total
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setOutstandingExpired($total)
+    {
+        $this->outstandingExpired = $total;
 
         return $this;
     }
@@ -229,27 +259,37 @@ trait PaymentSubjectTrait
     }
 
     /**
-     * Returns whether or not the subject requires payment.
+     * Returns whether or not the subject is fully paid.
      *
      * @return bool
      */
-    public function requiresPayment()
+    public function isPaid()
     {
-        return $this->paidTotal < $this->grandTotal;
+        // TRUE If grand total is greater than paid total
+        return 0 <= Money::compare($this->grandTotal, $this->paidTotal, $this->getCurrency()->getCode());
     }
 
     /**
-     * @inheritdoc
+     * Returns the payment remaining amount.
+     *
+     * @return float
      */
     public function getRemainingAmount()
     {
-        $paid = $this->paidTotal - $this->outstandingTotal;
-
-        if ($paid >= $this->grandTotal) {
+        // If fully paid
+        if ($this->isPaid()) {
+            // Return zero
             return 0;
         }
 
-        return $this->grandTotal - $paid;
-    }
+        // If paid + accepted outstanding equals grand total
+        $currency = $this->getCurrency()->getCode();
+        if (0 === Money::compare($this->paidTotal + $this->outstandingAccepted, $this->grandTotal, $currency)) {
+            // Return accepted outstanding amount (for fund release)
+            return $this->outstandingAccepted;
+        }
 
+        // Return grand total minus paid + accepted outstanding
+        return $this->grandTotal - ($this->paidTotal + $this->outstandingAccepted);
+    }
 }

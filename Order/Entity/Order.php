@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -20,16 +19,12 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 class Order extends AbstractSale implements Model\OrderInterface
 {
     use Shipment\ShipmentSubjectTrait;
+    use Invoice\InvoiceSubjectTrait;
 
     /**
      * @var CustomerInterface
      */
     protected $originCustomer;
-
-    /**
-     * @var ArrayCollection|Invoice\InvoiceInterface[]
-     */
-    protected $invoices;
 
     /**
      * @var \DateTime
@@ -43,9 +38,9 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function __construct()
     {
         $this->state = Model\OrderStates::STATE_NEW;
-        $this->invoices = new ArrayCollection();
 
         $this->initializeShipmentSubject();
+        $this->initializeInvoiceSubject();
 
         parent::__construct();
     }
@@ -366,22 +361,6 @@ class Order extends AbstractSale implements Model\OrderInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasInvoices()
-    {
-        return 0 < $this->invoices->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getInvoices()
-    {
-        return $this->invoices;
     }
 
     /**

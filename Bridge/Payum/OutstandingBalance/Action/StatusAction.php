@@ -49,6 +49,12 @@ class StatusAction implements ActionInterface
             return;
         }
 
+        if (Constants::STATUS_EXPIRED == $model[Constants::FIELD_STATUS]) {
+            $request->markExpired();
+
+            return;
+        }
+
         if (Constants::STATUS_CANCELED == $model[Constants::FIELD_STATUS]) {
             $request->markCanceled();
 

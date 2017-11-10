@@ -31,4 +31,11 @@ interface CartRepositoryInterface extends SaleRepositoryInterface
      * @return CartInterface|null
      */
     public function findLatestByCustomer(CustomerInterface $customer);
+
+    /**
+     * Finds the expired carts.
+     *
+     * @return CartInterface[]
+     */
+    public function findExpired();
 }

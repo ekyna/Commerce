@@ -89,6 +89,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function assignSaleItem(SaleItemInterface $item)
     {
+        // Abort if not supported
         if (!$this->supportsAssignment($item)) {
             return;
         }
@@ -101,6 +102,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function applySaleItem(SaleItemInterface $item)
     {
+        // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
             return;
         }
@@ -145,6 +147,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function detachSaleItem(SaleItemInterface $item)
     {
+        // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
             return;
         }
@@ -238,7 +241,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function detachShipmentItem(ShipmentItemInterface $item)
     {
-        // Abort if not supporter
+        // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
             return;
         }

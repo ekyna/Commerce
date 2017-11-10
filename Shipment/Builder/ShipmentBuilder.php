@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Shipment\Builder;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Shipment\Calculator\QuantityCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
@@ -20,21 +20,21 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     private $factory;
 
     /**
-     * @var QuantityCalculatorInterface
+     * @var ShipmentCalculatorInterface
      */
-    private $quantityCalculator;
+    private $calculator;
 
 
     /**
      * Constructor.
      *
      * @param SaleFactoryInterface        $factory
-     * @param QuantityCalculatorInterface $calculator
+     * @param ShipmentCalculatorInterface $calculator
      */
-    public function __construct(SaleFactoryInterface $factory, QuantityCalculatorInterface $calculator)
+    public function __construct(SaleFactoryInterface $factory, ShipmentCalculatorInterface $calculator)
     {
         $this->factory = $factory;
-        $this->quantityCalculator = $calculator;
+        $this->calculator = $calculator;
     }
 
     /**
@@ -74,15 +74,15 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         $shipment->addItem($item);
 
         $expected = $shipment->isReturn()
-            ? $this->quantityCalculator->calculateReturnableQuantity($item)
-            : $this->quantityCalculator->calculateShippableQuantity($item);
+            ? $this->calculator->calculateReturnableQuantity($item)
+            : $this->calculator->calculateShippableQuantity($item);
 
         if (0 >= $expected) {
             $shipment->removeItem($item);
 
             return;
         } elseif (!$shipment->isReturn()) {
-            $item->setQuantity(min($expected, $this->quantityCalculator->calculateAvailableQuantity($item)));
+            $item->setQuantity(min($expected, $this->calculator->calculateAvailableQuantity($item)));
         }
 
         if (!$saleItem->isCompound() && $saleItem->hasChildren()) {

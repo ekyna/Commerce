@@ -9,9 +9,12 @@ use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
+use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Releaser\ReleaserInterface;
-use Ekyna\Component\Commerce\Payment\Util\PaymentUtil;
 
 /**
  * Class SaleUpdater
@@ -41,6 +44,16 @@ class SaleUpdater implements SaleUpdaterInterface
     protected $weightCalculator;
 
     /**
+     * @var PaymentCalculatorInterface
+     */
+    protected $paymentCalculator;
+
+    /**
+     * @var InvoiceCalculatorInterface
+     */
+    protected $invoiceCalculator;
+
+    /**
      * @var ReleaserInterface
      */
     protected $outstandingReleaser;
@@ -58,7 +71,9 @@ class SaleUpdater implements SaleUpdaterInterface
      * @param AdjustmentBuilderInterface $adjustmentBuilder
      * @param AmountsCalculatorInterface $amountCalculator
      * @param WeightCalculatorInterface  $weightCalculator
-     * @param ReleaserInterface        $outstandingReleaser
+     * @param PaymentCalculatorInterface $paymentCalculator
+     * @param InvoiceCalculatorInterface $invoiceCalculator
+     * @param ReleaserInterface          $outstandingReleaser
      * @param SaleFactoryInterface       $saleFactory
      */
     public function __construct(
@@ -66,6 +81,8 @@ class SaleUpdater implements SaleUpdaterInterface
         AdjustmentBuilderInterface $adjustmentBuilder,
         AmountsCalculatorInterface $amountCalculator,
         WeightCalculatorInterface $weightCalculator,
+        PaymentCalculatorInterface $paymentCalculator,
+        InvoiceCalculatorInterface $invoiceCalculator,
         ReleaserInterface $outstandingReleaser,
         SaleFactoryInterface $saleFactory
     ) {
@@ -73,6 +90,8 @@ class SaleUpdater implements SaleUpdaterInterface
         $this->adjustmentBuilder = $adjustmentBuilder;
         $this->amountCalculator = $amountCalculator;
         $this->weightCalculator = $weightCalculator;
+        $this->paymentCalculator = $paymentCalculator;
+        $this->invoiceCalculator = $invoiceCalculator;
         $this->outstandingReleaser = $outstandingReleaser;
         $this->saleFactory = $saleFactory;
     }
@@ -86,13 +105,33 @@ class SaleUpdater implements SaleUpdaterInterface
         // 1. discounts
         $changed = $this->updateDiscounts($sale);
         // 2. weight total
-        $changed |= $this->updateTotalWeight($sale);
+        $changed |= $this->updateWeightTotal($sale);
         // 3. shipment amount (based on 2.)
         //TODO$changed |= $this->updateTotalWeight($sale);
         // 4. taxation (items and shipment)
         $changed |= $this->updateTaxation($sale);
-        // 5. gross and gran totals
-        $changed |= $this->updateTotals($sale);
+        // 5. net and grand totals
+        $changed |= $this->updateAmountsTotal($sale);
+        // 6. paid and outstanding totals
+        $changed |= $this->updatePaymentTotal($sale);
+        // 7. invoice total
+        $changed |= $this->updateInvoiceTotal($sale);
+
+        return $changed;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateTotals(SaleInterface $sale)
+    {
+        $changed = $this->updateWeightTotal($sale);
+
+        $changed |= $this->updateAmountsTotal($sale);
+
+        $changed |= $this->updatePaymentTotal($sale);
+
+        $changed |= $this->updateInvoiceTotal($sale);
 
         return $changed;
     }
@@ -150,22 +189,6 @@ class SaleUpdater implements SaleUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateTotalWeight(SaleInterface $sale)
-    {
-        $weightTotal = $this->weightCalculator->calculateSale($sale);
-
-        if ($sale->getWeightTotal() != $weightTotal) {
-            $sale->setWeightTotal($weightTotal);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function updateOutstandingAndTerm(SaleInterface $sale)
     {
         $changed = false;
@@ -187,17 +210,35 @@ class SaleUpdater implements SaleUpdaterInterface
 
         // Outstanding payments
         $hasOutstandingPayments = false;
+        $allowedStates = [
+            PaymentStates::STATE_CAPTURED,
+            PaymentStates::STATE_AUTHORIZED,
+            PaymentStates::STATE_EXPIRED,
+        ];
         foreach ($sale->getPayments() as $payment) {
-            if ($payment->getMethod()->isOutstanding() && PaymentStates::isPaidState($payment->getState())) {
+            if ($payment->getMethod()->isOutstanding() && in_array($payment->getState(), $allowedStates, true)) {
                 $hasOutstandingPayments = true;
                 break;
             }
         }
 
-        // If has payment term and outstanding payments
-        if ($term && $hasOutstandingPayments) {
+        // Invoice date
+        $invoicedAt = null;
+        if ($sale instanceof InvoiceSubjectInterface) {
+            $invoicedAt = $sale->getInvoicedAt();
+        }
+
+        // If sale has payment term and outstanding payments and invoice date
+        if ($term && $hasOutstandingPayments && $invoicedAt) {
+            // Calculate outstanding date
+            $date = clone $invoicedAt;
+            $date->setTime(23, 59, 59);
+            $date->modify(sprintf('+%s days', $term->getDays()));
+            if ($term->getEndOfMonth()) {
+                $date->modify('last day of this month');
+            }
+
             // Update outstanding date
-            $date = PaymentUtil::calculateOutstandingDate($term, $sale->getCreatedAt());
             if ($date !== $sale->getOutstandingDate()) {
                 $sale->setOutstandingDate($date);
                 $changed = true;
@@ -211,32 +252,18 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
-     * @inheritdoc
+     * Updates the total weight.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
      */
-    public function updatePaidTotal(SaleInterface $sale)
+    protected function updateWeightTotal(SaleInterface $sale)
     {
-        // Paid total calculator
-        $calculate = function(SaleInterface $sale) {
-            $total = 0;
+        $weightTotal = $this->weightCalculator->calculateSale($sale);
 
-            foreach ($sale->getPayments() as $payment) {
-                if (PaymentStates::isPaidState($payment->getState())) {
-                    $total += $payment->getAmount();
-                }
-            }
-
-            return $total;
-        };
-
-        $total = $calculate($sale);
-        if ($total != $sale->getPaidTotal()) {
-            $sale->setPaidTotal($total);
-
-            // Paid total has changed => try to release outstanding fund
-            if ($this->outstandingReleaser->releaseFund($sale)) {
-                // Re-update the paid total
-                $sale->setPaidTotal($calculate($sale));
-            }
+        if ($sale->getWeightTotal() != $weightTotal) {
+            $sale->setWeightTotal($weightTotal);
 
             return true;
         }
@@ -245,45 +272,25 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
-     * @inheritdoc
+     * Updates the sale's net and grand totals.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
      */
-    public function updateOutstandingTotal(SaleInterface $sale)
-    {
-        $total = 0;
-
-        foreach ($sale->getPayments() as $payment) {
-            if (!$payment->getMethod()->isOutstanding()) {
-                continue;
-            }
-            if (PaymentStates::isPaidState($payment->getState())) {
-                $total += $payment->getAmount();
-            }
-        }
-
-        if ($total != $sale->getOutstandingTotal()) {
-            $sale->setOutstandingTotal($total);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateTotalAmounts(SaleInterface $sale)
+    protected function updateAmountsTotal(SaleInterface $sale)
     {
         $changed = false;
 
+        $currency = $sale->getCurrency()->getCode();
         $amounts = $this->amountCalculator->calculateSale($sale);
 
-        if ($sale->getNetTotal() != $amounts->getBase()) {
+        if (0 != Money::compare($amounts->getBase(), $sale->getNetTotal(), $currency)) {
             $sale->setNetTotal($amounts->getBase());
             $changed = true;
         }
 
-        if ($sale->getGrandTotal() != $amounts->getTotal()) {
+        if (0 != Money::compare($amounts->getTotal(), $sale->getGrandTotal(), $currency)) {
             $sale->setGrandTotal($amounts->getTotal());
             $changed = true;
         }
@@ -292,18 +299,68 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
-     * @inheritdoc
+     * Updates the payment totals total.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
      */
-    public function updateTotals(SaleInterface $sale)
+    protected function updatePaymentTotal(SaleInterface $sale)
     {
-        $changed = $this->updateTotalAmounts($sale);
+        $changed = false;
 
-        $changed |= $this->updateTotalWeight($sale);
+        $currency = $sale->getCurrency()->getCode();
 
-        $changed |= $this->updatePaidTotal($sale);
+        // Update paid total if needed
+        $paid = $this->paymentCalculator->calculatePaidTotal($sale);
+        if (0 != Money::compare($paid, $sale->getPaidTotal(), $currency)) {
+            $sale->setPaidTotal($paid);
+            $changed = true;
+        }
+        // Update accepted outstanding total if needed
+        $acceptedOutstanding = $this->paymentCalculator->calculateOutstandingAcceptedTotal($sale);
+        if (0 != Money::compare($acceptedOutstanding, $sale->getOutstandingAccepted(), $currency)) {
+            $sale->setOutstandingAccepted($acceptedOutstanding);
+            $changed = true;
+        }
+        // Update expired outstanding total if needed
+        $expiredOutstanding = $this->paymentCalculator->calculateOutstandingExpiredTotal($sale);
+        if (0 != Money::compare($expiredOutstanding, $sale->getOutstandingExpired(), $currency)) {
+            $sale->setOutstandingExpired($expiredOutstanding);
+            $changed = true;
+        }
 
-        $changed |= $this->updateOutstandingTotal($sale);
+        // If payment totals has changed and fund has been released
+        if ($changed && $this->outstandingReleaser->releaseFund($sale)) {
+            // Re-update the payment totals
+            $sale->setPaidTotal($this->paymentCalculator->calculatePaidTotal($sale));
+            $sale->setOutstandingAccepted($this->paymentCalculator->calculateOutstandingAcceptedTotal($sale));
+            $sale->setOutstandingExpired($this->paymentCalculator->calculateOutstandingExpiredTotal($sale));
+        }
 
         return $changed;
+    }
+
+    /**
+     * Updates the sale invoice total.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function updateInvoiceTotal(SaleInterface $sale)
+    {
+        if (!$sale instanceof InvoiceSubjectInterface) {
+            return false;
+        }
+
+        $total = $this->invoiceCalculator->calculateTotal($sale);
+        if (0 != Money::compare($total, $sale->getInvoiceTotal(), $sale->getCurrency()->getCode())) {
+            $sale->setInvoiceTotal($total);
+
+            return true;
+        }
+
+        return false;
     }
 }

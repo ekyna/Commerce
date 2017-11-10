@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
  * Trait ShipmentSubjectTrait
@@ -67,5 +69,34 @@ trait ShipmentSubjectTrait
     public function getShipments()
     {
         return $this->shipments;
+    }
+
+    /**
+     * Returns the first shipment date.
+     *
+     * @return \DateTime|null
+     */
+    public function getShippedAt()
+    {
+        if (0 == $this->shipments->count()) {
+            return null;
+        }
+
+        $criteria = Criteria::create();
+        $criteria
+            ->andWhere(Criteria::expr()->eq('return', false))
+            ->andWhere(Criteria::expr()->in('state', ShipmentStates::getShippedStates()))
+            ->orderBy(['createdAt' => Criteria::ASC]);
+
+        /** @var ArrayCollection $shipments */
+        $shipments = $this->shipments;
+        $shipments = $shipments->matching($criteria);
+
+        /** @var ShipmentInterface $shipment */
+        if (false !== $shipment = $shipments->first()) {
+            return $shipment->getCreatedAt();
+        }
+
+        return null;
     }
 }
