@@ -12,20 +12,13 @@ abstract class Constants
     const FACTORY_NAME = 'outstanding_balance';
 
     const FIELD_BALANCE = 'balance';
-
     const FIELD_LIMIT = 'limit';
-
     const FIELD_AMOUNT = 'amount';
-
     const FIELD_STATUS = 'status';
 
     const STATUS_CAPTURED = 'captured';
-
     const STATUS_AUTHORIZED = 'authorized';
-
     const STATUS_FAILED = 'failed';
-
     const STATUS_CANCELED = 'canceled';
-
     const STATUS_EXPIRED = 'expired';
 }

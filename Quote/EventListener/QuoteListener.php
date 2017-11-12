@@ -17,6 +17,22 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class QuoteListener extends AbstractSaleListener
 {
     /**
+     * @var string
+     */
+    protected $expirationDelay;
+
+
+    /**
+     * Sets the expiration delay.
+     *
+     * @param string $delay
+     */
+    public function setExpirationDelay($delay)
+    {
+        $this->expirationDelay = $delay;
+    }
+
+    /**
      * @inheritdoc
      */
     public function onInitialize(ResourceEventInterface $event)
@@ -26,9 +42,9 @@ class QuoteListener extends AbstractSaleListener
         /** @var \Ekyna\Bundle\CommerceBundle\Entity\Quote $quote */
         $quote = $this->getSaleFromEvent($event);
 
-        // Set default expires at
+        // Set the default 'expires at' date time
         $date = new \DateTime();
-        $date->modify('+2 months'); // TODO parameter
+        $date->modify($this->expirationDelay);
         $quote->setExpiresAt($date);
     }
 

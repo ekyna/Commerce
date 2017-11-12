@@ -34,7 +34,7 @@ class CaptureAction implements ActionInterface
             throw new RuntimeException("Payment has not been converted.");
         }
 
-        if ($model[Constants::FIELD_LIMIT] <= $model[Constants::FIELD_BALANCE] - $model[Constants::FIELD_AMOUNT]) {
+        if ($model[Constants::FIELD_LIMIT] >= $model[Constants::FIELD_AMOUNT] - $model[Constants::FIELD_BALANCE]) {
             $model[Constants::FIELD_STATUS] = Constants::STATUS_CAPTURED;
         } else {
             $model[Constants::FIELD_STATUS] = Constants::STATUS_FAILED;

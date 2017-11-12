@@ -64,6 +64,7 @@ trait PaymentSubjectTrait
         $this->grandTotal = 0;
         $this->paidTotal = 0;
         $this->outstandingAccepted = 0;
+        $this->outstandingExpired = 0;
         $this->outstandingLimit = 0;
 
         $this->paymentState = PaymentStates::STATE_NEW;
@@ -265,8 +266,8 @@ trait PaymentSubjectTrait
      */
     public function isPaid()
     {
-        // TRUE If grand total is greater than paid total
-        return 0 <= Money::compare($this->grandTotal, $this->paidTotal, $this->getCurrency()->getCode());
+        // TRUE If paid total is greater than or equals grand total
+        return 0 <= Money::compare($this->paidTotal, $this->grandTotal, $this->getCurrency()->getCode());
     }
 
     /**

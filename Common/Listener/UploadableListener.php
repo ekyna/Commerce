@@ -22,6 +22,7 @@ class UploadableListener
      */
     private $enabled = true;
 
+
     /**
      * @param UploaderInterface $uploader
      */
@@ -37,7 +38,7 @@ class UploadableListener
      */
     public function setEnabled($enabled)
     {
-        $this->enabled = (bool) $enabled;
+        $this->enabled = (bool)$enabled;
     }
 
     /**

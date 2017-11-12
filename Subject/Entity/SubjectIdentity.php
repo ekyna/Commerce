@@ -88,7 +88,7 @@ final class SubjectIdentity
      */
     public function setProvider($provider)
     {
-        $this->provider = $provider;
+        $this->provider = (string)$provider;
 
         return $this;
     }
@@ -112,7 +112,7 @@ final class SubjectIdentity
      */
     public function setIdentifier($identifier)
     {
-        $this->identifier = $identifier;
+        $this->identifier = (string)$identifier;
 
         return $this;
     }

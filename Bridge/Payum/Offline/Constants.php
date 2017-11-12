@@ -14,7 +14,7 @@ abstract class Constants
     const FIELD_STATUS = 'status';
 
     const STATUS_PENDING  = 'pending';
-    const STATUS_ACCEPTED = 'accepted';
+    const STATUS_CAPTURED = 'captured';
     const STATUS_REFUND   = 'refund';
     const STATUS_CANCELED = 'canceled';
 

@@ -84,25 +84,23 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
             $changed |= $this->invoiceStateResolver->resolve($subject);
         }
 
-        return $changed;
-    }
+        $state = $this->resolveState($subject);
 
-    /**
-     * Sets the sale state.
-     *
-     * @param SaleInterface $sale
-     * @param string        $state
-     *
-     * @return bool Whether or not the state has been changed.
-     */
-    protected function setState(SaleInterface $sale, $state)
-    {
-        if ($state !== $sale->getState()) {
-            $sale->setState($state);
+        if ($state !== $subject->getState()) {
+            $subject->setState($state);
 
             return true;
         }
 
-        return false;
+        return $changed;
     }
+
+    /**
+     * Resolves the sale state.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return string
+     */
+    abstract protected function resolveState(SaleInterface $sale);
 }

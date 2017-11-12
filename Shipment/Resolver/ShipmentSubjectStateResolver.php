@@ -72,8 +72,9 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
         if ($returnedCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_RETURNED);
         }
-        // Else if all fully shipped
-        elseif ($shippedCount == $itemsCount) {
+
+        // If all fully shipped
+        if ($shippedCount == $itemsCount) {
             // Watch for non completed shipment
             foreach ($subject->getShipments() as $shipment) {
                 if ($shipment->getState() != ShipmentStates::STATE_COMPLETED) {
@@ -84,8 +85,9 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             // All Clear
             return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
         }
-        // Else if some partially shipped
-        elseif (0 < $partialCount) {
+
+        // If some partially shipped
+        if (0 < $partialCount || 0 < $shippedCount) {
             return $this->setState($subject, ShipmentStates::STATE_PARTIAL);
         }
 

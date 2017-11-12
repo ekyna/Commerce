@@ -164,7 +164,7 @@ abstract class AbstractSaleListener
         $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
 
         // Update outstanding
-        $changed |= $this->saleUpdater->updateOutstandingAndTerm($sale);
+        $changed |= $this->saleUpdater->updatePaymentTerm($sale);
 
         // Update discounts
         $changed |= $this->saleUpdater->updateDiscounts($sale, true);
@@ -230,7 +230,7 @@ abstract class AbstractSaleListener
 
         // If customer has changed
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
-            $changed |= $this->saleUpdater->updateOutstandingAndTerm($sale);
+            $changed |= $this->saleUpdater->updatePaymentTerm($sale);
 
             // TODO Update customer's balances
             // For each payments
@@ -327,8 +327,11 @@ abstract class AbstractSaleListener
      */
     protected function handleContentChange(SaleInterface $sale)
     {
+        // Update outstanding date
+        $changed = $this->saleUpdater->updateOutstandingDate($sale);
+
         // Update totals
-        $changed = $this->saleUpdater->updateTotals($sale);
+        $changed |= $this->saleUpdater->updateTotals($sale);
 
         // Update state
         $changed |= $this->updateState($sale);
@@ -351,21 +354,16 @@ abstract class AbstractSaleListener
             return;
         }
 
-        if ($this->handleStateChange($sale)) {
-            $this->persistenceHelper->persistAndRecompute($sale);
-        }
+        $this->handleStateChange($sale);
     }
 
     /**
      * Handles the state change.
      *
      * @param SaleInterface $sale
-     *
-     * @return bool
      */
     protected function handleStateChange(SaleInterface $sale)
     {
-        return false;
     }
 
     /**

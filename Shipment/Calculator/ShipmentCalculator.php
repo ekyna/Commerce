@@ -245,17 +245,13 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
      */
     private function buildSaleItemQuantities(Common\SaleItemInterface $item, array &$quantities)
     {
-        // TODO Abort if not shippable
-
-        if ($item->isCompound()) {
-            return;
+        if (!$item->isCompound()) {
+            $quantities[$item->getId()] = [
+                'sold'     => $item->getTotalQuantity(),
+                'shipped'  => $this->calculateShippedQuantity($item),
+                'returned' => $this->calculateReturnedQuantity($item),
+            ];
         }
-
-        $quantities[$item->getId()] = [
-            'sold'     => $item->getTotalQuantity(),
-            'shipped'  => $this->calculateShippedQuantity($item),
-            'returned' => $this->calculateReturnedQuantity($item),
-        ];
 
         if ($item->hasChildren()) {
             foreach ($item->getChildren() as $child) {

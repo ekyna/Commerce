@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Resolver;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -21,27 +22,24 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
     /**
      * @inheritdoc
      */
-    public function resolve($order)
+    protected function resolveState(SaleInterface $sale)
     {
-        if (!$order instanceof OrderInterface) {
-            throw new InvalidArgumentException("Expected instance of OrderInterface.");
+        if (!$sale instanceof OrderInterface) {
+            throw new InvalidArgumentException("Expected instance of " . OrderInterface::class);
         }
 
-        parent::resolve($order);
+        $paymentState = $sale->getPaymentState();
+        $shipmentState = $sale->getShipmentState();
+        $invoiceState = $sale->getInvoiceState();
 
-        $paymentState = $order->getPaymentState();
-        $shipmentState = $order->getShipmentState();
-        $invoiceState = $order->getInvoiceState();
-
-        // Order states
-        if ($order->hasItems()) {
+        if ($sale->hasItems()) {
             // COMPLETED If fully Paid / Shipped / Invoiced
             if (
                 PaymentStates::STATE_COMPLETED === $paymentState &&
                 ShipmentStates::isShippedState($shipmentState) &&
                 InvoiceStates::STATE_INVOICED === $invoiceState
             ) {
-                return $this->setState($order, OrderStates::STATE_COMPLETED);
+                return OrderStates::STATE_COMPLETED;
             }
 
             // COMPLETED If fully Refund / Returned / Credited
@@ -50,46 +48,46 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 ShipmentStates::isReturnedState($shipmentState) &&
                 InvoiceStates::STATE_CREDITED === $invoiceState
             ) {
-                return $this->setState($order, OrderStates::STATE_COMPLETED);
+                return OrderStates::STATE_COMPLETED;
             }
 
-            // ACCEPTED If order has shipment(s) or invoice(s)
-            if ($order->hasShipments() || $order->hasInvoices()) {
-                return $this->setState($order, OrderStates::STATE_ACCEPTED);
+            // ACCEPTED If order has shipment(s), invoice(s) or accepted outstanding.
+            if ($sale->hasShipments() || $sale->hasInvoices() || 0 < $sale->getOutstandingAccepted()) {
+                return OrderStates::STATE_ACCEPTED;
             }
 
             // ACCEPTED If payment state is accepted or outstanding
             $acceptedStates = [
+                PaymentStates::STATE_COMPLETED,
                 PaymentStates::STATE_CAPTURED,
                 PaymentStates::STATE_AUTHORIZED,
                 PaymentStates::STATE_OUTSTANDING,
             ];
             if (in_array($paymentState, $acceptedStates, true)) {
-                return $this->setState($order, OrderStates::STATE_ACCEPTED);
+                return OrderStates::STATE_ACCEPTED;
             }
 
             // PENDING If order has pending offline payments
             if (PaymentStates::STATE_PENDING === $paymentState) {
-                return $this->setState($order, OrderStates::STATE_PENDING);
+                return OrderStates::STATE_PENDING;
             }
 
             // REFUNDED If order has been refunded
             if (PaymentStates::STATE_REFUNDED === $paymentState) {
-                return $this->setState($order, OrderStates::STATE_REFUNDED);
+                return OrderStates::STATE_REFUNDED;
             }
 
             // FAILED If all payments have failed
             if (PaymentStates::STATE_FAILED === $paymentState) {
-                return $this->setState($order, OrderStates::STATE_REFUSED);
+                return OrderStates::STATE_REFUSED;
             }
 
             // CANCELED If all payments have been canceled
             if (PaymentStates::STATE_CANCELED === $paymentState) {
-                return $this->setState($order, OrderStates::STATE_CANCELED);
+                return OrderStates::STATE_CANCELED;
             }
         }
 
-        // NEW (default)
-        return $this->setState($order, OrderStates::STATE_NEW);
+        return OrderStates::STATE_NEW;
     }
 }

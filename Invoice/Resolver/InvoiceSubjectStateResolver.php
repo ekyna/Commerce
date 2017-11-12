@@ -80,7 +80,7 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
             return $this->setState($subject, InvoiceStates::STATE_INVOICED);
         }
         // Else if some partially invoiced
-        elseif (0 < $partialCount) {
+        elseif (0 < $partialCount || 0 < $invoicedCount) {
             return $this->setState($subject, InvoiceStates::STATE_PARTIAL);
         }
 

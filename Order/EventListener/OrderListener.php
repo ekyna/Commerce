@@ -40,28 +40,6 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    /*public function onInsert(ResourceEventInterface $event)
-    {
-        parent::onInsert($event);
-
-        $sale = $this->getSaleFromEvent($event);
-    }*/
-
-    /**
-     * @inheritdoc
-     */
-    /*public function onUpdate(ResourceEventInterface $event)
-    {
-        $sale = $this->getSaleFromEvent($event);
-
-        // TODO prevent customer change if completed
-
-        parent::onUpdate($event);
-    }*/
-
-    /**
-     * @inheritdoc
-     */
     public function onPreDelete(ResourceEventInterface $event)
     {
         parent::onPreDelete($event);
@@ -87,7 +65,7 @@ class OrderListener extends AbstractSaleListener
      */
     public function handleStateChange(SaleInterface $sale)
     {
-        $changed = parent::handleStateChange($sale);
+        parent::handleStateChange($sale);
 
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
@@ -106,8 +84,6 @@ class OrderListener extends AbstractSaleListener
                 // We don't need to handle invoices as they are detached with sale items.
             }
         }
-
-        return $changed;
     }
 
     /**

@@ -11,5 +11,19 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
  */
 interface QuoteInterface extends SaleInterface
 {
+    /**
+     * Returns the "expires at" date time.
+     *
+     * @return \DateTime
+     */
+    public function getExpiresAt();
 
+    /**
+     * Sets the "expires at" date time.
+     *
+     * @param \DateTime $expiresAt
+     *
+     * @return $this|QuoteInterface
+     */
+    public function setExpiresAt(\DateTime $expiresAt = null);
 }

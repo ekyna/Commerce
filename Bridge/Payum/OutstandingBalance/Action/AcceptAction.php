@@ -1,24 +1,24 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Bridge\Payum\Offline\Action;
+namespace Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Action;
 
-use Ekyna\Component\Commerce\Bridge\Payum\Offline\Constants;
-use Ekyna\Component\Commerce\Bridge\Payum\Request\Hang;
+use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Constants;
+use Ekyna\Component\Commerce\Bridge\Payum\Request\Accept;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
 
 /**
- * Class HangAction
- * @package Ekyna\Component\Commerce\Bridge\Payum\Offline\Action
+ * Class AcceptAction
+ * @package Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Action
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class HangAction implements ActionInterface
+class AcceptAction implements ActionInterface
 {
     /**
      * {@inheritDoc}
      *
-     * @param Hang $request
+     * @param Accept $request
      */
     public function execute($request)
     {
@@ -26,7 +26,7 @@ class HangAction implements ActionInterface
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $model[Constants::FIELD_STATUS] = Constants::STATUS_PENDING;
+        $model[Constants::FIELD_STATUS] = Constants::STATUS_CAPTURED;
     }
 
     /**
@@ -34,7 +34,7 @@ class HangAction implements ActionInterface
      */
     public function supports($request)
     {
-        return $request instanceof Hang
+        return $request instanceof Accept
             && $request->getModel() instanceof \ArrayAccess;
     }
 }

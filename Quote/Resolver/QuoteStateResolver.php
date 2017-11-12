@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Quote\Resolver;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -19,39 +20,41 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
     /**
      * @inheritdoc
      */
-    public function resolve($quote)
+    protected function resolveState(SaleInterface $sale)
     {
-        if (!$quote instanceof QuoteInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteInterface.");
+        if (!$sale instanceof QuoteInterface) {
+            throw new InvalidArgumentException("Expected instance of " . QuoteInterface::class);
         }
 
-        parent::resolve($quote);
+        if ($sale->hasItems()) {
+            $paymentState = $sale->getPaymentState();
 
-        if ($quote->hasItems()) {
-            $paymentState = $quote->getPaymentState();
-
+            // ACCEPTED If payment state is accepted or pending
             $acceptedStates = [
                 PaymentStates::STATE_CAPTURED,
                 PaymentStates::STATE_AUTHORIZED,
                 PaymentStates::STATE_PENDING,
             ];
             if (in_array($paymentState, $acceptedStates, true)) {
-                return $this->setState($quote, QuoteStates::STATE_ACCEPTED);
+                return QuoteStates::STATE_ACCEPTED;
             }
 
+            // REFUNDED If order has been refunded
             if (PaymentStates::STATE_REFUNDED === $paymentState) {
-                return $this->setState($quote, QuoteStates::STATE_REFUNDED);
+                return QuoteStates::STATE_REFUNDED;
             }
 
+            // FAILED If all payments have failed
             if (PaymentStates::STATE_FAILED === $paymentState) {
-                return $this->setState($quote, QuoteStates::STATE_REFUSED);
+                return QuoteStates::STATE_REFUSED;
             }
 
+            // CANCELED If all payments have been canceled
             if (PaymentStates::STATE_CANCELED === $paymentState) {
-                return $this->setState($quote, QuoteStates::STATE_CANCELED);
+                return QuoteStates::STATE_CANCELED;
             }
         }
 
-        return $this->setState($quote, QuoteStates::STATE_NEW);
+        return QuoteStates::STATE_NEW;
     }
 }

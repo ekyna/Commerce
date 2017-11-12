@@ -309,15 +309,13 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
      */
     private function buildSaleItemQuantities(Common\SaleItemInterface $item, array &$quantities)
     {
-        if ($item->isCompound()) {
-            return;
+        if (!$item->isCompound()) {
+            $quantities[$item->getId()] = [
+                'sold'     => $item->getTotalQuantity(),
+                'invoiced' => $this->calculateInvoicedQuantity($item),
+                'credited' => $this->calculateCreditedQuantity($item),
+            ];
         }
-
-        $quantities[$item->getId()] = [
-            'sold'     => $item->getTotalQuantity(),
-            'invoiced' => $this->calculateInvoicedQuantity($item),
-            'credited' => $this->calculateCreditedQuantity($item),
-        ];
 
         if ($item->hasChildren()) {
             foreach ($item->getChildren() as $child) {

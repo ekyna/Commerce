@@ -64,11 +64,11 @@ class CustomerUpdater implements CustomerUpdaterInterface
 
         $acceptedStates = $this->getAcceptedStates($payment);
 
-        $fromAccepted = in_array($payment->getState(), $acceptedStates, true);
-        $toAccepted = in_array($payment->getState(), $acceptedStates, true);
+        $fromAccepted = in_array($stateCs[0], $acceptedStates, true);
+        $toAccepted = in_array($stateCs[1], $acceptedStates, true);
 
         // If payment state has changed from or to a accepted state
-        if ($fromAccepted xor !$toAccepted) {
+        if ($fromAccepted xor $toAccepted) {
             // Update the customer balance
             return $this->updateCustomerBalance($payment, isset($amountCs[0]) ? $amountCs[0] : null);
         }
@@ -89,7 +89,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
      */
     public function handlePaymentDelete(PaymentInterface $payment)
     {
-        if ($this->supports($payment)) {
+        if ($this->supports($payment) && $this->isAcceptedPayment($payment)) {
             $payment->setState(PaymentStates::STATE_CANCELED);
 
             return $this->updateCustomerBalance($payment);

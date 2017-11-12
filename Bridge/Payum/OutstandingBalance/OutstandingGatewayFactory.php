@@ -34,10 +34,11 @@ class OutstandingGatewayFactory extends GatewayFactory
         $config->defaults([
             'payum.factory_name'           => Constants::FACTORY_NAME,
             'payum.factory_title'          => 'Customer outstanding balance',
-            'payum.action.convert_payment' => new Action\ConvertAction(),
-            'payum.action.capture'         => new Action\CaptureAction(),
+            'payum.action.accept'          => new Action\AcceptAction(),
             'payum.action.authorize'       => new Action\AuthorizeAction(),
             'payum.action.cancel'          => new Action\CancelAction(),
+            'payum.action.capture'         => new Action\CaptureAction(),
+            'payum.action.convert_payment' => new Action\ConvertAction(),
             'payum.action.status'          => new Action\StatusAction(),
             'payum.action.sync'            => new Action\SyncAction(),
         ]);

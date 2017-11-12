@@ -189,13 +189,10 @@ class SaleUpdater implements SaleUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateOutstandingAndTerm(SaleInterface $sale)
+    public function updatePaymentTerm(SaleInterface $sale)
     {
-        $changed = false;
-
         $term = null;
 
-        // Payment term
         if (null !== $customer = $sale->getCustomer()) {
             // From parent if available
             if ($customer->hasParent()) {
@@ -204,51 +201,30 @@ class SaleUpdater implements SaleUpdaterInterface
                 $term = $customer->getPaymentTerm();
             }
         }
+
         if ($term !== $sale->getPaymentTerm()) {
             $sale->setPaymentTerm($term);
+
+            return true;
         }
 
-        // Outstanding payments
-        $hasOutstandingPayments = false;
-        $allowedStates = [
-            PaymentStates::STATE_CAPTURED,
-            PaymentStates::STATE_AUTHORIZED,
-            PaymentStates::STATE_EXPIRED,
-        ];
-        foreach ($sale->getPayments() as $payment) {
-            if ($payment->getMethod()->isOutstanding() && in_array($payment->getState(), $allowedStates, true)) {
-                $hasOutstandingPayments = true;
-                break;
-            }
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateOutstandingDate(SaleInterface $sale)
+    {
+        $date = $this->resolveOutstandingDate($sale);
+
+        if ($date !== $sale->getOutstandingDate()) {
+            $sale->setOutstandingDate($date);
+
+            return true;
         }
 
-        // Invoice date
-        $invoicedAt = null;
-        if ($sale instanceof InvoiceSubjectInterface) {
-            $invoicedAt = $sale->getInvoicedAt();
-        }
-
-        // If sale has payment term and outstanding payments and invoice date
-        if ($term && $hasOutstandingPayments && $invoicedAt) {
-            // Calculate outstanding date
-            $date = clone $invoicedAt;
-            $date->setTime(23, 59, 59);
-            $date->modify(sprintf('+%s days', $term->getDays()));
-            if ($term->getEndOfMonth()) {
-                $date->modify('last day of this month');
-            }
-
-            // Update outstanding date
-            if ($date !== $sale->getOutstandingDate()) {
-                $sale->setOutstandingDate($date);
-                $changed = true;
-            }
-        } elseif (null !== $sale->getOutstandingDate()) {
-            $sale->setOutstandingDate(null);
-            $changed = true;
-        }
-
-        return $changed;
+        return false;
     }
 
     /**
@@ -359,6 +335,63 @@ class SaleUpdater implements SaleUpdaterInterface
             $sale->setInvoiceTotal($total);
 
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Resolves the outstanding date.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return \DateTime|null
+     */
+    protected function resolveOutstandingDate(SaleInterface $sale)
+    {
+        if (!$sale instanceof InvoiceSubjectInterface) {
+            return null;
+        }
+
+        if (null === $term = $sale->getPaymentTerm()) {
+            return null;
+        }
+
+        if (!$this->saleHasOutstandingPayments($sale)) {
+            return null;
+        }
+
+        $invoicedAt = $sale->getInvoicedAt();
+
+        // Calculate outstanding date
+        $date = clone $invoicedAt;
+        $date->setTime(23, 59, 59);
+        $date->modify(sprintf('+%s days', $term->getDays()));
+        if ($term->getEndOfMonth()) {
+            $date->modify('last day of this month');
+        }
+
+        return $date;
+    }
+
+    /**
+     * Returns whether the sale has (accepted/expired) outstanding payments.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function saleHasOutstandingPayments(SaleInterface $sale)
+    {
+        $allowedStates = [
+            PaymentStates::STATE_CAPTURED,
+            PaymentStates::STATE_AUTHORIZED,
+            PaymentStates::STATE_EXPIRED,
+        ];
+        foreach ($sale->getPayments() as $payment) {
+            if ($payment->getMethod()->isOutstanding() && in_array($payment->getState(), $allowedStates, true)) {
+                return true;
+            }
         }
 
         return false;

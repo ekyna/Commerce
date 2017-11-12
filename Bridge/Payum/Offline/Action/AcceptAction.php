@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Payum\Offline\Action;
 
 use Ekyna\Component\Commerce\Bridge\Payum\Offline\Constants;
-use Ekyna\Component\Commerce\Bridge\Payum\Offline\Request\Accept;
+use Ekyna\Component\Commerce\Bridge\Payum\Request\Accept;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
@@ -18,7 +18,7 @@ class AcceptAction implements ActionInterface
     /**
      * {@inheritDoc}
      *
-     * @param Accept $request
+     * @param \Ekyna\Component\Commerce\Bridge\Payum\Request\Accept $request
      */
     public function execute($request)
     {
@@ -26,7 +26,7 @@ class AcceptAction implements ActionInterface
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $model[Constants::FIELD_STATUS] = Constants::STATUS_ACCEPTED;
+        $model[Constants::FIELD_STATUS] = Constants::STATUS_CAPTURED;
     }
 
     /**

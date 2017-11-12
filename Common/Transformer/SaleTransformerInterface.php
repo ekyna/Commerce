@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
-use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
  * Class SaleTransformerInterface
@@ -13,51 +12,21 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 interface SaleTransformerInterface
 {
     /**
-     * Copy the source sale into the target sale.
+     * Initializes the sale transformation.
      *
-     * @param Model\SaleInterface $source
-     * @param Model\SaleInterface $target
+     * @param SaleInterface $source The source sale.
+     * @param SaleInterface $target The target sale.
+     *
+     * @return \Ekyna\Component\Resource\Event\ResourceEventInterface The target initialize event.
      */
-    public function copySale(Model\SaleInterface $source, Model\SaleInterface $target);
+    public function initialize(SaleInterface $source, SaleInterface $target);
 
     /**
-     * Copy the source adjustment into the target adjustment.
+     * Transforms the given source sale to the given target sale.
      *
-     * @param Model\SaleAddressInterface $source
-     * @param Model\SaleAddressInterface $target
-     */
-    public function copyAddress(Model\SaleAddressInterface $source, Model\SaleAddressInterface $target);
-
-    /**
-     * Copy the source adjustment into the target adjustment.
+     * @return \Ekyna\Component\Resource\Event\ResourceEventInterface|null The event that stopped transformation if any.
      *
-     * @param Model\AdjustmentInterface $source
-     * @param Model\AdjustmentInterface $target
+     * @throws \Ekyna\Component\Commerce\Exception\LogicException If initialize has not been called first.
      */
-    public function copyAdjustment(Model\AdjustmentInterface $source, Model\AdjustmentInterface $target);
-
-    /**
-     * Copy the source payment into the target payment.
-     *
-     * @param PaymentInterface $source
-     * @param PaymentInterface $target
-     */
-    public function copyPayment(PaymentInterface $source, PaymentInterface $target);
-
-    /**
-     * Copy the source item into the target item.
-     *
-     * @param Model\SaleItemInterface $source
-     * @param Model\SaleItemInterface $target
-     */
-    public function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target);
-
-    /**
-     * Copy the property form the source object to the target object.
-     *
-     * @param object       $source
-     * @param object       $target
-     * @param string|array $properties
-     */
-    public function copy($source, $target, $properties);
+    public function transform();
 }

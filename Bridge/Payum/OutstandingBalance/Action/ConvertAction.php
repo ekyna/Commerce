@@ -42,7 +42,7 @@ class ConvertAction implements ActionInterface
             throw new RuntimeException("Sale's customer must be defined at this point.");
         }
 
-        // Switch to parent if available
+        // Use parent if available
         if ($customer->hasParent()) {
             $customer = $customer->getParent();
         }

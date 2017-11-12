@@ -2,103 +2,142 @@
 
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
-use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Cart\Model\CartInterface;
+use Ekyna\Component\Commerce\Common\Listener\UploadableListener;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
-use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
 
 /**
  * Class SaleTransformer
  * @package Ekyna\Component\Commerce\Common\Transformer
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO    Use a "resource service factory" to get operators
  */
 class SaleTransformer implements SaleTransformerInterface
 {
     /**
-     * @var SaleFactoryInterface
+     * @var SaleCopierInterface
      */
-    protected $saleFactory;
+    private $saleCopier;
 
     /**
-     * @var PropertyAccessorInterface
+     * @var ResourceOperatorInterface
      */
-    protected $accessor;
+    private $cartOperator;
+
+    /**
+     * @var ResourceOperatorInterface
+     */
+    private $quoteOperator;
+
+    /**
+     * @var ResourceOperatorInterface
+     */
+    private $orderOperator;
+
+    /**
+     * @var UploadableListener
+     */
+    private $uploadableListener;
+
+    /**
+     * @var SaleInterface
+     */
+    protected $source;
+
+    /**
+     * @var SaleInterface
+     */
+    protected $target;
 
 
     /**
      * Constructor.
      *
-     * @param SaleFactoryInterface $saleFactory
+     * @param SaleCopierInterface       $saleCopier
+     * @param ResourceOperatorInterface $cartOperator
+     * @param ResourceOperatorInterface $quoteOperator
+     * @param ResourceOperatorInterface $orderOperator
+     * @param UploadableListener        $uploadableListener
      */
-    public function __construct(SaleFactoryInterface $saleFactory)
-    {
-        $this->saleFactory = $saleFactory;
-        $this->accessor = PropertyAccess::createPropertyAccessor();
+    public function __construct(
+        SaleCopierInterface $saleCopier,
+        ResourceOperatorInterface $cartOperator,
+        ResourceOperatorInterface $quoteOperator,
+        ResourceOperatorInterface $orderOperator,
+        UploadableListener $uploadableListener
+    ) {
+        $this->saleCopier = $saleCopier;
+        $this->cartOperator = $cartOperator;
+        $this->quoteOperator = $quoteOperator;
+        $this->orderOperator = $orderOperator;
+        $this->uploadableListener = $uploadableListener;
     }
 
     /**
      * @inheritdoc
      */
-    public function copySale(Model\SaleInterface $source, Model\SaleInterface $target)
+    public function initialize(SaleInterface $source, SaleInterface $target)
     {
-        $this->copy($source, $target, [
-            'currency', 'customer', 'customerGroup',
-            'email', 'company', 'gender', 'firstName', 'lastName',
-            'sameAddress', 'preferredShipmentMethod', 'shipmentAmount',
-            'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
-            'voucherNumber', 'description', 'comment',
-        ]);
+        $this->source = $source;
+        $this->target = $target;
 
-        // Invoice address
-        if (null !== $sourceInvoiceAddress = $source->getInvoiceAddress()) {
-            $targetInvoiceAddress = $this->saleFactory->createAddressForSale($target, $sourceInvoiceAddress);
-            $target->setInvoiceAddress($targetInvoiceAddress);
+        $this->saleCopier->copySale($this->source, $this->target);
+
+        $this->postCopy($this->source, $this->target);
+
+        return $this->getOperator($this->target)->initialize($this->target);
+    }
+
+    /**
+     * Transforms the given source sale to the given target sale.
+     *
+     * @return \Ekyna\Component\Resource\Event\ResourceEventInterface|null The event that stopped transformation if any.
+     *
+     * @throws LogicException If initialize has not been called first.
+     */
+    public function transform()
+    {
+        if (null === $this->source || null === $this->target) {
+            throw new LogicException("Please call initialize first.");
         }
 
-        // Delivery address
-        if (null !== $sourceDeliveryAddress = $source->getDeliveryAddress()) {
-            $targetDeliveryAddress = $this->saleFactory->createAddressForSale($target, $sourceDeliveryAddress);
-            $target->setDeliveryAddress($targetDeliveryAddress);
+        // Disable the uploadable listener
+        $this->uploadableListener->setEnabled(false);
+
+        // Persist the target sale
+        $event = $this->getOperator($this->target)->persist($this->target);
+        if (!$event->isPropagationStopped() && !$event->hasErrors()) {
+            // Delete the source sale
+            $sourceEvent = $this->getOperator($this->source)->delete($this->source, true); // Hard delete
+            if (!$sourceEvent->isPropagationStopped() && !$sourceEvent->hasErrors()) {
+                $event = null;
+            }
         }
 
-        // Attachments
-        foreach ($source->getAttachments() as $sourceAttachment) {
-            $targetAttachment = $this->saleFactory->createAttachmentForSale($target);
-            $target->addAttachment($targetAttachment);
-            $this->copyAttachment($sourceAttachment, $targetAttachment);
-        }
+        // Enable the uploadable listener
+        $this->uploadableListener->setEnabled(true);
 
-        // Items
-        foreach ($source->getItems() as $sourceItem) {
-            $targetItem = $this->saleFactory->createItemForSale($target);
-            $target->addItem($targetItem);
-            $this->copyItem($sourceItem, $targetItem);
-        }
+        // Unset source and target sales
+        $this->source = null;
+        $this->target = null;
 
-        // Adjustments
-        foreach ($source->getAdjustments() as $sourceAdjustment) {
-            $targetAdjustment = $this->saleFactory->createAdjustmentForSale($target);
-            $target->addAdjustment($targetAdjustment);
-            $this->copyAdjustment($sourceAdjustment, $targetAdjustment);
-        }
+        return $event;
+    }
 
-        // Payments
-        foreach ($source->getPayments() as $sourcePayment) {
-            $targetPayment = $this->saleFactory->createPaymentForSale($target);
-            $target->addPayment($targetPayment);
-            $this->copyPayment($sourcePayment, $targetPayment);
-        }
-
-        // Shipments
-        /*foreach ($source->getShipments() as $sourceShipment) {
-            $targetShipment = $this->saleFactory->createShipmentForSale($target);
-            $target->addShipment($targetShipment);
-            $this->copyShipment($sourceShipment, $targetShipment);
-        }*/
-
+    /**
+     * Post copy handler.
+     *
+     * @param SaleInterface $source
+     * @param SaleInterface $target
+     */
+    protected function postCopy(SaleInterface $source, SaleInterface $target)
+    {
         // Origin number
         if ($source instanceof QuoteInterface || $source instanceof OrderInterface) {
             $target->setOriginNumber($source->getNumber());
@@ -106,87 +145,22 @@ class SaleTransformer implements SaleTransformerInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the proper operator for the given sale.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return ResourceOperatorInterface
      */
-    public function copyAddress(Model\SaleAddressInterface $source, Model\SaleAddressInterface $target)
+    protected function getOperator(SaleInterface $sale)
     {
-        $this->copy($source, $target, [
-            'company', 'gender', 'firstName', 'lastName',
-            'street', 'supplement', 'postalCode', 'city',
-            'country', 'state', 'phone', 'mobile',
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target)
-    {
-        $this->copy($source, $target, [
-            'path', 'title', 'size', 'internal', 'createdAt', 'updatedAt',
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function copyAdjustment(Model\AdjustmentInterface $source, Model\AdjustmentInterface $target)
-    {
-        $this->copy($source, $target, [
-            'designation', 'type', 'mode', 'amount', 'immutable',
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function copyPayment(PaymentInterface $source, PaymentInterface $target)
-    {
-        $this->copy($source, $target, [
-            'currency', 'method', 'amount', 'state', 'details',
-            'description', 'createdAt', 'updatedAt', 'completedAt',
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target)
-    {
-        $this->copy($source, $target, [
-            'designation', 'reference', 'netPrice', 'weight', 'taxGroup', 'quantity',
-            'position', 'compound', 'immutable', 'configurable', 'data',
-        ]);
-
-        // SubjectIdentity
-        $this->copy($source->getSubjectIdentity(), $target->getSubjectIdentity(), [
-            'provider', 'identifier'
-        ]);
-
-        // Adjustments
-        foreach ($source->getAdjustments() as $sourceAdjustment) {
-            $targetAdjustment = $this->saleFactory->createAdjustmentForItem($target);
-            $target->addAdjustment($targetAdjustment);
-            $this->copyAdjustment($sourceAdjustment, $targetAdjustment);
+        if ($sale instanceof CartInterface) {
+            return $this->cartOperator;
+        } elseif ($sale instanceof QuoteInterface) {
+            return $this->quoteOperator;
+        } elseif ($sale instanceof OrderInterface) {
+            return $this->orderOperator;
         }
 
-        // Children
-        foreach ($source->getChildren() as $sourceChild) {
-            $targetChild = $this->saleFactory->createItemForSale($target->getSale());
-            $target->addChild($targetChild);
-            $this->copyItem($sourceChild, $targetChild);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function copy($source, $target, $properties)
-    {
-        $properties = (array)$properties;
-
-        foreach ($properties as $property) {
-            $this->accessor->setValue($target, $property, $this->accessor->getValue($source, $property));
-        }
+        throw new InvalidArgumentException("Unexpected sale type.");
     }
 }
