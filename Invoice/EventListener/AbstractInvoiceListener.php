@@ -127,6 +127,9 @@ abstract class AbstractInvoiceListener
         // Updates the invoice data
         $changed |= $this->invoiceBuilder->update($invoice);
 
+        // Updates the totals
+        $changed |= $this->updateTotals($invoice);
+
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
         }
@@ -178,7 +181,11 @@ abstract class AbstractInvoiceListener
 
         //$this->updateCustomerCreditBalance($invoice);
 
-        $this->scheduleSaleContentChangeEvent($invoice->getSale());
+        /** @var SaleInterface|InvoiceSubjectInterface $sale */
+        $sale = $invoice->getSale();
+        $sale->removeInvoice($invoice);
+
+        $this->scheduleSaleContentChangeEvent($sale);
     }
 
     /**
@@ -191,20 +198,49 @@ abstract class AbstractInvoiceListener
         $invoice = $this->getInvoiceFromEvent($event);
 
         if (!$this->persistenceHelper->isScheduledForRemove($invoice)) {
-            $changed = $this->invoiceCalculator->calculate($invoice);
-
-            if ($changed) {
+            if ($this->updateTotals($invoice)) {
                 $this->persistenceHelper->persistAndRecompute($invoice, false);
-
-                foreach ($invoice->getLines() as $line) {
-                    $this->persistenceHelper->persistAndRecompute($line, false);
-                }
             }
         }
 
         $this->updateCustomerCreditBalance($invoice);
 
         $this->scheduleSaleContentChangeEvent($invoice->getSale());
+    }
+
+    /**
+     * Pre delete event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onPreDelete(ResourceEventInterface $event)
+    {
+        $invoice = $this->getInvoiceFromEvent($event);
+
+        // Pre load sale's invoices collection
+        /** @var InvoiceSubjectInterface $sale */
+        $sale = $invoice->getSale();
+        $sale->getInvoices()->toArray();
+    }
+
+    /**
+     * Updates the invoice totals.
+     *
+     * @param InvoiceInterface $invoice
+     *
+     * @return bool
+     */
+    protected function updateTotals(InvoiceInterface $invoice)
+    {
+        $changed = $this->invoiceCalculator->calculate($invoice);
+
+        if ($changed) {
+            foreach ($invoice->getLines() as $line) {
+                $this->persistenceHelper->persistAndRecompute($line, false);
+            }
+        }
+
+        return $changed;
     }
 
     /**
@@ -274,7 +310,7 @@ abstract class AbstractInvoiceListener
         if ($this->persistenceHelper->isChanged($invoice, 'type')) {
             list($old, $new) = $this->persistenceHelper->getChangeSet($invoice, 'type');
             if ($old != $new) {
-                throw new Exception\RuntimeException("Changing the invoice's type is not yet supported.");
+                throw new Exception\RuntimeException("Changing the invoice type is not yet supported.");
             }
         }
     }

@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Invoice\Builder;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
 use Ekyna\Component\Commerce\Document\Model as Document;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use libphonenumber\PhoneNumberUtil;
@@ -15,17 +14,17 @@ use libphonenumber\PhoneNumberUtil;
  * @package Ekyna\Component\Commerce\Invoice\Builder
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceBuilder extends DocumentBuilder
+class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 {
     /**
      * @var SaleFactoryInterface
      */
-    private $factory;
+    private $saleFactory;
 
     /**
      * @var InvoiceCalculatorInterface
      */
-    private $calculator;
+    private $invoiceCalculator;
 
 
     /**
@@ -42,26 +41,46 @@ class InvoiceBuilder extends DocumentBuilder
     ) {
         parent::__construct($phoneNumberUtil);
 
-        $this->factory = $factory;
-        $this->calculator = $calculator;
+        $this->saleFactory = $factory;
+        $this->invoiceCalculator = $calculator;
+    }
+
+    /**
+     * Returns the sale factory.
+     *
+     * @return SaleFactoryInterface
+     */
+    public function getSaleFactory()
+    {
+        return $this->saleFactory;
+    }
+
+    /**
+     * Returns the invoice calculator.
+     *
+     * @return InvoiceCalculatorInterface
+     */
+    public function getInvoiceCalculator()
+    {
+        return $this->invoiceCalculator;
     }
 
     /**
      * @inheritdoc
+     *
+     * @param Invoice\InvoiceLineInterface $line
      */
     protected function postBuildLine(Document\DocumentLineInterface $line)
     {
         $invoice = $line->getDocument();
 
+        $max = $this->invoiceCalculator->calculateMaxQuantity($line);
+
         /** @var Invoice\InvoiceLineInterface $line */
-        if ($invoice->getType() === Invoice\InvoiceTypes::TYPE_INVOICE) {
-            $max = $this->calculator->calculateInvoiceableQuantity($line);
+        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
             $line->setQuantity($max);
-        } elseif ($invoice->getType() === Invoice\InvoiceTypes::TYPE_CREDIT) {
-            $max = $this->calculator->calculateCreditableQuantity($line);
+        } elseif (Invoice\InvoiceTypes::isCredit($invoice)) {
             $line->setQuantity(0);
-        } else {
-            throw new InvalidArgumentException("Unexpected invoice type.");
         }
 
         if (0 >= $max) {
@@ -75,6 +94,6 @@ class InvoiceBuilder extends DocumentBuilder
     protected function createLine(Document\DocumentInterface $document)
     {
         /** @var Invoice\InvoiceInterface $document */
-        return $this->factory->createLineForInvoice($document);
+        return $this->saleFactory->createLineForInvoice($document);
     }
 }

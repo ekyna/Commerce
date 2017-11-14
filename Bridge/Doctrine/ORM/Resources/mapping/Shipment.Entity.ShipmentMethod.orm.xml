@@ -28,16 +28,18 @@
         <field name="gatewayConfig" column="gateway_config" type="json_array" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMessage"
-                     mapped-by="method" field="messages" fetch="EXTRA_LAZY">
+                     field="messages" mapped-by="method" orphan-removal="true" fetch="EXTRA_LAZY">
             <cascade>
-                <cascade-all/>
+                <cascade-persist/>
+                <cascade-remove/>
             </cascade>
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice"
-                     field="prices" mapped-by="method" fetch="EXTRA_LAZY">
+                     field="prices" mapped-by="method" orphan-removal="true" fetch="EXTRA_LAZY">
             <cascade>
                 <cascade-persist/>
+                <cascade-remove/>
             </cascade>
             <order-by>
                 <order-by-field name="zone" direction="ASC"/>

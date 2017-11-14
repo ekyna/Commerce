@@ -3,15 +3,17 @@
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 
 /**
  * Class AbstractGateway
  * @package Ekyna\Component\Commerce\Shipment\Gateway
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractGateway implements GatewayInterface
+abstract class AbstractGateway implements GatewayInterface, Shipment\WeightCalculatorAwareInterface
 {
+    use Shipment\WeightCalculatorAwareTrait;
+
     /**
      * @var string
      */
@@ -21,7 +23,6 @@ abstract class AbstractGateway implements GatewayInterface
      * @var array
      */
     protected $config;
-
 
     /**
      * Constructor.
@@ -62,7 +63,7 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @inheritDoc
      */
-    public function getActions(ShipmentInterface $shipment = null)
+    public function getActions(Shipment\ShipmentInterface $shipment = null)
     {
         return [];
     }

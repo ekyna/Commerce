@@ -16,12 +16,12 @@
         <field name="netPrice" column="net_price" type="decimal" precision="8" scale="5" nullable="false"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentZone"
-                     field="zone" inversed-by="prices" orphan-removal="true">
+                     field="zone" inversed-by="prices">
             <join-column name="zone_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface"
-                     field="method" inversed-by="prices" orphan-removal="true">
+                     field="method" inversed-by="prices">
             <join-column name="method_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 

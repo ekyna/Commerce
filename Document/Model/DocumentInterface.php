@@ -19,6 +19,15 @@ interface DocumentInterface
     public function getSale();
 
     /**
+     * Sets the sale.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return $this|DocumentInterface
+     */
+    public function setSale(SaleInterface $sale = null);
+
+    /**
      * Returns the type.
      *
      * @return string
@@ -129,6 +138,15 @@ interface DocumentInterface
      * @return bool
      */
     public function hasLine(DocumentLineInterface $line);
+
+    /**
+     * Returns whether the invoice has at least one with the given type.
+     *
+     * @param string $type
+     *
+     * @return bool
+     */
+    public function hasLineByType($type);
 
     /**
      * Adds the line.

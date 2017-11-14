@@ -2,7 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Entity\AbstractShipment;
 
@@ -17,6 +20,11 @@ class OrderShipment extends AbstractShipment implements OrderShipmentInterface
      * @var OrderInterface
      */
     protected $order;
+
+    /**
+     * @var OrderInvoiceInterface
+     */
+    protected $invoice;
 
 
     /**
@@ -53,6 +61,32 @@ class OrderShipment extends AbstractShipment implements OrderShipmentInterface
             if ($this->order) {
                 $this->order->addShipment($this);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getInvoice()
+    {
+        return $this->invoice;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setInvoice(InvoiceInterface $invoice = null)
+    {
+        if ($invoice && !$invoice instanceof OrderInvoiceInterface) {
+            throw new InvalidArgumentException("Expected instance of " . OrderInvoiceInterface::class);
+        }
+
+        $this->invoice = $invoice;
+
+        if ($this !== $invoice->getShipment()) {
+            $invoice->setShipment($this);
         }
 
         return $this;

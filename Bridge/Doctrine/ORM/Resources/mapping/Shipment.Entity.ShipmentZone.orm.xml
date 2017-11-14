@@ -15,9 +15,10 @@
         <field name="name" column="name" type="string" length="255" unique="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice"
-                     field="prices" mapped-by="zone" fetch="EXTRA_LAZY">
+                     field="prices" mapped-by="zone" orphan-removal="true" fetch="EXTRA_LAZY">
             <cascade>
                 <cascade-persist/>
+                <cascade-remove/>
             </cascade>
             <order-by>
                 <order-by-field name="method" direction="ASC"/>

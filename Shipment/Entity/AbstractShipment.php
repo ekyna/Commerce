@@ -30,6 +30,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $method;
 
     /**
+     * @var bool
+     */
+    protected $autoInvoice;
+
+    /**
      * @var ArrayCollection|Shipment\ShipmentItemInterface[]
      */
     protected $items;
@@ -83,6 +88,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         $this->state = Shipment\ShipmentStates::STATE_NEW;
         $this->items = new ArrayCollection();
         $this->return = false;
+        $this->autoInvoice = true;
     }
 
     /**
@@ -115,6 +121,24 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function setMethod(Shipment\ShipmentMethodInterface $method)
     {
         $this->method = $method;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAutoInvoice()
+    {
+        return $this->autoInvoice;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAutoInvoice($auto)
+    {
+        $this->autoInvoice = (bool)$auto;
 
         return $this;
     }
@@ -212,7 +236,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
      */
     public function setWeight($weight)
     {
-        $this->weight = (float)$weight;
+        $this->weight = 0 < $weight ? (float)$weight : null;
 
         return $this;
     }

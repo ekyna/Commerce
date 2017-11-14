@@ -361,7 +361,9 @@ class SaleUpdater implements SaleUpdaterInterface
             return null;
         }
 
-        $invoicedAt = $sale->getInvoicedAt();
+        if (null === $invoicedAt = $sale->getInvoicedAt()) {
+            return null;
+        }
 
         // Calculate outstanding date
         $date = clone $invoicedAt;

@@ -55,24 +55,21 @@ class CustomerUpdater implements CustomerUpdaterInterface
         $stateCs = $this->persistenceHelper->getChangeSet($payment, 'state');
         $amountCs = $this->persistenceHelper->getChangeSet($payment, 'amount');
 
-        if (
-            (empty($stateCs) || ($stateCs[0] === $stateCs[1])) &&
-            (empty($amountCs) || ($amountCs[0] === $amountCs[1]))
-        ) {
-            return false;
-        }
-
         $acceptedStates = $this->getAcceptedStates($payment);
 
-        $fromAccepted = in_array($stateCs[0], $acceptedStates, true);
-        $toAccepted = in_array($stateCs[1], $acceptedStates, true);
+        // By state change
+        if (!empty($stateCs) && $stateCs[0] !== $stateCs[1]) {
+            $fromAccepted = in_array($stateCs[0], $acceptedStates, true);
+            $toAccepted = in_array($stateCs[1], $acceptedStates, true);
 
-        // If payment state has changed from or to a accepted state
-        if ($fromAccepted xor $toAccepted) {
-            // Update the customer balance
-            return $this->updateCustomerBalance($payment, isset($amountCs[0]) ? $amountCs[0] : null);
+            // If payment state has changed from or to a accepted state
+            if ($fromAccepted xor $toAccepted) {
+                // Update the customer balance
+                return $this->updateCustomerBalance($payment, isset($amountCs[0]) ? $amountCs[0] : null);
+            }
         }
 
+        // By Amount change
         if (!empty($amountCs)) {
             $amountDelta = $amountCs[1] - $amountCs[0]; // New - Old
             // If amount changed and payment is accepted

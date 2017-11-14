@@ -41,8 +41,12 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
         }
 
         $quantities = $this->calculator->buildShipmentQuantityMap($subject);
-        if (!$subject->hasShipments() || 0 === $itemsCount = count($quantities)) {
+        if (0 === $itemsCount = count($quantities)) {
             return $this->setState($subject, ShipmentStates::STATE_NONE);
+        }
+
+        if (!$subject->hasShipments()) {
+            return $this->setState($subject, ShipmentStates::STATE_PENDING);
         }
 
         $partialCount = $shippedCount = $returnedCount = 0;
@@ -68,22 +72,14 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             }
         }
 
+        // If all fully shipped
+        if ($shippedCount == $itemsCount) {
+            return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
+        }
+
         // If all fully returned
         if ($returnedCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_RETURNED);
-        }
-
-        // If all fully shipped
-        if ($shippedCount == $itemsCount) {
-            // Watch for non completed shipment
-            foreach ($subject->getShipments() as $shipment) {
-                if ($shipment->getState() != ShipmentStates::STATE_COMPLETED) {
-                    return $this->setState($subject, ShipmentStates::STATE_SHIPPED);
-                }
-            }
-
-            // All Clear
-            return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
         }
 
         // If some partially shipped

@@ -157,7 +157,10 @@ abstract class AbstractPaymentListener
 
         $this->customerUpdater->handlePaymentDelete($payment);
 
-        $this->scheduleSaleContentChangeEvent($payment->getSale());
+        $sale = $payment->getSale();
+        $sale->removePayment($payment);
+
+        $this->scheduleSaleContentChangeEvent($sale);
     }
 
     /**
@@ -170,6 +173,9 @@ abstract class AbstractPaymentListener
     public function onPreDelete(ResourceEventInterface $event)
     {
         $payment = $this->getPaymentFromEvent($event);
+
+        // Pre load sale's payments
+        $payment->getSale()->getPayments()->toArray();
 
         if (!in_array($payment->getState(), PaymentStates::getDeletableStates())) {
             throw new IllegalOperationException(); // TODO reason message

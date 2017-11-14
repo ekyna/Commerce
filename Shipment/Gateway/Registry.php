@@ -3,8 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareInterface;
-use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareTrait;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 
 /**
  * Class GatewayRegistry
@@ -13,7 +12,8 @@ use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareTrait;
  */
 class Registry implements RegistryInterface
 {
-    use AddressResolverAwareTrait;
+    use Shipment\AddressResolverAwareTrait,
+        Shipment\WeightCalculatorAwareTrait;
 
     /**
      * @var array|ProviderInterface[]
@@ -66,8 +66,11 @@ class Registry implements RegistryInterface
 
         $platform->setRegistry($this);
 
-        if ($platform instanceof AddressResolverAwareInterface) {
+        if ($platform instanceof Shipment\AddressResolverAwareInterface) {
             $platform->setAddressResolver($this->addressResolver);
+        }
+        if ($platform instanceof Shipment\WeightCalculatorAwareInterface) {
+            $platform->setWeightCalculator($this->weightCalculator);
         }
 
         $this->platforms[$name] = $platform;

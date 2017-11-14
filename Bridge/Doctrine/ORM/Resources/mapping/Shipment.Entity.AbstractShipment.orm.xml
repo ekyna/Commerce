@@ -11,7 +11,8 @@
         <field name="number" column="number" type="string" length="16"/>
         <field name="state" column="state" type="string" length="16"/>
         <field name="return" column="is_return" type="boolean"/>
-        <field name="weight" column="weight" type="decimal" precision="10" scale="3"/>
+        <field name="autoInvoice" column="auto_invoice" type="boolean"/>
+        <field name="weight" column="weight" type="decimal" precision="10" scale="3" nullable="true"/>
         <field name="description" column="description" type="string" length="255" nullable="true"/>
         <field name="trackingNumber" column="tracking_number" type="string" length="32" nullable="true"/>
         <field name="gatewayData" column="gateway_data" type="json_array" nullable="true"/>

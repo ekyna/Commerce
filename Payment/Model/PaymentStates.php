@@ -83,7 +83,6 @@ final class PaymentStates
             static::STATE_CAPTURED,
             static::STATE_FAILED,
             static::STATE_REFUNDED,
-            static::STATE_OUTSTANDING,
         ];
     }
 

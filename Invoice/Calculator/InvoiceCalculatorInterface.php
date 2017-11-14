@@ -13,6 +13,15 @@ use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 interface InvoiceCalculatorInterface
 {
     /**
+     * Calculate the line's max quantity.
+     *
+     * @param Invoice\InvoiceLineInterface $line
+     *
+     * @return float
+     */
+    public function calculateMaxQuantity(Invoice\InvoiceLineInterface $line);
+
+    /**
      * Calculates the invoice line invoiceable quantity.
      *
      * @param Invoice\InvoiceLineInterface $line

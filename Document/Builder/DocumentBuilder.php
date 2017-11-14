@@ -27,7 +27,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * Constructor.
      *
-     * @param PhoneNumberUtil            $phoneNumberUtil
+     * @param PhoneNumberUtil $phoneNumberUtil
      */
     public function __construct(PhoneNumberUtil $phoneNumberUtil = null)
     {
@@ -98,6 +98,84 @@ class DocumentBuilder implements DocumentBuilderInterface
         }
 
         return $changed;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function buildGoodLine(Common\SaleItemInterface $item, Model\DocumentInterface $document, $recurse = true)
+    {
+        $line = null;
+
+        if (!$item->isCompound()) {
+            $line = $this->createLine($document);
+            $line
+                ->setType(Model\DocumentLineTypes::TYPE_GOOD)
+                ->setSaleItem($item)
+                ->setDesignation($item->getDesignation())
+                ->setDescription($item->getDescription())
+                ->setReference($item->getReference())
+                ->setQuantity($item->getTotalQuantity());
+
+            $document->addLine($line);
+
+            $this->postBuildLine($line);
+        }
+
+        if ($recurse && $item->hasChildren()) {
+            foreach ($item->getChildren() as $child) {
+                $this->buildGoodLine($child, $document);
+            }
+        }
+
+        return $line;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function buildDiscountLine(Common\AdjustmentInterface $adjustment, Model\DocumentInterface $document)
+    {
+        if ($adjustment->getType() !== Common\AdjustmentTypes::TYPE_DISCOUNT) {
+            throw new InvalidArgumentException("Unexpected adjustment type.");
+        }
+
+        $line = $this->createLine($document);
+        $line
+            ->setType(Model\DocumentLineTypes::TYPE_DISCOUNT)
+            ->setSaleAdjustment($adjustment)
+            ->setDesignation($adjustment->getDesignation());
+
+        $document->addLine($line);
+
+        $this->postBuildLine($line);
+
+        return $line;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function buildShipmentLine(Model\DocumentInterface $document)
+    {
+        $sale = $document->getSale();
+
+        if (0 >= $sale->getShipmentAmount()) {
+            return null;
+        }
+
+        // TODO Do not add twice (check other invoices)
+
+        $line = $this->createLine($document);
+        $line
+            ->setType(Model\DocumentLineTypes::TYPE_SHIPMENT)
+            ->setDesignation($sale->getPreferredShipmentMethod()->getTitle());
+
+        $document->addLine($line);
+
+        $this->postBuildLine($line);
+
+        return $line;
     }
 
     /**
@@ -185,44 +263,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     protected function buildGoodsLines(Model\DocumentInterface $document)
     {
         foreach ($document->getSale()->getItems() as $item) {
-            $this->buildGoodLine($document, $item);
-        }
-    }
-
-    /**
-     * Builds the document good line from the given sale item.
-     *
-     * @param Model\DocumentInterface $document
-     * @param Common\SaleItemInterface $item
-     */
-    protected function buildGoodLine(Model\DocumentInterface $document, Common\SaleItemInterface $item)
-    {
-        $description = null;
-        if ($item->isCompound() && $item->hasChildren()) {
-            foreach ($item->getChildren() as $child) {
-                $this->buildGoodLine($document, $child);
-            }
-
-            return;
-        }
-
-        $line = $this->createLine($document);
-        $line
-            ->setType(Model\DocumentLineTypes::TYPE_GOOD)
-            ->setSaleItem($item)
-            ->setDesignation($item->getDesignation())
-            ->setDescription($description)
-            ->setReference($item->getReference())
-            ->setQuantity($item->getTotalQuantity());
-
-        $document->addLine($line);
-
-        $this->postBuildLine($line);
-
-        if (!$item->isCompound() && $item->hasChildren()) {
-            foreach ($item->getChildren() as $child) {
-                $this->buildGoodLine($document, $child);
-            }
+            $this->buildGoodLine($item, $document);
         }
     }
 
@@ -242,55 +283,9 @@ class DocumentBuilder implements DocumentBuilderInterface
         $adjustments = $sale->getAdjustments();
         foreach ($adjustments as $adjustment) {
             if ($adjustment->getType() === Common\AdjustmentTypes::TYPE_DISCOUNT) {
-                $this->buildDiscountLine($document, $adjustment);
+                $this->buildDiscountLine($adjustment, $document);
             }
         }
-    }
-
-    /**
-     * Builds the discount line from the given adjustment.
-     *
-     * @param Model\DocumentInterface $document
-     * @param Common\AdjustmentInterface $adjustment
-     */
-    protected function buildDiscountLine(Model\DocumentInterface $document, Common\AdjustmentInterface $adjustment)
-    {
-        if ($adjustment->getType() !== Common\AdjustmentTypes::TYPE_DISCOUNT) {
-            throw new InvalidArgumentException("Unexpected adjustment type.");
-        }
-
-        $line = $this->createLine($document);
-        $line
-            ->setType(Model\DocumentLineTypes::TYPE_DISCOUNT)
-            ->setSaleAdjustment($adjustment)
-            ->setDesignation($adjustment->getDesignation());
-
-        $document->addLine($line);
-
-        $this->postBuildLine($line);
-    }
-
-    /**
-     * Builds the document's shipment line.
-     *
-     * @param Model\DocumentInterface $document
-     */
-    protected function buildShipmentLine(Model\DocumentInterface $document)
-    {
-        $sale = $document->getSale();
-
-        if (0 >= $sale->getShipmentAmount()) {
-            return;
-        }
-
-        $line = $this->createLine($document);
-        $line
-            ->setType(Model\DocumentLineTypes::TYPE_SHIPMENT)
-            ->setDesignation($sale->getPreferredShipmentMethod()->getTitle());
-
-        $document->addLine($line);
-
-        $this->postBuildLine($line);
     }
 
     /**

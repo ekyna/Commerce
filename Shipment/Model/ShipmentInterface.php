@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Resource\Model as Resource;
 
 /**
@@ -24,6 +25,22 @@ interface ShipmentInterface extends
     public function getSale();
 
     /**
+     * Returns the invoice.
+     *
+     * @return InvoiceInterface
+     */
+    public function getInvoice();
+
+    /**
+     * Sets the invoice.
+     *
+     * @param InvoiceInterface|null $invoice
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setInvoice(InvoiceInterface $invoice = null);
+
+    /**
      * Returns the method.
      *
      * @return ShipmentMethodInterface
@@ -38,6 +55,22 @@ interface ShipmentInterface extends
      * @return $this|ShipmentInterface
      */
     public function setMethod(ShipmentMethodInterface $method);
+
+    /**
+     * Returns whether or not an equivalent invoice should be generated automatically.
+     *
+     * @return bool
+     */
+    public function isAutoInvoice();
+
+    /**
+     * Sets whether or not an equivalent invoice should be generated automatically.
+     *
+     * @param bool $auto
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setAutoInvoice($auto);
 
     /**
      * Returns whether the shipment has at least one item or not.

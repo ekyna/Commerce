@@ -24,13 +24,4 @@ interface OrderInvoiceInterface
      * @return $this|OrderInvoiceInterface
      */
     public function setOrder(OrderInterface $order = null);
-
-    /**
-     * Sets the shipment.
-     *
-     * @param OrderShipmentInterface $shipment
-     *
-     * @return $this|OrderInvoiceInterface
-     */
-    public function setShipment(OrderShipmentInterface $shipment = null);
 }

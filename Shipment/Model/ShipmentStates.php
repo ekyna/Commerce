@@ -11,7 +11,6 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class ShipmentStates
 {
-    const STATE_NONE        = 'none';
     const STATE_NEW         = 'new';
 //    const STATE_CHECKOUT    = 'checkout';
 //    const STATE_ONHOLD      = 'onhold';
@@ -20,9 +19,12 @@ final class ShipmentStates
     const STATE_READY     = 'ready';
     const STATE_SHIPPED   = 'shipped';
     const STATE_PARTIAL   = 'partial';
-    const STATE_COMPLETED = 'completed';
     const STATE_RETURNED  = 'returned';
     const STATE_CANCELED  = 'canceled';
+
+    // For sale
+    const STATE_NONE        = 'none';
+    const STATE_COMPLETED = 'completed';
 
 
     /**
@@ -33,7 +35,6 @@ final class ShipmentStates
     static public function getStates()
     {
         return [
-            static::STATE_NONE,
             static::STATE_NEW,
 //            static::STATE_CHECKOUT,
 //            static::STATE_ONHOLD,
@@ -42,9 +43,10 @@ final class ShipmentStates
             static::STATE_READY,
             static::STATE_SHIPPED,
             static::STATE_PARTIAL,
-            static::STATE_COMPLETED,
             static::STATE_RETURNED,
             static::STATE_CANCELED,
+            static::STATE_NONE,
+            static::STATE_COMPLETED,
         ];
     }
 
@@ -86,54 +88,23 @@ final class ShipmentStates
     }
 
     /**
-     * Returns the shipped states.
+     * Returns whether the given shipment (or return) is a done.
      *
-     * @return array
-     */
-    static public function getShippedStates()
-    {
-        return [
-            static::STATE_NONE, // TODO why ?
-            static::STATE_SHIPPED,
-            static::STATE_COMPLETED,
-        ];
-    }
-
-    /**
-     * Returns whether the given state is a shipped state.
-     *
-     * @param string $state
+     * @param ShipmentInterface $shipment
      *
      * @return bool
      */
-    static public function isShippedState($state)
+    static public function isDone(ShipmentInterface $shipment)
     {
-        return in_array($state, static::getShippedStates(), true);
-    }
+        if ($shipment->isReturn()) {
+            if (static::STATE_RETURNED === $shipment->getState()) {
+                return true;
+            }
+        } elseif (static::STATE_SHIPPED === $shipment->getState()) {
+            return true;
+        }
 
-    /**
-     * Returns the returned states.
-     *
-     * @return array
-     */
-    static public function getReturnedStates()
-    {
-        return [
-            static::STATE_NONE, // TODO why ?
-            static::STATE_RETURNED
-        ];
-    }
-
-    /**
-     * Returns whether the given state is a returned state.
-     *
-     * @param string $state
-     *
-     * @return bool
-     */
-    static public function isReturnedState($state)
-    {
-        return in_array($state, static::getReturnedStates(), true);
+        return false;
     }
 
     /**
@@ -144,7 +115,6 @@ final class ShipmentStates
     static public function getDeletableStates()
     {
         return [
-            static::STATE_NONE,
             static::STATE_NEW,
             static::STATE_CANCELED,
         ];
@@ -203,7 +173,6 @@ final class ShipmentStates
             static::STATE_READY,
             static::STATE_PARTIAL,
             static::STATE_SHIPPED,
-            static::STATE_COMPLETED,
             static::STATE_RETURNED,
         ];
     }

@@ -3,13 +3,14 @@
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Shipment\Model\AddressResolverAwareInterface;
+use Ekyna\Component\Commerce\Shipment\Model\WeightCalculatorAwareInterface;
 
 /**
  * Interface GatewayRegistryInterface
  * @package Ekyna\Component\Commerce\Shipment\Gateway
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface RegistryInterface extends AddressResolverAwareInterface
+interface RegistryInterface extends AddressResolverAwareInterface, WeightCalculatorAwareInterface
 {
     /**
      * Registers the provider.

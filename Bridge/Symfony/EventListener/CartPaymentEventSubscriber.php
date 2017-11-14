@@ -22,7 +22,6 @@ class CartPaymentEventSubscriber extends CartPaymentListener implements EventSub
             CartPaymentEvents::INSERT     => ['onInsert', 0],
             CartPaymentEvents::UPDATE     => ['onUpdate', 0],
             CartPaymentEvents::DELETE     => ['onDelete', 0],
-            CartPaymentEvents::PRE_UPDATE => ['onPreUpdate', 0],
             CartPaymentEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }

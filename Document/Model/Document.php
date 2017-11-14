@@ -199,7 +199,7 @@ class Document implements DocumentInterface
     public function getLinesByType($type)
     {
         if (!DocumentLineTypes::isValidType($type)) {
-            throw new InvalidArgumentException("Invalid invoice line type.");
+            throw new InvalidArgumentException("Invalid document line type.");
         }
 
         $lines = [];
@@ -219,6 +219,24 @@ class Document implements DocumentInterface
     public function hasLine(DocumentLineInterface $line)
     {
         return $this->lines->contains($line);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasLineByType($type)
+    {
+        if (!DocumentLineTypes::isValidType($type)) {
+            throw new InvalidArgumentException("Invalid document line type.");
+        }
+
+        foreach ($this->getLines() as $line) {
+            if ($line->getType() === $type) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -366,7 +384,7 @@ class Document implements DocumentInterface
     /**
      * @inheritdoc
      */
-    public function setSale(SaleInterface $sale)
+    public function setSale(SaleInterface $sale = null)
     {
         $this->sale = $sale;
 

@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
  * Trait ShipmentSubjectTrait
@@ -85,7 +84,7 @@ trait ShipmentSubjectTrait
         $criteria = Criteria::create();
         $criteria
             ->andWhere(Criteria::expr()->eq('return', false))
-            ->andWhere(Criteria::expr()->in('state', ShipmentStates::getShippedStates()))
+            ->andWhere(Criteria::expr()->eq('state', ShipmentStates::STATE_SHIPPED))
             ->orderBy(['createdAt' => Criteria::ASC]);
 
         /** @var ArrayCollection $shipments */

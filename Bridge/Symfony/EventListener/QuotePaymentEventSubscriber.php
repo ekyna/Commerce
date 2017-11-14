@@ -22,7 +22,6 @@ class QuotePaymentEventSubscriber extends QuotePaymentListener implements EventS
             QuotePaymentEvents::INSERT     => ['onInsert', 0],
             QuotePaymentEvents::UPDATE     => ['onUpdate', 0],
             QuotePaymentEvents::DELETE     => ['onDelete', 0],
-            QuotePaymentEvents::PRE_UPDATE => ['onPreUpdate', 0],
             QuotePaymentEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }

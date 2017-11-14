@@ -20,6 +20,11 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoice"
+                    field="invoice" inversed-by="shipment">
+            <join-column name="invoice_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+        </one-to-one>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipmentItem"
                      field="items" mapped-by="shipment" orphan-removal="true">
             <cascade>

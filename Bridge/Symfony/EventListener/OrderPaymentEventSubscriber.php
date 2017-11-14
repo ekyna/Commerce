@@ -22,8 +22,6 @@ class OrderPaymentEventSubscriber extends OrderPaymentListener implements EventS
             OrderPaymentEvents::INSERT     => ['onInsert', 0],
             OrderPaymentEvents::UPDATE     => ['onUpdate', 0],
             OrderPaymentEvents::DELETE     => ['onDelete', 0],
-            OrderPaymentEvents::PRE_CREATE => ['onPreCreate', 0],
-            OrderPaymentEvents::PRE_UPDATE => ['onPreUpdate', 0],
             OrderPaymentEvents::PRE_DELETE => ['onPreDelete', 0],
         ];
     }

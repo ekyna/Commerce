@@ -18,6 +18,24 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * @inheritDoc
      */
+    public function calculateMaxQuantity(Invoice\InvoiceLineInterface $line)
+    {
+        $invoice = $line->getDocument();
+
+        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+            return $this->calculateInvoiceableQuantity($line);
+        }
+
+        if (Invoice\InvoiceTypes::isCredit($invoice)) {
+            return $this->calculateCreditableQuantity($line);
+        }
+
+        throw new InvalidArgumentException("Unexpected invoice type.");
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function calculateInvoiceableQuantity(Invoice\InvoiceLineInterface $line)
     {
         if ($line->getInvoice()->getType() !== Invoice\InvoiceTypes::TYPE_INVOICE) {
@@ -43,21 +61,13 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             // Debit invoice's sale item quantities
             foreach ($sale->getInvoices() as $invoice) {
                 // Ignore the current item's invoice
-                if ($invoice === $line->getInvoice()) {
+                if ($invoice === $line->getInvoice() || !Invoice\InvoiceTypes::isInvoice($invoice)) {
                     continue;
                 }
 
-                foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_GOOD) {
-                        continue;
-                    }
-
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
                     if ($invoiceLine->getSaleItem() === $saleItem) {
-                        if (Invoice\InvoiceTypes::TYPE_INVOICE === $invoice->getType()) {
-                            $quantity -= $invoiceLine->getQuantity();
-                        } elseif (Invoice\InvoiceTypes::TYPE_CREDIT === $invoice->getType()) {
-                            $quantity += $invoiceLine->getQuantity();
-                        }
+                        $quantity -= $invoiceLine->getQuantity();
                     }
                 }
             }
@@ -70,21 +80,13 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
             foreach ($sale->getInvoices() as $invoice) {
                 // Ignore the current item's invoice
-                if ($invoice === $line->getInvoice()) {
+                if ($invoice === $line->getInvoice() || !Invoice\InvoiceTypes::isInvoice($invoice)) {
                     continue;
                 }
 
-                foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_DISCOUNT) {
-                        continue;
-                    }
-
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $invoiceLine) {
                     if ($invoiceLine->getSaleAdjustment() === $adjustment) {
-                        if (Invoice\InvoiceTypes::TYPE_INVOICE === $invoice->getType()) {
-                            $quantity -= $invoiceLine->getQuantity();
-                        } elseif (Invoice\InvoiceTypes::TYPE_CREDIT === $invoice->getType()) {
-                            $quantity += $invoiceLine->getQuantity();
-                        }
+                        $quantity -= $invoiceLine->getQuantity();
                     }
                 }
             }
@@ -93,20 +95,12 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
             foreach ($sale->getInvoices() as $invoice) {
                 // Ignore the current item's invoice
-                if ($invoice === $line->getInvoice()) {
+                if ($invoice === $line->getInvoice() || !Invoice\InvoiceTypes::isInvoice($invoice)) {
                     continue;
                 }
 
-                foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_SHIPMENT) {
-                        continue;
-                    }
-
-                    if (Invoice\InvoiceTypes::TYPE_INVOICE === $invoice->getType()) {
-                        $quantity -= $invoiceLine->getQuantity();
-                    } elseif (Invoice\InvoiceTypes::TYPE_CREDIT === $invoice->getType()) {
-                        $quantity += $invoiceLine->getQuantity();
-                    }
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $invoiceLine) {
+                    $quantity -= $invoiceLine->getQuantity();
                 }
             }
         } else {
@@ -121,7 +115,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
      */
     public function calculateCreditableQuantity(Invoice\InvoiceLineInterface $line)
     {
-        if ($line->getInvoice()->getType() !== Invoice\InvoiceTypes::TYPE_CREDIT) {
+        if (!Invoice\InvoiceTypes::isCredit($line->getInvoice())) {
             throw new LogicException(sprintf("Expected invoice with type '%s'.", Invoice\InvoiceTypes::TYPE_CREDIT));
         }
 
@@ -146,17 +140,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                     continue;
                 }
 
-                foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_GOOD) {
-                        continue;
-                    }
+                $credit = Invoice\InvoiceTypes::isCredit($invoice);
 
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
                     if ($invoiceLine->getSaleItem() === $saleItem) {
-                        if (Invoice\InvoiceTypes::TYPE_INVOICE === $invoice->getType()) {
-                            $quantity += $invoiceLine->getQuantity();
-                        } elseif (Invoice\InvoiceTypes::TYPE_CREDIT === $invoice->getType()) {
-                            $quantity -= $invoiceLine->getQuantity();
-                        }
+                        $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
                     }
                 }
             }
@@ -171,17 +159,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                     continue;
                 }
 
-                foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_DISCOUNT) {
-                        continue;
-                    }
+                $credit = Invoice\InvoiceTypes::isCredit($invoice);
 
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $invoiceLine) {
                     if ($invoiceLine->getSaleAdjustment() === $adjustment) {
-                        if (Invoice\InvoiceTypes::TYPE_INVOICE === $invoice->getType()) {
-                            $quantity += $invoiceLine->getQuantity();
-                        } elseif (Invoice\InvoiceTypes::TYPE_CREDIT === $invoice->getType()) {
-                            $quantity -= $invoiceLine->getQuantity();
-                        }
+                        $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
                     }
                 }
             }
@@ -192,16 +174,10 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                     continue;
                 }
 
-                foreach ($invoice->getLines() as $invoiceLine) {
-                    if ($invoiceLine->getType() !== DocumentLineTypes::TYPE_SHIPMENT) {
-                        continue;
-                    }
+                $credit = Invoice\InvoiceTypes::isCredit($invoice);
 
-                    if (Invoice\InvoiceTypes::TYPE_INVOICE === $invoice->getType()) {
-                        $quantity += $invoiceLine->getQuantity();
-                    } elseif (Invoice\InvoiceTypes::TYPE_CREDIT === $invoice->getType()) {
-                        $quantity -= $invoiceLine->getQuantity();
-                    }
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $invoiceLine) {
+                    $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
                 }
             }
         } else {
@@ -225,7 +201,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         $quantity = 0;
 
         foreach ($sale->getInvoices() as $invoice) {
-            $credit = $invoice->getType() === Invoice\InvoiceTypes::TYPE_CREDIT;
+            $credit = Invoice\InvoiceTypes::isCredit($invoice);
 
             foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
                 if ($line->getSaleItem() === $item) {
@@ -251,7 +227,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         $quantity = 0;
 
         foreach ($sale->getInvoices() as $invoice) {
-            if ($invoice->getType() !== Invoice\InvoiceTypes::TYPE_CREDIT) {
+            if (!Invoice\InvoiceTypes::isCredit($invoice)) {
                 continue;
             }
 
@@ -273,10 +249,10 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         $total = .0;
 
         foreach ($subject->getInvoices() as $invoice) {
-            if ($invoice->getType() === Invoice\InvoiceTypes::TYPE_CREDIT) {
-                $total -=  $invoice->getGrandTotal();
+            if (Invoice\InvoiceTypes::isCredit($invoice)) {
+                $total -= $invoice->getGrandTotal();
             } else {
-                $total +=  $invoice->getGrandTotal();
+                $total += $invoice->getGrandTotal();
             }
         }
 

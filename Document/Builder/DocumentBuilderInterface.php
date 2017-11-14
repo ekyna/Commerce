@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Document\Builder;
 
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
+use Ekyna\Component\Commerce\Document\Model\DocumentLineInterface;
 
 /**
  * Interface DocumentBuilderInterface
@@ -26,4 +28,34 @@ interface DocumentBuilderInterface
      * @return bool
      */
     public function update(DocumentInterface $document);
+
+    /**
+     * Builds the document good line from the given sale item.
+     *
+     * @param Common\SaleItemInterface $item
+     * @param DocumentInterface        $document
+     * @param bool                     $recurse
+     *
+     * @return DocumentLineInterface|null
+     */
+    public function buildGoodLine(Common\SaleItemInterface $item, DocumentInterface $document, $recurse = true);
+
+    /**
+     * Builds the discount line from the given adjustment.
+     *
+     * @param Common\AdjustmentInterface $adjustment
+     * @param DocumentInterface          $document
+     *
+     * @return DocumentLineInterface|null
+     */
+    public function buildDiscountLine(Common\AdjustmentInterface $adjustment, DocumentInterface $document);
+
+    /**
+     * Builds the document's shipment line.
+     *
+     * @param DocumentInterface $document
+     *
+     * @return DocumentLineInterface|null
+     */
+    public function buildShipmentLine(DocumentInterface $document);
 }

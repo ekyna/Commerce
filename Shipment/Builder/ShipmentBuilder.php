@@ -61,31 +61,25 @@ class ShipmentBuilder implements ShipmentBuilderInterface
      */
     protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment)
     {
-        if ($saleItem->isCompound() && $saleItem->hasChildren()) {
-            foreach ($saleItem->getChildren() as $childSaleItem) {
-                $this->buildItem($childSaleItem, $shipment);
+        if (!$saleItem->isCompound()) {
+            $item = $this->factory->createItemForShipment($shipment);
+            $item->setSaleItem($saleItem);
+            $shipment->addItem($item);
+
+            $expected = $shipment->isReturn()
+                ? $this->calculator->calculateReturnableQuantity($item)
+                : $this->calculator->calculateShippableQuantity($item);
+
+            if (0 >= $expected) {
+                $shipment->removeItem($item);
+
+                return;
+            } elseif (!$shipment->isReturn()) {
+                $item->setQuantity(min($expected, $this->calculator->calculateAvailableQuantity($item)));
             }
-
-            return;
         }
 
-        $item = $this->factory->createItemForShipment($shipment);
-        $item->setSaleItem($saleItem);
-        $shipment->addItem($item);
-
-        $expected = $shipment->isReturn()
-            ? $this->calculator->calculateReturnableQuantity($item)
-            : $this->calculator->calculateShippableQuantity($item);
-
-        if (0 >= $expected) {
-            $shipment->removeItem($item);
-
-            return;
-        } elseif (!$shipment->isReturn()) {
-            $item->setQuantity(min($expected, $this->calculator->calculateAvailableQuantity($item)));
-        }
-
-        if (!$saleItem->isCompound() && $saleItem->hasChildren()) {
+        if ($saleItem->hasChildren()) {
             foreach ($saleItem->getChildren() as $childSaleItem) {
                 $this->buildItem($childSaleItem, $shipment);
             }

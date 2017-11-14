@@ -20,6 +20,9 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipment"
+                    field="shipment" mapped-by="invoice"/>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoiceLine"
                      field="lines" mapped-by="invoice" orphan-removal="true">
             <cascade>

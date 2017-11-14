@@ -180,7 +180,7 @@ class SupplierOrderListener extends AbstractListener
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether the supplier order has been generated or not.
+     * @return bool Whether or not the supplier order number has been changed.
      */
     protected function updateNumber(SupplierOrderInterface $order)
     {
@@ -198,7 +198,7 @@ class SupplierOrderListener extends AbstractListener
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether the supplier order has been changed or not.
+     * @return bool Whether or not the supplier order has been changed.
      */
     protected function updateState(SupplierOrderInterface $order)
     {
@@ -221,7 +221,7 @@ class SupplierOrderListener extends AbstractListener
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether the supplier order has been changed or not.
+     * @return bool Whether or not the supplier order has been changed.
      */
     protected function updateTotal(SupplierOrderInterface $order)
     {
