@@ -179,7 +179,7 @@ abstract class AbstractInvoiceListener
     {
         $invoice = $this->getInvoiceFromEvent($event);
 
-        //$this->updateCustomerCreditBalance($invoice);
+        $this->updateCustomerCreditBalance($invoice);
 
         /** @var SaleInterface|InvoiceSubjectInterface $sale */
         $sale = $invoice->getSale();
@@ -201,9 +201,9 @@ abstract class AbstractInvoiceListener
             if ($this->updateTotals($invoice)) {
                 $this->persistenceHelper->persistAndRecompute($invoice, false);
             }
-        }
 
-        $this->updateCustomerCreditBalance($invoice);
+            $this->updateCustomerCreditBalance($invoice);
+        }
 
         $this->scheduleSaleContentChangeEvent($invoice->getSale());
     }

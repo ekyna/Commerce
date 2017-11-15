@@ -100,6 +100,11 @@ class CustomerUpdater implements CustomerUpdaterInterface
      */
     public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false)
     {
+        // Switch to parent if available
+        if ($customer->hasParent()) {
+            $customer = $customer->getParent();
+        }
+
         $old = $customer->getCreditBalance();
         $new = $relative ? $old + $amount : $amount;
 

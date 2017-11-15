@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -388,16 +387,6 @@ abstract class AbstractSale implements Common\SaleInterface
     public function hasAttachments()
     {
         return 0 < $this->attachments->count();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCustomerAttachments()
-    {
-        return $this->attachments->matching(
-            Criteria::create()->where(Criteria::expr()->eq('internal', false))
-        );
     }
 
     /**
