@@ -117,7 +117,7 @@
             <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="min">2</option>
-                <option name="max">16</option>
+                <option name="max">32</option>
             </constraint>
         </property>
         <property name="quantity">
