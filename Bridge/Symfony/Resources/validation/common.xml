@@ -275,7 +275,7 @@
             </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
-                <option name="max">16</option>
+                <option name="max">32</option>
                 <option name="groups">
                     <value>Default</value>
                     <value>Calculation</value>
