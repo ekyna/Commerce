@@ -2,12 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Document\Calculator;
 
-use Ekyna\Component\Commerce\Common\Calculator\Result;
+use Ekyna\Component\Commerce\Common\Calculator\Amount;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use InvalidArgumentException;
 
 /**
  * Class DocumentCalculator
@@ -17,63 +17,96 @@ use InvalidArgumentException;
 class DocumentCalculator implements DocumentCalculatorInterface
 {
     /**
+     * @var AmountCalculatorInterface
+     */
+    protected $calculator;
+
+    /**
      * @var string
      */
     protected $currency;
 
+    /**
+     * @var bool
+     */
+    protected $changed;
+
+
+    /**
+     * Constructor.
+     *
+     * @param AmountCalculatorInterface $calculator
+     */
+    public function __construct(AmountCalculatorInterface $calculator)
+    {
+        $this->calculator = $calculator;
+    }
 
     /**
      * @inheritdoc
      */
     public function calculate(Model\DocumentInterface $document)
     {
+        $this->changed = false;
         $this->currency = $document->getCurrency();
 
-        $changed = false;
-
-        $result = new Result();
-
-        // Goods lines
-        foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_GOOD) as $line) {
-            $changed |= $this->calculateGoodLine($line, $result);
+        if (null === $sale = $document->getSale()) {
+            throw new LogicException("Document can't be recalculated.");
         }
+
+        // TODO Currency conversion
+        //$currency = $sale->getCurrency()->getCode();
+
+        // Clear all sale's results and disable calculator cache
+        $sale->clearResults();
+        $this->calculator->setCache(false);
+
+        // Goods lines / Gross result
+        $gross = $this->calculateGoodLines($document);
+
+        // Final result
+        $final = Amount::createFinalFromGross($gross);
 
         // Discount lines
-        $goodsResult = clone $result;
         foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_DISCOUNT) as $line) {
-            $changed |= $this->calculateDiscountLine($line, $goodsResult, $result);
-        }
-
-        // Document goods base (after discounts)
-        if ($result->getBase() !== $document->getGoodsBase()) {
-            $document->setGoodsBase($result->getBase());
-            $changed = true;
+            $this->calculateDiscountLine($line, $gross, $final);
         }
 
         // Shipment lines
         $shipmentBase = 0;
         foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_SHIPMENT) as $line) {
-            $changed |= $this->calculateShipmentLine($line, $result);
+            $result = $this->calculateShipmentLine($line, $final);
 
-            $shipmentBase += $line->getNetTotal();
+            $shipmentBase += $result->getBase();
+        }
+
+        // Document goods base (after discounts)
+        if ($document->getGoodsBase() !== $gross->getBase()) {
+            $document->setGoodsBase($gross->getBase());
+            $this->changed = true;
+        }
+
+        // Document discount base.
+        if ($document->getDiscountBase() !== $final->getDiscount()) {
+            $document->setDiscountBase($final->getDiscount());
+            $this->changed = true;
         }
 
         // Document shipment base.
-        if ($shipmentBase !== $document->getShipmentBase()) {
+        if ($document->getShipmentBase() !== $shipmentBase) {
             $document->setShipmentBase($shipmentBase);
-            $changed = true;
+            $this->changed = true;
         }
 
         // Document taxes total
-        $taxesTotal = $result->getTaxTotal();
-        if ($taxesTotal !== $document->getTaxesTotal()) {
-            $document->setTaxesTotal($taxesTotal);
-            $changed = true;
+        if ($document->getTaxesTotal() !== $final->getTax()) {
+            $document->setTaxesTotal($final->getTax());
+            $this->changed = true;
         }
 
         // Taxes details
         $taxesDetails = [];
-        foreach ($result->getTaxes() as $tax) {
+        foreach ($final->getTaxAdjustments() as $tax) {
             $taxesDetails[] = [
                 'name'   => $tax->getName(),
                 'rate'   => $tax->getRate(),
@@ -82,29 +115,51 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
         if ($document->getTaxesDetails() !== $taxesDetails) {
             $document->setTaxesDetails($taxesDetails);
-            $changed = true;
+            $this->changed = true;
         }
 
         // Document grand total
-        $grandTotal = $result->getTotal();
-        if ($grandTotal !== $document->getGrandTotal()) {
-            $document->setGrandTotal($grandTotal);
-            $changed = true;
+        if ($document->getGrandTotal() !== $final->getTotal()) {
+            $document->setGrandTotal($final->getTotal());
+            $this->changed = true;
         }
 
-        return $changed;
+        // Clear all sale's results
+        $sale->clearResults();
+
+        return $this->changed;
+    }
+
+    /**
+     * Calculates the good lines.
+     *
+     * @param Model\DocumentInterface $document
+     *
+     * @return Amount
+     */
+    protected function calculateGoodLines(Model\DocumentInterface $document): Amount
+    {
+        $gross = new Amount();
+
+        foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_GOOD) as $line) {
+            $gross->merge($this->calculateGoodLine($line));
+        }
+
+        $gross->copyGrossToUnit();
+
+        return $gross;
     }
 
     /**
      * Calculate the good line.
      *
      * @param Model\DocumentLineInterface $line
-     * @param Result                     $result
      *
-     * @return bool
+     * @return Amount
+     *
      * @throws LogicException
      */
-    protected function calculateGoodLine(Model\DocumentLineInterface $line, Result $result)
+    protected function calculateGoodLine(Model\DocumentLineInterface $line): Amount
     {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_GOOD) {
             throw new LogicException(sprintf(
@@ -113,90 +168,27 @@ class DocumentCalculator implements DocumentCalculatorInterface
             ));
         }
 
-        $changed = false;
-
         if (null === $item = $line->getSaleItem()) {
             throw new LogicException("Document can't be recalculated.");
         }
 
-        $netUnit = $this->round($item->getNetPrice()); // TODO Currency conversion
+        $result = $this->calculator->calculateSaleItem($item, $line->getQuantity());
 
-        $quantity = $line->getQuantity();
-        $netTotal = $baseTotal = $netUnit * $quantity;
+        $this->syncLineWithResult($line, $result);
 
-        // Discounts
-        $discountTotal = 0;
-        if (!empty($adjustments = $this->getSaleItemDiscountAdjustments($item))) {
-            foreach ($adjustments as $adjustment) {
-                if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
-                    $discountTotal -= $this->round($baseTotal * $adjustment->getAmount() / 100);
-                } elseif ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
-                    $discountTotal -= $this->round($baseTotal * $adjustment->getAmount() * ($quantity / $item->getTotalQuantity()));
-                } else {
-                    throw new InvalidArgumentException("Unexpected discount adjustment mode '{$adjustment->getMode()}'.");
-                }
-            }
-            $netTotal += $discountTotal;
-        }
-
-        $result->addBase($netTotal);
-
-        // Unit net price
-        if ($line->getNetPrice() != $netUnit) {
-            $line->setNetPrice($netUnit);
-            $changed = true;
-        }
-        // Base total
-        if ($baseTotal !== $line->getBaseTotal()) {
-            $line->setBaseTotal($baseTotal);
-            $changed = true;
-        }
-        // Discount total
-        if ($discountTotal !== $line->getDiscountTotal()) {
-            $line->setDiscountTotal($discountTotal);
-            $changed = true;
-        }
-        // Net total
-        if ($netTotal !== $line->getNetTotal()) {
-            $line->setNetTotal($netTotal);
-            $changed = true;
-        }
-
-        // Taxes
-        $taxRates = [];
-        if (!empty($adjustments = $item->getAdjustments(Common\AdjustmentTypes::TYPE_TAXATION)->toArray())) {
-            /** @var Common\AdjustmentInterface $adjustment */
-            foreach ($adjustments as $adjustment) {
-                // Only percent type is allowed for taxation
-                if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
-                    $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $netTotal);
-                    $taxRates[] = $adjustment->getAmount();
-                } else {
-                    throw new InvalidArgumentException("Unexpected tax adjustment mode '{$adjustment->getMode()}'.");
-                }
-            }
-        }
-
-        // Tax rates
-        if ($taxRates !== $line->getTaxRates()) {
-            $line->setTaxRates($taxRates);
-            $changed = true;
-        }
-
-        return $changed;
+        return $result;
     }
 
     /**
      * Calculate the discount line.
      *
      * @param Model\DocumentLineInterface $line
-     * @param Result                     $goodsResult
-     * @param Result                     $result
+     * @param Amount                      $gross
+     * @param Amount                      $final
      *
-     * @return bool
      * @throws LogicException
      */
-    protected function calculateDiscountLine(Model\DocumentLineInterface $line, Result $goodsResult, Result $result)
+    protected function calculateDiscountLine(Model\DocumentLineInterface $line, Amount $gross, Amount $final)
     {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_DISCOUNT) {
             throw new LogicException(sprintf(
@@ -205,74 +197,26 @@ class DocumentCalculator implements DocumentCalculatorInterface
             ));
         }
 
-        $changed = false;
-
+        /** @var Common\SaleAdjustmentInterface $adjustment */
         if (null === $adjustment = $line->getSaleAdjustment()) {
             throw new LogicException("Document can't be recalculated.");
         }
 
-        if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
-            $rate = $adjustment->getAmount() / 100;
+        $result = $this->calculator->calculateSaleDiscount($adjustment, $gross, $final);
 
-            $discountAmount = -$this->round($goodsResult->getBase() * $rate);
-
-            // Apply discount rate to base
-            $result->addBase($discountAmount);
-
-            // Apply discount rate to taxes
-            foreach ($goodsResult->getTaxes() as $tax) {
-                $taxBase = -$this->round($tax->getBase() * $rate);
-                $result->addTax($tax->getName(), $tax->getRate(), $taxBase);
-            }
-        } elseif ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
-            $discountAmount = -$adjustment->getAmount(); // TODO Currency conversion
-
-            // Apply discount amount to base
-            $result->addBase($discountAmount);
-
-            // Dispatch the discount amount over taxes
-            foreach ($goodsResult->getTaxes() as $tax) {
-                $taxBase = -$this->round($adjustment->getAmount() * $tax->getBase() / $goodsResult->getBase());
-                $result->addTax($tax->getName(), $tax->getRate(), $taxBase);
-            }
-        } else {
-            throw new InvalidArgumentException("Unexpected adjustment mode '{$adjustment->getMode()}'.");
-        }
-
-        // Unit net price
-        if ($discountAmount !== $line->getNetPrice()) {
-            $line->setNetPrice($discountAmount);
-            $changed = true;
-        }
-        // Base total
-        if ($discountAmount !== $line->getBaseTotal()) {
-            $line->setBaseTotal($discountAmount);
-            $changed = true;
-        }
-        // Discount total
-        if (0 !== $line->getDiscountTotal()) {
-            $line->setDiscountTotal(0);
-            $changed = true;
-        }
-        // Net total
-        if ($discountAmount !== $line->getNetTotal()) {
-            $line->setNetTotal($discountAmount);
-            $changed = true;
-        }
-
-        return $changed;
+        $this->syncLineWithResult($line, $result);
     }
 
     /**
      * Calculate the shipment line.
      *
      * @param Model\DocumentLineInterface $line
-     * @param Result                     $result
+     * @param Amount                      $final
      *
-     * @return bool
+     * @return Amount
      * @throws LogicException
      */
-    protected function calculateShipmentLine(Model\DocumentLineInterface $line, Result $result)
+    protected function calculateShipmentLine(Model\DocumentLineInterface $line, Amount $final): Amount
     {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_SHIPMENT) {
             throw new LogicException(sprintf(
@@ -281,72 +225,76 @@ class DocumentCalculator implements DocumentCalculatorInterface
             ));
         }
 
-        $changed = false;
-
         $sale = $line->getDocument()->getSale();
 
-        if (0 < $base = $sale->getShipmentAmount()) {
-            $base = $this->round($base);
+        $result = $this->calculator->calculateSaleShipment($sale, $final);
 
-            $result->addBase($base);
-
-            // Taxes
-            if (!empty($adjustments = $sale->getAdjustments(Common\AdjustmentTypes::TYPE_TAXATION)->toArray())) {
-                /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface $adjustment */
-                foreach ($adjustments as $adjustment) {
-                    // Only percent type is allowed for taxation
-                    if ($adjustment->getMode() === Common\AdjustmentModes::MODE_PERCENT) {
-                        $result->addTax($adjustment->getDesignation(), $adjustment->getAmount(), $base);
-                    } else {
-                        throw new InvalidArgumentException("Unexpected adjustment mode '{$adjustment->getMode()}'.");
-                    }
-                }
-            }
+        if (null === $result) {
+            throw new LogicException("Unexpected document shipment line.");
         }
 
-        // Unit net price
-        if ($base !== $line->getNetPrice()) { // TODO Currency conversion
-            $line->setNetPrice($base);
-            $changed = true;
-        }
-        // Base total
-        if ($base !== $line->getBaseTotal()) {
-            $line->setBaseTotal($base);
-            $changed = true;
-        }
-        // Discount total
-        if (0 !== $line->getDiscountTotal()) {
-            $line->setDiscountTotal(0);
-            $changed = true;
-        }
-        // Net total
-        if ($base !== $line->getNetTotal()) {
-            $line->setNetTotal($base);
-            $changed = true;
-        }
+        $this->syncLineWithResult($line, $result);
 
-        return $changed;
+        return $result;
     }
 
     /**
-     * Returns the discount adjustments for the given sale item.
+     * Synchronizes the line amounts with the given result.
      *
-     * @param Common\SaleItemInterface $item
-     *
-     * @return \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[]
+     * @param Model\DocumentLineInterface $line
+     * @param Amount                      $result
      */
-    protected function getSaleItemDiscountAdjustments(Common\SaleItemInterface $item)
+    protected function syncLineWithResult(Model\DocumentLineInterface $line, Amount $result)
     {
-        $parent = $item;
-        do {
-            $adjustments = $parent->getAdjustments(Common\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
-            if (!empty($adjustments)) {
-                return $adjustments;
-            }
-            $parent = $parent->getParent();
-        } while (null !== $parent);
+        // TODO Currency conversions
 
-        return [];
+        // Unit
+        if ($line->getUnit() !== $result->getUnit()) {
+            $line->setUnit($result->getUnit());
+            $this->changed = true;
+        }
+        // Gross
+        if ($line->getGross() !== $result->getGross()) {
+            $line->setGross($result->getGross());
+            $this->changed = true;
+        }
+        // Discount
+        if ($line->getDiscount() !== $result->getDiscount()) {
+            $line->setDiscount($result->getDiscount());
+            $this->changed = true;
+        }
+        // Discount rates
+        $discountRates = [];
+        if (!empty($adjustments = $result->getDiscountAdjustments())) {
+            foreach ($adjustments as $adjustment) {
+                $discountRates[] = $adjustment->getRate();
+            }
+        }
+        if ($discountRates !== $line->getDiscountRates()) {
+            $line->setDiscountRates($discountRates);
+            $this->changed = true;
+        }
+        // Base
+        if ($line->getBase() !== $result->getBase()) {
+            $line->setBase($result->getBase());
+            $this->changed = true;
+        }
+        // Tax rates
+        $taxRates = [];
+        if (!empty($adjustments = $result->getTaxAdjustments())) {
+            foreach ($adjustments as $adjustment) {
+                $taxRates[] = $adjustment->getRate();
+            }
+        }
+        if ($taxRates !== $line->getTaxRates()) {
+            $line->setTaxRates($taxRates);
+            $this->changed = true;
+        }
+        // Total
+        if ($line->getTotal() !== $result->getTotal()) {
+            $line->setTotal($result->getTotal());
+            $this->changed = true;
+        }
     }
 
     /**

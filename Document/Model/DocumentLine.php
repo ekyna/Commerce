@@ -39,7 +39,7 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @var float
      */
-    protected $netPrice;
+    protected $unit;
 
     /**
      * @var float
@@ -49,22 +49,37 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @var float
      */
-    protected $baseTotal;
+    protected $gross;
 
     /**
      * @var float
      */
-    protected $discountTotal;
+    protected $discount;
+
+    /**
+     * @var array
+     */
+    protected $discountRates;
 
     /**
      * @var float
      */
-    protected $netTotal;
+    protected $base;
+
+    /**
+     * @var float
+     */
+    protected $tax;
 
     /**
      * @var array
      */
     protected $taxRates;
+
+    /**
+     * @var float
+     */
+    protected $total;
 
     /**
      * @var Common\SaleItemInterface
@@ -82,10 +97,10 @@ class DocumentLine implements DocumentLineInterface
      */
     public function __construct()
     {
-        $this->netPrice = 0;
+        $this->unit = 0;
         $this->quantity = 0;
-        $this->discountTotal = 0;
-        $this->netTotal = 0;
+        $this->discount = 0;
+        $this->base = 0;
         $this->taxRates = [];
     }
 
@@ -182,17 +197,17 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getNetPrice()
+    public function getUnit()
     {
-        return $this->netPrice;
+        return $this->unit;
     }
 
     /**
      * @inheritdoc
      */
-    public function setNetPrice($price)
+    public function setUnit($price)
     {
-        $this->netPrice = (float)$price;
+        $this->unit = (float)$price;
 
         return $this;
     }
@@ -218,17 +233,17 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getBaseTotal()
+    public function getGross()
     {
-        return $this->baseTotal;
+        return $this->gross;
     }
 
     /**
      * @inheritdoc
      */
-    public function setBaseTotal($baseTotal)
+    public function setGross($gross)
     {
-        $this->baseTotal = $baseTotal;
+        $this->gross = (float)$gross;
 
         return $this;
     }
@@ -236,17 +251,17 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getDiscountTotal()
+    public function getDiscount()
     {
-        return $this->discountTotal;
+        return $this->discount;
     }
 
     /**
      * @inheritdoc
      */
-    public function setDiscountTotal($total)
+    public function setDiscount($total)
     {
-        $this->discountTotal = $total;
+        $this->discount = (float)$total;
 
         return $this;
     }
@@ -254,17 +269,59 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getNetTotal()
+    public function getDiscountRates()
     {
-        return $this->netTotal;
+        return $this->taxRates;
     }
 
     /**
      * @inheritdoc
      */
-    public function setNetTotal($total)
+    public function setDiscountRates(array $rates)
     {
-        $this->netTotal = $total;
+        $this->discountRates = $rates;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBase()
+    {
+        return $this->base;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setBase($total)
+    {
+        $this->base = (float)$total;
+
+        return $this;
+    }
+
+    /**
+     * Returns the tax.
+     *
+     * @return float
+     */
+    public function getTax()
+    {
+        return $this->tax;
+    }
+
+    /**
+     * Sets the tax.
+     *
+     * @param float $tax
+     *
+     * @return DocumentLine
+     */
+    public function setTax($tax)
+    {
+        $this->tax = (float)$tax;
 
         return $this;
     }
@@ -280,9 +337,27 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function setTaxRates(array $taxRates)
+    public function setTaxRates(array $rates)
     {
-        $this->taxRates = $taxRates;
+        $this->taxRates = $rates;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTotal($total)
+    {
+        $this->total = (float)$total;
 
         return $this;
     }

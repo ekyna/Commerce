@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Document\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
@@ -167,6 +168,15 @@ interface DocumentInterface
     public function removeLine(DocumentLineInterface $line);
 
     /**
+     * Sets the document lines.
+     *
+     * @param ArrayCollection|DocumentLineInterface[] $lines
+     *
+     * @return $this|DocumentInterface
+     */
+    public function setLines(ArrayCollection $lines);
+
+    /**
      * Returns the description.
      *
      * @return string
@@ -197,6 +207,22 @@ interface DocumentInterface
      * @return $this|DocumentInterface
      */
     public function setGoodsBase($base);
+
+    /**
+     * Returns the discount base.
+     *
+     * @return float
+     */
+    public function getDiscountBase();
+
+    /**
+     * Sets the discount base.
+     *
+     * @param float $base
+     *
+     * @return Document
+     */
+    public function setDiscountBase($base);
 
     /**
      * Returns the shipment base.

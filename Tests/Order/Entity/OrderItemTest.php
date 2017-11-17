@@ -102,12 +102,8 @@ class OrderItemTest extends \PHPUnit_Framework_TestCase
             'OrderItem is not initialized with a null net price'
         );
         $this->assertNull(
-            $item->getTaxName(),
+            $item->getTaxGroup(),
             'OrderItem is not initialized with a null tax name'
-        );
-        $this->assertNull(
-            $item->getTaxRate(),
-            'OrderItem is not initialized with a null tax rate'
         );
         $this->assertNull(
             $item->getWeight(),

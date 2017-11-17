@@ -32,12 +32,30 @@ class SaleItemValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SaleItem::class);
         }
 
-        // Tax group must not be null if item has no children
-        if (!$item->hasChildren() && null === $item->getTaxGroup()) {
+        $parent = $item->getParent();
+
+        if ($item->isPrivate()) {
+            if (null === $parent) {
+                // Level zero items must be public
+                $this
+                    ->context
+                    ->buildViolation($constraint->root_item_cant_be_private)
+                    ->atPath('private')
+                    ->addViolation();
+            } elseif ($item->getTaxGroup() !== $parent->getTaxGroup()) {
+                // Tax group must match parent's one
+                $this
+                    ->context
+                    ->buildViolation($constraint->tax_group_integrity)
+                    ->atPath('taxGroup')
+                    ->addViolation();
+            }
+        } elseif (null !== $parent && $parent->isPrivate()) {
+            // Item with private parent must be private
             $this
                 ->context
-                ->buildViolation($constraint->tax_group_must_not_be_null)
-                ->atPath('taxGroup')
+                ->buildViolation($constraint->privacy_integrity)
+                ->atPath('private')
                 ->addViolation();
         }
 
@@ -73,7 +91,7 @@ class SaleItemValidator extends ConstraintValidator
         if (0 < $quantity && $item->getTotalQuantity() < $quantity) {
             $this
                 ->context
-                ->buildViolation($constraint->quantity_is_lower_than_invoiced, [
+                ->buildViolation($constraint->quantity_is_lower_than_credited, [
                     '%max%' => $quantity,
                 ])
                 ->atPath('quantity')

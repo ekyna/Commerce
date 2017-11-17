@@ -56,6 +56,11 @@ class Document implements DocumentInterface
     /**
      * @var float
      */
+    protected $discountBase;
+
+    /**
+     * @var float
+     */
     protected $shipmentBase;
 
     /**
@@ -268,6 +273,20 @@ class Document implements DocumentInterface
     /**
      * @inheritdoc
      */
+    public function setLines(ArrayCollection $lines)
+    {
+        $this->lines = new ArrayCollection();
+
+        foreach ($lines as $line) {
+            $this->addLine($line);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getDescription()
     {
         return $this->description;
@@ -297,6 +316,24 @@ class Document implements DocumentInterface
     public function setGoodsBase($base)
     {
         $this->goodsBase = (float)$base;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDiscountBase()
+    {
+        return $this->discountBase;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDiscountBase($base)
+    {
+        $this->discountBase = (float)$base;
 
         return $this;
     }
@@ -397,7 +434,7 @@ class Document implements DocumentInterface
     public function hasLineDiscount()
     {
         foreach ($this->lines as $line) {
-            if (0 != $line->getDiscountTotal()) {
+            if (0 != $line->getDiscount()) {
                 return true;
             }
         }

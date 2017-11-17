@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Resource\Model as Resource;
@@ -82,7 +83,7 @@ interface ShipmentInterface extends
     /**
      * Returns the items.
      *
-     * @return \Doctrine\Common\Collections\Collection|ShipmentItemInterface[]
+     * @return ArrayCollection|ShipmentItemInterface[]
      */
     public function getItems();
 
@@ -112,6 +113,15 @@ interface ShipmentInterface extends
      * @return $this|ShipmentInterface
      */
     public function removeItem(ShipmentItemInterface $item);
+
+    /**
+     * Sets the shipment items.
+     *
+     * @param ArrayCollection|ShipmentItemInterface[] $items
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setItems(ArrayCollection $items);
 
     /**
      * Returns whether or not the shipment is a return.

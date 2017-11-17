@@ -12,11 +12,6 @@ class SaleView extends AbstractView
     /**
      * @var string
      */
-    private $mode;
-
-    /**
-     * @var string
-     */
     private $template;
 
     /**
@@ -58,12 +53,10 @@ class SaleView extends AbstractView
     /**
      * Constructor.
      *
-     * @param string $mode
      * @param string $template
      */
-    public function __construct($mode, $template)
+    public function __construct($template)
     {
-        $this->mode = $mode;
         $this->template = $template;
 
         $this->items = [];
@@ -71,16 +64,6 @@ class SaleView extends AbstractView
         $this->taxes = [];
 
         $this->translations = $this->getDefaultTranslations();
-    }
-
-    /**
-     * Returns the mode.
-     *
-     * @return string
-     */
-    public function getMode()
-    {
-        return $this->mode;
     }
 
     /**
@@ -270,6 +253,9 @@ class SaleView extends AbstractView
             'reference'      => 'Reference',
             'unit_net_price' => 'Unit net price',
             'quantity'       => 'Quantity',
+
+            'gross'          => 'Gross',
+            'discount'       => 'Discount',
 
             'tax_rate'       => 'Tax rate',
             'tax_name'       => 'Tax',

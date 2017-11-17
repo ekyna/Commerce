@@ -88,7 +88,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         $this->state = Shipment\ShipmentStates::STATE_NEW;
         $this->items = new ArrayCollection();
         $this->return = false;
-        $this->autoInvoice = true;
+        $this->autoInvoice = false;
     }
 
     /**
@@ -194,9 +194,21 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Returns the return.
-     *
-     * @return bool
+     * @inheritdoc
+     */
+    public function setItems(ArrayCollection $items)
+    {
+        $this->items = new ArrayCollection();
+
+        foreach ($items as $item) {
+            $this->addItem($item);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function isReturn()
     {
@@ -204,11 +216,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Sets the return.
-     *
-     * @param bool $return
-     *
-     * @return AbstractShipment
+     * @inheritdoc
      */
     public function setReturn($return)
     {
@@ -218,9 +226,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Returns the weight.
-     *
-     * @return float
+     * @inheritdoc
      */
     public function getWeight()
     {
@@ -228,11 +234,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Sets the weight.
-     *
-     * @param float $weight
-     *
-     * @return AbstractShipment
+     * @inheritdoc
      */
     public function setWeight($weight)
     {
@@ -338,9 +340,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Returns the sender address data.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function getSenderAddress()
     {
@@ -348,11 +348,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Sets the sender address data.
-     *
-     * @param array $data
-     *
-     * @return AbstractShipment
+     * @inheritdoc
      */
     public function setSenderAddress($data)
     {
@@ -362,9 +358,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Returns the receiver address data.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function getReceiverAddress()
     {
@@ -372,11 +366,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Sets the receiver address data.
-     *
-     * @param array $data
-     *
-     * @return AbstractShipment
+     * @inheritdoc
      */
     public function setReceiverAddress($data)
     {

@@ -9,7 +9,14 @@ namespace Ekyna\Component\Commerce\Common\Event;
  */
 final class SaleItemEvents
 {
-    const INITIALIZE  = 'ekyna_commerce.sale_item.initialize';
-    const BUILD       = 'ekyna_commerce.sale_item.build';
-    const ADJUSTMENTS = 'ekyna_commerce.sale_item.adjustments';
+    const INITIALIZE = 'ekyna_commerce.sale_item.initialize';
+    const BUILD      = 'ekyna_commerce.sale_item.build';
+    const DISCOUNT   = 'ekyna_commerce.sale_item.discount';
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Cart\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAdjustment;
 use Ekyna\Component\Commerce\Cart\Model\CartAdjustmentInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 
@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Cart\Model\CartInterface;
  * @package Ekyna\Component\Commerce\Cart\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CartAdjustment extends AbstractAdjustment implements CartAdjustmentInterface
+class CartAdjustment extends AbstractSaleAdjustment implements CartAdjustmentInterface
 {
     /**
      * @var CartInterface

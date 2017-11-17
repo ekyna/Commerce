@@ -89,7 +89,7 @@ class SaleTransformer implements SaleTransformerInterface
 
         $this->saleCopier->copySale($this->source, $this->target);
 
-        $this->postCopy($this->source, $this->target);
+        $this->postCopy();
 
         return $this->getOperator($this->target)->initialize($this->target);
     }
@@ -106,6 +106,8 @@ class SaleTransformer implements SaleTransformerInterface
         if (null === $this->source || null === $this->target) {
             throw new LogicException("Please call initialize first.");
         }
+
+        $this->preTransform();
 
         // Disable the uploadable listener
         $this->uploadableListener->setEnabled(false);
@@ -132,16 +134,21 @@ class SaleTransformer implements SaleTransformerInterface
 
     /**
      * Post copy handler.
-     *
-     * @param SaleInterface $source
-     * @param SaleInterface $target
      */
-    protected function postCopy(SaleInterface $source, SaleInterface $target)
+    protected function postCopy()
     {
         // Origin number
-        if ($source instanceof QuoteInterface || $source instanceof OrderInterface) {
-            $target->setOriginNumber($source->getNumber());
+        if ($this->source instanceof QuoteInterface || $this->source instanceof OrderInterface) {
+            $this->target->setOriginNumber($this->source->getNumber());
         }
+    }
+
+    /**
+     * Pre transform handler.
+     */
+    protected function preTransform()
+    {
+
     }
 
     /**

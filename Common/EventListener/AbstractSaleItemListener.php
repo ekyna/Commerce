@@ -100,7 +100,7 @@ abstract class AbstractSaleItemListener
      *
      * @param Model\SaleItemInterface $item
      *
-     * @return bool Whether the adjustments has been updated or not.
+     * @return bool Whether the adjustments has been changed or not.
      */
     protected function updateDiscount(Model\SaleItemInterface $item)
     {
@@ -112,7 +112,7 @@ abstract class AbstractSaleItemListener
      *
      * @param Model\SaleItemInterface $item
      *
-     * @return bool Whether the adjustments has been updated or not.
+     * @return bool Whether the adjustments has been changed or not.
      */
     protected function updateTaxation(Model\SaleItemInterface $item)
     {
@@ -191,6 +191,8 @@ abstract class AbstractSaleItemListener
 
         if (isset($changeSet[$path])) {
             return $changeSet[$path][0];
+        } elseif (null !== $parent = $item->getParent()) {
+            return $this->getSaleFromItem($parent);
         } elseif (isset($changeSet['parent'])) {
             return $this->getSaleFromItem($changeSet['parent'][0]);
         }

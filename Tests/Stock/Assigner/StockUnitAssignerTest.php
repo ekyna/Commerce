@@ -11,6 +11,8 @@ use Ekyna\Component\Commerce\Tests\BaseTestCase;
  */
 class StockUnitAssignerTest extends BaseTestCase
 {
+    // TODO Test when both parent and children change
+
     public function test_assignItem()
     {
         $this->markTestIncomplete();

@@ -133,7 +133,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface
      */
-    private function resolveTargetCountry($target)
+    protected function resolveTargetCountry($target)
     {
         if ($target instanceof CountryInterface) {
             return $target;
@@ -160,7 +160,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
      */
-    private function resolveTaxRule(CountryInterface $country, $business = false)
+    protected function resolveTaxRule(CountryInterface $country, $business = false)
     {
         if ($business) {
             return $this->taxRuleRepository->findOneByCountryForBusiness($country);
@@ -176,7 +176,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface|null
      */
-    private function resolveSaleTargetCountry(SaleInterface $sale)
+    protected function resolveSaleTargetCountry(SaleInterface $sale)
     {
         $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
 
@@ -200,7 +200,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface|null
      */
-    private function resolveCustomerTargetCountry(CustomerInterface $customer)
+    protected function resolveCustomerTargetCountry(CustomerInterface $customer)
     {
         if (null !== $address = $customer->getDefaultDeliveryAddress()) {
             return $address->getCountry();
@@ -216,7 +216,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface|null
      */
-    private function getCountryByCode($code)
+    protected function getCountryByCode($code)
     {
         return $this->countryRepository->findOneByCode($code);
     }

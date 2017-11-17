@@ -47,6 +47,13 @@ interface CartProviderInterface
     public function clearInformation();
 
     /**
+     * Updates the cart customer group and currency.
+     *
+     * @return CartProviderInterface
+     */
+    public function updateCustomerGroupAndCurrency();
+
+    /**
      * Saves the cart.
      *
      * @return CartProviderInterface

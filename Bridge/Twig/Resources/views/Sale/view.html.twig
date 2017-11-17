@@ -4,8 +4,14 @@
     <th class="sale-detail-designation">{{ view.translations.designation }}</th>
     <th>{{ view.translations.reference }}</th>
     <th>{{ view.translations.unit_net_price }}</th>
+    {% if view.vars.line_taxes -%}
     <th>{{ view.translations.tax_rate }}</th>
+    {%- endif %}
     <th>{{ view.translations.quantity }}</th>
+    {% if view.vars.line_discounts -%}
+    <th>{{ view.translations.gross }}</th>
+    <th colspan="2">{{ 'ekyna_commerce.sale.field.discount'|trans }}</th>
+    {%- endif %}
     <th>{{ view.translations.net_total }}</th>
 {% endspaceless %}
 {% endblock lines_headers %}
@@ -18,41 +24,60 @@
 {% endblock line_quantity %}
 
 
-{% block line_tax_rates %}
+{% block line_taxes %}
 {% spaceless %}
-    <td class="text-right" id="{{ line.id }}_taxes">
+    <td class="text-right" id="{{ line.id }}_taxRates">
         {{- line.taxRates -}}
     </td>
 {% endspaceless %}
-{% endblock line_tax_rates %}
+{% endblock line_taxes %}
 
 
-{% block line_leaf %}
+{% block line_discounts %}
+{% spaceless %}
+    <td class="text-right" id="{{ line.id }}_gross">
+        {{- line.gross -}}
+    </td>
+    <td class="text-right" id="{{ line.id }}_discountRates">
+        {{- line.discountRates -}}
+    </td>
+    <td class="text-right" id="{{ line.id }}_discountAmount">
+        {%- if 0 < line.discountAmount %}-{{- line.discountAmount -}}{% endif -%}
+    </td>
+{% endspaceless %}
+{% endblock line_discounts %}
+
+
+{% block line_public %}
 {% spaceless %}
     <td class="text-right" id="{{ line.id }}_unit">
         {%- if line.unit is not null %}{{ line.unit }}{% endif -%}
     </td>
-    {{- block('line_tax_rates') -}}
+    {%- if view.vars.line_taxes %}{{ block('line_taxes') }}{% endif -%}
     {{- block('line_quantity') -}}
+    {% if view.vars.line_discounts %}{{ block('line_discounts') }}{% endif -%}
     <td class="text-right" id="{{ line.id }}_base">
         {{- line.base -}}
     </td>
 {% endspaceless %}
-{% endblock line_leaf %}
+{% endblock line_public %}
 
 
-{% block line_node %}
+{% block line_private %}
 {% spaceless %}
-    <td colspan="2">&nbsp;</td>
-    {{ block('line_quantity') }}
-    <td>&nbsp;</td>
+    <td class="text-right" id="{{ line.id }}_unit">
+        {%- if line.unit is not null %}{{ line.unit }}{% endif -%}
+    </td>
+    {%- if view.vars.line_taxes %}<td>&nbsp;</td>{% endif -%}
+    {{- block('line_quantity') -}}
+    <td colspan="{{ view.vars.line_discounts ? 4 : 1 }}">&nbsp;</td>
 {% endspaceless %}
-{% endblock line_node %}
+{% endblock line_private %}
 
 
 {% block line %}
 {% spaceless %}
-    <tr class="level-{{ line.level }}{% if line.node %} sale-detail-node{% endif %}">
+    <tr class="level-{{ line.level }}{% if line.private %} sale-detail-private{% endif %}">
         <td class="sale-detail-number">{{ line.number }}</td>
         <td class="sale-detail-designation" id="{{ line.id }}_designation">
             {% if line.level > 0 -%}
@@ -81,14 +106,14 @@
             </span>
         </td>
         <td id="{{ line.id }}_reference">{{ line.reference }}</td>
-        {%- if line.node -%}
-            {{ block('line_node') }}
+        {%- if line.private -%}
+            {{ block('line_private') }}
         {%- else -%}
-            {{ block('line_leaf') }}
+            {{ block('line_public') }}
         {%- endif -%}
     </tr>
     {%- if line.vars.information is defined -%}
-    <tr class="level-{{ line.level }}{% if line.node %} sale-detail-node{% endif %}"
+    <tr class="level-{{ line.level }}{% if line.private %} sale-detail-private{% endif %}"
         id="{{ line.id }}_information" style="display: none">
         <td class="sale-detail-number">&nbsp;</td>
         {{ block('line_information') }}
@@ -105,7 +130,7 @@
 
 {% block line_information %}
 {% spaceless %}
-    <td class="sale-detail-information" colspan="6">
+    <td class="sale-detail-information" colspan="{{ view.vars.columns_count - 1 }}">
         {{ line.vars.information|raw }}
     </td>
 {% endspaceless %}
@@ -133,12 +158,24 @@
     <tbody>
         <tr>
             <th>&nbsp;</th>
-            <th class="text-right" colspan="5">
+            <th class="text-right" colspan="{% if view.vars.line_discounts -%}
+                        {{- view.vars.columns_count - 6 -}}
+                    {%- else -%}
+                        {{- view.vars.columns_count - 3 -}}
+                    {%- endif -%}">
                 <strong>{{ view.translations.gross_totals }}</strong>
             </th>
-            <td class="text-right sale-detail-gross" id="gross_base">
-                {{- view.gross.base -}}
-            </td>
+            {%- if view.vars.line_discounts -%}
+                <th class="text-right sale-detail-gross" id="gross_base">
+                    {{- view.gross.base -}}
+                </th>
+                <th class="text-right sale-detail-gross" colspan="2" id="gross_base">
+                    -{{- view.gross.adjustment -}}
+                </th>
+            {%- endif -%}
+            <th class="text-right sale-detail-gross" id="gross_base">
+                {{- view.gross.total -}}
+            </th>
         </tr>
     </tbody>
 {% endspaceless %}
@@ -156,13 +193,10 @@
             {%- endif -%}
         </span>
     </td>
-    <td class="line-reference" id="{{ line.id }}_reference">
-        {{- line.reference -}}
-    </td>
-    <td class="text-right" colspan="3">&nbsp;</td>
-    <td class="text-right" id="{{ line.id }}_base">
-        {{- line.base -}}
-    </td>
+    <td class="text-right" colspan="2">&nbsp;</td>
+    {%- if view.vars.line_taxes %}{{ block('line_taxes') }}{% endif -%}
+    <td{% if view.vars.line_discounts %} colspan="4"{% endif %}>&nbsp;</td>
+    <td class="text-right" id="{{ line.id }}_base">-{{- line.base -}}</td>
 {% endspaceless %}
 {% endblock discount %}
 
@@ -182,26 +216,19 @@
 
 {% block shipment %}
 {% spaceless %}
-    {% set line = view.shipment %}
-    <tbody>
-    <tr>
-        <td class="sale-detail-number">{#{{ line.number }}#}</td>
-        <td class="sale-detail-designation" id="{{ line.id }}_designation">
-            <span>
-                {{- line.designation -}}
-                {%- if line.description is not empty -%}
-                    <br><em>{{ line.description }}</em>
-                {%- endif -%}
-            </span>
-        </td>
-        <td class="text-right" colspan="2">&nbsp;</td>
-        {{ block('line_tax_rates') }}
-        <td class="text-right">&nbsp;</td>
-        <td class="text-right" id="{{ line.id }}_base">
-            {{- line.base -}}
-        </td>
-    </tr>
-    </tbody>
+    <td class="sale-detail-number">{#{{ line.number }}#}</td>
+    <td class="sale-detail-designation" id="{{ line.id }}_designation">
+        <span>
+            {{- line.designation -}}
+            {%- if line.description is not empty -%}
+                <br><em>{{ line.description }}</em>
+            {%- endif -%}
+        </span>
+    </td>
+    <td class="text-right" colspan="2">&nbsp;</td>
+    {%- if view.vars.line_taxes %}{{ block('line_taxes') }}{% endif -%}
+    <td{% if view.vars.line_discounts %} colspan="4"{% endif %}>&nbsp;</td>
+    <td class="text-right" id="{{ line.id }}_base">{{ line.base }}</td>
 {% endspaceless %}
 {% endblock shipment %}
 
@@ -210,7 +237,7 @@
 {% spaceless %}
     <tbody>
     <tr>
-        <th colspan="5" rowspan="3">&nbsp;</th>
+        <th colspan="{{ view.vars.columns_count - 2 }}" rowspan="3">&nbsp;</th>
         <th>{{ view.translations.net_total|upper }}</th>
         <td class="text-right sale-detail-total" id="final_base">
             {{- view.final.base -}}
@@ -219,7 +246,7 @@
     <tr>
         <th>{{ view.translations.tax_total|upper }}</th>
         <td class="text-right sale-detail-total" id="final_tax">
-            {{- view.final.tax -}}
+            {{- view.final.adjustment -}}
         </td>
     </tr>
     <tr>
@@ -261,7 +288,7 @@
 {% spaceless %}
     <tbody>
     <tr class="sale-detail-spacer">
-        <td colspan="9">&nbsp;</td>
+        <td colspan="{{ view.vars.columns_count }}">&nbsp;</td>
     </tr>
     </tbody>
 {% endspaceless %}
@@ -283,7 +310,9 @@
 
                 {% if view.shipment is not null %}
                     {{ block('spacer') }}
+                    <tbody><tr>
                     {{ block('shipment') }}
+                    </tr></tbody>
                 {% endif %}
 
                 {{ block('spacer') }}

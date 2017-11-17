@@ -136,6 +136,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
             $this->cart
                 ->setCustomer(null)
                 ->setCustomerGroup(null)
+                ->setCurrency(null)
                 ->setEmail(null)
                 ->setCompany(null)
                 ->setGender(null)
@@ -145,8 +146,40 @@ abstract class AbstractCartProvider implements CartProviderInterface
                 ->setDeliveryAddress(null)
                 ->setSameAddress(true);
 
-            // TODO Default customer group (?)
-            // TODO Default currency (?)
+            $this->updateCustomerGroupAndCurrency();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Updates the cart customer group and currency.
+     *
+     * @return $this
+     */
+    public function updateCustomerGroupAndCurrency()
+    {
+        if (!$this->hasCart()) {
+            return $this;
+        }
+
+        // Customer group
+        if (null !== $customer = $this->cart->getCustomer()) {
+            if ($this->cart->getCustomerGroup() !== $customer->getCustomerGroup()) {
+                $this->cart->setCustomerGroup($customer->getCustomerGroup());
+            }
+
+            // TODO Currency
+        }
+
+        // Sets the default customer group
+        if (null === $this->cart->getCustomerGroup()) {
+            $this->cart->setCustomerGroup($this->saleFactory->getDefaultCustomerGroup());
+        }
+
+        // Sets the currency
+        if (null === $this->cart->getCurrency()) {
+            $this->cart->setCurrency($this->saleFactory->getDefaultCurrency());
         }
 
         return $this;
@@ -163,27 +196,16 @@ abstract class AbstractCartProvider implements CartProviderInterface
 
         $this->clearCart();
 
-        /** @noinspection PhpParamsInspection */
-        /** @var CartInterface $cart */
-        $cart = $this->cartRepository->createNew();
+        $this->setCart($this->cartRepository->createNew());
 
         // Sets the customer if available
         if ($this->customerProvider->hasCustomer()) {
-            $cart->setCustomer($this->customerProvider->getCustomer());
-
-            // TODO customer preferred currency
-        } else {
-            $cart->setCustomerGroup($this->saleFactory->getDefaultCustomerGroup());
+            $this->cart->setCustomer($this->customerProvider->getCustomer());
         }
 
-        // Sets the currency
-        if (null === $cart->getCurrency()) {
-            $cart->setCurrency($this->saleFactory->getDefaultCurrency());
-        }
+        $this->updateCustomerGroupAndCurrency();
 
-        $this->cartOperator->initialize($cart);
-
-        $this->setCart($cart);
+        $this->cartOperator->initialize($this->cart);
 
         return $this->cart;
     }

@@ -76,10 +76,10 @@ abstract class AbstractListener
             if (null === $stockUnit = $resource->getStockUnit()) {
                 return;
             }
-            if (0 < $stockUnit->getShippedQuantity() || 0 < $stockUnit->getSoldQuantity()) {
+            if (0 < $stockUnit->getShippedQuantity()) {
                 throw new Exception\IllegalOperationException(
                     "Supplier delivery can't be removed as at least one ".
-                    "of its items is linked to a shipped stock unit or sold order."
+                    "of its items is linked to a shipped stock unit."
                 ); // TODO message as translation id
             }
         } elseif ($resource instanceof Model\SupplierOrderInterface) {

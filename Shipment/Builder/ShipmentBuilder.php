@@ -4,8 +4,10 @@ namespace Ekyna\Component\Commerce\Shipment\Builder;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 
 /**
  * Class ShipmentBuilder
@@ -42,7 +44,9 @@ class ShipmentBuilder implements ShipmentBuilderInterface
      */
     public function build(ShipmentInterface $shipment)
     {
-        $sale = $shipment->getSale();
+        if (null === $sale = $shipment->getSale()) {
+            throw new LogicException("Sale must be set.");
+        }
 
         if (null !== $method = $sale->getPreferredShipmentMethod()) {
             $shipment->setMethod($method);
@@ -58,31 +62,94 @@ class ShipmentBuilder implements ShipmentBuilderInterface
      *
      * @param SaleItemInterface $saleItem
      * @param ShipmentInterface $shipment
+     *
+     * @return ShipmentItemInterface|null
      */
     protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment)
     {
-        if (!$saleItem->isCompound()) {
+        $item = null;
+
+        // Skip compound sale items with only public children
+        if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
             $item = $this->factory->createItemForShipment($shipment);
+            $item->setShipment($shipment);
             $item->setSaleItem($saleItem);
-            $shipment->addItem($item);
 
-            $expected = $shipment->isReturn()
-                ? $this->calculator->calculateReturnableQuantity($item)
-                : $this->calculator->calculateShippableQuantity($item);
+            if (!$saleItem->isCompound()) {
+                $expected = $shipment->isReturn()
+                    ? $this->calculator->calculateReturnableQuantity($item)
+                    : $this->calculator->calculateShippableQuantity($item);
 
-            if (0 >= $expected) {
-                $shipment->removeItem($item);
+                if (0 < $expected) {
+                    // Set expected quantity
+                    $item->setExpected($expected);
 
-                return;
-            } elseif (!$shipment->isReturn()) {
-                $item->setQuantity(min($expected, $this->calculator->calculateAvailableQuantity($item)));
+                    if ($shipment->isReturn()) {
+                        // Set expected quantity as available
+                        $item->setAvailable($expected);
+                    } else {
+                        // Set available quantity
+                        $available = $this->calculator->calculateAvailableQuantity($item);
+                        $item->setAvailable($available);
+
+                        // Set default quantity for new non return shipment items
+                        if (null === $shipment->getId()) {
+                            $item->setQuantity(min($expected, $available));
+                        }
+                    }
+                } else {
+                    // Remove unexpected item
+                    $shipment->removeItem($item);
+                    $item = null;
+                }
             }
         }
 
-        if ($saleItem->hasChildren()) {
+        if (null !== $item && $saleItem->isCompound()) {
+            $available = $expected = null;
+            foreach ($saleItem->getChildren() as $childSaleItem) {
+                if (null !== $child = $this->buildItem($childSaleItem, $shipment)) {
+                    $saleItemQty = $childSaleItem->getQuantity();
+
+                    $a = $child->getAvailable() / $saleItemQty;
+                    if (null === $available || $available > $a) {
+                        $available = $a;
+                    }
+
+                    $e = $child->getExpected() / $saleItemQty;
+                    if (null === $expected || $expected > $e) {
+                        $expected = $e;
+                    }
+                }
+            }
+
+            if (0 < $expected) {
+                // Set expected and available quantities
+                $item->setExpected($expected);
+
+                if ($shipment->isReturn()) {
+                    // Set expected quantity as available
+                    $item->setAvailable($expected);
+                } else {
+                    // Set available quantity
+                    $item->setAvailable($available);
+
+                    // Set default quantity for new non return shipment items
+                    if (null === $shipment->getId()) {
+                        $item->setQuantity(min($expected, $available));
+                    }
+                }
+            } else {
+                // Remove unexpected item
+                $shipment->removeItem($item);
+                $item = null;
+            }
+        } else {
             foreach ($saleItem->getChildren() as $childSaleItem) {
                 $this->buildItem($childSaleItem, $shipment);
             }
         }
+
+        return $item;
     }
 }

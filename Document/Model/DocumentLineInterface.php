@@ -135,7 +135,7 @@ interface DocumentLineInterface
      *
      * @return float
      */
-    public function getNetPrice();
+    public function getUnit();
 
     /**
      * Sets the unit net price.
@@ -144,7 +144,7 @@ interface DocumentLineInterface
      *
      * @return $this|DocumentLineInterface
      */
-    public function setNetPrice($price);
+    public function setUnit($price);
 
     /**
      * Returns the quantity.
@@ -167,7 +167,7 @@ interface DocumentLineInterface
      *
      * @return float
      */
-    public function getBaseTotal();
+    public function getGross();
 
     /**
      * Sets the base total.
@@ -176,14 +176,14 @@ interface DocumentLineInterface
      *
      * @return $this|DocumentLineInterface
      */
-    public function setBaseTotal($baseTotal);
+    public function setGross($baseTotal);
 
     /**
      * Returns the discount total.
      *
      * @return float
      */
-    public function getDiscountTotal();
+    public function getDiscount();
 
     /**
      * Sets the discount total.
@@ -192,14 +192,30 @@ interface DocumentLineInterface
      *
      * @return $this|DocumentLineInterface
      */
-    public function setDiscountTotal($total);
+    public function setDiscount($total);
+
+    /**
+     * Returns the discount rates.
+     *
+     * @return array
+     */
+    public function getDiscountRates();
+
+    /**
+     * Sets the discount rates.
+     *
+     * @param array $rates
+     *
+     * @return $this|DocumentLineInterface
+     */
+    public function setDiscountRates(array $rates);
 
     /**
      * Returns the net total.
      *
      * @return float
      */
-    public function getNetTotal();
+    public function getBase();
 
     /**
      * Sets the net total.
@@ -208,7 +224,23 @@ interface DocumentLineInterface
      *
      * @return $this|DocumentLineInterface
      */
-    public function setNetTotal($total);
+    public function setBase($total);
+
+    /**
+     * Returns the tax.
+     *
+     * @return float
+     */
+    public function getTax();
+
+    /**
+     * Sets the tax.
+     *
+     * @param float $tax
+     *
+     * @return $this|DocumentLineInterface
+     */
+    public function setTax($tax);
 
     /**
      * Returns the tax rates.
@@ -220,9 +252,25 @@ interface DocumentLineInterface
     /**
      * Sets the tax rates.
      *
-     * @param array $taxRates
+     * @param array $rates
      *
      * @return $this|DocumentLineInterface
      */
-    public function setTaxRates(array $taxRates);
+    public function setTaxRates(array $rates);
+
+    /**
+     * Returns the total.
+     *
+     * @return float
+     */
+    public function getTotal();
+
+    /**
+     * Sets the total.
+     *
+     * @param float $total
+     *
+     * @return $this|DocumentLineInterface
+     */
+    public function setTotal($total);
 }

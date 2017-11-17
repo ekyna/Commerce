@@ -166,7 +166,7 @@ class SaleCopier implements SaleCopierInterface
     {
         $this->copy($source, $target, [
             'designation', 'reference', 'netPrice', 'weight', 'taxGroup', 'quantity',
-            'position', 'compound', 'immutable', 'configurable', 'data',
+            'position', 'compound', 'immutable', 'configurable', 'private', 'data',
         ]);
 
         // SubjectIdentity

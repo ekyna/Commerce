@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -114,6 +115,21 @@ abstract class AbstractSale implements Common\SaleInterface
      * @var ArrayCollection|Common\SaleItemInterface[]
      */
     protected $items;
+
+    /**
+     * @var Amount
+     */
+    private $grossResult;
+
+    /**
+     * @var Amount
+     */
+    private $shipmentResult;
+
+    /**
+     * @var Amount
+     */
+    private $finalResult;
 
 
     /**
@@ -411,5 +427,80 @@ abstract class AbstractSale implements Common\SaleInterface
     public function getItems()
     {
         return $this->items;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearResults()
+    {
+        foreach ($this->items as $item) {
+            $item->clearResult();
+        }
+
+        /** @var Common\SaleAdjustmentInterface $adjustment */
+        foreach ($this->adjustments as $adjustment) {
+            $adjustment->clearResult();
+        }
+
+        $this->grossResult = null;
+        $this->shipmentResult = null;
+        $this->finalResult = null;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGrossResult(Amount $result)
+    {
+        $this->grossResult = $result;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGrossResult()
+    {
+        return $this->grossResult;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setShipmentResult(Amount $result)
+    {
+        $this->shipmentResult = $result;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShipmentResult()
+    {
+        return $this->shipmentResult;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFinalResult(Amount $result)
+    {
+        $this->finalResult = $result;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFinalResult()
+    {
+        return $this->finalResult;
     }
 }

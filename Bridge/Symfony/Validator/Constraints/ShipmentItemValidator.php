@@ -48,6 +48,23 @@ class ShipmentItemValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, ShipmentItem::class);
         }
 
+        // Check parent/quantity integrity
+        $saleItem = $item->getSaleItem();
+        if ($saleItem->isPrivate()) {
+            if (0 !== bccomp($item->getQuantity() % $saleItem->getQuantity(), 0, 5)) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->quantity_must_be_multiple_of_parent, [
+                        '%multiple%' => $saleItem->getQuantity()
+                    ])
+                    ->setInvalidValue($item->getQuantity())
+                    ->atPath('quantity')
+                    ->addViolation();
+
+                return;
+            }
+        }
+
         // Return shipment case
         if ($item->getShipment()->isReturn()) {
             $returnable = $this->shipmentCalculator->calculateReturnableQuantity($item);

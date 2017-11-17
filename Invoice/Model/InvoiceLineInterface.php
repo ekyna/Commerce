@@ -27,4 +27,50 @@ interface InvoiceLineInterface extends DocumentLineInterface, ResourceInterface
      * @return $this|InvoiceLineInterface
      */
     public function setInvoice(InvoiceInterface $invoice = null);
+
+    /**
+     * Returns the children invoice lines.
+     *
+     * @return \Doctrine\Common\Collections\Collection|InvoiceLineInterface[]
+     */
+    public function getChildren();
+
+    /**
+     * Clears the children.
+     *
+     * @return $this|InvoiceLineInterface
+     */
+    public function clearChildren();
+
+    /**
+     * Returns the expected.
+     *
+     * @return float
+     */
+    public function getExpected();
+
+    /**
+     * Sets the expected.
+     *
+     * @param float $expected
+     *
+     * @return $this|InvoiceLineInterface
+     */
+    public function setExpected($expected);
+
+    /**
+     * Returns the available.
+     *
+     * @return float
+     */
+    public function getAvailable();
+
+    /**
+     * Sets the available.
+     *
+     * @param float $available
+     *
+     * @return $this|InvoiceLineInterface
+     */
+    public function setAvailable($available);
 }

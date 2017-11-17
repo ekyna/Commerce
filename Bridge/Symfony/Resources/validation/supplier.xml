@@ -226,8 +226,8 @@
         </getter>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">
-                <value>supplier</value>
                 <value>reference</value>
+                <value>supplier</value>
             </option>
         </constraint>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierProduct"/>

@@ -12,6 +12,8 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class SaleItemEvent extends Event
 {
+    use AdjustmentDataTrait;
+
     /**
      * @var SaleItemInterface
      */

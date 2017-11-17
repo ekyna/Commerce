@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\View;
 
+use Ekyna\Component\Commerce\Common\Calculator\Adjustment;
 use NumberFormatter;
 
 /**
@@ -38,7 +39,7 @@ class Formatter
      * @param string $locale
      * @param string $currency
      */
-    public function __construct($locale, $currency)
+    public function __construct(string $locale, string $currency)
     {
         $this->locale = $locale;
         $this->currency = $currency;
@@ -52,7 +53,7 @@ class Formatter
      *
      * @return string
      */
-    public function getLocale()
+    public function getLocale(): string
     {
         return $this->locale;
     }
@@ -62,7 +63,7 @@ class Formatter
      *
      * @return string
      */
-    public function getCurrency()
+    public function getCurrency(): string
     {
         return $this->currency;
     }
@@ -74,7 +75,7 @@ class Formatter
      *
      * @return string
      */
-    public function number($number)
+    public function number(float $number): string
     {
         return $this->numberFormatter->format($number, NumberFormatter::TYPE_DEFAULT);
     }
@@ -86,7 +87,7 @@ class Formatter
      *
      * @return string
      */
-    public function currency($number)
+    public function currency(float $number): string
     {
         return $this->currencyFormatter->formatCurrency($number, $this->currency);
     }
@@ -98,22 +99,22 @@ class Formatter
      *
      * @return string
      */
-    public function percent($number)
+    public function percent(float $number): string
     {
         return $this->numberFormatter->format($number, NumberFormatter::TYPE_DEFAULT) . '%';
     }
 
     /**
-     * Formats the given tax rates for display.
+     * Formats the given adjustments rates for display.
      *
-     * @param float[] $rates
+     * @param Adjustment[] ...$adjustments
      *
      * @return string
      */
-    public function taxRates(array $rates)
+    public function rates(Adjustment ...$adjustments): string
     {
-        return implode(', ', array_map(function($rate) {
-            return $this->percent($rate);
-        }, $rates));
+        return implode(', ', array_map(function(Adjustment $adjustment) {
+            return $this->percent($adjustment->getRate());
+        }, $adjustments));
     }
 }

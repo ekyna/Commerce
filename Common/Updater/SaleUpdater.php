@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Updater;
 
 use Ekyna\Component\Commerce\Common\Builder\AddressBuilderInterface;
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
-use Ekyna\Component\Commerce\Common\Calculator\AmountsCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
@@ -34,7 +34,7 @@ class SaleUpdater implements SaleUpdaterInterface
     protected $adjustmentBuilder;
 
     /**
-     * @var AmountsCalculatorInterface
+     * @var AmountCalculatorInterface
      */
     protected $amountCalculator;
 
@@ -69,7 +69,7 @@ class SaleUpdater implements SaleUpdaterInterface
      *
      * @param AddressBuilderInterface    $addressBuilder
      * @param AdjustmentBuilderInterface $adjustmentBuilder
-     * @param AmountsCalculatorInterface $amountCalculator
+     * @param AmountCalculatorInterface $amountCalculator
      * @param WeightCalculatorInterface  $weightCalculator
      * @param PaymentCalculatorInterface $paymentCalculator
      * @param InvoiceCalculatorInterface $invoiceCalculator
@@ -79,7 +79,7 @@ class SaleUpdater implements SaleUpdaterInterface
     public function __construct(
         AddressBuilderInterface $addressBuilder,
         AdjustmentBuilderInterface $adjustmentBuilder,
-        AmountsCalculatorInterface $amountCalculator,
+        AmountCalculatorInterface $amountCalculator,
         WeightCalculatorInterface $weightCalculator,
         PaymentCalculatorInterface $paymentCalculator,
         InvoiceCalculatorInterface $invoiceCalculator,
@@ -259,15 +259,17 @@ class SaleUpdater implements SaleUpdaterInterface
         $changed = false;
 
         $currency = $sale->getCurrency()->getCode();
-        $amounts = $this->amountCalculator->calculateSale($sale);
 
-        if (0 != Money::compare($amounts->getBase(), $sale->getNetTotal(), $currency)) {
-            $sale->setNetTotal($amounts->getBase());
+        $sale->clearResults();
+        $result = $this->amountCalculator->calculateSale($sale);
+
+        if (0 != Money::compare($result->getBase(), $sale->getNetTotal(), $currency)) {
+            $sale->setNetTotal($result->getBase());
             $changed = true;
         }
 
-        if (0 != Money::compare($amounts->getTotal(), $sale->getGrandTotal(), $currency)) {
-            $sale->setGrandTotal($amounts->getTotal());
+        if (0 != Money::compare($result->getTotal(), $sale->getGrandTotal(), $currency)) {
+            $sale->setGrandTotal($result->getTotal());
             $changed = true;
         }
 

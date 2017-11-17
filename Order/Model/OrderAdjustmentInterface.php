@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Order\Model;
 
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
 
 /**
  * Interface OrderAdjustmentInterface
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderAdjustmentInterface extends AdjustmentInterface
+interface OrderAdjustmentInterface extends SaleAdjustmentInterface
 {
     /**
      * Returns the order.

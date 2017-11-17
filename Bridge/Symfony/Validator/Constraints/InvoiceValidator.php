@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -30,9 +31,15 @@ class InvoiceValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, Invoice::class);
         }
 
-        return; // TODO
+        if (empty($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD))) {
+            $this
+                ->context
+                ->buildViolation($constraint->empty_good_lines)
+                ->atPath('lines')
+                ->addViolation();
+        }
 
-        // Shipment / Sale integrity
+        // [ Invoice <-> Sale <-> Shipment ] integrity
         if (null !== $shipment = $invoice->getShipment()) {
             if ($invoice->getSale() !== $shipment->getSale()) {
                 $this

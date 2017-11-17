@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Comparable;
+use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
@@ -237,6 +238,36 @@ interface SaleItemInterface extends
     public function setConfigurable($configurable);
 
     /**
+     * Returns the private.
+     *
+     * @return bool
+     */
+    public function isPrivate();
+
+    /**
+     * Sets the private.
+     *
+     * @param bool $private
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function setPrivate($private);
+
+    /**
+     * Returns whether or not the item has at least one private child.
+     *
+     * @return bool
+     */
+    public function hasPrivateChildren();
+
+    /**
+     * Returns whether or not the item has at least one public child.
+     *
+     * @return bool
+     */
+    public function hasPublicChildren();
+
+    /**
      * Returns whether the item has data (optionally for the given key).
      *
      * @param string $key
@@ -260,7 +291,7 @@ interface SaleItemInterface extends
      * @param array|string $keyOrData The key of the data or the whole data as array.
      * @param mixed        $data      The data assigned to the key (must be null if $keyOrData is the whole data).
      *
-     * @return $this|SubjectRelativeInterface
+     * @return $this|SaleItemInterface
      */
     public function setData($keyOrData, $data = null);
 
@@ -269,7 +300,7 @@ interface SaleItemInterface extends
      *
      * @param string $key
      *
-     * @return $this|SubjectRelativeInterface
+     * @return $this|SaleItemInterface
      */
     public function unsetData($key);
 
@@ -286,4 +317,33 @@ interface SaleItemInterface extends
      * @return float
      */
     public function getTotalQuantity();
+
+    /**
+     * Clears the results.
+     *
+     * @return $this|SaleItemInterface
+     *
+     * @internal Usage reserved to calculator.
+     */
+    public function clearResult();
+
+    /**
+     * Sets the result.
+     *
+     * @param Amount $result
+     *
+     * @return $this|SaleItemInterface
+     *
+     * @internal Usage reserved to calculator.
+     */
+    public function setResult(Amount $result);
+
+    /**
+     * Returns the result.
+     *
+     * @return Amount
+     *
+     * @internal Usage reserved to view builder.
+     */
+    public function getResult();
 }

@@ -5,11 +5,11 @@ namespace Ekyna\Component\Commerce\Common\Event;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentDataInterface;
 
 /**
- * Class SaleItemAdjustmentEvent
+ * Trait AdjustmentDataTrait
  * @package Ekyna\Component\Commerce\Common\Event
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SaleItemAdjustmentEvent extends SaleItemEvent
+trait AdjustmentDataTrait
 {
     /**
      * @var AdjustmentDataInterface[]

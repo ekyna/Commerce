@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Shipment\Model;
 
 /**
@@ -26,6 +27,29 @@ abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
      */
     protected $quantity = 0;
 
+    /**
+     * @var ArrayCollection
+     */
+    protected $children;
+
+    /**
+     * @var float
+     */
+    protected $expected;
+
+    /**
+     * @var float
+     */
+    protected $available;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->clearChildren();
+    }
 
     /**
      * @inheritdoc
@@ -78,6 +102,60 @@ abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
     public function setQuantity($quantity)
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearChildren()
+    {
+        $this->children = new ArrayCollection();
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExpected()
+    {
+        return $this->expected;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setExpected($expected)
+    {
+        $this->expected = (float)$expected;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAvailable()
+    {
+        return $this->available;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAvailable($available)
+    {
+        $this->available = (float)$available;
 
         return $this;
     }

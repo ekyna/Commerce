@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -15,6 +16,8 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * Interface SaleInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method SaleAdjustmentInterface[] getAdjustments($type = null)
  */
 interface SaleInterface extends
     ResourceModel\ResourceInterface,
@@ -336,4 +339,73 @@ interface SaleInterface extends
      * @return Collection|SaleItemInterface[]
      */
     public function getItems();
+
+    /**
+     * Clears the results.
+     *
+     * @return $this|SaleInterface
+     *
+     * @internal Usage reserved to calculator.
+     */
+    public function clearResults();
+
+    /**
+     * Sets the gross result.
+     *
+     * @param Amount $result
+     *
+     * @return $this|SaleInterface
+     *
+     * @internal Usage reserved to calculator.
+     */
+    public function setGrossResult(Amount $result);
+
+    /**
+     * Returns the gross result.
+     *
+     * @return Amount
+     *
+     * @internal Usage reserved to view builder.
+     */
+    public function getGrossResult();
+
+    /**
+     * Sets the shipment result.
+     *
+     * @param Amount $result
+     *
+     * @return $this|SaleInterface
+     *
+     * @internal Usage reserved to calculator.
+     */
+    public function setShipmentResult(Amount $result);
+
+    /**
+     * Returns the shipment result.
+     *
+     * @return Amount|null
+     *
+     * @internal Usage reserved to view builder.
+     */
+    public function getShipmentResult();
+
+    /**
+     * Sets the final result.
+     *
+     * @param Amount $result
+     *
+     * @return $this|SaleInterface
+     *
+     * @internal Usage reserved to calculator.
+     */
+    public function setFinalResult(Amount $result);
+
+    /**
+     * Returns the final result.
+     *
+     * @return Amount
+     *
+     * @internal Usage reserved to view builder.
+     */
+    public function getFinalResult();
 }

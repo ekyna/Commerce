@@ -42,7 +42,6 @@ abstract class Money
         $precision = static::getPrecision($currency);
         $roundingIncrement = static::getRoundingIncrement($currency);
 
-        // TODO Check
         $amount = round($amount, $precision, \PHP_ROUND_HALF_EVEN);
 
         if (0 < $roundingIncrement && 0 < $precision) {

@@ -17,6 +17,7 @@
         <field name="compound" column="compound" type="boolean"/>
         <field name="immutable" column="immutable" type="boolean"/>
         <field name="configurable" column="configurable" type="boolean"/>
+        <field name="private" column="private" type="boolean"/>
         <field name="data" column="data" type="json_array"/>
 
     </mapped-superclass>

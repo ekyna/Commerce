@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAdjustment;
 use Ekyna\Component\Commerce\Order\Model\OrderAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderAdjustment extends AbstractAdjustment implements OrderAdjustmentInterface
+class OrderAdjustment extends AbstractSaleAdjustment implements OrderAdjustmentInterface
 {
     /**
      * @var OrderInterface

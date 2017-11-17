@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Cart\Model;
 
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
 
 /**
  * Interface CartAdjustmentInterface
  * @package Ekyna\Component\Commerce\Cart\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CartAdjustmentInterface extends AdjustmentInterface
+interface CartAdjustmentInterface extends SaleAdjustmentInterface
 {
     /**
      * Returns the cart.

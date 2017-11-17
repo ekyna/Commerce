@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Invoice\Model;
 
@@ -21,6 +22,32 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
      * @var Model\InvoiceInterface
      */
     protected $invoice;
+
+    /**
+     * @var ArrayCollection
+     */
+    protected $children;
+
+    /**
+     * @var float
+     */
+    protected $expected;
+
+    /**
+     * @var float
+     */
+    protected $available;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->clearChildren();
+    }
 
 
     /**
@@ -74,6 +101,60 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
                 $this->invoice->addLine($this);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearChildren()
+    {
+        $this->children = new ArrayCollection();
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExpected()
+    {
+        return $this->expected;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setExpected($expected)
+    {
+        $this->expected = (float)$expected;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAvailable()
+    {
+        return $this->available;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAvailable($available)
+    {
+        $this->available = (float)$available;
 
         return $this;
     }

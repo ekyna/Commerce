@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAdjustment;
 use Ekyna\Component\Commerce\Quote\Model\QuoteAdjustmentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 
@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
  * @package Ekyna\Component\Commerce\Quote\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class QuoteAdjustment extends AbstractAdjustment implements QuoteAdjustmentInterface
+class QuoteAdjustment extends AbstractSaleAdjustment implements QuoteAdjustmentInterface
 {
     /**
      * @var QuoteInterface

@@ -4,15 +4,15 @@ namespace Ekyna\Component\Commerce\Tests;
 
 use Ekyna\Component\Commerce\Common\Converter\ArrayCurrencyConverter;
 use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Entity\Currency;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactory;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
-use Ekyna\Component\Commerce\Customer\Entity\CustomerGroup;
-use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
+use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
+use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class BaseTestCase
@@ -22,19 +22,9 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var CustomerGroupInterface[]
-     */
-    private $customerGroups; # TODO move to fixtures
-
-    /**
      * @var CustomerGroupRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $customerGroupRepositoryMock;
-
-    /**
-     * @var CurrencyInterface[]
-     */
-    private $currencies; # TODO move to fixtures
 
     /**
      * @var CurrencyRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
@@ -47,6 +37,16 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     private $currencyConverter;
 
     /**
+     * @var TaxResolverInterface
+     */
+    private $taxResolver;
+
+    /**
+     * @var DiscountResolverInterface
+     */
+    private $discountResolver;
+
+    /**
      * @var SaleFactoryInterface
      */
     private $saleFactory;
@@ -56,95 +56,11 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
      */
     private $persistenceHelper;
 
-
     /**
-     * Returns the customer groups.
-     *
-     * @return array|CustomerGroupInterface[]
+     * @var EventDispatcherInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected function getCustomerGroups()
-    {
-        if (null !== $this->customerGroups) {
-            return $this->customerGroups;
-        }
+    private $eventDispatcher;
 
-        $customers = new CustomerGroup();
-        $customers
-            ->setName('Customers')
-            ->setDefault(true);
-
-        $resellers = new CustomerGroup();
-        $resellers
-            ->setName('Resellers')
-            ->setDefault(false);
-
-        return $this->customerGroups = [$customers, $resellers];
-    }
-
-    /**
-     * Returns the currencies.
-     *
-     * @return array|CurrencyInterface[]
-     */
-    protected function getCurrencies()
-    {
-        if (null !== $this->currencies) {
-            return $this->currencies;
-        }
-
-        $euro = new Currency();
-        $euro
-            ->setName('Euro')
-            ->setCode('EUR')
-            ->setEnabled(true);
-
-        $dollar = new Currency();
-        $dollar
-            ->setName('US Dollar')
-            ->setCode('USD')
-            ->setEnabled(true);
-
-
-        return $this->currencies = [$euro, $dollar];
-    }
-
-    /**
-     * Returns the default currency.
-     *
-     * @return CurrencyInterface
-     */
-    protected function getDefaultCurrency()
-    {
-        return $this->getCurrencies()[0];
-    }
-
-    /**
-     * Finds the currency by its code.
-     *
-     * @param string $code
-     *
-     * @return CurrencyInterface
-     */
-    protected function getCurrencyByCode($code)
-    {
-        foreach ($this->getCurrencies() as $currency) {
-            if ($currency->getCode() === $code) {
-                return $currency;
-            }
-        }
-
-        throw new \InvalidArgumentException("Unexpected currency code '$code'.");
-    }
-
-    /**
-     * Returns the default customer group.
-     *
-     * @return CustomerGroupInterface
-     */
-    protected function getDefaultCustomerGroup()
-    {
-        return $this->getCustomerGroups()[0];
-    }
 
     /**
      * Returns a customer group repository mock.
@@ -159,7 +75,7 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
 
         $mock = $this->createMock(CustomerGroupRepositoryInterface::class);
 
-        $mock->method('findDefault')->willReturn($this->getDefaultCustomerGroup());
+        $mock->method('findDefault')->willReturn(Fixtures::getDefaultCustomerGroup());
 
         return $this->customerGroupRepositoryMock = $mock;
     }
@@ -177,9 +93,9 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
 
         $mock = $this->createMock(CurrencyRepositoryInterface::class);
 
-        $mock->method('findDefault')->willReturn($this->getDefaultCurrency());
-        $mock->method('findOneByCode')->with('EUR')->willReturn($this->getCurrencyByCode('EUR'));
-        $mock->method('findOneByCode')->with('USD')->willReturn($this->getCurrencyByCode('USD'));
+        $mock->method('findDefault')->willReturn(Fixtures::getDefaultCurrency());
+        $mock->method('findOneByCode')->with('EUR')->willReturn(Fixtures::getCurrencyByCode('EUR'));
+        $mock->method('findOneByCode')->with('USD')->willReturn(Fixtures::getCurrencyByCode('USD'));
 
         return $this->currencyRepositoryMock = $mock;
     }
@@ -202,6 +118,34 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Returns the tax resolver mock.
+     *
+     * @return TaxResolverInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getTaxResolverMock()
+    {
+        if (null !== $this->taxResolver) {
+            return $this->taxResolver;
+        }
+
+        return $this->taxResolver = $this->createMock(TaxResolverInterface::class);
+    }
+
+    /**
+     * Returns the discount resolver mock.
+     *
+     * @return DiscountResolverInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getDiscountResolverMock()
+    {
+        if (null !== $this->discountResolver) {
+            return $this->discountResolver;
+        }
+
+        return $this->discountResolver = $this->createMock(DiscountResolverInterface::class);
+    }
+
+    /**
      * Returns a sale factory.
      *
      * @return SaleFactoryInterface
@@ -219,7 +163,7 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Returns the persistence helper.
+     * Returns the persistence helper mock.
      *
      * @return PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
      */
@@ -230,5 +174,19 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
         }
 
         return $this->persistenceHelper = $this->createMock(PersistenceHelperInterface::class);
+    }
+
+    /**
+     * Returns the event dispatcher mock.
+     *
+     * @return EventDispatcherInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getEventDispatcherMock()
+    {
+        if (null !== $this->eventDispatcher) {
+            return $this->eventDispatcher;
+        }
+
+        return $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
     }
 }

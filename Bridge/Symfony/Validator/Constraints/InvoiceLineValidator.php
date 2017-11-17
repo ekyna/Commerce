@@ -18,29 +18,38 @@ class InvoiceLineValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($item, Constraint $constraint)
+    public function validate($line, Constraint $constraint)
     {
-        if (null === $item) {
+        if (null === $line) {
             return;
         }
 
-        if (!$item instanceof InvoiceLineInterface) {
-            throw new UnexpectedTypeException($item, InvoiceLineInterface::class);
+        if (!$line instanceof InvoiceLineInterface) {
+            throw new UnexpectedTypeException($line, InvoiceLineInterface::class);
         }
         if (!$constraint instanceof InvoiceLine) {
             throw new UnexpectedTypeException($constraint, InvoiceLine::class);
         }
 
-        if ($item->getType() === DocumentLineTypes::TYPE_GOOD) {
-            if (null === $item->getSaleItem()) {
+        if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
+            if (null === $line->getSaleItem()) {
                 $this
                     ->context
-                    ->buildViolation($constraint->shipment_is_not_return)
+                    ->buildViolation($constraint->null_sale_item)
                     ->setInvalidValue(null)
                     ->atPath('saleItem')
                     ->addViolation();
+            }
+        }
 
-                return;
+        if ($line->getType() !== DocumentLineTypes::TYPE_DISCOUNT) {
+            if (empty($line->getDesignation())) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->empty_designation)
+                    ->setInvalidValue($line->getDesignation())
+                    ->atPath('designation')
+                    ->addViolation();
             }
         }
 
@@ -49,7 +58,7 @@ class InvoiceLineValidator extends ConstraintValidator
 //        TODO
 //
 //        // ShipmentItem vs SaleItem integrity
-//        if (null !== $shipmentItem = $item->getShipmentItem()) {
+//        if (null !== $shipmentItem = $line->getShipmentItem()) {
 //            // Shipment must be a return
 //            if (!$shipmentItem->getShipment()->isReturn()) {
 //                $this
@@ -63,7 +72,7 @@ class InvoiceLineValidator extends ConstraintValidator
 //            }
 //
 //            // Invoice's SaleItem and ShipmentItem's SaleItem must match
-//            if ($item->getSaleItem() !== $shipmentItem->getSaleItem()) {
+//            if ($line->getSaleItem() !== $shipmentItem->getSaleItem()) {
 //                $this
 //                    ->context
 //                    ->buildViolation($constraint->sale_item_and_shipment_item_miss_match)
@@ -75,7 +84,7 @@ class InvoiceLineValidator extends ConstraintValidator
 //            }
 //
 //            // InvoiceLine's quantity can't be greater than the related ShipmentItem's quantity
-//            if ($item->getQuantity() > $shipmentItem->getQuantity()) {
+//            if ($line->getQuantity() > $shipmentItem->getQuantity()) {
 //                $this
 //                    ->context
 //                    ->buildViolation($constraint->quantity_is_greater_than_returned, [
@@ -92,11 +101,11 @@ class InvoiceLineValidator extends ConstraintValidator
 //        }
 //
 //        // The Sale of the InvoiceLine's SaleItem must match the Sale of the SaleItem's Invoice
-//        if ($item->getSaleItem()->getSale() !== $item->getInvoice()->getSale()) {
+//        if ($line->getSaleItem()->getSale() !== $line->getInvoice()->getSale()) {
 //            $this
 //                ->context
 //                ->buildViolation($constraint->sale_and_invoice_miss_match)
-//                ->setInvalidValue($item->getSaleItem())
+//                ->setInvalidValue($line->getSaleItem())
 //                ->atPath('saleItem')
 //                ->addViolation();
 //
@@ -105,11 +114,11 @@ class InvoiceLineValidator extends ConstraintValidator
 //
 //        // InvoiceLine's quantity can't be greater than the invoiceable quantity
 //        // TODO Use QuantityCalculatorInterface
-//        $available = InvoiceUtil::calculateMaxCreditQuantity($item->getSaleItem());
-//        if ($item->getQuantity() > $available) {
+//        $available = InvoiceUtil::calculateMaxCreditQuantity($line->getSaleItem());
+//        if ($line->getQuantity() > $available) {
 //            $this
 //                ->context
-//                ->buildViolation($constraint->quantity_is_greater_than_invoiceable, [
+//                ->buildViolation($constraint->quantity_is_greater_than_creditable, [
 //                    '%max%' => $available,
 //                ])
 //                ->setInvalidValue($shipmentItem)

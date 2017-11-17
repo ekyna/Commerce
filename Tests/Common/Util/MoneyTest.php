@@ -14,8 +14,8 @@ class MoneyTest extends TestCase
 {
     public function testRound()
     {
-        $this->assertEquals(12.34, Money::round(12.3412, 'EUR'));
-        $this->assertEquals(12.35, Money::round(12.3456, 'EUR'));
+        $this->assertEquals(12.34, Money::round(12.3450, 'EUR'));
+        $this->assertEquals(12.35, Money::round(12.3451, 'EUR'));
     }
 
     public function testCompare()

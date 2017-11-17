@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Common\Model\AdjustableTrait;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -83,9 +84,19 @@ abstract class AbstractSaleItem implements SaleItemInterface
     protected $configurable = false;
 
     /**
+     * @var bool
+     */
+    protected $private = false;
+
+    /**
      * @var array
      */
     protected $data = [];
+
+    /**
+     * @var Amount
+     */
+    private $result;
 
 
     /**
@@ -306,6 +317,52 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
+    public function isPrivate()
+    {
+        return $this->private;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPrivate($private)
+    {
+        $this->private = (bool)$private;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasPrivateChildren()
+    {
+        foreach ($this->children as $child) {
+            if ($child->isPrivate()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasPublicChildren()
+    {
+        foreach ($this->children as $child) {
+            if (!$child->isPrivate()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasData($key = null)
     {
         if (!empty($key)) {
@@ -384,6 +441,38 @@ abstract class AbstractSaleItem implements SaleItemInterface
     public function getTotalQuantity()
     {
         return $this->getQuantity() * $this->getParentsQuantity();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearResult()
+    {
+        foreach ($this->children as $child) {
+            $child->clearResult();
+        }
+
+        $this->result = null;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setResult(Amount $result)
+    {
+        $this->result = $result;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getResult()
+    {
+        return $this->result;
     }
 
     /**

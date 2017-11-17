@@ -3,14 +3,11 @@
 namespace Ekyna\Component\Commerce\Tests\Stock\Linker;
 
 use Acme\Product\Entity\StockUnit;
-use Ekyna\Component\Commerce\Order\Entity\Order;
-use Ekyna\Component\Commerce\Order\Entity\OrderItem;
 use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
 use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinker;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
-use Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder;
-use Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem;
+use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
 
 /**
@@ -18,7 +15,7 @@ use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
  * @package Ekyna\Component\Commerce\Tests\Stock\Linker
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * TODO use Fixtures / Rename test methods
+ * TODO Rename test methods
  */
 class StockUnitLinkerTest extends BaseStockTestCase
 {
@@ -59,38 +56,31 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_link_item()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder
-            ->setCurrency($this->getDefaultCurrency())
-            ->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
 
         // Given the stock unit resolver will not find an available stock unit
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn(null);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $this->linker->linkItem($supplierOrderItem);
+        $this->linker->linkItem($supplierItem);
 
         // Then the supplier order item should be linked to a stock unit
-        $this->assertNotNull($supplierOrderItem->getStockUnit());
+        $this->assertNotNull($supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $newStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $newStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(20, $newStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 0
@@ -108,56 +98,46 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_link_item_while_no_overflow()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder
-            ->setCurrency($this->getDefaultCurrency())
-            ->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
 
         // Given the subject has been sold for 10 quantity
-        $orderItem = (new OrderItem())->setQuantity(10);
-        $linkableStockUnit = (new StockUnit())->setSoldQuantity(10);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItem)
-            ->setStockUnit($linkableStockUnit)
-            ->setSoldQuantity(10);
+        $orderItem = Fixtures::createOrderItem(10);
+        $stockUnit = Fixtures::createStockUnit()->setSoldQuantity(10);
+        Fixtures::createStockAssignment($stockUnit, $orderItem, 10);
 
         // Given the stock unit resolver will find the available stock unit
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItem)
-            ->willReturn($linkableStockUnit);
+            ->with($supplierItem)
+            ->willReturn($stockUnit);
 
         // Given the stock unit resolver will return a new stock unit
 //        $this->getUnitResolver()
 //            ->method('createBySubjectRelative')
-//            ->with($supplierOrderItem)
+//            ->with($supplierItem)
 //            ->willReturn(new StockUnit());
 
         // Test
-        $this->linker->linkItem($supplierOrderItem);
+        $this->linker->linkItem($supplierItem);
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkableStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($stockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkableStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $stockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
-        $this->assertEquals(20, $linkableStockUnit->getOrderedQuantity());
+        $this->assertEquals(20, $stockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 10
-        $this->assertEquals(10, $linkableStockUnit->getSoldQuantity());
+        $this->assertEquals(10, $stockUnit->getSoldQuantity());
         // Then the stock unit's net price should equal 12
-        $this->assertEquals(12, $linkableStockUnit->getNetPrice());
+        $this->assertEquals(12, $stockUnit->getNetPrice());
         // Then the stock unit's state should equal 'pending'
-        $this->assertEquals(StockUnitStates::STATE_PENDING, $linkableStockUnit->getState());
+        $this->assertEquals(StockUnitStates::STATE_PENDING, $stockUnit->getState());
 
         /** @var OrderItemStockAssignment[] $assignments */
-        $assignments = array_values($linkableStockUnit->getStockAssignments()->toArray());
+        $assignments = array_values($stockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have one assignment
         $this->assertCount(1, $assignments);
         // Then the assignment should be associated with the order item
@@ -171,64 +151,45 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_link_item_by_moving_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder
-            ->setCurrency($this->getDefaultCurrency())
-            ->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
 
         // Given the subject has been sold for 20 quantity and 10 quantity
-        $date = new \DateTime();
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-2 day'))
-            );
-        $orderItemB = (new OrderItem())
-            ->setQuantity(10)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-1 day'))
-            );
-        $linkableStockUnit = (new StockUnit())->setSoldQuantity(30);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkableStockUnit)
-            ->setSoldQuantity(20);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($linkableStockUnit)
-            ->setSoldQuantity(10);
+        $orderItemA = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $orderItemB = Fixtures::createOrderItem(10)->setOrder(
+            Fixtures::createOrder('EUR', '-1 day')
+        );
+        $linkableStockUnit = Fixtures::createStockUnit()->setSoldQuantity(30);
+        Fixtures::createStockAssignment($linkableStockUnit, $orderItemA, 20);
+        Fixtures::createStockAssignment($linkableStockUnit, $orderItemB, 10);
+
 
         // Given the stock unit resolver will find the available stock unit
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($linkableStockUnit);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $this->linker->linkItem($supplierOrderItem);
+        $this->linker->linkItem($supplierItem);
 
         // Order item B and his assignment should be moved from the new stock unit to the linkable stock unit
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkableStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkableStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkableStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkableStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(20, $linkableStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 20
@@ -271,64 +232,44 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_link_item_by_splitting_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder
-            ->setCurrency($this->getDefaultCurrency())
-            ->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
 
-        // Given the subject has been sold for 30 quantity
-        $date = new \DateTime();
-        $orderItemA = (new OrderItem())
-            ->setQuantity(15)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-2 day'))
-            );
-        $orderItemB = (new OrderItem())
-            ->setQuantity(15)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-1 day'))
-            );
-        $linkableStockUnit = (new StockUnit())->setSoldQuantity(30);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkableStockUnit)
-            ->setSoldQuantity(15);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($linkableStockUnit)
-            ->setSoldQuantity(15);
+        // Given the subject has been sold for 15 quantity and 15 quantity
+        $orderItemA = Fixtures::createOrderItem(15)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $orderItemB = Fixtures::createOrderItem(15)->setOrder(
+            Fixtures::createOrder('EUR', '-1 day')
+        );
+        $linkableStockUnit = Fixtures::createStockUnit()->setSoldQuantity(30);
+        Fixtures::createStockAssignment($linkableStockUnit, $orderItemA, 15);
+        Fixtures::createStockAssignment($linkableStockUnit, $orderItemB, 15);
 
         // Given the stock unit resolver will find the available stock unit
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($linkableStockUnit);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Tests
-        $this->linker->linkItem($supplierOrderItem);
+        $this->linker->linkItem($supplierItem);
 
         // Order item B's assignment should be split into the new stock unit for 10 quantity
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkableStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkableStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkableStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkableStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(20, $linkableStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 20
@@ -375,54 +316,41 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_apply_item_with_positive_change()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 25 quantity (20 before update) with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(25)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(25, 12);
 
         // Given the subject has been ordered for 20 quantity
-        $linkedStockUnit = (new StockUnit())
-            ->setSupplierOrderItem($supplierOrderItem)
+        $linkedStockUnit = Fixtures::createStockUnit()
+            ->setSupplierOrderItem($supplierItem)
             ->setSoldQuantity(20)
             ->setOrderedQuantity(20)
             ->setNetPrice(12)
             ->setState(StockUnitStates::STATE_PENDING);
 
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt(new \DateTime())
-            );
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(20);
+        $orderItemA = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemA, 20);
 
         // Given the supplier order item's quantity has changed from 20 to 25 (+8)
         $this->getPersistenceHelperMock()
             ->method('isChanged')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn(true);
         $this->getPersistenceHelperMock()
             ->method('getChangeSet')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn([20, 25]);
 
         // TODO test price change
 
         // Test
-        $this->linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierItem);
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkedStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkedStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkedStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 25
         $this->assertEquals(25, $linkedStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 0
@@ -440,64 +368,42 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_apply_item_with_positive_change_by_moving_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 30 quantity (20 before change) with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(30)
-            ->setOrder($supplierOrder);
-
-        $date = new \DateTime();
+        $supplierItem = Fixtures::createSupplierOrderItem(30, 12);
 
         // Given the subject has been sold for 30 quantity
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-2 day'))
-            );
-        $orderItemB = (new OrderItem())
-            ->setQuantity(10)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-1 day'))
-            );
-
-        $linkedStockUnit = (new StockUnit())
+        $orderItemA = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $orderItemB = Fixtures::createOrderItem(10)->setOrder(
+            Fixtures::createOrder('EUR', '-1 day')
+        );
+        $linkedStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(20)
             ->setSoldQuantity(20)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItem);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(20);
+            ->setSupplierOrderItem($supplierItem);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemA, 20);
 
-        $newStockUnit = (new StockUnit())
+        $newStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(0)
             ->setSoldQuantity(10);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($newStockUnit)
-            ->setSoldQuantity(10);
+        Fixtures::createStockAssignment($newStockUnit, $orderItemB, 10);
 
         // Given the supplier order item's quantity has changed from 20 to 30
         $this->getPersistenceHelperMock()
             ->method('isChanged')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn(true);
         $this->getPersistenceHelperMock()
             ->method('getChangeSet')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn([20, 30]);
 
         // Given the stock unit resolver will return a new stock unit
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Assert that stock unit B will be removed
@@ -507,14 +413,14 @@ class StockUnitLinkerTest extends BaseStockTestCase
             ->with($newStockUnit, true);
 
         // Test
-        $this->linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierItem);
 
         // Order item B ans his assignment should be moved from the new stock unit into the linked stock unit
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkedStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkedStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkedStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(30, $linkedStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 20
@@ -555,79 +461,54 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_apply_item_with_positive_change_by_splitting_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 30 quantity (20 before change) with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(30)
-            ->setOrder($supplierOrder);
-
-        $date = new \DateTime();
+        $supplierItem = Fixtures::createSupplierOrderItem(30, 12);
 
         // Given the subject has been sold for 40 quantity
-        $orderItemA = (new OrderItem())
-            ->setQuantity(15)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-2 day'))
-            );
-        $orderItemB = (new OrderItem())
-            ->setQuantity(25)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-1 day'))
-            );
-
-        $linkedStockUnit = (new StockUnit())
+        $orderItemA = Fixtures::createOrderItem(15)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $orderItemB = Fixtures::createOrderItem(25)->setOrder(
+            Fixtures::createOrder('EUR', '-1 day')
+        );
+        $linkedStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(20)
             ->setSoldQuantity(20)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItem);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(15);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(5);
+            ->setSupplierOrderItem($supplierItem);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemA, 15);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemB, 5);
 
-        $newStockUnit = (new StockUnit())
+        $newStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(0)
             ->setSoldQuantity(20);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($newStockUnit)
-            ->setSoldQuantity(20);
+        Fixtures::createStockAssignment($newStockUnit, $orderItemB, 20);
 
         // Given the supplier order item's quantity has changed from 20 to 30
         $this->getPersistenceHelperMock()
             ->method('isChanged')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn(true);
         $this->getPersistenceHelperMock()
             ->method('getChangeSet')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn([20, 30]);
 
         // Given the stock unit resolver will return a new stock unit
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $this->linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierItem);
 
         // Order item B ans his assignment should be split from the new stock unit into the linked stock unit
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkedStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkedStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkedStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 30
         $this->assertEquals(30, $linkedStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 30
@@ -674,52 +555,39 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_apply_item_with_negative_change()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity (25 before update) with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(20, 12);
 
         // Given the subject has been ordered for 20 quantity
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt(new \DateTime())
-            );
+        $orderItemA = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
 
-        $linkedStockUnit = (new StockUnit())
-            ->setSupplierOrderItem($supplierOrderItem)
-            ->setSoldQuantity(20)
+        $linkedStockUnit = Fixtures::createStockUnit()
+            ->setSupplierOrderItem($supplierItem)
             ->setOrderedQuantity(25)
+            ->setSoldQuantity(20)
             ->setNetPrice(12)
             ->setState(StockUnitStates::STATE_PENDING);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(20);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemA, 20);
 
         // Given the supplier order item's quantity has changed from 20 to 18 (-2)
         $this->getPersistenceHelperMock()
             ->method('isChanged')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn(true);
         $this->getPersistenceHelperMock()
             ->method('getChangeSet')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn([25, 20]);
 
         // Test
-        $this->linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierItem);
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkedStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkedStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkedStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(20, $linkedStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 0
@@ -744,76 +612,57 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_apply_item_with_negative_change_by_moving_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity (30 before change) with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(20, 12);
 
         // Given the subject has been sold for 30
-        $date = new \DateTime();
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-2 day'))
-            );
-        $orderItemB = (new OrderItem())
-            ->setQuantity(10)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-1 day'))
-            );
-        $linkedStockUnit = (new StockUnit())
+        $orderItemA = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $orderItemB = Fixtures::createOrderItem(10)->setOrder(
+            Fixtures::createOrder('EUR', '-1 day')
+        );
+        $linkedStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(30)
             ->setSoldQuantity(30)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItem);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(20);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(10);
+            ->setSupplierOrderItem($supplierItem);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemA, 20);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemB, 10);
+
 
         // Given the supplier order item's quantity has changed from 30 to 20
         $this->getPersistenceHelperMock()
             ->method('isChanged')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn(true);
         $this->getPersistenceHelperMock()
             ->method('getChangeSet')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn([30, 20]);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
         $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn([]);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $this->linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierItem);
 
         // Order item B ans his assignment should be moved from the linked stock unit into the new stock unit
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkedStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkedStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkedStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(20, $linkedStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 20
@@ -853,76 +702,56 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_apply_item_with_negative_change_by_splitting_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity (30 before change) with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(20, 12);
 
         // Given the subject has been sold for 30
-        $date = new \DateTime();
-        $orderItemA = (new OrderItem())
-            ->setQuantity(15)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-2 day'))
-            );
-        $orderItemB = (new OrderItem())
-            ->setQuantity(15)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-1 day'))
-            );
-        $linkedStockUnit = (new StockUnit())
+        $orderItemA = Fixtures::createOrderItem(15)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $orderItemB = Fixtures::createOrderItem(15)->setOrder(
+            Fixtures::createOrder('EUR', '-1 day')
+        );
+        $linkedStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(30)
             ->setSoldQuantity(30)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItem);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(15);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(15);
+            ->setSupplierOrderItem($supplierItem);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemA, 15);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemB, 15);
 
         // Given the supplier order item's quantity has changed from 30 to 20
         $this->getPersistenceHelperMock()
             ->method('isChanged')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn(true);
         $this->getPersistenceHelperMock()
             ->method('getChangeSet')
-            ->with($supplierOrderItem, 'quantity')
+            ->with($supplierItem, 'quantity')
             ->willReturn([30, 20]);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
         $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn([]);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $this->linker->applyItem($supplierOrderItem);
+        $this->linker->applyItem($supplierItem);
 
         // Order item B ans his assignment should be split from the linked stock unit into the new stock unit
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkedStockUnit, $supplierOrderItem->getStockUnit());
+        $this->assertEquals($linkedStockUnit, $supplierItem->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItem, $linkedStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItem, $linkedStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(20, $linkedStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 20
@@ -966,92 +795,68 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_apply_item_with_negative_change_by_moving_and_splitting_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrderA = new SupplierOrder();
-        $supplierOrderA->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 20 quantity (30 before change) with a cost of 12 euros
-        $supplierOrderItemA = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(20)
-            ->setOrder($supplierOrderA);
+        $supplierItemA = Fixtures::createSupplierOrderItem(20, 12);
 
         // Given the subject has been sold for 30
-        $date = new \DateTime();
-        $orderItemA = (new OrderItem())
-            ->setQuantity(15)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-2 day'))
-            );
-        $orderItemB = (new OrderItem())
-            ->setQuantity(15)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt((clone $date)->modify('-1 day'))
-            );
-        $linkedStockUnit = (new StockUnit())
+        $orderItemA = Fixtures::createOrderItem(15)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $orderItemB = Fixtures::createOrderItem(15)->setOrder(
+            Fixtures::createOrder('EUR', '-1 day')
+        );
+        $linkedStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(30)
             ->setSoldQuantity(30)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItemA);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(15);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($linkedStockUnit)
-            ->setSoldQuantity(15);
+            ->setSupplierOrderItem($supplierItemA);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemA, 15);
+        Fixtures::createStockAssignment($linkedStockUnit, $orderItemB, 15);
 
         // Given the supplier order item's quantity has changed from 30 to 20
         $this->getPersistenceHelperMock()
             ->method('isChanged')
-            ->with($supplierOrderItemA, 'quantity')
+            ->with($supplierItemA, 'quantity')
             ->willReturn(true);
         $this->getPersistenceHelperMock()
             ->method('getChangeSet')
-            ->with($supplierOrderItemA, 'quantity')
+            ->with($supplierItemA, 'quantity')
             ->willReturn([30, 20]);
 
         // Given the stock unit resolver will return a pending stock unit
-        $supplierOrderItemB = (new SupplierOrderItem())
-            ->setNetPrice(14)
-            ->setQuantity(15)
-            ->setOrder((new SupplierOrder())->setOrderedAt(new \DateTime()));
-        $pendingStockUnit = new StockUnit();
-        $pendingStockUnit
+        $supplierItemB = Fixtures::createSupplierOrderItem(15, 14)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
+        $pendingStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(15)
             ->setSoldQuantity(10)
             ->setNetPrice(14)
-            ->setSupplierOrderItem($supplierOrderItemB);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemB)
-            ->setStockUnit($pendingStockUnit)
-            ->setSoldQuantity(10);
+            ->setSupplierOrderItem($supplierItemB);
+        Fixtures::createStockAssignment($pendingStockUnit, $orderItemB, 10);
+
         $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
-            ->with($supplierOrderItemA)
+            ->with($supplierItemA)
             ->willReturn([$pendingStockUnit]);
 
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
-            ->with($supplierOrderItemA)
+            ->with($supplierItemA)
             ->willReturn($newStockUnit);
 
         // Test
-        $this->linker->applyItem($supplierOrderItemA);
+        $this->linker->applyItem($supplierItemA);
 
         // Order item B ans his assignment should be
         // split from the linked stock unit into the pending stock unit for 5 quantity and
         // split from the linked stock unit into the new stock unit for 5 quantity
 
         // Then the supplier order item should be linked to the stock unit
-        $this->assertEquals($linkedStockUnit, $supplierOrderItemA->getStockUnit());
+        $this->assertEquals($linkedStockUnit, $supplierItemA->getStockUnit());
         // Then the stock unit should be linked to the supplier order item
-        $this->assertEquals($supplierOrderItemA, $linkedStockUnit->getSupplierOrderItem());
+        $this->assertEquals($supplierItemA, $linkedStockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 20
         $this->assertEquals(20, $linkedStockUnit->getOrderedQuantity());
         // Then the stock unit's sold quantity should equal 20
@@ -1116,51 +921,38 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_unlink_item()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 25 quantity with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(25)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(25, 12);
 
         // Given the subject has been sold for 20 quantity
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt($date = new \DateTime())
-            );
-        $stockUnit = (new StockUnit())
+        $orderItem = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder('EUR', '-2 days')
+        );
+        $stockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(25)
             ->setSoldQuantity(20)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItem);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($stockUnit)
-            ->setSoldQuantity(20);
+            ->setSupplierOrderItem($supplierItem);
+        Fixtures::createStockAssignment($stockUnit, $orderItem, 20);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
         $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn([]);
 
         // Given the stock unit resolver will return a new stock unit
-        $newStockUnit = new StockUnit();
+        $newStockUnit = Fixtures::createStockUnit();
         $this->getStockUnitResolverMock()
             ->method('createBySubjectRelative')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($newStockUnit);
 
         // Test
-        $this->linker->unlinkItem($supplierOrderItem);
+        $this->linker->unlinkItem($supplierItem);
 
         // Then the supplier order item should be unlinked
-        $this->assertNull($supplierOrderItem->getStockUnit());
+        $this->assertNull($supplierItem->getStockUnit());
         // Then the stock unit should be unlinked
         $this->assertNull($stockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 0
@@ -1177,7 +969,7 @@ class StockUnitLinkerTest extends BaseStockTestCase
         // Then the linked stock unit should have one assignment
         $this->assertCount(1, $assignments);
         // Then the assignment should be associated with the order item A
-        $this->assertEquals($orderItemA, $assignments[0]->getOrderItem());
+        $this->assertEquals($orderItem, $assignments[0]->getOrderItem());
         // Then the assignment's sold quantity should equal 20
         $this->assertEquals(20, $assignments[0]->getSoldQuantity());
     }
@@ -1187,49 +979,35 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_unlink_item_by_moving_assignment()
     {
-        // Given the supplier order is submitted
-        $supplierOrder = new SupplierOrder();
-        $supplierOrder->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 25 quantity with a cost of 12 euros
-        $supplierOrderItem = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(25)
-            ->setOrder($supplierOrder);
+        $supplierItem = Fixtures::createSupplierOrderItem(25, 12)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
 
         // Given the subject has been sold for 20 quantity
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt($date = new \DateTime())
-            );
-        $stockUnit = (new StockUnit())
+        $orderItem = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder()
+        );
+        $stockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(25)
             ->setSoldQuantity(20)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItem);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($stockUnit)
-            ->setSoldQuantity(20);
+            ->setSupplierOrderItem($supplierItem);
+        Fixtures::createStockAssignment($stockUnit, $orderItem, 20);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
         $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn([]);
 
         // Given the stock unit resolver will return a linkable stock unit
-        $linkableStockUnit = (new StockUnit())
+        $linkableStockUnit = Fixtures::createStockUnit()
             ->setSoldQuantity(10);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($linkableStockUnit)
-            ->setSoldQuantity(10);
+        Fixtures::createStockAssignment($linkableStockUnit, $orderItem, 10);
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItem)
+            ->with($supplierItem)
             ->willReturn($linkableStockUnit);
 
         // TODO Assert that stock unit will be removed
@@ -1239,10 +1017,10 @@ class StockUnitLinkerTest extends BaseStockTestCase
             ->with($stockUnit, false);*/
 
         // Test
-        $this->linker->unlinkItem($supplierOrderItem);
+        $this->linker->unlinkItem($supplierItem);
 
         // Then the supplier order item should be unlinked
-        $this->assertNull($supplierOrderItem->getStockUnit());
+        $this->assertNull($supplierItem->getStockUnit());
         // Then the stock unit should be unlinked
         $this->assertNull($stockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 0
@@ -1273,7 +1051,7 @@ class StockUnitLinkerTest extends BaseStockTestCase
         // Then the linkable stock unit should have one assignment
         $this->assertCount(1, $assignments);
         // Then the assignment should be associated with the order item A
-        $this->assertEquals($orderItemA, $assignments[0]->getOrderItem());
+        $this->assertEquals($orderItem, $assignments[0]->getOrderItem());
         // Then the assignment's sold quantity should equal 30
         $this->assertEquals(30, $assignments[0]->getSoldQuantity());
     }
@@ -1283,64 +1061,49 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     public function test_unlink_item_by_splitting_assignment()
     {
-        // Given the supplier A order is submitted
-        $supplierOrderA = new SupplierOrder();
-        $supplierOrderA->setOrderedAt(new \DateTime());
-
         // Given the subject is ordered for 25 quantity with a cost of 12 euros
-        $supplierOrderItemA = (new SupplierOrderItem())
-            ->setNetPrice(12)
-            ->setQuantity(25)
-            ->setOrder($supplierOrderA);
+        $supplierItemA = Fixtures::createSupplierOrderItem(25, 12)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
 
         // Given the subject has been sold for 20 quantity
-        $orderItemA = (new OrderItem())
-            ->setQuantity(20)
-            ->setOrder((new Order())
-                ->setCurrency($this->getDefaultCurrency())
-                ->setCreatedAt($date = new \DateTime())
-            );
-        $stockUnit = (new StockUnit())
+        $orderItemA = Fixtures::createOrderItem(20)->setOrder(
+            Fixtures::createOrder()
+        );
+        $stockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(25)
             ->setSoldQuantity(20)
             ->setNetPrice(12)
-            ->setSupplierOrderItem($supplierOrderItemA);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($stockUnit)
-            ->setSoldQuantity(20);
+            ->setSupplierOrderItem($supplierItemA);
+        Fixtures::createStockAssignment($stockUnit, $orderItemA, 20);
 
         // Given the stock unit resolver will return a pending stock unit
-        $supplierOrderItemB = (new SupplierOrderItem())
-            ->setNetPrice(14)
-            ->setQuantity(20)
-            ->setOrder((new SupplierOrder())->setOrderedAt(new \DateTime()));
-        $pendingStockUnit = (new StockUnit())
+        $supplierItemB = Fixtures::createSupplierOrderItem(20, 14)->setOrder(
+            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
+        );
+        $pendingStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(20)
             ->setSoldQuantity(10)
             ->setNetPrice(14)
-            ->setSupplierOrderItem($supplierOrderItemB);
-        (new OrderItemStockAssignment())
-            ->setOrderItem($orderItemA)
-            ->setStockUnit($pendingStockUnit)
-            ->setSoldQuantity(10);
+            ->setSupplierOrderItem($supplierItemB);
+        Fixtures::createStockAssignment($pendingStockUnit, $orderItemA, 10);
 
         // Given the stock unit resolver will return no 'pending or ready' stock unit
         $this->getStockUnitResolverMock()
             ->method('findPendingOrReady')
-            ->with($supplierOrderItemA)
+            ->with($supplierItemA)
             ->willReturn([$pendingStockUnit]);
 
         $this->getStockUnitResolverMock()
             ->method('findLinkable')
-            ->with($supplierOrderItemA)
+            ->with($supplierItemA)
             ->willReturn(null);
 
         // Test
-        $this->linker->unlinkItem($supplierOrderItemA);
+        $this->linker->unlinkItem($supplierItemA);
 
         // Then the supplier order item should be unlinked
-        $this->assertNull($supplierOrderItemA->getStockUnit());
+        $this->assertNull($supplierItemA->getStockUnit());
         // Then the stock unit should be unlinked
         $this->assertNull($stockUnit->getSupplierOrderItem());
         // Then the stock unit's ordered quantity should equal 0

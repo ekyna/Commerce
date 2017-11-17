@@ -76,6 +76,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 throw new LogicException("Invoice line's sale adjustment must be set.");
             }
 
+            // Flat discounts are dispatched into all invoices
+            if ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
+                return 1;
+            }
+
             $quantity = 1;
 
             foreach ($sale->getInvoices() as $invoice) {
@@ -151,6 +156,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         } elseif ($line->getType() === DocumentLineTypes::TYPE_DISCOUNT) {
             if (null === $adjustment = $line->getSaleAdjustment()) {
                 throw new LogicException("Invoice line's sale adjustment must be set.");
+            }
+
+            // Flat discounts are dispatched into all invoices
+            if ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
+                return 1;
             }
 
             foreach ($sale->getInvoices() as $invoice) {

@@ -45,6 +45,8 @@ class LineView extends AbstractView
     private $reference;
 
     /**
+     * The unit price.
+     *
      * @var string
      */
     private $unit;
@@ -55,6 +57,25 @@ class LineView extends AbstractView
     private $quantity;
 
     /**
+     * Total price before applying discounts and taxes.
+     *
+     * @var string
+     */
+    private $gross;
+
+    /**
+     * @var string
+     */
+    private $discountRates;
+
+    /**
+     * @var string
+     */
+    private $discountAmount;
+
+    /**
+     * Total price after applying discounts and before applying taxes.
+     *
      * @var string
      */
     private $base;
@@ -70,6 +91,8 @@ class LineView extends AbstractView
     private $taxAmount;
 
     /**
+     * Total price after applying discounts and taxes.
+     *
      * @var string
      */
     private $total;
@@ -82,7 +105,7 @@ class LineView extends AbstractView
     /**
      * @var bool
      */
-    private $node = false;
+    private $private = false;
 
 
     /**
@@ -262,6 +285,78 @@ class LineView extends AbstractView
     }
 
     /**
+     * Returns the gross price.
+     *
+     * @return string
+     */
+    public function getGross()
+    {
+        return $this->gross;
+    }
+
+    /**
+     * Sets the gross price.
+     *
+     * @param string $gross
+     *
+     * @return LineView
+     */
+    public function setGross($gross)
+    {
+        $this->gross = $gross;
+
+        return $this;
+    }
+
+    /**
+     * Returns the discount rates.
+     *
+     * @return string
+     */
+    public function getDiscountRates()
+    {
+        return $this->discountRates;
+    }
+
+    /**
+     * Sets the discount rates.
+     *
+     * @param string $rates
+     *
+     * @return LineView
+     */
+    public function setDiscountRates($rates)
+    {
+        $this->discountRates = $rates;
+
+        return $this;
+    }
+
+    /**
+     * Returns the discount amount.
+     *
+     * @return string
+     */
+    public function getDiscountAmount()
+    {
+        return $this->discountAmount;
+    }
+
+    /**
+     * Sets the discount amount.
+     *
+     * @param string $amount
+     *
+     * @return LineView
+     */
+    public function setDiscountAmount($amount)
+    {
+        $this->discountAmount = $amount;
+
+        return $this;
+    }
+
+    /**
      * Sets the base.
      *
      * @param string $base
@@ -382,26 +477,26 @@ class LineView extends AbstractView
     }
 
     /**
-     * Sets the node.
+     * Sets the whether or not the line is private.
      *
-     * @param bool $node
+     * @param bool $private
      *
      * @return LineView
      */
-    public function setNode($node)
+    public function setPrivate($private)
     {
-        $this->node = (bool)$node;
+        $this->private = (bool)$private;
 
         return $this;
     }
 
     /**
-     * Returns whether the line is node or leaf.
+     * Returns whether or not the line is private.
      *
      * @return boolean
      */
-    public function isNode()
+    public function isPrivate()
     {
-        return $this->node;
+        return $this->private;
     }
 }

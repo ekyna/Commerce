@@ -2,15 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Common\Builder;
 
-use Ekyna\Component\Commerce\Common\Event\SaleItemAdjustmentEvent;
-use Ekyna\Component\Commerce\Common\Event\SaleItemEvents;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
-use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class AdjustmentBuilder
@@ -22,49 +19,41 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @var SaleFactoryInterface
      */
-    private $saleFactory;
-
-    /**
-     * @var SubjectProviderRegistryInterface
-     */
-    private $subjectProviderRegistry;
+    protected $saleFactory;
 
     /**
      * @var TaxResolverInterface
      */
-    private $taxResolver;
+    protected $taxResolver;
 
     /**
-     * @var EventDispatcherInterface
+     * @var DiscountResolverInterface
      */
-    private $eventDispatcher;
+    protected $discountResolver;
 
     /**
      * @var PersistenceHelperInterface
      */
-    private $persistenceHelper;
+    protected $persistenceHelper;
 
 
     /**
      * Constructor.
      *
      * @param SaleFactoryInterface             $saleFactory
-     * @param SubjectProviderRegistryInterface $subjectProviderRegistry
      * @param TaxResolverInterface             $taxResolver
-     * @param EventDispatcherInterface         $eventDispatcher
+     * @param DiscountResolverInterface         $discountResolver
      * @param PersistenceHelperInterface       $persistenceHelper
      */
     public function __construct(
         SaleFactoryInterface $saleFactory,
-        SubjectProviderRegistryInterface $subjectProviderRegistry,
         TaxResolverInterface $taxResolver,
-        EventDispatcherInterface $eventDispatcher,
+        DiscountResolverInterface $discountResolver,
         PersistenceHelperInterface $persistenceHelper
     ) {
         $this->saleFactory = $saleFactory;
-        $this->subjectProviderRegistry = $subjectProviderRegistry;
         $this->taxResolver = $taxResolver;
-        $this->eventDispatcher = $eventDispatcher;
+        $this->discountResolver = $discountResolver;
         $this->persistenceHelper = $persistenceHelper;
     }
 
@@ -73,15 +62,9 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false)
     {
-        /* TODO $event = new SaleAdjustmentEvent($sale);
+        $data = $this->discountResolver->resolveSale($sale);
 
-        $this->eventDispatcher->dispatch(SaleEvents::ADJUSTMENTS, $event);
-
-        $data = $event->getAdjustmentsData();
-
-        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence);*/
-
-        return false;
+        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence);
     }
 
     /**
@@ -100,10 +83,10 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $change = false;
 
         foreach ($children as $child) {
-            $change = $this->buildDiscountAdjustmentsForSaleItem($child, $persistence) || $change;
+            $change |= $this->buildDiscountAdjustmentsForSaleItem($child, $persistence);
 
             if ($child->hasChildren()) {
-                $change = $this->buildDiscountAdjustmentsForSaleItems($child, $persistence) || $change;
+                $change |= $this->buildDiscountAdjustmentsForSaleItems($child, $persistence);
             }
         }
 
@@ -115,18 +98,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
-        $parent = $item->getParent();
-
-        // Don't apply discount(s) to both parent and children
-        if (null !== $parent && $parent->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
-            $data = [];
-        } else {
-            $event = new SaleItemAdjustmentEvent($item);
-
-            $this->eventDispatcher->dispatch(SaleItemEvents::ADJUSTMENTS, $event);
-
-            $data = $event->getAdjustmentsData();
-        }
+        $data = $this->discountResolver->resolveSaleItem($item);
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
@@ -136,15 +108,15 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false)
     {
-        $taxes = [];
+        $data = [];
 
         // For now, we assume that sale's taxation adjustments are only related to shipment.
         if (null !== $taxable = $sale->getPreferredShipmentMethod()) {
             // Resolve taxes
-            $taxes = $this->taxResolver->resolveTaxes($taxable, $sale);
+            $data = $this->taxResolver->resolveTaxes($taxable, $sale);
         }
 
-        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $sale, $taxes, $persistence);
+        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $sale, $data, $persistence);
     }
 
     /**
@@ -178,13 +150,16 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
-        $taxes = [];
-        if (null !== $sale = $item->getSale()) {
-            $taxes = $this->taxResolver->resolveTaxes($item, $sale);
+        $data = [];
+
+        if (!$item->isPrivate() && null !== $sale = $item->getSale()) {
+            $data = $this->taxResolver->resolveTaxes($item, $sale);
         }
 
-        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $item, $taxes, $persistence);
+        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $item, $data, $persistence);
     }
+
+
 
     /**
      * Builds the adjustable's adjustments based on the given data and type.
@@ -196,7 +171,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
      */
-    private function buildAdjustments($type, Model\AdjustableInterface $adjustable, array $data, $persistence = false)
+    protected function buildAdjustments($type, Model\AdjustableInterface $adjustable, array $data, $persistence = false)
     {
         Model\AdjustmentTypes::isValidType($type);
 

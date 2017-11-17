@@ -15,7 +15,7 @@
     "homepage": "https://github.com/ekyna/Commerce",
     "license": "MIT",
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.1",
         "ext-intl" : "*",
         "psr/http-message": "~1.0",
         "doctrine/collections": "~1.3",

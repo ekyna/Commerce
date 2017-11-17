@@ -402,7 +402,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             if ($this->persistenceHelper->isChanged($parent, 'quantity')) {
                 list($parentOld, $parentNew) = $this->persistenceHelper->getChangeSet($parent, 'quantity');
             } else {
-                $parentOld = $parentNew = $item->getQuantity();
+                $parentOld = $parentNew = $parent->getQuantity();
             }
             $old *= $parentOld;
             $new *= $parentNew;

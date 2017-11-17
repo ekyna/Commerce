@@ -19,9 +19,9 @@ class OrderShipmentItemEventSubscriber extends OrderShipmentItemListener impleme
     public static function getSubscribedEvents()
     {
         return [
-            OrderShipmentItemEvents::INSERT     => ['onInsert', 0],
-            OrderShipmentItemEvents::UPDATE     => ['onUpdate', 0],
-            OrderShipmentItemEvents::DELETE     => ['onDelete', 0],
+            OrderShipmentItemEvents::INSERT => ['onInsert', 0],
+            OrderShipmentItemEvents::UPDATE => ['onUpdate', 0],
+            OrderShipmentItemEvents::DELETE => ['onDelete', 0],
         ];
     }
 }

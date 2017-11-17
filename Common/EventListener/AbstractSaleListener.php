@@ -585,7 +585,7 @@ abstract class AbstractSaleListener
 
         if (null !== $customer = $sale->getCustomer()) {
             // Customer group
-            if (null === $sale->getCustomerGroup() && null !== $customer->getCustomerGroup()) {
+            if (null === $sale->getCustomerGroup()) {
                 $sale->setCustomerGroup($customer->getCustomerGroup());
                 $changed = true;
             }

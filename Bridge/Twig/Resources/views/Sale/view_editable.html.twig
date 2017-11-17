@@ -65,20 +65,20 @@
 {% endblock line_quantity %}
 
 
-{% block line_leaf %}
+{% block line_public %}
 {% spaceless %}
     {{ parent() }}
     {{ block('actions') }}
 {% endspaceless %}
-{% endblock line_leaf %}
+{% endblock line_public %}
 
 
-{% block line_node %}
+{% block line_private %}
 {% spaceless %}
     {{ parent() }}
     {{ block('actions') }}
 {% endspaceless %}
-{% endblock line_node %}
+{% endblock line_private %}
 
 
 {% block line_information %}
@@ -94,11 +94,23 @@
     <tbody>
     <tr id="sale_gross">
         <th>&nbsp;</th>
-        <th class="text-right" colspan="5">
+        <th class="text-right" colspan="{% if view.vars.line_discounts -%}
+                    {{- view.vars.columns_count - 6 -}}
+                {%- else -%}
+                    {{- view.vars.columns_count - 3 -}}
+                {%- endif -%}">
             <strong>{{ view.translations.gross_totals }}</strong>
         </th>
+        {%- if view.vars.line_discounts -%}
         <th class="text-right sale-detail-gross" id="gross_base">
             {{- view.gross.base -}}
+        </th>
+        <th class="text-right sale-detail-gross" colspan="2" id="gross_discount">
+            -{{- view.gross.adjustment -}}
+        </th>
+        {%- endif -%}
+        <th class="text-right sale-detail-gross" id="gross_total">
+            {{- view.gross.total -}}
         </th>
         <th>&nbsp;</th>
     </tr>
@@ -117,25 +129,8 @@
 
 {% block shipment %}
 {% spaceless %}
-    {% set line = view.shipment %}
-    <tbody>
-    <tr>
-        <td class="sale-detail-number">{#{{ line.number }}#}</td>
-        <td class="sale-detail-designation" id="{{ line.id }}_designation">
-            <span>
-                {{- line.designation -}}
-                {%- if line.description is not empty -%}
-                    <br><em>{{ line.description }}</em>
-                {%- endif -%}
-            </span>
-        </td>
-        <td class="text-right" colspan="2">&nbsp;</td>
-        {{ block('line_tax_rates') }}
-        <td class="text-right">&nbsp;</td>
-        <td class="text-right" id="{{ line.id }}_base">{{ line.base }}</td>
-        {{ block('actions') }}
-    </tr>
-    </tbody>
+    {{ parent() }}
+    {{ block('actions') }}
 {% endspaceless %}
 {% endblock shipment %}
 
@@ -144,7 +139,7 @@
 {% spaceless %}
     <tbody>
     <tr>
-        <th colspan="5" rowspan="3" class="sale-detail-buttons">
+        <th colspan="{{ view.vars.columns_count - 3 }}" rowspan="3" class="sale-detail-buttons">
             {{ form_widget(view.vars.form.submit) }}
         </th>
         <th>{{ view.translations.net_total|upper }}</th>
@@ -156,7 +151,7 @@
     <tr>
         <th>{{ view.translations.tax_total|upper }}</th>
         <td class="text-right sale-detail-total" id="final_tax">
-            {{- view.final.tax -}}
+            {{- view.final.adjustment -}}
         </td>
     </tr>
     <tr>
@@ -168,17 +163,6 @@
     </tbody>
 {% endspaceless %}
 {% endblock gran_totals %}
-
-
-{% block spacer %}
-{% spaceless %}
-    <tbody>
-    <tr class="sale-detail-spacer">
-        <td colspan="10">&nbsp;</td>
-    </tr>
-    </tbody>
-{% endspaceless %}
-{% endblock spacer %}
 
 
 {% block sale %}
@@ -197,7 +181,10 @@
 
                 {% if view.shipment is not null %}
                     {{ block('spacer') }}
+                    <tbody><tr>
+                    {% set line = view.shipment %}
                     {{ block('shipment') }}
+                    </tr></tbody>
                 {% endif %}
 
                 {{ block('spacer') }}
