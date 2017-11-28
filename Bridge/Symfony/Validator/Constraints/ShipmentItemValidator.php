@@ -51,7 +51,8 @@ class ShipmentItemValidator extends ConstraintValidator
         // Check parent/quantity integrity
         $saleItem = $item->getSaleItem();
         if ($saleItem->isPrivate()) {
-            if (0 !== bccomp($item->getQuantity() % $saleItem->getQuantity(), 0, 5)) {
+            // TODO use packaging format
+            if (0 !== bccomp(fmod((float)$item->getQuantity(), (float)$saleItem->getQuantity()), 0, 5)) {
                 $this
                     ->context
                     ->buildViolation($constraint->quantity_must_be_multiple_of_parent, [

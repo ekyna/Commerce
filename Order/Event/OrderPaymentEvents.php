@@ -27,4 +27,12 @@ final class OrderPaymentEvents
 
     const PRE_DELETE   = 'ekyna_commerce.order_payment.pre_delete';
     const POST_DELETE  = 'ekyna_commerce.order_payment.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

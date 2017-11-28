@@ -60,13 +60,6 @@ abstract class AbstractShipmentItemListener
         if (Model\ShipmentStates::isStockableState($shipment->getState())) {
             // Assign shipment item to stock units
             $this->stockUnitAssigner->assignShipmentItem($item);
-            /*if ($shipment->isReturn()) {
-                // Detach shipment item to stock units
-                $this->stockUnitAssigner->detachShipmentItem($item);
-            } else {
-                // Assign shipment item to stock units
-                $this->stockUnitAssigner->assignShipmentItem($item);
-            }*/
         }
 
         $this->scheduleShipmentContentChangeEvent($shipment);
@@ -128,13 +121,6 @@ abstract class AbstractShipmentItemListener
         if (Model\ShipmentStates::isStockableState($shipment->getState())) {
             // Detach shipment item to stock units
             $this->stockUnitAssigner->detachShipmentItem($item);
-            /*if ($shipment->isReturn()) {
-                // Assign shipment item to stock units
-                $this->stockUnitAssigner->assignShipmentItem($item);
-            } else {
-                // Detach shipment item to stock units
-                $this->stockUnitAssigner->detachShipmentItem($item);
-            }*/
         }
 
         $this->scheduleShipmentContentChangeEvent($shipment);

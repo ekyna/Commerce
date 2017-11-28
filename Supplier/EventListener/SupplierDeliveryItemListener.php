@@ -95,9 +95,12 @@ class SupplierDeliveryItemListener extends AbstractListener
 
             // Trigger the supplier order update
             if (null === $order = $orderItem->getOrder()) {
-                throw new RuntimeException("Order must be set.");
+                throw new RuntimeException("Failed to retrieve supplier order.");
             }
-            $this->scheduleSupplierOrderContentChangeEvent($order);
+
+            if (!$this->persistenceHelper->isScheduledForRemove($order)) {
+                $this->scheduleSupplierOrderContentChangeEvent($order);
+            }
         }
 
         // Clear association
@@ -115,11 +118,12 @@ class SupplierDeliveryItemListener extends AbstractListener
 
         // Delta quantity (difference between new and old)
         if (null === $orderItem = $item->getOrderItem()) {
-            throw new RuntimeException("OrderItem must be set.");
+            throw new RuntimeException("Failed to retrieve order item.");
         }
         if (null === $stockUnit = $orderItem->getStockUnit()) {
-            throw new RuntimeException("StockUnit must be set.");
+            throw new RuntimeException("Failed to retrieve stock unit.");
         }
+        // TODO use packaging format
         if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
             // Update stock unit received quantity
             $this->stockUnitUpdater->updateReceived($stockUnit, $deltaQuantity, true);
@@ -127,7 +131,7 @@ class SupplierDeliveryItemListener extends AbstractListener
 
         // Trigger the supplier order update
         if (null === $order = $orderItem->getOrder()) {
-            throw new RuntimeException("Order must be set.");
+            throw new RuntimeException("Failed to retrieve order.");
         }
         $this->scheduleSupplierOrderContentChangeEvent($order);
     }

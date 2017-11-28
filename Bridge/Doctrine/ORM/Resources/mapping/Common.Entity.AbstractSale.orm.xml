@@ -19,6 +19,7 @@
         <field name="weightTotal" column="weight_total" type="decimal" precision="10" scale="3"/>
         <field name="shipmentAmount" column="shipment_amount" type="decimal" precision="10" scale="5" nullable="true"/>
 
+        <field name="autoDiscount" column="auto_discount" type="boolean"/>
         <field name="taxExempt" column="tax_exempt" type="boolean"/>
 
         <field name="netTotal" column="net_total" type="decimal" precision="12" scale="5"/>

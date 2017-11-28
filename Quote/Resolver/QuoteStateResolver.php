@@ -34,6 +34,7 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
                 PaymentStates::STATE_CAPTURED,
                 PaymentStates::STATE_AUTHORIZED,
                 PaymentStates::STATE_PENDING,
+                PaymentStates::STATE_COMPLETED,
             ];
             if (in_array($paymentState, $acceptedStates, true)) {
                 return QuoteStates::STATE_ACCEPTED;

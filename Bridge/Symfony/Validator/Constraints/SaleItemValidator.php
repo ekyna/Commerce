@@ -83,7 +83,11 @@ class SaleItemValidator extends ConstraintValidator
         foreach ($invoices as $invoice) {
             foreach ($invoice->getLines() as $line) {
                 if ($line->getSaleItem() === $item) {
-                    $quantity += $line->getQuantity();
+                    if (Invoice\InvoiceTypes::isCredit($invoice)) {
+                        $quantity -= $line->getQuantity();
+                    } else {
+                        $quantity += $line->getQuantity();
+                    }
                 }
             }
         }

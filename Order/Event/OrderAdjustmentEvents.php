@@ -25,4 +25,12 @@ final class OrderAdjustmentEvents
 
     const PRE_DELETE  = 'ekyna_commerce.order_adjustment.pre_delete';
     const POST_DELETE = 'ekyna_commerce.order_adjustment.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

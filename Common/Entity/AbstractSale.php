@@ -74,6 +74,11 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @var bool
      */
+    protected $autoDiscount;
+
+    /**
+     * @var bool
+     */
     protected $taxExempt;
 
     /**
@@ -142,6 +147,7 @@ abstract class AbstractSale implements Common\SaleInterface
         }
 
         $this->sameAddress = true;
+        $this->autoDiscount = true;
         $this->taxExempt = false;
 
         $this->netTotal = 0;
@@ -266,9 +272,25 @@ abstract class AbstractSale implements Common\SaleInterface
     }
 
     /**
-     * Returns whether the sale is tax exempt.
-     *
-     * @return boolean
+     * @inheritdoc
+     */
+    public function isAutoDiscount()
+    {
+        return $this->autoDiscount;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAutoDiscount($auto)
+    {
+        $this->autoDiscount = (bool)$auto;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function isTaxExempt()
     {
@@ -276,11 +298,7 @@ abstract class AbstractSale implements Common\SaleInterface
     }
 
     /**
-     * Sets the tax exempt.
-     *
-     * @param boolean $exempt
-     *
-     * @return AbstractSale
+     * @inheritdoc
      */
     public function setTaxExempt($exempt)
     {

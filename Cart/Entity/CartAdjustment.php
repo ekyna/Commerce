@@ -22,6 +22,14 @@ class CartAdjustment extends AbstractSaleAdjustment implements CartAdjustmentInt
     /**
      * @inheritdoc
      */
+    public function getSale()
+    {
+        return $this->getCart();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCart()
     {
         return $this->cart;

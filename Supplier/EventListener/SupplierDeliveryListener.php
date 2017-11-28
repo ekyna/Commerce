@@ -23,14 +23,22 @@ class SupplierDeliveryListener extends AbstractListener
         $delivery = $this->getSupplierDeliveryFromEvent($event);
 
         if (null === $order = $delivery->getOrder()) {
-            throw new Exception\RuntimeException("SupplierOrder must be set.");
+            $changeSet = $this->persistenceHelper->getChangeSet($delivery);
+            if (array_key_exists('order', $changeSet)) {
+                $order = $changeSet['order'][0];
+            }
+        }
+        if (null === $order) {
+            throw new Exception\RuntimeException("Failed to retrieve supplier order.");
         }
 
         // Clear association
         $delivery->setOrder(null);
 
         // Trigger the supplier order update
-        $this->scheduleSupplierOrderContentChangeEvent($order);
+        if (!$this->persistenceHelper->isScheduledForRemove($order)) {
+            $this->scheduleSupplierOrderContentChangeEvent($order);
+        }
     }
 
     /**

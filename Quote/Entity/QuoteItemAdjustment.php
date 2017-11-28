@@ -21,6 +21,8 @@ class QuoteItemAdjustment extends AbstractAdjustment implements QuoteItemAdjustm
 
     /**
      * @inheritdoc
+     *
+     * @return QuoteItemInterface
      */
     public function getItem()
     {

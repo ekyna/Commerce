@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Ekyna\Component\Commerce\Common\Util\Money;
+
 /**
  * Class Amount
  * @package Ekyna\Component\Commerce\Common\Calculator
@@ -290,6 +292,16 @@ class Amount
     public function copyGrossToUnit(): void
     {
         $this->unit = $this->gross;
+    }
+
+    /**
+     * Rounds the taxes regarding to currency.
+     *
+     * @param string $currency
+     */
+    public function roundTax(string $currency): void
+    {
+        $this->tax = Money::round($this->tax, $currency);
     }
 
     /**

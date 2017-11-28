@@ -55,7 +55,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         // TODO Currency conversion
-        //$currency = $sale->getCurrency()->getCode();
+        $currency = $sale->getCurrency()->getCode();
 
         // Clear all sale's results and disable calculator cache
         $sale->clearResults();
@@ -79,6 +79,10 @@ class DocumentCalculator implements DocumentCalculatorInterface
 
             $shipmentBase += $result->getBase();
         }
+
+        // Rounds tax totals.
+        $gross->roundTax($currency);
+        $final->roundTax($currency);
 
         // Document goods base (after discounts)
         if ($document->getGoodsBase() !== $gross->getBase()) {
@@ -277,6 +281,11 @@ class DocumentCalculator implements DocumentCalculatorInterface
         // Base
         if ($line->getBase() !== $result->getBase()) {
             $line->setBase($result->getBase());
+            $this->changed = true;
+        }
+        // Tax
+        if ($line->getTax() !== $result->getTax()) {
+            $line->setTax($result->getTax());
             $this->changed = true;
         }
         // Tax rates

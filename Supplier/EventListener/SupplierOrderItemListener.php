@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -37,11 +38,9 @@ class SupplierOrderItemListener extends AbstractListener
         if (SupplierOrderStates::isStockableState($item->getOrder()->getState())) {
             // Associated stock unit (if not exists) must be created (absolute ordered quantity).
             $this->stockUnitLinker->linkItem($item);
-            //$this->createSupplierOrderItemStockUnit($item);
         } else { // Supplier order state is 'new' or 'canceled'
             // Associated stock unit (if exists) must be deleted.
             $this->stockUnitLinker->unlinkItem($item);
-            //$this->deleteSupplierOrderItemStockUnit($item);
         }
     }
 
@@ -133,6 +132,9 @@ class SupplierOrderItemListener extends AbstractListener
                 $order = $changeSet['order'][0];
             }
         }
+        if (null === $order) {
+            throw new RuntimeException("Failed to retrieve supplier order.");
+        }
 
         // Clear association
         $item->setOrder(null);
@@ -140,7 +142,9 @@ class SupplierOrderItemListener extends AbstractListener
         //$order->getItems()->removeElement($item);
 
         // Trigger the supplier order update
-        $this->scheduleSupplierOrderContentChangeEvent($order);
+        if (!$this->persistenceHelper->isScheduledForRemove($order)) {
+            $this->scheduleSupplierOrderContentChangeEvent($order);
+        }
     }
 
     /**

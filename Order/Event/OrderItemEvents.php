@@ -25,4 +25,12 @@ final class OrderItemEvents
 
     const PRE_DELETE  = 'ekyna_commerce.order_item.pre_delete';
     const POST_DELETE = 'ekyna_commerce.order_item.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

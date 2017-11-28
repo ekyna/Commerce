@@ -20,6 +20,14 @@ class OrderAdjustment extends AbstractSaleAdjustment implements OrderAdjustmentI
 
 
     /**
+     * @inheritDoc
+     */
+    public function getSale()
+    {
+        return $this->getOrder();
+    }
+
+    /**
      * @inheritdoc
      */
     public function getOrder()

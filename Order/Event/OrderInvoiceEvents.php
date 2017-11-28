@@ -28,4 +28,12 @@ final class OrderInvoiceEvents
 
     const PRE_DELETE     = 'ekyna_commerce.order_invoice.pre_delete';
     const POST_DELETE    = 'ekyna_commerce.order_invoice.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

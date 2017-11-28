@@ -25,4 +25,12 @@ final class OrderAddressEvents
 
     const PRE_DELETE  = 'ekyna_commerce.order_address.pre_delete';
     const POST_DELETE = 'ekyna_commerce.order_address.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

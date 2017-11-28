@@ -22,7 +22,6 @@ class OrderItemEventSubscriber extends OrderItemListener  implements EventSubscr
             OrderItemEvents::INSERT     => ['onInsert', 0],
             OrderItemEvents::UPDATE     => ['onUpdate', 0],
             OrderItemEvents::DELETE     => ['onDelete', 0],
-            OrderItemEvents::PRE_CREATE => ['onPreCreate', 0],
             OrderItemEvents::PRE_UPDATE => ['onPreUpdate', 0],
             OrderItemEvents::PRE_DELETE => ['onPreDelete', 0],
         ];

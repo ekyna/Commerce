@@ -28,4 +28,12 @@ final class OrderShipmentEvents
 
     const PRE_DELETE     = 'ekyna_commerce.order_shipment.pre_delete';
     const POST_DELETE    = 'ekyna_commerce.order_shipment.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

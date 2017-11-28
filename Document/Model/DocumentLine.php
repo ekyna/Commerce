@@ -271,7 +271,7 @@ class DocumentLine implements DocumentLineInterface
      */
     public function getDiscountRates()
     {
-        return $this->taxRates;
+        return $this->discountRates;
     }
 
     /**

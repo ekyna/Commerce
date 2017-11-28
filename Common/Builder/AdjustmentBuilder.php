@@ -62,7 +62,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false)
     {
-        $data = $this->discountResolver->resolveSale($sale);
+        $data = $sale->isAutoDiscount() ? $this->discountResolver->resolveSale($sale) : [];
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence);
     }
@@ -98,7 +98,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
-        $data = $this->discountResolver->resolveSaleItem($item);
+        $data = $item->getSale()->isAutoDiscount() ? $this->discountResolver->resolveSaleItem($item) : [];
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
@@ -111,7 +111,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $data = [];
 
         // For now, we assume that sale's taxation adjustments are only related to shipment.
-        if (null !== $taxable = $sale->getPreferredShipmentMethod()) {
+        if (!$sale->isTaxExempt() && null !== $taxable = $sale->getPreferredShipmentMethod()) {
             // Resolve taxes
             $data = $this->taxResolver->resolveTaxes($taxable, $sale);
         }
@@ -152,7 +152,8 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     {
         $data = [];
 
-        if (!$item->isPrivate() && null !== $sale = $item->getSale()) {
+        $sale = $item->getSale();
+        if (!$item->isPrivate() && !(null === $sale || $sale->isTaxExempt())) {
             $data = $this->taxResolver->resolveTaxes($item, $sale);
         }
 

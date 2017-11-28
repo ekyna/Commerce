@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Quote\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractAdjustmentListener;
-use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Quote\Event\QuoteEvents;
 use Ekyna\Component\Commerce\Quote\Model\QuoteItemAdjustmentInterface;
@@ -19,17 +18,6 @@ class QuoteItemAdjustmentListener extends AbstractAdjustmentListener
     /**
      * @inheritdoc
      */
-    protected function scheduleSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
-    {
-        /** @var \Ekyna\Component\Commerce\Quote\Model\QuoteItemInterface $item */
-        $item = $adjustment->getAdjustable();
-
-        $this->persistenceHelper->scheduleEvent(QuoteEvents::CONTENT_CHANGE, $item->getSale());
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function getAdjustmentFromEvent(ResourceEventInterface $event)
     {
         $adjustment = $event->getResource();
@@ -39,5 +27,21 @@ class QuoteItemAdjustmentListener extends AbstractAdjustmentListener
         }
 
         return $adjustment;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getSaleChangeEvent()
+    {
+        return QuoteEvents::CONTENT_CHANGE;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getSalePropertyPath()
+    {
+        return 'quote';
     }
 }

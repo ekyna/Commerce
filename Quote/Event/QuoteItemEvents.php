@@ -25,4 +25,12 @@ final class QuoteItemEvents
 
     const PRE_DELETE  = 'ekyna_commerce.quote_item.pre_delete';
     const POST_DELETE = 'ekyna_commerce.quote_item.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

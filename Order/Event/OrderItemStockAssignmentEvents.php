@@ -25,4 +25,12 @@ final class OrderItemStockAssignmentEvents
 
     const PRE_DELETE  = 'ekyna_commerce.order_item_stock_assignment.pre_delete';
     const POST_DELETE = 'ekyna_commerce.order_item_stock_assignment.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

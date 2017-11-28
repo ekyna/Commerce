@@ -145,16 +145,30 @@ interface SaleInterface extends
     public function setSameAddress($same);
 
     /**
+     * Returns whether to generate discounts automatically.
+     *
+     * @return bool
+     */
+    public function isAutoDiscount();
+
+    /**
+     * Sets whether to generate discounts automatically.
+     *
+     * @param bool $auto
+     *
+     * @return $this|SaleInterface
+     */
+    public function setAutoDiscount($auto);
+
+    /**
      * Returns whether the sale is tax exempt.
      *
      * @return boolean
-     * @deprecated
-     * @todo remove
      */
     public function isTaxExempt();
 
     /**
-     * Sets the tax exempt.
+     * Sets whether the sale is tax exempt.
      *
      * @param boolean $exempt
      *

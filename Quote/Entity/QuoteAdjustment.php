@@ -20,6 +20,14 @@ class QuoteAdjustment extends AbstractSaleAdjustment implements QuoteAdjustmentI
 
 
     /**
+     * @inheritDoc
+     */
+    public function getSale()
+    {
+        return $this->getQuote();
+    }
+
+    /**
      * @inheritdoc
      */
     public function getQuote()

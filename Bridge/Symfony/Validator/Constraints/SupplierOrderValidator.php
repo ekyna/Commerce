@@ -30,25 +30,20 @@ class SupplierOrderValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SupplierOrder::class);
         }
 
-        // Subject identity uniqueness
-        $identities = [];
+        // Supplier products duplication
+        $products = [];
         foreach ($order->getItems() as $item) {
-            $identity = $item->getSubjectIdentity();
-            if ($identity->hasIdentity()) {
-                /** @var \Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity $i */
-                foreach ($identities as $i) {
-                    if ($i->equals($item->getSubjectIdentity())) {
-                        $this
-                            ->context
-                            ->buildViolation($constraint->duplicate_subject)
-                            ->atPath('items')
-                            ->addViolation();
+            $product = $item->getProduct();
+            if (in_array ($product, $products, true)) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->duplicate_product)
+                    ->atPath('items')
+                    ->addViolation();
 
-                        return;
-                    }
-                }
-                $identities[] = $identity;
+                return;
             }
+            $products[] = $product;
         }
 
         // Each deliveries items must match an order item

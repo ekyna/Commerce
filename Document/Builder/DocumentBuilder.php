@@ -113,16 +113,25 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            $line = $this->createLine($document);
-            $line
-                ->setType(Document\DocumentLineTypes::TYPE_GOOD)
-                ->setSaleItem($item)
-                ->setDesignation($item->getDesignation())
-                ->setDescription($item->getDescription())
-                ->setReference($item->getReference())
-                ->setQuantity($item->getTotalQuantity());
+            // Existing line lookup
+            foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $documentLine) {
+                if ($documentLine->getSaleItem() === $item) {
+                    $line = $documentLine;
+                }
+            }
+            // Not found, create it
+            if (null === $line) {
+                $line = $this->createLine($document);
+                $line
+                    ->setType(Document\DocumentLineTypes::TYPE_GOOD)
+                    ->setSaleItem($item)
+                    ->setDesignation($item->getDesignation())
+                    ->setDescription($item->getDescription())
+                    ->setReference($item->getReference())
+                    ->setQuantity($item->getTotalQuantity());
 
-            $document->addLine($line);
+                $document->addLine($line);
+            }
 
             $this->postBuildLine($line);
         }
@@ -145,13 +154,23 @@ class DocumentBuilder implements DocumentBuilderInterface
             throw new InvalidArgumentException("Unexpected adjustment type.");
         }
 
-        $line = $this->createLine($document);
-        $line
-            ->setType(Document\DocumentLineTypes::TYPE_DISCOUNT)
-            ->setSaleAdjustment($adjustment)
-            ->setDesignation($adjustment->getDesignation());
+        $line = null;
+        // Existing line lookup
+        foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_DISCOUNT) as $documentLine) {
+            if ($documentLine->getSaleAdjustment() === $adjustment) {
+                $line = $documentLine;
+            }
+        }
+        // Not found, create it
+        if (null === $line) {
+            $line = $this->createLine($document);
+            $line
+                ->setType(Document\DocumentLineTypes::TYPE_DISCOUNT)
+                ->setSaleAdjustment($adjustment)
+                ->setDesignation($adjustment->getDesignation());
 
-        $document->addLine($line);
+            $document->addLine($line);
+        }
 
         $this->postBuildLine($line);
 
@@ -169,14 +188,19 @@ class DocumentBuilder implements DocumentBuilderInterface
             return null;
         }
 
-        // TODO Do not add twice (check other invoices)
+        // Existing line lookup
+        $shipmentLines = $document->getLinesByType(Document\DocumentLineTypes::TYPE_SHIPMENT);
+        $line = !empty($shipmentLines) ? current($shipmentLines) : null;
 
-        $line = $this->createLine($document);
-        $line
-            ->setType(Document\DocumentLineTypes::TYPE_SHIPMENT)
-            ->setDesignation($sale->getPreferredShipmentMethod()->getTitle());
+        // Not found, create it
+        if (null === $line) {
+            $line = $this->createLine($document);
+            $line
+                ->setType(Document\DocumentLineTypes::TYPE_SHIPMENT)
+                ->setDesignation($sale->getPreferredShipmentMethod()->getTitle());
 
-        $document->addLine($line);
+            $document->addLine($line);
+        }
 
         $this->postBuildLine($line);
 

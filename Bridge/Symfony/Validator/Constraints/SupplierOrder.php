@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraint;
 class SupplierOrder extends Constraint
 {
     public $order_and_delivery_items_miss_match = 'ekyna_commerce.supplier_order.order_and_delivery_items_miss_match';
-    public $duplicate_subject                   = 'ekyna_commerce.supplier_order.duplicate_subject';
+    public $duplicate_product                   = 'ekyna_commerce.supplier_order.duplicate_product';
 
 
     /**

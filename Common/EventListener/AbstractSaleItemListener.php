@@ -79,44 +79,24 @@ abstract class AbstractSaleItemListener
         $change = false;
 
         // Handle taxation update
-        if ($this->persistenceHelper->isChanged($item, ['subjectIdentity.provider', 'subjectIdentity.identifier'])) {
-            $change |= $this->updateTaxation($item);
+        if ($this->persistenceHelper->isChanged($item, ['taxGroup'])) {
+            $change = $this->updateTaxation($item);
         }
 
-        $change |= $this->persistenceHelper->isChanged($item, ['netPrice', 'quantity']);
+        // Handle discount update
+        $discountFields = [
+            'subjectIdentity.provider', 'subjectIdentity.identifier',
+            'netPrice', 'quantity', 'compound', 'private'
+        ];
+        if ($this->persistenceHelper->isChanged($item, $discountFields)) {
+            $change |= $this->updateDiscount($item);
+        }
 
         if ($change) {
-            // Handle discount update
-            $this->updateDiscount($item);
-
             $this->persistenceHelper->persistAndRecompute($item);
 
             $this->scheduleSaleContentChangeEvent($item->getSale());
         }
-    }
-
-    /**
-     * Updates the item's discount adjustments.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return bool Whether the adjustments has been changed or not.
-     */
-    protected function updateDiscount(Model\SaleItemInterface $item)
-    {
-        return $this->adjustmentBuilder->buildDiscountAdjustmentsForSaleItem($item, true);
-    }
-
-    /**
-     * Updates the item's taxation adjustments.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return bool Whether the adjustments has been changed or not.
-     */
-    protected function updateTaxation(Model\SaleItemInterface $item)
-    {
-        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItem($item, true);
     }
 
     /**
@@ -129,7 +109,6 @@ abstract class AbstractSaleItemListener
         $item = $this->getSaleItemFromEvent($event);
 
         if (null === $sale = $this->getSaleFromItem($item)) {
-            // TODO Not working in case ([item ->]+ -> item -> sale)
             throw new RuntimeException('Failed to retrieve the sale.');
         }
 
@@ -173,8 +152,32 @@ abstract class AbstractSaleItemListener
 
         // Stop if item is immutable.
         if ($item->isImmutable()) {
-            throw new IllegalOperationException(); // TODO reason message
+            throw new IllegalOperationException('ekyna_commerce.sale.message.immutable_element'); // TODO reason message
         }
+    }
+
+    /**
+     * Updates the item's discount adjustments.
+     *
+     * @param Model\SaleItemInterface $item
+     *
+     * @return bool Whether the adjustments has been changed or not.
+     */
+    protected function updateDiscount(Model\SaleItemInterface $item)
+    {
+        return $this->adjustmentBuilder->buildDiscountAdjustmentsForSaleItem($item, true);
+    }
+
+    /**
+     * Updates the item's taxation adjustments.
+     *
+     * @param Model\SaleItemInterface $item
+     *
+     * @return bool Whether the adjustments has been changed or not.
+     */
+    protected function updateTaxation(Model\SaleItemInterface $item)
+    {
+        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItem($item, true);
     }
 
     /**
@@ -187,14 +190,14 @@ abstract class AbstractSaleItemListener
         }
 
         $path = $this->getSalePropertyPath();
-        $changeSet = $this->persistenceHelper->getChangeSet($item);
+        $cs = $this->persistenceHelper->getChangeSet($item);
 
-        if (isset($changeSet[$path])) {
-            return $changeSet[$path][0];
+        if (isset($cs[$path])) {
+            return $cs[$path][0];
         } elseif (null !== $parent = $item->getParent()) {
             return $this->getSaleFromItem($parent);
-        } elseif (isset($changeSet['parent'])) {
-            return $this->getSaleFromItem($changeSet['parent'][0]);
+        } elseif (isset($cs['parent'])) {
+            return $this->getSaleFromItem($cs['parent'][0]);
         }
 
         return null;

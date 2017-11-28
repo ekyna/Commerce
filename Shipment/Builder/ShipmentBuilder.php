@@ -71,9 +71,18 @@ class ShipmentBuilder implements ShipmentBuilderInterface
 
         // Skip compound sale items with only public children
         if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
-            $item = $this->factory->createItemForShipment($shipment);
-            $item->setShipment($shipment);
-            $item->setSaleItem($saleItem);
+            // Existing item lookup
+            foreach ($shipment->getItems() as $shipmentItem) {
+                if ($shipmentItem->getSaleItem() === $saleItem) {
+                    $item = $shipmentItem;
+                }
+            }
+            // Not found, create it
+            if (null === $item) {
+                $item = $this->factory->createItemForShipment($shipment);
+                $item->setShipment($shipment);
+                $item->setSaleItem($saleItem);
+            }
 
             if (!$saleItem->isCompound()) {
                 $expected = $shipment->isReturn()

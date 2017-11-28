@@ -55,6 +55,11 @@ class AmountCalculator implements AmountCalculatorInterface
         // Shipment
         $this->calculateSaleShipment($sale, $final);
 
+        // Rounds tax totals.
+        $currency = $sale->getCurrency()->getCode();
+        $gross->roundTax($currency);
+        $final->roundTax($currency);
+
         // Store the results
         $sale->setGrossResult($gross);
         $sale->setFinalResult($final);
@@ -378,7 +383,13 @@ class AmountCalculator implements AmountCalculatorInterface
 
         $rate = (float)$data->getAmount();
 
-        $amount = Money::round($base * $rate / 100, $currency);
+        if ($data->getType() === Model\AdjustmentTypes::TYPE_TAXATION) {
+            // Round taxation adjustment to 5 decimals.
+            $amount = round($base * $rate / 100, 5);
+        } else {
+            // Round others adjustments regarding to currency
+            $amount = Money::round($base * $rate / 100, $currency);
+        }
 
         return new Adjustment((string)$data->getDesignation(), $amount, $rate);
     }

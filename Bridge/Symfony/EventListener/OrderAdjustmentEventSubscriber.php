@@ -22,7 +22,6 @@ class OrderAdjustmentEventSubscriber extends OrderAdjustmentListener implements 
             OrderAdjustmentEvents::INSERT     => ['onInsert', 0],
             OrderAdjustmentEvents::UPDATE     => ['onUpdate', 0],
             OrderAdjustmentEvents::DELETE     => ['onDelete', 0],
-            OrderAdjustmentEvents::PRE_CREATE => ['onPreCreate', 0],
             OrderAdjustmentEvents::PRE_UPDATE => ['onPreUpdate', 0],
             OrderAdjustmentEvents::PRE_DELETE => ['onPreDelete', 0],
         ];

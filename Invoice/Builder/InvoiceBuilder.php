@@ -85,16 +85,25 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            $line = $this->createLine($document);
-            $line
-                ->setType(Document\DocumentLineTypes::TYPE_GOOD)
-                ->setSaleItem($item)
-                ->setDesignation($item->getDesignation())
-                ->setDescription($item->getDescription())
-                ->setReference($item->getReference())
-                ->setQuantity($item->getTotalQuantity());
+            // Existing line lookup
+            foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $documentLine) {
+                if ($documentLine->getSaleItem() === $item) {
+                    $line = $documentLine;
+                }
+            }
+            // Not found, create it
+            if (null === $line) {
+                $line = $this->createLine($document);
+                $line
+                    ->setType(Document\DocumentLineTypes::TYPE_GOOD)
+                    ->setSaleItem($item)
+                    ->setDesignation($item->getDesignation())
+                    ->setDescription($item->getDescription())
+                    ->setReference($item->getReference())
+                    ->setQuantity($item->getTotalQuantity());
 
-            $document->addLine($line);
+                $document->addLine($line);
+            }
 
             if (!$item->isCompound()) {
                 $expected = Invoice\InvoiceTypes::isInvoice($document)

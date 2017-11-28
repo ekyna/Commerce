@@ -28,4 +28,12 @@ final class QuotePaymentEvents
 
     const PRE_DELETE     = 'ekyna_commerce.quote_payment.pre_delete';
     const POST_DELETE    = 'ekyna_commerce.quote_payment.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

@@ -449,8 +449,8 @@ abstract class AbstractSaleListener
     {
         $saleCs = $this->persistenceHelper->getChangeSet($sale);
 
-        // Watch for customer group or customer change
-        if (isset($saleCs['customerGroup']) || isset($saleCs['customer'])) {
+        // Watch for auto discount, customer group or customer change
+        if (isset($saleCs['autoDiscount']) || isset($saleCs['customerGroup']) || isset($saleCs['customer'])) {
             return true;
         }
 

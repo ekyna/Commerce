@@ -170,7 +170,7 @@
     {{ form_start(view.vars.form, {'attr': {'class': 'sale-view'}}) }}
         {{ form_errors(view.vars.form) }}
         <div class="table-responsive">
-            <table class="table table-striped sale-detail">
+            <table class="table sale-detail">
                 {{ block('lines') }}
 
                 {% if view.discounts is not empty %}

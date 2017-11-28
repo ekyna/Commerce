@@ -12,6 +12,13 @@ use Ekyna\Component\Commerce\Common\Calculator\Amount;
 interface SaleAdjustmentInterface extends AdjustmentInterface
 {
     /**
+     * Returns the sale.
+     *
+     * @return SaleInterface
+     */
+    public function getSale();
+
+    /**
      * Clears the result.
      *
      * @return $this|SaleAdjustmentInterface

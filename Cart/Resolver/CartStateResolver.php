@@ -34,6 +34,7 @@ class CartStateResolver extends AbstractSaleStateResolver implements StateResolv
                 PaymentStates::STATE_CAPTURED,
                 PaymentStates::STATE_AUTHORIZED,
                 PaymentStates::STATE_PENDING,
+                PaymentStates::STATE_COMPLETED,
             ];
             if (in_array($paymentState, $acceptedStates, true)) {
                 return CartStates::STATE_ACCEPTED;
