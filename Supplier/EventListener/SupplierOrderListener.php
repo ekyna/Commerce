@@ -6,7 +6,7 @@ use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Supplier\Calculator\CalculatorInterface;
+use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -24,7 +24,7 @@ class SupplierOrderListener extends AbstractListener
     protected $numberGenerator;
 
     /**
-     * @var CalculatorInterface
+     * @var SupplierOrderCalculatorInterface
      */
     protected $calculator;
 
@@ -37,13 +37,13 @@ class SupplierOrderListener extends AbstractListener
     /**
      * Constructor.
      *
-     * @param NumberGeneratorInterface $numberGenerator
-     * @param CalculatorInterface      $calculator
-     * @param StateResolverInterface   $stateResolver
+     * @param NumberGeneratorInterface         $numberGenerator
+     * @param SupplierOrderCalculatorInterface $calculator
+     * @param StateResolverInterface           $stateResolver
      */
     public function __construct(
         NumberGeneratorInterface $numberGenerator,
-        CalculatorInterface $calculator,
+        SupplierOrderCalculatorInterface $calculator,
         StateResolverInterface $stateResolver
     ) {
         $this->numberGenerator = $numberGenerator;

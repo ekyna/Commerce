@@ -195,7 +195,7 @@ abstract class AbstractSaleListener
         }
 
         // Schedule content change
-        if ($this->persistenceHelper->isChanged($sale, 'paymentTerm')) {
+        if ($this->persistenceHelper->isChanged($sale, ['paymentTerm', 'shipmentAmount'])) {
             $this->scheduleContentChangeEvent($sale);
         }
 

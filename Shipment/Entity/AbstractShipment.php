@@ -88,7 +88,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         $this->state = Shipment\ShipmentStates::STATE_NEW;
         $this->items = new ArrayCollection();
         $this->return = false;
-        $this->autoInvoice = false;
+        $this->autoInvoice = true;
     }
 
     /**

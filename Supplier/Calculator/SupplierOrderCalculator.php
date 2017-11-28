@@ -6,11 +6,11 @@ use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 
 /**
- * Class Calculator
+ * Class SupplierOrderCalculator
  * @package Ekyna\Component\Commerce\Supplier\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Calculator implements CalculatorInterface
+class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
 {
     /**
      * @inheritdoc
@@ -23,6 +23,20 @@ class Calculator implements CalculatorInterface
 
         foreach ($order->getItems() as $item) {
             $total += Money::round($item->getNetPrice(), $currency) * $item->getQuantity();
+        }
+
+        return $total;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateWeightTotal(SupplierOrderInterface $order)
+    {
+        $total = 0;
+
+        foreach ($order->getItems() as $item) {
+            $total += $item->getProduct()->getWeight() * $item->getQuantity();
         }
 
         return $total;
