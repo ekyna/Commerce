@@ -13,6 +13,7 @@ final class SaleItemEvents
     const BUILD      = 'ekyna_commerce.sale_item.build';
     const DISCOUNT   = 'ekyna_commerce.sale_item.discount';
 
+
     /**
      * Disabled constructor.
      */

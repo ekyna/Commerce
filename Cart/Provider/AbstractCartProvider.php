@@ -93,8 +93,12 @@ abstract class AbstractCartProvider implements CartProviderInterface
     /**
      * @inheritdoc
      */
-    public function getCart()
+    public function getCart($create = false)
     {
+        if ($create) {
+            return $this->createCart();
+        }
+
         return $this->cart;
     }
 

@@ -78,6 +78,22 @@ interface CustomerGroupInterface extends TranslatableInterface
     public function setRegistration($registration);
 
     /**
+     * Returns whether users of this group can create quotes.
+     *
+     * @return bool
+     */
+    public function isQuoteAllowed();
+
+    /**
+     * Sets whether users of this group can create quotes.
+     *
+     * @param bool $allowed
+     *
+     * @return $this
+     */
+    public function setQuoteAllowed($allowed);
+
+    /**
      * Returns the (translated) title.
      *
      * @return string

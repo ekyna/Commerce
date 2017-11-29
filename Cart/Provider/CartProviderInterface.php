@@ -21,9 +21,11 @@ interface CartProviderInterface
     /**
      * Returns the cart.
      *
+     * @param bool $create Whether to create the cart if none is available.
+     *
      * @return CartInterface|null
      */
-    public function getCart();
+    public function getCart($create = false);
 
     /**
      * Creates and returns the cart.

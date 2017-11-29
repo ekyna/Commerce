@@ -25,6 +25,7 @@
         <field name="default" column="is_default" type="boolean"/>
         <field name="business" column="is_business" type="boolean"/>
         <field name="registration" column="is_registration" type="boolean"/>
+        <field name="quoteAllowed" column="is_quote_allowed" type="boolean"/>
 
     </mapped-superclass>
 

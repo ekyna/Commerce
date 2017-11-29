@@ -49,6 +49,9 @@
             <cascade>
                 <cascade-all/>
             </cascade>
+            <order-by>
+                <order-by-field name="createdAt" direction="DESC"/>
+            </order-by>
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItem"

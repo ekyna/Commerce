@@ -125,6 +125,8 @@ class SaleTransformer implements SaleTransformerInterface
         // Enable the uploadable listener
         $this->uploadableListener->setEnabled(true);
 
+        $this->postTransform();
+
         // Unset source and target sales
         $this->source = null;
         $this->target = null;
@@ -147,6 +149,14 @@ class SaleTransformer implements SaleTransformerInterface
      * Pre transform handler.
      */
     protected function preTransform()
+    {
+
+    }
+
+    /**
+     * Post transform handler.
+     */
+    protected function postTransform()
     {
 
     }

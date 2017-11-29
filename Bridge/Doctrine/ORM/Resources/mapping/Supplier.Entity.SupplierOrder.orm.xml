@@ -63,6 +63,9 @@
                 <cascade-persist/>
                 <cascade-remove/>
             </cascade>
+            <order-by>
+                <order-by-field name="createdAt" direction="DESC"/>
+            </order-by>
         </one-to-many>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">

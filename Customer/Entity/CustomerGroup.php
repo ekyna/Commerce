@@ -10,6 +10,8 @@ use Ekyna\Component\Resource\Model\AbstractTranslatable;
  * Class Group
  * @package Ekyna\Component\Commerce\Customer\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method CustomerGroupTranslationInterface translate($locale = null, $create = false)
  */
 class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterface
 {
@@ -38,6 +40,11 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
      */
     protected $registration;
 
+    /**
+     * @var boolean
+     */
+    protected $quoteAllowed;
+
 
     /**
      * Constructor.
@@ -49,6 +56,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
         $this->default = false;
         $this->business = false;
         $this->registration = false;
+        $this->quoteAllowed = false;
     }
 
     /**
@@ -139,6 +147,24 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     public function setRegistration($registration)
     {
         $this->registration = (bool)$registration;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isQuoteAllowed()
+    {
+        return $this->quoteAllowed;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setQuoteAllowed($allowed)
+    {
+        $this->quoteAllowed = (bool)$allowed;
 
         return $this;
     }

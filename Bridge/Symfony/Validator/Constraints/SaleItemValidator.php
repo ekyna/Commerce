@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\ValidationFailedException;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Symfony\Component\Validator\Constraint;
@@ -32,6 +33,25 @@ class SaleItemValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SaleItem::class);
         }
 
+        try {
+            $this->checkPrivacyIntegrity($item, $constraint);
+            $this->checkInvoiceIntegrity($item, $constraint);
+            $this->checkShipmentIntegrity($item, $constraint);
+        } catch (ValidationFailedException $e) {
+            return;
+        }
+    }
+
+    /**
+     * Checks the sale item privacy integrity.
+     *
+     * @param SaleItemInterface $item
+     * @param SaleItem          $constraint
+     *
+     * @throws ValidationFailedException
+     */
+    protected function checkPrivacyIntegrity(SaleItemInterface $item, SaleItem $constraint)
+    {
         $parent = $item->getParent();
 
         if ($item->isPrivate()) {
@@ -42,6 +62,8 @@ class SaleItemValidator extends ConstraintValidator
                     ->buildViolation($constraint->root_item_cant_be_private)
                     ->atPath('private')
                     ->addViolation();
+
+                throw new ValidationFailedException();
             } elseif ($item->getTaxGroup() !== $parent->getTaxGroup()) {
                 // Tax group must match parent's one
                 $this
@@ -49,6 +71,8 @@ class SaleItemValidator extends ConstraintValidator
                     ->buildViolation($constraint->tax_group_integrity)
                     ->atPath('taxGroup')
                     ->addViolation();
+
+                throw new ValidationFailedException();
             }
         } elseif (null !== $parent && $parent->isPrivate()) {
             // Item with private parent must be private
@@ -57,10 +81,9 @@ class SaleItemValidator extends ConstraintValidator
                 ->buildViolation($constraint->privacy_integrity)
                 ->atPath('private')
                 ->addViolation();
-        }
 
-        $this->checkInvoiceIntegrity($item, $constraint);
-        $this->checkShipmentIntegrity($item, $constraint);
+            throw new ValidationFailedException();
+        }
     }
 
     /**
@@ -68,6 +91,8 @@ class SaleItemValidator extends ConstraintValidator
      *
      * @param SaleItemInterface $item
      * @param SaleItem          $constraint
+     *
+     * @throws ValidationFailedException
      */
     protected function checkInvoiceIntegrity(SaleItemInterface $item, SaleItem $constraint)
     {
@@ -76,9 +101,14 @@ class SaleItemValidator extends ConstraintValidator
             return;
         }
 
+        $invoices = $sale->getInvoices()->toArray();
+
+        if (empty($invoices)) {
+            return;
+        }
+
         $quantity = 0;
 
-        $invoices = $sale->getInvoices();
         /** @var Invoice\InvoiceInterface $invoice */
         foreach ($invoices as $invoice) {
             foreach ($invoice->getLines() as $line) {
@@ -100,6 +130,8 @@ class SaleItemValidator extends ConstraintValidator
                 ])
                 ->atPath('quantity')
                 ->addViolation();
+
+            throw new ValidationFailedException();
         }
     }
 
@@ -107,7 +139,9 @@ class SaleItemValidator extends ConstraintValidator
      * Checks that the sale item quantity is greater than or equals the shipped quantity.
      *
      * @param SaleItemInterface $item
-     * @param SaleItem $constraint
+     * @param SaleItem          $constraint
+     *
+     * @throws ValidationFailedException
      */
     protected function checkShipmentIntegrity(SaleItemInterface $item, SaleItem $constraint)
     {
@@ -116,9 +150,14 @@ class SaleItemValidator extends ConstraintValidator
             return;
         }
 
+        $shipments = $sale->getShipments()->toArray();
+
+        if (empty($shipments)) {
+            return;
+        }
+
         $quantity = 0;
 
-        $shipments = $sale->getShipments();
         /** @var Shipment\ShipmentInterface $shipment */
         foreach ($shipments as $shipment) {
             if (!Shipment\ShipmentStates::isStockableState($shipment->getState())) {
@@ -140,11 +179,13 @@ class SaleItemValidator extends ConstraintValidator
             $this
                 ->context
                 ->buildViolation($constraint->quantity_is_lower_than_shipped, [
-                    '%max%' => $quantity
+                    '%max%' => $quantity,
                 ])
                 ->setInvalidValue($item->getQuantity())
                 ->atPath('quantity')
                 ->addViolation();
+
+            throw new ValidationFailedException();
         }
     }
 }
