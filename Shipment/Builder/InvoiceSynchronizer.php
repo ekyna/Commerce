@@ -67,6 +67,11 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
             throw new LogicException("Shipment's sale must be set at this point.");
         }
 
+        // Abort if sale is sample
+        if ($sale->isSample()) {
+            return;
+        }
+
         $invoice = $shipment->getInvoice();
 
         // Abort if shipment is removed or not in shipped / returned state

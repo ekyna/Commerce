@@ -119,6 +119,8 @@ abstract class AbstractSaleItemListener
      * Pre update event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
      */
     public function onPreUpdate(ResourceEventInterface $event)
     {
@@ -129,6 +131,8 @@ abstract class AbstractSaleItemListener
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
      */
     public function onPreDelete(ResourceEventInterface $event)
     {
@@ -152,7 +156,7 @@ abstract class AbstractSaleItemListener
 
         // Stop if item is immutable.
         if ($item->isImmutable()) {
-            throw new IllegalOperationException('ekyna_commerce.sale.message.immutable_element'); // TODO reason message
+            throw new IllegalOperationException('ekyna_commerce.sale.message.immutable_element');
         }
     }
 

@@ -36,6 +36,8 @@ abstract class AbstractAdjustmentListener
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws \Ekyna\Component\Resource\Exception\ResourceExceptionInterface
      */
     public function onInsert(ResourceEventInterface $event)
     {
@@ -48,6 +50,8 @@ abstract class AbstractAdjustmentListener
      * Update event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws \Ekyna\Component\Resource\Exception\ResourceExceptionInterface
      */
     public function onUpdate(ResourceEventInterface $event)
     {
@@ -62,6 +66,8 @@ abstract class AbstractAdjustmentListener
      * Delete event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws \Ekyna\Component\Resource\Exception\ResourceExceptionInterface
      */
     public function onDelete(ResourceEventInterface $event)
     {
@@ -74,6 +80,8 @@ abstract class AbstractAdjustmentListener
      * Pre update event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
      */
     public function onPreUpdate(ResourceEventInterface $event)
     {
@@ -84,6 +92,8 @@ abstract class AbstractAdjustmentListener
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
      */
     public function onPreDelete(ResourceEventInterface $event)
     {
@@ -115,6 +125,8 @@ abstract class AbstractAdjustmentListener
      * Dispatches the sale content change event.
      *
      * @param Model\AdjustmentInterface $adjustment
+     *
+     * @throws \Ekyna\Component\Resource\Exception\ResourceExceptionInterface
      */
     protected function scheduleSaleContentChangeEvent(Model\AdjustmentInterface $adjustment)
     {

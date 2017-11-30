@@ -15,6 +15,15 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface, InvoiceSubjectInterface
 {
     /**
+     * Sets whether the order contains sample items.
+     *
+     * @param bool $sample
+     *
+     * @return $this|OrderInterface
+     */
+    public function setSample($sample);
+
+    /**
      * Returns the origin customer.
      *
      * @return CustomerInterface

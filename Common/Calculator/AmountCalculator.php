@@ -114,45 +114,50 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
-        $discounts = $taxes = [];
-        $discount = $tax = 0;
+        // Sample sale case
+        if ($item->getSale()->isSample()) {
+            $result = new Amount();
+        } else {
+            $discounts = $taxes = [];
+            $discount = $tax = 0;
 
-        // Gross price
-        $gross = Money::round($unit, $currency) * (null !== $quantity ? $quantity : $item->getTotalQuantity());
+            // Gross price
+            $gross = Money::round($unit, $currency) * (null !== $quantity ? $quantity : $item->getTotalQuantity());
 
-        $parent = $item->getParent();
-        $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+            $parent = $item->getParent();
+            $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
 
-        // Items without subject can inherit discounts from their non-compound parent
-        if (empty($discountAdjustments) && !$item->hasSubjectIdentity() && null !== $parent && !$parent->isCompound()) {
-            $discountAdjustments = $parent->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+            // Items without subject can inherit discounts from their non-compound parent
+            if (empty($discountAdjustments) && !$item->hasSubjectIdentity() && null !== $parent && !$parent->isCompound()) {
+                $discountAdjustments = $parent->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+            }
+
+            // Discount amount and result adjustments
+            foreach ($discountAdjustments as $data) {
+                $adjustment = $this->createPercentAdjustment($data, $gross, $currency);
+
+                $discount += $adjustment->getAmount();
+                $discounts[] = $adjustment;
+            }
+
+            // Base
+            $base = Money::round($gross - $discount, $currency);
+
+            // Tax amount and result adjustments
+            $taxAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
+            foreach ($taxAdjustments as $data) {
+                $adjustment = $this->createPercentAdjustment($data, $base, $currency);
+
+                $tax += $adjustment->getAmount();
+                $taxes[] = $adjustment;
+            }
+
+            // Total
+            $total = Money::round($base + $tax, $currency);
+
+            // Result
+            $result = new Amount($unit, $gross, $discount, $base, $tax, $total, $discounts, $taxes);
         }
-
-        // Discount amount and result adjustments
-        foreach ($discountAdjustments as $data) {
-            $adjustment = $this->createPercentAdjustment($data, $gross, $currency);
-
-            $discount += $adjustment->getAmount();
-            $discounts[] = $adjustment;
-        }
-
-        // Base
-        $base = Money::round($gross - $discount, $currency);
-
-        // Tax amount and result adjustments
-        $taxAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
-        foreach ($taxAdjustments as $data) {
-            $adjustment = $this->createPercentAdjustment($data, $base, $currency);
-
-            $tax += $adjustment->getAmount();
-            $taxes[] = $adjustment;
-        }
-
-        // Total
-        $total = Money::round($base + $tax, $currency);
-
-        // Result
-        $result = new Amount($unit, $gross, $discount, $base, $tax, $total, $discounts, $taxes);
 
         // Store the result
         $item->setResult($result);
@@ -174,6 +179,15 @@ class AmountCalculator implements AmountCalculatorInterface
 
         /** @var Model\SaleInterface $sale */
         $sale = $adjustment->getAdjustable();
+
+        // Sample sale case
+        if ($sale->isSample()) {
+            $result = new Amount();
+            $adjustment->setResult($result);
+
+            return $result;
+        }
+
         $currency = $sale->getCurrency()->getCode();
         $base = $gross->getBase();
 
@@ -245,6 +259,14 @@ class AmountCalculator implements AmountCalculatorInterface
     {
         // Don't calculate twice
         if ($this->cache && null !== $result = $sale->getShipmentResult()) {
+            return $result;
+        }
+
+        // Sample sale case
+        if ($sale->isSample()) {
+            $result = new Amount();
+            $sale->setShipmentResult($result);
+
             return $result;
         }
 
@@ -350,6 +372,8 @@ class AmountCalculator implements AmountCalculatorInterface
      * @param Model\SaleInterface $sale
      *
      * @return float
+     *
+     * @throws Exception\LogicException
      */
     protected function getRealGrossBase(Model\SaleInterface $sale): float
     {

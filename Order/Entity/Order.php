@@ -22,6 +22,11 @@ class Order extends AbstractSale implements Model\OrderInterface
     use Invoice\InvoiceSubjectTrait;
 
     /**
+     * @var bool
+     */
+    protected $sample;
+
+    /**
      * @var CustomerInterface
      */
     protected $originCustomer;
@@ -43,6 +48,24 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->initializeInvoiceSubject();
 
         parent::__construct();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isSample()
+    {
+        return $this->sample;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSample($sample)
+    {
+        $this->sample = (bool)$sample;
+
+        return $this;
     }
 
     /**

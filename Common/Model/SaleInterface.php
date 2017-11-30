@@ -177,6 +177,13 @@ interface SaleInterface extends
     public function setTaxExempt($exempt);
 
     /**
+     * Returns whether the sale contains sample items.
+     *
+     * @return bool
+     */
+    public function isSample();
+
+    /**
      * Returns the net total.
      *
      * @return float

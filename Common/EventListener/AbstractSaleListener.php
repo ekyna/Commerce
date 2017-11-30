@@ -132,6 +132,8 @@ abstract class AbstractSaleListener
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
     public function onInsert(ResourceEventInterface $event)
     {
@@ -148,6 +150,8 @@ abstract class AbstractSaleListener
      * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed.
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
     protected function handleInsert(SaleInterface $sale)
     {
@@ -299,9 +303,11 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Content (item/adjustment/payment/shipment) change event handler.
+     * Content (item/adjustment/payment/shipment/invoice) change event handler.
      *
      * @param ResourceEventInterface $event
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
     public function onContentChange(ResourceEventInterface $event)
     {
@@ -324,6 +330,8 @@ abstract class AbstractSaleListener
      * @param SaleInterface $sale
      *
      * @return bool
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
     protected function handleContentChange(SaleInterface $sale)
     {
@@ -370,8 +378,6 @@ abstract class AbstractSaleListener
      * Initialize event handler.
      *
      * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
      */
     public function onInitialize(ResourceEventInterface $event)
     {
@@ -401,8 +407,6 @@ abstract class AbstractSaleListener
      * Pre create event handler.
      *
      * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
      */
     public function onPreCreate(ResourceEventInterface $event)
     {
@@ -676,6 +680,8 @@ abstract class AbstractSaleListener
      * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed or not.
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
     protected function updateState(SaleInterface $sale)
     {

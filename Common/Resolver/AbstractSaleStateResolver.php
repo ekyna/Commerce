@@ -4,7 +4,9 @@ namespace Ekyna\Component\Commerce\Common\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 
@@ -73,7 +75,15 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
         $changed = false;
 
         if ($subject instanceof PaymentSubjectInterface) {
-            $changed |= $this->paymentStateResolver->resolve($subject);
+            if ($subject->isSample()) {
+                if ($subject->getPaymentState() !== PaymentStates::STATE_COMPLETED) {
+                    $subject->setPaymentState(PaymentStates::STATE_COMPLETED);
+
+                    $changed = true;
+                }
+            } else {
+                $changed |= $this->paymentStateResolver->resolve($subject);
+            }
         }
 
         if ($subject instanceof ShipmentSubjectInterface) {
@@ -81,7 +91,15 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
         }
 
         if ($subject instanceof InvoiceSubjectInterface) {
-            $changed |= $this->invoiceStateResolver->resolve($subject);
+            if ($subject->isSample()) {
+                if ($subject->getInvoiceState() !== InvoiceStates::STATE_INVOICED) {
+                    $subject->setInvoiceState(InvoiceStates::STATE_INVOICED);
+
+                    $changed = true;
+                }
+            } else {
+                $changed |= $this->invoiceStateResolver->resolve($subject);
+            }
         }
 
         $state = $this->resolveState($subject);

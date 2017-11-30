@@ -62,7 +62,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false)
     {
-        $data = $sale->isAutoDiscount() ? $this->discountResolver->resolveSale($sale) : [];
+        $data = $sale->isAutoDiscount() && !$sale->isSample() ? $this->discountResolver->resolveSale($sale) : [];
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence);
     }
@@ -98,7 +98,9 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      */
     public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
     {
-        $data = $item->getSale()->isAutoDiscount() ? $this->discountResolver->resolveSaleItem($item) : [];
+        $sale = $item->getSale();
+
+        $data = $sale->isAutoDiscount() && !$sale->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
@@ -111,7 +113,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $data = [];
 
         // For now, we assume that sale's taxation adjustments are only related to shipment.
-        if (!$sale->isTaxExempt() && null !== $taxable = $sale->getPreferredShipmentMethod()) {
+        if (!($sale->isTaxExempt() || $sale->isSample()) && null !== $taxable = $sale->getPreferredShipmentMethod()) {
             // Resolve taxes
             $data = $this->taxResolver->resolveTaxes($taxable, $sale);
         }
@@ -153,14 +155,12 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $data = [];
 
         $sale = $item->getSale();
-        if (!$item->isPrivate() && !(null === $sale || $sale->isTaxExempt())) {
+        if (!$item->isPrivate() && !(null === $sale || $sale->isTaxExempt() || $sale->isSample())) {
             $data = $this->taxResolver->resolveTaxes($item, $sale);
         }
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $item, $data, $persistence);
     }
-
-
 
     /**
      * Builds the adjustable's adjustments based on the given data and type.

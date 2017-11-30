@@ -110,7 +110,7 @@ abstract class AbstractShipmentListener
         $changed = $this->generateNumber($shipment);
 
         // Total weight
-        $changed |= $this->calculateWeight($shipment);
+        //$changed |= $this->calculateWeight($shipment);
 
         // Completed state
         $changed |= $this->handleCompletedState($shipment);
@@ -142,7 +142,7 @@ abstract class AbstractShipmentListener
         $changed = $this->generateNumber($shipment);
 
         // Total weight
-        $changed |= $this->calculateWeight($shipment);
+        //$changed |= $this->calculateWeight($shipment);
 
         $stateChanged = $this->persistenceHelper->isChanged($shipment, 'state');
 
@@ -282,7 +282,7 @@ abstract class AbstractShipmentListener
      *
      * @return bool Whether the shipment has been generated or not.
      */
-    protected function calculateWeight(ShipmentInterface $shipment)
+    /*protected function calculateWeight(ShipmentInterface $shipment)
     {
         if (0 < $shipment->getWeight()) {
             return false;
@@ -297,7 +297,7 @@ abstract class AbstractShipmentListener
         }
 
         return false;
-    }
+    }*/
 
     /**
      * Handle the 'completed' state.

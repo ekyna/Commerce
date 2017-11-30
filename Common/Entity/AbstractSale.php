@@ -308,6 +308,14 @@ abstract class AbstractSale implements Common\SaleInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isSample()
+    {
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getNetTotal()

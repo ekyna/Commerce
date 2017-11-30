@@ -87,6 +87,42 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
+     * @inheritDoc
+     */
+    protected function isDiscountUpdateNeeded(SaleInterface $sale)
+    {
+        if ($this->persistenceHelper->isChanged($sale, 'sample')) {
+            return true;
+        }
+
+        return parent::isDiscountUpdateNeeded($sale);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function isTaxationUpdateNeeded(SaleInterface $sale)
+    {
+        if ($this->persistenceHelper->isChanged($sale, 'sample')) {
+            return true;
+        }
+
+        return parent::isTaxationUpdateNeeded($sale);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale)
+    {
+        if ($this->persistenceHelper->isChanged($sale, 'sample')) {
+            return true;
+        }
+
+        return parent::isShipmentTaxationUpdateNeeded($sale);
+    }
+
+    /**
      * @inheritdoc
      */
     protected function updateState(SaleInterface $sale)

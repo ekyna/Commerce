@@ -33,6 +33,17 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         $invoiceState = $sale->getInvoiceState();
 
         if ($sale->hasItems()) {
+            // Sample sale case
+            if ($sale->isSample()) {
+                // COMPLETED If fully returned
+                if (ShipmentStates::STATE_RETURNED === $shipmentState) {
+                    return OrderStates::STATE_COMPLETED;
+                }
+
+                // ACCEPTED
+                return OrderStates::STATE_ACCEPTED;
+            }
+
             // COMPLETED If fully Paid / Shipped / Invoiced
             if (
                 PaymentStates::STATE_COMPLETED === $paymentState &&

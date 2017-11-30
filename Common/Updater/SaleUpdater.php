@@ -261,6 +261,7 @@ class SaleUpdater implements SaleUpdaterInterface
         $currency = $sale->getCurrency()->getCode();
 
         $sale->clearResults();
+
         $result = $this->amountCalculator->calculateSale($sale);
 
         if (0 != Money::compare($result->getBase(), $sale->getNetTotal(), $currency)) {
