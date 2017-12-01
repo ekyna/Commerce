@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Invoice\Entity;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
 use Ekyna\Component\Commerce\Document\Model\Document;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -21,6 +22,11 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
      * @var int
      */
     protected $id;
+
+    /**
+     * @var PaymentMethodInterface
+     */
+    protected $paymentMethod;
 
 
     /**
@@ -47,5 +53,23 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPaymentMethod($method = null)
+    {
+        $this->paymentMethod = $method;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPaymentMethod()
+    {
+        return $this->paymentMethod;
     }
 }

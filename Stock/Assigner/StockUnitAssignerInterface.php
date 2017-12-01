@@ -44,7 +44,7 @@ interface StockUnitAssignerInterface
 
     /**
      * Applies the shipment item quantity change to stock units
-     * by updating the stock assignment"s shipped quantities.
+     * by updating the stock assignment's shipped quantities.
      *
      * @param ShipmentItemInterface $item
      */
@@ -57,4 +57,28 @@ interface StockUnitAssignerInterface
      * @param ShipmentItemInterface $item
      */
     public function detachShipmentItem(ShipmentItemInterface $item);
+
+    /**
+     * Assigns the invoice line to stock units
+     * by updating the stock assignments's sold quantities.
+     *
+     * @param InvoiceLineInterface $line
+     */
+    public function assignInvoiceLine(InvoiceLineInterface $line);
+
+    /**
+     * Applies the invoice line quantity change to stock units
+     * by updating the stock assignment's sold quantities.
+     *
+     * @param InvoiceLineInterface $line
+     */
+    public function applyInvoiceLine(InvoiceLineInterface $line);
+
+    /**
+     * Detaches the invoice line from stock units
+     * by updating the stock assignment's sold quantities.
+     *
+     * @param InvoiceLineInterface $line
+     */
+    public function detachInvoiceLine(InvoiceLineInterface $line);
 }

@@ -32,6 +32,10 @@
             <gedmo:timestampable on="update"/>
         </field>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface" field="paymentMethod">
+            <join-column name="payment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
     </mapped-superclass>
 
 </doctrine-mapping>

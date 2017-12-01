@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
@@ -19,15 +20,24 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
      */
     private $subjectHelper;
 
+    /**
+     * @var InvoiceCalculatorInterface
+     */
+    private $invoiceCalculator;
+
 
     /**
      * Constructor.
      *
-     * @param SubjectHelperInterface $subjectHelper
+     * @param SubjectHelperInterface     $subjectHelper
+     * @param InvoiceCalculatorInterface $invoiceCalculator
      */
-    public function __construct(SubjectHelperInterface $subjectHelper)
-    {
+    public function __construct(
+        SubjectHelperInterface $subjectHelper,
+        InvoiceCalculatorInterface $invoiceCalculator
+    ) {
         $this->subjectHelper = $subjectHelper;
+        $this->invoiceCalculator = $invoiceCalculator;
     }
 
     /**
@@ -37,6 +47,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     {
         $saleItem = $item->getSaleItem();
 
+        /** @var Common\SaleItemInterface $saleItem */
         if (!$this->hasStockableSubject($saleItem)) {
             return INF;
         }
@@ -123,9 +134,11 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
 
         $quantity = $saleItem->getTotalQuantity();
 
-        /** @var Shipment\ShipmentSubjectInterface $sale */
+        //$quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
+
         $sale = $saleItem->getSale();
 
+        /** @var Shipment\ShipmentSubjectInterface $sale */
         foreach ($sale->getShipments() as $shipment) {
             // Skip returns and this shipment
             if ($shipment->isReturn() || $shipment === $item->getShipment()) {
@@ -294,6 +307,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         if (!$item->isCompound()) {
             $quantities[$item->getId()] = [
                 'sold'     => $item->getTotalQuantity(),
+                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
             ];
@@ -313,8 +327,9 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
      *
      * @return bool
      */
-    private function hasStockableSubject(Common\SaleItemInterface $saleItem)
-    {
+    private function hasStockableSubject(
+        Common\SaleItemInterface $saleItem
+    ) {
         if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
             return false;
         }

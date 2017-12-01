@@ -142,6 +142,7 @@ class AmountCalculatorTest extends AbstractAmountTest
     {
         $item = Fixtures::createOrderItem(5, 12.34)->setOrder(Fixtures::createOrder());
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 12.34, 61.70, 0.00, 61.70, 0.00, 61.70);
@@ -154,6 +155,7 @@ class AmountCalculatorTest extends AbstractAmountTest
     {
         $item = Fixtures::createOrderItem(5, 12.34, [], [5.5])->setOrder(Fixtures::createOrder());
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $result = $item->getResult();
@@ -171,6 +173,7 @@ class AmountCalculatorTest extends AbstractAmountTest
     {
         $item = Fixtures::createOrderItem(5, 12.34, [], [5.5, 7])->setOrder(Fixtures::createOrder());
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $result = $item->getResult();
@@ -189,6 +192,7 @@ class AmountCalculatorTest extends AbstractAmountTest
     {
         $item = Fixtures::createOrderItem(5, 12.34, [5])->setOrder(Fixtures::createOrder());
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $result = $item->getResult();
@@ -206,6 +210,7 @@ class AmountCalculatorTest extends AbstractAmountTest
     {
         $item = Fixtures::createOrderItem(5, 12.34, [5, 15])->setOrder(Fixtures::createOrder());
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $result = $item->getResult();
@@ -224,6 +229,7 @@ class AmountCalculatorTest extends AbstractAmountTest
     {
         $item = Fixtures::createOrderItem(5, 12.34, [5, 15], [5.5, 7])->setOrder(Fixtures::createOrder());
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 12.34, 61.70, 12.34, 49.36, 6.17, 55.53);
@@ -251,6 +257,7 @@ class AmountCalculatorTest extends AbstractAmountTest
 
         $this->expectException(LogicException::class);
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
     }
 
@@ -267,6 +274,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $public2 = Fixtures::createOrderItem(8, 47.99, [10], [5.5]);
         $item->addChild($public2);
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 32.59, 97.77, 6.84, 90.93, 18.19, 109.12);
@@ -290,6 +298,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $private2 = Fixtures::createOrderItem(4, 18.99)->setPrivate(true);
         $item->addChild($private2);
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 237.72, 713.16, 71.32, 641.84, 35.30, 677.14);
@@ -315,6 +324,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $private22 = Fixtures::createOrderItem(2, 3.99)->setPrivate(true);
         $private2->addChild($private22);
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 293.6, 880.8, 88.08, 792.72, 43.60, 836.32);
@@ -335,6 +345,7 @@ class AmountCalculatorTest extends AbstractAmountTest
 
         // TODO Add child to public 2
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 0, 0, 0, 0, 0, 0);
@@ -358,6 +369,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $private2 = Fixtures::createOrderItem(3, 18.99)->setPrivate(true);
         $item->addChild($private2);
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 440.89, 1322.67, 132.27, 1190.40, 65.47, 1255.87);
@@ -377,8 +389,11 @@ class AmountCalculatorTest extends AbstractAmountTest
         $private2 = Fixtures::createOrderItem(8, 47.99)->setPrivate(true);
         $item->addChild($private2);
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 445.62, 1336.86, 200.53, 1136.33, 227.27, 1363.6);
     }
+
+    // TODO Sample sale case tests
 }

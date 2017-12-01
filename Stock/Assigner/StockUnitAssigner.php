@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
@@ -184,8 +185,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             } else {
                 $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
             }
-            // TODO Should be relative ? (multiple shipment items may point to the same sale item)
-            //$quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, false);
         }
 
         // Remaining quantity
@@ -232,7 +231,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new StockLogicException('Failed to assign shipment item.');
+            throw new StockLogicException('Failed to apply shipment item.');
         }
     }
 
@@ -259,13 +258,118 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             } else {
                 $quantity += $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
             }
-            // TODO Should be relative ? (multiple shipment items may point to the same sale item)
-            //$result += $this->assignmentUpdater->updateShipped($assignment, 0, false);
         }
 
         // Remaining quantity
         if (0 != $quantity) {
             throw new StockLogicException('Failed to detach shipment item.');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function assignInvoiceLine(InvoiceLineInterface $line)
+    {
+        // Abort if not credit
+        if (!InvoiceTypes::isCredit($line->getInvoice())) {
+            return;
+        }
+
+        // Abort if not supported
+        if (null === $assignments = $this->getAssignments($line)) {
+            return;
+        }
+
+        // TODO sort assignments ?
+
+        $quantity = $line->getQuantity();
+
+        // TODO Use packaging format
+
+        foreach ($assignments as $assignment) {
+            $quantity += $this->assignmentUpdater->updateSold($assignment, -$quantity, true);
+        }
+
+        // Remaining quantity
+        if (0 != $quantity) {
+            throw new StockLogicException('Failed to assign invoice line.');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function applyInvoiceLine(InvoiceLineInterface $line)
+    {
+        // Abort if not credit
+        if (!InvoiceTypes::isCredit($line->getInvoice())) {
+            return;
+        }
+
+        // Abort if not supported
+        if (null === $assignments = $this->getAssignments($line)) {
+            return;
+        }
+
+        // Resolve quantity change
+        if (!$this->persistenceHelper->isChanged($line, 'quantity')) {
+            return;
+        }
+        list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'quantity');
+        if (0 == $quantity = $new - $old) {
+            return;
+        }
+
+        // TODO sort assignments ? (reverse for debit)
+
+        // Update assignments
+        foreach ($assignments as $assignment) {
+            $quantity += $this->assignmentUpdater->updateSold($assignment, -$quantity, true);
+
+            if (0 == $quantity) {
+                return;
+            }
+        }
+
+        // Remaining quantity
+        if (0 != $quantity) {
+            throw new StockLogicException('Failed to apply invoice line.');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function detachInvoiceLine(InvoiceLineInterface $line)
+    {
+        // Abort if not credit
+        // TODO This might be a problem :
+        // we should never call this method when invoice is null
+        // cause we won't be able to test if invoice is credit
+        $invoice = $line->getInvoice();
+        if (null !== $invoice && !InvoiceTypes::isCredit($line->getInvoice())) {
+            return;
+        }
+
+        // Abort if not supported
+        if (null === $assignments = $this->getAssignments($line)) {
+            return;
+        }
+
+        // TODO sort assignments ? (reverse for debit)
+
+        // TODO Use packaging format
+        $quantity = $line->getQuantity();
+
+        // Update assignments
+        foreach ($assignments as $assignment) {
+            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity, true);
+        }
+
+        // Remaining quantity
+        if (0 != $quantity) {
+            throw new StockLogicException('Failed to detach invoice line.');
         }
     }
 

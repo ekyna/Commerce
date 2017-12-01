@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
-use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 

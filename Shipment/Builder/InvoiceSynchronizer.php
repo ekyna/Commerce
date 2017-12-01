@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Builder\InvoiceBuilderInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -57,6 +58,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
     public function synchronize(Shipment\ShipmentInterface $shipment)
     {
         // Abort if auto invoicing is disabled
+        // (We do not remove linked invoice)
         if (!$shipment->isAutoInvoice()) {
             return;
         }
@@ -78,27 +80,16 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         if ($this->persistenceHelper->isScheduledForRemove($shipment) || !Shipment\ShipmentStates::isDone($shipment)) {
             if (null !== $invoice) {
                 $sale->removeInvoice($invoice);
-                $this->persistenceHelper->remove($invoice, true);
+                if (null !== $invoice->getId()) {
+                    $this->persistenceHelper->remove($invoice, true);
+                }
             }
 
             return;
         }
 
-        // Create the shipment invoice if needed
         if (null === $invoice) {
-            $type = $shipment->isReturn() ? Invoice\InvoiceTypes::TYPE_CREDIT : Invoice\InvoiceTypes::TYPE_INVOICE;
-            $invoice = $this
-                ->invoiceBuilder
-                ->getSaleFactory()
-                ->createInvoiceForSale($sale)
-                ->setSale($sale)
-                ->setShipment($shipment)
-                ->setType($type);
-
-            // Prevent 'new entity found through line -> invoice relationship'
-            $this->persistenceHelper->persistAndRecompute($invoice, false);
-            // Persist shipment -> invoice association
-            $this->persistenceHelper->persistAndRecompute($shipment, false);
+            throw new RuntimeException("Shipment invoice must be set at this point");
         }
 
         $this->checkShipmentInvoice($invoice);
@@ -107,9 +98,9 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         $changed |= $this->feedShipmentInvoice($invoice);
 
-        if ($changed) {
-            //$this->documentCalculator->calculate($invoice);
+        // TODO validate ?
 
+        if ($changed) {
             // Persist all lines has the may have been updated.
             foreach ($invoice->getLines() as $line) {
                 $this->persistenceHelper->persistAndRecompute($line, true);
@@ -156,8 +147,6 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
      * @param Invoice\InvoiceInterface $invoice
      *
      * @return bool Whether the invoice has been changed
-     *
-     * @throws LogicException
      */
     private function purgeShipmentInvoice(Invoice\InvoiceInterface $invoice)
     {
@@ -220,8 +209,6 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
      * @param Invoice\InvoiceInterface $invoice
      *
      * @return bool Whether the invoice has been changed
-     *
-     * @throws LogicException
      */
     private function feedShipmentInvoice(Invoice\InvoiceInterface $invoice)
     {

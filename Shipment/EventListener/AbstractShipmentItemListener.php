@@ -39,11 +39,11 @@ abstract class AbstractShipmentItemListener
     /**
      * Sets the stock assigner.
      *
-     * @param StockUnitAssignerInterface $stockUnitAssigner
+     * @param StockUnitAssignerInterface $assigner
      */
-    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner)
+    public function setStockUnitAssigner(StockUnitAssignerInterface $assigner)
     {
-        $this->stockUnitAssigner = $stockUnitAssigner;
+        $this->stockUnitAssigner = $assigner;
     }
 
     /**
@@ -111,10 +111,11 @@ abstract class AbstractShipmentItemListener
     public function onDelete(ResourceEventInterface $event)
     {
         $item = $this->getShipmentItemFromEvent($event);
-        $shipment = $item->getShipment();
-        // TODO get shipment from change set if null ?
 
-        //$this->preventOrderItemChange($item);
+        // Get shipment from change set if null
+        if (null === $shipment = $item->getShipment()) {
+            $shipment = $this->persistenceHelper->getChangeSet($item, 'shipment')[0];
+        }
 
         // If shipment is in a stockable state and quantity has changed
         // TODO Or shipment was in stockable state (watch state change set) ?

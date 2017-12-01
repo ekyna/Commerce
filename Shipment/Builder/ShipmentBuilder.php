@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Shipment\Builder;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
@@ -48,8 +49,21 @@ class ShipmentBuilder implements ShipmentBuilderInterface
             throw new LogicException("Sale must be set.");
         }
 
-        if (null !== $method = $sale->getPreferredShipmentMethod()) {
+        // If shipment method is not defined and preferred method if defined
+        if (null === $shipment->getMethod() && null !== $method = $sale->getPreferredShipmentMethod()) {
+            // Set preferred method
             $shipment->setMethod($method);
+        }
+
+        // Create invoice if not exists (will be removed by the synchronizer if needed)
+        if (null === $shipment->getInvoice()) {
+            $type = $shipment->isReturn() ? InvoiceTypes::TYPE_CREDIT : InvoiceTypes::TYPE_INVOICE;
+            $this
+                ->factory
+                ->createInvoiceForSale($sale)
+                ->setSale($sale)
+                ->setShipment($shipment)
+                ->setType($type);
         }
 
         foreach ($sale->getItems() as $saleItem) {

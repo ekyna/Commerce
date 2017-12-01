@@ -92,10 +92,17 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
             throw new InvalidArgumentException("Expected instance of " . Model\OrderShipmentInterface::class);
         }
 
-        $this->shipment = $shipment;
+        if ($this->shipment !== $shipment) {
+            $previous = $this->shipment;
+            $this->shipment = $shipment;
 
-        if ($this !== $shipment->getInvoice()) {
-            $shipment->setInvoice($this);
+            if (null !== $previous) {
+                $this->shipment->setInvoice(null);
+            }
+
+            if (null !== $shipment) {
+                $shipment->setInvoice($this);
+            }
         }
 
         return $this;

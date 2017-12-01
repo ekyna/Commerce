@@ -60,11 +60,11 @@ abstract class AbstractShipmentListener
     /**
      * Sets the number generator.
      *
-     * @param NumberGeneratorInterface $numberGenerator
+     * @param NumberGeneratorInterface $generator
      */
-    public function setNumberGenerator(NumberGeneratorInterface $numberGenerator)
+    public function setNumberGenerator(NumberGeneratorInterface $generator)
     {
-        $this->numberGenerator = $numberGenerator;
+        $this->numberGenerator = $generator;
     }
 
     /**
@@ -80,11 +80,11 @@ abstract class AbstractShipmentListener
     /**
      * Sets the stock assigner.
      *
-     * @param StockUnitAssignerInterface $stockUnitAssigner
+     * @param StockUnitAssignerInterface $assigner
      */
-    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner)
+    public function setStockUnitAssigner(StockUnitAssignerInterface $assigner)
     {
-        $this->stockUnitAssigner = $stockUnitAssigner;
+        $this->stockUnitAssigner = $assigner;
     }
 
     /**
@@ -214,6 +214,31 @@ abstract class AbstractShipmentListener
     }
 
     /**
+     * Pre create event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onPreCreate(ResourceEventInterface $event)
+    {
+        $shipment = $this->getShipmentFromEvent($event);
+
+        $invoice = $shipment->getInvoice();
+
+        if ($shipment->isAutoInvoice() && null !== $invoice) {
+            $this->persistenceHelper->getManager()->persist($invoice);
+        } else {
+            $invoice->setShipment(null);
+            return;
+        }
+
+        $sale = $shipment->getSale();
+
+        // Pre load sale invoice collection
+        /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface $sale */
+        $sale->getInvoices()->toArray();
+    }
+
+    /**
      * Pre update event handler.
      *
      * @param ResourceEventInterface $event
@@ -222,7 +247,11 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        if (!$shipment->isAutoInvoice()) {
+        $invoice = $shipment->getInvoice();
+
+        if ($shipment->isAutoInvoice() && null !== $invoice) {
+            $this->persistenceHelper->getManager()->persist($invoice);
+        } else {
             return;
         }
 

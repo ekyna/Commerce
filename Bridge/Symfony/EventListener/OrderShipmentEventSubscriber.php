@@ -23,6 +23,7 @@ class OrderShipmentEventSubscriber extends OrderShipmentListener implements Even
             OrderShipmentEvents::UPDATE         => ['onUpdate', 0],
             OrderShipmentEvents::DELETE         => ['onDelete', 0],
             OrderShipmentEvents::CONTENT_CHANGE => ['onContentChange', 0],
+            OrderShipmentEvents::PRE_CREATE     => ['onPreCreate', 0],
             OrderShipmentEvents::PRE_UPDATE     => ['onPreUpdate', 0],
             OrderShipmentEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];

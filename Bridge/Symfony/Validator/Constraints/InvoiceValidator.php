@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -31,12 +32,24 @@ class InvoiceValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, Invoice::class);
         }
 
+        // If credit, must have a payment method
+        if (InvoiceTypes::isCredit($invoice) && null === $invoice->getPaymentMethod()) {
+            $this
+                ->context
+                ->buildViolation($constraint->null_credit_method)
+                ->atPath('paymentMethod')
+                ->addViolation();
+        }
+
+        // Can't have no good lines
         if (empty($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD))) {
             $this
                 ->context
                 ->buildViolation($constraint->empty_good_lines)
                 ->atPath('lines')
                 ->addViolation();
+
+            return;
         }
 
         // [ Invoice <-> Sale <-> Shipment ] integrity
@@ -48,6 +61,8 @@ class InvoiceValidator extends ConstraintValidator
                     ->setInvalidValue($shipment)
                     ->atPath('shipment')
                     ->addViolation();
+
+                return;
             }
         }
     }

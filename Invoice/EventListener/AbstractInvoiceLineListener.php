@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model;
+use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -19,6 +20,11 @@ abstract class AbstractInvoiceLineListener
      */
     protected $persistenceHelper;
 
+    /**
+     * @var StockUnitAssignerInterface
+     */
+    protected $stockUnitAssigner;
+
 
     /**
      * Sets the persistence helper.
@@ -31,6 +37,16 @@ abstract class AbstractInvoiceLineListener
     }
 
     /**
+     * Sets the stock assigner.
+     *
+     * @param StockUnitAssignerInterface $stockUnitAssigner
+     */
+    public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner)
+    {
+        $this->stockUnitAssigner = $stockUnitAssigner;
+    }
+
+    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -38,6 +54,8 @@ abstract class AbstractInvoiceLineListener
     public function onInsert(ResourceEventInterface $event)
     {
         $line = $this->getInvoiceLineFromEvent($event);
+
+        $this->stockUnitAssigner->assignInvoiceLine($line);
 
         $this->scheduleInvoiceContentChangeEvent($line->getInvoice());
     }
@@ -53,6 +71,8 @@ abstract class AbstractInvoiceLineListener
 
         $this->preventForbiddenChange($line);
 
+        $this->stockUnitAssigner->applyInvoiceLine($line);
+
         // If invoice item quantity has changed
         if ($this->persistenceHelper->isChanged($line, 'quantity')) {
             $this->scheduleInvoiceContentChangeEvent($line->getInvoice());
@@ -66,10 +86,16 @@ abstract class AbstractInvoiceLineListener
      */
     public function onDelete(ResourceEventInterface $event)
     {
-        $item = $this->getInvoiceLineFromEvent($event);
-        $invoice = $item->getInvoice();
+        $line = $this->getInvoiceLineFromEvent($event);
 
-        // TODO get invoice from change set if null ?
+        // Get invoice from change set if null
+        if (null === $invoice = $line->getInvoice()) {
+            $invoice = $this->persistenceHelper->getChangeSet($line, 'invoice')[0];
+        }
+
+        if (Model\InvoiceTypes::isCredit($invoice)) {
+            $this->stockUnitAssigner->detachInvoiceLine($line);
+        }
 
         $this->scheduleInvoiceContentChangeEvent($invoice);
     }

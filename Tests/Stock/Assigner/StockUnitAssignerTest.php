@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Tests\BaseTestCase;
 class StockUnitAssignerTest extends BaseTestCase
 {
     // TODO Test when both parent and children change
+    // TODO Test with credit invoices
 
     public function test_assignItem()
     {

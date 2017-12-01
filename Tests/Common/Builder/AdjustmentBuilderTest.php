@@ -107,6 +107,8 @@ class AdjustmentBuilderTest extends BaseTestCase
         $this->markTestIncomplete();
     }
 
+    // TODO Sample sale case tests
+
     /**
      * Makes assertions on the given discount adjustment.
      *

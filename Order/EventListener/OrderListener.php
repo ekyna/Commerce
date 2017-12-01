@@ -52,9 +52,24 @@ class OrderListener extends AbstractSaleListener
             /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface $shipment */
             foreach ($shipments as $shipment) {
                 if (!ShipmentStates::isDeletableState($shipment->getState())) {
-                    throw new IllegalOperationException(); // TODO reason message
+                    throw new IllegalOperationException(); // TODO Reason message
                 }
             }
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function onPreUpdate(ResourceEventInterface $event)
+    {
+        /** @var OrderInterface $sale */
+        $sale = $this->getSaleFromEvent($event);
+
+        if ($sale->isSample() && ($sale->hasPayments() || $sale->hasInvoices())) {
+            throw new IllegalOperationException( // TODO Translation
+                "Order with payments or invoices can't be turned into sample order."
+            );
         }
     }
 

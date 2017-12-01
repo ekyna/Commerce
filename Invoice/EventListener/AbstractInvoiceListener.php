@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilderInterface;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
@@ -179,7 +180,7 @@ abstract class AbstractInvoiceListener
     {
         $invoice = $this->getInvoiceFromEvent($event);
 
-        $this->updateCustomerCreditBalance($invoice);
+        $this->updateCustomerBalance($invoice);
 
         /** @var SaleInterface|InvoiceSubjectInterface $sale */
         $sale = $invoice->getSale();
@@ -202,7 +203,7 @@ abstract class AbstractInvoiceListener
                 $this->persistenceHelper->persistAndRecompute($invoice, false);
             }
 
-            $this->updateCustomerCreditBalance($invoice);
+            $this->updateCustomerBalance($invoice);
         }
 
         $this->scheduleSaleContentChangeEvent($invoice->getSale());
@@ -244,11 +245,11 @@ abstract class AbstractInvoiceListener
     }
 
     /**
-     * Updates the customer credit balance
+     * Updates the customer balance
      *
      * @param InvoiceInterface $invoice
      */
-    protected function updateCustomerCreditBalance(InvoiceInterface $invoice)
+    protected function updateCustomerBalance(InvoiceInterface $invoice)
     {
         // Abort if not credit
         if (!InvoiceTypes::isCredit($invoice)) {
@@ -260,18 +261,47 @@ abstract class AbstractInvoiceListener
             return;
         }
 
+        $methodCs = $this->persistenceHelper->getChangeSet($invoice, 'paymentMethod');
+        $amountCs = $this->persistenceHelper->getChangeSet($invoice, 'grandTotal');
+
+        // Debit grand total if invoice is removed
         // TODO Multiple call will credit too much !
         if ($this->persistenceHelper->isScheduledForRemove($invoice)) {
-            $this->customerUpdater->updateCreditBalance($customer, -$invoice->getGrandTotal(), true);
+            $method = empty($methodCs) ? $invoice->getPaymentMethod() : $methodCs[0];
+            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[0];
+
+            if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
+                $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
+            }
 
             return;
         }
 
-        if (empty($cs = $this->persistenceHelper->getChangeSet($invoice, 'grandTotal'))) {
+        // Abort if nothing has changed
+        if (empty($methodCs) && empty($amountCs)) {
             return;
         }
 
-        if (0 != $amount = $cs[1] - $cs[0]) { // old - new
+        // Debit old method customer balance
+        /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
+        if (!empty($methodCs) && null !== $method = $methodCs[0]) {
+            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[0];
+
+            if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
+                $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
+            }
+        }
+
+        // Credit new method customer balance
+        if (empty($methodCs)) {
+            $method = $invoice->getPaymentMethod();
+            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[1] - $amountCs[0];
+        } else {
+            /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
+            $method = $methodCs[1];
+            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[1];
+        }
+        if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
             $this->customerUpdater->updateCreditBalance($customer, $amount, true);
         }
     }

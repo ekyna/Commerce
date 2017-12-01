@@ -5,16 +5,13 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * Class Invoice
+ * Class Order
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Invoice extends Constraint
+class Order extends Constraint
 {
-    public $hierarchy_integrity = 'ekyna_commerce.invoice.hierarchy_integrity';
-    public $empty_good_lines    = 'ekyna_commerce.invoice.empty_good_lines';
-    public $null_credit_method  = 'ekyna_commerce.invoice.null_credit_method';
-
+    public $sample_with_payments_or_invoices = 'ekyna_commerce.order.sample_with_payments_or_invoices';
 
     /**
      * @inheritDoc

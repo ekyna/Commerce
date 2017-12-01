@@ -55,7 +55,7 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             // TODO Use packaging format
 
             // If shipped equals sold, item is fully shipped
-            if ($q['sold'] == $q['shipped']) {
+            if ($q['sold'] == $q['shipped'] - $q['returned']) {
                 $shippedCount++;
                 continue;
             }

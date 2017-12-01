@@ -31,6 +31,7 @@
         <property name="completedAt">
             <constraint name="DateTime"/>
         </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Order"/>
     </class>
 
     <!--<class name="Ekyna\Component\Commerce\Order\Entity\OrderAddress">
