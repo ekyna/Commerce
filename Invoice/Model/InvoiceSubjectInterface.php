@@ -26,6 +26,22 @@ interface InvoiceSubjectInterface
     public function setInvoiceTotal($total);
 
     /**
+     * Returns the credits total.
+     *
+     * @return float
+     */
+    public function getCreditTotal();
+
+    /**
+     * Sets the credit total.
+     *
+     * @param float $total
+     *
+     * @return $this|InvoiceSubjectInterface
+     */
+    public function setCreditTotal($total);
+
+    /**
      * Returns the invoice state.
      *
      * @return string

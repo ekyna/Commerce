@@ -26,9 +26,9 @@ class Quote extends AbstractSale implements Model\QuoteInterface
      */
     public function __construct()
     {
-        $this->state = Model\QuoteStates::STATE_NEW;
-
         parent::__construct();
+
+        $this->state = Model\QuoteStates::STATE_NEW;
     }
 
     /**

@@ -25,6 +25,7 @@
 
         <field name="shipmentState" column="shipment_state" type="string" length="16"/>
         <field name="invoiceTotal" column="invoice_total" type="decimal" precision="12" scale="5"/>
+        <field name="creditTotal" column="credit_total" type="decimal" precision="12" scale="5"/>
         <field name="invoiceState" column="invoice_state" type="string" length="16"/>
         <field name="sample" column="is_sample" type="boolean"/>
         <field name="completedAt" column="completed_at" type="datetime" nullable="true"/>

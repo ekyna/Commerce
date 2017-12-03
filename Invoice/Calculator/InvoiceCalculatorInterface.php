@@ -58,13 +58,40 @@ interface InvoiceCalculatorInterface
     public function calculateCreditedQuantity(Common\SaleItemInterface $item);
 
     /**
-     * Calculates the subject's invoice total.
+     * Calculates the canceled quantity for the given sale item.
+     *
+     * @param Common\SaleItemInterface $item
+     *
+     * @return float
+     */
+    public function calculateCanceledQuantity(Common\SaleItemInterface $item);
+
+    /**
+     * Calculates the total of all subject's invoices.
      *
      * @param Invoice\InvoiceSubjectInterface $subject
      *
      * @return float
      */
-    public function calculateTotal(Invoice\InvoiceSubjectInterface $subject);
+    public function calculateInvoiceTotal(Invoice\InvoiceSubjectInterface $subject);
+
+    /**
+     * Calculates the total of all subject's credits.
+     *
+     * @param Invoice\InvoiceSubjectInterface $subject
+     *
+     * @return float
+     */
+    public function calculateCreditTotal(Invoice\InvoiceSubjectInterface $subject);
+
+    /**
+     * Calculates the total of all subject's credits which are not linked to return shipment.
+     *
+     * @param Invoice\InvoiceSubjectInterface $subject
+     *
+     * @return float
+     */
+    public function calculateCanceledTotal(Invoice\InvoiceSubjectInterface $subject);
 
     /**
      * Builds the invoice quantity map.

@@ -305,6 +305,46 @@ class Amount
     }
 
     /**
+     * Rounds the tax adjustments amounts.
+     *
+     * @param string $currency
+     */
+    public function roundTaxAdjustments(string $currency): void
+    {
+        $old = $this->taxes;
+
+        // Sort by amount
+        usort($old, function(Adjustment $a, Adjustment $b):int {
+            if ($a->getAmount() == $b->getAmount()) {
+                return 0;
+            }
+
+            return $a->getAmount() > $b->getAmount() ? 1 : -1;
+        });
+
+        $new = [];
+        $total = 0;
+        foreach ($old as $tax) {
+            $amount = Money::round($tax->getAmount(), $currency);
+
+            // Fix overflow
+            if ($total + $amount > $this->tax) {
+                $amount = $this->tax - $total;
+            }
+            $total += $amount;
+
+            $new[] = new Adjustment($tax->getName(), $amount, $tax->getRate());
+        }
+
+        // Sort by rate
+        usort($new, function(Adjustment $a, Adjustment $b):int {
+            return $a->getRate() > $b->getRate() ? 1 : -1;
+        });
+
+        $this->taxes = $new;
+    }
+
+    /**
      * Creates the final result from the given gross result.
      *
      * @param Amount $gross

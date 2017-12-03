@@ -99,17 +99,17 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
                     ->setSaleItem($item)
                     ->setDesignation($item->getDesignation())
                     ->setDescription($item->getDescription())
-                    ->setReference($item->getReference())
-                    ->setQuantity($item->getTotalQuantity());
+                    ->setReference($item->getReference());
 
                 $document->addLine($line);
             }
 
             if (!$item->isCompound()) {
                 $expected = Invoice\InvoiceTypes::isInvoice($document)
-                    ? $this->shipmentCalculator->calculateShippedQuantity($item)
+                    ? $this->shipmentCalculator->calculateShippedQuantity($item) // TODO Test
                     : 0;
 
+                // TODO minus shipped quantity (credit case, without linked return ?)
                 $available = $this->invoiceCalculator->calculateMaxQuantity($line);
 
                 if (0 < $available) {

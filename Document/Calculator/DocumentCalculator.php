@@ -83,6 +83,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
         // Rounds tax totals.
         $gross->roundTax($currency);
         $final->roundTax($currency);
+        $final->roundTaxAdjustments($currency);
 
         // Document goods base (after discounts)
         if ($document->getGoodsBase() !== $gross->getBase()) {

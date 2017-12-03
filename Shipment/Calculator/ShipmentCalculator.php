@@ -53,15 +53,20 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         }
 
         /**
-         * Calculates the shipped quantity by ignoring returns, canceled shipments and this shipment
+         * Credited quantity
          */
-        $shippedQuantity = 0;
+        $creditedQuantity = $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
+
+        /**
+         * Calculates the shipped and returned quantities by ignoring canceled shipments and this shipment
+         */
+        $shippedQuantity = $returnedQuantity = 0;
 
         /** @var Shipment\ShipmentSubjectInterface $sale */
         $sale = $saleItem->getSale();
         foreach ($sale->getShipments() as $shipment) {
             // Skip returns and this shipment
-            if ($shipment->isReturn() || $shipment === $item->getShipment()) {
+            if ($shipment === $item->getShipment()) {
                 continue;
             }
 
@@ -73,7 +78,11 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
             // Find matching sale item
             foreach ($shipment->getItems() as $shipmentItem) {
                 if ($shipmentItem->getSaleItem() === $saleItem) {
-                    $shippedQuantity += $shipmentItem->getQuantity();
+                    if ($shipment->isReturn()) {
+                        $returnedQuantity += $shipmentItem->getQuantity();
+                    } else {
+                        $shippedQuantity += $shipmentItem->getQuantity();
+                    }
                 }
             }
         }
@@ -96,6 +105,9 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
             }
         }
 
+        // Original (before credit) assignments sold quantity TODO Test
+        $assignmentSold += min($creditedQuantity, $returnedQuantity);
+
         /**
          * Calculates the assigned stock units's available quantity
          * by ignoring this sale item's assignments.
@@ -114,6 +126,10 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
                 $stockUnitShipped += $assignment->getShippedQuantity();
             }
         }
+
+        // Original (before credit) stock units sold quantity TODO Test
+        $stockUnitSold += min($creditedQuantity, $returnedQuantity);
+
         $stockUnitAvailable = min($stockUnitReceived, $stockUnitSold) - $stockUnitShipped;
         if (0 > $stockUnitAvailable) $stockUnitAvailable = 0;
 
@@ -132,7 +148,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
 
         // TODO return zero if not shippable
 
-        $quantity = $saleItem->getTotalQuantity();
+        $quantity = $saleItem->getTotalQuantity() - $this->invoiceCalculator->calculateCanceledQuantity($saleItem);
 
         //$quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
 
@@ -238,13 +254,13 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         $quantity = 0;
 
         foreach ($sale->getShipments() as $shipment) {
-            if (!Shipment\ShipmentStates::isDone($shipment)) {
+            if (!(!$shipment->isReturn() && Shipment\ShipmentStates::isDone($shipment))) {
                 continue;
             }
 
             foreach ($shipment->getItems() as $line) {
                 if ($line->getSaleItem() === $saleItem) {
-                    $quantity += $shipment->isReturn() ? -$line->getQuantity() : $line->getQuantity();
+                    $quantity += $line->getQuantity();
                 }
             }
         }
@@ -307,9 +323,9 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         if (!$item->isCompound()) {
             $quantities[$item->getId()] = [
                 'sold'     => $item->getTotalQuantity(),
-                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
+                'canceled' => $this->invoiceCalculator->calculateCanceledQuantity($item),
             ];
         }
 

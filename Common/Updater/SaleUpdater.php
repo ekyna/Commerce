@@ -325,7 +325,7 @@ class SaleUpdater implements SaleUpdaterInterface
      *
      * @param SaleInterface $sale
      *
-     * @return bool
+     * @return bool Whether the sale has been changed or not.
      */
     protected function updateInvoiceTotal(SaleInterface $sale)
     {
@@ -333,14 +333,23 @@ class SaleUpdater implements SaleUpdaterInterface
             return false;
         }
 
-        $total = $this->invoiceCalculator->calculateTotal($sale);
-        if (0 != Money::compare($total, $sale->getInvoiceTotal(), $sale->getCurrency()->getCode())) {
-            $sale->setInvoiceTotal($total);
+        $changed = false;
 
-            return true;
+        $invoice = $this->invoiceCalculator->calculateInvoiceTotal($sale);
+        if (0 != Money::compare($invoice, $sale->getInvoiceTotal(), $sale->getCurrency()->getCode())) {
+            $sale->setInvoiceTotal($invoice);
+
+            $changed = true;
         }
 
-        return false;
+        $credit = $this->invoiceCalculator->calculateCreditTotal($sale);
+        if (0 != Money::compare($credit, $sale->getCreditTotal(), $sale->getCurrency()->getCode())) {
+            $sale->setCreditTotal($credit);
+
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     /**

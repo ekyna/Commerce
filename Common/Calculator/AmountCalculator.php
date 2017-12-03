@@ -59,6 +59,7 @@ class AmountCalculator implements AmountCalculatorInterface
         $currency = $sale->getCurrency()->getCode();
         $gross->roundTax($currency);
         $final->roundTax($currency);
+        $final->roundTaxAdjustments($currency);
 
         // Store the results
         $sale->setGrossResult($gross);
@@ -103,21 +104,14 @@ class AmountCalculator implements AmountCalculatorInterface
             }
         }
 
-        // Set private item unit price
         if ($item->isPrivate()) {
-            // Result
+            // Private case : we just need unit amount
             $result = new Amount($unit);
-
-            // Store the result
-            $item->setResult($result);
-
-            return $result;
-        }
-
-        // Sample sale case
-        if ($item->getSale()->isSample()) {
+        } elseif ($item->getSale()->isSample()) {
+            // Sample sale case : zero amounts
             $result = new Amount();
         } else {
+            // Regular case
             $discounts = $taxes = [];
             $discount = $tax = 0;
 
@@ -127,7 +121,7 @@ class AmountCalculator implements AmountCalculatorInterface
             $parent = $item->getParent();
             $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
 
-            // Items without subject can inherit discounts from their non-compound parent
+            // Items without subject inherit discounts from their non-compound parent
             if (empty($discountAdjustments) && !$item->hasSubjectIdentity() && null !== $parent && !$parent->isCompound()) {
                 $discountAdjustments = $parent->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
             }

@@ -18,6 +18,11 @@ trait InvoiceSubjectTrait
     protected $invoiceTotal;
 
     /**
+     * @var float
+     */
+    protected $creditTotal;
+
+    /**
      * @var string
      */
     protected $invoiceState;
@@ -34,6 +39,7 @@ trait InvoiceSubjectTrait
     protected function initializeInvoiceSubject()
     {
         $this->invoiceTotal = 0;
+        $this->creditTotal = 0;
         $this->invoiceState = InvoiceStates::STATE_NEW;
         $this->invoices = new ArrayCollection();
     }
@@ -49,15 +55,39 @@ trait InvoiceSubjectTrait
     }
 
     /**
-     * Sets the invoice total.
+     * Sets the invoices total.
      *
      * @param float $total
      *
-     * @return InvoiceSubjectTrait
+     * @return $this|InvoiceSubjectInterface
      */
     public function setInvoiceTotal($total)
     {
         $this->invoiceTotal = (float)$total;
+
+        return $this;
+    }
+
+    /**
+     * Returns the credits total.
+     *
+     * @return float
+     */
+    public function getCreditTotal()
+    {
+        return $this->creditTotal;
+    }
+
+    /**
+     * Sets the credit total.
+     *
+     * @param float $total
+     *
+     * @return $this|InvoiceSubjectInterface
+     */
+    public function setCreditTotal($total)
+    {
+        $this->creditTotal = (float)$total;
 
         return $this;
     }

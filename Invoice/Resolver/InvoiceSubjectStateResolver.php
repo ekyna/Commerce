@@ -51,7 +51,7 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
         foreach ($quantities as $q) {
             // TODO Use packaging format
 
-            // If invoiced equals sold, item is fully invoiced
+            // If invoiced equals, item is fully invoiced
             if ($q['sold'] == $q['invoiced']) {
                 $invoicedCount++;
                 continue;

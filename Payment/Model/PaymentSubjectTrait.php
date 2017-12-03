@@ -285,12 +285,15 @@ trait PaymentSubjectTrait
 
         // If paid + accepted outstanding equals grand total
         $currency = $this->getCurrency()->getCode();
-        if (0 === Money::compare($this->paidTotal + $this->outstandingAccepted, $this->grandTotal, $currency)) {
-            // Return accepted outstanding amount (for fund release)
-            return $this->outstandingAccepted;
+
+        if (0 < $this->outstandingAccepted) {
+            if (0 === Money::compare($this->paidTotal + $this->outstandingAccepted, $this->grandTotal, $currency)) {
+                // Return accepted outstanding amount (for fund release)
+                return $this->outstandingAccepted;
+            }
         }
 
-        // Return grand total minus paid + accepted outstanding
-        return $this->grandTotal - ($this->paidTotal + $this->outstandingAccepted);
+        // Return grand total minus paid
+        return $this->grandTotal - $this->paidTotal;
     }
 }

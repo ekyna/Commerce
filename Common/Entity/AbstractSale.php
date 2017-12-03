@@ -142,10 +142,6 @@ abstract class AbstractSale implements Common\SaleInterface
      */
     public function __construct()
     {
-        if (null === $this->state) {
-            throw new RuntimeException("Initial state must be defined.");
-        }
-
         $this->sameAddress = true;
         $this->autoDiscount = true;
         $this->taxExempt = false;

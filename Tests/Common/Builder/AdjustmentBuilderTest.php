@@ -51,6 +51,7 @@ class AdjustmentBuilderTest extends BaseTestCase
     public function test_buildItemDiscount_withSingleItem()
     {
         $item = Fixtures::createOrderItem();
+        $item->setOrder(Fixtures::createOrder());
 
         // Given the discount resolver will return a 7% discount adjustment data.
         $this

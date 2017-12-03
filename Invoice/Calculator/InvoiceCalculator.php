@@ -211,11 +211,13 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         $quantity = 0;
 
         foreach ($sale->getInvoices() as $invoice) {
-            $credit = Invoice\InvoiceTypes::isCredit($invoice);
+            if (Invoice\InvoiceTypes::isCredit($invoice)) {
+                continue;
+            }
 
             foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
                 if ($line->getSaleItem() === $item) {
-                    $quantity += $credit ? -$line->getQuantity() : $line->getQuantity();
+                    $quantity += $line->getQuantity();
                 }
             }
         }
@@ -241,9 +243,9 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 continue;
             }
 
-            foreach ($invoice->getLines() as $invoiceItem) {
-                if ($invoiceItem->getSaleItem() === $item) {
-                    $quantity += $invoiceItem->getQuantity();
+            foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
+                if ($line->getSaleItem() === $item) {
+                    $quantity += $line->getQuantity();
                 }
             }
         }
@@ -254,14 +256,72 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateTotal(Invoice\InvoiceSubjectInterface $subject)
+    public function calculateCanceledQuantity(Common\SaleItemInterface $item)
+    {
+        $sale = $item->getSale();
+
+        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+            return 0;
+        }
+
+        $quantity = 0;
+
+        foreach ($sale->getInvoices() as $invoice) {
+            if (!Invoice\InvoiceTypes::isCredit($invoice) || null !== $invoice->getShipment()) {
+                continue;
+            }
+
+            foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
+                if ($line->getSaleItem() === $item) {
+                    $quantity += $line->getQuantity();
+                }
+            }
+        }
+
+        return $quantity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateInvoiceTotal(Invoice\InvoiceSubjectInterface $subject)
+    {
+        $total = .0;
+
+        foreach ($subject->getInvoices() as $invoice) {
+            if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+                $total += $invoice->getGrandTotal();
+            }
+        }
+
+        return $total;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateCreditTotal(Invoice\InvoiceSubjectInterface $subject)
     {
         $total = .0;
 
         foreach ($subject->getInvoices() as $invoice) {
             if (Invoice\InvoiceTypes::isCredit($invoice)) {
-                $total -= $invoice->getGrandTotal();
-            } else {
+                $total += $invoice->getGrandTotal();
+            }
+        }
+
+        return $total;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateCanceledTotal(Invoice\InvoiceSubjectInterface $subject)
+    {
+        $total = .0;
+
+        foreach ($subject->getInvoices() as $invoice) {
+            if (Invoice\InvoiceTypes::isCredit($invoice) && null === $invoice->getShipment()) {
                 $total += $invoice->getGrandTotal();
             }
         }

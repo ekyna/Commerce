@@ -26,9 +26,9 @@ class Cart extends AbstractSale implements Model\CartInterface
      */
     public function __construct()
     {
-        $this->state = Model\CartStates::STATE_NEW;
-
         parent::__construct();
+
+        $this->state = Model\CartStates::STATE_NEW;
     }
 
     /**

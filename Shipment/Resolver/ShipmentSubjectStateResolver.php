@@ -54,15 +54,15 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
         foreach ($quantities as $q) {
             // TODO Use packaging format
 
-            // If shipped equals sold, item is fully shipped
-            if ($q['sold'] == $q['shipped'] - $q['returned']) {
-                $shippedCount++;
+            // If returned equals sold minus canceled, item is fully returned
+            if ($q['sold'] - $q['canceled'] == $q['returned']) {
+                $returnedCount++;
                 continue;
             }
 
-            // If returned equals sold, item is fully returned
-            if ($q['sold'] == $q['returned']) {
-                $returnedCount++;
+            // If shipped equals sold minus canceled, item is fully shipped
+            if ($q['sold'] - $q['canceled'] == $q['shipped']) {
+                $shippedCount++;
                 continue;
             }
 

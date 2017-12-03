@@ -42,12 +42,13 @@ class Order extends AbstractSale implements Model\OrderInterface
      */
     public function __construct()
     {
-        $this->state = Model\OrderStates::STATE_NEW;
+        parent::__construct();
 
         $this->initializeShipmentSubject();
         $this->initializeInvoiceSubject();
 
-        parent::__construct();
+        $this->state = Model\OrderStates::STATE_NEW;
+        $this->sample = false;
     }
 
     /**
