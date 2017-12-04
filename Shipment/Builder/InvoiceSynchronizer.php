@@ -76,8 +76,11 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         $invoice = $shipment->getInvoice();
 
-        // Abort if shipment is removed or not in shipped / returned state
-        if ($this->persistenceHelper->isScheduledForRemove($shipment) || !Shipment\ShipmentStates::isDone($shipment)) {
+        // Abort if shipment is removed or not in stockable state
+        if (
+            $this->persistenceHelper->isScheduledForRemove($shipment) ||
+            !Shipment\ShipmentStates::isStockableState($shipment->getState())
+        ) {
             if (null !== $invoice) {
                 $sale->removeInvoice($invoice);
                 if (null !== $invoice->getId()) {
@@ -226,7 +229,11 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
             // Look for an invoice line that matches the shipment item
             foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $line) {
                 if ($saleItem === $line->getSaleItem()) {
-                    $quantity = min($calculator->calculateMaxQuantity($line), $shipmentItem->getQuantity());
+                    $max = $shipment->isReturn()
+                        ? $calculator->calculateCreditableQuantity($line)
+                        : $calculator->calculateInvoiceableQuantity($line);
+
+                    $quantity = min($max, $shipmentItem->getQuantity());
                     if ($line->getQuantity() !== $quantity) {
                         $line->setQuantity($quantity);
 
@@ -239,7 +246,11 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
             // Invoice line not found -> create it
             if (null !== $line = $this->invoiceBuilder->buildGoodLine($saleItem, $invoice, false)) {
-                $quantity = min($calculator->calculateMaxQuantity($line), $shipmentItem->getQuantity());
+                $max = $shipment->isReturn()
+                    ? $calculator->calculateCreditableQuantity($line)
+                    : $calculator->calculateInvoiceableQuantity($line);
+
+                $quantity = min($max, $shipmentItem->getQuantity());
                 $line->setQuantity($quantity);
             }
 

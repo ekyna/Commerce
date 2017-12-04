@@ -57,7 +57,7 @@ class ShipmentItemValidator extends ConstraintValidator
             if (0 !== $iQty % $siQty) {
                 $this
                     ->context
-                    ->buildViolation($constraint->quantity_must_be_multiple_of_parent, [
+                    ->buildViolation($constraint->parent_quantity_integrity, [
                         '%multiple%' => $saleItem->getQuantity()
                     ])
                     ->setInvalidValue($item->getQuantity())
@@ -70,13 +70,13 @@ class ShipmentItemValidator extends ConstraintValidator
 
         // Return shipment case
         if ($item->getShipment()->isReturn()) {
-            $returnable = $this->shipmentCalculator->calculateReturnableQuantity($item);
+            $max = $this->shipmentCalculator->calculateReturnableQuantity($item);
 
-            if ($item->getQuantity() > $returnable) {
+            if ($max < $item->getQuantity()) {
                 $this
                     ->context
-                    ->buildViolation($constraint->quantity_must_be_lower_than_or_equal_shipped, [
-                        '%max%' => $returnable
+                    ->buildViolation($constraint->returnable_overflow, [
+                        '%max%' => $max
                     ])
                     ->setInvalidValue($item->getQuantity())
                     ->atPath('quantity')
@@ -89,31 +89,12 @@ class ShipmentItemValidator extends ConstraintValidator
         }
 
         // Regular shipment case
-
-        $expected = $this->shipmentCalculator->calculateShippableQuantity($item);
-        $available = $this->shipmentCalculator->calculateAvailableQuantity($item);
-
-        if (ShipmentStates::isStockableState($item->getShipment()->getState()) && $available < $expected) {
-            // Shipment item's quantity must be lower than or equals the shipment item's available quantity
-            if ($item->getQuantity() > $available) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->quantity_must_be_lower_than_or_equal_available, [
-                        '%max%' => $available
-                    ])
-                    ->setInvalidValue($item->getQuantity())
-                    ->atPath('quantity')
-                    ->addViolation();
-
-                return;
-            }
-        }
-        // Shipment item's quantity must be lower than or equals the shipment item's available expected
-        elseif ($item->getQuantity() > $expected) {
+        $max = $this->shipmentCalculator->calculateShippableQuantity($item);
+        if ($max < $item->getQuantity()) {
             $this
                 ->context
-                ->buildViolation($constraint->quantity_must_be_lower_than_or_equal_expected, [
-                    '%max%' => $expected
+                ->buildViolation($constraint->shippable_overflow, [
+                    '%max%' => $max
                 ])
                 ->setInvalidValue($item->getQuantity())
                 ->atPath('quantity')

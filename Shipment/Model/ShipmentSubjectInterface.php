@@ -35,9 +35,11 @@ interface ShipmentSubjectInterface extends ShipmentDataInterface
     /**
      * Returns the shipments.
      *
+     * @param bool $filter TRUE for returns, FALSE for shipments, NULL for all
+     *
      * @return \Doctrine\Common\Collections\Collection|ShipmentInterface[]
      */
-    public function getShipments();
+    public function getShipments($filter = null);
 
     /**
      * Returns whether the order has the shipment or not.

@@ -13,15 +13,6 @@ use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 interface InvoiceCalculatorInterface
 {
     /**
-     * Calculate the line's max quantity.
-     *
-     * @param Invoice\InvoiceLineInterface $line
-     *
-     * @return float
-     */
-    public function calculateMaxQuantity(Invoice\InvoiceLineInterface $line);
-
-    /**
      * Calculates the invoice line invoiceable quantity.
      *
      * @param Invoice\InvoiceLineInterface $line
@@ -40,31 +31,43 @@ interface InvoiceCalculatorInterface
     public function calculateCreditableQuantity(Invoice\InvoiceLineInterface $line);
 
     /**
-     * Calculates the invoiced (minus credited) quantity for the given sale item.
+     * Calculates the invoice line cancelable quantity.
      *
-     * @param Common\SaleItemInterface $item
+     * @param Invoice\InvoiceLineInterface $line
      *
      * @return float
      */
-    public function calculateInvoicedQuantity(Common\SaleItemInterface $item);
+    public function calculateCancelableQuantity(Invoice\InvoiceLineInterface $line);
+
+    /**
+     * Calculates the invoiced quantity for the given sale item.
+     *
+     * @param Common\SaleItemInterface $item
+     * @param Invoice\InvoiceInterface $ignore
+     *
+     * @return float
+     */
+    public function calculateInvoicedQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null);
 
     /**
      * Calculates the credited quantity for the given sale item.
      *
      * @param Common\SaleItemInterface $item
+     * @param Invoice\InvoiceInterface $ignore
      *
      * @return float
      */
-    public function calculateCreditedQuantity(Common\SaleItemInterface $item);
+    public function calculateCreditedQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null);
 
     /**
      * Calculates the canceled quantity for the given sale item.
      *
      * @param Common\SaleItemInterface $item
+     * @param Invoice\InvoiceInterface $ignore
      *
      * @return float
      */
-    public function calculateCanceledQuantity(Common\SaleItemInterface $item);
+    public function calculateCanceledQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null);
 
     /**
      * Calculates the total of all subject's invoices.

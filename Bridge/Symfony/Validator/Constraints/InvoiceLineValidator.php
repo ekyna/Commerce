@@ -2,8 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -15,6 +18,21 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class InvoiceLineValidator extends ConstraintValidator
 {
+    /**
+     * @var InvoiceCalculatorInterface
+     */
+    private $invoiceCalculator;
+
+    /**
+     * Constructor.
+     *
+     * @param InvoiceCalculatorInterface $calculator
+     */
+    public function __construct(InvoiceCalculatorInterface $calculator)
+    {
+        $this->invoiceCalculator = $calculator;
+    }
+
     /**
      * @inheritDoc
      */
@@ -39,6 +57,8 @@ class InvoiceLineValidator extends ConstraintValidator
                     ->setInvalidValue(null)
                     ->atPath('saleItem')
                     ->addViolation();
+
+                return;
             }
         }
 
@@ -50,82 +70,136 @@ class InvoiceLineValidator extends ConstraintValidator
                     ->setInvalidValue($line->getDesignation())
                     ->atPath('designation')
                     ->addViolation();
+
+                return;
             }
         }
 
-        return;
+        $invoice = $line->getInvoice();
 
-//        TODO
-//
-//        // ShipmentItem vs SaleItem integrity
-//        if (null !== $shipmentItem = $line->getShipmentItem()) {
-//            // Shipment must be a return
-//            if (!$shipmentItem->getShipment()->isReturn()) {
-//                $this
-//                    ->context
-//                    ->buildViolation($constraint->shipment_is_not_return)
-//                    ->setInvalidValue($shipmentItem)
-//                    ->atPath('shipmentItem')
-//                    ->addViolation();
-//
-//                return;
-//            }
-//
-//            // Invoice's SaleItem and ShipmentItem's SaleItem must match
-//            if ($line->getSaleItem() !== $shipmentItem->getSaleItem()) {
-//                $this
-//                    ->context
-//                    ->buildViolation($constraint->sale_item_and_shipment_item_miss_match)
-//                    ->setInvalidValue($shipmentItem)
-//                    ->atPath('shipmentItem')
-//                    ->addViolation();
-//
-//                return;
-//            }
-//
-//            // InvoiceLine's quantity can't be greater than the related ShipmentItem's quantity
-//            if ($line->getQuantity() > $shipmentItem->getQuantity()) {
-//                $this
-//                    ->context
-//                    ->buildViolation($constraint->quantity_is_greater_than_returned, [
-//                        '%max%' => $shipmentItem->getQuantity(),
-//                    ])
-//                    ->setInvalidValue($shipmentItem)
-//                    ->atPath('quantity')
-//                    ->addViolation();
-//
-//                return;
-//            }
-//        } else {
-//
-//        }
-//
-//        // The Sale of the InvoiceLine's SaleItem must match the Sale of the SaleItem's Invoice
-//        if ($line->getSaleItem()->getSale() !== $line->getInvoice()->getSale()) {
-//            $this
-//                ->context
-//                ->buildViolation($constraint->sale_and_invoice_miss_match)
-//                ->setInvalidValue($line->getSaleItem())
-//                ->atPath('saleItem')
-//                ->addViolation();
-//
-//            return;
-//        }
-//
-//        // InvoiceLine's quantity can't be greater than the invoiceable quantity
-//        // TODO Use QuantityCalculatorInterface
-//        $available = InvoiceUtil::calculateMaxCreditQuantity($line->getSaleItem());
-//        if ($line->getQuantity() > $available) {
-//            $this
-//                ->context
-//                ->buildViolation($constraint->quantity_is_greater_than_creditable, [
-//                    '%max%' => $available,
-//                ])
-//                ->setInvalidValue($shipmentItem)
-//                ->atPath('quantity')
-//                ->addViolation();
-//
-//            return;
-//        }
+        // Invoice case
+        if (InvoiceTypes::isInvoice($invoice)) {
+            // If invoice is linked to a shipment
+            if (null !== $shipment = $invoice->getShipment()) {
+                // Check that a matching shipment item exists
+                if (null === $shipmentItem = $this->findMatchingShipmentItem($line, $shipment)) {
+                    $this
+                        ->context
+                        ->buildViolation($constraint->hierarchy_integrity)
+                        ->addViolation();
+
+                    return;
+                }
+
+                // Check that quantities equals
+                if ($shipmentItem->getQuantity() != $line->getQuantity()) {
+                    $this
+                        ->context
+                        ->buildViolation($constraint->shipped_miss_match, [
+                            '%qty%' => $shipmentItem->getQuantity(),
+                        ])
+                        ->setInvalidValue($line->getQuantity())
+                        ->atPath('quantity')
+                        ->addViolation();
+
+                    return;
+                }
+            }
+
+            // Check invoiceable quantity
+            $max = $this->invoiceCalculator->calculateInvoiceableQuantity($line);
+            if ($max < $line->getQuantity()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->invoiceable_overflow, [
+                        '%max%' => $max,
+                    ])
+                    ->setInvalidValue($line->getQuantity())
+                    ->atPath('quantity')
+                    ->addViolation();
+            }
+
+            return;
+        }
+
+        // Credit case
+        if (null !== $shipment = $invoice->getShipment()) {
+            // Check that a matching shipment item exists
+            if (null === $shipmentItem = $this->findMatchingShipmentItem($line, $shipment)) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->hierarchy_integrity)
+                    ->addViolation();
+
+                return;
+            }
+
+            // Check that quantities equals
+            if ($shipmentItem->getQuantity() != $line->getQuantity()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->returned_miss_match, [
+                        '%qty%' => $shipmentItem->getQuantity(),
+                    ])
+                    ->setInvalidValue($line->getQuantity())
+                    ->atPath('quantity')
+                    ->addViolation();
+
+                return;
+            }
+
+            // Check creditable quantity
+            $max = $this->invoiceCalculator->calculateCreditableQuantity($line);
+            if ($max < $line->getQuantity()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->creditable_overflow, [
+                        '%max%' => $max,
+                    ])
+                    ->setInvalidValue($line->getQuantity())
+                    ->atPath('quantity')
+                    ->addViolation();
+            }
+
+            return;
+        }
+
+        // Cancel case
+
+        // Check invoiceable quantity
+        $max = $this->invoiceCalculator->calculateCancelableQuantity($line);
+        if ($max < $line->getQuantity()) {
+            $this
+                ->context
+                ->buildViolation($constraint->cancelable_overflow, [
+                    '%max%' => $max,
+                ])
+                ->setInvalidValue($line->getQuantity())
+                ->atPath('quantity')
+                ->addViolation();
+        }
+
+        return;
+    }
+
+    /**
+     * Finds the shipment item matching the invoice line.
+     *
+     * @param InvoiceLineInterface $line
+     * @param ShipmentInterface    $shipment
+     *
+     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface|null
+     */
+    private function findMatchingShipmentItem(InvoiceLineInterface $line, ShipmentInterface $shipment)
+    {
+        $saleItem = $line->getSaleItem();
+
+        foreach ($shipment->getItems() as $shipmentItem) {
+            if ($saleItem === $shipmentItem->getSaleItem()) {
+                return $shipmentItem;
+            }
+        }
+
+        return null;
     }
 }

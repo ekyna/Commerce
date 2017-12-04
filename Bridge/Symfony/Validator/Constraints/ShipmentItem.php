@@ -11,10 +11,9 @@ use Symfony\Component\Validator\Constraint;
  */
 class ShipmentItem extends Constraint
 {
-    public $quantity_must_be_lower_than_or_equal_available = 'ekyna_commerce.shipment_item.quantity_must_be_lower_than_or_equal_available';
-    public $quantity_must_be_lower_than_or_equal_expected  = 'ekyna_commerce.shipment_item.quantity_must_be_lower_than_or_equal_expected';
-    public $quantity_must_be_lower_than_or_equal_shipped   = 'ekyna_commerce.shipment_item.quantity_must_be_lower_than_or_equal_shipped';
-    public $quantity_must_be_multiple_of_parent            = 'ekyna_commerce.shipment_item.quantity_must_be_multiple_of_parent';
+    public $returnable_overflow       = 'ekyna_commerce.shipment_item.returnable_overflow';
+    public $shippable_overflow        = 'ekyna_commerce.shipment_item.shippable_overflow';
+    public $parent_quantity_integrity = 'ekyna_commerce.shipment_item.parent_quantity_integrity';
 
 
     /**

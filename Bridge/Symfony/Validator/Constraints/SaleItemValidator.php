@@ -4,7 +4,9 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\ValidationFailedException;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -17,6 +19,31 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class SaleItemValidator extends ConstraintValidator
 {
+    /**
+     * @var InvoiceCalculatorInterface
+     */
+    protected $invoiceCalculator;
+
+    /**
+     * @var ShipmentCalculatorInterface
+     */
+    protected $shipmentCalculator;
+
+
+    /**
+     * Constructor.
+     *
+     * @param InvoiceCalculatorInterface  $invoiceCalculator
+     * @param ShipmentCalculatorInterface $shipmentCalculator
+     */
+    public function __construct(
+        InvoiceCalculatorInterface $invoiceCalculator,
+        ShipmentCalculatorInterface $shipmentCalculator
+    ) {
+        $this->invoiceCalculator = $invoiceCalculator;
+        $this->shipmentCalculator = $shipmentCalculator;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -101,32 +128,19 @@ class SaleItemValidator extends ConstraintValidator
             return;
         }
 
-        $invoices = $sale->getInvoices()->toArray();
-
-        if (empty($invoices)) {
+        if (empty($sale->getInvoices()->toArray())) {
             return;
         }
 
-        $quantity = 0;
+        $min = $this->invoiceCalculator->calculateCanceledQuantity($item)
+            + $this->invoiceCalculator->calculateInvoicedQuantity($item);
 
-        /** @var Invoice\InvoiceInterface $invoice */
-        foreach ($invoices as $invoice) {
-            foreach ($invoice->getLines() as $line) {
-                if ($line->getSaleItem() === $item) {
-                    if (Invoice\InvoiceTypes::isCredit($invoice)) {
-                        $quantity -= $line->getQuantity();
-                    } else {
-                        $quantity += $line->getQuantity();
-                    }
-                }
-            }
-        }
-
-        if (0 < $quantity && $item->getTotalQuantity() < $quantity) {
+        // TODO Use packaging format
+        if (0 < $min && $item->getTotalQuantity() < $min) {
             $this
                 ->context
-                ->buildViolation($constraint->quantity_is_lower_than_credited, [
-                    '%max%' => $quantity,
+                ->buildViolation($constraint->quantity_is_lower_than_invoiced, [
+                    '%min%' => $min,
                 ])
                 ->atPath('quantity')
                 ->addViolation();
@@ -150,36 +164,18 @@ class SaleItemValidator extends ConstraintValidator
             return;
         }
 
-        $shipments = $sale->getShipments()->toArray();
-
-        if (empty($shipments)) {
+        if (empty($sale->getShipments()->toArray())) {
             return;
         }
 
-        $quantity = 0;
+        $min = $this->shipmentCalculator->calculateShippedQuantity($item);
 
-        /** @var Shipment\ShipmentInterface $shipment */
-        foreach ($shipments as $shipment) {
-            if (!Shipment\ShipmentStates::isStockableState($shipment->getState())) {
-                continue;
-            }
-
-            foreach ($shipment->getItems() as $shipmentItem) {
-                if ($shipmentItem->getSaleItem() === $item) {
-                    if ($shipment->isReturn()) {
-                        $quantity -= $shipmentItem->getQuantity();
-                    } else {
-                        $quantity += $shipmentItem->getQuantity();
-                    }
-                }
-            }
-        }
-
-        if (0 < $quantity && $item->getTotalQuantity() < $quantity) {
+        // TODO Use packaging format
+        if (0 < $min && $item->getTotalQuantity() < $min) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_is_lower_than_shipped, [
-                    '%max%' => $quantity,
+                    '%min%' => $min,
                 ])
                 ->setInvalidValue($item->getQuantity())
                 ->atPath('quantity')

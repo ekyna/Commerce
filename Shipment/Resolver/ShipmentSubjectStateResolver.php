@@ -49,10 +49,14 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             return $this->setState($subject, ShipmentStates::STATE_PENDING);
         }
 
-        $partialCount = $shippedCount = $returnedCount = 0;
+        $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
 
         foreach ($quantities as $q) {
             // TODO Use packaging format
+            if ($q['sold'] == $q['canceled']) {
+                $canceledCount++;
+                continue;
+            }
 
             // If returned equals sold minus canceled, item is fully returned
             if ($q['sold'] - $q['canceled'] == $q['returned']) {
@@ -73,7 +77,7 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
         }
 
         // If all fully shipped
-        if ($shippedCount == $itemsCount) {
+        if ($shippedCount == $itemsCount || $canceledCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
         }
 

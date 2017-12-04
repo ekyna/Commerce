@@ -30,14 +30,20 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
      * Constructor.
      *
      * @param SubjectHelperInterface     $subjectHelper
-     * @param InvoiceCalculatorInterface $invoiceCalculator
      */
-    public function __construct(
-        SubjectHelperInterface $subjectHelper,
-        InvoiceCalculatorInterface $invoiceCalculator
-    ) {
+    public function __construct(SubjectHelperInterface $subjectHelper)
+    {
         $this->subjectHelper = $subjectHelper;
-        $this->invoiceCalculator = $invoiceCalculator;
+    }
+
+    /**
+     * Sets the invoice calculator.
+     *
+     * @param InvoiceCalculatorInterface $calculator
+     */
+    public function setInvoiceCalculator(InvoiceCalculatorInterface $calculator)
+    {
+        $this->invoiceCalculator = $calculator;
     }
 
     /**
@@ -148,45 +154,36 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
 
         // TODO return zero if not shippable
 
-        $quantity = $saleItem->getTotalQuantity() - $this->invoiceCalculator->calculateCanceledQuantity($saleItem);
+        // Quantity = Sold - Canceled - Shipped (ignoring current)
+        return $saleItem->getTotalQuantity()
+            - $this->invoiceCalculator->calculateCanceledQuantity($saleItem)
+            - $this->calculateShippedQuantity($saleItem, $item->getShipment());
 
         //$quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
 
-        $sale = $saleItem->getSale();
-
-        /** @var Shipment\ShipmentSubjectInterface $sale */
-        foreach ($sale->getShipments() as $shipment) {
-            // Skip returns and this shipment
-            if ($shipment->isReturn() || $shipment === $item->getShipment()) {
-                continue;
-            }
-
-            // Skip if shipment is canceled
-            if ($shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
-                continue;
-            }
-
-            // Find matching sale item
-            foreach ($shipment->getItems() as $shipmentItem) {
-                if ($shipmentItem->getSaleItem() === $saleItem) {
-                    $quantity -= $shipmentItem->getQuantity();
-                }
-            }
-        }
-
-        // If shipment is in stockable state, this shipment item's quantity
-        // is considered as shipped.
-        // TODO Test. Multiple shipment items can point to the same subject ...
-        /*$shipment = $item->getShipment();
-        if (Shipment\ShipmentStates::isStockableState($shipment->getState())) {
-            if ($shipment->isReturn()) {
-                $quantity -= $item->getQuantity();
-            } else {
-                $quantity += $item->getQuantity();
-            }
-        }*/
-
-        return $quantity;
+//        $sale = $saleItem->getSale();
+//
+//        /** @var Shipment\ShipmentSubjectInterface $sale */
+//        foreach ($sale->getShipments() as $shipment) {
+//            // Skip returns and this shipment
+//            if ($shipment->isReturn() || $shipment === $item->getShipment()) {
+//                continue;
+//            }
+//
+//            // Skip if shipment is canceled
+//            if ($shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
+//                continue;
+//            }
+//
+//            // Find matching sale item
+//            foreach ($shipment->getItems() as $shipmentItem) {
+//                if ($shipmentItem->getSaleItem() === $saleItem) {
+//                    $quantity -= $shipmentItem->getQuantity();
+//                }
+//            }
+//        }
+//
+//        return $quantity;
     }
 
     /**
@@ -198,52 +195,56 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
 
         // TODO return zero if not shippable
 
-        $quantity = 0;
+        // Quantity = Shipped - Returned (ignoring current)
+        return $this->calculateShippedQuantity($saleItem)
+            - $this->calculateReturnedQuantity($saleItem, $item->getShipment());
 
-        /** @var Shipment\ShipmentSubjectInterface $sale */
-        $sale = $saleItem->getSale();
-
-        foreach ($sale->getShipments() as $shipment) {
-            // Skip this shipment
-            if ($shipment === $item->getShipment()) {
-                continue;
-            }
-
-            // Skip if shipment is shipped/returned
-            if (!Shipment\ShipmentStates::isDone($shipment)) {
-                continue;
-            }
-
-            // Find matching sale item
-            foreach ($shipment->getItems() as $shipmentItem) {
-                if ($shipmentItem->getSaleItem() === $saleItem) {
-                    if ($shipment->isReturn()) {
-                        $quantity -= $shipmentItem->getQuantity();
-                    } else {
-                        $quantity += $shipmentItem->getQuantity();
-                    }
-                }
-            }
-        }
-
-        // If shipment is in stockable state, this shipment item's quantity
-        // is considered as shipped.
-        // TODO Test. Multiple shipment items can point to the same subject ...
-        if (Shipment\ShipmentStates::isStockableState($item->getShipment())) {
-            if ($item->getShipment()->isReturn()) {
-                $quantity += $item->getQuantity();
-            } else {
-                $quantity -= $item->getQuantity();
-            }
-        }
-
-        return $quantity;
+//        $quantity = 0;
+//
+//        /** @var Shipment\ShipmentSubjectInterface $sale */
+//        $sale = $saleItem->getSale();
+//
+//        foreach ($sale->getShipments() as $shipment) {
+//            // Skip this shipment
+//            if ($shipment === $item->getShipment()) {
+//                continue;
+//            }
+//
+//            // Skip if shipment is shipped/returned
+//            if (!Shipment\ShipmentStates::isDone($shipment)) {
+//                continue;
+//            }
+//
+//            // Find matching sale item
+//            foreach ($shipment->getItems() as $shipmentItem) {
+//                if ($shipmentItem->getSaleItem() === $saleItem) {
+//                    if ($shipment->isReturn()) {
+//                        $quantity -= $shipmentItem->getQuantity();
+//                    } else {
+//                        $quantity += $shipmentItem->getQuantity();
+//                    }
+//                }
+//            }
+//        }
+//
+//        // If shipment is in stockable state, this shipment item's quantity
+//        // is considered as shipped.
+//        // TODO Test. Multiple shipment items can point to the same subject ...
+//        if (Shipment\ShipmentStates::isStockableState($item->getShipment())) {
+//            if ($item->getShipment()->isReturn()) {
+//                $quantity += $item->getQuantity();
+//            } else {
+//                $quantity -= $item->getQuantity();
+//            }
+//        }
+//
+//        return $quantity;
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateShippedQuantity(Common\SaleItemInterface $saleItem)
+    public function calculateShippedQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null)
     {
         $sale = $saleItem->getSale();
 
@@ -254,7 +255,11 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         $quantity = 0;
 
         foreach ($sale->getShipments() as $shipment) {
-            if (!(!$shipment->isReturn() && Shipment\ShipmentStates::isDone($shipment))) {
+            if (null !== $ignore && $shipment === $ignore) {
+                continue;
+            }
+
+            if ($shipment->isReturn() || $shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
                 continue;
             }
 
@@ -271,7 +276,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateReturnedQuantity(Common\SaleItemInterface $saleItem)
+    public function calculateReturnedQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null)
     {
         $sale = $saleItem->getSale();
 
@@ -282,7 +287,11 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         $quantity = 0;
 
         foreach ($sale->getShipments() as $shipment) {
-            if (!($shipment->isReturn() && Shipment\ShipmentStates::isDone($shipment))) {
+            if (null !== $ignore && $shipment === $ignore) {
+                continue;
+            }
+
+            if (!$shipment->isReturn() || $shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
                 continue;
             }
 

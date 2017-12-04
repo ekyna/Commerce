@@ -67,9 +67,11 @@ interface InvoiceSubjectInterface
     /**
      * Returns the invoices.
      *
+     * @param bool $filter TRUE for invoices, FALSE for credits, NULL for all
+     *
      * @return \Doctrine\Common\Collections\Collection|InvoiceInterface[]
      */
-    public function getInvoices();
+    public function getInvoices($filter = null);
 
     /**
      * Returns whether the order has the invoice or not.

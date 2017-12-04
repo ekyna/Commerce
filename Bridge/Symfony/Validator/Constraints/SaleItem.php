@@ -15,7 +15,7 @@ class SaleItem extends Constraint
     public $privacy_integrity               = 'ekyna_commerce.sale_item.privacy_integrity';
     public $tax_group_integrity             = 'ekyna_commerce.sale_item.tax_group_integrity';
     public $quantity_is_lower_than_shipped  = 'ekyna_commerce.sale_item.quantity_is_lower_than_shipped';
-    public $quantity_is_lower_than_credited = 'ekyna_commerce.sale_item.quantity_is_lower_than_credited';
+    public $quantity_is_lower_than_invoiced = 'ekyna_commerce.sale_item.quantity_is_lower_than_invoiced';
 
 
     /**

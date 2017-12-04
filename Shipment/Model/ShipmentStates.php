@@ -93,6 +93,8 @@ final class ShipmentStates
      * @param ShipmentInterface $shipment
      *
      * @return bool
+     *
+     * @deprecated No longer used
      */
     static public function isDone(ShipmentInterface $shipment)
     {
@@ -171,7 +173,6 @@ final class ShipmentStates
     {
         return [
             static::STATE_READY,
-            static::STATE_PARTIAL,
             static::STATE_SHIPPED,
             static::STATE_RETURNED,
         ];

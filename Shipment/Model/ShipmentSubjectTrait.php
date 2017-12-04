@@ -63,11 +63,19 @@ trait ShipmentSubjectTrait
     /**
      * Returns the shipments.
      *
+     * @param bool $filter TRUE for shipments, FALSE for returns, NULL for all
+     *
      * @return \Doctrine\Common\Collections\Collection|ShipmentInterface[]
      */
-    public function getShipments()
+    public function getShipments($filter = null)
     {
-        return $this->shipments;
+        if (null === $filter) {
+            return $this->shipments;
+        }
+
+        return $this->shipments->filter(function(ShipmentInterface $shipment) use ($filter) {
+            return $filter xor $shipment->isReturn();
+        });
     }
 
     /**

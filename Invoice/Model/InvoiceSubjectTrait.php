@@ -129,11 +129,19 @@ trait InvoiceSubjectTrait
     /**
      * Returns the invoices.
      *
+     * @param bool $filter TRUE for invoices, FALSE for credits, NULL for all
+     *
      * @return \Doctrine\Common\Collections\Collection|InvoiceInterface[]
      */
-    public function getInvoices()
+    public function getInvoices($filter = null)
     {
-        return $this->invoices;
+        if (null === $filter) {
+            return $this->invoices;
+        }
+
+        return $this->invoices->filter(function(InvoiceInterface $invoice) use ($filter) {
+            return $filter xor InvoiceTypes::isCredit($invoice);
+        });
     }
 
     /**

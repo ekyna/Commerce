@@ -193,6 +193,7 @@ abstract class AbstractShipmentListener
 
         $this->invoiceSynchronizer->synchronize($shipment);
 
+        // TODO get from change set (need sale path 'order')
         $sale = $shipment->getSale();
         $sale->removeShipment($shipment);
 

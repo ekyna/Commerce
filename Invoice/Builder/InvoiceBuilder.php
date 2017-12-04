@@ -78,22 +78,22 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $document, $recurse = true)
+    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $invoice, $recurse = true)
     {
-        /** @var Invoice\InvoiceInterface $document */
+        /** @var Invoice\InvoiceInterface $invoice */
         $line = null;
 
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             // Existing line lookup
-            foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $documentLine) {
-                if ($documentLine->getSaleItem() === $item) {
-                    $line = $documentLine;
+            foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
+                if ($invoiceLine->getSaleItem() === $item) {
+                    $line = $invoiceLine;
                 }
             }
             // Not found, create it
             if (null === $line) {
-                $line = $this->createLine($document);
+                $line = $this->createLine($invoice);
                 $line
                     ->setType(Document\DocumentLineTypes::TYPE_GOOD)
                     ->setSaleItem($item)
@@ -101,29 +101,34 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
                     ->setDescription($item->getDescription())
                     ->setReference($item->getReference());
 
-                $document->addLine($line);
+                $invoice->addLine($line);
             }
 
             if (!$item->isCompound()) {
-                $expected = Invoice\InvoiceTypes::isInvoice($document)
-                    ? $this->shipmentCalculator->calculateShippedQuantity($item) // TODO Test
-                    : 0;
-
-                // TODO minus shipped quantity (credit case, without linked return ?)
-                $available = $this->invoiceCalculator->calculateMaxQuantity($line);
+                $expected = 0;
+                if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+                    // Invoice case
+                    $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($line);
+                } elseif (null !== $invoice->getShipment()) {
+                    // Credit case
+                    $available = $this->invoiceCalculator->calculateCreditableQuantity($line);
+                } else {
+                    // Cancel case
+                    $available = $this->invoiceCalculator->calculateCancelableQuantity($line);
+                }
 
                 if (0 < $available) {
                     // Set available and expected quantity
                     $line->setAvailable($available);
                     $line->setExpected($expected);
 
-                    if (Invoice\InvoiceTypes::isInvoice($document) && null === $document->getId()) {
+                    if (Invoice\InvoiceTypes::isInvoice($invoice) && null === $invoice->getId()) {
                         // Set default quantity for new non return shipment items
                         $line->setQuantity(min($expected, $available));
                     }
                 } else {
                     // Remove unexpected line
-                    $document->removeLine($line);
+                    $invoice->removeLine($line);
                     $line = null;
                 }
             }
@@ -133,7 +138,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             if (null !== $line && $item->isCompound()) {
                 $available = $expected = null;
                 foreach ($item->getChildren() as $childItem) {
-                    if (null !== $childLine = $this->buildGoodLine($childItem, $document)) {
+                    if (null !== $childLine = $this->buildGoodLine($childItem, $invoice)) {
                         $saleItemQty = $childItem->getQuantity();
 
                         $a = $childLine->getAvailable() / $saleItemQty;
@@ -153,18 +158,18 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
                     $line->setExpected($expected);
                     $line->setAvailable($available);
 
-                    if (Invoice\InvoiceTypes::isInvoice($document) && null === $document->getId()) {
+                    if (Invoice\InvoiceTypes::isInvoice($invoice) && null === $invoice->getId()) {
                         // Set default quantity for new non credit invoice lines
                         $line->setQuantity(min($expected, $available));
                     }
                 } else {
                     // Remove unexpected line
-                    $document->removeLine($line);
+                    $invoice->removeLine($line);
                     $item = null;
                 }
             } else {
                 foreach ($item->getChildren() as $childLine) {
-                    $this->buildGoodLine($childLine, $document);
+                    $this->buildGoodLine($childLine, $invoice);
                 }
             }
         }
@@ -179,9 +184,19 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      */
     protected function postBuildLine(Document\DocumentLineInterface $line)
     {
+        /** @var Invoice\InvoiceInterface $invoice */
         $invoice = $line->getDocument();
 
-        $available = $this->invoiceCalculator->calculateMaxQuantity($line);
+        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+            // Invoice case
+            $available = $this->invoiceCalculator->calculateInvoiceableQuantity($line);
+        } elseif (null !== $invoice->getShipment()) {
+            // Credit case
+            $available = $this->invoiceCalculator->calculateCreditableQuantity($line);
+        } else {
+            // Cancel case
+            $available = $this->invoiceCalculator->calculateCancelableQuantity($line);
+        }
 
         if (0 < $available) {
             $line->setExpected($available);
@@ -201,9 +216,9 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * @inheritdoc
      */
-    protected function createLine(Document\DocumentInterface $document)
+    protected function createLine(Document\DocumentInterface $invoice)
     {
-        /** @var Invoice\InvoiceInterface $document */
-        return $this->saleFactory->createLineForInvoice($document);
+        /** @var Invoice\InvoiceInterface $invoice */
+        return $this->saleFactory->createLineForInvoice($invoice);
     }
 }

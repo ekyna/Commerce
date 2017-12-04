@@ -135,8 +135,6 @@ abstract class AbstractInvoiceListener
             $this->persistenceHelper->persistAndRecompute($invoice, false);
         }
 
-        //$this->updateCustomerCreditBalance($invoice);
-
         $sale = $invoice->getSale();
         if ($sale instanceof InvoiceSubjectInterface) {
             $sale->addInvoice($invoice); // TODO wtf ?
@@ -162,9 +160,11 @@ abstract class AbstractInvoiceListener
         // Updates the invoice data
         $changed |= $this->invoiceBuilder->update($invoice);
 
-        if ($changed) {
-            //$this->updateCustomerCreditBalance($invoice);
+        if ($this->persistenceHelper->isChanged($invoice, 'paymentMethod')) {
+            $this->updateCustomerBalance($invoice);
+        }
 
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
 
             $this->scheduleSaleContentChangeEvent($invoice->getSale());

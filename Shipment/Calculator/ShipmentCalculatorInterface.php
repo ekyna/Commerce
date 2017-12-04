@@ -40,22 +40,24 @@ interface ShipmentCalculatorInterface
     public function calculateReturnableQuantity(Shipment\ShipmentItemInterface $item);
 
     /**
-     * Calculates the shipped (minus returned) quantity for the given sale item.
+     * Calculates the shipped quantity for the given sale item.
      *
-     * @param Common\SaleItemInterface $saleItem
+     * @param Common\SaleItemInterface   $saleItem
+     * @param Shipment\ShipmentInterface $ignore
      *
      * @return float
      */
-    public function calculateShippedQuantity(Common\SaleItemInterface $saleItem);
+    public function calculateShippedQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
 
     /**
      * Calculates the returned quantity for the given sale item.
      *
-     * @param Common\SaleItemInterface $saleItem
+     * @param Common\SaleItemInterface   $saleItem
+     * @param Shipment\ShipmentInterface $ignore
      *
      * @return float
      */
-    public function calculateReturnedQuantity(Common\SaleItemInterface $saleItem);
+    public function calculateReturnedQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
 
     /**
      * Builds the shipment quantity map.

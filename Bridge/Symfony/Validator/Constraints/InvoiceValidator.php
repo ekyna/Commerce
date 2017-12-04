@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
+use Ekyna\Component\Commerce\Exception\ValidationFailedException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Symfony\Component\Validator\Constraint;
@@ -39,6 +40,8 @@ class InvoiceValidator extends ConstraintValidator
                 ->buildViolation($constraint->null_credit_method)
                 ->atPath('paymentMethod')
                 ->addViolation();
+
+            return;
         }
 
         // Can't have no good lines
@@ -52,17 +55,40 @@ class InvoiceValidator extends ConstraintValidator
             return;
         }
 
+        try {
+            $this->checkHierarchyIntegrity($invoice);
+        } catch (ValidationFailedException $e) {
+            $this
+                ->context
+                ->buildViolation($constraint->hierarchy_integrity)
+                ->atPath('shipment')
+                ->addViolation();
+        }
+    }
+
+    /**
+     * Check the hierarchy integrity.
+     *
+     * @param InvoiceInterface $invoice
+     *
+     * @throws ValidationFailedException
+     */
+    private function checkHierarchyIntegrity(InvoiceInterface $invoice)
+    {
         // [ Invoice <-> Sale <-> Shipment ] integrity
         if (null !== $shipment = $invoice->getShipment()) {
             if ($invoice->getSale() !== $shipment->getSale()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->hierarchy_integrity)
-                    ->setInvalidValue($shipment)
-                    ->atPath('shipment')
-                    ->addViolation();
+                throw new ValidationFailedException();
+            }
 
-                return;
+            // Credit <-> Return
+            if (InvoiceTypes::isCredit($invoice) && !$shipment->isReturn()) {
+                throw new ValidationFailedException();
+            }
+
+            // Invoice <-> Shipment
+            if (InvoiceTypes::isInvoice($invoice) && $shipment->isReturn()) {
+                throw new ValidationFailedException();
             }
         }
     }
