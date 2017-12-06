@@ -472,15 +472,7 @@ class LoadMetadataListener implements EventSubscriber
                 'precision'  => 10,
                 'scale'      => 3,
                 'nullable'   => true,
-            ],
-            [
-                'fieldName'  => 'minimumOrderQuantity',
-                'columnName' => 'minimum_order_quantity',
-                'type'       => 'decimal',
-                'precision'  => 10,
-                'scale'      => 3,
-                'nullable'   => false,
-                'default'    => 1,
+                'default'    => 0,
             ],
             [
                 'fieldName'  => 'inStock',
@@ -521,6 +513,36 @@ class LoadMetadataListener implements EventSubscriber
                 'columnName' => 'estimated_date_of_arrival',
                 'type'       => 'datetime',
                 'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'geocode',
+                'columnName' => 'geocode',
+                'type'       => 'string',
+                'length'     => 16,
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'minimumOrderQuantity',
+                'columnName' => 'minimum_order_quantity',
+                'type'       => 'decimal',
+                'precision'  => 10,
+                'scale'      => 3,
+                'nullable'   => false,
+                'default'    => 1,
+            ],
+            [
+                'fieldName'  => 'quoteOnly',
+                'columnName' => 'quote_only',
+                'type'       => 'boolean',
+                'nullable'   => false,
+                'default'    => false,
+            ],
+            [
+                'fieldName'  => 'endOfLife',
+                'columnName' => 'end_of_life',
+                'type'       => 'boolean',
+                'nullable'   => false,
+                'default'    => false,
             ],
         ];
     }

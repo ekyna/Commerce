@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Calculator\Adjustment;
+use IntlDateFormatter;
 use NumberFormatter;
 
 /**
@@ -23,6 +24,11 @@ class Formatter
     private $currency;
 
     /**
+     * @var IntlDateFormatter
+     */
+    private $dateFormatter;
+
+    /**
      * @var NumberFormatter
      */
     private $numberFormatter;
@@ -39,11 +45,19 @@ class Formatter
      * @param string $locale
      * @param string $currency
      */
-    public function __construct(string $locale, string $currency)
+    public function __construct(string $locale = 'FR', string $currency = 'EUR')
     {
         $this->locale = $locale;
         $this->currency = $currency;
 
+        $this->dateFormatter = IntlDateFormatter::create(
+            $locale,
+            IntlDateFormatter::SHORT,
+            IntlDateFormatter::NONE,
+            ini_get('date.timezone'),
+            //PHP_VERSION_ID >= 50500 ? $date->getTimezone() : $date->getTimezone()->getName(),
+            IntlDateFormatter::GREGORIAN
+        );
         $this->numberFormatter = NumberFormatter::create($locale, NumberFormatter::DECIMAL);
         $this->currencyFormatter = NumberFormatter::create($locale, NumberFormatter::CURRENCY);
     }
@@ -66,6 +80,21 @@ class Formatter
     public function getCurrency(): string
     {
         return $this->currency;
+    }
+
+    /**
+     * Formats the given date time for display.
+     *
+     * @param \DateTime $date
+     *
+     * @return string
+     */
+    public function date(\DateTime $date): string
+    {
+        //$this->dateFormatter->getTimeZone()
+        //if ($this->dateFormatter->getTimeZone() === $date->getTimezone();
+
+        return $this->dateFormatter->format($date->getTimestamp());
     }
 
     /**

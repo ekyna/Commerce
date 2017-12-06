@@ -27,11 +27,6 @@ trait StockSubjectTrait
     /**
      * @var float
      */
-    protected $minimumOrderQuantity;
-
-    /**
-     * @var float
-     */
     protected $inStock;
 
     /**
@@ -45,14 +40,34 @@ trait StockSubjectTrait
     protected $virtualStock;
 
     /**
+     * @var \DateTime
+     */
+    protected $estimatedDateOfArrival;
+
+    /**
      * @var int
      */
     protected $replenishmentTime;
 
     /**
-     * @var \DateTime
+     * @var string
      */
-    protected $estimatedDateOfArrival;
+    protected $geocode;
+
+    /**
+     * @var float
+     */
+    protected $minimumOrderQuantity;
+
+    /**
+     * @var bool
+     */
+    protected $quoteOnly = false;
+
+    /**
+     * @var bool
+     */
+    protected $endOfLife;
 
 
     /**
@@ -67,6 +82,8 @@ trait StockSubjectTrait
         $this->virtualStock = 0;
         $this->replenishmentTime = 2;
         $this->minimumOrderQuantity = 1;
+        $this->quoteOnly = false;
+        $this->endOfLife = false;
     }
 
     /**
@@ -132,35 +149,11 @@ trait StockSubjectTrait
      *
      * @param float $floor
      *
-     * @return StockSubjectTrait
+     * @return $this|StockSubjectInterface
      */
     public function setStockFloor($floor)
     {
         $this->stockFloor = $floor;
-
-        return $this;
-    }
-
-    /**
-     * Returns the minimum order quantity.
-     *
-     * @return float
-     */
-    public function getMinimumOrderQuantity()
-    {
-        return $this->minimumOrderQuantity;
-    }
-
-    /**
-     * Sets the minimum order quantity.
-     *
-     * @param float $quantity
-     *
-     * @return StockSubjectTrait
-     */
-    public function setMinimumOrderQuantity($quantity)
-    {
-        $this->minimumOrderQuantity = $quantity;
 
         return $this;
     }
@@ -238,6 +231,30 @@ trait StockSubjectTrait
     }
 
     /**
+     * Returns the estimated date of arrival.
+     *
+     * @return \DateTime
+     */
+    public function getEstimatedDateOfArrival()
+    {
+        return $this->estimatedDateOfArrival;
+    }
+
+    /**
+     * Sets the estimated date of arrival.
+     *
+     * @param \DateTime $date
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setEstimatedDateOfArrival(\DateTime $date = null)
+    {
+        $this->estimatedDateOfArrival = $date;
+
+        return $this;
+    }
+
+    /**
      * Returns the replenishment time.
      *
      * @return int
@@ -252,7 +269,7 @@ trait StockSubjectTrait
      *
      * @param int $days
      *
-     * @return StockSubjectTrait
+     * @return $this|StockSubjectInterface
      */
     public function setReplenishmentTime($days)
     {
@@ -262,23 +279,99 @@ trait StockSubjectTrait
     }
 
     /**
-     * Returns the estimated date of arrival.
+     * Returns the geocode.
      *
-     * @return \DateTime
+     * @return string
      */
-    public function getEstimatedDateOfArrival()
+    public function getGeocode()
     {
-        return $this->estimatedDateOfArrival;
+        return $this->geocode;
     }
 
     /**
-     * Sets the estimated date of arrival.
+     * Sets the geocode.
      *
-     * @param \DateTime $date
+     * @param string $code
+     *
+     * @return $this|StockSubjectInterface
      */
-    public function setEstimatedDateOfArrival(\DateTime $date = null)
+    public function setGeocode($code)
     {
-        $this->estimatedDateOfArrival = $date;
+        $this->geocode = $code;
+
+        return $this;
+    }
+
+    /**
+     * Returns the minimum order quantity.
+     *
+     * @return float
+     */
+    public function getMinimumOrderQuantity()
+    {
+        return $this->minimumOrderQuantity;
+    }
+
+    /**
+     * Sets the minimum order quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setMinimumOrderQuantity($quantity)
+    {
+        $this->minimumOrderQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether or not this subject is available only through quotes.
+     *
+     * @return bool
+     */
+    public function isQuoteOnly()
+    {
+        return $this->quoteOnly;
+    }
+
+    /**
+     * Sets the whether or not this subject is available only through quotes.
+     *
+     * @param bool $quoteOnly
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setQuoteOnly($quoteOnly)
+    {
+        $this->quoteOnly = (bool)$quoteOnly;
+
+        return $this;
+    }
+
+    /**
+     * Returns the endOfLife.
+     *
+     * @return bool
+     */
+    public function isEndOfLife()
+    {
+        return $this->endOfLife;
+    }
+
+    /**
+     * Sets the endOfLife.
+     *
+     * @param bool $endOfLife
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setEndOfLife($endOfLife)
+    {
+        $this->endOfLife = (bool)$endOfLife;
+
+        return $this;
     }
 
     /**

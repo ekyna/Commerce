@@ -92,6 +92,7 @@ abstract class AbstractStockUnitListener
         $stockUnit = $this->getStockUnitFromEvent($event);
 
         $trackProperties = [
+            'state',
             'orderedQuantity',
             'receivedQuantity',
             'soldQuantity',
