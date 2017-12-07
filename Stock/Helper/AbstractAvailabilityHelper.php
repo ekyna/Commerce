@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Stock\Helper;
 
 use Ekyna\Component\Commerce\Common\View\Formatter;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 
 /**
@@ -11,7 +12,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
  * @package Ekyna\Component\Commerce\Stock\Helper
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAvailabilityHelper
+abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
 {
     /**
      * @var Formatter
@@ -20,11 +21,9 @@ abstract class AbstractAvailabilityHelper
 
 
     /**
-     * Returns the formatter.
-     *
-     * @return Formatter
+     * @inheritdoc
      */
-    protected function getFormatter()
+    public function getFormatter()
     {
         if (null !== $this->formatter) {
             return $this->formatter;
@@ -34,11 +33,7 @@ abstract class AbstractAvailabilityHelper
     }
 
     /**
-     * Returns the subject's available quantity.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return float|int
+     * @inheritdoc
      */
     public function getAvailableQuantity(StockSubjectInterface $subject)
     {
@@ -46,12 +41,14 @@ abstract class AbstractAvailabilityHelper
             return 0;
         }
 
-        // TODO MOQ
+        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+            return INF;
+        }
+
         if ($subject->getStockState() === StockSubjectStates::STATE_IN_STOCK) {
             return $subject->getAvailableStock();
         }
 
-        // TODO MOQ
         if ((0 < $qty = $subject->getVirtualStock()) && (null !== $subject->getEstimatedDateOfArrival())) {
             return $qty;
         }
@@ -60,11 +57,7 @@ abstract class AbstractAvailabilityHelper
     }
 
     /**
-     * Returns the subject's availability message.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getAvailabilityMessage(StockSubjectInterface $subject)
     {
@@ -72,14 +65,16 @@ abstract class AbstractAvailabilityHelper
             return $this->translate('quote_only');
         }
 
-        // TODO MOQ
+        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+            return $this->translate('available');
+        }
+
         if ($subject->getStockState() === StockSubjectStates::STATE_IN_STOCK) {
             return $this->translate('in_stock', [
                 '%qty%' => $this->getFormatter()->number($subject->getAvailableStock()),
             ]);
         }
 
-        // TODO MOQ
         if ((0 < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
             return $this->translate('pre_order', [
                 '%eda%' => $this->getFormatter()->date($eda),
@@ -99,14 +94,4 @@ abstract class AbstractAvailabilityHelper
 
         return $this->translate('out_of_stock');
     }
-
-    /**
-     * Translate the availability message.
-     *
-     * @param string $id
-     * @param array  $parameters
-     *
-     * @return string
-     */
-    abstract protected function translate($id, array $parameters = []);
 }

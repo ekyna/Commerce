@@ -37,6 +37,8 @@ interface SubjectProviderInterface
      *
      * @param Subject\Model\SubjectRelativeInterface $relative
      *
+     * @throws SubjectException
+     *
      * @return object
      */
     public function resolve(Subject\Model\SubjectRelativeInterface $relative);
