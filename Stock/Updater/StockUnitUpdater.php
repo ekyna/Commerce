@@ -41,6 +41,14 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
+    public function getStockUnitCache()
+    {
+        return $this->stockUnitCache;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function updateOrdered(StockUnitInterface $stockUnit, $quantity, $relative = true)
     {
         if ($relative) {

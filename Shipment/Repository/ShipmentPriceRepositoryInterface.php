@@ -20,7 +20,7 @@ interface ShipmentPriceRepositoryInterface extends ResourceRepositoryInterface
      * @param ShipmentMethodInterface $method
      * @param float                   $weight The weight in Kg.
      *
-     * @return mixed
+     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface|null
      */
     public function findOneByCountryAndMethodAndWeight(
         CountryInterface $country,

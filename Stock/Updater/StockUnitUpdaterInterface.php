@@ -13,6 +13,13 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 interface StockUnitUpdaterInterface
 {
     /**
+     * Returns the stockUnitCache.
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface
+     */
+    public function getStockUnitCache();
+
+    /**
      * Updates the ordered quantity (to supplier).
      *
      * @param StockUnitInterface $stockUnit

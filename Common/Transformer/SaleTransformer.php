@@ -109,21 +109,21 @@ class SaleTransformer implements SaleTransformerInterface
 
         $this->preTransform();
 
-        // Disable the uploadable listener
-        $this->uploadableListener->setEnabled(false);
-
         // Persist the target sale
         $event = $this->getOperator($this->target)->persist($this->target);
         if (!$event->isPropagationStopped() && !$event->hasErrors()) {
+            // Disable the uploadable listener
+            $this->uploadableListener->setEnabled(false);
+
             // Delete the source sale
             $sourceEvent = $this->getOperator($this->source)->delete($this->source, true); // Hard delete
             if (!$sourceEvent->isPropagationStopped() && !$sourceEvent->hasErrors()) {
                 $event = null;
             }
-        }
 
-        // Enable the uploadable listener
-        $this->uploadableListener->setEnabled(true);
+            // Enable the uploadable listener
+            $this->uploadableListener->setEnabled(true);
+        }
 
         $this->postTransform();
 

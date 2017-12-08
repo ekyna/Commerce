@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class StockUnitResolver
@@ -30,6 +31,11 @@ class StockUnitResolver implements StockUnitResolverInterface
     protected $stockUnitCache;
 
     /**
+     * @var PersistenceHelperInterface
+     */
+    protected $persistenceHelper;
+
+    /**
      * @var EntityManagerInterface
      */
     protected $entityManager;
@@ -43,28 +49,31 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * Constructor.
      *
-     * @param SubjectHelperInterface $subjectHelper
-     * @param StockUnitCacheInterface $stockUnitCache
-     * @param EntityManagerInterface $entityManager
+     * @param SubjectHelperInterface     $subjectHelper
+     * @param StockUnitCacheInterface    $stockUnitCache
+     * @param PersistenceHelperInterface $persistenceHelper
+     * @param EntityManagerInterface     $entityManager
      */
     public function __construct(
         SubjectHelperInterface $subjectHelper,
         StockUnitCacheInterface $stockUnitCache,
+        PersistenceHelperInterface $persistenceHelper,
         EntityManagerInterface $entityManager
     ) {
         $this->subjectHelper = $subjectHelper;
         $this->stockUnitCache = $stockUnitCache;
+        $this->persistenceHelper = $persistenceHelper;
         $this->entityManager = $entityManager;
 
-        $this->clear();
+        $this->repositoryCache = [];
     }
 
     /**
-     * Clears the cache.
+     * @inheritdoc
      */
-    public function clear()
+    public function getStockUnitCache()
     {
-        $this->repositoryCache = [];
+        return $this->stockUnitCache;
     }
 
     /**
@@ -222,7 +231,9 @@ class StockUnitResolver implements StockUnitResolverInterface
             }
         }
 
-        return $cachedUnits;
+        return array_filter($cachedUnits, function($stockUnit) {
+            return !$this->persistenceHelper->isScheduledForRemove($stockUnit);
+        });
     }
 
     /**

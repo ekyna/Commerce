@@ -112,7 +112,6 @@ class SupplierOrderItemListener extends AbstractListener
      * Delete event handler.
      *
      * @param ResourceEventInterface $event
-     * @throws IllegalOperationException
      */
     public function onDelete(ResourceEventInterface $event)
     {

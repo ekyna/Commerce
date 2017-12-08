@@ -13,6 +13,7 @@ class SupplierOrder extends Constraint
 {
     public $order_and_delivery_items_miss_match = 'ekyna_commerce.supplier_order.order_and_delivery_items_miss_match';
     public $duplicate_product                   = 'ekyna_commerce.supplier_order.duplicate_product';
+    public $null_estimated_date_of_arrival      = 'ekyna_commerce.supplier_order.null_estimated_date_of_arrival';
 
 
     /**

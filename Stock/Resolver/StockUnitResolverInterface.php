@@ -14,6 +14,13 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 interface StockUnitResolverInterface
 {
     /**
+     * Returns the stock unit cache.
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface
+     */
+    public function getStockUnitCache();
+
+    /**
      * Creates a stock unit for the given subject relative.
      *
      * @param SubjectRelativeInterface $relative

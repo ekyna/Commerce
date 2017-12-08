@@ -198,6 +198,9 @@ class StockUnitLinker implements StockUnitLinkerInterface
             throw new LogicException("Can't unlink supplier order item as it has been partially or fully received or shipped.");
         }
 
+        // Cache the stock unit
+        $this->unitResolver->getStockUnitCache()->add($stockUnit);
+
         // Unlink stock unit by setting supplier order item to null and ordered quantity to zero
         $stockUnit
             ->setSupplierOrderItem(null)

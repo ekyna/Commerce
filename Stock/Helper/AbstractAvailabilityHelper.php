@@ -82,14 +82,14 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             ]);
         }
 
+        if ($subject->isEndOfLife()) {
+            return $this->translate('end_of_life');
+        }
+
         if (0 < $days = $subject->getReplenishmentTime()) {
             return $this->translate('replenishment', [
                 '%days%' => $days,
             ]);
-        }
-
-        if ($subject->isEndOfLife()) {
-            return $this->translate('end_of_life');
         }
 
         return $this->translate('out_of_stock');

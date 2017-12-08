@@ -40,13 +40,15 @@
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderAdjustment">
         TODO
-    </class>
+    </class>-->
 
     <class name="Ekyna\Component\Commerce\Order\Entity\OrderAttachment">
-        TODO
+        <property name="order">
+            <constraint name="NotNull"/>
+        </property>
     </class>
 
-    <class name="Ekyna\Component\Commerce\Order\Entity\OrderItem">
+    <!--<class name="Ekyna\Component\Commerce\Order\Entity\OrderItem">
         TODO
     </class>
 

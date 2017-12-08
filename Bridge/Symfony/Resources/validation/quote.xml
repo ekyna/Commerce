@@ -22,13 +22,15 @@
 
     <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAdjustment">
         TODO
-    </class>
+    </class>-->
 
     <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteAttachment">
-        TODO
+        <property name="quote">
+            <constraint name="NotNull"/>
+        </property>
     </class>
 
-    <class name="Ekyna\Component\Commerce\Quote\Entity\QuoteItem">
+    <!--<class name="Ekyna\Component\Commerce\Quote\Entity\QuoteItem">
         TODO
     </class>
 

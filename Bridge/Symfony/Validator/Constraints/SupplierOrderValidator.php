@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -28,6 +29,15 @@ class SupplierOrderValidator extends ConstraintValidator
         }
         if (!$constraint instanceof SupplierOrder) {
             throw new UnexpectedTypeException($constraint, SupplierOrder::class);
+        }
+
+        // Stockable supplier order must have an EDA
+        if (SupplierOrderStates::isStockableState($order->getState()) && null === $order->getEstimatedDateOfArrival()) {
+            $this
+                ->context
+                ->buildViolation($constraint->null_estimated_date_of_arrival)
+                ->atPath('estimatedDateOfArrival')
+                ->addViolation();
         }
 
         // Supplier products duplication

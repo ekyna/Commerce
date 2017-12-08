@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
-use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
@@ -165,8 +164,6 @@ class SupplierOrderListener extends AbstractListener
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
      */
     public function onPreDelete(ResourceEventInterface $event)
     {
