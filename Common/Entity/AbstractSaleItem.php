@@ -488,4 +488,17 @@ abstract class AbstractSaleItem implements SaleItemInterface
 
         return 0;
     }
+
+    public function getHash()
+    {
+        $parts = [];
+
+        if ($this->hasSubjectIdentity()) {
+            $parts[] = $this->getSubjectIdentity()->getProvider() . ':' . $this->getSubjectIdentity()->getIdentifier();
+        } else {
+            $parts[] = $this->getReference();
+        }
+
+        return implode('-', $parts);
+    }
 }

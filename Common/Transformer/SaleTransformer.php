@@ -143,6 +143,17 @@ class SaleTransformer implements SaleTransformerInterface
         if ($this->source instanceof QuoteInterface || $this->source instanceof OrderInterface) {
             $this->target->setOriginNumber($this->source->getNumber());
         }
+
+        // Abort if source sale has no customer
+        if (null === $customer = $this->source->getCustomer()) {
+            return;
+        }
+
+        // If target sale is order and source customer has parent
+        if ($this->target instanceof OrderInterface && $customer->hasParent()) {
+            // Sets the parent as customer
+            $this->target->setCustomer($customer->getParent());
+        }
     }
 
     /**
@@ -150,7 +161,22 @@ class SaleTransformer implements SaleTransformerInterface
      */
     protected function preTransform()
     {
+        // Abort if source sale has no customer
+        if (null === $customer = $this->source->getCustomer()) {
+            return;
+        }
 
+        // Order specific: origin customer
+        if ($this->target instanceof OrderInterface) {
+            // If target sale has no origin customer
+            if (null === $this->target->getOriginCustomer()) {
+                // If the source customer is different from the target sale's customer
+                if ($customer !== $this->target->getCustomer()) {
+                    // Set origin customer
+                    $this->target->setOriginCustomer($customer);
+                }
+            }
+        }
     }
 
     /**

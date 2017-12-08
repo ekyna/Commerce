@@ -44,7 +44,7 @@ class QuoteListener extends AbstractSaleListener
 
         // Set the default 'expires at' date time
         $date = new \DateTime();
-        $date->modify($this->expirationDelay);
+        $date->modify($this->expirationDelay)->setTime(0, 0, 0);
         $quote->setExpiresAt($date);
     }
 

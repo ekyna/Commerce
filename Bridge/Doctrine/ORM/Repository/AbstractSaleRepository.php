@@ -88,12 +88,40 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
+    public function findByParent(CustomerInterface $customer, array $states = [])
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb
+            ->andWhere($qb->expr()->in('o.customer', ':customers'))
+            ->addOrderBy('o.createdAt', 'DESC');
+
+        $parameters = ['customers' => $customer->getChildren()->toArray()];
+
+        if (!empty($states)) {
+            $qb->andWhere($qb->expr()->in('o.state', ':states'));
+
+            $parameters['states'] = $states;
+        }
+
+        return $qb
+            ->getQuery()
+            ->setParameters($parameters)
+            ->getResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function findOneByCustomerAndNumber(CustomerInterface $customer, $number)
     {
         $qb = $this->createQueryBuilder('o');
 
         $sale = $qb
-            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->join('o.customer', 'c')
+            ->andWhere($qb->expr()->orX(
+                $qb->expr()->eq('c', ':customer'),
+                $qb->expr()->eq('c.parent', ':customer')
+            ))
             ->andWhere($qb->expr()->eq('o.number', ':number'))
             ->getQuery()
             ->setParameters([

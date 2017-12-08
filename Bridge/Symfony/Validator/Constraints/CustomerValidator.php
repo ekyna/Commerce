@@ -41,6 +41,19 @@ class CustomerValidator extends ConstraintValidator
                     ->buildViolation($constraint->hierarchy_overflow)
                     ->atPath('parent')
                     ->addViolation();
+
+                return;
+            }
+
+            // Prevent setting a parent to a customer who have non zero outstanding|credit balance
+            if (0 != $customer->getOutstandingBalance() || 0 != $customer->getCreditBalance()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->non_zero_balance)
+                    ->atPath('parent')
+                    ->addViolation();
+
+                return;
             }
         }
 
@@ -51,12 +64,16 @@ class CustomerValidator extends ConstraintValidator
                 ->buildViolation($constraint->parent_company_is_mandatory)
                 ->atPath('parent')
                 ->addViolation();
+
+            return;
         } elseif ($customer->hasChildren() && 0 == strlen($customer->getCompany())) {
             $this
                 ->context
                 ->buildViolation($constraint->company_is_mandatory)
                 ->atPath('company')
                 ->addViolation();
+
+            return;
         }
 
         // Outstanding / Payment term
@@ -68,12 +85,16 @@ class CustomerValidator extends ConstraintValidator
                 ->buildViolation($constraint->term_required_for_outstanding)
                 ->atPath('paymentTerm')
                 ->addViolation();
+
+            return;
         } else if ($hasPaymentTerm && !$hasOutstanding) {
             $this
                 ->context
                 ->buildViolation($constraint->outstanding_required_for_term)
                 ->atPath('outstandingLimit')
                 ->addViolation();
+
+            return;
         }
     }
 }

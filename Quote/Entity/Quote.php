@@ -302,4 +302,18 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isExpired()
+    {
+        if (null === $this->expiresAt) {
+            return false;
+        }
+
+        $diff = $this->expiresAt->diff((new \DateTime())->setTime(0,0,0));
+
+        return 0 < $diff->days && !$diff->invert;
+    }
 }

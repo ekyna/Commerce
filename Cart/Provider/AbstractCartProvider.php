@@ -140,7 +140,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
             $this->cart
                 ->setCustomer(null)
                 ->setCustomerGroup(null)
-                ->setCurrency(null)
+                // ->setCurrency(null) TODO Can't be set to null
                 ->setEmail(null)
                 ->setCompany(null)
                 ->setGender(null)

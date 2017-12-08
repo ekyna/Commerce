@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraint;
 class Customer extends Constraint
 {
     public $hierarchy_overflow            = 'ekyna_commerce.customer.hierarchy_overflow';
+    public $non_zero_balance              = 'ekyna_commerce.customer.non_zero_balance';
     public $parent_company_is_mandatory   = 'ekyna_commerce.customer.parent_company_is_mandatory';
     public $company_is_mandatory          = 'ekyna_commerce.customer.company_is_mandatory';
     public $term_required_for_outstanding = 'ekyna_commerce.customer.term_required_for_outstanding';

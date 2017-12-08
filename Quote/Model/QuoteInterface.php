@@ -26,4 +26,11 @@ interface QuoteInterface extends SaleInterface
      * @return $this|QuoteInterface
      */
     public function setExpiresAt(\DateTime $expiresAt = null);
+
+    /**
+     * Returns whether or not the quote is expired.
+     *
+     * @return bool
+     */
+    public function isExpired();
 }
