@@ -15,6 +15,7 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 final class DocumentTypes
 {
     const TYPE_FORM         = 'form';
+    const TYPE_VOUCHER      = 'voucher';
     const TYPE_QUOTE        = 'quote';
     const TYPE_PROFORMA     = 'proforma';
     const TYPE_CONFIRMATION = 'confirmation';
@@ -29,6 +30,7 @@ final class DocumentTypes
     {
         return [
             static::TYPE_FORM,
+            static::TYPE_VOUCHER,
             static::TYPE_QUOTE,
             static::TYPE_PROFORMA,
             static::TYPE_CONFIRMATION,
@@ -36,7 +38,7 @@ final class DocumentTypes
     }
 
     /**
-     * Returns the sale class supported by the given type.
+     * Returns the sale class supported by the given type for document generation.
      *
      * @param string $type
      *
@@ -52,6 +54,8 @@ final class DocumentTypes
             case static::TYPE_PROFORMA:
             case static::TYPE_CONFIRMATION:
                 return OrderInterface::class;
+            case static::TYPE_VOUCHER:
+                return null;
             default:
                 throw new InvalidArgumentException("Unexpected type '$type'.");
         }

@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Quote\Model;
 
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model as Common;
 
 /**
  * Interface QuoteInterface
  * @package Ekyna\Component\Commerce\Quote\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface QuoteInterface extends SaleInterface
+interface QuoteInterface extends Common\SaleInterface
 {
     /**
      * Returns the "expires at" date time.
@@ -33,4 +33,18 @@ interface QuoteInterface extends SaleInterface
      * @return bool
      */
     public function isExpired();
+
+    /**
+     * Returns whether or not the quote has voucher number and attachment set.
+     *
+     * @return bool
+     */
+    public function hasVoucher();
+
+    /**
+     * Returns the voucher attachment if set.
+     *
+     * @return Common\SaleAttachmentInterface|null
+     */
+    public function getVoucherAttachment();
 }

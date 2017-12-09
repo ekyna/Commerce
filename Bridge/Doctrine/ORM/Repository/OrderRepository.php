@@ -50,6 +50,38 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     /**
      * @inheritdoc
      */
+    public function findByOriginCustomer(CustomerInterface $customer, array $states = [], $strict = false)
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        if ($strict) {
+            $qb->andWhere($qb->expr()->eq('o.originCustomer', ':customer'));
+        } else {
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->eq('o.customer', ':customer'),
+                $qb->expr()->eq('o.originCustomer', ':customer')
+            ));
+        }
+
+        $qb->addOrderBy('o.createdAt', 'DESC');
+
+        $parameters = ['customer' => $customer];
+
+        if (!empty($states)) {
+            $qb->andWhere($qb->expr()->in('o.state', ':states'));
+
+            $parameters['states'] = $states;
+        }
+
+        return $qb
+            ->getQuery()
+            ->setParameters($parameters)
+            ->getResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function getAlias()
     {
         return 'o';

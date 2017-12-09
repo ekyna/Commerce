@@ -37,20 +37,11 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
      *
      * @param CustomerInterface $customer
      * @param array             $states
+     * @param bool              $withChildren
      *
      * @return array|SaleInterface[]
      */
-    public function findByCustomer(CustomerInterface $customer, array $states = []);
-
-    /**
-     * Finds the sales by parent customer (ie children sales), optionally filtered by states.
-     *
-     * @param CustomerInterface $customer
-     * @param array             $states
-     *
-     * @return array|SaleInterface[]
-     */
-    public function findByParent(CustomerInterface $customer, array $states = []);
+    public function findByCustomer(CustomerInterface $customer, array $states = [], $withChildren = false);
 
     /**
      * Finds the sale by customer and number.

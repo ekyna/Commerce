@@ -65,6 +65,7 @@ class AddressValidator extends ConstraintValidator
                     'max' => 128,
                 ]),
             ],
+            // TODO https://github.com/barbieswimcrew/zip-code-validator/blob/master/src/ZipCodeValidator/Constraints/ZipCodeValidator.php
             'postalCode' => [
                 new Assert\NotBlank(),
                 new Assert\Length([

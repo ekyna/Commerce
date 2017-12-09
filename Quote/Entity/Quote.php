@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Quote\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
@@ -315,5 +316,27 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         $diff = $this->expiresAt->diff((new \DateTime())->setTime(0,0,0));
 
         return 0 < $diff->days && !$diff->invert;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasVoucher()
+    {
+        return !empty($this->voucherNumber) && null !== $this->getVoucherAttachment();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getVoucherAttachment()
+    {
+        foreach ($this->attachments as $attachment) {
+            if ($attachment->getType() === DocumentTypes::TYPE_VOUCHER) {
+                return $attachment;
+            }
+        }
+
+        return null;
     }
 }

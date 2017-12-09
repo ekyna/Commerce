@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Order\Repository;
 
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
 /**
@@ -21,4 +22,14 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      * @return OrderInterface
      */
     public function createNew();
+
+    /**
+     * Finds the sales by origin customer, optionally filtered by states.
+     *
+     * @param CustomerInterface $customer
+     * @param array             $states
+     *
+     * @return array|OrderInterface[]
+     */
+    public function findByOriginCustomer(CustomerInterface $customer, array $states = []);
 }

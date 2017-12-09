@@ -64,38 +64,19 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
-    public function findByCustomer(CustomerInterface $customer, array $states = [])
+    public function findByCustomer(CustomerInterface $customer, array $states = [], $withChildren = false)
     {
         $qb = $this->createQueryBuilder('o');
-        $qb
-            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
-            ->addOrderBy('o.createdAt', 'DESC');
 
-        $parameters = ['customer' => $customer];
-
-        if (!empty($states)) {
-            $qb->andWhere($qb->expr()->in('o.state', ':states'));
-
-            $parameters['states'] = $states;
+        if ($withChildren && $customer->hasChildren()) {
+            $qb->andWhere($qb->expr()->in('o.customer', ':customers'));
+            $parameters = ['customers' => array_merge([$customer], $customer->getChildren()->toArray())];
+        } else {
+            $qb->andWhere($qb->expr()->eq('o.customer', ':customer'));
+            $parameters = ['customer' => $customer];
         }
 
-        return $qb
-            ->getQuery()
-            ->setParameters($parameters)
-            ->getResult();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function findByParent(CustomerInterface $customer, array $states = [])
-    {
-        $qb = $this->createQueryBuilder('o');
-        $qb
-            ->andWhere($qb->expr()->in('o.customer', ':customers'))
-            ->addOrderBy('o.createdAt', 'DESC');
-
-        $parameters = ['customers' => $customer->getChildren()->toArray()];
+        $qb->addOrderBy('o.createdAt', 'DESC');
 
         if (!empty($states)) {
             $qb->andWhere($qb->expr()->in('o.state', ':states'));

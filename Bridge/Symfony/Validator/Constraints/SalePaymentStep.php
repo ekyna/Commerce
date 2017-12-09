@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraint;
  */
 class SalePaymentStep extends Constraint
 {
+    public $voucher_must_be_set         = 'ekyna_commerce.sale.voucher_must_be_set';
     public $shipment_method_must_be_set = 'ekyna_commerce.sale.shipment_method_must_be_set';
 
     /**
