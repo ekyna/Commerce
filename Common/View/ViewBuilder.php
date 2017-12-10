@@ -380,7 +380,7 @@ class ViewBuilder
 
         // Method title
         $designation = 'Shipping cost';
-        if (null !== $method = $sale->getPreferredShipmentMethod()) {
+        if (null !== $method = $sale->getShipmentMethod()) {
             $designation = $method->getTitle();
         }
 

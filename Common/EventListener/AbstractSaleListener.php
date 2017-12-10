@@ -536,7 +536,7 @@ abstract class AbstractSaleListener
      */
     protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale)
     {
-        return $this->persistenceHelper->isChanged($sale, 'preferredShipmentMethod');
+        return $this->persistenceHelper->isChanged($sale, 'shipmentMethod');
     }
 
     /**

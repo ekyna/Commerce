@@ -197,7 +197,7 @@ class DocumentBuilder implements DocumentBuilderInterface
             $line = $this->createLine($document);
             $line
                 ->setType(Document\DocumentLineTypes::TYPE_SHIPMENT)
-                ->setDesignation($sale->getPreferredShipmentMethod()->getTitle());
+                ->setDesignation($sale->getShipmentMethod()->getTitle());
 
             $document->addLine($line);
         }

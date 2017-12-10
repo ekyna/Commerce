@@ -187,7 +187,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
             ->leftJoin($alias . '.customerGroup', 'customer_group')
             ->leftJoin($alias . '.invoiceAddress', 'invoice_address')
             ->leftJoin($alias . '.deliveryAddress', 'delivery_address')
-            ->leftJoin($alias . '.preferredShipmentMethod', 'shipment_method')
+            ->leftJoin($alias . '.shipmentMethod', 'shipment_method')
             ->leftJoin($alias . '.currency', 'currency')
             ->setMaxResults(1);
     }

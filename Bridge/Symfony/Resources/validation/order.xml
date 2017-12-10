@@ -9,7 +9,7 @@
         <property name="invoiceAddress">
             <constraint name="NotNull" />
         </property>
-        <property name="preferredShipmentMethod">
+        <property name="shipmentMethod">
             <constraint name="NotNull" />
         </property>
         <property name="state">

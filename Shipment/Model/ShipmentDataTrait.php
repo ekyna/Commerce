@@ -10,20 +10,24 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 trait ShipmentDataTrait
 {
     /**
-     * @var ShipmentMethodInterface
-     * TODO rename to shipmentMethod
-     */
-    protected $preferredShipmentMethod;
-
-    /**
      * @var float
      */
     protected $weightTotal;
 
     /**
+     * @var ShipmentMethodInterface
+     */
+    protected $shipmentMethod;
+
+    /**
      * @var float
      */
     protected $shipmentAmount;
+
+    /**
+     * @var string
+     */
+    protected $relayPoint;
 
 
     /**
@@ -33,30 +37,6 @@ trait ShipmentDataTrait
     {
         $this->weightTotal = 0;
         $this->shipmentAmount = 0;
-    }
-
-    /**
-     * Returns the preferred shipment method.
-     *
-     * @return ShipmentMethodInterface
-     */
-    public function getPreferredShipmentMethod()
-    {
-        return $this->preferredShipmentMethod;
-    }
-
-    /**
-     * Sets the preferred shipment method.
-     *
-     * @param ShipmentMethodInterface $method
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function setPreferredShipmentMethod(ShipmentMethodInterface $method = null)
-    {
-        $this->preferredShipmentMethod = $method;
-
-        return $this;
     }
 
     /**
@@ -84,6 +64,30 @@ trait ShipmentDataTrait
     }
 
     /**
+     * Returns the preferred shipment method.
+     *
+     * @return ShipmentMethodInterface
+     */
+    public function getShipmentMethod()
+    {
+        return $this->shipmentMethod;
+    }
+
+    /**
+     * Sets the preferred shipment method.
+     *
+     * @param ShipmentMethodInterface $method
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function setShipmentMethod(ShipmentMethodInterface $method = null)
+    {
+        $this->shipmentMethod = $method;
+
+        return $this;
+    }
+
+    /**
      * Returns the shipment amount.
      *
      * @return float
@@ -103,6 +107,30 @@ trait ShipmentDataTrait
     public function setShipmentAmount($amount)
     {
         $this->shipmentAmount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the relay point identifier.
+     *
+     * @return string
+     */
+    public function getRelayPoint()
+    {
+        return $this->relayPoint;
+    }
+
+    /**
+     * Sets the relay point identifier.
+     *
+     * @param string $relayPoint
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function setRelayPoint($relayPoint)
+    {
+        $this->relayPoint = $relayPoint;
 
         return $this;
     }

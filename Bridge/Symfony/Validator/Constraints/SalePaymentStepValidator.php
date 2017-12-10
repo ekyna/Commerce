@@ -31,7 +31,7 @@ class SalePaymentStepValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SalePaymentStep::class);
         }
 
-        if (null === $sale->getPreferredShipmentMethod()) {
+        if (null === $sale->getShipmentMethod()) {
             $this->context
                 ->buildViolation($constraint->shipment_method_must_be_set)
                 ->addViolation();

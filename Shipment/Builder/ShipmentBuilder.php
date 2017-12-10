@@ -50,7 +50,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         }
 
         // If shipment method is not defined and preferred method if defined
-        if (null === $shipment->getMethod() && null !== $method = $sale->getPreferredShipmentMethod()) {
+        if (null === $shipment->getMethod() && null !== $method = $sale->getShipmentMethod()) {
             // Set preferred method
             $shipment->setMethod($method);
         }

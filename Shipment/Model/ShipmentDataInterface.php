@@ -10,22 +10,6 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 interface ShipmentDataInterface
 {
     /**
-     * Returns the preferred shipment method.
-     *
-     * @return ShipmentMethodInterface
-     */
-    public function getPreferredShipmentMethod();
-
-    /**
-     * Sets the preferred shipment method.
-     *
-     * @param ShipmentMethodInterface $method
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function setPreferredShipmentMethod(ShipmentMethodInterface $method = null);
-
-    /**
      * Returns the weight total (kilograms).
      *
      * @return float
@@ -42,6 +26,22 @@ interface ShipmentDataInterface
     public function setWeightTotal($total);
 
     /**
+     * Returns the shipment method.
+     *
+     * @return ShipmentMethodInterface
+     */
+    public function getShipmentMethod();
+
+    /**
+     * Sets the shipment method.
+     *
+     * @param ShipmentMethodInterface $method
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function setShipmentMethod(ShipmentMethodInterface $method = null);
+
+    /**
      * Returns the shipment amount.
      *
      * @return float
@@ -56,4 +56,20 @@ interface ShipmentDataInterface
      * @return $this|ShipmentDataInterface
      */
     public function setShipmentAmount($amount);
+
+    /**
+     * Returns the relay point identifier.
+     *
+     * @return string
+     */
+    public function getRelayPoint();
+
+    /**
+     * Sets the relay point identifier.
+     *
+     * @param string $relayPoint
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function setRelayPoint($relayPoint);
 }

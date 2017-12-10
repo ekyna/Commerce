@@ -45,7 +45,7 @@ class SaleCopier implements SaleCopierInterface
     {
         $fields = [
             'currency', 'customer', 'customerGroup',
-            'sameAddress', 'preferredShipmentMethod', 'shipmentAmount',
+            'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
             'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
             'voucherNumber', 'description', 'comment',
         ];

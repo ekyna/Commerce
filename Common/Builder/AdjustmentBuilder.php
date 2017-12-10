@@ -113,7 +113,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $data = [];
 
         // For now, we assume that sale's taxation adjustments are only related to shipment.
-        if (!($sale->isTaxExempt() || $sale->isSample()) && null !== $taxable = $sale->getPreferredShipmentMethod()) {
+        if (!($sale->isTaxExempt() || $sale->isSample()) && null !== $taxable = $sale->getShipmentMethod()) {
             // Resolve taxes
             $data = $this->taxResolver->resolveTaxes($taxable, $sale);
         }
