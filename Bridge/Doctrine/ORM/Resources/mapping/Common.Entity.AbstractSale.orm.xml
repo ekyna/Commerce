@@ -27,7 +27,7 @@
         <field name="adjustmentTotal" column="adjustment_total" type="decimal" precision="10" scale="5"/>
         <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
         <field name="paidTotal" column="paid_total" type="decimal" precision="12" scale="5"/>
-
+        <field name="pendingTotal" column="pending_total" type="decimal" precision="12" scale="5"/>
         <field name="outstandingAccepted" column="outstanding_accepted" type="decimal" precision="12" scale="5"/>
         <field name="outstandingExpired" column="outstanding_expired" type="decimal" precision="12" scale="5"/>
         <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="5"/>

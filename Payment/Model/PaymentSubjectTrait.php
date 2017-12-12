@@ -28,6 +28,11 @@ trait PaymentSubjectTrait
     /**
      * @var float
      */
+    protected $pendingTotal;
+
+    /**
+     * @var float
+     */
     protected $outstandingAccepted;
 
     /**
@@ -63,6 +68,7 @@ trait PaymentSubjectTrait
     {
         $this->grandTotal = 0;
         $this->paidTotal = 0;
+        $this->pendingTotal = 0;
         $this->outstandingAccepted = 0;
         $this->outstandingExpired = 0;
         $this->outstandingLimit = 0;
@@ -90,7 +96,7 @@ trait PaymentSubjectTrait
      */
     public function setGrandTotal($total)
     {
-        $this->grandTotal = $total;
+        $this->grandTotal = (float)$total;
 
         return $this;
     }
@@ -114,7 +120,31 @@ trait PaymentSubjectTrait
      */
     public function setPaidTotal($total)
     {
-        $this->paidTotal = $total;
+        $this->paidTotal = (float)$total;
+
+        return $this;
+    }
+
+    /**
+     * Returns the pending total.
+     *
+     * @return float
+     */
+    public function getPendingTotal()
+    {
+        return $this->pendingTotal;
+    }
+
+    /**
+     * Sets the pending total.
+     *
+     * @param float $total
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setPendingTotal($total)
+    {
+        $this->pendingTotal = (float)$total;
 
         return $this;
     }
@@ -138,7 +168,7 @@ trait PaymentSubjectTrait
      */
     public function setOutstandingAccepted($total)
     {
-        $this->outstandingAccepted = $total;
+        $this->outstandingAccepted = (float)$total;
 
         return $this;
     }
@@ -162,7 +192,7 @@ trait PaymentSubjectTrait
      */
     public function setOutstandingExpired($total)
     {
-        $this->outstandingExpired = $total;
+        $this->outstandingExpired = (float)$total;
 
         return $this;
     }
@@ -186,7 +216,7 @@ trait PaymentSubjectTrait
      */
     public function setOutstandingLimit($amount)
     {
-        $this->outstandingLimit = $amount;
+        $this->outstandingLimit = (float)$amount;
 
         return $this;
     }
@@ -277,23 +307,20 @@ trait PaymentSubjectTrait
      */
     public function getRemainingAmount()
     {
-        // If fully paid
-        if ($this->isPaid()) {
-            // Return zero
-            return 0;
-        }
-
-        // If paid + accepted outstanding equals grand total
+        $amount = 0;
         $currency = $this->getCurrency()->getCode();
 
-        if (0 < $this->outstandingAccepted) {
-            if (0 === Money::compare($this->paidTotal + $this->outstandingAccepted, $this->grandTotal, $currency)) {
-                // Return accepted outstanding amount (for fund release)
-                return $this->outstandingAccepted;
-            }
+        $c = Money::compare($this->grandTotal, $this->paidTotal + $this->outstandingAccepted + $this->pendingTotal, $currency);
+        if (1 === $c) {
+            $amount = $this->grandTotal - $this->paidTotal - $this->outstandingAccepted - $this->pendingTotal;
+        } else if (0 === $c && 0 < $this->outstandingAccepted) {
+            $amount = $this->outstandingAccepted;
         }
 
-        // Return grand total minus paid
-        return $this->grandTotal - $this->paidTotal;
+        if (0 < $amount) {
+            return $amount;
+        }
+
+        return 0;
     }
 }

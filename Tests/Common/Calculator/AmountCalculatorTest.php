@@ -102,19 +102,55 @@ class AmountCalculatorTest extends AbstractAmountTest
         $shipmentResult = $sale->getShipmentResult();
         $finalResult    = $sale->getFinalResult();
 
-        $this->assertResult($grossResult,    1029.93, 1029.93, 93.61, 936.32, 66.18, 1002.51);
+        $this->assertResult($grossResult,    1029.93, 1029.93, 93.61, 936.32, 66.19, 1002.51);
 
         $this->assertResult($discountResult,  112.36,  112.36,  0.00, 112.36,  7.94,  120.30);
 
         $this->assertResult($shipmentResult,   15.26,   15.26,  0.00,  15.26,  3.05,   18.31);
 
-        $this->assertResult($finalResult,     936.32, 936.32, 112.36, 839.22, 61.29,  900.52);
+        $this->assertResult($finalResult,     936.32, 936.32, 112.36, 839.22, 61.30,  900.52);
 
         $taxes = $finalResult->getTaxAdjustments();
         $this->assertCount(3, $taxes);
-        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 36.06, 5.5);
+        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 36.07, 5.5);
         $this->assertAdjustment($taxes[1], 'VAT 7%',    6.17, 7);
         $this->assertAdjustment($taxes[2], 'VAT 20%',  19.06, 20);
+    }
+
+    public function test_calculateSale2()
+    {
+        $sale = Fixtures::createOrder();
+
+        $item1 = Fixtures::createOrderItem(3, 249.99167, [], [20])->setSale($sale);
+        $item2 = Fixtures::createOrderItem(3,  59.48333, [], [20])->setSale($sale);
+        $item3 = Fixtures::createOrderItem(3,  42.48333, [], [20])->setSale($sale);
+        $item4 = Fixtures::createOrderItem(3,  12.74167, [], [20])->setSale($sale);
+        $item5 = Fixtures::createOrderItem(3,  15.29167, [], [20])->setSale($sale);
+
+        $this->calculator->calculateSale($sale);
+
+        $this->assertResult($item1->getResult(), 249.99, 749.97, 0, 749.97, 149.994, 899.96);
+        $this->assertResult($item2->getResult(),  59.48, 178.44, 0, 178.44,  35.688, 214.13);
+        $this->assertResult($item3->getResult(),  42.48, 127.44, 0, 127.44,  25.488, 152.93);
+        $this->assertResult($item4->getResult(),  12.74,  38.22, 0,  38.22,   7.644,  45.86);
+        $this->assertResult($item5->getResult(),  15.29,  45.87, 0,  45.87,   9.174,  55.04);
+
+        $grossResult = $sale->getGrossResult();
+
+        $taxes = $grossResult->getTaxAdjustments();
+        $this->assertCount(1, $taxes);
+        $this->assertAdjustment($taxes[0], 'VAT 20%', 227.988, 20);
+
+        $this->assertCount(0, $grossResult->getDiscountAdjustments());
+
+        $finalResult = $sale->getFinalResult();
+
+        $this->assertResult($grossResult,    1139.94, 1139.94, 0, 1139.94, 227.98, 1367.92);
+        $this->assertResult($finalResult,    1139.94, 1139.94, 0, 1139.94, 227.98, 1367.92);
+
+        $taxes = $finalResult->getTaxAdjustments();
+        $this->assertCount(1, $taxes);
+        $this->assertAdjustment($taxes[0], 'VAT 20%',  227.98, 20);
     }
 
     /**

@@ -44,6 +44,22 @@ interface PaymentSubjectInterface extends CurrencySubjectInterface
     public function setPaidTotal($total);
 
     /**
+     * Returns the pending total.
+     *
+     * @return float
+     */
+    public function getPendingTotal();
+
+    /**
+     * Sets the pending total.
+     *
+     * @param float $total
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setPendingTotal($total);
+
+    /**
      * Returns the accepted outstanding total.
      *
      * @return float

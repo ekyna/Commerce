@@ -296,6 +296,12 @@ class SaleUpdater implements SaleUpdaterInterface
             $sale->setPaidTotal($paid);
             $changed = true;
         }
+        // Update pending total total if needed
+        $pending = $this->paymentCalculator->calculateOfflinePendingTotal($sale);
+        if (0 != Money::compare($pending, $sale->getPendingTotal(), $currency)) {
+            $sale->setPendingTotal($pending);
+            $changed = true;
+        }
         // Update accepted outstanding total if needed
         $acceptedOutstanding = $this->paymentCalculator->calculateOutstandingAcceptedTotal($sale);
         if (0 != Money::compare($acceptedOutstanding, $sale->getOutstandingAccepted(), $currency)) {
@@ -311,8 +317,9 @@ class SaleUpdater implements SaleUpdaterInterface
 
         // If payment totals has changed and fund has been released
         if ($changed && $this->outstandingReleaser->releaseFund($sale)) {
-            // Re-update the payment totals
-            $sale->setPaidTotal($this->paymentCalculator->calculatePaidTotal($sale));
+            // Re-update the outstanding totals
+            //$sale->setPaidTotal($this->paymentCalculator->calculatePaidTotal($sale));
+            //$sale->setPendingTotal($this->paymentCalculator->calculateOfflinePendingTotal($sale));
             $sale->setOutstandingAccepted($this->paymentCalculator->calculateOutstandingAcceptedTotal($sale));
             $sale->setOutstandingExpired($this->paymentCalculator->calculateOutstandingExpiredTotal($sale));
         }

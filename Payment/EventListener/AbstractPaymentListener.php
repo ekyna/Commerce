@@ -95,6 +95,9 @@ abstract class AbstractPaymentListener
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
 
+        // Completed state
+        $changed |= $this->handleCompletedState($payment);
+
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($payment);
         }
@@ -121,6 +124,10 @@ abstract class AbstractPaymentListener
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
 
+        if ($this->persistenceHelper->isChanged($payment, 'state')) {
+            $changed |= $this->handleCompletedState($payment);
+        }
+
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($payment);
         }
@@ -144,6 +151,31 @@ abstract class AbstractPaymentListener
 
             $this->customerUpdater->handlePaymentUpdate($payment);
         }
+    }
+
+    /**
+     * Handle the 'completed' state.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool Whether or not the shipment has been changed.
+     */
+    protected function handleCompletedState(PaymentInterface $payment)
+    {
+        $changed = false;
+
+        $state = $payment->getState();
+        $completedAt = $payment->getCompletedAt();
+
+        if (PaymentStates::isPaidState($state) && null === $completedAt) {
+            $payment->setCompletedAt(new \DateTime());
+            $changed = true;
+        } elseif (PaymentStates::isPaidState($state) && null !== $completedAt) {
+            $payment->setCompletedAt(null);
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     /**

@@ -295,22 +295,16 @@ class Amount
     }
 
     /**
-     * Rounds the taxes regarding to currency.
-     *
-     * @param string $currency
-     */
-    public function roundTax(string $currency): void
-    {
-        $this->tax = Money::round($this->tax, $currency);
-    }
-
-    /**
      * Rounds the tax adjustments amounts.
      *
      * @param string $currency
      */
-    public function roundTaxAdjustments(string $currency): void
+    public function finalize(string $currency): void
     {
+        $this->round($currency);
+
+        //$this->tax = Money::round($this->total - $this->base, $currency);
+
         $old = $this->taxes;
 
         // Sort by amount
@@ -342,6 +336,22 @@ class Amount
         });
 
         $this->taxes = $new;
+    }
+
+    /**
+     * Rounds the amounts.
+     *
+     * @param string $currency
+     */
+    public function round(string $currency)
+    {
+        $this->unit = Money::round($this->unit, $currency);
+        $this->gross = Money::round($this->gross, $currency);
+        $this->discount = Money::round($this->discount, $currency);
+        $this->base = Money::round($this->base, $currency);
+        $this->total = Money::round($this->total, $currency);
+        //$this->tax = Money::round($this->tax, $currency);
+        $this->tax = Money::round($this->total - $this->base, $currency);
     }
 
     /**

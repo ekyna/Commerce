@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Order\Model;
 
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
+
 /**
  * Interface OrderInvoiceLineInterface
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderInvoiceLineInterface
+interface OrderInvoiceLineInterface extends InvoiceLineInterface
 {
     /**
      * Set the order item.

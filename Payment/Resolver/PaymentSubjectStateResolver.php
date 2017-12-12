@@ -74,8 +74,7 @@ class PaymentSubjectStateResolver implements StateResolverInterface
         }
 
         // PENDING total is greater than zero
-        $pendingTotal = $this->paymentCalculator->calculateOfflinePendingTotal($subject);
-        if ($fullFill($subject->getPaidTotal() + $subject->getOutstandingAccepted() + $pendingTotal)) {
+        if ($fullFill($subject->getPaidTotal() + $subject->getOutstandingAccepted() + $subject->getPendingTotal())) {
             return $this->setState($subject, PaymentStates::STATE_PENDING);
         }
 

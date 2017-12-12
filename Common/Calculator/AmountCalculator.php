@@ -55,11 +55,10 @@ class AmountCalculator implements AmountCalculatorInterface
         // Shipment
         $this->calculateSaleShipment($sale, $final);
 
-        // Rounds tax totals.
+        // Round/finalize results.
         $currency = $sale->getCurrency()->getCode();
-        $gross->roundTax($currency);
-        $final->roundTax($currency);
-        $final->roundTaxAdjustments($currency);
+        $gross->round($currency);
+        $final->finalize($currency);
 
         // Store the results
         $sale->setGrossResult($gross);
@@ -86,7 +85,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
         $currency = $item->getSale()->getCurrency()->getCode();
         $taxGroup = $item->getTaxGroup();
-        $unit = (float)$item->getNetPrice();
+        $unit = Money::round($item->getNetPrice(), $currency);
 
         // Add private items unit prices
         foreach ($item->getChildren() as $child) {
@@ -116,7 +115,7 @@ class AmountCalculator implements AmountCalculatorInterface
             $discount = $tax = 0;
 
             // Gross price
-            $gross = Money::round($unit, $currency) * (null !== $quantity ? $quantity : $item->getTotalQuantity());
+            $gross = $unit * (null !== $quantity ? $quantity : $item->getTotalQuantity());
 
             $parent = $item->getParent();
             $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();

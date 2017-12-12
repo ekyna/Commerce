@@ -80,10 +80,9 @@ class DocumentCalculator implements DocumentCalculatorInterface
             $shipmentBase += $result->getBase();
         }
 
-        // Rounds tax totals.
-        $gross->roundTax($currency);
-        $final->roundTax($currency);
-        $final->roundTaxAdjustments($currency);
+        // Round/finalize results.
+        $gross->round($currency);
+        $final->finalize($currency);
 
         // Document goods base (after discounts)
         if ($document->getGoodsBase() !== $gross->getBase()) {

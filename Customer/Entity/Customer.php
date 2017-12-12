@@ -454,14 +454,14 @@ class Customer implements Model\CustomerInterface
      */
     public function getDefaultInvoiceAddress($allowParentAddress = false)
     {
-        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('invoiceDefault', true))) {
-            return $address;
-        }
-
         if ($allowParentAddress && $this->hasParent()) {
-            if (null !== $address = $this->parent->getDefaultInvoiceAddress()) {
+            if (null !== $address = $this->parent->getDefaultInvoiceAddress($allowParentAddress)) {
                 return $address;
             }
+        }
+
+        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('invoiceDefault', true))) {
+            return $address;
         }
 
         return null;
@@ -472,12 +472,14 @@ class Customer implements Model\CustomerInterface
      */
     public function getDefaultDeliveryAddress($allowParentAddress = false)
     {
-        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('deliveryDefault', true))) {
-            return $address;
+        if ($allowParentAddress && $this->hasParent()) {
+            if (null !== $address = $this->parent->getDefaultDeliveryAddress($allowParentAddress)) {
+                return $address;
+            }
         }
 
-        if ($allowParentAddress && $this->hasParent()) {
-            return $this->parent->getDefaultDeliveryAddress($allowParentAddress);
+        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('deliveryDefault', true))) {
+            return $address;
         }
 
         return null;
