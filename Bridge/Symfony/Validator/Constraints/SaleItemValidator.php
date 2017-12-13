@@ -132,8 +132,7 @@ class SaleItemValidator extends ConstraintValidator
             return;
         }
 
-        $min = $this->invoiceCalculator->calculateCanceledQuantity($item)
-            + $this->invoiceCalculator->calculateInvoicedQuantity($item);
+        $min = $this->invoiceCalculator->calculateInvoicedQuantity($item);
 
         // TODO Use packaging format
         if (0 < $min && $item->getTotalQuantity() < $min) {

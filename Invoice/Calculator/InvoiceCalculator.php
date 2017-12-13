@@ -55,11 +55,9 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 throw new LogicException("Invoice line's sale item must be set.");
             }
 
-            // Quantity = Sold - Canceled - Invoiced (ignoring current invoice)
+            // Quantity = Sold - Invoiced (ignoring current invoice)
             return $saleItem->getTotalQuantity()
-                - $this->calculateCanceledQuantity($saleItem)
                 - $this->calculateInvoicedQuantity($saleItem, $line->getInvoice());
-
         }
 
         // Discount line case
@@ -70,25 +68,6 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
             // Discounts must be dispatched into all invoices
             return 1;
-
-            /*if ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
-                return 1;
-            }
-
-            $quantity = 1;
-
-            foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current invoice
-                if ($invoice === $line->getInvoice() || !Invoice\InvoiceTypes::isInvoice($invoice)) {
-                    continue;
-                }
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $invoiceLine) {
-                    if ($invoiceLine->getSaleAdjustment() === $adjustment) {
-                        $quantity -= $invoiceLine->getQuantity();
-                    }
-                }
-            }*/
         }
 
         // Shipment line case
@@ -104,8 +83,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
                 foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $invoiceLine) {
                     $quantity -= $invoiceLine->getQuantity();
+                    break;
                 }
             }
+
+            if (0 > $quantity) $quantity = 0;
 
             return $quantity;
         }
@@ -130,30 +112,17 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceSubjectInterface::class);
         }
 
+        // TODO assert shipment linked
+
         // Good line case
         if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
             if (null === $saleItem = $line->getSaleItem()) {
                 throw new LogicException("Invoice line's sale item must be set.");
             }
 
-            // Quantity = Shipped - Credited (ignoring current credit)
-            return $this->shipmentCalculator->calculateShippedQuantity($saleItem)
+            // Quantity = Returned - Credited (ignoring current credit)
+            return $this->shipmentCalculator->calculateReturnedQuantity($saleItem)
                 - $this->calculateCreditedQuantity($saleItem, $line->getInvoice());
-
-            /*foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current invoice
-                if ($invoice === $line->getInvoice()) {
-                    continue;
-                }
-
-                $credit = Invoice\InvoiceTypes::isCredit($invoice);
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
-                    if ($invoiceLine->getSaleItem() === $saleItem) {
-                        $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
-                    }
-                }
-            }*/
         }
 
         // Discount line case
@@ -164,45 +133,12 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
             // Discounts must be dispatched into all invoices
             return 1;
-
-            /*// Flat discounts are dispatched into all invoices
-            if ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
-                return 1;
-            }
-
-            foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current invoice
-                if ($invoice === $line->getInvoice()) {
-                    continue;
-                }
-
-                $credit = Invoice\InvoiceTypes::isCredit($invoice);
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $invoiceLine) {
-                    if ($invoiceLine->getSaleAdjustment() === $adjustment) {
-                        $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
-                    }
-                }
-            }*/
         }
 
         // Shipment line case
         if ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
             // Shipment can't be credited (but canceled)
             return 0;
-
-            /*foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current invoice
-                if ($invoice === $line->getInvoice()) {
-                    continue;
-                }
-
-                $credit = Invoice\InvoiceTypes::isCredit($invoice);
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $invoiceLine) {
-                    $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
-                }
-            }*/
         }
 
         throw new InvalidArgumentException("Unexpected line type '{$line->getType()}'.");
@@ -225,31 +161,18 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceSubjectInterface::class);
         }
 
+        // TODO assert no shipment linked
+
         // Good line case
         if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
             if (null === $saleItem = $line->getSaleItem()) {
                 throw new LogicException("Invoice line's sale item must be set.");
             }
 
-            // Quantity = Sold - Shipped - Canceled (ignoring current credit)
-            return $saleItem->getTotalQuantity()
+            // Quantity = Invoiced - Shipped - Canceled (ignoring current credit)
+            return $this->calculateInvoicedQuantity($saleItem)
                 - $this->shipmentCalculator->calculateShippedQuantity($saleItem)
                 - $this->calculateCanceledQuantity($saleItem, $line->getInvoice());
-
-            /*foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current item's invoice
-                if ($invoice === $line->getInvoice()) {
-                    continue;
-                }
-
-                $credit = Invoice\InvoiceTypes::isCredit($invoice);
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
-                    if ($invoiceLine->getSaleItem() === $saleItem) {
-                        $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
-                    }
-                }
-            }*/
         }
 
         // Discount line case
@@ -260,11 +183,12 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
             // Discounts must be dispatched into all invoices
             return 1;
+        }
 
-            /*// Flat discounts are dispatched into all invoices
-            if ($adjustment->getMode() === Common\AdjustmentModes::MODE_FLAT) {
-                return 1;
-            }
+        // Shipment line case
+        if ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
+            // Shipment can be credited once
+            $quantity = 0;
 
             foreach ($sale->getInvoices() as $invoice) {
                 // Ignore the current invoice
@@ -274,33 +198,13 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
 
                 $credit = Invoice\InvoiceTypes::isCredit($invoice);
 
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $invoiceLine) {
-                    if ($invoiceLine->getSaleAdjustment() === $adjustment) {
-                        $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
-                    }
-                }
-            }*/
-        }
-
-        // Shipment line case
-        if ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
-            // Shipment can be credited once
-            $quantity = 1;
-
-            foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current invoice
-                if ($invoice === $line->getInvoice()) {
-                    continue;
-                }
-
-                if (!Invoice\InvoiceTypes::isCredit($invoice)) {
-                    continue;
-                }
-
                 foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $invoiceLine) {
-                    $quantity -= $invoiceLine->getQuantity();
+                    $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
                 }
             }
+
+            if (0 > $quantity) $quantity = 0;
+            if (1 < $quantity) $quantity = 1;
 
             return $quantity;
         }
@@ -463,8 +367,6 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             foreach ($subject->getItems() as $item) {
                 $this->buildSaleItemQuantities($item, $quantities);
             }
-
-            // TODO Add shipment and discount quantities
         }
 
         return $quantities;
