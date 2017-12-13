@@ -109,7 +109,7 @@ class DefaultNumberGenerator implements NumberGeneratorInterface
     }
 
     /**
-     * Writes the previous number.
+     * Writes the new number.
      *
      * @param string $number
      */
