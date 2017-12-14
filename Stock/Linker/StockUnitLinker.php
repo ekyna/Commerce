@@ -101,6 +101,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
 
         // New 'unlinked' stock unit for the sold quantity overflow
         $newStockUnit = $this->unitResolver->createBySubjectRelative($supplierOrderItem);
+        $this->persistenceHelper->persistAndRecompute($newStockUnit);
 
         $overflow -= $this->moveAssignments($stockUnit, $newStockUnit, $overflow);
 
