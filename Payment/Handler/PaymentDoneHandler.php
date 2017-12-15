@@ -112,7 +112,7 @@ class PaymentDoneHandler
 
         /** @var TokenInterface[] $tokens */
         $tokens = $this->payum->getTokenStorage()->findBy([
-            'details' => serialize($identity),
+            'details' => $identity,
         ]);
 
         return $tokens;
@@ -168,8 +168,7 @@ class PaymentDoneHandler
         // Update tokens identity
         $storage = $this->payum->getTokenStorage();
         foreach ($tokens as $t) {
-            /** @noinspection PhpParamsInspection */
-            $t->setDetails(serialize($identity));
+            $t->setDetails($identity);
             $storage->update($t);
         }
     }
