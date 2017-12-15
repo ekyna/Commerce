@@ -46,7 +46,7 @@ class SaleCopier implements SaleCopierInterface
         $fields = [
             'currency', 'customer', 'customerGroup',
             'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
-            'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
+            'autoDiscount', 'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
             'voucherNumber', 'description', 'comment',
         ];
 
@@ -134,7 +134,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target)
     {
         $this->copy($source, $target, [
-            'path', 'title', 'size', 'internal', 'createdAt', 'updatedAt',
+            'path', 'title', 'type', 'size', 'internal', 'createdAt', 'updatedAt',
         ]);
     }
 
@@ -154,7 +154,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyPayment(PaymentInterface $source, PaymentInterface $target)
     {
         $this->copy($source, $target, [
-            'currency', 'method', 'amount', 'state', 'details',
+            'currency', 'method', 'key', 'number', 'amount', 'state', 'details',
             'description', 'createdAt', 'updatedAt', 'completedAt',
         ]);
     }
