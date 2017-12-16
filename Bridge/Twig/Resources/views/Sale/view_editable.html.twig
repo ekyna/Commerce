@@ -53,12 +53,12 @@
 
 {% block line_quantity %}
 {% spaceless %}
-    <td class="text-right">
+    <td class="sale-detail-quantity">
         {% if view.vars.form[line.formId] is defined %}
             {% form_theme view.vars.form[line.formId] _self %}
             {{ form_widget(view.vars.form[line.formId]) }}
         {% else %}
-            <span class="sale-detail-quantity" id="{{ line.id }}_quantity">{{ line.quantity }}</span>
+            <span id="{{ line.id }}_quantity">{{ line.quantity }}</span>
         {% endif %}
     </td>
 {% endspaceless %}

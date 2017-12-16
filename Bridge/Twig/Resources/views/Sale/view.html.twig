@@ -3,6 +3,9 @@
     <th class="sale-detail-number">&nbsp;</th>
     <th class="sale-detail-designation">{{ view.translations.designation }}</th>
     <th>{{ view.translations.reference }}</th>
+    {% if view.vars.line_availability -%}
+    <th>{{ view.translations.availability }}</th>
+    {%- endif %}
     <th>{{ view.translations.unit_net_price }}</th>
     {% if view.vars.line_taxes -%}
     <th>{{ view.translations.tax_rate }}</th>
@@ -19,7 +22,9 @@
 
 {% block line_quantity %}
 {% spaceless %}
-    <td class="text-right" id="{{ line.id }}_quantity">{{ line.quantity }}</td>
+    <td class="sale-detail-quantity">
+        <span id="{{ line.id }}_quantity">{{ line.quantity }}</span>
+    </td>
 {% endspaceless %}
 {% endblock line_quantity %}
 
@@ -77,7 +82,7 @@
 
 {% block line %}
 {% spaceless %}
-    <tr class="level-{{ line.level }}{% if line.private %} sale-detail-private{% endif %}">
+    <tr class="level-{{ line.level }}{{ line.vars.classes }}">
         <td class="sale-detail-number">{{ line.number }}</td>
         <td class="sale-detail-designation" id="{{ line.id }}_designation">
             {% if line.level > 0 -%}
@@ -106,6 +111,9 @@
             </span>
         </td>
         <td id="{{ line.id }}_reference">{{ line.reference }}</td>
+        {% if view.vars.line_availability -%}
+        <td class="sale-detail-availability" id="{{ line.id }}_availability">{{ line.availability }}</td>
+        {%- endif %}
         {%- if line.private -%}
             {{ block('line_private') }}
         {%- else -%}
@@ -113,7 +121,7 @@
         {%- endif -%}
     </tr>
     {%- if line.vars.information is defined -%}
-    <tr class="level-{{ line.level }}{% if line.private %} sale-detail-private{% endif %}"
+    <tr class="level-{{ line.level }}"
         id="{{ line.id }}_information" style="display: none">
         <td class="sale-detail-number">&nbsp;</td>
         {{ block('line_information') }}
@@ -193,7 +201,7 @@
             {%- endif -%}
         </span>
     </td>
-    <td class="text-right" colspan="2">&nbsp;</td>
+    <td class="text-right" colspan="{{ view.vars.line_availability ? 3 : 2 }}">&nbsp;</td>
     {%- if view.vars.line_taxes %}{{ block('line_taxes') }}{% endif -%}
     <td{% if view.vars.line_discounts %} colspan="4"{% endif %}>&nbsp;</td>
     <td class="text-right" id="{{ line.id }}_base">-{{- line.base -}}</td>
@@ -225,7 +233,7 @@
             {%- endif -%}
         </span>
     </td>
-    <td class="text-right" colspan="2">&nbsp;</td>
+    <td class="text-right" colspan="{{ view.vars.line_availability ? 3 : 2 }}">&nbsp;</td>
     {%- if view.vars.line_taxes %}{{ block('line_taxes') }}{% endif -%}
     <td{% if view.vars.line_discounts %} colspan="4"{% endif %}>&nbsp;</td>
     <td class="text-right" id="{{ line.id }}_base">{{ line.base }}</td>

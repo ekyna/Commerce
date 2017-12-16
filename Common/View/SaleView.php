@@ -64,6 +64,12 @@ class SaleView extends AbstractView
         $this->taxes = [];
 
         $this->translations = $this->getDefaultTranslations();
+
+        $this->vars = [
+            'line_availability' => false,
+            'line_taxes'        => false,
+            'line_discount'     => false,
+        ];
     }
 
     /**
@@ -254,17 +260,17 @@ class SaleView extends AbstractView
             'unit_net_price' => 'Unit net price',
             'quantity'       => 'Quantity',
 
-            'gross'          => 'Gross',
-            'discount'       => 'Discount',
+            'gross'    => 'Gross',
+            'discount' => 'Discount',
 
-            'tax_rate'       => 'Tax rate',
-            'tax_name'       => 'Tax',
-            'tax_amount'     => 'Amount',
+            'tax_rate'   => 'Tax rate',
+            'tax_name'   => 'Tax',
+            'tax_amount' => 'Amount',
 
-            'gross_totals'   => 'Gross totals',
-            'net_total'      => 'Net total',
-            'tax_total'      => 'Tax total',
-            'grand_total'    => 'Grand total',
+            'gross_totals' => 'Gross totals',
+            'net_total'    => 'Net total',
+            'tax_total'    => 'Tax total',
+            'grand_total'  => 'Grand total',
         ];
     }
 }

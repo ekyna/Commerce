@@ -132,7 +132,7 @@ class ViewBuilder
             $type->buildSaleView($sale, $this->view, $this->options);
         }
 
-        $columnsCount = 6;
+        $columnsCount = $this->view->vars['line_availability'] ? 7 : 6;
         if ($this->view->vars['line_discounts'] = 0 < count($grossResult->getDiscountAdjustments())) {
             $columnsCount += 3;
         }
@@ -295,11 +295,20 @@ class ViewBuilder
             ->setBase($base)
             ->setTaxRates($taxRates)
             ->setTaxAmount($taxAmount)
-            ->setTotal($total)
-            ->setPrivate($item->isPrivate());
+            ->setTotal($total);
+
+        if ($item->isPrivate()) {
+            $view->setPrivate(true)->addClass('private');
+        } else {
+            $view->setPrivate(false)->removeClass('private');
+        }
 
         foreach ($this->types as $type) {
             $type->buildItemView($item, $view, $this->options);
+        }
+
+        if (!empty($view->getAvailability())) {
+            $this->view->vars['line_availability'] = true;
         }
 
         if ($item->hasChildren()) {

@@ -45,6 +45,11 @@ class LineView extends AbstractView
     private $reference;
 
     /**
+     * @var string
+     */
+    private $availability;
+
+    /**
      * The unit price.
      *
      * @var string
@@ -234,6 +239,30 @@ class LineView extends AbstractView
     public function getReference()
     {
         return $this->reference;
+    }
+
+    /**
+     * Returns the availability.
+     *
+     * @return string
+     */
+    public function getAvailability()
+    {
+        return $this->availability;
+    }
+
+    /**
+     * Sets the availability.
+     *
+     * @param string $availability
+     *
+     * @return LineView
+     */
+    public function setAvailability($availability)
+    {
+        $this->availability = $availability;
+
+        return $this;
     }
 
     /**

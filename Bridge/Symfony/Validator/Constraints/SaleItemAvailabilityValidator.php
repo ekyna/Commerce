@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\ValidationFailedException;
+use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Stock\Helper\AvailabilityHelperInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
@@ -59,6 +60,17 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SaleItemAvailability::class);
         }
 
+        if (null !== $item->getParent()) {
+            // This constraint should not be applied to children
+            return;
+        }
+
+        $sale = $item->getSale();
+        if ($sale instanceof OrderInterface) {
+            // This constraint does not applies to orders
+            return;
+        }
+
         try {
             $this->validateItem($item);
         } catch (ValidationFailedException $e) {
@@ -77,10 +89,6 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
      */
     private function validateItem(SaleItemInterface $item)
     {
-        foreach ($item->getChildren() as $child) {
-            $this->validateItem($child);
-        }
-
         if (null === $subject = $this->subjectHelper->resolve($item, false)) {
             return;
         }
@@ -89,18 +97,20 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
             return;
         }
 
-        $quantity = $item->getTotalQuantity();
-        $max = $this->availabilityHelper->getAvailableQuantity($subject);
-        $min = $subject->getMinimumOrderQuantity();
-
-        if (0 == $max) {
-            $message = $this->availabilityHelper->getAvailabilityMessage($subject);
-        } else if ($quantity > $max) {
-            $message = $this->availabilityHelper->translate('max_quantity', ['%max%' => $max]);
-        } else if (null === $item->getParent() && $quantity < $min) {
-            $message = $this->availabilityHelper->translate('min_quantity', ['%min%' => $min]);
+        if ($subject->isQuoteOnly()) {
+            $message = $this->availabilityHelper->translate('quote_only');
         } else {
-            return;
+            $quantity = $item->getTotalQuantity();
+            $max = $this->availabilityHelper->getAvailableQuantity($subject);
+            $min = $subject->getMinimumOrderQuantity();
+
+            if (0 == $max && $subject->isEndOfLife()) {
+                $message = $this->availabilityHelper->translate('end_of_life');
+            } else if ($quantity < $min) {
+                $message = $this->availabilityHelper->translate('min_quantity', ['%min%' => $min]);
+            } else {
+                return;
+            }
         }
 
         if (null !== $item->getParent()) {
