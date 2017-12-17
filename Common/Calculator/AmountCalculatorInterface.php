@@ -45,6 +45,7 @@ interface AmountCalculatorInterface
      *
      * @param Model\SaleAdjustmentInterface $adjustment The sale discount adjustment
      * @param Amount                        $gross      The gross result (items sum)
+     * @param Amount                        $final      The gross result (items sum)
      *
      * @return Amount The sale discount calculation result
      * @throws \Ekyna\Component\Commerce\Exception\LogicException

@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Comparable;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
+use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
@@ -346,4 +347,18 @@ interface SaleItemInterface extends
      * @internal Usage reserved to view builder.
      */
     public function getResult();
+
+    /**
+     * Sets the margin.
+     *
+     * @param Margin $margin
+     */
+    public function setMargin(Margin $margin);
+
+    /**
+     * Returns the margin.
+     *
+     * @return Margin
+     */
+    public function getMargin();
 }

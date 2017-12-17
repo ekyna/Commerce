@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Symfony\Component\OptionsResolver\Options;
@@ -23,7 +24,12 @@ class ViewBuilder
     /**
      * @var AmountCalculatorInterface
      */
-    private $calculator;
+    private $amountCalculator;
+
+    /**
+     * @var MarginCalculatorInterface
+     */
+    private $marginCalculator;
 
     /**
      * @var string
@@ -70,18 +76,21 @@ class ViewBuilder
      * Constructor.
      *
      * @param ViewTypeRegistryInterface $registry
-     * @param AmountCalculatorInterface $calculator
+     * @param AmountCalculatorInterface $amountCalculator
+     * @param MarginCalculatorInterface $marginCalculator
      * @param string                    $defaultTemplate
      * @param string                    $editableTemplate
      */
     public function __construct(
         ViewTypeRegistryInterface $registry,
-        AmountCalculatorInterface $calculator,
+        AmountCalculatorInterface $amountCalculator,
+        MarginCalculatorInterface $marginCalculator,
         $defaultTemplate = '@Commerce/Sale/view.html.twig',
         $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
         $this->registry = $registry;
-        $this->calculator = $calculator;
+        $this->amountCalculator = $amountCalculator;
+        $this->marginCalculator = $marginCalculator;
         $this->defaultTemplate = $defaultTemplate;
         $this->editableTemplate = $editableTemplate;
     }
@@ -100,7 +109,7 @@ class ViewBuilder
 
         $this->view = new SaleView($this->options['template']);
 
-        $this->calculator->calculateSale($sale);
+        $this->amountCalculator->calculateSale($sale);
 
         // Gross total view
         $grossResult = $sale->getGrossResult();
@@ -111,12 +120,21 @@ class ViewBuilder
         ));
 
         // Final total view
-        $finalResult = $this->calculator->calculateSale($sale);
+        $finalResult = $sale->getFinalResult();
         $this->view->setFinal(new TotalView(
             $this->formatter->currency($finalResult->getBase()),
             $this->formatter->currency($finalResult->getTax()),
             $this->formatter->currency($finalResult->getTotal())
         ));
+
+        if ($this->options['private'] && null !== $margin = $this->marginCalculator->calculateSale($sale)) {
+            $prefix = $margin->isAverage() ? '~' : '';
+            $this->view->setMargin(new MarginView(
+                $prefix.$this->formatter->currency($margin->getAmount()),
+                $prefix.$this->formatter->percent($margin->getPercent())
+            ));
+            $this->view->vars['show_margin'] = true;
+        }
 
         // Items lines
         $this->buildSaleItemsLinesViews($sale);
@@ -132,11 +150,17 @@ class ViewBuilder
             $type->buildSaleView($sale, $this->view, $this->options);
         }
 
-        $columnsCount = $this->view->vars['line_availability'] ? 7 : 6;
-        if ($this->view->vars['line_discounts'] = 0 < count($grossResult->getDiscountAdjustments())) {
+        $columnsCount = 6;
+        if ($this->view->vars['show_availability']) {
+            $columnsCount++;
+        }
+        if ($this->view->vars['show_discounts'] = 0 < count($grossResult->getDiscountAdjustments())) {
             $columnsCount += 3;
         }
-        if ($this->view->vars['line_taxes'] = 1 < count($finalResult->getTaxAdjustments())) {
+        if ($this->view->vars['show_taxes'] = 1 < count($finalResult->getTaxAdjustments())) {
+            $columnsCount++;
+        }
+        if ($this->view->vars['show_margin']) {
             $columnsCount++;
         }
         if ($this->options['editable']) {
@@ -187,7 +211,7 @@ class ViewBuilder
             return;
         }
 
-        $amounts = $this->calculator->calculateSale($sale);
+        $amounts = $this->amountCalculator->calculateSale($sale);
 
         foreach ($amounts->getTaxAdjustments() as $tax) {
             $this->view->addTax(new TaxView(
@@ -308,7 +332,16 @@ class ViewBuilder
         }
 
         if (!empty($view->getAvailability())) {
-            $this->view->vars['line_availability'] = true;
+            $this->view->vars['show_availability'] = true;
+        }
+
+        if ($this->options['private']) {
+            if (!$item->isCompound() && null !== $margin = $item->getMargin()) {
+                $view->setMargin(
+                    ($margin->isAverage() ? '~' : '') .
+                    $this->formatter->percent($margin->getPercent())
+                );
+            }
         }
 
         if ($item->hasChildren()) {

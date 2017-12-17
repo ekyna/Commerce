@@ -94,14 +94,14 @@
     <tbody>
     <tr id="sale_gross">
         <th>&nbsp;</th>
-        <th class="text-right" colspan="{% if view.vars.line_discounts -%}
+        <th class="text-right" colspan="{% if view.vars.show_discounts -%}
                     {{- view.vars.columns_count - 6 -}}
                 {%- else -%}
                     {{- view.vars.columns_count - 3 -}}
                 {%- endif -%}">
             <strong>{{ view.translations.gross_totals }}</strong>
         </th>
-        {%- if view.vars.line_discounts -%}
+        {%- if view.vars.show_discounts -%}
         <th class="text-right sale-detail-gross" id="gross_base">
             {{- view.gross.base -}}
         </th>
@@ -112,7 +112,7 @@
         <th class="text-right sale-detail-gross" id="gross_total">
             {{- view.gross.total -}}
         </th>
-        <th>&nbsp;</th>
+        <th{% if view.vars.show_margin %} colspan="2"{% endif %}>&nbsp;</th>
     </tr>
     </tbody>
 {% endspaceless %}
@@ -139,14 +139,15 @@
 {% spaceless %}
     <tbody>
     <tr>
-        <th colspan="{{ view.vars.columns_count - 3 }}" rowspan="3" class="sale-detail-buttons">
+        <th colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
+            rowspan="{{ view.vars.show_margin ? 4 : 3 }}" class="sale-detail-buttons">
             {{ form_widget(view.vars.form.submit) }}
         </th>
         <th>{{ view.translations.net_total|upper }}</th>
         <td class="text-right sale-detail-total" id="final_base">
             {{- view.final.base -}}
         </td>
-        <th rowspan="3">&nbsp;</th>
+        <th{% if view.vars.show_margin %} colspan="2" rowspan="4"{% else %} rowspan="3"{% endif %}>&nbsp;</th>
     </tr>
     <tr>
         <th>{{ view.translations.tax_total|upper }}</th>
@@ -160,6 +161,14 @@
             {{- view.final.total -}}
         </td>
     </tr>
+    {% if view.vars.show_margin -%}
+    <tr>
+        <th>{{ view.translations.margin|upper }}</th>
+        <td class="text-right sale-detail-total" id="final_margin">
+            {{- view.margin.percent -}}
+        </td>
+    </tr>
+    {%- endif %}
     </tbody>
 {% endspaceless %}
 {% endblock gran_totals %}

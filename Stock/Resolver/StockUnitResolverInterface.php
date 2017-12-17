@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
 /**
  * Interface StockUnitResolverInterface
@@ -28,15 +27,6 @@ interface StockUnitResolverInterface
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
      */
     public function createBySubjectRelative(SubjectRelativeInterface $relative);
-
-    /**
-     * Creates (and initializes) a stock unit for the given supplier order item.
-     *
-     * @param SupplierOrderItemInterface $item
-     *
-     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
-     */
-    public function createBySupplierOrderItem(SupplierOrderItemInterface $item);
 
     /**
      * Finds the pending stock units.

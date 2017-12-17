@@ -303,12 +303,10 @@ class Amount
     {
         $this->round($currency);
 
-        //$this->tax = Money::round($this->total - $this->base, $currency);
-
         $old = $this->taxes;
 
         // Sort by amount
-        usort($old, function(Adjustment $a, Adjustment $b):int {
+        usort($old, function (Adjustment $a, Adjustment $b): int {
             if ($a->getAmount() == $b->getAmount()) {
                 return 0;
             }
@@ -331,7 +329,7 @@ class Amount
         }
 
         // Sort by rate
-        usort($new, function(Adjustment $a, Adjustment $b):int {
+        usort($new, function (Adjustment $a, Adjustment $b): int {
             return $a->getRate() > $b->getRate() ? 1 : -1;
         });
 
@@ -343,14 +341,13 @@ class Amount
      *
      * @param string $currency
      */
-    public function round(string $currency)
+    public function round(string $currency): void
     {
         $this->unit = Money::round($this->unit, $currency);
         $this->gross = Money::round($this->gross, $currency);
         $this->discount = Money::round($this->discount, $currency);
         $this->base = Money::round($this->base, $currency);
         $this->total = Money::round($this->total, $currency);
-        //$this->tax = Money::round($this->tax, $currency);
         $this->tax = Money::round($this->total - $this->base, $currency);
     }
 

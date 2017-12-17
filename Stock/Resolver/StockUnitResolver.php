@@ -10,7 +10,6 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -99,20 +98,6 @@ class StockUnitResolver implements StockUnitResolverInterface
         $this->stockUnitCache->add($stockUnit);
 
         return $stockUnit;
-    }
-
-    /**
-     * @inheritdoc
-     * @deprecated
-     */
-    public function createBySupplierOrderItem(SupplierOrderItemInterface $item)
-    {
-        return $this
-            ->createBySubjectRelative($item)
-            ->setSupplierOrderItem($item)
-            ->setNetPrice($item->getNetPrice())
-            ->setOrderedQuantity($item->getQuantity())
-            ->setEstimatedDateOfArrival($item->getOrder()->getEstimatedDateOfArrival());
     }
 
     /**

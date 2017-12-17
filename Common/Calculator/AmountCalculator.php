@@ -22,7 +22,7 @@ class AmountCalculator implements AmountCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function setCache(bool $cache)
+    public function setCache(bool $cache): void
     {
         $this->cache = $cache;
     }

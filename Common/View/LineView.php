@@ -103,6 +103,13 @@ class LineView extends AbstractView
     private $total;
 
     /**
+     * The margin in percentage.
+     *
+     * @var string
+     */
+    private $margin;
+
+    /**
      * @var LineView[]
      */
     private $lines = [];
@@ -479,6 +486,30 @@ class LineView extends AbstractView
     public function getTotal()
     {
         return $this->total;
+    }
+
+    /**
+     * Sets the margin in percentage.
+     *
+     * @param string $margin
+     *
+     * @return LineView
+     */
+    public function setMargin($margin)
+    {
+        $this->margin = $margin;
+
+        return $this;
+    }
+
+    /**
+     * Returns the margin in percentage.
+     *
+     * @return string
+     */
+    public function getMargin()
+    {
+        return $this->margin;
     }
 
     /**

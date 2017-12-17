@@ -25,6 +25,11 @@ class SaleView extends AbstractView
     private $final;
 
     /**
+     * @var MarginView
+     */
+    private $margin;
+
+    /**
      * @var LineView[]
      */
     private $items;
@@ -66,9 +71,10 @@ class SaleView extends AbstractView
         $this->translations = $this->getDefaultTranslations();
 
         $this->vars = [
-            'line_availability' => false,
-            'line_taxes'        => false,
-            'line_discount'     => false,
+            'show_availability' => false,
+            'show_taxes'        => false,
+            'show_discount'     => false,
+            'show_margin'       => false,
         ];
     }
 
@@ -122,11 +128,36 @@ class SaleView extends AbstractView
 
     /**
      * Returns the final total view.
+     *
      * @return TotalView
      */
     public function getFinal()
     {
         return $this->final;
+    }
+
+    /**
+     * Sets the margin view.
+     *
+     * @param MarginView $margin
+     *
+     * @return SaleView
+     */
+    public function setMargin($margin)
+    {
+        $this->margin = $margin;
+
+        return $this;
+    }
+
+    /**
+     * Returns the margin view.
+     *
+     * @return MarginView
+     */
+    public function getMargin()
+    {
+        return $this->margin;
     }
 
     /**
@@ -257,20 +288,22 @@ class SaleView extends AbstractView
         return [
             'designation'    => 'Designation',
             'reference'      => 'Reference',
-            'unit_net_price' => 'Unit net price',
+            'availability'   => 'Avai.',
+            'unit_net_price' => 'Unit Price',
             'quantity'       => 'Quantity',
 
-            'gross'    => 'Gross',
-            'discount' => 'Discount',
+            'gross'          => 'Gross',
+            'discount'       => 'Discount',
 
-            'tax_rate'   => 'Tax rate',
-            'tax_name'   => 'Tax',
-            'tax_amount' => 'Amount',
+            'tax_rate'       => 'Tax rate',
+            'tax_name'       => 'Tax',
+            'tax_amount'     => 'Amount',
 
-            'gross_totals' => 'Gross totals',
-            'net_total'    => 'Net total',
-            'tax_total'    => 'Tax total',
-            'grand_total'  => 'Grand total',
+            'gross_totals'   => 'Gross totals',
+            'net_total'      => 'Net total',
+            'tax_total'      => 'Tax total',
+            'grand_total'    => 'Grand total',
+            'margin'         => 'Margin',
         ];
     }
 }

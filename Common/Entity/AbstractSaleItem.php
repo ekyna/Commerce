@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
+use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Common\Model\AdjustableTrait;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -97,6 +98,11 @@ abstract class AbstractSaleItem implements SaleItemInterface
      * @var Amount
      */
     private $result;
+
+    /**
+     * @var Margin
+     */
+    private $margin;
 
 
     /**
@@ -453,6 +459,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
         }
 
         $this->result = null;
+        $this->margin = null;
 
         return $this;
     }
@@ -473,6 +480,22 @@ abstract class AbstractSaleItem implements SaleItemInterface
     public function getResult()
     {
         return $this->result;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setMargin(Margin $margin)
+    {
+        $this->margin = $margin;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMargin()
+    {
+        return $this->margin;
     }
 
     /**

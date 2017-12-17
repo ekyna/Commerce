@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
+use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -429,4 +430,18 @@ interface SaleInterface extends
      * @internal Usage reserved to view builder.
      */
     public function getFinalResult();
+
+    /**
+     * Sets the margin.
+     *
+     * @param Margin $margin
+     */
+    public function setMargin(Margin $margin);
+
+    /**
+     * Returns the margin.
+     *
+     * @return Margin
+     */
+    public function getMargin();
 }
