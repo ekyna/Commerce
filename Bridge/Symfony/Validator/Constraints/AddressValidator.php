@@ -98,9 +98,10 @@ class AddressValidator extends ConstraintValidator
         $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
         if (class_exists($zipCodeClass) && (null !== $country = $address->getCountry())) {
             $config['postalCode'][] = new $zipCodeClass([
+                'message'     => $constraint->invalid_zip_code,
                 'iso'         => $country->getCode(),
                 'ignoreEmpty' => true,
-                'message'     => $constraint->invalid_zip_code,
+                'strict'      => false,
             ]);
         }
 
