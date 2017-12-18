@@ -130,7 +130,11 @@ class Margin
     {
         $amount = $this->getAmount();
 
-        return round($amount * 100 / $this->sellingPrice, 2);
+        if (0 < $this->sellingPrice) {
+            return round($amount * 100 / $this->sellingPrice, 2);
+        }
+
+        return 0;
     }
 
     /**

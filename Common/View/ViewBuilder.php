@@ -335,8 +335,8 @@ class ViewBuilder
             $this->view->vars['show_availability'] = true;
         }
 
-        if ($this->options['private']) {
-            if (!$item->isCompound() && null !== $margin = $item->getMargin()) {
+        if ($this->options['private'] && !($item->isCompound() && !$item->hasPrivateChildren())) {
+            if (null !== $margin = $item->getMargin()) {
                 $view->setMargin(
                     ($margin->isAverage() ? '~' : '') .
                     $this->formatter->percent($margin->getPercent())

@@ -79,7 +79,10 @@
     </td>
     {%- if view.vars.show_taxes %}<td>&nbsp;</td>{% endif -%}
     {{- block('line_quantity') -}}
-    <td colspan="{{ view.vars.show_discounts ? (view.vars.show_margin ? 5 : 4) : (view.vars.show_margin ? 2 : 1) }}">&nbsp;</td>
+    <td colspan="{{ view.vars.show_discounts ? 4 : 1 }}">&nbsp;</td>
+    {% if view.vars.show_margin -%}
+        <td class="text-right" id="{{ line.id }}_margin">{{ line.margin }}</td>
+    {%- endif %}
 {% endspaceless %}
 {% endblock line_private %}
 

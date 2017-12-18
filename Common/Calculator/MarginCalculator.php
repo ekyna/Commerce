@@ -145,7 +145,15 @@ class MarginCalculator implements MarginCalculatorInterface
 
         foreach ($item->getChildren() as $child) {
             if (null !== $childMargin = $this->calculateSaleItem($child)) {
-                $margin->merge($childMargin);
+                if ($child->isPrivate()) {
+                    if (0 < $cost = $childMargin->getPurchaseCost()) {
+                        $margin->addPurchaseCost($childMargin->getPurchaseCost());
+                    } else {
+                        $margin->setAverage(true);
+                    }
+                } else {
+                    $margin->merge($childMargin);
+                }
             } else {
                 $margin->setAverage(true);
             }

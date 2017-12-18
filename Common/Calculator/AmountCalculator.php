@@ -105,7 +105,8 @@ class AmountCalculator implements AmountCalculatorInterface
 
         if ($item->isPrivate()) {
             // Private case : we just need unit amount
-            $result = new Amount($unit);
+            $gross = $unit * $item->getTotalQuantity();
+            $result = new Amount($unit, $gross, 0 , $gross);
         } elseif ($item->getSale()->isSample()) {
             // Sample sale case : zero amounts
             $result = new Amount();
