@@ -121,7 +121,7 @@ abstract class AbstractShipmentItemListener
         $stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state');
         if (
             Model\ShipmentStates::isStockableState($shipment->getState()) ||
-            Model\ShipmentStates::hasChangedFromStockable($stateCs)
+            (!empty($stateCs) && Model\ShipmentStates::hasChangedFromStockable($stateCs))
         ) {
             // Detach shipment item to stock units
             $this->stockUnitAssigner->detachShipmentItem($item);

@@ -82,7 +82,9 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
             !Shipment\ShipmentStates::isStockableState($shipment->getState())
         ) {
             if (null !== $invoice) {
-                $sale->removeInvoice($invoice);
+                $invoice->setShipment(null);
+                $invoice->setSale(null);
+
                 if (null !== $invoice->getId()) {
                     $this->persistenceHelper->remove($invoice, true);
                 }

@@ -78,7 +78,7 @@ class MarginCalculator implements MarginCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSale(Model\SaleInterface $sale): Margin
+    public function calculateSale(Model\SaleInterface $sale): ?Margin
     {
         if (null !== $margin = $sale->getMargin()) {
             return $margin;
@@ -92,10 +92,16 @@ class MarginCalculator implements MarginCalculatorInterface
 
         $margin = new Margin();
 
+        $cancel = true;
         foreach ($sale->getItems() as $item) {
             if (null !== $itemMargin = $this->calculateSaleItem($item)) {
                 $margin->merge($itemMargin);
+                $cancel = false;
             }
+        }
+
+        if ($cancel) {
+            return null;
         }
 
         foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {

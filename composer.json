@@ -36,7 +36,8 @@
         "misd/phone-number-bundle": "^1.2"
     },
     "suggest": {
-        "florianv/swap": "For currency exchange rates"
+        "florianv/swap": "For currency exchange rates",
+        "barbieswimcrew/zip-code-validator": "For zip code validation"
     },
     "autoload": {
         "psr-4": {

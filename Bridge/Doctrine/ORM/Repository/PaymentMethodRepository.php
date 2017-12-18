@@ -40,6 +40,7 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
         return $qb
             ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
             ->andWhere($qb->expr()->eq('m.available', ':available'))
+            ->orderBy('m.position', 'ASC')
             ->getQuery()
             ->setParameters([
                 'enabled'   => true,
@@ -57,6 +58,7 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
 
         return $qb
             ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
+            ->orderBy('m.position', 'ASC')
             ->getQuery()
             ->setParameters([
                 'enabled' => true,

@@ -17,6 +17,7 @@ class Address extends Constraint
     public $company_is_mandatory    = 'ekyna_commerce.address.company_is_mandatory';
     public $phone_is_mandatory      = 'ekyna_commerce.address.phone_is_mandatory';
     public $mobile_is_mandatory     = 'ekyna_commerce.address.mobile_is_mandatory';
+    public $invalid_zip_code         = 'ekyna_commerce.address.invalid_zip_code';
 
     public $identity                = false;
     public $company                 = false;

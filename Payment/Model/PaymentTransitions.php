@@ -13,7 +13,7 @@ class PaymentTransitions
     const TRANSITION_HANG   = 'hang';
     const TRANSITION_ACCEPT = 'accept';
     const TRANSITION_REJECT = 'reject';
-    //const TRANSITION_REFUND = 'refund';
+    const TRANSITION_REFUND = 'refund';
 
 
     /**
@@ -41,7 +41,7 @@ class PaymentTransitions
                     case PaymentStates::STATE_CAPTURED:
                         $transitions[] = static::TRANSITION_CANCEL;
                         $transitions[] = static::TRANSITION_HANG;
-                        //$transitions[] = static::TRANSITION_REFUND;
+                        $transitions[] = static::TRANSITION_REFUND;
                         break;
                     case PaymentStates::STATE_REFUNDED:
                         $transitions[] = static::TRANSITION_CANCEL;
@@ -59,7 +59,7 @@ class PaymentTransitions
                 } else {
                     $transitions[] = static::TRANSITION_ACCEPT;
                 }
-            }/* else {
+            } else {
                 if ($state === PaymentStates::STATE_CAPTURED) {
                     $transitions[] = static::TRANSITION_REFUND;
                 }
@@ -68,9 +68,9 @@ class PaymentTransitions
                         $transitions[] = static::TRANSITION_CANCEL;
                     }
                 }
-            }*/
+            }
         } else {
-            if ($state === PaymentStates::STATE_PENDING && $method->isManual()) {
+            if ($method->isManual() && $state === PaymentStates::STATE_PENDING) {
                 $transitions[] = static::TRANSITION_CANCEL;
             }
         }

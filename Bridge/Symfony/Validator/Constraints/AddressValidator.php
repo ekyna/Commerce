@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 /**
  * Class AddressValidator
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints
- * @author Étienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 class AddressValidator extends ConstraintValidator
 {
@@ -40,13 +40,13 @@ class AddressValidator extends ConstraintValidator
         }
 
         $config = [
-            'company' => [
+            'company'    => [
                 new Assert\Length([
                     'min' => 2,
                     'max' => 64,
                 ]),
             ],
-            'street' => [
+            'street'     => [
                 new Assert\NotBlank(),
                 new Assert\Length([
                     'min' => 2,
@@ -73,27 +73,36 @@ class AddressValidator extends ConstraintValidator
                     'max' => 16,
                 ]),
             ],
-            'city' => [
+            'city'       => [
                 new Assert\NotBlank(),
                 new Assert\Length([
                     'min' => 2,
                     'max' => 64,
                 ]),
             ],
-            'country' => [
+            'country'    => [
                 new Assert\NotNull(),
             ],
-            'phone' => [
+            'phone'      => [
                 new PhoneNumber([
                     'type' => 'fixed_line',
                 ]),
             ],
-            'mobile' => [
+            'mobile'     => [
                 new PhoneNumber([
                     'type' => 'mobile',
                 ]),
-            ]
+            ],
         ];
+
+        $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
+        if (class_exists($zipCodeClass) && (null !== $country = $address->getCountry())) {
+            $config['postalCode'][] = new $zipCodeClass([
+                'iso'         => $country->getCode(),
+                'ignoreEmpty' => true,
+                'message'     => $constraint->invalid_zip_code,
+            ]);
+        }
 
         if ($constraint->company) {
             $config['company'][] = new Assert\NotBlank();

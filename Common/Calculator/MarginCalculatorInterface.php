@@ -18,7 +18,7 @@ interface MarginCalculatorInterface
      *
      * @return Margin
      */
-    public function calculateSale(Model\SaleInterface $sale): Margin;
+    public function calculateSale(Model\SaleInterface $sale): ?Margin;
 
     /**
      * Calculates the sale item margin.

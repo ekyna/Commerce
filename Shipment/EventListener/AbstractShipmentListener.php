@@ -225,11 +225,15 @@ abstract class AbstractShipmentListener
 
         $invoice = $shipment->getInvoice();
 
-        if ($shipment->isAutoInvoice() && null !== $invoice) {
-            $this->persistenceHelper->getManager()->persist($invoice);
-        } else {
-            $invoice->setShipment(null);
-            return;
+        if (null !== $invoice) {
+            if ($shipment->isAutoInvoice() && ShipmentStates::isStockableState($shipment->getState())) {
+                $this->persistenceHelper->getManager()->persist($invoice);
+            } else {
+                $invoice->setShipment(null);
+                $invoice->setSale(null);
+
+                return;
+            }
         }
 
         $sale = $shipment->getSale();
@@ -250,10 +254,15 @@ abstract class AbstractShipmentListener
 
         $invoice = $shipment->getInvoice();
 
-        if ($shipment->isAutoInvoice() && null !== $invoice) {
-            $this->persistenceHelper->getManager()->persist($invoice);
-        } else {
-            return;
+        if (null !== $invoice) {
+            if ($shipment->isAutoInvoice() && ShipmentStates::isStockableState($shipment->getState())) {
+                $this->persistenceHelper->getManager()->persist($invoice);
+            } else {
+                $invoice->setShipment(null);
+                $invoice->setSale(null);
+
+                return;
+            }
         }
 
         $sale = $shipment->getSale();
