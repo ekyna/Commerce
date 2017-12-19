@@ -146,7 +146,9 @@ class DocumentCalculator implements DocumentCalculatorInterface
         $gross = new Amount();
 
         foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_GOOD) as $line) {
-            $gross->merge($this->calculateGoodLine($line));
+            if (null !== $result = $this->calculateGoodLine($line)) {
+                $gross->merge($result);
+            }
         }
 
         $gross->copyGrossToUnit();
@@ -163,7 +165,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
      *
      * @throws LogicException
      */
-    protected function calculateGoodLine(Model\DocumentLineInterface $line): Amount
+    protected function calculateGoodLine(Model\DocumentLineInterface $line): ?Amount
     {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_GOOD) {
             throw new LogicException(sprintf(
@@ -174,6 +176,10 @@ class DocumentCalculator implements DocumentCalculatorInterface
 
         if (null === $item = $line->getSaleItem()) {
             throw new LogicException("Document can't be recalculated.");
+        }
+
+        if ($item->isPrivate()) {
+            return null;
         }
 
         $result = $this->calculator->calculateSaleItem($item, $line->getQuantity());
