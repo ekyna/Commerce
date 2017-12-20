@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
-use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface;
@@ -33,6 +32,9 @@ class SupplierDeliveryItemListener extends AbstractListener
         if (null === $stockUnit = $orderItem->getStockUnit()) {
             throw new RuntimeException("StockUnit must be set.");
         }
+
+        $stockUnit->addGeocode($item->getGeocode());
+
         $this->stockUnitUpdater->updateReceived($stockUnit, $item->getQuantity(), true);
 
         // Dispatch supplier order content change event
@@ -51,13 +53,27 @@ class SupplierDeliveryItemListener extends AbstractListener
     {
         $item = $this->getSupplierDeliveryItemFromEvent($event);
 
-        if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
+        if (null === $orderItem = $item->getOrderItem()) {
+            throw new RuntimeException("OrderItem must be set.");
+        }
+
+        if ($this->persistenceHelper->isChanged($item, 'geocode')) {
+            if (null === $stockUnit = $orderItem->getStockUnit()) {
+                throw new RuntimeException("StockUnit must be set.");
+            }
+
+            $gCs = $this->persistenceHelper->getChangeSet($item, 'geocode');
+
+            $stockUnit->removeGeocode($gCs[0]);
+            $stockUnit->addGeocode($gCs[1]);
+
+            $this->persistenceHelper->persistAndRecompute($stockUnit, false);
+        }
+
+        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
             $this->handleQuantityChange($item);
 
             // Dispatch supplier order content change event
-            if (null === $orderItem = $item->getOrderItem()) {
-                throw new RuntimeException("OrderItem must be set.");
-            }
             if (null === $order = $orderItem->getOrder()) {
                 throw new RuntimeException("Order must be set.");
             }
@@ -81,16 +97,19 @@ class SupplierDeliveryItemListener extends AbstractListener
 
         $this->assertDeletable($item);
 
+        if (null === $orderItem = $item->getOrderItem()) {
+            throw new RuntimeException("OrderItem must be set.");
+        }
+        if (null === $stockUnit = $orderItem->getStockUnit()) {
+            throw new RuntimeException("StockUnit must be set.");
+        }
+
+        $stockUnit->removeGeocode($item->getGeocode());
+
         if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
             $this->handleQuantityChange($item);
         } else {
             // Debit stock unit received quantity
-            if (null === $orderItem = $item->getOrderItem()) {
-                throw new RuntimeException("OrderItem must be set.");
-            }
-            if (null === $stockUnit = $orderItem->getStockUnit()) {
-                throw new RuntimeException("StockUnit must be set.");
-            }
             $this->stockUnitUpdater->updateReceived($stockUnit, -$item->getQuantity(), true);
 
             // Trigger the supplier order update
@@ -140,8 +159,6 @@ class SupplierDeliveryItemListener extends AbstractListener
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
      */
     public function onPreDelete(ResourceEventInterface $event)
     {

@@ -58,4 +58,20 @@ interface SupplierDeliveryItemInterface extends ResourceInterface
      * @return $this|SupplierDeliveryItemInterface
      */
     public function setQuantity($quantity);
+
+    /**
+     * Returns the geocode.
+     *
+     * @return string
+     */
+    public function getGeocode();
+
+    /**
+     * Sets the geocode.
+     *
+     * @param string $geocode
+     *
+     * @return $this|SupplierDeliveryItemInterface
+     */
+    public function setGeocode($geocode);
 }

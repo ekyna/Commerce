@@ -31,20 +31,47 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function getSubject();
 
     /**
-     * Returns the geocode.
+     * Returns the geocodes.
      *
-     * @return string
+     * @return array
      */
-    public function getGeocode();
+    public function getGeocodes();
 
     /**
-     * Sets the geocode.
+     * Returns whether the stock unit has the given geocode.
      *
-     * @param string $code
+     * @param string $geocode
+     *
+     * @return bool
+     */
+    public function hasGeocode($geocode);
+
+    /**
+     * Adds the geocode.
+     *
+     * @param string $geocode
      *
      * @return $this|StockUnitInterface
      */
-    public function setGeocode($code);
+    public function addGeocode($geocode);
+
+    /**
+     * Removes the geocode.
+     *
+     * @param string $geocode
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function removeGeocode($geocode);
+
+    /**
+     * Sets the geocodes.
+     *
+     * @param array $codes
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setGeocodes(array $codes);
 
     /**
      * Returns the supplierOrderItem.

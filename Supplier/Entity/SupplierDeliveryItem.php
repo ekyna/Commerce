@@ -31,6 +31,11 @@ class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
      */
     protected $quantity;
 
+    /**
+     * @var string
+     */
+    protected $geocode;
+
 
     /**
      * @inheritdoc
@@ -102,6 +107,24 @@ class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
     public function setQuantity($quantity)
     {
         $this->quantity = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGeocode()
+    {
+        return $this->geocode;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGeocode($geocode)
+    {
+        $this->geocode = $geocode;
 
         return $this;
     }

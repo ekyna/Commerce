@@ -23,9 +23,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $id;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $geocode;
+    protected $geocodes;
 
     /**
      * @var SupplierOrderItemInterface
@@ -94,6 +94,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function __construct()
     {
         $this->state = Model\StockUnitStates::STATE_NEW;
+        $this->geocodes = [];
         $this->createdAt = new \DateTime();
         $this->stockAssignments = new ArrayCollection();
     }
@@ -105,9 +106,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function __toString()
     {
-        if (0 < strlen($this->getGeocode())) {
-            return $this->getGeocode();
-        } elseif (0 < $this->getId()) {
+        if (!empty($this->getGeocodes())) {
+            return implode('-', $this->getGeocodes());
+        } elseif (null !== $this->getId()) {
             return '#'.$this->getId();
         }
 
@@ -126,17 +127,55 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function getGeocode()
+    public function getGeocodes()
     {
-        return $this->geocode;
+        return $this->geocodes;
     }
 
     /**
      * @inheritdoc
      */
-    public function setGeocode($code)
+    public function hasGeocode($geocode)
     {
-        $this->geocode = $code;
+        $geocode = strtoupper($geocode);
+
+        return in_array($geocode, $this->geocodes, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addGeocode($geocode)
+    {
+        $geocode = strtoupper($geocode);
+
+        if (!in_array($geocode, $this->geocodes, true)) {
+            $this->geocodes[] = $geocode;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeGeocode($geocode)
+    {
+        $geocode = strtoupper($geocode);
+
+        if (false !== $index = array_search($geocode, $this->geocodes, true)) {
+            unset($this->geocodes[$index]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGeocodes(array $codes)
+    {
+        $this->geocodes = $codes;
 
         return $this;
     }

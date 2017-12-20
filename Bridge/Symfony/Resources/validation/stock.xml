@@ -34,11 +34,11 @@
                 </option>
             </constraint>
         </property>
-        <property name="geocode">
+        <!--<property name="geocodes">
             <constraint name="Length">
-                <option name="max">16</option>
+                <option name="max">64</option>
             </constraint>
-        </property>
+        </property>-->
         <property name="estimatedDateOfArrival">
             <constraint name="DateTime"/>
         </property>

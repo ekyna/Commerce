@@ -146,11 +146,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $stockUnit->setEstimatedDateOfArrival($date);
 
             $this->persistenceHelper->persistAndRecompute($stockUnit, true);
-
-            return true;
         }
-
-        return false;
     }
 
     /**
