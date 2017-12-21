@@ -58,7 +58,6 @@ class AvailabilityViewType extends AbstractViewType
             return;
         }
 
-
         if (0 < $available = $this->availabilityHelper->getAvailableQuantity($subject)) {
             $quantity = $item->getTotalQuantity();
             if ($quantity > $available) {
@@ -73,7 +72,7 @@ class AvailabilityViewType extends AbstractViewType
         if (!empty($message = $this->availabilityHelper->getAvailabilityMessage($subject))) {
             $view
                 ->setAvailability($message)
-                ->addClass('danger');
+                ->addClass('warning');
         }
     }
 

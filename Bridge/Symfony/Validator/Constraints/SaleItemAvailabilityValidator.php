@@ -104,11 +104,11 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
             $max = $this->availabilityHelper->getAvailableQuantity($subject);
             $min = $subject->getMinimumOrderQuantity();
 
-            if (0 == $max && $subject->isEndOfLife()) {
-                $message = $this->availabilityHelper->translate('end_of_life');
-            } else if ($quantity < $min) {
+            if ($quantity < $min) {
                 $message = $this->availabilityHelper->translate('min_quantity', ['%min%' => $min]);
-            } else {
+            } elseif (0 == $max && $subject->isEndOfLife()) {
+                $message = $this->availabilityHelper->translate('end_of_life');
+            } else  {
                 return;
             }
         }

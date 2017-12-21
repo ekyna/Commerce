@@ -21,7 +21,7 @@ class SupplierOrderItemRepository extends ResourceRepository implements Supplier
         $qb = $this->createQueryBuilder('i');
 
         return $qb
-            ->join('i.supplierOrder', 'o')
+            ->join('i.order', 'o')
             ->join('i.product', 'p')
             ->andWhere($qb->expr()->isNotNull('i.netPrice'))
             ->andWhere($qb->expr()->eq('p.subjectIdentity.provider', ':provider'))
