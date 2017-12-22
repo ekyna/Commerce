@@ -33,7 +33,7 @@ class SwapCurrencyConverter implements CurrencyConverterInterface
     public function __construct(Swap $swap, $defaultCurrency = 'USD')
     {
         $this->swap = $swap;
-        $this->defaultCurrency = $defaultCurrency;
+        $this->defaultCurrency = strtoupper($defaultCurrency);
     }
 
     /**
@@ -41,7 +41,12 @@ class SwapCurrencyConverter implements CurrencyConverterInterface
      */
     public function convert($amount, $base, $quote = null, \DateTime $date = null)
     {
-        $quote = $quote ?: $this->defaultCurrency;
+        $base = strtoupper($base);
+        $quote = $quote ? strtoupper($quote) : $this->defaultCurrency;
+
+        if ($base === $quote) {
+            return $amount;
+        }
 
         $pair = "$base/$quote";
         if (null !== $date && $date <= new \DateTime()) {
@@ -50,6 +55,6 @@ class SwapCurrencyConverter implements CurrencyConverterInterface
             $rate = $this->swap->latest($pair)->getValue();
         }
 
-        return Money::round($amount / $rate, $quote);
+        return Money::round($amount * $rate, $quote);
     }
 }
