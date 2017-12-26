@@ -134,8 +134,8 @@ class AddressValidator extends ConstraintValidator
             }
         }
 
-        if ($constraint->identity) {
-            IdentityValidator::validateIdentity($this->context, $address);
-        }
+        IdentityValidator::validateIdentity($this->context, $address, [
+            'required' => $constraint->identity
+        ]);
     }
 }

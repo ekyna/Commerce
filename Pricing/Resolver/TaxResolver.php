@@ -178,11 +178,9 @@ class TaxResolver implements TaxResolverInterface
      */
     protected function resolveSaleTargetCountry(SaleInterface $sale)
     {
-        $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
-
-        // Get the country from the delivery address
-        if (null !== $address) {
-            return $address->getCountry();
+        // Get the country from the sale's delivery address
+        if (null !== $country = $sale->getDeliveryCountry()) {
+            return $country;
         }
 
         // If none, resolves the customer's taxation target address

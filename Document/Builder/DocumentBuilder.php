@@ -184,7 +184,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     {
         $sale = $document->getSale();
 
-        if (0 >= $sale->getShipmentAmount()) {
+        if (null === $method = $sale->getShipmentMethod()) {
             return null;
         }
 
@@ -197,7 +197,7 @@ class DocumentBuilder implements DocumentBuilderInterface
             $line = $this->createLine($document);
             $line
                 ->setType(Document\DocumentLineTypes::TYPE_SHIPMENT)
-                ->setDesignation($sale->getShipmentMethod()->getTitle());
+                ->setDesignation($method->getTitle());
 
             $document->addLine($line);
         }

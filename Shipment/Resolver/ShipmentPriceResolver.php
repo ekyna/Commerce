@@ -46,7 +46,7 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      */
     public function getAvailableMethodsBySale(SaleInterface $sale)
     {
-        if (null !== $country = $this->getSaleDeliveryCountry($sale)) {
+        if (null !== $country = $sale->getDeliveryCountry()) {
             return $this->getAvailableMethodsByCountryAndWeight($country, $sale->getWeightTotal());
         }
 
@@ -58,7 +58,7 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      */
     public function getAvailablePricesBySale(SaleInterface $sale)
     {
-        if (null !== $country = $this->getSaleDeliveryCountry($sale)) {
+        if (null !== $country = $sale->getDeliveryCountry()) {
             return $this->getAvailablePricesByCountryAndWeight($country, $sale->getWeightTotal());
         }
 
@@ -112,21 +112,5 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         return $this
             ->priceRepository
             ->findOneByCountryAndMethodAndWeight($country, $method, $weight);
-    }
-
-    /**
-     * Returns the sale delivery country.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return CountryInterface|null
-     */
-    private function getSaleDeliveryCountry(SaleInterface $sale)
-    {
-        $address = $sale->isSameAddress()
-            ? $sale->getInvoiceAddress()
-            : $sale->getDeliveryAddress();
-
-        return null !== $address ? $address->getCountry() : null;
     }
 }

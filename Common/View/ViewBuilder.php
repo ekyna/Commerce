@@ -407,7 +407,7 @@ class ViewBuilder
      */
     private function buildShipmentLine(Model\SaleInterface $sale)
     {
-        if (0 >= $sale->getShipmentAmount() && !$this->options['private']) {
+        if (null === $sale->getShipmentMethod() && !$this->options['private']) {
             return;
         }
 

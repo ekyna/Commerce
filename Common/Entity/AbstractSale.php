@@ -457,6 +457,16 @@ abstract class AbstractSale implements Common\SaleInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getDeliveryCountry()
+    {
+        $address = $this->isSameAddress() ? $this->getInvoiceAddress() : $this->getDeliveryAddress();
+
+        return null !== $address ? $address->getCountry() : null;
+    }
+
+    /**
      * @inheritdoc
      */
     public function clearResults()

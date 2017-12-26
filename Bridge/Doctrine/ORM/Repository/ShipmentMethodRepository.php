@@ -46,7 +46,8 @@ class ShipmentMethodRepository extends TranslatableResourceRepository implements
         $qb = $this->getCollectionQueryBuilder();
         $qb
             ->join('o.prices', 'p')
-            ->addGroupBy('o.id');
+            ->addGroupBy('o.id')
+            ->addOrderBy('o.position', 'ASC');
 
         $parameters = [];
 
@@ -95,6 +96,7 @@ class ShipmentMethodRepository extends TranslatableResourceRepository implements
                 ->andWhere($qb->expr()->eq('o.enabled', ':enabled'))
                 ->andWhere($qb->expr()->eq('o.available', ':available'))
                 ->addGroupBy('o.id')
+                ->addOrderBy('o.position', 'ASC')
                 ->getQuery();
         }
 

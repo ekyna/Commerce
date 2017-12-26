@@ -195,7 +195,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         }
 
         // Remove unexpected shipment lines
-        if (0 >= $sale->getShipmentAmount()) {
+        if (null === $sale->getShipmentMethod()) {
             foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_SHIPMENT) as $line) {
                 $invoice->removeLine($line);
 
@@ -275,7 +275,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         }
 
         // Add expected shipment line
-        if (0 < $sale->getShipmentAmount() && !$this->isShipmentAmountInvoiced($invoice)) {
+        if (null !== $sale->getShipmentMethod() && !$this->isShipmentAmountInvoiced($invoice)) {
             $this->invoiceBuilder->buildShipmentLine($invoice);
         }
 

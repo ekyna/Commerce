@@ -14,10 +14,10 @@
         </id>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface"
-                    field="invoiceOrder" mapped-by="invoiceAddress" orphan-removal="true"/>
+                    field="invoiceOrder" mapped-by="invoiceAddress"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface"
-                    field="deliveryOrder" mapped-by="deliveryAddress" orphan-removal="true"/>
+                    field="deliveryOrder" mapped-by="deliveryAddress"/>
 
     </mapped-superclass>
 

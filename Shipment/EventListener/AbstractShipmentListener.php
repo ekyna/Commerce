@@ -173,9 +173,9 @@ abstract class AbstractShipmentListener
                     $this->stockUnitAssigner->detachShipmentItem($item);
                 }
             }
-
-            $this->invoiceSynchronizer->synchronize($shipment);
         }
+
+        $this->invoiceSynchronizer->synchronize($shipment);
 
         if ($changed || $stateChanged) {
             $this->scheduleSaleContentChangeEvent($shipment->getSale());

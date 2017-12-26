@@ -228,11 +228,7 @@ class MarginCalculator implements MarginCalculatorInterface
             return $margin;
         }
 
-        $deliveryAddress = $sale->isSameAddress()
-            ? $sale->getInvoiceAddress()
-            : $sale->getDeliveryAddress();
-
-        $country = $deliveryAddress ? $deliveryAddress->getCountry() : null;
+        $country = $sale->getDeliveryCountry();
         $method = $sale->getShipmentMethod();
         $weight = $sale->getWeightTotal();
 

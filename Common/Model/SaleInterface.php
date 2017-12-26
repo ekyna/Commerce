@@ -363,6 +363,13 @@ interface SaleInterface extends
     public function getItems();
 
     /**
+     * Returns the delivery country.
+     *
+     * @return CountryInterface|null
+     */
+    public function getDeliveryCountry();
+
+    /**
      * Clears the results.
      *
      * @return $this|SaleInterface
