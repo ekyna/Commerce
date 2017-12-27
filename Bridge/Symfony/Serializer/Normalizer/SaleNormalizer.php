@@ -2,37 +2,44 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
-use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
 /**
- * Class CustomerNormalizer
+ * Class SaleNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerNormalizer extends AbstractResourceNormalizer
+class SaleNormalizer extends AbstractResourceNormalizer
 {
     /**
      * @inheritdoc
      */
-    public function normalize($customer, $format = null, array $context = [])
+    public function normalize($sale, $format = null, array $context = [])
     {
-        $data = parent::normalize($customer, $format, $context);
+        $data = parent::normalize($sale, $format, $context);
 
-        /** @var CustomerInterface $customer */
+        /** @var SaleInterface $sale */
         $groups = isset($context['groups']) ? (array)$context['groups'] : [];
 
         if (in_array('Default', $groups) || in_array('Search', $groups)) {
-            $parent = $customer->getParent();
+            $data = array_replace($data, [
+                'number'     => $sale->getNumber(),
+                'company'    => $sale->getCompany(),
+                'email'      => $sale->getEmail(),
+                'first_name' => $sale->getFirstName(),
+                'last_name'  => $sale->getLastName(),
+            ]);
+        } elseif (in_array('Summary', $groups)) {
+            $items = [];
+
+            foreach ($sale->getItems() as $item) {
+                $items[] = $this->normalizeObject($item, $format, $context);
+            }
 
             $data = array_replace($data, [
-                'number'     => $customer->getNumber(),
-                'company'    => $customer->getCompany(),
-                'email'      => $customer->getEmail(),
-                'first_name' => $customer->getFirstName(),
-                'last_name'  => $customer->getLastName(),
-                'parent'     => $parent ? $parent->getId() : null,
-                'vatValid'   => $customer->isVatValid(),
+                'items' => $items,
+                'total' => $sale->getGrandTotal(),
             ]);
         }
 
@@ -54,7 +61,7 @@ class CustomerNormalizer extends AbstractResourceNormalizer
      */
     public function supportsNormalization($data, $format = null)
     {
-        return $data instanceof CustomerInterface;
+        return $data instanceof SaleInterface;
     }
 
     /**
@@ -62,6 +69,6 @@ class CustomerNormalizer extends AbstractResourceNormalizer
      */
     public function supportsDenormalization($data, $type, $format = null)
     {
-        return class_exists($type) && is_subclass_of($type, CustomerInterface::class);
+        return class_exists($type) && is_subclass_of($type, SaleInterface::class);
     }
 }

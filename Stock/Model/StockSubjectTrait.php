@@ -62,7 +62,7 @@ trait StockSubjectTrait
     /**
      * @var bool
      */
-    protected $quoteOnly = false;
+    protected $quoteOnly;
 
     /**
      * @var bool
