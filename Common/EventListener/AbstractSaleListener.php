@@ -249,6 +249,8 @@ abstract class AbstractSaleListener
         // Update taxation
         if ($this->isTaxationUpdateNeeded($sale)) {
             $changed |= $this->saleUpdater->updateTaxation($sale, true);
+        } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
+            $changed |= $this->saleUpdater->updateShipmentTaxation($sale, true);
         }
 
         return $changed;

@@ -17,39 +17,11 @@ interface ShipmentPriceResolverInterface
      * Returns the available shipment methods by sale.
      *
      * @param SaleInterface $sale
-     *
-     * @return array|ShipmentMethodInterface[]
-     */
-    public function getAvailableMethodsBySale(SaleInterface $sale);
-
-    /**
-     * Returns the available shipment methods by sale.
-     *
-     * @param SaleInterface $sale
+     * @param bool          $availableMethods
      *
      * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
      */
-    public function getAvailablePricesBySale(SaleInterface $sale);
-
-    /**
-     * Returns the available shipment methods by country and weight.
-     *
-     * @param CountryInterface $country
-     * @param float            $weight The weight in Kg.
-     *
-     * @return array|ShipmentMethodInterface[]
-     */
-    public function getAvailableMethodsByCountryAndWeight(CountryInterface $country, $weight);
-
-    /**
-     * Returns the available shipment prices by country and weight.
-     *
-     * @param CountryInterface $country
-     * @param float            $weight The weight in Kg.
-     *
-     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
-     */
-    public function getAvailablePricesByCountryAndWeight(CountryInterface $country, $weight);
+    public function getAvailablePricesBySale(SaleInterface $sale, $availableMethods);
 
     /**
      * Returns the shipment price by country, method and weight.

@@ -27,4 +27,15 @@ interface ShipmentPriceRepositoryInterface extends ResourceRepositoryInterface
         ShipmentMethodInterface $method,
         $weight
     );
+
+    /**
+     * Returns the prices by country and weight.
+     *
+     * @param CountryInterface $country
+     * @param float            $weight
+     * @param bool             $available
+     *
+     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
+     */
+    public function findByCountryAndWeight(CountryInterface $country, $weight, $available = true);
 }
