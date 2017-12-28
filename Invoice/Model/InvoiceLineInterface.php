@@ -29,6 +29,15 @@ interface InvoiceLineInterface extends DocumentLineInterface, ResourceInterface
     public function setInvoice(InvoiceInterface $invoice = null);
 
     /**
+     * Sets the children.
+     *
+     * @param array $children
+     *
+     * @return $this|InvoiceLineInterface
+     */
+    public function setChildren(array $children);
+
+    /**
      * Returns the children invoice lines.
      *
      * @return \Doctrine\Common\Collections\Collection|InvoiceLineInterface[]

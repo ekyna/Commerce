@@ -109,6 +109,20 @@ abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
     /**
      * @inheritdoc
      */
+    public function setChildren(array $children)
+    {
+        $this->clearChildren();
+
+        foreach ($children as $child) {
+            $this->children->add($child);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getChildren()
     {
         return $this->children;

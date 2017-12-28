@@ -108,6 +108,20 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
     /**
      * @inheritdoc
      */
+    public function setChildren(array $children)
+    {
+        $this->clearChildren();
+
+        foreach ($children as $child) {
+            $this->children->add($child);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getChildren()
     {
         return $this->children;

@@ -62,6 +62,15 @@ interface ShipmentItemInterface extends ResourceInterface
     public function setQuantity($quantity);
 
     /**
+     * Sets the children.
+     *
+     * @param array $children
+     *
+     * @return $this|ShipmentItemInterface
+     */
+    public function setChildren(array $children);
+
+    /**
      * Returns the children shipment items.
      *
      * @return \Doctrine\Common\Collections\Collection|ShipmentItemInterface[]
