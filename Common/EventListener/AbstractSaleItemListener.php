@@ -124,7 +124,8 @@ abstract class AbstractSaleItemListener
      */
     public function onPreUpdate(ResourceEventInterface $event)
     {
-        $this->throwIllegalOperationIfItemIsImmutable($event);
+        // TODO Disabled to allow admins to change weight and net price
+        // $this->throwIllegalOperationIfItemIsImmutable($event);
     }
 
     /**

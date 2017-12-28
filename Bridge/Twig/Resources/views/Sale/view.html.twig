@@ -336,6 +336,7 @@
                 {% if view.shipment is not null %}
                     {{ block('spacer') }}
                     <tbody><tr>
+                    {% set line = view.shipment %}
                     {{ block('shipment') }}
                     </tr></tbody>
                 {% endif %}
