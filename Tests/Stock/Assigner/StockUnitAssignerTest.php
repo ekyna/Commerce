@@ -29,6 +29,11 @@ class StockUnitAssignerTest extends BaseTestCase
         $this->markTestIncomplete();
     }
 
+    public function test_swapItems()
+    {
+        $this->markTestIncomplete();
+    }
+
     public function test_assignShipmentItem()
     {
         $this->markTestIncomplete();

@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
+use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -61,6 +62,10 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
      */
     private $eventDispatcher;
 
+    /**
+     * @var SubjectHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $subjectHelper;
 
     /**
      * Returns a customer group repository mock.
@@ -188,5 +193,19 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
         }
 
         return $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+    }
+
+    /**
+     * Returns the subject helper mock.
+     *
+     * @return SubjectHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getSubjectHelperMock()
+    {
+        if (null !== $this->subjectHelper) {
+            return $this->subjectHelper;
+        }
+
+        return $this->subjectHelper = $this->createMock(SubjectHelperInterface::class);
     }
 }

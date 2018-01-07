@@ -163,6 +163,18 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     }
 
     /**
+     * Swap the sale given items.
+     *
+     * @param SaleItemInterface $itemA
+     * @param SaleItemInterface $itemB
+     */
+    public function swapSaleItems(SaleItemInterface $itemA, SaleItemInterface $itemB)
+    {
+        // TODO The goal is to move assignments from pending stock units (not yet received)
+        // to ready stock units. So that shippable quantity won't be limited.
+    }
+
+    /**
      * @inheritdoc
      */
     public function assignShipmentItem(ShipmentItemInterface $item)

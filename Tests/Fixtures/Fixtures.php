@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Order\Entity as OrderE;
 use Ekyna\Component\Commerce\Order\Model as OrderM;
 use Ekyna\Component\Commerce\Pricing\Entity as PricingE;
 use Ekyna\Component\Commerce\Pricing\Model as PricingM;
+use Ekyna\Component\Commerce\Shipment\Model as ShipmentM;
 use Ekyna\Component\Commerce\Stock\Model as StockM;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
@@ -518,5 +519,38 @@ class Fixtures
             ->setAmount($amount);
 
         return $adjustment;
+    }
+
+    /**
+     * Creates a new shipment.
+     *
+     * @param OrderM\OrderInterface $order
+     *
+     * @return OrderE\OrderShipment
+     */
+    public static function createShipment(OrderM\OrderInterface $order)
+    {
+        $shipment = new OrderE\OrderShipment();
+        $shipment->setOrder($order);
+
+        return $shipment;
+    }
+
+    /**
+     * Creates a new shipment item.
+     *
+     * @param ShipmentM\ShipmentInterface $shipment
+     * @param OrderM\OrderItemInterface   $orderItem
+     *
+     * @return OrderE\OrderShipmentItem
+     */
+    public static function createShipmentItem(ShipmentM\ShipmentInterface $shipment, OrderM\OrderItemInterface $orderItem)
+    {
+        $item = new OrderE\OrderShipmentItem();
+        $item
+            ->setShipment($shipment)
+            ->setOrderItem($orderItem);
+
+        return $item;
     }
 }
