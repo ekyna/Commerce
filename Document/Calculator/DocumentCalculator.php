@@ -178,13 +178,13 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
-        if ($item->isPrivate()) {
-            return null;
-        }
-
         $result = $this->calculator->calculateSaleItem($item, $line->getQuantity());
 
         $this->syncLineWithResult($line, $result);
+
+        if ($item->isPrivate()) {
+            return null;
+        }
 
         return $result;
     }
