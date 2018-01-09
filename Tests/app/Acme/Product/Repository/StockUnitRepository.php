@@ -152,6 +152,21 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     }
 
     /**
+     * @inheritDoc
+     */
+    public function findInStock()
+    {
+        $qb = $this->getQueryBuilder('su');
+
+        return $qb
+            ->join('su.product', 'p')
+            ->andWhere($qb->expr()->gt('su.receivedQuantity', 0))
+            ->andWhere($qb->expr()->gt('su.receivedQuantity', 'su.shippedQuantity'))
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @inheritdoc
      */
     protected function getAlias()
