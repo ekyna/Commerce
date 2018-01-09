@@ -28,6 +28,7 @@ class SupplierOrderItemRepository extends ResourceRepository implements Supplier
             ->andWhere($qb->expr()->eq('p.subjectIdentity.identifier', ':identifier'))
             ->orderBy('o.createdAt', 'DESC')
             ->getQuery()
+            ->setMaxResults(1)
             ->setParameters([
                 'provider'   => $subject->getProviderName(),
                 'identifier' => $subject->getId(),
