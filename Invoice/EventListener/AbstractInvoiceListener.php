@@ -182,8 +182,9 @@ abstract class AbstractInvoiceListener
 
         $this->updateCustomerBalance($invoice);
 
-        /** @var SaleInterface|InvoiceSubjectInterface $sale */
-        $sale = $invoice->getSale();
+        if (null === $sale = $invoice->getSale()) {
+            $sale = $this->persistenceHelper->getChangeSet($invoice, $this->getSalePropertyPath())[0];
+        }
         $sale->removeInvoice($invoice);
 
         $this->scheduleSaleContentChangeEvent($sale);
@@ -361,4 +362,11 @@ abstract class AbstractInvoiceListener
      * @throws Exception\InvalidArgumentException
      */
     abstract protected function getInvoiceFromEvent(ResourceEventInterface $event);
+
+    /**
+     * Returns the invoice's sale property path.
+     *
+     * @return string
+     */
+    abstract protected function getSalePropertyPath();
 }

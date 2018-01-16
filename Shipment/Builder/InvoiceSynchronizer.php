@@ -87,6 +87,8 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
                 if (null !== $invoice->getId()) {
                     $this->persistenceHelper->remove($invoice, true);
+                } elseif ($this->persistenceHelper->isScheduledForInsert($invoice)) {
+                    $this->persistenceHelper->getManager()->remove($invoice);
                 }
             }
 
@@ -103,7 +105,19 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         $changed |= $this->feedShipmentInvoice($invoice);
 
-        // TODO validate ?
+        // Remove empty invoices
+        if (0 == $invoice->getLines()->count()) {
+            $invoice->setShipment(null);
+            $invoice->setSale(null);
+
+            if (null !== $invoice->getId()) {
+                $this->persistenceHelper->remove($invoice, true);
+            } elseif ($this->persistenceHelper->isScheduledForInsert($invoice)) {
+                $this->persistenceHelper->getManager()->remove($invoice);
+            }
+
+            return;
+        }
 
         if ($changed) {
             // Persist all lines has the may have been updated.
@@ -235,10 +249,14 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
                         ? $calculator->calculateCreditableQuantity($line)
                         : $calculator->calculateInvoiceableQuantity($line);
 
-                    $quantity = min($max, $shipmentItem->getQuantity());
-                    if ($line->getQuantity() !== $quantity) {
-                        $line->setQuantity($quantity);
-
+                    if (0 < $quantity = min($max, $shipmentItem->getQuantity())) {
+                        if ($line->getQuantity() !== $quantity) {
+                            $line->setQuantity($quantity);
+                            $changed = true;
+                        }
+                    } else {
+                        // TODO persistence removal ?
+                        $invoice->removeLine($line);
                         $changed = true;
                     }
 
@@ -252,31 +270,35 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
                     ? $calculator->calculateCreditableQuantity($line)
                     : $calculator->calculateInvoiceableQuantity($line);
 
-                $quantity = min($max, $shipmentItem->getQuantity());
-                $line->setQuantity($quantity);
-            }
-
-            $changed = true;
-        }
-
-        // Add expected discount lines
-        $sale = $invoice->getSale();
-        foreach ($sale->getAdjustments(Common\AdjustmentTypes::TYPE_DISCOUNT) as $saleAdjustment) {
-            foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_DISCOUNT) as $line) {
-                if ($saleAdjustment === $line->getSaleAdjustment()) {
-                    continue 2; // Invoice line found -> next sale adjustment
+                if (0 < $quantity = min($max, $shipmentItem->getQuantity())) {
+                    $line->setQuantity($quantity);
+                    $changed = true;
+                } else {
+                    $invoice->removeLine($line);
                 }
             }
-
-            // Invoice line not found -> create it
-            $this->invoiceBuilder->buildDiscountLine($saleAdjustment, $invoice);
-
-            $changed = true;
         }
 
-        // Add expected shipment line
-        if (null !== $sale->getShipmentMethod() && !$this->isShipmentAmountInvoiced($invoice)) {
-            $this->invoiceBuilder->buildShipmentLine($invoice);
+        if ($invoice->hasLineByType(Document\DocumentLineTypes::TYPE_GOOD)) {
+            // Add expected discount lines
+            $sale = $invoice->getSale();
+            foreach ($sale->getAdjustments(Common\AdjustmentTypes::TYPE_DISCOUNT) as $saleAdjustment) {
+                foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_DISCOUNT) as $line) {
+                    if ($saleAdjustment === $line->getSaleAdjustment()) {
+                        continue 2; // Invoice line found -> next sale adjustment
+                    }
+                }
+
+                // Invoice line not found -> create it
+                $this->invoiceBuilder->buildDiscountLine($saleAdjustment, $invoice);
+
+                $changed = true;
+            }
+
+            // Add expected shipment line
+            if (null !== $sale->getShipmentMethod() && !$this->isShipmentAmountInvoiced($invoice)) {
+                $this->invoiceBuilder->buildShipmentLine($invoice);
+            }
         }
 
         return $changed;

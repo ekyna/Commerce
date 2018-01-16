@@ -71,11 +71,22 @@ class SaleView extends AbstractView
         $this->translations = $this->getDefaultTranslations();
 
         $this->vars = [
+            'buttons'           => [],
             'show_availability' => false,
             'show_taxes'        => false,
             'show_discount'     => false,
             'show_margin'       => false,
         ];
+    }
+
+    /**
+     * Adds the button.
+     *
+     * @param Button $button
+     */
+    public function addButton(Button $button)
+    {
+        $this->vars['buttons'][] = $button;
     }
 
     /**
@@ -292,18 +303,18 @@ class SaleView extends AbstractView
             'unit_net_price' => 'Unit Price',
             'quantity'       => 'Quantity',
 
-            'gross'          => 'Gross',
-            'discount'       => 'Discount',
+            'gross'    => 'Gross',
+            'discount' => 'Discount',
 
-            'tax_rate'       => 'Tax rate',
-            'tax_name'       => 'Tax',
-            'tax_amount'     => 'Amount',
+            'tax_rate'   => 'Tax rate',
+            'tax_name'   => 'Tax',
+            'tax_amount' => 'Amount',
 
-            'gross_totals'   => 'Gross totals',
-            'net_total'      => 'Net total',
-            'tax_total'      => 'Tax total',
-            'grand_total'    => 'Grand total',
-            'margin'         => 'Margin',
+            'gross_totals' => 'Gross totals',
+            'net_total'    => 'Net total',
+            'tax_total'    => 'Tax total',
+            'grand_total'  => 'Grand total',
+            'margin'       => 'Margin',
         ];
     }
 }

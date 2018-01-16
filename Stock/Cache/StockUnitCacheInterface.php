@@ -16,18 +16,38 @@ interface StockUnitCacheInterface extends StockUnitFinderInterface
     /**
      * Adds the stock unit to the cache.
      *
-     * @param StockUnitInterface $stockUnit
+     * @param StockUnitInterface $unit
      *
      * @throws LogicException
      */
-    public function add(StockUnitInterface $stockUnit);
+    public function add(StockUnitInterface $unit);
+
+    /**
+     * Returns whether a stock unit has been cached as added.
+     *
+     * @param StockUnitInterface $unit
+     *
+     * @return bool
+     * @throws LogicException
+     */
+    public function isAdded(StockUnitInterface $unit);
 
     /**
      * Removes the stock unit from the cache.
      *
-     * @param StockUnitInterface $stockUnit
+     * @param StockUnitInterface $unit
      *
      * @throws LogicException
      */
-    public function remove(StockUnitInterface $stockUnit);
+    public function remove(StockUnitInterface $unit);
+
+    /**
+     * Returns whether a stock unit has been cached as removed.
+     *
+     * @param StockUnitInterface $unit
+     *
+     * @return bool
+     * @throws LogicException
+     */
+    public function isRemoved(StockUnitInterface $unit);
 }

@@ -12,20 +12,6 @@
 {% endspaceless %}
 {% endblock %}
 
-{% block attributes %}
-{% spaceless %}
-    {% for name, value in attr %}
-        {% if name == 'title' %}
-            title="{{ value }}"
-        {% elseif name == 'confirm' %}
-            data-confirm="{{ value|escape }}"
-        {% else %}
-            {{ name }}{% if value is not empty %}="{{ value }}"{% endif %}
-        {% endif %}
-    {% endfor %}
-{% endspaceless %}
-{% endblock attributes %}
-
 
 {% block actions %}
 {% spaceless %}

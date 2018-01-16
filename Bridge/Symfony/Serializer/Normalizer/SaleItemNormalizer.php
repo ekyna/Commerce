@@ -33,6 +33,7 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
                 'designation' => $item->getDesignation(),
                 'reference'   => $item->getReference(),
                 'quantity'    => $item->getTotalQuantity(),
+                'private'     => $item->isPrivate(),
                 'children'    => $children,
             ]);
         }

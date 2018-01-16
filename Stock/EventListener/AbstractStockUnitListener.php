@@ -7,7 +7,6 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Event\SubjectStockUnitEvent;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
-use Ekyna\Component\Commerce\Stock\Util\StockUtil;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -76,7 +75,7 @@ abstract class AbstractStockUnitListener
         $stockUnit = $this->getStockUnitFromEvent($event);
 
         if ($this->stateResolver->resolve($stockUnit)) {
-            $this->persistenceHelper->persistAndRecompute($stockUnit);
+            $this->persistenceHelper->persistAndRecompute($stockUnit, false);
         }
 
         $this->scheduleSubjectStockUnitChangeEvent($stockUnit);
@@ -95,6 +94,7 @@ abstract class AbstractStockUnitListener
             'state',
             'orderedQuantity',
             'receivedQuantity',
+            'adjustedQuantity',
             'soldQuantity',
             'shippedQuantity',
             'estimatedDateOfArrival'
@@ -102,7 +102,7 @@ abstract class AbstractStockUnitListener
 
         if ($this->persistenceHelper->isChanged($stockUnit, $trackProperties)) {
             if ($this->stateResolver->resolve($stockUnit)) {
-                $this->persistenceHelper->persistAndRecompute($stockUnit);
+                $this->persistenceHelper->persistAndRecompute($stockUnit, false);
             }
 
             $this->scheduleSubjectStockUnitChangeEvent($stockUnit);
@@ -129,13 +129,13 @@ abstract class AbstractStockUnitListener
             }
         }
 
-        if (!StockUtil::isDeletableStockUnit($stockUnit)) {
+        if (!$stockUnit->isEmpty()) {
             throw new IllegalOperationException(
-                "The stock unit can't be deleted as it has been received, sold or shipped."
+                "The stock unit can't be deleted as it has been received, adjusted, sold or shipped."
             ); // TODO message as translation id
         }
 
-        $this->scheduleSubjectStockUnitRemovalEvent($stockUnit);
+        $this->scheduleSubjectStockUnitChangeEvent($stockUnit);
     }
 
     /**
@@ -147,19 +147,6 @@ abstract class AbstractStockUnitListener
     {
         $this->persistenceHelper->scheduleEvent(
             $this->getSubjectStockUnitChangeEventName(),
-            new SubjectStockUnitEvent($stockUnit)
-        );
-    }
-
-    /**
-     * Dispatches the subject's "stock unit remove" event.
-     *
-     * @param StockUnitInterface $stockUnit
-     */
-    protected function scheduleSubjectStockUnitRemovalEvent(StockUnitInterface $stockUnit)
-    {
-        $this->persistenceHelper->scheduleEvent(
-            $this->getSubjectStockUnitRemoveEventName(),
             new SubjectStockUnitEvent($stockUnit)
         );
     }
@@ -180,11 +167,4 @@ abstract class AbstractStockUnitListener
      * @return string
      */
     abstract protected function getSubjectStockUnitChangeEventName();
-
-    /**
-     * Returns the subject's "stock unit remove" event name.
-     *
-     * @return string
-     */
-    abstract protected function getSubjectStockUnitRemoveEventName();
 }

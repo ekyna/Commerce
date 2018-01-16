@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Cart\EventListener;
 
 use Ekyna\Component\Commerce\Cart\Event\CartEvents;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
+use Ekyna\Component\Commerce\Cart\Model\CartStates;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -74,6 +75,25 @@ class CartListener extends AbstractSaleListener
         $cart->setExpiresAt($date);
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function updateState(SaleInterface $sale)
+    {
+        if (parent::updateState($sale)) {
+            /** @var CartInterface $sale */
+            if (($sale->getState() === CartStates::STATE_ACCEPTED) && (null === $sale->getAcceptedAt())) {
+                $sale->setAcceptedAt(new \DateTime());
+            } elseif (($sale->getState() !== CartStates::STATE_ACCEPTED) && (null !== $sale->getAcceptedAt())) {
+                $sale->setAcceptedAt(null);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -20,7 +20,13 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
      * @var StockUnitInterface[][]
      * [identity => StockUnitInterface]
      */
-    protected $stockUnits;
+    protected $addedUnits;
+
+    /**
+     * @var StockUnitInterface[][]
+     * [identity => StockUnitInterface]
+     */
+    protected $removedUnits;
 
 
     /**
@@ -42,45 +48,65 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     /**
      * @inheritdoc
      */
-    public function add(StockUnitInterface $stockUnit)
+    public function add(StockUnitInterface $unit)
     {
-        if (null === $subject = $stockUnit->getSubject()) {
+        if (null === $subject = $unit->getSubject()) {
             throw new LogicException("Stock unit's subject must be set.");
         }
 
         $oid = spl_object_hash($subject);
 
-        if (!isset($this->stockUnits[$oid])) {
-            $this->stockUnits[$oid] = [];
-        }
+        // Clears the unit from the removed list
+        $this->pop($this->removedUnits, $oid, $unit);
 
-        if (!in_array($stockUnit, $this->stockUnits[$oid], true)) {
-            $this->stockUnits[$oid][] = $stockUnit;
-        }
+        // Adds the unit the added list
+        $this->push($this->addedUnits, $oid, $unit);
     }
 
     /**
      * @inheritdoc
      */
-    public function remove(StockUnitInterface $stockUnit)
+    public function isAdded(StockUnitInterface $unit)
     {
-        if (null === $subject = $stockUnit->getSubject()) {
+        if (null === $subject = $unit->getSubject()) {
             throw new LogicException("Stock unit's subject must be set.");
         }
 
         $oid = spl_object_hash($subject);
 
-        if (!isset($this->stockUnits[$oid])) {
-            return;
+        return $this->has($this->addedUnits, $oid, $unit);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function remove(StockUnitInterface $unit)
+    {
+        if (null === $subject = $unit->getSubject()) {
+            throw new LogicException("Stock unit's subject must be set.");
         }
 
-        if (false !== $index = array_search($stockUnit, $this->stockUnits[$oid], true)) {
-            unset($this->stockUnits[$oid][$index]);
+        $oid = spl_object_hash($subject);
 
-            if (empty($this->stockUnits[$oid])) {
-                unset($this->stockUnits[$oid]);
-            }
+        // Clears the unit from the added list
+        $this->pop($this->addedUnits, $oid, $unit);
+
+        // Adds the unit the removed list
+        $this->push($this->removedUnits, $oid, $unit);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isRemoved(StockUnitInterface $unit)
+    {
+        if (null === $subject = $unit->getSubject()) {
+            throw new LogicException("Stock unit's subject must be set.");
         }
+
+        $oid = spl_object_hash($subject);
+
+        return $this->has($this->removedUnits, $oid, $unit);
     }
 
     /**
@@ -89,7 +115,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     public function findNewBySubject(StockSubjectInterface $subject)
     {
         return $this->findBySubjectAndStates($subject, [
-            StockUnitStates::STATE_NEW
+            StockUnitStates::STATE_NEW,
         ]);
     }
 
@@ -100,6 +126,16 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     {
         return $this->findBySubjectAndStates($subject, [
             StockUnitStates::STATE_PENDING,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findReadyBySubject(StockSubjectInterface $subject)
+    {
+        return $this->findBySubjectAndStates($subject, [
+            StockUnitStates::STATE_READY,
         ]);
     }
 
@@ -131,25 +167,25 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
      */
     public function findAssignableBySubject(StockSubjectInterface $subject)
     {
-        $stockUnits = [];
+        $units = [];
 
         // Find by subject oid
         $oid = spl_object_hash($subject);
-        if (isset($this->stockUnits[$oid])) {
-            $stockUnits = $this->stockUnits[$oid];
+        if (isset($this->addedUnits[$oid])) {
+            $units = $this->addedUnits[$oid];
         }
 
         // Filter by :
         // - Not yet linked to a supplier order
         // - Sold lower than ordered
-        if (!empty($stockUnits)) {
-            $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) {
-                return null === $stockUnit->getSupplierOrderItem()
-                    || $stockUnit->getSoldQuantity() < $stockUnit->getOrderedQuantity();
+        if (!empty($units)) {
+            $units = array_filter($units, function (StockUnitInterface $unit) {
+                return null === $unit->getSupplierOrderItem()
+                    || ($unit->getSoldQuantity() < $unit->getOrderedQuantity() + $unit->getAdjustedQuantity());
             });
         }
 
-        return $stockUnits;
+        return $units;
     }
 
     /**
@@ -157,23 +193,23 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
      */
     public function findLinkableBySubject(StockSubjectInterface $subject)
     {
-        $stockUnits = [];
+        $units = [];
 
         // Find by subject oid
         $oid = spl_object_hash($subject);
-        if (isset($this->stockUnits[$oid])) {
-            $stockUnits = $this->stockUnits[$oid];
+        if (isset($this->addedUnits[$oid])) {
+            $units = $this->addedUnits[$oid];
         }
 
         // Filter by :
         // - Not yet linked to a supplier order
-        if (!empty($stockUnits)) {
-            $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) {
-                return null === $stockUnit->getSupplierOrderItem();
+        if (!empty($units)) {
+            $units = array_filter($units, function (StockUnitInterface $unit) {
+                return null === $unit->getSupplierOrderItem();
             });
         }
 
-        return $stockUnits;
+        return $units;
     }
 
     /**
@@ -186,30 +222,112 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
      */
     private function findBySubjectAndStates(StockSubjectInterface $subject, array $states = [])
     {
-        $stockUnits = [];
+        $units = [];
 
         // Find by subject oid
         $oid = spl_object_hash($subject);
-        if (isset($this->stockUnits[$oid])) {
-            $stockUnits = $this->stockUnits[$oid];
+        if (isset($this->addedUnits[$oid])) {
+            $units = $this->addedUnits[$oid];
         }
 
         // Filter by states
-        if (!empty($stockUnits) && !empty($states)) {
-            $stockUnits = array_filter($stockUnits, function(StockUnitInterface $stockUnit) use ($states) {
-                return in_array($stockUnit->getState(), $states);
+        if (!empty($units) && !empty($states)) {
+            $units = array_filter($units, function (StockUnitInterface $unit) use ($states) {
+                return in_array($unit->getState(), $states);
             });
         }
 
-        return $stockUnits;
+        return $units;
     }
 
     /**
-     * Clears the stock unit list.
+     * Returns whether the unit exists into the given list for the given object identifier.
+     *
+     * @param array              $list
+     * @param string             $oid
+     * @param StockUnitInterface $unit
+     *
+     * @return bool
+     */
+    private function has(array &$list, $oid, StockUnitInterface $unit)
+    {
+        if (!isset($list[$oid])) {
+            return false;
+        }
+
+        return false !== $this->find($list, $oid, $unit);
+    }
+
+    /**
+     * Finds the unit into the given list for the given object identifier.
+     *
+     * @param array              $list
+     * @param string             $oid
+     * @param StockUnitInterface $unit
+     *
+     * @return bool|false|int|string
+     */
+    private function find(array &$list, $oid, StockUnitInterface $unit)
+    {
+        if (!isset($list[$oid])) {
+            return false;
+        }
+
+        // Non persisted search
+        if (null === $unit->getId()) {
+            return array_search($unit, $list[$oid], true);
+        }
+
+        // Persisted search
+        /** @var StockUnitInterface $u */
+        foreach ($list[$oid] as $index => $u) {
+            if ($u->getId() == $unit->getId()) {
+                return $index;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Pushes the unit to the given list for the given object identifier.
+     *
+     * @param array              $list
+     * @param string             $oid
+     * @param StockUnitInterface $unit
+     */
+    private function push(array &$list, $oid, StockUnitInterface $unit)
+    {
+        if (!$this->has($list, $oid, $unit)) {
+            $list[$oid][] = $unit;
+        }
+    }
+
+    /**
+     * Pops the unit to the given list for the given object identifier.
+     *
+     * @param array              $list
+     * @param string             $oid
+     * @param StockUnitInterface $unit
+     */
+    private function pop(array &$list, $oid, StockUnitInterface $unit)
+    {
+        if (false !== $index = $this->find($list, $oid, $unit)) {
+            unset($list[$oid][$index]);
+
+            if (empty($list[$oid])) {
+                unset($list[$oid]);
+            }
+        }
+    }
+
+    /**
+     * Clears the stock unit lists.
      */
     private function clear()
     {
-        $this->stockUnits = [];
+        $this->addedUnits = [];
+        $this->removedUnits = [];
     }
 
     /**

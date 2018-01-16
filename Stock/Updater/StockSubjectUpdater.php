@@ -60,20 +60,22 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             return $changed;
         }
 
-        $ordered = $received = $sold = $shipped = 0;
+        $ordered = $received = $adjusted = $sold = $shipped = 0;
         $eda = null;
 
         // Loop over the 'not closed' stock units.
         // We don't use a dql query to get sums, because database may not reflect
         // real/current data of theses stock units (during a flush event).
+        // The stock unit resolver uses the stock unit cache.
         $stockUnits = $this->stockUnitResolver->findNotClosed($subject);
         foreach ($stockUnits as $stockUnit) {
             $sold += $stockUnit->getSoldQuantity();
+            $shipped += $stockUnit->getShippedQuantity();
+            $adjusted += $stockUnit->getAdjustedQuantity();
 
             if ($stockUnit->getState() !== StockUnitStates::STATE_NEW) {
                 $ordered += $o = $stockUnit->getOrderedQuantity();
                 $received += $r = $stockUnit->getReceivedQuantity();
-                $shipped += $s = $stockUnit->getShippedQuantity();
 
                 // Ignore EDA if stock unit his fully received
                 if (0 < $o && 0 < $r && $r >= $o) {
@@ -93,15 +95,15 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         // In stock
-        $inStock = $received - $shipped;
+        $inStock = $received + $adjusted - $shipped;
         if (0 > $inStock) $inStock = 0;
 
         // Available stock
-        $availableStock = $received - $sold;
+        $availableStock = $received + $adjusted - $sold;
         if (0 > $availableStock) $availableStock = 0;
 
         // Virtual stock
-        $virtualStock = $ordered - $sold;
+        $virtualStock = $ordered + $adjusted - $sold;
 
         // Estimated date of arrival
         // Set null if we do not expect supplier deliveries

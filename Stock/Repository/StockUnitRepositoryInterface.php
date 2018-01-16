@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Repository;
 
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitFinderInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
@@ -19,4 +20,14 @@ interface StockUnitRepositoryInterface extends StockUnitFinderInterface, Resourc
      * @return StockUnitInterface[]
      */
     public function findInStock();
+
+    /**
+     * Returns the latest closed stock units.
+     *
+     * @param StockSubjectInterface $subject
+     * @param int                   $limit
+     *
+     * @return StockUnitInterface[]
+     */
+    public function findLatestClosedBySubject(StockSubjectInterface $subject, $limit = 3);
 }

@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Quote\Event\QuoteEvents;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
+use Ekyna\Component\Commerce\Quote\Model\QuoteStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -46,6 +47,25 @@ class QuoteListener extends AbstractSaleListener
         $date = new \DateTime();
         $date->modify($this->expirationDelay)->setTime(0, 0, 0);
         $quote->setExpiresAt($date);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function updateState(SaleInterface $sale)
+    {
+        if (parent::updateState($sale)) {
+            /** @var QuoteInterface $sale */
+            if (($sale->getState() === QuoteStates::STATE_ACCEPTED) && (null === $sale->getAcceptedAt())) {
+                $sale->setAcceptedAt(new \DateTime());
+            } elseif (($sale->getState() !== QuoteStates::STATE_ACCEPTED) && (null !== $sale->getAcceptedAt())) {
+                $sale->setAcceptedAt(null);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

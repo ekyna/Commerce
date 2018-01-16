@@ -10,6 +10,7 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
 final class InvoiceStates
 {
     const STATE_NEW      = 'new';      // Subject does not need invoice yet
+    const STATE_CANCELED = 'canceled'; // Invoicing has been canceled
     const STATE_PENDING  = 'pending';  // Subject needs invoice but none has been created yet
     const STATE_PARTIAL  = 'partial';  // Subject has invoices but is not fully invoiced
     const STATE_INVOICED = 'invoiced'; // Subject is fully invoiced
@@ -25,6 +26,7 @@ final class InvoiceStates
     {
         return [
             static::STATE_NEW,
+            static::STATE_CANCELED,
             static::STATE_PENDING,
             static::STATE_PARTIAL,
             static::STATE_INVOICED,

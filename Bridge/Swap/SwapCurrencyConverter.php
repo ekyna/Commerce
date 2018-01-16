@@ -57,4 +57,12 @@ class SwapCurrencyConverter implements CurrencyConverterInterface
 
         return Money::round($amount * $rate, $quote);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultCurrency()
+    {
+        return $this->defaultCurrency;
+    }
 }

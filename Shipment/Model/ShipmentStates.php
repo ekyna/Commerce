@@ -173,6 +173,7 @@ final class ShipmentStates
     {
         return [
             static::STATE_READY,
+            static::STATE_PARTIAL,
             static::STATE_SHIPPED,
             static::STATE_RETURNED,
         ];

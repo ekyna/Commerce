@@ -65,7 +65,7 @@ class SupplierOrderItemListener extends AbstractListener
 
         $changed = $this->synchronizeWithProduct($item);
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($item);
+            $this->persistenceHelper->persistAndRecompute($item, false);
         }
 
         // TODO These tests are made in the supplier order listener and should not be done twice...
@@ -84,24 +84,8 @@ class SupplierOrderItemListener extends AbstractListener
         }
 
         if (SupplierOrderStates::isStockableState($order->getState())) {
-            $scheduleContentChange = false;
-            // TODO This test appends twice (StockUnitLinker::applyItem)
-            if ($this->persistenceHelper->isChanged($item, 'quantity')) {
-                // Updates the ordered quantity
-                $this->stockUnitLinker->applyItem($item);
-
-                $scheduleContentChange = true;
-            }
-
-            // TODO Do this in the StockUnitLinker::applyItem() method ?
-            if ($this->persistenceHelper->isChanged($item, 'netPrice')) {
-                // Updates the net price
-                $this->stockUnitLinker->updatePrice($item->getStockUnit());
-
-                $scheduleContentChange = true;
-            }
-
-            if ($scheduleContentChange) {
+            // Updates the ordered quantity and price
+            if ($this->stockUnitLinker->applyItem($item)) {
                 // Dispatch supplier order content change event
                 $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
             }

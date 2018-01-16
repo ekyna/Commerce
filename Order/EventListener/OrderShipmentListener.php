@@ -37,4 +37,12 @@ class OrderShipmentListener extends AbstractShipmentListener
 
         return $resource;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSalePropertyPath()
+    {
+        return 'order';
+    }
 }

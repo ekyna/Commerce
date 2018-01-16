@@ -20,6 +20,15 @@ interface StockUnitResolverInterface
     public function getStockUnitCache();
 
     /**
+     * Creates a stock unit for the given subject.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
+     */
+    public function createBySubject(StockSubjectInterface $subject);
+
+    /**
      * Creates a stock unit for the given subject relative.
      *
      * @param SubjectRelativeInterface $relative
@@ -36,6 +45,15 @@ interface StockUnitResolverInterface
      * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
      */
     public function findPending($subjectOrRelative);
+
+    /**
+     * Finds the ready stock units.
+     *
+     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     *
+     * @return array|\Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    public function findReady($subjectOrRelative);
 
     /**
      * Finds the pending or ready stock units.

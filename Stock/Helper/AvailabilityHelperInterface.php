@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Helper;
 
-use Ekyna\Component\Commerce\Common\View\Formatter;
+use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 
 /**
@@ -12,13 +12,6 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
  */
 interface AvailabilityHelperInterface
 {
-    /**
-     * Returns the formatter.
-     *
-     * @return Formatter
-     */
-    public function getFormatter();
-
     /**
      * Returns the subject's available quantity.
      *

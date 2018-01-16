@@ -37,7 +37,7 @@ class StockUnitValidator extends ConstraintValidator
                 ->atPath('receivedQuantity')
                 ->addViolation();
         }
-        if ($stockUnit->getShippedQuantity() > $stockUnit->getReceivedQuantity()) {
+        if ($stockUnit->getShippedQuantity() > ($stockUnit->getReceivedQuantity() + $stockUnit->getAdjustedQuantity())) {
             $this->context
                 ->buildViolation($constraint->shipped_must_be_lower_than_received)
                 ->setInvalidValue($stockUnit->getShippedQuantity())

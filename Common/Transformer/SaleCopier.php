@@ -47,7 +47,7 @@ class SaleCopier implements SaleCopierInterface
             'currency', 'customer', 'customerGroup',
             'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
             'autoDiscount', 'taxExempt', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
-            'voucherNumber', 'description', 'comment',
+            'voucherNumber', 'description', 'comment', 'acceptedAt'
         ];
 
         // Copy information fields only if source has no customer entity

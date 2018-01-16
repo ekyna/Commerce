@@ -68,6 +68,15 @@ interface PaymentCalculatorInterface
     public function calculateFailedTotal(PaymentSubjectInterface $subject);
 
     /**
+     * Calculates the canceled total.
+     *
+     * @param PaymentSubjectInterface $subject
+     *
+     * @return float
+     */
+    public function calculateCanceledTotal(PaymentSubjectInterface $subject);
+
+    /**
      * Calculates the offline pending total.
      *
      * @param PaymentSubjectInterface $subject

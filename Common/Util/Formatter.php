@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Ekyna\Component\Commerce\Common\View;
+namespace Ekyna\Component\Commerce\Common\Util;
 
 use Ekyna\Component\Commerce\Common\Calculator\Adjustment;
 use IntlDateFormatter;
@@ -8,7 +8,7 @@ use NumberFormatter;
 
 /**
  * Class Formatter
- * @package Ekyna\Component\Commerce\Common\View
+ * @package Ekyna\Component\Commerce\Common\Util
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class Formatter

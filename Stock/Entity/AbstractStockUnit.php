@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Stock\Model;
-use Ekyna\Component\Commerce\Stock\Util\StockUtil;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
 /**
@@ -54,6 +53,13 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $receivedQuantity = 0;
 
     /**
+     * The quantity adjusted by administrators.
+     *
+     * @var float
+     */
+    protected $adjustedQuantity = 0;
+
+    /**
      * The quantity sold from sales.
      *
      * @var float
@@ -87,6 +93,11 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     protected $stockAssignments;
 
+    /**
+     * @var ArrayCollection|Model\StockAdjustmentInterface[]
+     */
+    protected $stockAdjustments;
+
 
     /**
      * Constructor.
@@ -97,6 +108,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         $this->geocodes = [];
         $this->createdAt = new \DateTime();
         $this->stockAssignments = new ArrayCollection();
+        $this->stockAdjustments = new ArrayCollection();
     }
 
     /**
@@ -211,24 +223,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
-    public function getEstimatedDateOfArrival()
-    {
-        return $this->estimatedDateOfArrival;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setEstimatedDateOfArrival(\DateTime $date = null)
-    {
-        $this->estimatedDateOfArrival = $date;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getOrderedQuantity()
     {
         return $this->orderedQuantity;
@@ -258,6 +252,24 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function setReceivedQuantity($quantity)
     {
         $this->receivedQuantity = (float)$quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAdjustedQuantity()
+    {
+        return $this->adjustedQuantity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAdjustedQuantity($quantity)
+    {
+        $this->adjustedQuantity = (float)$quantity;
 
         return $this;
     }
@@ -319,6 +331,24 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
+    public function getEstimatedDateOfArrival()
+    {
+        return $this->estimatedDateOfArrival;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEstimatedDateOfArrival(\DateTime $date = null)
+    {
+        $this->estimatedDateOfArrival = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCreatedAt()
     {
         return $this->createdAt;
@@ -355,9 +385,17 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
+    public function hasStockAssignment(Model\StockAssignmentInterface $assignment)
+    {
+        return $this->stockAssignments->contains($assignment);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function addStockAssignment(Model\StockAssignmentInterface $assignment)
     {
-        if (!$this->stockAssignments->contains($assignment)) {
+        if (!$this->hasStockAssignment($assignment)) {
             $this->stockAssignments->add($assignment);
             $assignment->setStockUnit($this);
         }
@@ -370,7 +408,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function removeStockAssignment(Model\StockAssignmentInterface $assignment)
     {
-        if ($this->stockAssignments->contains($assignment)) {
+        if ($this->hasStockAssignment($assignment)) {
             $this->stockAssignments->removeElement($assignment);
             $assignment->setStockUnit(null);
         }
@@ -389,9 +427,46 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritdoc
      */
+    public function addStockAdjustment(Model\StockAdjustmentInterface $adjustment)
+    {
+        if (!$this->stockAdjustments->contains($adjustment)) {
+            $this->stockAdjustments->add($adjustment);
+            $adjustment->setStockUnit($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeStockAdjustment(Model\StockAdjustmentInterface $adjustment)
+    {
+        if ($this->stockAdjustments->contains($adjustment)) {
+            $this->stockAdjustments->removeElement($adjustment);
+            //$adjustment->setStockUnit(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStockAdjustments()
+    {
+        return $this->stockAdjustments;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function isEmpty()
     {
-        return 0 == $this->orderedQuantity && 0 == $this->soldQuantity;
+        return null === $this->supplierOrderItem
+            && 0 == $this->orderedQuantity
+            && 0 == $this->soldQuantity
+            && 0 == $this->adjustedQuantity;
     }
 
     /**
@@ -399,10 +474,13 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getReservableQuantity()
     {
-        return StockUtil::calculateReservable(
-            $this->orderedQuantity,
-            $this->soldQuantity
-        );
+        if (0 == $this->orderedQuantity) {
+            return INF;
+        }
+
+        $result = $this->orderedQuantity + $this->adjustedQuantity - $this->soldQuantity;
+
+        return max($result, 0);
     }
 
     /**
@@ -410,10 +488,8 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getShippableQuantity()
     {
-        return StockUtil::calculateShippable(
-            $this->receivedQuantity,
-            $this->soldQuantity,
-            $this->shippedQuantity
-        );
+        $result = (min($this->receivedQuantity, $this->soldQuantity) + $this->adjustedQuantity) - $this->shippedQuantity;
+
+        return max($result, 0);
     }
 }

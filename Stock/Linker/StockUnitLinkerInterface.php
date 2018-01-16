@@ -26,6 +26,8 @@ interface StockUnitLinkerInterface
      *
      * @param SupplierOrderItemInterface $supplierOrderItem
      *
+     * @return bool Whether the stock unit has been updated.
+     *
      * @throws \Ekyna\Component\Commerce\Exception\LogicException
      */
     public function applyItem(SupplierOrderItemInterface $supplierOrderItem);
@@ -38,13 +40,4 @@ interface StockUnitLinkerInterface
      * @throws \Ekyna\Component\Commerce\Exception\LogicException
      */
     public function unlinkItem(SupplierOrderItemInterface $supplierOrderItem);
-
-    /**
-     * Updates the stock unit price.
-     *
-     * @param StockUnitInterface $stockUnit
-     *
-     * @throws \Ekyna\Component\Commerce\Exception\LogicException
-     */
-    public function updatePrice(StockUnitInterface $stockUnit);
 }

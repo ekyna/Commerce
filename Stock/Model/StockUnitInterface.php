@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Util\StockUtil;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -138,6 +137,22 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function setReceivedQuantity($quantity);
 
     /**
+     * Returns the adjusted quantity.
+     *
+     * @return float
+     */
+    public function getAdjustedQuantity();
+
+    /**
+     * Sets the adjusted quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setAdjustedQuantity($quantity);
+
+    /**
      * Returns the sold quantity.
      *
      * @return float
@@ -218,6 +233,15 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function setClosedAt(\DateTime $date = null);
 
     /**
+     * Returns whether the stock unit has the given stock assignment.
+     *
+     * @param StockAssignmentInterface $assignment
+     *
+     * @return bool
+     */
+    public function hasStockAssignment(StockAssignmentInterface $assignment);
+
+    /**
      * Adds the stock assignments.
      *
      * @param StockAssignmentInterface $assignment
@@ -243,6 +267,31 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function getStockAssignments();
 
     /**
+     * Adds the stock adjustments.
+     *
+     * @param StockAdjustmentInterface $adjustment
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function addStockAdjustment(StockAdjustmentInterface $adjustment);
+
+    /**
+     * Removes the stock adjustments.
+     *
+     * @param StockAdjustmentInterface $adjustment
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function removeStockAdjustment(StockAdjustmentInterface $adjustment);
+
+    /**
+     * Returns the stock adjustments.
+     *
+     * @return \Doctrine\Common\Collections\Collection|StockAdjustmentInterface[]
+     */
+    public function getStockAdjustments();
+
+    /**
      * Returns whether the stock unit is empty (regarding to the ordered and sold quantities).
      *
      * @return bool
@@ -252,16 +301,12 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     /**
      * Returns the reservable stock quantity.
      *
-     * @see StockUtil::calculateReservable()
-     *
      * @return float
      */
     public function getReservableQuantity();
 
     /**
      * Returns the shippable stock quantity.
-     *
-     * @see StockUtil::calculateShippable()
      *
      * @return float
      */

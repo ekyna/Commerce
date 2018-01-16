@@ -41,6 +41,8 @@
         <field name="description" column="description" type="text" nullable="true"/>
         <field name="comment" column="comment" type="text" nullable="true"/>
 
+        <field name="acceptedAt" column="accepted_at" type="datetime" nullable="true"/>
+
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
         </field>

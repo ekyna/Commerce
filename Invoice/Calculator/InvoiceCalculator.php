@@ -169,10 +169,14 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 throw new LogicException("Invoice line's sale item must be set.");
             }
 
-            // Quantity = Invoiced - Shipped - Canceled (ignoring current credit)
-            return $this->calculateInvoicedQuantity($saleItem)
-                - $this->shipmentCalculator->calculateShippedQuantity($saleItem)
-                - $this->calculateCanceledQuantity($saleItem, $line->getInvoice());
+            // Quantity = Invoiced - Shipped + Returned - Credited (ignoring current) - Canceled (ignoring current)
+            $invoiced = $this->calculateInvoicedQuantity($saleItem);
+            $shipped = $this->shipmentCalculator->calculateShippedQuantity($saleItem);
+            $returned = $this->shipmentCalculator->calculateReturnedQuantity($saleItem);
+            $canceled = $this->calculateCanceledQuantity($saleItem, $line->getInvoice());
+            $credited = $this->calculateCreditedQuantity($saleItem, $line->getInvoice());
+
+            return $invoiced - $shipped + $returned - $credited - $canceled;
         }
 
         // Discount line case

@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Util\Formatter;
 
 /**
  * Interface ViewVarsBuilderInterface

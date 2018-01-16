@@ -3,8 +3,10 @@
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Exception\StockLogicException;
-use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
+use Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcherInterface;
+use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -17,33 +19,42 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @var PersistenceHelperInterface
      */
-    private $persistenceHelper;
+    protected $persistenceHelper;
 
     /**
-     * @var StockUnitCacheInterface
+     * @var StockUnitResolverInterface
      */
-    private $stockUnitCache;
+    protected $unitResolver;
+
+    /**
+     * @var StockUnitManagerInterface
+     */
+    protected $unitManager;
+
+    /**
+     * @var StockAssignmentDispatcherInterface
+     */
+    protected $assignmentDispatcher;
+
 
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockUnitCacheInterface    $stockUnitCache
+     * @param PersistenceHelperInterface         $persistenceHelper
+     * @param StockUnitResolverInterface         $unitResolver
+     * @param StockUnitManagerInterface          $unitManager
+     * @param StockAssignmentDispatcherInterface $assignmentDispatcher
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        StockUnitCacheInterface $stockUnitCache
+        StockUnitResolverInterface $unitResolver,
+        StockUnitManagerInterface $unitManager,
+        StockAssignmentDispatcherInterface $assignmentDispatcher
     ) {
         $this->persistenceHelper = $persistenceHelper;
-        $this->stockUnitCache = $stockUnitCache;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStockUnitCache()
-    {
-        return $this->stockUnitCache;
+        $this->unitResolver = $unitResolver;
+        $this->unitManager = $unitManager;
+        $this->assignmentDispatcher = $assignmentDispatcher;
     }
 
     /**
@@ -65,7 +76,12 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setOrderedQuantity($quantity);
 
-        $this->persistOrRemove($stockUnit);
+        if ($this->handleOverflow($stockUnit)) {
+            // Stock unit persistence has been made by assignment dispatcher.
+            return;
+        }
+
+        $this->unitManager->persistOrRemove($stockUnit);
     }
 
     /**
@@ -87,7 +103,34 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setReceivedQuantity($quantity);
 
-        $this->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($stockUnit);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateAdjusted(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    {
+        if ($relative) {
+            $quantity = $stockUnit->getAdjustedQuantity() + $quantity;
+        }
+
+//        // Prevent received quantity to be set as greater than the ordered quantity
+//        if (
+//            (0 < $stockUnit->getOrderedQuantity()) &&
+//            ($quantity + $stockUnit->getOrderedQuantity() < $stockUnit->getSoldQuantity())
+//        ) {
+//            throw new StockLogicException("The sum of adjusted and ordered quantity can't be lower than the sold quantity.");
+//        }
+
+        $stockUnit->setAdjustedQuantity($quantity);
+
+        if ($this->handleOverflow($stockUnit)) {
+            // Stock unit persistence has been made by assignment dispatcher.
+            return;
+        }
+
+        $this->unitManager->persistOrRemove($stockUnit);
     }
 
     /**
@@ -109,7 +152,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setSoldQuantity($quantity);
 
-        $this->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($stockUnit);
     }
 
     /**
@@ -128,13 +171,13 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         if ($quantity > $stockUnit->getSoldQuantity()) {
             throw new StockLogicException("The shipped quantity can't be greater than the sold quantity.");
         }
-        if ($quantity > $stockUnit->getReceivedQuantity()) {
-            throw new StockLogicException("The shipped quantity can't be greater than the received quantity.");
+        if ($quantity > $stockUnit->getReceivedQuantity() + $stockUnit->getAdjustedQuantity()) {
+            throw new StockLogicException("The shipped quantity can't be greater than the sum (received + adjusted) quantity.");
         }
 
         $stockUnit->setShippedQuantity($quantity);
 
-        $this->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($stockUnit);
     }
 
     /**
@@ -150,23 +193,77 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     }
 
     /**
-     * Persists the stock unit, or removes it if empty.
+     * Checks stock unit overflow (sold > ordered + adjusted) and fixes assignments if needed.
      *
      * @param StockUnitInterface $stockUnit
+     *
+     * @return bool Whether assignment(s) has been moved.
+     *
+     * @throws StockLogicException
      */
-    protected function persistOrRemove(StockUnitInterface $stockUnit)
+    private function handleOverflow(StockUnitInterface $stockUnit)
     {
-        // TODO refactor stock unit validation here ?
+        // TODO Abort if stock unit is new ...
 
-        if ($stockUnit->isEmpty()) {
-            // TODO Check if removal is safe
-            // TODO Clear association
-            $this->persistenceHelper->remove($stockUnit, true);
-            $this->stockUnitCache->remove($stockUnit);
-        } else {
-            $this->persistenceHelper->persistAndRecompute($stockUnit, true);
-            // Caches the stock unit to make it available for the StockSubjectUpdater.
-            $this->stockUnitCache->add($stockUnit);
+        // We don't care about shipped quantities because of the 'ordered > received > shipped' rule.
+        $overflow = $stockUnit->getSoldQuantity()
+            - $stockUnit->getOrderedQuantity()
+            - $stockUnit->getAdjustedQuantity();
+
+        // Abort if no overflow
+        if (0 == $overflow) {
+            return false;
         }
+
+        $subject = $stockUnit->getSubject();
+
+        // Negative case : too much sold quantity
+        if (0 < $overflow) {
+            // Try to move sold overflow to other pending/ready stock units
+            // TODO prefer ready units with enough quantity
+            $targetStockUnits = $this->unitResolver->findPendingOrReady($subject);
+            foreach ($targetStockUnits as $targetStockUnit) {
+                // Skip the stock unit we're applying
+                if ($targetStockUnit === $stockUnit) {
+                    continue;
+                }
+
+                $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
+
+                if (0 == $overflow) {
+                    break; // We're done dispatching sold quantity
+                }
+            }
+
+            // Try to move sold overflow to a linkable stock unit
+            if (null !== $targetStockUnit = $this->unitResolver->findLinkable($subject)) {
+                $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
+            }
+
+            // Move sold overflow to a new stock unit
+            if (0 < $overflow) {
+                $newStockUnit = $this->unitResolver->createBySubject($subject);
+
+                // Pre persist stock unit
+                $this->persistenceHelper->persistAndRecompute($newStockUnit, false);
+
+                $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $newStockUnit, $overflow);
+            }
+
+            if (0 != $overflow) {
+                throw new StockLogicException("Failed to apply supplier order item.");
+            }
+
+            return true;
+        }
+
+        // Positive case : not enough sold quantity
+        if (null !== $sourceUnit = $this->unitResolver->findLinkable($subject)) {
+            if (0 != $this->assignmentDispatcher->moveAssignments($sourceUnit, $stockUnit, -$overflow)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

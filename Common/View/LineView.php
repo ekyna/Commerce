@@ -134,6 +134,18 @@ class LineView extends AbstractView
         $this->formId = $formId;
         $this->number = $number;
         $this->level = $level;
+
+        $this->vars['actions'] = [];
+    }
+
+    /**
+     * Adds the action.
+     *
+     * @param Action $action
+     */
+    public function addAction(Action $action)
+    {
+        $this->vars['actions'][] = $action;
     }
 
     /**

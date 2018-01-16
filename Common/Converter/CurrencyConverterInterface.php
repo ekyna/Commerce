@@ -20,4 +20,11 @@ interface CurrencyConverterInterface
      * @return float
      */
     public function convert($amount, $base, $quote = null, \DateTime $date = null);
+
+    /**
+     * Returns the default currency.
+     *
+     * @return string
+     */
+    public function getDefaultCurrency();
 }

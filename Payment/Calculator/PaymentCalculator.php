@@ -116,6 +116,14 @@ class PaymentCalculator implements PaymentCalculatorInterface
     /**
      * @inheritdoc
      */
+    public function calculateCanceledTotal(PaymentSubjectInterface $subject)
+    {
+        return $this->calculateTotalByState($subject, PaymentStates::STATE_CANCELED);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject)
     {
         $currency = $subject->getCurrency()->getCode();

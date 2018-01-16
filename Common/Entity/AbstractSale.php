@@ -112,6 +112,11 @@ abstract class AbstractSale implements Common\SaleInterface
     protected $comment;
 
     /**
+     * @var \DateTime
+     */
+    protected $acceptedAt;
+
+    /**
      * @var ArrayCollection|Common\SaleAttachmentInterface[]
      */
     protected $attachments;
@@ -420,6 +425,24 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setComment($comment)
     {
         $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAcceptedAt()
+    {
+        return $this->acceptedAt;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAcceptedAt(\DateTime $acceptedAt = null)
+    {
+        $this->acceptedAt = $acceptedAt;
 
         return $this;
     }

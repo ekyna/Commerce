@@ -30,6 +30,15 @@ interface StockUnitFinderInterface
     public function findPendingBySubject(Stock\StockSubjectInterface $subject);
 
     /**
+     * Finds the subject's ready stock units.
+     *
+     * @param Stock\StockSubjectInterface $subject
+     *
+     * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface[]
+     */
+    public function findReadyBySubject(Stock\StockSubjectInterface $subject);
+
+    /**
      * Finds the subject's pending or ready stock units.
      *
      * @param Stock\StockSubjectInterface $subject

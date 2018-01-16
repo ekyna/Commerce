@@ -281,6 +281,22 @@ interface SaleInterface extends
     public function setComment($comment);
 
     /**
+     * Returns the "accepted at" datetime.
+     *
+     * @return \DateTime
+     */
+    public function getAcceptedAt();
+
+    /**
+     * Sets the "accepted at" datetime.
+     *
+     * @param \DateTime $acceptedAt
+     *
+     * @return $this|SaleInterface
+     */
+    public function setAcceptedAt(\DateTime $acceptedAt = null);
+
+    /**
      * Returns whether the order has attachments or not.
      *
      * @return bool

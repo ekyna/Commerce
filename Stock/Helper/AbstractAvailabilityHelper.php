@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Helper;
 
-use Ekyna\Component\Commerce\Common\View\Formatter;
+use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
@@ -15,21 +15,24 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
 {
     /**
-     * @var Formatter
+     * @var \Ekyna\Component\Commerce\Common\Util\Formatter
      */
     protected $formatter;
 
 
     /**
-     * @inheritdoc
+     * Constructor.
+     *
+     * @param Formatter $formatter
      */
-    public function getFormatter()
+    public function __construct(Formatter $formatter)
     {
-        if (null !== $this->formatter) {
-            return $this->formatter;
-        }
+        $this->formatter = $formatter;
+    }
 
-        return $this->formatter = $this->formatter = new Formatter();
+    public function isAvailable()
+    {
+
     }
 
     /**
@@ -71,14 +74,14 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
 
         if ($subject->getStockState() === StockSubjectStates::STATE_IN_STOCK) {
             return $this->translate('in_stock', [
-                '%qty%' => $this->getFormatter()->number($subject->getAvailableStock()),
+                '%qty%' => $this->formatter->number($subject->getAvailableStock()),
             ]);
         }
 
         if ((0 < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
             return $this->translate('pre_order', [
-                '%eda%' => $this->getFormatter()->date($eda),
-                '%qty%' => $this->getFormatter()->number($qty),
+                '%eda%' => $this->formatter->date($eda),
+                '%qty%' => $this->formatter->number($qty),
             ]);
         }
 
@@ -93,5 +96,15 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
         }
 
         return $this->translate('out_of_stock');
+    }
+
+    public function getResupplyQuantity()
+    {
+        // TODO
+    }
+
+    public function getResupplyMessage()
+    {
+        // TODO
     }
 }

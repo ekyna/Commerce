@@ -23,25 +23,39 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
         $resolvedState = StockUnitStates::STATE_NEW;
         $currentState = $stockUnit->getState();
 
-        if (0 < $stockUnit->getOrderedQuantity() && null !== $stockUnit->getSupplierOrderItem()) {
+        $adjusted = $stockUnit->getAdjustedQuantity();
+
+        if (null !== $stockUnit->getSupplierOrderItem()) {
+            $max = $stockUnit->getOrderedQuantity() + $adjusted;
+
             // Assigned to supplier order and pending for delivery
             $resolvedState = StockUnitStates::STATE_PENDING;
 
-            // If the whole ordered quantity (to suppliers) has been entirely shipped (to customers)
-            if ($stockUnit->getOrderedQuantity() == $stockUnit->getShippedQuantity()) {
+            // If the ordered quantity (to suppliers) + adjusted quantity (from administrators)
+            // has been entirely shipped (to customers)
+            if ($max == $stockUnit->getShippedQuantity()) {
                 $resolvedState = StockUnitStates::STATE_CLOSED;
             }
 
             // If quantity has been received (by supplier)
-            elseif (0 < $stockUnit->getReceivedQuantity()) {
-                // If received (from supplier) quantity has been entirely shipped (to customers)
-                if ($stockUnit->getReceivedQuantity() == $stockUnit->getShippedQuantity()) {
+            elseif (0 < $max = $stockUnit->getReceivedQuantity() + $adjusted) {
+                // If received quantity (from supplier) + adjusted quantity (from administrators)
+                // has been entirely shipped (to customers)
+                if ($max == $stockUnit->getShippedQuantity()) {
                     // Waiting for another delivery (from suppliers)
                     $resolvedState = StockUnitStates::STATE_PENDING;
                 } else {
                     // Ready for shipment (to customers)
                     $resolvedState = StockUnitStates::STATE_READY;
                 }
+            }
+        } elseif (0 < $adjusted) {
+            // If the whole adjusted quantity (from administrators) has been entirely shipped (to customers)
+            if ($adjusted == $stockUnit->getShippedQuantity()) {
+                $resolvedState = StockUnitStates::STATE_CLOSED;
+            } else {
+                // Ready for shipment (to customers)
+                $resolvedState = StockUnitStates::STATE_READY;
             }
         }
 

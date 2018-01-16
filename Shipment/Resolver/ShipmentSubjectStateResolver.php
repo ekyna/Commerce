@@ -65,7 +65,7 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             }
 
             // If shipped equals sold minus canceled, item is fully shipped
-            if ($q['sold'] - $q['canceled'] == $q['shipped']) {
+            if ($q['sold'] - $q['canceled'] - $q['credited'] == $q['shipped'] - $q['returned']) {
                 $shippedCount++;
                 continue;
             }

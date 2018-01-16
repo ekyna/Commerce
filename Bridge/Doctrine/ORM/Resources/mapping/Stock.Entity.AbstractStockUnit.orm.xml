@@ -25,6 +25,7 @@
 
         <field name="orderedQuantity" column="ordered_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="receivedQuantity" column="received_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="adjustedQuantity" column="adjusted_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="soldQuantity" column="sold_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
         <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
 
@@ -40,6 +41,15 @@
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment"
                      mapped-by="stockUnit" field="stockAssignments">
+            <cascade>
+                <cascade-persist/>
+                <cascade-detach/>
+                <cascade-merge/>
+            </cascade>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Stock\Entity\StockAdjustment"
+                     mapped-by="stockUnit" field="stockAdjustments">
             <cascade>
                 <cascade-persist/>
                 <cascade-detach/>

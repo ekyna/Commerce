@@ -64,4 +64,12 @@ class OrderInvoiceListener extends AbstractInvoiceListener
 
         return $resource;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSalePropertyPath()
+    {
+        return 'order';
+    }
 }

@@ -88,6 +88,11 @@ class PaymentSubjectStateResolver implements StateResolverInterface
             return $this->setState($subject, PaymentStates::STATE_FAILED);
         }
 
+        // FAILED total is greater than or equals the grand total
+        if ($fullFill($this->paymentCalculator->calculateCanceledTotal($subject))) {
+            return $this->setState($subject, PaymentStates::STATE_CANCELED);
+        }
+
         // NEW (default) state
         return $this->setState($subject, PaymentStates::STATE_NEW);
     }

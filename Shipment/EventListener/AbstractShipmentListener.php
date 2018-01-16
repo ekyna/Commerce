@@ -193,8 +193,9 @@ abstract class AbstractShipmentListener
 
         $this->invoiceSynchronizer->synchronize($shipment);
 
-        // TODO get from change set (need sale path 'order')
-        $sale = $shipment->getSale();
+        if (null === $sale = $shipment->getSale()) {
+            $sale = $this->persistenceHelper->getChangeSet($shipment, $this->getSalePropertyPath())[0];
+        }
         $sale->removeShipment($shipment);
 
         $this->scheduleSaleContentChangeEvent($sale);
@@ -394,4 +395,11 @@ abstract class AbstractShipmentListener
      * @throws InvalidArgumentException
      */
     abstract protected function getShipmentFromEvent(ResourceEventInterface $event);
+
+    /**
+     * Returns the shipment's sale property path.
+     *
+     * @return string
+     */
+    abstract protected function getSalePropertyPath();
 }

@@ -163,18 +163,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     }
 
     /**
-     * Swap the sale given items.
-     *
-     * @param SaleItemInterface $itemA
-     * @param SaleItemInterface $itemB
-     */
-    public function swapSaleItems(SaleItemInterface $itemA, SaleItemInterface $itemB)
-    {
-        // TODO The goal is to move assignments from pending stock units (not yet received)
-        // to ready stock units. So that shippable quantity won't be limited.
-    }
-
-    /**
      * @inheritdoc
      */
     public function assignShipmentItem(ShipmentItemInterface $item)
@@ -536,7 +524,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     protected function sortAssignments(array $assignments)
     {
-        uasort($assignments, function (StockAssignmentInterface $a1, StockAssignmentInterface $a2) {
+        usort($assignments, function (StockAssignmentInterface $a1, StockAssignmentInterface $a2) {
             $u1 = $a1->getStockUnit();
             $u2 = $a2->getStockUnit();
 
@@ -555,7 +543,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     protected function sortStockUnits(array $stockUnits)
     {
-        uasort($stockUnits, [$this, 'compareStockUnit']);
+        usort($stockUnits, [$this, 'compareStockUnit']);
 
         return $stockUnits;
     }
@@ -574,28 +562,29 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Sorting is made for credit case
 
-        // Prefer stock units with received quantities
-        if (0 < $u1->getReceivedQuantity() && 0 == $u2->getReceivedQuantity()) {
+        $u1Result = $u1->getReceivedQuantity() + $u1->getAdjustedQuantity();
+        $u2Result = $u2->getReceivedQuantity() + $u2->getAdjustedQuantity();
+
+        // Prefer stock units with received/adjusted quantities
+        if (0 < $u1Result && 0 == $u2Result) {
             return -1;
-        } elseif (0 == $u1->getReceivedQuantity() && 0 < $u2->getReceivedQuantity()) {
+        } elseif (0 == $u1Result && 0 < $u2Result) {
             return 1;
-        } elseif (0 < $u1->getReceivedQuantity() && 0 < $u2->getReceivedQuantity()) {
+        } elseif (0 < $u1Result && 0 < $u2Result) {
             // If both have received quantities, prefer cheapest
             if (0 != $result = $this->compareStockUnitByPrice($u1, $u2)) {
                 return $result;
             }
         }
 
+        $u1Result = $u1->getOrderedQuantity() + $u1->getAdjustedQuantity();
+        $u2Result = $u2->getOrderedQuantity() + $u2->getAdjustedQuantity();
+
         // Prefer stock units with ordered quantities
-        if (0 < $u1->getOrderedQuantity() && 0 == $u2->getOrderedQuantity()) {
+        if (0 < $u1Result && 0 == $u2Result) {
             return -1;
-        } elseif (0 == $u1->getOrderedQuantity() && 0 < $u2->getOrderedQuantity()) {
+        } elseif (0 == $u1Result && 0 < $u2Result) {
             return 1;
-        } elseif (0 < $u1->getOrderedQuantity() && 0 < $u2->getOrderedQuantity()) {
-            // If both have ordered quantities, prefer closest eda
-            if (0 != $result = $this->compareStockUnitByEda($u1, $u2)) {
-                return $result;
-            }
         }
 
         // By eta DESC

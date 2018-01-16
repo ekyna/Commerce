@@ -118,4 +118,20 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
 
         return min($quantity, $this->stockUnit->getShippableQuantity());
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFullyShipped()
+    {
+        return $this->soldQuantity === $this->shippedQuantity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFullyShippable()
+    {
+        return $this->getShippableQuantity() >= $this->soldQuantity - $this->shippedQuantity;
+    }
 }

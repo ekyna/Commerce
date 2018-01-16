@@ -13,7 +13,8 @@ abstract class AbstractView
      * @var array
      */
     public $vars = [
-        'classes' => ''
+        'classes' => '',
+        'attr'    => [],
     ];
 
 

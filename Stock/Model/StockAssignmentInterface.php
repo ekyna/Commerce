@@ -82,4 +82,18 @@ interface StockAssignmentInterface extends ResourceInterface
      * @return float
      */
     public function getShippableQuantity();
+
+    /**
+     * Returns whether or not the assignment is fully shipped.
+     *
+     * @return bool
+     */
+    public function isFullyShipped();
+
+    /**
+     * Returns whether or not the assignment is fully shippable.
+     *
+     * @return bool
+     */
+    public function isFullyShippable();
 }

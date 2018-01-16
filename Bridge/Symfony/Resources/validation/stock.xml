@@ -68,4 +68,25 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\StockUnit"/>
     </class>
 
+    <class name="Ekyna\Component\Commerce\Stock\Entity\StockAdjustment">
+        <property name="stockUnit">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="quantity">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="reason">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons</value>
+                    <value>getReasons</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
+
 </constraint-mapping>

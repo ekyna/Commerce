@@ -1,3 +1,16 @@
+{% block attributes %}
+{% spaceless %}
+{% for name, value in attr %}
+    {% if name == 'confirm' %}
+        data-confirm="{{ value|escape }}"
+    {% else %}
+        {{ name }}{% if value is not empty %}="{{ value }}"{% endif %}
+    {% endif %}
+{% endfor %}
+{% endspaceless %}
+{% endblock attributes %}
+
+
 {% block lines_headers %}
 {% spaceless %}
     <th class="sale-detail-number">&nbsp;</th>
@@ -89,7 +102,8 @@
 
 {% block line %}
 {% spaceless %}
-    <tr class="level-{{ line.level }}{{ line.vars.classes }}">
+    {% set attr = line.vars.attr %}
+    <tr class="level-{{ line.level }}{{ line.vars.classes }}"{{ block('attributes') }}>
         <td class="sale-detail-number">{{ line.number }}</td>
         <td class="sale-detail-designation" id="{{ line.id }}_designation">
             {% if line.level > 0 -%}

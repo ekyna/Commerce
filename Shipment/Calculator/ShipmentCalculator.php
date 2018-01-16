@@ -58,42 +58,8 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
             return INF;
         }
 
-        /**
-         * Credited quantity
-         */
-        $creditedQuantity = $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
 
-        /**
-         * Calculates the shipped and returned quantities by ignoring canceled shipments and this shipment
-         */
-        $shippedQuantity = $returnedQuantity = 0;
 
-        /** @var Shipment\ShipmentSubjectInterface $sale */
-        $sale = $saleItem->getSale();
-        foreach ($sale->getShipments() as $shipment) {
-            // Skip returns and this shipment
-            if ($shipment === $item->getShipment()) {
-                continue;
-            }
-
-            // Skip if shipment is canceled
-            if ($shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
-                continue;
-            }
-
-            // Find matching sale item
-            foreach ($shipment->getItems() as $shipmentItem) {
-                if ($shipmentItem->getSaleItem() === $saleItem) {
-                    if ($shipment->isReturn()) {
-                        $returnedQuantity += $shipmentItem->getQuantity();
-                    } else {
-                        $shippedQuantity += $shipmentItem->getQuantity();
-                    }
-                }
-            }
-        }
-
-        $stockUnits = [];
         /** @var Stock\StockAssignmentsInterface $saleItem */
         /** @var Stock\StockAssignmentInterface[] $assignments */
         $assignments = $saleItem->getStockAssignments()->toArray();
@@ -101,49 +67,117 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         /**
          * Calculates this sale item assignments sold quantity.
          */
-        $assignmentSold = 0;
+        $available = 0;
         foreach ($assignments as $assignment) {
-            $assignmentSold += $assignment->getSoldQuantity();
-
-            // Store distinct stock units
-            if (!in_array($stockUnit = $assignment->getStockUnit(), $stockUnits, true)) {
-                $stockUnits[] = $stockUnit;
-            }
+            $available += $assignment->getShippableQuantity();
         }
 
-        // Original (before credit) assignments sold quantity TODO Test
-        $assignmentSold += min($creditedQuantity, $returnedQuantity);
+//        $available += $this->calculateReturnedQuantity($saleItem, $item->getShipment());
+//        $available -= $this->calculateShippedQuantity($saleItem, $item->getShipment());
 
-        /**
-         * Calculates the assigned stock units's available quantity
-         * by ignoring this sale item's assignments.
-         */
-        $stockUnitSold = $stockUnitReceived = $stockUnitShipped = 0;
-        /** @var Stock\StockUnitInterface $stockUnit */
-        foreach ($stockUnits as $stockUnit) {
-            $stockUnitSold += $stockUnit->getSoldQuantity();
-            $stockUnitReceived += $stockUnit->getReceivedQuantity();
-
-            foreach ($stockUnit->getStockAssignments() as $assignment) {
-                // Skip this sale item's assignments
-                if (in_array($assignment, $assignments, true)) {
-                    continue;
-                }
-                $stockUnitShipped += $assignment->getShippedQuantity();
-            }
-        }
-
-        // Original (before credit) stock units sold quantity TODO Test
-        $stockUnitSold += min($creditedQuantity, $returnedQuantity);
-
-        $stockUnitAvailable = min($stockUnitReceived, $stockUnitSold) - $stockUnitShipped;
-        if (0 > $stockUnitAvailable) $stockUnitAvailable = 0;
-
-        $available = min($assignmentSold, $stockUnitAvailable) - $shippedQuantity;
         if (0 > $available) $available = 0;
 
         return $available;
     }
+
+    /**
+     * @inheritdoc
+     */
+//    public function calculateAvailableQuantity_BACKUP(Shipment\ShipmentItemInterface $item)
+//    {
+//        $saleItem = $item->getSaleItem();
+//
+//        /** @var Common\SaleItemInterface $saleItem */
+//        if (!$this->hasStockableSubject($saleItem)) {
+//            return INF;
+//        }
+//
+//        /**
+//         * Credited quantity
+//         */
+//        $creditedQuantity = $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
+//
+//        /**
+//         * Calculates the shipped and returned quantities by ignoring canceled shipments and this shipment
+//         */
+//        $shippedQuantity = $returnedQuantity = 0;
+//
+//        /** @var Shipment\ShipmentSubjectInterface $sale */
+//        $sale = $saleItem->getSale();
+//        foreach ($sale->getShipments() as $shipment) {
+//            // Skip returns and this shipment
+//            if ($shipment === $item->getShipment()) {
+//                continue;
+//            }
+//
+//            // Skip if shipment is canceled
+//            if ($shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
+//                continue;
+//            }
+//
+//            // Find matching sale item
+//            foreach ($shipment->getItems() as $shipmentItem) {
+//                if ($shipmentItem->getSaleItem() === $saleItem) {
+//                    if ($shipment->isReturn()) {
+//                        $returnedQuantity += $shipmentItem->getQuantity();
+//                    } else {
+//                        $shippedQuantity += $shipmentItem->getQuantity();
+//                    }
+//                }
+//            }
+//        }
+//
+//        $stockUnits = [];
+//        /** @var Stock\StockAssignmentsInterface $saleItem */
+//        /** @var Stock\StockAssignmentInterface[] $assignments */
+//        $assignments = $saleItem->getStockAssignments()->toArray();
+//
+//        /**
+//         * Calculates this sale item assignments sold quantity.
+//         */
+//        $assignmentSold = 0;
+//        foreach ($assignments as $assignment) {
+//            $assignmentSold += $assignment->getSoldQuantity();
+//
+//            // Store distinct stock units
+//            if (!in_array($stockUnit = $assignment->getStockUnit(), $stockUnits, true)) {
+//                $stockUnits[] = $stockUnit;
+//            }
+//        }
+//
+//        // Original (before credit) assignments sold quantity TODO Test
+//        $assignmentSold += min($creditedQuantity, $returnedQuantity);
+//
+//        /**
+//         * Calculates the assigned stock units's available quantity
+//         * by ignoring this sale item's assignments.
+//         */
+//        $stockUnitSold = $stockUnitReceived = $stockUnitShipped = 0;
+//        /** @var Stock\StockUnitInterface $stockUnit */
+//        foreach ($stockUnits as $stockUnit) {
+//            $stockUnitSold += $stockUnit->getSoldQuantity();
+//            $stockUnitReceived += $stockUnit->getReceivedQuantity();
+//
+//            foreach ($stockUnit->getStockAssignments() as $assignment) {
+//                // Skip this sale item's assignments
+//                if (in_array($assignment, $assignments, true)) {
+//                    continue;
+//                }
+//                $stockUnitShipped += $assignment->getShippedQuantity();
+//            }
+//        }
+//
+//        // Original (before credit) stock units sold quantity TODO Test
+//        $stockUnitSold += min($creditedQuantity, $returnedQuantity);
+//
+//        $stockUnitAvailable = min($stockUnitReceived, $stockUnitSold) - $stockUnitShipped;
+//        if (0 > $stockUnitAvailable) $stockUnitAvailable = 0;
+//
+//        $available = min($assignmentSold, $stockUnitAvailable) - $shippedQuantity;
+//        if (0 > $available) $available = 0;
+//
+//        return $available;
+//    }
 
     /**
      * @inheritdoc
@@ -157,7 +191,8 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         // Quantity = Sold - Canceled - Shipped (ignoring current)
         return $saleItem->getTotalQuantity()
             - $this->invoiceCalculator->calculateCanceledQuantity($saleItem)
-            - $this->calculateShippedQuantity($saleItem, $item->getShipment());
+            - $this->calculateShippedQuantity($saleItem, $item->getShipment())
+            + $this->calculateReturnedQuantity($saleItem);
 
         //$quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
 
@@ -197,7 +232,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
 
         // Quantity = Shipped - Returned (ignoring current)
         return $this->calculateShippedQuantity($saleItem)
-            - $this->calculateReturnedQuantity($saleItem, $item->getShipment());
+             - $this->calculateReturnedQuantity($saleItem, $item->getShipment());
 
 //        $quantity = 0;
 //
@@ -259,7 +294,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
                 continue;
             }
 
-            if ($shipment->isReturn() || $shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
+            if ($shipment->isReturn() || $shipment->getState() !== Shipment\ShipmentStates::STATE_SHIPPED) {
                 continue;
             }
 
@@ -291,7 +326,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
                 continue;
             }
 
-            if (!$shipment->isReturn() || $shipment->getState() === Shipment\ShipmentStates::STATE_CANCELED) {
+            if (!$shipment->isReturn() || $shipment->getState() !== Shipment\ShipmentStates::STATE_RETURNED) {
                 continue;
             }
 
@@ -334,6 +369,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
                 'sold'     => $item->getTotalQuantity(),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
+                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
                 'canceled' => $this->invoiceCalculator->calculateCanceledQuantity($item),
             ];
         }

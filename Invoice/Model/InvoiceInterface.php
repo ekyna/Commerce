@@ -12,6 +12,8 @@ use Ekyna\Component\Resource\Model as Resource;
  * Interface InvoiceInterface
  * @package Ekyna\Component\Commerce\Invoice\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method Common\SaleInterface|InvoiceSubjectInterface getSale()
  */
 interface InvoiceInterface extends
     DocumentInterface,
