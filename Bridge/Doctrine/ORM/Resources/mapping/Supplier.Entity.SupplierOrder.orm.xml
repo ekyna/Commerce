@@ -28,8 +28,10 @@
         <field name="customsDuty" column="customs_duty" type="decimal" precision="10" scale="5"/>
         <field name="customsVat" column="customs_vat" type="decimal" precision="10" scale="5"/>
         <field name="administrativeFee" column="administrative_fee" type="decimal" precision="10" scale="5"/>
+        <field name="discountTotal" column="discount_total" type="decimal" precision="12" scale="5"/>
         <field name="paymentTotal" column="payment_total" type="decimal" precision="12" scale="5"/>
         <field name="paymentDate" column="payment_date" type="datetime" nullable="true"/>
+        <field name="trackingUrl" column="tracking_url" type="string" length="255" nullable="true"/>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
@@ -42,7 +44,7 @@
         <field name="completedAt" column="completed_at" type="datetime" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem"
-                     field="items" mapped-by="order" orphan-removal="true">
+                     field="items" mapped-by="order" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -50,7 +52,7 @@
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryInterface"
-                     field="deliveries" mapped-by="order" orphan-removal="true">
+                     field="deliveries" mapped-by="order" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>
@@ -58,7 +60,7 @@
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderAttachment"
-                     field="attachments" mapped-by="supplierOrder" orphan-removal="true">
+                     field="attachments" mapped-by="supplierOrder" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>

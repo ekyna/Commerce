@@ -166,6 +166,22 @@ interface SupplierOrderInterface extends
     public function setCustomsDuty($amount);
 
     /**
+     * Returns the discount total.
+     *
+     * @return float
+     */
+    public function getDiscountTotal();
+
+    /**
+     * Sets the discount total.
+     *
+     * @param float $amount
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setDiscountTotal($amount);
+
+    /**
      * Returns the payment total.
      *
      * @return float
@@ -196,6 +212,22 @@ interface SupplierOrderInterface extends
      * @return $this|SupplierOrderInterface
      */
     public function setPaymentDate(\DateTime $date = null);
+
+    /**
+     * Returns the tracking url.
+     *
+     * @return string
+     */
+    public function getTrackingUrl();
+
+    /**
+     * Sets the tracking url.
+     *
+     * @param string $url
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setTrackingUrl($url);
 
     /**
      * Returns the estimated date of arrival.

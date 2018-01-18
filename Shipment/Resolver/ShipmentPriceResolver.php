@@ -34,6 +34,18 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
     /**
      * @inheritdoc
      */
+    public function hasFreeShipping(SaleInterface $sale)
+    {
+        if (null !== $customerGroup = $sale->getCustomerGroup()) {
+            return $customerGroup->isFreeShipping();
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAvailablePricesBySale(SaleInterface $sale, $availableMethods = true)
     {
         if (null !== $country = $sale->getDeliveryCountry()) {

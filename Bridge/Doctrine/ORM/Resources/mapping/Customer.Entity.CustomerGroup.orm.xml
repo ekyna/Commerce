@@ -26,6 +26,7 @@
         <field name="business" column="is_business" type="boolean"/>
         <field name="registration" column="is_registration" type="boolean"/>
         <field name="quoteAllowed" column="is_quote_allowed" type="boolean"/>
+        <field name="freeShipping" column="is_free_shipping" type="boolean"/>
 
     </mapped-superclass>
 

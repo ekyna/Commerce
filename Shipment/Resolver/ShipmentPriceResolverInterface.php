@@ -14,6 +14,15 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 interface ShipmentPriceResolverInterface
 {
     /**
+     * Returns whether the sale has free shipping.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    public function hasFreeShipping(SaleInterface $sale);
+
+    /**
      * Returns the available shipment methods by sale.
      *
      * @param SaleInterface $sale

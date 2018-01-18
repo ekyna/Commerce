@@ -58,8 +58,6 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
             return INF;
         }
 
-
-
         /** @var Stock\StockAssignmentsInterface $saleItem */
         /** @var Stock\StockAssignmentInterface[] $assignments */
         $assignments = $saleItem->getStockAssignments()->toArray();
@@ -72,8 +70,13 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
             $available += $assignment->getShippableQuantity();
         }
 
-//        $available += $this->calculateReturnedQuantity($saleItem, $item->getShipment());
-//        $available -= $this->calculateShippedQuantity($saleItem, $item->getShipment());
+        $shipment = $item->getShipment();
+        if (
+            null !== $shipment->getId() && !$shipment->isReturn() &&
+            Shipment\ShipmentStates::isStockableState($shipment->getState())
+        ) {
+            $available += $item->getQuantity();
+        }
 
         if (0 > $available) $available = 0;
 

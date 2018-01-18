@@ -292,7 +292,7 @@
     <tr>
         <th>{{ view.translations.margin|upper }}</th>
         <td class="text-right sale-detail-total" id="final_margin">
-            {{- view.margin.percent -}}
+            {{- view.margin.amount }}<br>({{ view.margin.percent -}})
         </td>
     </tr>
     {%- endif %}

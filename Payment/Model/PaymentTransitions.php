@@ -64,7 +64,8 @@ class PaymentTransitions
                     $transitions[] = static::TRANSITION_REFUND;
                 }
                 if ($state === PaymentStates::STATE_PENDING) {
-                    if (0 < $payment->getUpdatedAt()->diff(new \DateTime())->days) {
+                    $diff = $payment->getUpdatedAt()->diff(new \DateTime());
+                    if (0 < $diff->days && !$diff->invert) {
                         $transitions[] = static::TRANSITION_CANCEL;
                     }
                 }

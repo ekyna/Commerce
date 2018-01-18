@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Payment\Watcher;
 
-use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Payment\Model;
 use Ekyna\Component\Commerce\Payment\Repository;
 
@@ -44,8 +43,6 @@ abstract class OutstandingWatcher implements WatcherInterface
      * @param Repository\PaymentRepositoryInterface $paymentRepository
      *
      * @return bool Whether some payments have been updated.
-     *
-     * @throws LogicException
      */
     public function watch(Repository\PaymentRepositoryInterface $paymentRepository)
     {
@@ -87,8 +84,8 @@ abstract class OutstandingWatcher implements WatcherInterface
                 }
 
                 // If outstanding limit date is past
-                if (0 < $date->diff($today)->days) {
-
+                $diff = $date->diff($today);
+                if (0 < $diff->days && !$diff->invert) {
                     $payment->setState(Model\PaymentStates::STATE_EXPIRED);
 
                     $this->persist($payment);

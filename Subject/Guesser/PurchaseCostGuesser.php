@@ -94,7 +94,10 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
                     $cost = round($cost / $count, 5);
                 }
 
-                return $this->currencyConverter->convert($cost, $this->defaultCurrency, $quoteCurrency);
+
+                if (0 < $cost) {
+                    return $this->currencyConverter->convert($cost, $this->defaultCurrency, $quoteCurrency);
+                }
             }
         }
 

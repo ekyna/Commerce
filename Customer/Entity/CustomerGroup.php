@@ -45,6 +45,11 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
      */
     protected $quoteAllowed;
 
+    /**
+     * @var boolean
+     */
+    protected $freeShipping;
+
 
     /**
      * Constructor.
@@ -57,6 +62,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
         $this->business = false;
         $this->registration = false;
         $this->quoteAllowed = false;
+        $this->freeShipping = false;
     }
 
     /**
@@ -165,6 +171,24 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     public function setQuoteAllowed($allowed)
     {
         $this->quoteAllowed = (bool)$allowed;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFreeShipping()
+    {
+        return $this->freeShipping;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFreeShipping($free)
+    {
+        $this->freeShipping = (bool)$free;
 
         return $this;
     }

@@ -38,8 +38,10 @@ class SaleNormalizer extends AbstractResourceNormalizer
             }
 
             $data = array_replace($data, [
-                'items' => $items,
-                'total' => $sale->getGrandTotal(),
+                'items'       => $items,
+                'total'       => $sale->getGrandTotal(),
+                'description' => $sale->getDescription(),
+                'comment'     => $sale->getComment(),
             ]);
         }
 

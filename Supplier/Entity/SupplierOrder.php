@@ -69,12 +69,22 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @var float
      */
+    protected $discountTotal = 0;
+
+    /**
+     * @var float
+     */
     protected $paymentTotal = 0;
 
     /**
      * @var \DateTime
      */
     protected $paymentDate;
+
+    /**
+     * @var string
+     */
+    protected $trackingUrl;
 
     /**
      * @var \DateTime
@@ -349,6 +359,24 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
+    public function getDiscountTotal()
+    {
+        return $this->discountTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDiscountTotal($amount)
+    {
+        $this->discountTotal = $amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getPaymentTotal()
     {
         return $this->paymentTotal;
@@ -378,6 +406,24 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function setPaymentDate(\DateTime $date = null)
     {
         $this->paymentDate = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTrackingUrl()
+    {
+        return $this->trackingUrl;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTrackingUrl($url)
+    {
+        $this->trackingUrl = $url;
 
         return $this;
     }

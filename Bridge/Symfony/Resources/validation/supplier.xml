@@ -76,6 +76,11 @@
                 <option name="value">0</option>
             </constraint>
         </property>
+        <property name="discountTotal">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
         <property name="paymentTotal">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
@@ -83,6 +88,9 @@
         </property>
         <property name="paymentDate">
             <constraint name="DateTime"/>
+        </property>
+        <property name="trackingUrl">
+            <constraint name="Url"/>
         </property>
         <property name="estimatedDateOfArrival">
             <constraint name="DateTime"/>

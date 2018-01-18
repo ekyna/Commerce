@@ -25,6 +25,8 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             $total += Money::round($item->getNetPrice(), $currency) * $item->getQuantity();
         }
 
+        $total -= $order->getDiscountTotal();
+
         return $total;
     }
 
