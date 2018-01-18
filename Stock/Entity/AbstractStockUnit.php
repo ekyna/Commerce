@@ -488,7 +488,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getShippableQuantity()
     {
-        $result = (min($this->receivedQuantity, $this->soldQuantity) + $this->adjustedQuantity) - $this->shippedQuantity;
+        $result = $this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity;
 
         return max($result, 0);
     }

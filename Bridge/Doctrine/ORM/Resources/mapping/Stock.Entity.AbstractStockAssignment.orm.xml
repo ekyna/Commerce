@@ -9,6 +9,10 @@
             table="commerce_stock_assignment"
             inheritance-type="SINGLE_TABLE">
 
+        <unique-constraints>
+            <unique-constraint columns="stock_unit_id,order_item_id" name="unique_commerce_stock_unit_order_item"/>
+        </unique-constraints>
+
         <discriminator-column name="type" type="string"/>
 
         <discriminator-map>

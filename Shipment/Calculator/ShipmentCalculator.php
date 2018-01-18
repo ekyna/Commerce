@@ -78,9 +78,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
             $available += $item->getQuantity();
         }
 
-        if (0 > $available) $available = 0;
-
-        return $available;
+        return max($available, 0);
     }
 
     /**
@@ -184,6 +182,8 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
 
     /**
      * @inheritdoc
+     *
+     * @todo Add bool $strict parameter : really shipped and not created/prepared
      */
     public function calculateShippableQuantity(Shipment\ShipmentItemInterface $item)
     {
@@ -192,10 +192,12 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
         // TODO return zero if not shippable
 
         // Quantity = Sold - Canceled - Shipped (ignoring current)
-        return $saleItem->getTotalQuantity()
+        $shippable = $saleItem->getTotalQuantity()
             - $this->invoiceCalculator->calculateCanceledQuantity($saleItem)
             - $this->calculateShippedQuantity($saleItem, $item->getShipment())
             + $this->calculateReturnedQuantity($saleItem);
+
+        return max($shippable, 0);
 
         //$quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
 

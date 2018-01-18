@@ -207,7 +207,15 @@ abstract class AbstractInvoiceListener
             $this->updateCustomerBalance($invoice);
         }
 
-        $this->scheduleSaleContentChangeEvent($invoice->getSale());
+        // TODO review ...
+        if (null === $sale = $invoice->getSale()) {
+            $cs = $this->persistenceHelper->getChangeSet($invoice, $this->getSalePropertyPath());
+            if (!empty($cs)) $sale = $cs[0];
+        }
+
+        if (null !== $sale) {
+            $this->scheduleSaleContentChangeEvent($sale);
+        }
     }
 
     /**

@@ -89,10 +89,10 @@ class ShipmentItemValidator extends ConstraintValidator
         }
 
         // Regular shipment case
-        $max = min(
-            $this->shipmentCalculator->calculateShippableQuantity($item),
-            $this->shipmentCalculator->calculateAvailableQuantity($item)
-        );
+        $max = $this->shipmentCalculator->calculateShippableQuantity($item);
+        if (ShipmentStates::isStockableState($item->getShipment()->getState())) {
+            $max = min($max, $this->shipmentCalculator->calculateAvailableQuantity($item));
+        }
         if ($max < $item->getQuantity()) {
             $this
                 ->context
