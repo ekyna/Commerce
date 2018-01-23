@@ -77,6 +77,7 @@ trait StockSubjectTrait
     {
         $this->stockMode = StockSubjectModes::MODE_AUTO;
         $this->stockState = StockSubjectStates::STATE_OUT_OF_STOCK;
+        $this->stockFloor = 0;
         $this->inStock = 0;
         $this->availableStock = 0;
         $this->virtualStock = 0;
