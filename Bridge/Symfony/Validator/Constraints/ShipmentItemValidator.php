@@ -70,7 +70,7 @@ class ShipmentItemValidator extends ConstraintValidator
 
         // Return shipment case
         if ($item->getShipment()->isReturn()) {
-            $max = $this->shipmentCalculator->calculateReturnableQuantity($item);
+            $max = $this->shipmentCalculator->calculateReturnableQuantity($saleItem, $item->getShipment());
 
             if ($max < $item->getQuantity()) {
                 $this
@@ -89,7 +89,7 @@ class ShipmentItemValidator extends ConstraintValidator
         }
 
         // Regular shipment case
-        $max = $this->shipmentCalculator->calculateShippableQuantity($item);
+        $max = $this->shipmentCalculator->calculateShippableQuantity($saleItem, $item->getShipment());
         if (ShipmentStates::isStockableState($item->getShipment()->getState())) {
             $max = min($max, $this->shipmentCalculator->calculateAvailableQuantity($item));
         }

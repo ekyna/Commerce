@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Calculator;
 
-use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 
 /**
@@ -13,61 +15,53 @@ use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 interface InvoiceCalculatorInterface
 {
     /**
-     * Calculates the invoice line invoiceable quantity.
+     * Returns whether the sale item or adjustment is invoiced.
      *
-     * @param Invoice\InvoiceLineInterface $line
+     * @param SaleItemInterface|SaleAdjustmentInterface $itemOrAdjustment
      *
-     * @return float
+     * @return bool
      */
-    public function calculateInvoiceableQuantity(Invoice\InvoiceLineInterface $line);
+    public function isInvoiced($itemOrAdjustment);
 
     /**
-     * Calculates the invoice line creditable quantity.
+     * Calculates the given subject's invoiceable quantity.
      *
-     * @param Invoice\InvoiceLineInterface $line
+     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
+     * @param Invoice\InvoiceInterface                                $ignore
      *
      * @return float
      */
-    public function calculateCreditableQuantity(Invoice\InvoiceLineInterface $line);
+    public function calculateInvoiceableQuantity($subject, Invoice\InvoiceInterface $ignore = null);
 
     /**
-     * Calculates the invoice line cancelable quantity.
+     * Calculates the given subject's creditable quantity.
      *
-     * @param Invoice\InvoiceLineInterface $line
+     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
+     * @param Invoice\InvoiceInterface                                $ignore
      *
      * @return float
      */
-    public function calculateCancelableQuantity(Invoice\InvoiceLineInterface $line);
+    public function calculateCreditableQuantity($subject, Invoice\InvoiceInterface $ignore = null);
 
     /**
-     * Calculates the invoiced quantity for the given sale item.
+     * Calculates the given subject's invoiced quantity.
      *
-     * @param Common\SaleItemInterface $item
-     * @param Invoice\InvoiceInterface $ignore
+     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
+     * @param Invoice\InvoiceInterface                                $ignore
      *
      * @return float
      */
-    public function calculateInvoicedQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null);
+    public function calculateInvoicedQuantity($subject, Invoice\InvoiceInterface $ignore = null);
 
     /**
-     * Calculates the credited quantity for the given sale item.
+     * Calculates the given subject's credited quantity.
      *
-     * @param Common\SaleItemInterface $item
-     * @param Invoice\InvoiceInterface $ignore
-     *
-     * @return float
-     */
-    public function calculateCreditedQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null);
-
-    /**
-     * Calculates the canceled quantity for the given sale item.
-     *
-     * @param Common\SaleItemInterface $item
-     * @param Invoice\InvoiceInterface $ignore
+     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
+     * @param Invoice\InvoiceInterface                                $ignore
      *
      * @return float
      */
-    public function calculateCanceledQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null);
+    public function calculateCreditedQuantity($subject, Invoice\InvoiceInterface $ignore = null);
 
     /**
      * Calculates the total of all subject's invoices.
@@ -86,15 +80,6 @@ interface InvoiceCalculatorInterface
      * @return float
      */
     public function calculateCreditTotal(Invoice\InvoiceSubjectInterface $subject);
-
-    /**
-     * Calculates the total of all subject's credits which are not linked to return shipment.
-     *
-     * @param Invoice\InvoiceSubjectInterface $subject
-     *
-     * @return float
-     */
-    public function calculateCanceledTotal(Invoice\InvoiceSubjectInterface $subject);
 
     /**
      * Builds the invoice quantity map.

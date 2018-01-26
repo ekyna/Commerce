@@ -48,14 +48,14 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             if (
                 PaymentStates::STATE_COMPLETED === $paymentState &&
                 ShipmentStates::STATE_COMPLETED === $shipmentState &&
-                InvoiceStates::STATE_INVOICED === $invoiceState
+                InvoiceStates::STATE_COMPLETED === $invoiceState
             ) {
                 return OrderStates::STATE_COMPLETED;
             }
 
             // COMPLETED If fully Refund / Returned / Credited
             if (
-                PaymentStates::STATE_REFUNDED === $paymentState &&
+                in_array($paymentState, [PaymentStates::STATE_REFUNDED, PaymentStates::STATE_COMPLETED], true) &&
                 ShipmentStates::STATE_RETURNED === $shipmentState &&
                 InvoiceStates::STATE_CREDITED === $invoiceState
             ) {

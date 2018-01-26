@@ -173,11 +173,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // TODO sort assignments ?
+        // TODO Use packaging format
 
         $quantity = $item->getQuantity();
         $return = $item->getShipment()->isReturn();
-
-        // TODO Use packaging format
 
         foreach ($assignments as $assignment) {
             if ($return) {
@@ -213,6 +212,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // TODO sort assignments ? (reverse for debit)
+        // TODO Use packaging format
 
         $return = $item->getShipment()->isReturn();
 
@@ -246,10 +246,21 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // TODO sort assignments ? (reverse for debit)
-
         // TODO Use packaging format
-        $quantity = $item->getQuantity();
-        $return = $item->getShipment()->isReturn();
+
+        // Get previous quantity if it has changed
+        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
+            $quantity = $this->persistenceHelper->getChangeSet($item, 'quantity')[0];
+        } else {
+            $quantity = $item->getQuantity();
+        }
+
+        // Get shipment from change set if needed
+        if (null === $shipment = $item->getShipment()) {
+            $shipment = $this->persistenceHelper->getChangeSet($item, 'shipment')[0];
+        }
+
+        $return = $shipment->isReturn();
 
         // Update assignments
         foreach ($assignments as $assignment) {
@@ -272,7 +283,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     public function assignInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not credit
-        if (!InvoiceTypes::isCredit($line->getInvoice())) {
+        if (!InvoiceTypes::isCredit($line->getInvoice()->getType())) {
             return;
         }
 
@@ -282,10 +293,9 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // TODO sort assignments ?
+        // TODO Use packaging format
 
         $quantity = $line->getQuantity();
-
-        // TODO Use packaging format
 
         foreach ($assignments as $assignment) {
             $quantity += $this->assignmentUpdater->updateSold($assignment, -$quantity, true);
@@ -303,7 +313,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     public function applyInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not credit
-        if (!InvoiceTypes::isCredit($line->getInvoice())) {
+        if (!InvoiceTypes::isCredit($line->getInvoice()->getType())) {
             return;
         }
 
@@ -322,6 +332,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // TODO sort assignments ? (reverse for debit)
+        // TODO Use packaging format
 
         // Update assignments
         foreach ($assignments as $assignment) {
@@ -347,8 +358,12 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // TODO This might be a problem :
         // we should never call this method when invoice is null
         // cause we won't be able to test if invoice is credit
-        $invoice = $line->getInvoice();
-        if (null !== $invoice && !InvoiceTypes::isCredit($line->getInvoice())) {
+        // TODO get invoice from change set
+        if (null === $invoice = $line->getInvoice()) {
+            $invoice = $this->persistenceHelper->getChangeSet($line, 'invoice')[0];
+        }
+
+        if (!InvoiceTypes::isCredit($invoice->getType())) {
             return;
         }
 
@@ -358,8 +373,8 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // TODO sort assignments ? (reverse for debit)
-
         // TODO Use packaging format
+
         $quantity = $line->getQuantity();
 
         // Update assignments

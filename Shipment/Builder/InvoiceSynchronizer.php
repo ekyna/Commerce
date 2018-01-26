@@ -69,34 +69,36 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
             throw new LogicException("Shipment's sale must be set at this point.");
         }
 
-        // Abort if sale is sample
-        if ($sale->isSample()) {
-            return;
-        }
-
         $invoice = $shipment->getInvoice();
 
-        // Abort if shipment is removed or not in stockable state
+        // Abort if sale is sample, shipment is removed or shipment not in stockable state
         if (
+            $sale->isSample() ||
             $this->persistenceHelper->isScheduledForRemove($shipment) ||
             !Shipment\ShipmentStates::isStockableState($shipment->getState())
         ) {
             if (null !== $invoice) {
-                $invoice->setShipment(null);
-                $invoice->setSale(null);
-
-                if (null !== $invoice->getId()) {
-                    $this->persistenceHelper->remove($invoice, true);
-                } elseif ($this->persistenceHelper->isScheduledForInsert($invoice)) {
-                    $this->persistenceHelper->getManager()->remove($invoice);
-                }
+                $this->removeInvoice($invoice);
             }
 
             return;
         }
 
         if (null === $invoice) {
-            throw new RuntimeException("Shipment invoice must be set at this point");
+            $invoice = $this->invoiceBuilder->getSaleFactory()->createInvoiceForSale($sale);
+            $invoice
+                ->setSale($sale)
+                ->setShipment($shipment);
+
+            if ($shipment->isReturn()) {
+                if (null === $method = $shipment->getCreditMethod()) {
+                    throw new RuntimeException("Return's credit method must be set at this point.");
+                }
+
+                $invoice
+                    ->setType(Invoice\InvoiceTypes::TYPE_CREDIT)
+                    ->setPaymentMethod($method);
+            }
         }
 
         $this->checkShipmentInvoice($invoice);
@@ -105,27 +107,52 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         $changed |= $this->feedShipmentInvoice($invoice);
 
-        // Remove empty invoices
-        if (0 == $invoice->getLines()->count()) {
-            $invoice->setShipment(null);
-            $invoice->setSale(null);
-
-            if (null !== $invoice->getId()) {
-                $this->persistenceHelper->remove($invoice, true);
-            } elseif ($this->persistenceHelper->isScheduledForInsert($invoice)) {
-                $this->persistenceHelper->getManager()->remove($invoice);
-            }
+        // Remove (and don't persist) empty invoices
+        if (0 == count($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD))) {
+            $this->removeInvoice($invoice);
 
             return;
         }
 
         if ($changed) {
-            // Persist all lines has the may have been updated.
-            foreach ($invoice->getLines() as $line) {
-                $this->persistenceHelper->persistAndRecompute($line, true);
-            }
+            $this->persistInvoice($invoice);
+        }
+    }
 
-            $this->persistenceHelper->persistAndRecompute($invoice, true);
+    /**
+     * Persists the invoice.
+     *
+     * @param Invoice\InvoiceInterface $invoice
+     */
+    private function persistInvoice(Invoice\InvoiceInterface $invoice)
+    {
+        $this->persistenceHelper->persistAndRecompute($invoice, true);
+
+        foreach ($invoice->getLines() as $line) {
+            $this->persistenceHelper->persistAndRecompute($line, true);
+        }
+
+        // Persist the shipment <-> invoice relation, without scheduling event.
+        $this->persistenceHelper->persistAndRecompute($invoice->getShipment(), false);
+    }
+
+    /**
+     * Removes the invoice.
+     *
+     * @param Invoice\InvoiceInterface $invoice
+     */
+    private function removeInvoice(Invoice\InvoiceInterface $invoice)
+    {
+        $invoice->setShipment(null);
+        $invoice->setSale(null);
+
+        if (null !== $invoice->getId()) {
+            foreach ($invoice->getLines() as $line) {
+                $this->persistenceHelper->remove($line, true);
+            }
+            $this->persistenceHelper->remove($invoice, true);
+        } elseif ($this->persistenceHelper->isScheduledForInsert($invoice)) {
+            $this->persistenceHelper->getManager()->remove($invoice);
         }
     }
 
@@ -242,41 +269,21 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         foreach ($shipment->getItems() as $shipmentItem) {
             $saleItem = $shipmentItem->getSaleItem();
 
-            // Look for an invoice line that matches the shipment item
-            foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $line) {
-                if ($saleItem === $line->getSaleItem()) {
-                    $max = $shipment->isReturn()
-                        ? $calculator->calculateCreditableQuantity($line)
-                        : $calculator->calculateInvoiceableQuantity($line);
+            $max = $shipment->isReturn()
+                ? $calculator->calculateCreditableQuantity($saleItem)
+                : $calculator->calculateInvoiceableQuantity($saleItem);
 
-                    if (0 < $quantity = min($max, $shipmentItem->getQuantity())) {
-                        if ($line->getQuantity() !== $quantity) {
-                            $line->setQuantity($quantity);
-                            $changed = true;
-                        }
-                    } else {
-                        // TODO persistence removal ?
-                        $invoice->removeLine($line);
-                        $changed = true;
-                    }
-
-                    continue 2; // Invoice line found -> next shipment item
-                }
-            }
-
-            // Invoice line not found -> create it
-            if (null !== $line = $this->invoiceBuilder->buildGoodLine($saleItem, $invoice, false)) {
-                $max = $shipment->isReturn()
-                    ? $calculator->calculateCreditableQuantity($line)
-                    : $calculator->calculateInvoiceableQuantity($line);
-
-                if (0 < $quantity = min($max, $shipmentItem->getQuantity())) {
+            if (0 < $quantity = min($max, $shipmentItem->getQuantity())) {
+                $line = $this->invoiceBuilder->findOrCreateGoodLine($invoice, $saleItem, $max);
+                if ($line->getQuantity() !== $quantity) {
                     $line->setQuantity($quantity);
                     $changed = true;
-                } else {
-                    $invoice->removeLine($line);
                 }
-            }
+            } /*else {
+                // TODO find and remove line ?
+                $invoice->removeLine($line);
+                $changed = true;
+            }*/
         }
 
         if ($invoice->hasLineByType(Document\DocumentLineTypes::TYPE_GOOD)) {

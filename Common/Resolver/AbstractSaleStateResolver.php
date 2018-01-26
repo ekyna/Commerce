@@ -92,8 +92,8 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
 
         if ($subject instanceof InvoiceSubjectInterface) {
             if ($subject->isSample()) {
-                if ($subject->getInvoiceState() !== InvoiceStates::STATE_INVOICED) {
-                    $subject->setInvoiceState(InvoiceStates::STATE_INVOICED);
+                if ($subject->getInvoiceState() !== InvoiceStates::STATE_COMPLETED) {
+                    $subject->setInvoiceState(InvoiceStates::STATE_COMPLETED);
 
                     $changed = true;
                 }

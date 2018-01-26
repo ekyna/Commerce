@@ -23,6 +23,7 @@ class InvoiceLineValidator extends ConstraintValidator
      */
     private $invoiceCalculator;
 
+
     /**
      * Constructor.
      *
@@ -49,8 +50,12 @@ class InvoiceLineValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, InvoiceLine::class);
         }
 
+        $subject = null;
+        $invoice = $line->getInvoice();
+
+        // Good line
         if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
-            if (null === $line->getSaleItem()) {
+            if (null === $subject = $line->getSaleItem()) {
                 $this
                     ->context
                     ->buildViolation($constraint->null_sale_item)
@@ -60,6 +65,57 @@ class InvoiceLineValidator extends ConstraintValidator
 
                 return;
             }
+
+            // If invoice is linked to a shipment
+            if (null !== $shipment = $invoice->getShipment()) {
+                // Check that a matching shipment item exists
+                if (null === $shipmentItem = $this->findMatchingShipmentItem($line, $shipment)) {
+                    $this
+                        ->context
+                        ->buildViolation($constraint->hierarchy_integrity)
+                        ->addViolation();
+
+                    return;
+                }
+
+                // Check that quantities equals
+                if ($shipmentItem->getQuantity() != $line->getQuantity()) {
+                    $message = InvoiceTypes::isInvoice($invoice)
+                        ? $constraint->shipped_miss_match
+                        : $constraint->returned_miss_match;
+
+                    $this
+                        ->context
+                        ->buildViolation($message, [
+                            '%qty%' => $shipmentItem->getQuantity(),
+                        ])
+                        ->setInvalidValue($line->getQuantity())
+                        ->atPath('quantity')
+                        ->addViolation();
+
+                    return;
+                }
+            }
+        }
+
+        // Discount line
+        elseif ($line->getType() === DocumentLineTypes::TYPE_DISCOUNT) {
+            if (null === $subject = $line->getSaleAdjustment()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->null_sale_adjustment)
+                    ->setInvalidValue(null)
+                    ->atPath('saleAdjustment')
+                    ->addViolation();
+
+                return;
+            }
+
+        }
+
+        // Shipment line
+        elseif ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
+            $subject = $invoice->getSale();
         }
 
         if ($line->getType() !== DocumentLineTypes::TYPE_DISCOUNT) {
@@ -75,111 +131,27 @@ class InvoiceLineValidator extends ConstraintValidator
             }
         }
 
-        $invoice = $line->getInvoice();
-
-        // Invoice case
         if (InvoiceTypes::isInvoice($invoice)) {
-            // If invoice is linked to a shipment
-            if (null !== $shipment = $invoice->getShipment()) {
-                // Check that a matching shipment item exists
-                if (null === $shipmentItem = $this->findMatchingShipmentItem($line, $shipment)) {
-                    $this
-                        ->context
-                        ->buildViolation($constraint->hierarchy_integrity)
-                        ->addViolation();
-
-                    return;
-                }
-
-                // Check that quantities equals
-                if ($shipmentItem->getQuantity() != $line->getQuantity()) {
-                    $this
-                        ->context
-                        ->buildViolation($constraint->shipped_miss_match, [
-                            '%qty%' => $shipmentItem->getQuantity(),
-                        ])
-                        ->setInvalidValue($line->getQuantity())
-                        ->atPath('quantity')
-                        ->addViolation();
-
-                    return;
-                }
-            }
-
-            // Check invoiceable quantity
-            $max = $this->invoiceCalculator->calculateInvoiceableQuantity($line);
-            if ($max < $line->getQuantity()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->invoiceable_overflow, [
-                        '%max%' => $max,
-                    ])
-                    ->setInvalidValue($line->getQuantity())
-                    ->atPath('quantity')
-                    ->addViolation();
-            }
-
-            return;
+            // Invoice case
+            $max = $this->invoiceCalculator->calculateInvoiceableQuantity($subject, $invoice);
+            $message = $constraint->invoiceable_overflow;
+        } else {
+            // Credit case
+            $max = $this->invoiceCalculator->calculateCreditableQuantity($subject, $invoice);
+            $message = $constraint->creditable_overflow;
         }
 
-        // Credit case
-        if (null !== $shipment = $invoice->getShipment()) {
-            // Check that a matching shipment item exists
-            if (null === $shipmentItem = $this->findMatchingShipmentItem($line, $shipment)) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->hierarchy_integrity)
-                    ->addViolation();
-
-                return;
-            }
-
-            // Check that quantities equals
-            if ($shipmentItem->getQuantity() != $line->getQuantity()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->returned_miss_match, [
-                        '%qty%' => $shipmentItem->getQuantity(),
-                    ])
-                    ->setInvalidValue($line->getQuantity())
-                    ->atPath('quantity')
-                    ->addViolation();
-
-                return;
-            }
-
-            // Check creditable quantity
-            $max = $this->invoiceCalculator->calculateCreditableQuantity($line);
-            if ($max < $line->getQuantity()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->creditable_overflow, [
-                        '%max%' => $max,
-                    ])
-                    ->setInvalidValue($line->getQuantity())
-                    ->atPath('quantity')
-                    ->addViolation();
-            }
-
-            return;
-        }
-
-        // Cancel case
-
-        // Check invoiceable quantity
-        $max = $this->invoiceCalculator->calculateCancelableQuantity($line);
+        // Check quantity integrity
         if ($max < $line->getQuantity()) {
             $this
                 ->context
-                ->buildViolation($constraint->cancelable_overflow, [
-                    '%max%' => $max,
-                ])
+                ->buildViolation($message, ['%max%' => $max])
                 ->setInvalidValue($line->getQuantity())
                 ->atPath('quantity')
                 ->addViolation();
-        }
 
-        return;
+            return;
+        }
     }
 
     /**

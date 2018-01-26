@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Resource\Model as Resource;
 
 /**
@@ -264,4 +265,22 @@ interface ShipmentInterface extends
      * @return $this|ShipmentInterface
      */
     public function setReceiverAddress($data);
+
+    /**
+     * Returns the credit method.
+     * (non mapped, for credit synchronisation)
+     *
+     * @return Payment\PaymentMethodInterface
+     */
+    public function getCreditMethod();
+
+    /**
+     * Sets the credit method.
+     * (non mapped, for credit synchronisation)
+     *
+     * @param Payment\PaymentMethodInterface $method
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setCreditMethod(Payment\PaymentMethodInterface $method);
 }

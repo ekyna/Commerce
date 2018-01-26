@@ -2,10 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Calculator;
 
-use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 
@@ -19,7 +20,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * @var ShipmentCalculatorInterface
      */
-    protected $shipmentCalculator;
+    private $shipmentCalculator;
 
 
     /**
@@ -27,43 +28,91 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
      *
      * @param ShipmentCalculatorInterface $calculator
      */
-    public function setShipmentCalculator(ShipmentCalculatorInterface $calculator)
+    public function setShipmentCalculator($calculator)
     {
         $this->shipmentCalculator = $calculator;
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function calculateInvoiceableQuantity(Invoice\InvoiceLineInterface $line)
+    public function isInvoiced($itemOrAdjustment)
     {
-        if (!Invoice\InvoiceTypes::isInvoice($line->getInvoice())) {
-            throw new LogicException(sprintf("Expected invoice with type '%s'.", Invoice\InvoiceTypes::TYPE_INVOICE));
-        }
+        if ($itemOrAdjustment instanceof SaleItemInterface) {
+            // If compound with only public children
+            if ($itemOrAdjustment->isCompound() && !$itemOrAdjustment->hasPrivateChildren()) {
+                // Invoiced if any of it's children is
+                foreach ($itemOrAdjustment->getChildren() as $child) {
+                    if ($this->isInvoiced($child)) {
+                        return true;
+                    }
+                }
 
-        if (null === $sale = $line->getSale()) {
-            throw new LogicException("Invoice's sale must be set.");
-        }
-
-        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceSubjectInterface::class);
-        }
-
-        // Good line case
-        if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
-            if (null === $saleItem = $line->getSaleItem()) {
-                throw new LogicException("Invoice line's sale item must be set.");
+                return false;
             }
 
-            // Quantity = Sold - Invoiced (ignoring current invoice)
-            return $saleItem->getTotalQuantity()
-                - $this->calculateInvoicedQuantity($saleItem, $line->getInvoice());
+            $sale = $itemOrAdjustment->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return false;
+            }
+
+            foreach ($sale->getInvoices() as $invoice) {
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
+                    if ($line->getSaleItem() === $itemOrAdjustment) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        if ($itemOrAdjustment instanceof SaleAdjustmentInterface) {
+            $sale = $itemOrAdjustment->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return false;
+            }
+
+            foreach ($sale->getInvoices() as $invoice) {
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $line) {
+                    if ($line->getSaleAdjustment() === $itemOrAdjustment) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        throw new InvalidArgumentException(
+            "Expected instance of " . SaleItemInterface::class . " or " . SaleAdjustmentInterface::class
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateInvoiceableQuantity($subject, Invoice\InvoiceInterface $ignore = null)
+    {
+        // Good line case
+        if ($subject instanceof SaleItemInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
+            }
+
+            // Quantity = Total - Invoiced (ignoring current invoice)
+            $quantity = $subject->getTotalQuantity()
+                - $this->calculateInvoicedQuantity($subject, $ignore);
+
+            return max(0, $quantity);
         }
 
         // Discount line case
-        if ($line->getType() === DocumentLineTypes::TYPE_DISCOUNT) {
-            if (null === $adjustment = $line->getSaleAdjustment()) {
-                throw new LogicException("Invoice line's sale adjustment must be set.");
+        if ($subject instanceof SaleAdjustmentInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
             }
 
             // Discounts must be dispatched into all invoices
@@ -71,64 +120,49 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         }
 
         // Shipment line case
-        if ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
+        if ($subject instanceof SaleInterface) {
+            if (!$subject instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
+            }
+
             // Shipment must be invoiced once
-            $quantity = 1;
-
-            foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current invoice
-                if ($invoice === $line->getInvoice() || !Invoice\InvoiceTypes::isInvoice($invoice)) {
-                    continue;
-                }
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $invoiceLine) {
-                    $quantity -= $invoiceLine->getQuantity();
-                    break;
-                }
-            }
-
-            if (0 > $quantity) $quantity = 0;
-
-            return $quantity;
+            return min(0, 1 - $this->calculateInvoicedQuantity($subject));
         }
 
-        throw new InvalidArgumentException("Unexpected line type '{$line->getType()}'.");
+        throw new InvalidArgumentException(sprintf(
+            "Unexpected instance of %s, %s or %s",
+            SaleInterface::class,
+            SaleItemInterface::class,
+            SaleAdjustmentInterface::class
+        ));
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function calculateCreditableQuantity(Invoice\InvoiceLineInterface $line)
+    public function calculateCreditableQuantity($subject, Invoice\InvoiceInterface $ignore = null)
     {
-        if (!Invoice\InvoiceTypes::isCredit($line->getInvoice())) {
-            throw new LogicException(sprintf("Expected invoice with type '%s'.", Invoice\InvoiceTypes::TYPE_CREDIT));
-        }
-
-        if (null === $sale = $line->getSale()) {
-            throw new LogicException("Invoice's sale must be set.");
-        }
-
-        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceSubjectInterface::class);
-        }
-
-        // TODO assert shipment linked
-
         // Good line case
-        if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
-            if (null === $saleItem = $line->getSaleItem()) {
-                throw new LogicException("Invoice line's sale item must be set.");
+        if ($subject instanceof SaleItemInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
             }
 
-            // Quantity = Returned - Credited (ignoring current credit)
-            return $this->shipmentCalculator->calculateReturnedQuantity($saleItem)
-                - $this->calculateCreditedQuantity($saleItem, $line->getInvoice());
+            // Quantity = Invoiced - Shipped + Returned - Credited (ignoring current credit)
+            $quantity = $this->calculateInvoicedQuantity($subject)
+                - $this->shipmentCalculator->calculateShippedQuantity($subject)
+                + $this->shipmentCalculator->calculateReturnedQuantity($subject)
+                - $this->calculateCreditedQuantity($subject, $ignore);
+
+            return max(0, $quantity);
         }
 
         // Discount line case
-        if ($line->getType() === DocumentLineTypes::TYPE_DISCOUNT) {
-            if (null === $adjustment = $line->getSaleAdjustment()) {
-                throw new LogicException("Invoice line's sale adjustment must be set.");
+        if ($subject instanceof SaleAdjustmentInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
             }
 
             // Discounts must be dispatched into all invoices
@@ -136,180 +170,179 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
         }
 
         // Shipment line case
-        if ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
-            // Shipment can't be credited (but canceled)
-            return 0;
-        }
-
-        throw new InvalidArgumentException("Unexpected line type '{$line->getType()}'.");
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function calculateCancelableQuantity(Invoice\InvoiceLineInterface $line)
-    {
-        if (!Invoice\InvoiceTypes::isCredit($line->getInvoice())) {
-            throw new LogicException(sprintf("Expected invoice with type '%s'.", Invoice\InvoiceTypes::TYPE_CREDIT));
-        }
-
-        if (null === $sale = $line->getSale()) {
-            throw new LogicException("Invoice's sale must be set.");
-        }
-
-        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-            throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceSubjectInterface::class);
-        }
-
-        // TODO assert no shipment linked
-
-        // Good line case
-        if ($line->getType() === DocumentLineTypes::TYPE_GOOD) {
-            if (null === $saleItem = $line->getSaleItem()) {
-                throw new LogicException("Invoice line's sale item must be set.");
+        if ($subject instanceof SaleInterface) {
+            if (!$subject instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
             }
 
-            // Quantity = Invoiced - Shipped + Returned - Credited (ignoring current) - Canceled (ignoring current)
-            $invoiced = $this->calculateInvoicedQuantity($saleItem);
-            $shipped = $this->shipmentCalculator->calculateShippedQuantity($saleItem);
-            $returned = $this->shipmentCalculator->calculateReturnedQuantity($saleItem);
-            $canceled = $this->calculateCanceledQuantity($saleItem, $line->getInvoice());
-            $credited = $this->calculateCreditedQuantity($saleItem, $line->getInvoice());
-
-            return $invoiced - $shipped + $returned - $credited - $canceled;
-        }
-
-        // Discount line case
-        if ($line->getType() === DocumentLineTypes::TYPE_DISCOUNT) {
-            if (null === $adjustment = $line->getSaleAdjustment()) {
-                throw new LogicException("Invoice line's sale adjustment must be set.");
-            }
-
-            // Discounts must be dispatched into all invoices
-            return 1;
-        }
-
-        // Shipment line case
-        if ($line->getType() === DocumentLineTypes::TYPE_SHIPMENT) {
             // Shipment can be credited once
-            $quantity = 0;
+            return max(1, $this->calculateInvoicedQuantity($subject));
+        }
 
+        throw new InvalidArgumentException(sprintf(
+            "Unexpected instance of %s, %s or %s",
+            SaleInterface::class,
+            SaleItemInterface::class,
+            SaleAdjustmentInterface::class
+        ));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateInvoicedQuantity($subject, Invoice\InvoiceInterface $ignore = null)
+    {
+        // Good line case
+        if ($subject instanceof SaleItemInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
+            }
+
+            $quantity = 0;
             foreach ($sale->getInvoices() as $invoice) {
-                // Ignore the current invoice
-                if ($invoice === $line->getInvoice()) {
+                if (Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
                     continue;
                 }
 
-                $credit = Invoice\InvoiceTypes::isCredit($invoice);
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $invoiceLine) {
-                    $quantity += $credit ? -$invoiceLine->getQuantity() : $invoiceLine->getQuantity();
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
+                    if ($line->getSaleItem() === $subject) {
+                        $quantity += $line->getQuantity();
+                    }
                 }
             }
-
-            if (0 > $quantity) $quantity = 0;
-            if (1 < $quantity) $quantity = 1;
 
             return $quantity;
         }
 
-        throw new InvalidArgumentException("Unexpected line type '{$line->getType()}'.");
+        // Discount line case
+        if ($subject instanceof SaleAdjustmentInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
+            }
+
+            $quantity = 0;
+            foreach ($sale->getInvoices() as $invoice) {
+                if (Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+                    continue;
+                }
+
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $line) {
+                    if ($line->getSaleAdjustment() === $subject) {
+                        $quantity += $line->getQuantity();
+                    }
+                }
+            }
+
+            return $quantity;
+        }
+
+        // Shipment line case
+        if ($subject instanceof SaleInterface) {
+            if (!$subject instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
+            }
+
+            $quantity = 0;
+            foreach ($subject->getInvoices() as $invoice) {
+                if (Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+                    continue;
+                }
+
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $line) {
+                    $quantity += $line->getQuantity();
+                }
+            }
+
+            return $quantity;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            "Unexpected instance of %s, %s or %s",
+            SaleInterface::class,
+            SaleItemInterface::class,
+            SaleAdjustmentInterface::class
+        ));
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateInvoicedQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null)
+    public function calculateCreditedQuantity($subject, Invoice\InvoiceInterface $ignore = null)
     {
-        $sale = $item->getSale();
+        // Good line case
+        if ($subject instanceof SaleItemInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
+            }
 
-        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-            return 0;
+            $quantity = 0;
+            foreach ($sale->getInvoices() as $invoice) {
+                if (!Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+                    continue;
+                }
+
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
+                    if ($line->getSaleItem() === $subject) {
+                        $quantity += $line->getQuantity();
+                    }
+                }
+            }
+
+            return $quantity;
         }
 
-        $quantity = 0;
-
-        foreach ($sale->getInvoices() as $invoice) {
-            if (null !== $ignore && $invoice === $ignore) {
-                continue;
+        // Discount line case
+        if ($subject instanceof SaleAdjustmentInterface) {
+            $sale = $subject->getSale();
+            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
             }
 
-            if (Invoice\InvoiceTypes::isCredit($invoice)) {
-                continue;
+            $quantity = 0;
+            foreach ($sale->getInvoices() as $invoice) {
+                if (!Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+                    continue;
+                }
+
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $line) {
+                    if ($line->getSaleAdjustment() === $subject) {
+                        $quantity += $line->getQuantity();
+                    }
+                }
             }
 
-            foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
-                if ($line->getSaleItem() === $item) {
+            return $quantity;
+        }
+
+        // Shipment line case
+        if ($subject instanceof SaleInterface) {
+            if (!$subject instanceof Invoice\InvoiceSubjectInterface) {
+                return 0;
+            }
+
+            $quantity = 0;
+            foreach ($subject->getInvoices() as $invoice) {
+                if (!Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+                    continue;
+                }
+
+                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $line) {
                     $quantity += $line->getQuantity();
                 }
             }
+
+            return $quantity;
         }
 
-        return $quantity;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function calculateCreditedQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null)
-    {
-        $sale = $item->getSale();
-
-        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-            return 0;
-        }
-
-        $quantity = 0;
-
-        foreach ($sale->getInvoices() as $invoice) {
-            if (null !== $ignore && $invoice === $ignore) {
-                continue;
-            }
-
-            if (!(Invoice\InvoiceTypes::isCredit($invoice) && null !== $invoice->getShipment())) {
-                continue;
-            }
-
-            foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
-                if ($line->getSaleItem() === $item) {
-                    $quantity += $line->getQuantity();
-                }
-            }
-        }
-
-        return $quantity;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function calculateCanceledQuantity(Common\SaleItemInterface $item, Invoice\InvoiceInterface $ignore = null)
-    {
-        $sale = $item->getSale();
-
-        if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-            return 0;
-        }
-
-        $quantity = 0;
-
-        foreach ($sale->getInvoices() as $invoice) {
-            if (null !== $ignore && $invoice === $ignore) {
-                continue;
-            }
-
-            if (!(Invoice\InvoiceTypes::isCredit($invoice) && null === $invoice->getShipment())) {
-                continue;
-            }
-
-            foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
-                if ($line->getSaleItem() === $item) {
-                    $quantity += $line->getQuantity();
-                }
-            }
-        }
-
-        return $quantity;
+        throw new InvalidArgumentException(sprintf(
+            "Unexpected instance of %s, %s or %s",
+            SaleInterface::class,
+            SaleItemInterface::class,
+            SaleAdjustmentInterface::class
+        ));
     }
 
     /**
@@ -347,27 +380,11 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateCanceledTotal(Invoice\InvoiceSubjectInterface $subject)
-    {
-        $total = .0;
-
-        foreach ($subject->getInvoices() as $invoice) {
-            if (Invoice\InvoiceTypes::isCredit($invoice) && null === $invoice->getShipment()) {
-                $total += $invoice->getGrandTotal();
-            }
-        }
-
-        return $total;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function buildInvoiceQuantityMap(Invoice\InvoiceSubjectInterface $subject)
     {
         $quantities = [];
 
-        if ($subject instanceof Common\SaleInterface) {
+        if ($subject instanceof SaleInterface) {
             foreach ($subject->getItems() as $item) {
                 $this->buildSaleItemQuantities($item, $quantities);
             }
@@ -379,17 +396,17 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * Builds the sale item quantities recursively.
      *
-     * @param Common\SaleItemInterface $item
-     * @param array                    $quantities
+     * @param SaleItemInterface $item
+     * @param array             $quantities
      */
-    private function buildSaleItemQuantities(Common\SaleItemInterface $item, array &$quantities)
+    private function buildSaleItemQuantities(SaleItemInterface $item, array &$quantities)
     {
-        if (!$item->isCompound()) {
+        // Skip compound with only public children
+        if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
-                'sold'     => $item->getTotalQuantity(),
+                'total'    => $item->getTotalQuantity(),
                 'invoiced' => $this->calculateInvoicedQuantity($item),
                 'credited' => $this->calculateCreditedQuantity($item),
-                'canceled' => $this->calculateCanceledQuantity($item),
             ];
         }
 

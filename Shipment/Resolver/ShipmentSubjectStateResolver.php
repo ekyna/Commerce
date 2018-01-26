@@ -45,45 +45,52 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             return $this->setState($subject, ShipmentStates::STATE_NONE);
         }
 
-        if (!$subject->hasShipments()) {
-            return $this->setState($subject, ShipmentStates::STATE_PENDING);
-        }
-
         $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
 
         foreach ($quantities as $q) {
             // TODO Use packaging format
-            if ($q['sold'] == $q['canceled']) {
+
+            // If shipped greater than zero
+            if (0 < $q['shipped']) {
+                // If sold equals shipped minus returned, item is fully shipped
+                //if ($q['sold'] == $q['shipped'] - $q['returned']) {
+                if (0 === bccomp($q['sold'], $q['shipped'] - $q['returned'], 3)) {
+                    // If shipped equals returned, item is fully returned
+                    //if ($q['shipped'] == $q['returned']) {
+                    if (0 === bccomp($q['shipped'], $q['returned'], 3)) {
+                        $returnedCount++;
+                        continue;
+                    }
+
+                    $shippedCount++;
+                    continue;
+                }
+
+                // Item is partially shipped
+                $partialCount++;
+                continue;
+            }
+
+            //if ($q['sold'] == 0) {
+            if (0 === bccomp($q['sold'], 0, 3)) {
                 $canceledCount++;
                 continue;
             }
-
-            // If returned equals sold minus canceled, item is fully returned
-            if ($q['sold'] - $q['canceled'] == $q['returned']) {
-                $returnedCount++;
-                continue;
-            }
-
-            // If shipped equals sold minus canceled, item is fully shipped
-            if ($q['sold'] - $q['canceled'] - $q['credited'] == $q['shipped'] - $q['returned']) {
-                $shippedCount++;
-                continue;
-            }
-
-            // If shipped greater than zero, item is partially shipped
-            if (0 < $q['shipped']) {
-                $partialCount++;
-            }
         }
 
-        // If all fully shipped
-        if ($shippedCount == $itemsCount || $canceledCount == $itemsCount) {
-            return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
+        // If all fully canceled
+        if ($canceledCount == $itemsCount) {
+            return $this->setState($subject, ShipmentStates::STATE_CANCELED);
         }
 
         // If all fully returned
         if ($returnedCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_RETURNED);
+        }
+
+        // If all fully shipped
+        if ($shippedCount == $itemsCount) {
+            return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
         }
 
         // If some partially shipped

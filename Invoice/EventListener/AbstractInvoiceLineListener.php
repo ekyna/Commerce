@@ -88,13 +88,11 @@ abstract class AbstractInvoiceLineListener
     {
         $line = $this->getInvoiceLineFromEvent($event);
 
+        $this->stockUnitAssigner->detachInvoiceLine($line);
+
         // Get invoice from change set if null
         if (null === $invoice = $line->getInvoice()) {
             $invoice = $this->persistenceHelper->getChangeSet($line, 'invoice')[0];
-        }
-
-        if (Model\InvoiceTypes::isCredit($invoice)) {
-            $this->stockUnitAssigner->detachInvoiceLine($line);
         }
 
         $this->scheduleInvoiceContentChangeEvent($invoice);

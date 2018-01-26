@@ -50,21 +50,22 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
 
         foreach ($quantities as $q) {
             // TODO Use packaging format
-
-            // If sold equals credited plus canceled, item is fully credited
-            if ($q['sold'] == $q['credited'] + $q['canceled']) {
-                $creditedCount++;
-                continue;
-            }
-
-            // If sold equals invoiced, item is fully invoiced
-            if ($q['sold'] == $q['invoiced']) {
-                $invoicedCount++;
-                continue;
-            }
-
-            // If invoiced greater than zero, item is partially invoiced
+            // If invoiced greater than zero
             if (0 < $q['invoiced']) {
+                // If total equals invoiced, item is fully invoiced
+                //if ($q['total'] == $q['invoiced']) {
+                if (0 === bccomp($q['total'], $q['invoiced'], 3)) {
+                    // If invoiced equals credited, item is fully credited
+                    if (0 === bccomp($q['invoiced'], $q['credited'], 3)) {
+                        $creditedCount++;
+                        continue;
+                    }
+
+                    $invoicedCount++;
+                    continue;
+                }
+
+                // Item is partially invoiced
                 $partialCount++;
             }
         }
@@ -75,12 +76,14 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
         if ($creditedCount == $itemsCount) {
             return $this->setState($subject, InvoiceStates::STATE_CREDITED);
         }
-        // Else if all fully invoiced
-        elseif ($invoicedCount == $itemsCount) {
-            return $this->setState($subject, InvoiceStates::STATE_INVOICED);
+
+        // If all fully invoiced
+        if ($invoicedCount == $itemsCount) {
+            return $this->setState($subject, InvoiceStates::STATE_COMPLETED);
         }
-        // Else if some partially invoiced
-        elseif (0 < $partialCount || 0 < $invoicedCount) {
+
+        // If some partially invoiced
+        if (0 < $partialCount || 0 < $invoicedCount) {
             return $this->setState($subject, InvoiceStates::STATE_PARTIAL);
         }
 

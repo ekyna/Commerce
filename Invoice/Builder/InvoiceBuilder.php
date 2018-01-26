@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
 use Ekyna\Component\Commerce\Document\Model as Document;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
@@ -80,137 +81,181 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      */
     public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $invoice, $recurse = true)
     {
-        /** @var Invoice\InvoiceInterface $invoice */
-        $line = null;
-
-        // Skip compound with only public children
-        if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            // Existing line lookup
-            foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
-                if ($invoiceLine->getSaleItem() === $item) {
-                    $line = $invoiceLine;
-                }
-            }
-            // Not found, create it
-            if (null === $line) {
-                $line = $this->createLine($invoice);
-                $line
-                    ->setType(Document\DocumentLineTypes::TYPE_GOOD)
-                    ->setSaleItem($item)
-                    ->setDesignation($item->getDesignation())
-                    ->setDescription($item->getDescription())
-                    ->setReference($item->getReference());
-
-                $invoice->addLine($line);
-            }
-
-            if (!$item->isCompound()) {
-                $expected = 0;
-                if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-                    // Invoice case
-                    $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($line);
-                } elseif (null !== $invoice->getShipment()) {
-                    // Credit case
-                    $available = $this->invoiceCalculator->calculateCreditableQuantity($line);
-                } else {
-                    // Cancel case
-                    $available = $this->invoiceCalculator->calculateCancelableQuantity($line);
-                }
-
-                if (0 < $available) {
-                    // Set available and expected quantity
-                    $line->setAvailable($available);
-                    $line->setExpected($expected);
-
-                    if (Invoice\InvoiceTypes::isInvoice($invoice) && null === $invoice->getId()) {
-                        // Set default quantity for new non return shipment items
-                        $line->setQuantity(min($expected, $available));
-                    }
-                } else {
-                    // Remove unexpected line
-                    $invoice->removeLine($line);
-                    $line = null;
-                }
-            }
+        if (!$invoice instanceof Invoice\InvoiceInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceInterface::class);
         }
 
-        if ($recurse && $item->hasChildren()) {
-            if (null !== $line && $item->isCompound()) {
-                $available = $expected = null;
-                foreach ($item->getChildren() as $childItem) {
-                    if (null !== $childLine = $this->buildGoodLine($childItem, $invoice)) {
-                        $saleItemQty = $childItem->getQuantity();
-
-                        $a = $childLine->getAvailable() / $saleItemQty;
-                        if (null === $available || $available > $a) {
-                            $available = $a;
-                        }
-
-                        $e = $childLine->getExpected() / $saleItemQty;
-                        if (null === $expected || $expected > $e) {
-                            $expected = $e;
-                        }
-                    }
-                }
-
-                if (0 < $available) {
-                    // Set expected and available quantity
-                    $line->setExpected($expected);
-                    $line->setAvailable($available);
-
-                    if (Invoice\InvoiceTypes::isInvoice($invoice) && null === $invoice->getId()) {
-                        // Set default quantity for new non credit invoice lines
-                        $line->setQuantity(min($expected, $available));
-                    }
-                } else {
-                    // Remove unexpected line
-                    $invoice->removeLine($line);
-                    $item = null;
-                }
-            } else {
+        // If compound with only public children
+        if ($item->isCompound() && !$item->hasPrivateChildren()) {
+            if ($recurse) {
+                // Just build children
                 foreach ($item->getChildren() as $childLine) {
                     $this->buildGoodLine($childLine, $invoice);
                 }
             }
+
+            return null;
+        }
+
+        // Compound with private children
+        if ($item->isCompound()) {
+            $available = $expected = null;
+            foreach ($item->getChildren() as $childItem) {
+                if (null !== $childLine = $this->buildGoodLine($childItem, $invoice)) {
+                    $saleItemQty = $childItem->getQuantity();
+
+                    $a = $childLine->getAvailable() / $saleItemQty;
+                    if (null === $available || $available > $a) {
+                        $available = $a;
+                    }
+
+                    $e = $childLine->getExpected() / $saleItemQty;
+                    if (null === $expected || $expected > $e) {
+                        $expected = $e;
+                    }
+                }
+            }
+
+            if (0 < $available) {
+                return $this->findOrCreateGoodLine($invoice, $item, $available, $expected);
+            }
+        }
+
+        // Leaf line
+        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+            // Invoice case
+            $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $invoice);
+        } else {
+            // Credit case
+            $available = $this->invoiceCalculator->calculateCreditableQuantity($item, $invoice);
+        }
+
+        if (0 < $available) {
+            $expected = null;
+            if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+                $expected = min($available, $this->shipmentCalculator->calculateShippedQuantity($item));
+            }
+
+            return $this->findOrCreateGoodLine($invoice, $item, $available, $expected);
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, Document\DocumentInterface $invoice)
+    {
+        if (!$invoice instanceof Invoice\InvoiceInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceInterface::class);
+        }
+
+        $line = null;
+        $expected = null;
+        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+            // Invoice case
+            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($adjustment, $invoice);
+        } else {
+            // Credit case
+            $available = $this->invoiceCalculator->calculateCreditableQuantity($adjustment, $invoice);
+        }
+
+        if (0 < $available) {
+            /** @var Invoice\InvoiceLineInterface $line */
+            $line = parent::buildDiscountLine($adjustment, $invoice);
+            $line
+                ->setAvailable($available)
+                ->setExpected($expected)
+                ->setQuantity(1);
         }
 
         return $line;
     }
 
     /**
-     * @inheritdoc
-     *
-     * @param Invoice\InvoiceLineInterface $line
+     * @inheritDoc
      */
-    protected function postBuildLine(Document\DocumentLineInterface $line)
+    public function buildShipmentLine(Document\DocumentInterface $invoice)
     {
-        /** @var Invoice\InvoiceInterface $invoice */
-        $invoice = $line->getDocument();
+        if (!$invoice instanceof Invoice\InvoiceInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceInterface::class);
+        }
 
+        $line = null;
+        $expected = null;
+        $sale = $invoice->getSale();
         if (Invoice\InvoiceTypes::isInvoice($invoice)) {
             // Invoice case
-            $available = $this->invoiceCalculator->calculateInvoiceableQuantity($line);
-        } elseif (null !== $invoice->getShipment()) {
-            // Credit case
-            $available = $this->invoiceCalculator->calculateCreditableQuantity($line);
+            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($sale, $invoice);
         } else {
-            // Cancel case
-            $available = $this->invoiceCalculator->calculateCancelableQuantity($line);
+            // Credit case
+            $available = $this->invoiceCalculator->calculateCreditableQuantity($sale, $invoice);
         }
 
         if (0 < $available) {
-            $line->setExpected($available);
-            $line->setAvailable($available);
-
             /** @var Invoice\InvoiceLineInterface $line */
-            if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-                $line->setQuantity($available);
-            } elseif (Invoice\InvoiceTypes::isCredit($invoice)) {
-                $line->setQuantity(0);
-            }
-        } else {
-            $invoice->removeLine($line);
+            $line = parent::buildShipmentLine($invoice);
+            $line
+                ->setAvailable($available)
+                ->setExpected($expected)
+                ->setQuantity(max(1, $available));
         }
+
+        return $line;
+    }
+
+    /**
+     * Finds or create the invoice line.
+     *
+     * @param Invoice\InvoiceInterface $invoice
+     * @param Common\SaleItemInterface $item
+     * @param float                         $available
+     * @param float                     $expected
+     *
+     * @return Invoice\InvoiceLineInterface
+     */
+    public function findOrCreateGoodLine(
+        Invoice\InvoiceInterface $invoice,
+        Common\SaleItemInterface $item,
+        $available,
+        $expected = null
+    ) {
+        $line = null;
+
+        if (0 >= $available) {
+            return $line;
+        }
+
+        // Existing line lookup
+        foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
+            if ($invoiceLine->getSaleItem() === $item) {
+                $line = $invoiceLine;
+            }
+        }
+
+        // Not found, create it
+        if (null === $line) {
+            $line = $this->createLine($invoice);
+            $line
+                ->setInvoice($invoice)
+                ->setType(Document\DocumentLineTypes::TYPE_GOOD)
+                ->setSaleItem($item)
+                ->setDesignation($item->getDesignation())
+                ->setDescription($item->getDescription())
+                ->setReference($item->getReference());
+        }
+
+        // Set available and expected quantity
+        $line->setAvailable($available);
+        $line->setExpected($expected);
+
+        if (Invoice\InvoiceTypes::isInvoice($invoice) && null === $invoice->getId()) {
+            // Set default quantity for new non return shipment items
+            $line->setQuantity(min($expected, $available));
+        }
+
+        return $line;
     }
 
     /**

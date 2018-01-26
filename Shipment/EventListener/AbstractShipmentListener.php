@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Shipment\Builder\InvoiceSynchronizerInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -109,9 +110,6 @@ abstract class AbstractShipmentListener
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
-        // Total weight
-        //$changed |= $this->calculateWeight($shipment);
-
         // Completed state
         $changed |= $this->handleCompletedState($shipment);
 
@@ -119,7 +117,7 @@ abstract class AbstractShipmentListener
             $this->persistenceHelper->persistAndRecompute($shipment);
         }
 
-        $sale = $shipment->getSale();
+        $sale = $this->getShipmentSale($shipment);
         $sale->addShipment($shipment); // TODO wtf ?
 
         $this->invoiceSynchronizer->synchronize($shipment);
@@ -141,11 +139,7 @@ abstract class AbstractShipmentListener
         // Generate number and key
         $changed = $this->generateNumber($shipment);
 
-        // Total weight
-        //$changed |= $this->calculateWeight($shipment);
-
         $stateChanged = $this->persistenceHelper->isChanged($shipment, 'state');
-
         if ($stateChanged) {
             $changed |= $this->handleCompletedState($shipment);
         }
@@ -161,16 +155,22 @@ abstract class AbstractShipmentListener
             if (ShipmentStates::hasChangedToStockable($stateCs)) {
                 // For each shipment item
                 foreach ($shipment->getItems() as $item) {
-                    // Credit sale item stock units shipped quantity through assignments
-                    $this->stockUnitAssigner->assignShipmentItem($item);
+                    // If not scheduled for insert
+                    if (!$this->persistenceHelper->isScheduledForInsert($item)) {
+                        // Credit sale item stock units shipped quantity through assignments
+                        $this->stockUnitAssigner->assignShipmentItem($item);
+                    }
                 }
             }
             // Else if shipment state has changed from stockable to non stockable
             elseif (ShipmentStates::hasChangedFromStockable($stateCs)) {
                 // For each shipment item
                 foreach ($shipment->getItems() as $item) {
-                    // Debit sale item stock units shipped quantity through assignments
-                    $this->stockUnitAssigner->detachShipmentItem($item);
+                    // If not scheduled for remove
+                    if (!$this->persistenceHelper->isScheduledForRemove($item)) {
+                        // Debit sale item stock units shipped quantity through assignments
+                        $this->stockUnitAssigner->detachShipmentItem($item);
+                    }
                 }
             }
         }
@@ -178,7 +178,7 @@ abstract class AbstractShipmentListener
         $this->invoiceSynchronizer->synchronize($shipment);
 
         if ($changed || $stateChanged) {
-            $this->scheduleSaleContentChangeEvent($shipment->getSale());
+            $this->scheduleSaleContentChangeEvent($this->getShipmentSale($shipment));
         }
     }
 
@@ -193,9 +193,8 @@ abstract class AbstractShipmentListener
 
         $this->invoiceSynchronizer->synchronize($shipment);
 
-        if (null === $sale = $shipment->getSale()) {
-            $sale = $this->persistenceHelper->getChangeSet($shipment, $this->getSalePropertyPath())[0];
-        }
+        $sale = $this->getShipmentSale($shipment);
+
         $sale->removeShipment($shipment);
 
         $this->scheduleSaleContentChangeEvent($sale);
@@ -212,7 +211,7 @@ abstract class AbstractShipmentListener
 
         $this->invoiceSynchronizer->synchronize($shipment);
 
-        $this->scheduleSaleContentChangeEvent($shipment->getSale());
+        $this->scheduleSaleContentChangeEvent($this->getShipmentSale($shipment));
     }
 
     /**
@@ -224,24 +223,7 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        $invoice = $shipment->getInvoice();
-
-        if (null !== $invoice) {
-            if ($shipment->isAutoInvoice() && ShipmentStates::isStockableState($shipment->getState())) {
-                $this->persistenceHelper->getManager()->persist($invoice);
-            } else {
-                $invoice->setShipment(null);
-                $invoice->setSale(null);
-
-                return;
-            }
-        }
-
-        $sale = $shipment->getSale();
-
-        // Pre load sale invoice collection
-        /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface $sale */
-        $sale->getInvoices()->toArray();
+        $this->preLoadSale($shipment->getSale());
     }
 
     /**
@@ -253,24 +235,7 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        $invoice = $shipment->getInvoice();
-
-        if (null !== $invoice) {
-            if ($shipment->isAutoInvoice() && ShipmentStates::isStockableState($shipment->getState())) {
-                $this->persistenceHelper->getManager()->persist($invoice);
-            } else {
-                $invoice->setShipment(null);
-                $invoice->setSale(null);
-
-                return;
-            }
-        }
-
-        $sale = $shipment->getSale();
-
-        // Pre load sale invoice collection
-        /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface $sale */
-        $sale->getInvoices()->toArray();
+        $this->preLoadSale($shipment->getSale());
     }
 
     /**
@@ -282,17 +247,18 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        $sale = $shipment->getSale();
+        $this->preLoadSale($shipment->getSale());
+    }
 
-        // Pre load sale shipment collection
+    /**
+     * Pre loads the sale's shipments and invoices.
+     *
+     * @param SaleInterface $sale
+     */
+    private function preLoadSale(SaleInterface $sale)
+    {
         /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface $sale */
         $sale->getShipments()->toArray();
-
-        if (!$shipment->isAutoInvoice()) {
-            return;
-        }
-
-        // Pre load sale invoice collection
         /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface $sale */
         $sale->getInvoices()->toArray();
     }
@@ -314,30 +280,6 @@ abstract class AbstractShipmentListener
 
         return false;
     }
-
-    /**
-     * Calculates the weight.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return bool Whether the shipment has been generated or not.
-     */
-    /*protected function calculateWeight(ShipmentInterface $shipment)
-    {
-        if (0 < $shipment->getWeight()) {
-            return false;
-        }
-
-        $weight = $this->weightCalculator->calculateShipment($shipment);
-
-        if ($weight !== $shipment->getWeight()) {
-            $shipment->setWeight($weight);
-
-            return true;
-        }
-
-        return false;
-    }*/
 
     /**
      * Handle the 'completed' state.
@@ -377,6 +319,29 @@ abstract class AbstractShipmentListener
                 throw new RuntimeException("Changing the shipment type is not yet supported.");
             }
         }
+    }
+
+    /**
+     * Returns the shipment's sale.
+     *
+     * @param ShipmentInterface $shipment
+     *
+     * @return SaleInterface|ShipmentSubjectInterface
+     */
+    protected function getShipmentSale(ShipmentInterface $shipment)
+    {
+        if (null === $sale = $shipment->getSale()) {
+            $cs = $this->persistenceHelper->getChangeSet($shipment, $this->getSalePropertyPath());
+            if (!empty($cs)) {
+                $sale = $cs[0];
+            }
+        }
+
+        if (!$sale instanceof SaleInterface) {
+            throw new RuntimeException("Failed to retrieve shipment's sale.");
+        }
+
+        return $sale;
     }
 
     /**

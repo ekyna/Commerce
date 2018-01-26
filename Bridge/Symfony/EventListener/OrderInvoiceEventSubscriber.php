@@ -23,6 +23,7 @@ class OrderInvoiceEventSubscriber extends OrderInvoiceListener implements EventS
             OrderInvoiceEvents::UPDATE         => ['onUpdate', 0],
             OrderInvoiceEvents::DELETE         => ['onDelete', 0],
             OrderInvoiceEvents::CONTENT_CHANGE => ['onContentChange', 0],
+            OrderInvoiceEvents::PRE_UPDATE     => ['onPreUpdate', 0],
             OrderInvoiceEvents::PRE_DELETE     => ['onPreDelete', 0],
         ];
     }

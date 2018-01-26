@@ -135,7 +135,7 @@ abstract class AbstractInvoiceListener
             $this->persistenceHelper->persistAndRecompute($invoice, false);
         }
 
-        $sale = $invoice->getSale();
+        $sale = $this->getInvoiceSale($invoice);
         if ($sale instanceof InvoiceSubjectInterface) {
             $sale->addInvoice($invoice); // TODO wtf ?
         }
@@ -160,6 +160,9 @@ abstract class AbstractInvoiceListener
         // Updates the invoice data
         $changed |= $this->invoiceBuilder->update($invoice);
 
+        // Updates the totals
+        $changed |= $this->updateTotals($invoice);
+
         if ($this->persistenceHelper->isChanged($invoice, 'paymentMethod')) {
             $this->updateCustomerBalance($invoice);
         }
@@ -167,7 +170,7 @@ abstract class AbstractInvoiceListener
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
 
-            $this->scheduleSaleContentChangeEvent($invoice->getSale());
+            $this->scheduleSaleContentChangeEvent($this->getInvoiceSale($invoice));
         }
     }
 
@@ -182,9 +185,8 @@ abstract class AbstractInvoiceListener
 
         $this->updateCustomerBalance($invoice);
 
-        if (null === $sale = $invoice->getSale()) {
-            $sale = $this->persistenceHelper->getChangeSet($invoice, $this->getSalePropertyPath())[0];
-        }
+        $sale = $this->getInvoiceSale($invoice);
+
         $sale->removeInvoice($invoice);
 
         $this->scheduleSaleContentChangeEvent($sale);
@@ -207,15 +209,30 @@ abstract class AbstractInvoiceListener
             $this->updateCustomerBalance($invoice);
         }
 
-        // TODO review ...
-        if (null === $sale = $invoice->getSale()) {
-            $cs = $this->persistenceHelper->getChangeSet($invoice, $this->getSalePropertyPath());
-            if (!empty($cs)) $sale = $cs[0];
+        $sale = $this->getInvoiceSale($invoice);
+
+        $this->scheduleSaleContentChangeEvent($sale);
+    }
+
+    /**
+     * Pre update event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onPreUpdate(ResourceEventInterface $event)
+    {
+        $invoice = $this->getInvoiceFromEvent($event);
+
+        if (null !== $invoice->getShipment()) {
+            throw new Exception\IllegalOperationException(
+                "Invoice (or credit) associated with a shipment (or return) can't be modified."
+            );
         }
 
-        if (null !== $sale) {
-            $this->scheduleSaleContentChangeEvent($sale);
-        }
+        // Pre load sale's invoices collection
+        /** @var InvoiceSubjectInterface $sale */
+        $sale = $invoice->getSale();
+        $sale->getInvoices()->toArray();
     }
 
     /**
@@ -265,8 +282,10 @@ abstract class AbstractInvoiceListener
             return;
         }
 
+        $sale = $this->getInvoiceSale($invoice);
+
         // Abort if no customer
-        if (null === $customer = $invoice->getSale()->getCustomer()) {
+        if (null === $customer = $sale->getCustomer()) {
             return;
         }
 
@@ -352,6 +371,29 @@ abstract class AbstractInvoiceListener
                 throw new Exception\RuntimeException("Changing the invoice type is not yet supported.");
             }
         }
+    }
+
+    /**
+     * Returns the invoice's sale.
+     *
+     * @param InvoiceInterface $invoice
+     *
+     * @return SaleInterface|InvoiceSubjectInterface
+     */
+    protected function getInvoiceSale(InvoiceInterface $invoice)
+    {
+        if (null === $sale = $invoice->getSale()) {
+            $cs = $this->persistenceHelper->getChangeSet($invoice, $this->getSalePropertyPath());
+            if (!empty($cs)) {
+                $sale = $cs[0];
+            }
+        }
+
+        if (!$sale instanceof SaleInterface) {
+            throw new Exception\RuntimeException("Failed to retrieve invoice's sale.");
+        }
+
+        return $sale;
     }
 
     /**

@@ -275,6 +275,12 @@ class Document implements DocumentInterface
      */
     public function setLines(ArrayCollection $lines)
     {
+        foreach ($this->lines as $line) {
+            if (!$lines->contains($line)) {
+                $this->removeLine($line);
+            }
+        }
+
         $this->lines = new ArrayCollection();
 
         foreach ($lines as $line) {

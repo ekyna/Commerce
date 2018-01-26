@@ -52,6 +52,11 @@
                 <option name="value">0</option>
             </constraint>
         </property>
+        <property name="soldQuantity">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
         <property name="shippedQuantity">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>

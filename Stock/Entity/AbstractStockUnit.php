@@ -464,6 +464,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function isEmpty()
     {
         return null === $this->supplierOrderItem
+            && 0 == $this->stockAssignments->count()
             && 0 == $this->orderedQuantity
             && 0 == $this->soldQuantity
             && 0 == $this->adjustedQuantity;

@@ -123,17 +123,14 @@ class DocumentBuilder implements DocumentBuilderInterface
             if (null === $line) {
                 $line = $this->createLine($document);
                 $line
+                    ->setDocument($document)
                     ->setType(Document\DocumentLineTypes::TYPE_GOOD)
                     ->setSaleItem($item)
                     ->setDesignation($item->getDesignation())
                     ->setDescription($item->getDescription())
                     ->setReference($item->getReference())
                     ->setQuantity($item->getTotalQuantity());
-
-                $document->addLine($line);
             }
-
-            $this->postBuildLine($line);
         }
 
         if ($recurse && $item->hasChildren()) {
@@ -148,7 +145,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildDiscountLine(Common\AdjustmentInterface $adjustment, Document\DocumentInterface $document)
+    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, Document\DocumentInterface $document)
     {
         if ($adjustment->getType() !== Common\AdjustmentTypes::TYPE_DISCOUNT) {
             throw new InvalidArgumentException("Unexpected adjustment type.");
@@ -165,14 +162,11 @@ class DocumentBuilder implements DocumentBuilderInterface
         if (null === $line) {
             $line = $this->createLine($document);
             $line
+                ->setDocument($document)
                 ->setType(Document\DocumentLineTypes::TYPE_DISCOUNT)
                 ->setSaleAdjustment($adjustment)
                 ->setDesignation($adjustment->getDesignation());
-
-            $document->addLine($line);
         }
-
-        $this->postBuildLine($line);
 
         return $line;
     }
@@ -196,13 +190,10 @@ class DocumentBuilder implements DocumentBuilderInterface
         if (null === $line) {
             $line = $this->createLine($document);
             $line
+                ->setDocument($document)
                 ->setType(Document\DocumentLineTypes::TYPE_SHIPMENT)
                 ->setDesignation($method->getTitle());
-
-            $document->addLine($line);
         }
-
-        $this->postBuildLine($line);
 
         return $line;
     }
@@ -315,15 +306,6 @@ class DocumentBuilder implements DocumentBuilderInterface
                 $this->buildDiscountLine($adjustment, $document);
             }
         }
-    }
-
-    /**
-     * Post build good line.
-     *
-     * @param Document\DocumentLineInterface $line
-     */
-    protected function postBuildLine(Document\DocumentLineInterface $line)
-    {
     }
 
     /**

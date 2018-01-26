@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -78,6 +79,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
      * @var array
      */
     protected $receiverAddress;
+
+    /**
+     * @var Payment\PaymentMethodInterface
+     */
+    protected $creditMethod;
 
 
     /**
@@ -198,6 +204,12 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
      */
     public function setItems(ArrayCollection $items)
     {
+        foreach ($this->items as $item) {
+            if (!$items->contains($item)) {
+                $this->items->removeElement($item);
+            }
+        }
+
         $this->items = new ArrayCollection();
 
         foreach ($items as $item) {
@@ -371,6 +383,32 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function setReceiverAddress($data)
     {
         $this->receiverAddress = empty($data) ? null : $data;
+
+        return $this;
+    }
+
+    /**
+     * Returns the credit method.
+     * (non mapped, for credit synchronisation)
+     *
+     * @return Payment\PaymentMethodInterface
+     */
+    public function getCreditMethod()
+    {
+        return $this->creditMethod;
+    }
+
+    /**
+     * Sets the credit method.
+     * (non mapped, for credit synchronisation)
+     *
+     * @param Payment\PaymentMethodInterface $method
+     *
+     * @return AbstractShipment
+     */
+    public function setCreditMethod(Payment\PaymentMethodInterface $method)
+    {
+        $this->creditMethod = $method;
 
         return $this;
     }

@@ -13,6 +13,15 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 interface ShipmentCalculatorInterface
 {
     /**
+     * Returns whether or not the given sale item is shipped (present in any shipment or return).
+     *
+     * @param Common\SaleItemInterface $saleItem
+     *
+     * @return bool
+     */
+    public function isShipped(Common\SaleItemInterface $saleItem);
+
+    /**
      * Calculate the shipment item available quantity.
      *
      * @param Shipment\ShipmentItemInterface $item
@@ -24,20 +33,22 @@ interface ShipmentCalculatorInterface
     /**
      * Calculates the shipment item shippable quantity.
      *
-     * @param Shipment\ShipmentItemInterface $item
+     * @param Common\SaleItemInterface   $saleItem
+     * @param Shipment\ShipmentInterface $ignore
      *
      * @return float
      */
-    public function calculateShippableQuantity(Shipment\ShipmentItemInterface $item);
+    public function calculateShippableQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
 
     /**
      * Calculates the shipment item returnable quantity.
      *
-     * @param Shipment\ShipmentItemInterface $item
+     * @param Common\SaleItemInterface   $saleItem
+     * @param Shipment\ShipmentInterface $ignore
      *
      * @return float
      */
-    public function calculateReturnableQuantity(Shipment\ShipmentItemInterface $item);
+    public function calculateReturnableQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
 
     /**
      * Calculates the shipped quantity for the given sale item.

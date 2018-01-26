@@ -43,12 +43,12 @@ interface DocumentBuilderInterface
     /**
      * Builds the discount line from the given adjustment.
      *
-     * @param Common\AdjustmentInterface $adjustment
+     * @param Common\SaleAdjustmentInterface $adjustment
      * @param DocumentInterface          $document
      *
      * @return DocumentLineInterface|null
      */
-    public function buildDiscountLine(Common\AdjustmentInterface $adjustment, DocumentInterface $document);
+    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, DocumentInterface $document);
 
     /**
      * Builds the document's shipment line.
