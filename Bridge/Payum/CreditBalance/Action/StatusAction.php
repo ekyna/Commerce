@@ -43,6 +43,12 @@ class StatusAction implements ActionInterface
             return;
         }
 
+        if (Constants::STATUS_REFUNDED == $model[Constants::FIELD_STATUS]) {
+            $request->markRefunded();
+
+            return;
+        }
+
         if (Constants::STATUS_FAILED == $model[Constants::FIELD_STATUS]) {
             $request->markFailed();
 

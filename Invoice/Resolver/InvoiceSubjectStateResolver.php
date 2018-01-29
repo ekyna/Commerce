@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 
 /**
  * Class InvoiceSubjectStateResolver
@@ -41,8 +42,7 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
         }
 
         $quantities = $this->calculator->buildInvoiceQuantityMap($subject);
-
-        if (!$subject->hasInvoices() || 0 === $itemsCount = count($quantities)) {
+        if (0 === $itemsCount = count($quantities)) {
             return $this->setState($subject, InvoiceStates::STATE_NEW);
         }
 
@@ -55,13 +55,13 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
                 // If total equals invoiced, item is fully invoiced
                 //if ($q['total'] == $q['invoiced']) {
                 if (0 === bccomp($q['total'], $q['invoiced'], 3)) {
+                    $invoicedCount++;
+
                     // If invoiced equals credited, item is fully credited
                     if (0 === bccomp($q['invoiced'], $q['credited'], 3)) {
                         $creditedCount++;
-                        continue;
                     }
 
-                    $invoicedCount++;
                     continue;
                 }
 
@@ -70,7 +70,7 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
             }
         }
 
-        // TODO Check sale's shipment and discounts
+        // TODO Assert sale's shipment and discounts are invoiced
 
         // If all fully credited
         if ($creditedCount == $itemsCount) {
@@ -85,6 +85,11 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
         // If some partially invoiced
         if (0 < $partialCount || 0 < $invoicedCount) {
             return $this->setState($subject, InvoiceStates::STATE_PARTIAL);
+        }
+
+        /** @var \Ekyna\Component\Commerce\Common\Model\SaleInterface $subject */
+        if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
+            return $this->setState($subject, InvoiceStates::STATE_CANCELED);
         }
 
         return $this->setState($subject, InvoiceStates::STATE_PENDING);

@@ -219,6 +219,20 @@ interface ShipmentInterface extends
     public function setGatewayData(array $data = null);
 
     /**
+     * Returns the "shipped at" date time.
+     *
+     * @return \DateTime
+     */
+    public function getShippedAt();
+
+    /**
+     * Sets the "shipped at" date time.
+     *
+     * @param \DateTime $shippedAt
+     */
+    public function setShippedAt(\DateTime $shippedAt = null);
+
+    /**
      * Returns the completedAt.
      *
      * @return \DateTime

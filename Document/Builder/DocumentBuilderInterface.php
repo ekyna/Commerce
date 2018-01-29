@@ -34,11 +34,10 @@ interface DocumentBuilderInterface
      *
      * @param Common\SaleItemInterface $item
      * @param DocumentInterface        $document
-     * @param bool                     $recurse
      *
      * @return DocumentLineInterface|null
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, DocumentInterface $document, $recurse = true);
+    public function buildGoodLine(Common\SaleItemInterface $item, DocumentInterface $document);
 
     /**
      * Builds the discount line from the given adjustment.

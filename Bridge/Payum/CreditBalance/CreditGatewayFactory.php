@@ -39,6 +39,7 @@ class CreditGatewayFactory extends GatewayFactory
             'payum.action.cancel'          => new Action\CancelAction(),
             'payum.action.capture'         => new Action\CaptureAction(),
             'payum.action.convert_payment' => new Action\ConvertAction(),
+            'payum.action.refund'          => new Action\RefundAction(),
             'payum.action.status'          => new Action\StatusAction(),
             'payum.action.sync'            => new Action\SyncAction(),
         ]);

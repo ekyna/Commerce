@@ -12,11 +12,12 @@ abstract class Constants
     const FACTORY_NAME = 'credit_balance';
 
     const FIELD_BALANCE = 'balance';
-    const FIELD_AMOUNT = 'amount';
-    const FIELD_STATUS = 'status';
+    const FIELD_AMOUNT  = 'amount';
+    const FIELD_STATUS  = 'status';
 
-    const STATUS_CAPTURED = 'captured';
+    const STATUS_CAPTURED   = 'captured';
     const STATUS_AUTHORIZED = 'authorized';
-    const STATUS_FAILED = 'failed';
-    const STATUS_CANCELED = 'canceled';
+    const STATUS_REFUNDED   = 'refunded';
+    const STATUS_FAILED     = 'failed';
+    const STATUS_CANCELED   = 'canceled';
 }

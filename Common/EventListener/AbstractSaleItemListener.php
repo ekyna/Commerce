@@ -89,7 +89,8 @@ abstract class AbstractSaleItemListener
             'netPrice', 'quantity', 'compound', 'private'
         ];
         if ($this->persistenceHelper->isChanged($item, $discountFields)) {
-            $change |= $this->updateDiscount($item);
+            $this->updateDiscount($item);
+            $change = true;
         }
 
         if ($change) {

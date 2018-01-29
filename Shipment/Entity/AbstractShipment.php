@@ -68,6 +68,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     /**
      * @var \DateTime
      */
+    protected $shippedAt;
+
+    /**
+     * @var \DateTime
+     */
     protected $completedAt;
 
     /**
@@ -331,6 +336,26 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
         $this->gatewayData = $data;
 
         return $this;
+    }
+
+    /**
+     * Returns the "shipped at" date time.
+     *
+     * @return \DateTime
+     */
+    public function getShippedAt()
+    {
+        return $this->shippedAt;
+    }
+
+    /**
+     * Sets the "shipped at" date time.
+     *
+     * @param \DateTime $shippedAt
+     */
+    public function setShippedAt(\DateTime $shippedAt = null)
+    {
+        $this->shippedAt = $shippedAt;
     }
 
     /**

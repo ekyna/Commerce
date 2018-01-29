@@ -79,26 +79,14 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $invoice, $recurse = true)
+    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $invoice)
     {
         if (!$invoice instanceof Invoice\InvoiceInterface) {
             throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceInterface::class);
         }
 
-        // If compound with only public children
-        if ($item->isCompound() && !$item->hasPrivateChildren()) {
-            if ($recurse) {
-                // Just build children
-                foreach ($item->getChildren() as $childLine) {
-                    $this->buildGoodLine($childLine, $invoice);
-                }
-            }
-
-            return null;
-        }
-
-        // Compound with private children
-        if ($item->isCompound()) {
+        // Compound with only private children
+        if ($item->isCompound() && !$item->hasPublicChildren()) {
             $available = $expected = null;
             foreach ($item->getChildren() as $childItem) {
                 if (null !== $childLine = $this->buildGoodLine($childItem, $invoice)) {
@@ -119,27 +107,40 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             if (0 < $available) {
                 return $this->findOrCreateGoodLine($invoice, $item, $available, $expected);
             }
+
+            return null;
         }
 
-        // Leaf line
-        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-            // Invoice case
-            $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $invoice);
-        } else {
-            // Credit case
-            $available = $this->invoiceCalculator->calculateCreditableQuantity($item, $invoice);
-        }
+        $line = null;
 
-        if (0 < $available) {
-            $expected = null;
+        // Skip compound with only public children
+        if (!$item->isCompound()) {
             if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-                $expected = min($available, $this->shipmentCalculator->calculateShippedQuantity($item));
+                // Invoice case
+                $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $invoice);
+            } else {
+                // Credit case
+                $available = $this->invoiceCalculator->calculateCreditableQuantity($item, $invoice);
             }
 
-            return $this->findOrCreateGoodLine($invoice, $item, $available, $expected);
+            if (0 < $available) {
+                $expected = null;
+                if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+                    $expected = min($available, $this->shipmentCalculator->calculateShippedQuantity($item));
+                }
+
+                $line = $this->findOrCreateGoodLine($invoice, $item, $available, $expected);
+            }
         }
 
-        return null;
+        // Build children
+        if ($item->hasChildren()) {
+            foreach ($item->getChildren() as $childLine) {
+                $this->buildGoodLine($childLine, $invoice);
+            }
+        }
+
+        return $line;
     }
 
     /**

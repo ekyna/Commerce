@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
@@ -42,7 +43,7 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
 
         $quantities = $this->calculator->buildShipmentQuantityMap($subject);
         if (0 === $itemsCount = count($quantities)) {
-            return $this->setState($subject, ShipmentStates::STATE_NONE);
+            return $this->setState($subject, ShipmentStates::STATE_NEW);
         }
 
         $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
@@ -55,14 +56,14 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
                 // If sold equals shipped minus returned, item is fully shipped
                 //if ($q['sold'] == $q['shipped'] - $q['returned']) {
                 if (0 === bccomp($q['sold'], $q['shipped'] - $q['returned'], 3)) {
+                    $shippedCount++;
+
                     // If shipped equals returned, item is fully returned
                     //if ($q['shipped'] == $q['returned']) {
                     if (0 === bccomp($q['shipped'], $q['returned'], 3)) {
                         $returnedCount++;
-                        continue;
                     }
 
-                    $shippedCount++;
                     continue;
                 }
 
@@ -70,17 +71,6 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
                 $partialCount++;
                 continue;
             }
-
-            //if ($q['sold'] == 0) {
-            if (0 === bccomp($q['sold'], 0, 3)) {
-                $canceledCount++;
-                continue;
-            }
-        }
-
-        // If all fully canceled
-        if ($canceledCount == $itemsCount) {
-            return $this->setState($subject, ShipmentStates::STATE_CANCELED);
         }
 
         // If all fully returned
@@ -96,6 +86,11 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
         // If some partially shipped
         if (0 < $partialCount || 0 < $shippedCount) {
             return $this->setState($subject, ShipmentStates::STATE_PARTIAL);
+        }
+
+        /** @var \Ekyna\Component\Commerce\Common\Model\SaleInterface $subject */
+        if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
+            return $this->setState($subject, ShipmentStates::STATE_CANCELED);
         }
 
         return $this->setState($subject, ShipmentStates::STATE_PENDING);

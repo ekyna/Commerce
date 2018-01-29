@@ -149,6 +149,20 @@ final class PaymentStates
     }
 
     /**
+     * Returns the canceled states.
+     *
+     * @return array
+     */
+    static public function getCanceledStates()
+    {
+        return [
+            static::STATE_CANCELED,
+            static::STATE_FAILED,
+            static::STATE_REFUNDED,
+        ];
+    }
+
+    /**
      * Returns whether or not the state has changed
      * from a non paid state to a paid state.
      *

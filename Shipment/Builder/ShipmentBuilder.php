@@ -69,18 +69,8 @@ class ShipmentBuilder implements ShipmentBuilderInterface
      */
     protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment)
     {
-        // If compound with only public children
-        if ($saleItem->isCompound() && !$saleItem->hasPrivateChildren()) {
-            // Just build children
-            foreach ($saleItem->getChildren() as $childSaleItem) {
-                $this->buildItem($childSaleItem, $shipment);
-            }
-
-            return null;
-        }
-
-        // Compound with private children
-        if ($saleItem->isCompound()) {
+        // If compound with only private children
+        if ($saleItem->isCompound() && !$saleItem->hasPublicChildren()) {
             // Resolve available and expected quantities by building children
             $available = $expected = null;
             foreach ($saleItem->getChildren() as $childSaleItem) {
@@ -99,24 +89,35 @@ class ShipmentBuilder implements ShipmentBuilderInterface
                 }
             }
 
+            // If any children is expected
             if (0 < $expected) {
                 return $this->findOrCreateItem($shipment, $saleItem, $expected, $available);
             }
 
             return null;
-
         }
 
-        // Leaf item
-        $expected = $shipment->isReturn()
-            ? $this->calculator->calculateReturnableQuantity($saleItem, $shipment)
-            : $this->calculator->calculateShippableQuantity($saleItem, $shipment);
+        $item = null;
 
-        if (0 < $expected) {
-            return $this->findOrCreateItem($shipment, $saleItem, $expected);
+        // Skip compound with only public children
+        if (!$saleItem->isCompound()) {
+            $expected = $shipment->isReturn()
+                ? $this->calculator->calculateReturnableQuantity($saleItem, $shipment)
+                : $this->calculator->calculateShippableQuantity($saleItem, $shipment);
+
+            if (0 < $expected) {
+                $item = $this->findOrCreateItem($shipment, $saleItem, $expected);
+            }
         }
 
-        return null;
+        // Build children
+        if ($saleItem->hasChildren()) {
+            foreach ($saleItem->getChildren() as $childSaleItem) {
+                $this->buildItem($childSaleItem, $shipment);
+            }
+        }
+
+        return $item;
     }
 
     /**

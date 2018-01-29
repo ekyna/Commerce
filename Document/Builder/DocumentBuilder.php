@@ -103,7 +103,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $document, $recurse = true)
+    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $document)
     {
         $line = null;
 
@@ -133,7 +133,7 @@ class DocumentBuilder implements DocumentBuilderInterface
             }
         }
 
-        if ($recurse && $item->hasChildren()) {
+        if ($item->hasChildren()) {
             foreach ($item->getChildren() as $child) {
                 $this->buildGoodLine($child, $document);
             }

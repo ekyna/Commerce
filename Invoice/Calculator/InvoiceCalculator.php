@@ -125,8 +125,10 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 return 0;
             }
 
+            $invoiced = $this->calculateInvoicedQuantity($subject);
+
             // Shipment must be invoiced once
-            return min(0, 1 - $this->calculateInvoicedQuantity($subject));
+            return min(1, max(0, 1 - $invoiced));
         }
 
         throw new InvalidArgumentException(sprintf(

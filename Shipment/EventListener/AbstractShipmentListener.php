@@ -293,14 +293,30 @@ abstract class AbstractShipmentListener
         $changed = false;
 
         $state = $shipment->getState();
+        $shippedAt = $shipment->getShippedAt();
         $completedAt = $shipment->getCompletedAt();
 
-        if ($state === ShipmentStates::STATE_COMPLETED && null === $completedAt) {
-            $shipment->setCompletedAt(new \DateTime());
-            $changed = true;
-        } elseif ($state != ShipmentStates::STATE_COMPLETED && null !== $completedAt) {
-            $shipment->setCompletedAt(null);
-            $changed = true;
+        if (in_array($state, [ShipmentStates::STATE_SHIPPED, ShipmentStates::STATE_COMPLETED], true)) {
+            if (null === $shippedAt) {
+                $shipment->setShippedAt(new \DateTime());
+                $changed = true;
+            }
+            if ($state === ShipmentStates::STATE_COMPLETED && null === $completedAt) {
+                $shipment->setCompletedAt(new \DateTime());
+                $changed = true;
+            } elseif (null !== $completedAt) {
+                $shipment->setCompletedAt(null);
+                $changed = true;
+            }
+        } else {
+            if (null !== $shippedAt) {
+                $shipment->setShippedAt(null);
+                $changed = true;
+            }
+            if (null !== $completedAt) {
+                $shipment->setCompletedAt(null);
+                $changed = true;
+            }
         }
 
         return $changed;
