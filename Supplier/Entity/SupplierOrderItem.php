@@ -67,6 +67,14 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
+    public function __toString()
+    {
+        return $this->designation;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getId()
     {
         return $this->id;

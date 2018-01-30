@@ -41,14 +41,21 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
 
         $groups = isset($context['groups']) ? (array)$context['groups'] : [];
 
-        if (in_array('StockView', $groups)) {
+        if (in_array('StockView', $groups) || in_array('StockAssignment', $groups)) {
             if (null !== $eda = $unit->getEstimatedDateOfArrival()) {
                 $eda = $this->formatter->date($eda);
             }
 
             $adjustments = [];
-            foreach ($unit->getStockAdjustments() as $adjustment) {
-                $adjustments[] = $this->normalizeObject($adjustment, $format, $context);
+            $assignments = [];
+
+            if (in_array('StockView', $groups)) {
+                foreach ($unit->getStockAdjustments() as $adjustment) {
+                    $adjustments[] = $this->normalizeObject($adjustment, $format, $context);
+                }
+                foreach ($unit->getStockAssignments() as $assignment) {
+                    $assignments[] = $this->normalizeObject($assignment, $format, $context);
+                }
             }
 
             $data = array_replace($data, [
@@ -61,6 +68,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
                 'eda'         => $eda,
                 'net_price'   => $this->formatter->currency($unit->getNetPrice()),
                 'adjustments' => $adjustments,
+                'assignments' => $assignments,
             ]);
         }
 

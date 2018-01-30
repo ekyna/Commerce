@@ -112,13 +112,14 @@ class Formatter
     /**
      * Formats the given currency number for display.
      *
-     * @param float $number
+     * @param float  $number
+     * @param string $currency
      *
      * @return string
      */
-    public function currency(float $number): string
+    public function currency(float $number, string $currency = null): string
     {
-        return $this->currencyFormatter->formatCurrency($number, $this->currency);
+        return $this->currencyFormatter->formatCurrency($number, $currency ? $currency : $this->currency);
     }
 
     /**
@@ -142,7 +143,7 @@ class Formatter
      */
     public function rates(Adjustment ...$adjustments): string
     {
-        return implode(', ', array_map(function(Adjustment $adjustment) {
+        return implode(', ', array_map(function (Adjustment $adjustment) {
             return $this->percent($adjustment->getRate());
         }, $adjustments));
     }
