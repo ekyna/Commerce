@@ -9,6 +9,7 @@ use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
  * Class PrioritizeHelper
  * @package Ekyna\Component\Commerce\Stock\Prioritizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ * @TODO rename to PrioritizeUnitGuesser ? or PrioritizeUnitResolver ?
  */
 class PrioritizeHelper
 {
@@ -34,14 +35,16 @@ class PrioritizeHelper
      * @param StockAssignmentInterface $assignment
      * @param float                    $quantity
      *
-     * @return UnitCandidate
+     * @return UnitCandidate|null
      */
     public function getUnitCandidate(StockAssignmentInterface $assignment, $quantity)
     {
         $subject = $assignment->getStockUnit()->getSubject();
 
         // Find the subject's ready stock units
-        $units = $this->unitResolver->findReady($subject);
+        if (empty($units = $this->unitResolver->findReady($subject))) {
+            return null;
+        };
 
         $sale = $assignment->getSaleItem()->getSale();
 
@@ -60,6 +63,10 @@ class PrioritizeHelper
             $candidate->getCombination($diff);
 
             $candidates[] = $candidate;
+        }
+
+        if (empty($candidates)) {
+            return null;
         }
 
         // Sort candidates

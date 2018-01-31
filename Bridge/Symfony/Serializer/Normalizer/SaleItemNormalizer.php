@@ -5,7 +5,9 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
 /**
@@ -66,17 +68,31 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
                 $children[] = $this->normalize($child, $format, $context);
             }
 
+            $sale = $item->getSale();
+
+            $shipmentData = ['shipped' => 0, 'returned' => 0];
+            if ($sale instanceof ShipmentSubjectInterface) {
+                $shipmentData = [
+                    'shipped'  => $this->shipmentCalculator->calculateShippedQuantity($item),
+                    'returned' => $this->shipmentCalculator->calculateReturnedQuantity($item),
+                ];
+            }
+
+            $invoiceData = ['invoiced' => 0, 'credited' => 0];
+            if ($sale instanceof InvoiceSubjectInterface) {
+                $invoiceData = [
+                    'invoiced' => $this->invoiceCalculator->calculateInvoicedQuantity($item),
+                    'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
+                ];
+            }
+
             $data = array_replace($data, [
                 'designation' => $item->getDesignation(),
                 'reference'   => $item->getReference(),
                 'quantity'    => $item->getTotalQuantity(),
-                'shipped'     => $this->shipmentCalculator->calculateShippedQuantity($item),
-                'returned'    => $this->shipmentCalculator->calculateReturnedQuantity($item),
-                'invoiced'    => $this->invoiceCalculator->calculateInvoicedQuantity($item),
-                'credited'    => $this->invoiceCalculator->calculateCreditedQuantity($item),
                 'private'     => $item->isPrivate(),
                 'children'    => $children,
-            ]);
+            ], $shipmentData, $invoiceData);
         }
 
         return $data;
