@@ -13,6 +13,8 @@ class StockAdjustmentReasons
 {
     const REASON_FAULTY   = 'faulty';
     const REASON_IMPROPER = 'improper';
+    const REASON_DEBIT    = 'debit';
+    const REASON_CREDIT   = 'credit';
     const REASON_FOUND    = 'found';
 
 
@@ -27,19 +29,8 @@ class StockAdjustmentReasons
             static::REASON_FAULTY,
             static::REASON_IMPROPER,
             static::REASON_FOUND,
-        ];
-    }
-
-    /**
-     * Returns all the debit reasons.
-     *
-     * @return array
-     */
-    static public function getDebitReasons()
-    {
-        return [
-            static::REASON_FAULTY,
-            static::REASON_IMPROPER,
+            static::REASON_CREDIT,
+            static::REASON_DEBIT,
         ];
     }
 
@@ -62,6 +53,20 @@ class StockAdjustmentReasons
         }
 
         return false;
+    }
+
+    /**
+     * Returns all the debit reasons.
+     *
+     * @return array
+     */
+    static public function getDebitReasons()
+    {
+        return [
+            static::REASON_FAULTY,
+            static::REASON_IMPROPER,
+            static::REASON_DEBIT,
+        ];
     }
 
     /**

@@ -92,6 +92,7 @@
                 </option>
             </constraint>
         </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\StockAdjustment"/>
     </class>
 
 </constraint-mapping>

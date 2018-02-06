@@ -115,14 +115,6 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $quantity = $stockUnit->getAdjustedQuantity() + $quantity;
         }
 
-//        // Prevent received quantity to be set as greater than the ordered quantity
-//        if (
-//            (0 < $stockUnit->getOrderedQuantity()) &&
-//            ($quantity + $stockUnit->getOrderedQuantity() < $stockUnit->getSoldQuantity())
-//        ) {
-//            throw new StockLogicException("The sum of adjusted and ordered quantity can't be lower than the sold quantity.");
-//        }
-
         $stockUnit->setAdjustedQuantity($quantity);
 
         if ($this->handleOverflow($stockUnit)) {
@@ -251,7 +243,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             }
 
             if (0 != $overflow) {
-                throw new StockLogicException("Failed to apply supplier order item.");
+                throw new StockLogicException("Failed to fix stock unit sold quantity overflow.");
             }
 
             return true;

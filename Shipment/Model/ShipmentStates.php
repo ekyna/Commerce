@@ -173,7 +173,7 @@ final class ShipmentStates
     {
         return [
             static::STATE_READY,
-            static::STATE_PARTIAL,
+            //static::STATE_PARTIAL, // This is a sale state
             static::STATE_SHIPPED,
             static::STATE_RETURNED,
         ];

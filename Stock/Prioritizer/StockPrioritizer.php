@@ -21,22 +21,22 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * @var StockUnitResolverInterface
      */
-    private $unitResolver;
+    protected $unitResolver;
 
     /**
      * @var SaleFactoryInterface
      */
-    private $saleFactory;
+    protected $saleFactory;
 
     /**
      * @var EntityManagerInterface
      */
-    private $manager;
+    protected $manager;
 
     /**
      * @var StockLoggerInterface
      */
-    private $logger;
+    protected $logger;
 
 
     /**
@@ -145,7 +145,7 @@ class StockPrioritizer implements StockPrioritizerInterface
      *
      * @return bool Whether the assignment has been prioritized.
      */
-    private function prioritizeAssignment(Stock\StockAssignmentInterface $assignment)
+    protected function prioritizeAssignment(Stock\StockAssignmentInterface $assignment)
     {
         if ($assignment->isFullyShipped() || $assignment->isFullyShippable()) {
             return false;
@@ -171,7 +171,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             $targetUnit = $candidate->unit;
 
             // If not enough reservable quantity
-            if (0 < $diff = $quantity - $targetUnit->getReservableQuantity()) {
+            if (0 < $quantity - $targetUnit->getReservableQuantity()) {
                 // Use combination to release quantity
                 $combination = $candidate->combination;
                 foreach ($combination->map as $id => $qty) {
@@ -186,13 +186,12 @@ class StockPrioritizer implements StockPrioritizerInterface
 
             // Move assignment to the target unit.
             $delta = min($quantity, $targetUnit->getReservableQuantity());
-            $this->moveAssignment($assignment, $targetUnit, $delta);
+            $quantity -= $this->moveAssignment($assignment, $targetUnit, $delta);
 
             // TODO Validate units ?
 
             $changed = true;
 
-            $quantity -= $delta;
             if (0 >= $quantity) {
                 break;
             }
@@ -210,14 +209,15 @@ class StockPrioritizer implements StockPrioritizerInterface
      *
      * @return float The quantity moved
      */
-    private function moveAssignment(
+    protected function moveAssignment(
         Stock\StockAssignmentInterface $assignment,
         Stock\StockUnitInterface $targetUnit,
         $quantity
     ) {
         // Don't move shipped quantity
-        if ($quantity > $assignment->getSoldQuantity() - $assignment->getShippedQuantity()) {
-            throw new StockLogicException("Can't move the given quantity.");
+        $quantity = min($quantity, $assignment->getSoldQuantity() - $assignment->getShippedQuantity());
+        if (0 >= $quantity) { // TODO Packaging format
+            return 0;
         }
 
         $sourceUnit = $assignment->getStockUnit();
@@ -243,32 +243,34 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         if ($quantity == $assignment->getSoldQuantity()) {
-            // Move assignment
             if (null !== $merge) {
+                // Credit quantity to mergeable assignment
                 $this->logger->assignmentSold($merge, $quantity);
                 $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
-
                 $this->manager->persist($merge);
 
+                // Debit quantity from source assignment
                 $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
                 $this->manager->remove($assignment);
             } else {
+                // Move source assignment to target unit
                 $this->logger->assignmentUnit($assignment, $targetUnit);
                 $assignment->setStockUnit($targetUnit);
                 $this->manager->persist($assignment);
             }
         } else {
-            // Split assignment
+            // Debit quantity from source assignment
             $this->logger->assignmentSold($assignment, -$quantity);
             $assignment->setSoldQuantity($assignment->getSoldQuantity() - $quantity);
             $this->manager->persist($assignment);
 
             if (null !== $merge) {
+                // Credit quantity to mergeable assignment
                 $this->logger->assignmentSold($merge, $quantity);
                 $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
                 $this->manager->persist($merge);
             } else {
-                // Create new assignment
+                // Credit quantity to new assignment
                 $create = $this->saleFactory->createStockAssignmentForItem($saleItem);
                 $this->logger->assignmentSold($create, $quantity, false);
                 $create
