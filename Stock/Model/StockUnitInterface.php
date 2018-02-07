@@ -292,11 +292,18 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function getStockAdjustments();
 
     /**
-     * Returns whether the stock unit is empty (regarding to the ordered and sold quantities).
+     * Returns whether this stock unit is empty (regarding to the ordered and sold quantities).
      *
      * @return bool
      */
     public function isEmpty();
+
+    /**
+     * Returns whether this stock unit is closed.
+     *
+     * @return bool
+     */
+    public function isClosed();
 
     /**
      * Returns the reservable stock quantity.

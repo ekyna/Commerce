@@ -19,10 +19,16 @@ interface StockAssignmentDispatcherInterface
      * @param StockUnitInterface $sourceUnit
      * @param StockUnitInterface $targetUnit
      * @param float              $quantity
+     * @param int                $direction The source assignments sort direction (default SORT_DESC)
      *
      * @return float The quantity indeed moved
      *
      * @throws StockLogicException
      */
-    public function moveAssignments(StockUnitInterface $sourceUnit, StockUnitInterface $targetUnit, $quantity);
+    public function moveAssignments(
+        StockUnitInterface $sourceUnit,
+        StockUnitInterface $targetUnit,
+        $quantity,
+        $direction = SORT_DESC
+    );
 }

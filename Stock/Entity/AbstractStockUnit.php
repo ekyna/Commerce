@@ -471,6 +471,14 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isClosed()
+    {
+        return $this->state === Model\StockUnitStates::STATE_CLOSED;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getReservableQuantity()

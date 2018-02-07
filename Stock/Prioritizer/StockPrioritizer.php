@@ -214,6 +214,11 @@ class StockPrioritizer implements StockPrioritizerInterface
         Stock\StockUnitInterface $targetUnit,
         $quantity
     ) {
+        /**
+         * TODO Refactor with:
+         * @see \Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcher::moveAssignments()
+         */
+
         // Don't move shipped quantity
         $quantity = min($quantity, $assignment->getSoldQuantity() - $assignment->getShippedQuantity());
         if (0 >= $quantity) { // TODO Packaging format

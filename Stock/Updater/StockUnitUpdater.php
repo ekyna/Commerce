@@ -209,7 +209,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $subject = $stockUnit->getSubject();
 
-        // Negative case : too much sold quantity
+        // Positive case : too much sold quantity
         if (0 < $overflow) {
             // Try to move sold overflow to other pending/ready stock units
             // TODO prefer ready units with enough quantity
@@ -223,7 +223,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
                 $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
 
                 if (0 == $overflow) {
-                    break; // We're done dispatching sold quantity
+                    return true; // We're done dispatching sold quantity
                 }
             }
 
@@ -249,9 +249,9 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             return true;
         }
 
-        // Positive case : not enough sold quantity
+        // Negative case : not enough sold quantity
         if (null !== $sourceUnit = $this->unitResolver->findLinkable($subject)) {
-            if (0 != $this->assignmentDispatcher->moveAssignments($sourceUnit, $stockUnit, -$overflow)) {
+            if (0 != $this->assignmentDispatcher->moveAssignments($sourceUnit, $stockUnit, -$overflow, SORT_ASC)) {
                 return true;
             }
         }

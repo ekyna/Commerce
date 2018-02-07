@@ -61,8 +61,12 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
     /**
      * @inheritdoc
      */
-    public function moveAssignments(StockUnitInterface $sourceUnit, StockUnitInterface $targetUnit, $quantity)
-    {
+    public function moveAssignments(
+        StockUnitInterface $sourceUnit,
+        StockUnitInterface $targetUnit,
+        $quantity,
+        $direction = SORT_DESC
+    ) {
         if (0 >= $quantity) {
             throw new StockLogicException("Quantity must be greater than zero.");
         }
@@ -76,10 +80,20 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
 
         $moved = 0;
 
-        $sourceAssignments = $this->sortAssignments($sourceUnit->getStockAssignments()->toArray());
-        $targetAssignments = $targetUnit->getStockAssignments();
+        /**
+         * TODO Use combination to move the less assignments:
+         * @see \Ekyna\Component\Commerce\Stock\Prioritizer\UnitCandidate::getCombination()
+         */
+        $sourceAssignments = $this->sortAssignments($sourceUnit->getStockAssignments()->toArray(), $direction);
+        /** @var StockAssignmentInterface[] $targetAssignments */
+        $targetAssignments = $targetUnit->getStockAssignments()->toArray();
 
         foreach ($sourceAssignments as $assignment) {
+            /**
+             * TODO Refactor with:
+             * @see \Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizer::moveAssignment()
+             */
+
             // Don't move shipped quantity
             $delta = min($quantity, $assignment->getSoldQuantity() - $assignment->getShippedQuantity());
             if (0 >= $delta) {
@@ -146,59 +160,6 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
                 }
             }
 
-            /*// If no target assignment to merge into, move assignment
-            if (null === $merge && $delta == $assignment->getSoldQuantity()) {
-                // Add quantity to target unit
-                $this->logger->unitSold($targetUnit, $delta);
-                $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $delta);
-
-                // Remove quantity from source unit
-                $this->logger->unitSold($sourceUnit, -$delta);
-                $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $delta);
-
-                // Move assignment to target unit
-                $this->logger->assignmentUnit($assignment, $targetUnit);
-                $assignment->setStockUnit($targetUnit);
-
-                $this->persistAssignment($assignment);
-
-                $moved += $delta;
-                $quantity -= $delta;
-                if (0 == $quantity) {
-                    break;
-                }
-
-                continue;
-            }
-
-            // If not found, create a new assignment
-            if (null === $merge) {
-                $merge = $this->saleFactory->createStockAssignmentForItem($saleItem);
-                $merge
-                    ->setSaleItem($saleItem)
-                    ->setStockUnit($targetUnit);
-            }
-
-            // Add quantity to target unit
-            $this->logger->unitSold($targetUnit, $delta);
-            $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $delta);
-
-            // Remove quantity from source unit
-            $this->logger->unitSold($sourceUnit, -$delta);
-            $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $delta);
-
-            // Add quantity to target assignment
-            $this->logger->assignmentSold($merge, $delta);
-            $merge->setSoldQuantity($merge->getSoldQuantity() + $delta);
-
-            // Remove quantity from source assignment
-            $this->logger->assignmentSold($assignment, -$delta);
-            $assignment->setSoldQuantity($assignment->getSoldQuantity() - $delta);
-
-            // Persist the assignments
-            $this->persistAssignment($merge);
-            $this->persistAssignment($assignment);*/
-
             $moved += $delta;
             $quantity -= $delta;
             if (0 == $quantity) {
@@ -235,12 +196,13 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
      * Sort assignments from the most recent to the most ancient.
      *
      * @param StockAssignmentInterface[] $assignments
+     * @param int                        $direction
      *
      * @return StockAssignmentInterface[]
      */
-    private function sortAssignments(array $assignments)
+    private function sortAssignments(array $assignments, $direction = SORT_DESC)
     {
-        usort($assignments, function (StockAssignmentInterface $a, StockAssignmentInterface $b) {
+        usort($assignments, function (StockAssignmentInterface $a, StockAssignmentInterface $b) use ($direction) {
             $aDate = $a->getSaleItem()->getSale()->getCreatedAt();
             $bDate = $b->getSaleItem()->getSale()->getCreatedAt();
 
@@ -248,7 +210,11 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
                 return 0;
             }
 
-            return $aDate < $bDate ? 1 : -1;
+            if ($direction === SORT_ASC) {
+                return $aDate < $bDate ? -1 : 1;
+            }
+
+            return $aDate > $bDate ? -1 : 1;
         });
 
         return $assignments;
