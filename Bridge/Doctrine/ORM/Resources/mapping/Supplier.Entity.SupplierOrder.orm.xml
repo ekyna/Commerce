@@ -24,15 +24,23 @@
 
         <field name="number" column="number" type="string" length="16"/>
         <field name="state" column="state" type="string" length="16"/>
+
         <field name="shippingCost" column="shipping_cost" type="decimal" precision="10" scale="5"/>
-        <field name="customsDuty" column="customs_duty" type="decimal" precision="10" scale="5"/>
-        <field name="customsVat" column="customs_vat" type="decimal" precision="10" scale="5"/>
-        <field name="administrativeFee" column="administrative_fee" type="decimal" precision="10" scale="5"/>
         <field name="discountTotal" column="discount_total" type="decimal" precision="12" scale="5"/>
+        <field name="taxTotal" column="tax_total" type="decimal" precision="12" scale="5"/>
         <field name="paymentTotal" column="payment_total" type="decimal" precision="12" scale="5"/>
-        <field name="paymentDate" column="payment_date" type="datetime" nullable="true"/>
-        <field name="trackingUrl" column="tracking_url" type="string" length="255" nullable="true"/>
-        <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
+        <field name="paymentDate" column="payment_date" type="date" nullable="true"/>
+        <field name="paymentDueDate" column="payment_due_date" type="date" nullable="true"/>
+
+        <field name="forwarderFee" column="forwarder_fee" type="decimal" precision="10" scale="5"/>
+        <field name="customsTax" column="customs_tax" type="decimal" precision="10" scale="5"/>
+        <field name="customsVat" column="customs_vat" type="decimal" precision="10" scale="5"/>
+        <field name="forwarderTotal" column="forwarder_total" type="decimal" precision="12" scale="5"/>
+        <field name="forwarderDate" column="forwarder_date" type="date" nullable="true"/>
+        <field name="forwarderDueDate" column="forwarder_due_date" type="date" nullable="true"/>
+
+        <field name="trackingUrls" column="tracking_urls" type="array" nullable="true"/>
+        <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="date" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

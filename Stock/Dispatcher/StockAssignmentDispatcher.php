@@ -71,6 +71,10 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
             throw new StockLogicException("Quantity must be greater than zero.");
         }
 
+        if ($sourceUnit === $targetUnit) {
+            throw new StockLogicException("Source and target units are the same.");
+        }
+
         // Don't move more than reservable (don't create overflow on target unit)
         $quantity = min($quantity, $targetUnit->getReservableQuantity());
         if (0 >= $quantity) {

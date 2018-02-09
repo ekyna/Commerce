@@ -58,21 +58,16 @@ class AvailabilityViewType extends AbstractViewType
             return;
         }
 
-        if (0 < $available = $this->availabilityHelper->getAvailableQuantity($subject)) {
-            $quantity = $item->getTotalQuantity();
-            if ($quantity > $available) {
-                $view
-                    ->setAvailability($this->formatter->number($available)) // TODO packaging
-                    ->addClass('warning');
-            }
+        $quantity = $item->getTotalQuantity();
+        $availability = $this->availabilityHelper->getAvailability($subject, $options['private']);
 
-            return;
-        }
+        $messages = $availability->getMessagesForQuantity($quantity);
+        $view->setAvailability(
+            '<span class="availability-' . max(count($messages), 1) . '">' . implode('<br>', $messages) . '</span>'
+        );
 
-        if (!empty($message = $this->availabilityHelper->getAvailabilityMessage($subject))) {
-            $view
-                ->setAvailability($message)
-                ->addClass('warning');
+        if (!$availability->isAvailableForQuantity($quantity)) {
+            $view->addClass('warning');
         }
     }
 

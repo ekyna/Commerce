@@ -133,7 +133,7 @@
         </td>
         <td id="{{ line.id }}_reference">{{ line.reference }}</td>
         {% if view.vars.show_availability -%}
-        <td class="sale-detail-availability" id="{{ line.id }}_availability">{{ line.availability }}</td>
+        <td class="sale-detail-availability" id="{{ line.id }}_availability">{{ line.availability|raw }}</td>
         {%- endif %}
         {%- if line.private -%}
             {{ block('line_private') }}

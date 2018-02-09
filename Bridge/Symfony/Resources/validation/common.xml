@@ -211,7 +211,7 @@
         </property>
         <property name="voucherNumber">
             <constraint name="Length">
-                <option name="max">16</option>
+                <option name="max">32</option>
             </constraint>
         </property>
         <property name="originNumber">

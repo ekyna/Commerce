@@ -97,20 +97,15 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
             return;
         }
 
-        if ($subject->isQuoteOnly()) {
-            $message = $this->availabilityHelper->translate('quote_only');
-        } else {
-            $quantity = $item->getTotalQuantity();
-            $max = $this->availabilityHelper->getAvailableQuantity($subject);
-            $min = $subject->getMinimumOrderQuantity();
+        $quantity = $item->getTotalQuantity();
+        $availability = $this->availabilityHelper->getAvailability($subject);
 
-            if ($quantity < $min) {
-                $message = $this->availabilityHelper->translate('min_quantity', ['%min%' => $min]);
-            } elseif (0 == $max && $subject->isEndOfLife()) {
-                $message = $this->availabilityHelper->translate('end_of_life');
-            } else  {
-                return;
-            }
+        if ($quantity < $availability->getMinimumQuantity()) {
+            $message = $availability->getMinimumMessage();
+        } elseif ($quantity > $availability->getMaximumQuantity()) {
+            $message = $availability->getMaximumMessage();
+        } else {
+            return;
         }
 
         if (null !== $item->getParent()) {

@@ -14,6 +14,7 @@ final class SupplierOrderStates
     const STATE_NEW       = 'new';
     const STATE_ORDERED   = 'ordered';
     const STATE_PARTIAL   = 'partial';
+    const STATE_RECEIVED  = 'received';
     const STATE_COMPLETED = 'completed';
     const STATE_CANCELED  = 'canceled';
 
@@ -29,6 +30,7 @@ final class SupplierOrderStates
             static::STATE_NEW,
             static::STATE_ORDERED,
             static::STATE_PARTIAL,
+            static::STATE_RECEIVED,
             static::STATE_COMPLETED,
             static::STATE_CANCELED,
         ];
@@ -111,6 +113,7 @@ final class SupplierOrderStates
         return [
             static::STATE_ORDERED,
             static::STATE_PARTIAL,
+            static::STATE_RECEIVED,
             static::STATE_COMPLETED
         ];
     }

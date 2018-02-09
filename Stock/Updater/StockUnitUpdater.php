@@ -251,6 +251,9 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         // Negative case : not enough sold quantity
         if (null !== $sourceUnit = $this->unitResolver->findLinkable($subject)) {
+            if ($sourceUnit === $stockUnit) {
+                return false;
+            }
             if (0 != $this->assignmentDispatcher->moveAssignments($sourceUnit, $stockUnit, -$overflow, SORT_ASC)) {
                 return true;
             }

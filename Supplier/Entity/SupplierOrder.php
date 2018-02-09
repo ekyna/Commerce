@@ -54,22 +54,12 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @var float
      */
-    protected $customsDuty = 0;
-
-    /**
-     * @var float
-     */
-    protected $customsVat = 0;
-
-    /**
-     * @var float
-     */
-    protected $administrativeFee = 0;
-
-    /**
-     * @var float
-     */
     protected $discountTotal = 0;
+
+    /**
+     * @var float
+     */
+    protected $taxTotal = 0;
 
     /**
      * @var float
@@ -82,14 +72,49 @@ class SupplierOrder implements Model\SupplierOrderInterface
     protected $paymentDate;
 
     /**
-     * @var string
+     * @var \DateTime
      */
-    protected $trackingUrl;
+    protected $paymentDueDate;
+
+    /**
+     * @var float
+     */
+    protected $customsTax = 0;
+
+    /**
+     * @var float
+     */
+    protected $customsVat = 0;
+
+    /**
+     * @var float
+     */
+    protected $forwarderFee = 0;
+
+    /**
+     * @var float
+     */
+    protected $forwarderTotal = 0;
+
+    /**
+     * @var \DateTime
+     */
+    protected $forwarderDate;
+
+    /**
+     * @var \DateTime
+     */
+    protected $forwarderDueDate;
 
     /**
      * @var \DateTime
      */
     protected $estimatedDateOfArrival;
+
+    /**
+     * @var array
+     */
+    protected $trackingUrls;
 
     /**
      * @var \DateTime
@@ -293,72 +318,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
-    public function getCustomsDuty()
-    {
-        return $this->customsDuty;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCustomsDuty($amount)
-    {
-        $this->customsDuty = (float)$amount;
-
-        return $this;
-    }
-
-    /**
-     * Returns the customs VAT amount.
-     *
-     * @return float
-     */
-    public function getCustomsVat()
-    {
-        return $this->customsVat;
-    }
-
-    /**
-     * Sets the customs VAT amount.
-     *
-     * @param float $amount
-     *
-     * @return SupplierOrder
-     */
-    public function setCustomsVat($amount)
-    {
-        $this->customsVat = (float)$amount;
-
-        return $this;
-    }
-
-    /**
-     * Returns the "administrative fee" amount.
-     *
-     * @return float
-     */
-    public function getAdministrativeFee()
-    {
-        return $this->administrativeFee;
-    }
-
-    /**
-     * Sets the "administrative fee" amount.
-     *
-     * @param float $amount
-     *
-     * @return SupplierOrder
-     */
-    public function setAdministrativeFee($amount)
-    {
-        $this->administrativeFee = (float)$amount;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getDiscountTotal()
     {
         return $this->discountTotal;
@@ -369,7 +328,25 @@ class SupplierOrder implements Model\SupplierOrderInterface
      */
     public function setDiscountTotal($amount)
     {
-        $this->discountTotal = $amount;
+        $this->discountTotal = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTaxTotal()
+    {
+        return $this->taxTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTaxTotal($amount)
+    {
+        $this->taxTotal = (float)$amount;
 
         return $this;
     }
@@ -413,17 +390,137 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
-    public function getTrackingUrl()
+    public function getPaymentDueDate()
     {
-        return $this->trackingUrl;
+        return $this->paymentDueDate;
     }
 
     /**
      * @inheritdoc
      */
-    public function setTrackingUrl($url)
+    public function setPaymentDueDate(\DateTime $date = null)
     {
-        $this->trackingUrl = $url;
+        $this->paymentDueDate = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCustomsTax()
+    {
+        return $this->customsTax;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCustomsTax($amount)
+    {
+        $this->customsTax = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCustomsVat()
+    {
+        return $this->customsVat;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCustomsVat($amount)
+    {
+        $this->customsVat = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getForwarderFee()
+    {
+        return $this->forwarderFee;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setForwarderFee($amount)
+    {
+        $this->forwarderFee = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the forwarder total.
+     *
+     * @return float
+     */
+    public function getForwarderTotal()
+    {
+        return $this->forwarderTotal;
+    }
+
+    /**
+     * Sets the forwarder total.
+     *
+     * @param float $amount
+     *
+     * @return SupplierOrder
+     */
+    public function setForwarderTotal($amount)
+    {
+        $this->forwarderTotal = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the forwarder payment date.
+     *
+     * @return \DateTime
+     */
+    public function getForwarderDate()
+    {
+        return $this->forwarderDate;
+    }
+
+    /**
+     * Sets the forwarder payment date.
+     *
+     * @param \DateTime $date
+     *
+     * @return SupplierOrder
+     */
+    public function setForwarderDate(\DateTime $date = null)
+    {
+        $this->forwarderDate = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getForwarderDueDate()
+    {
+        return $this->forwarderDueDate;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setForwarderDueDate(\DateTime $date = null)
+    {
+        $this->forwarderDueDate = $date;
 
         return $this;
     }
@@ -442,6 +539,24 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function setEstimatedDateOfArrival(\DateTime $date = null)
     {
         $this->estimatedDateOfArrival = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTrackingUrls()
+    {
+        return $this->trackingUrls;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTrackingUrls(array $urls = [])
+    {
+        $this->trackingUrls = $urls;
 
         return $this;
     }

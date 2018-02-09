@@ -13,11 +13,27 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
 {
     /**
+     * @var string
+     */
+    private $defaultCurrency;
+
+
+    /**
+     * Constructor.
+     *
+     * @param string $defaultCurrency
+     */
+    public function __construct(string $defaultCurrency)
+    {
+        $this->defaultCurrency = $defaultCurrency;
+    }
+
+    /**
      * @inheritdoc
      */
     public function calculatePaymentTotal(SupplierOrderInterface $order)
     {
-        $total = $order->getShippingCost();
+        $total = 0;
 
         $currency = $order->getCurrency()->getCode();
 
@@ -25,9 +41,19 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             $total += Money::round($item->getNetPrice(), $currency) * $item->getQuantity();
         }
 
-        $total -= $order->getDiscountTotal();
+        $total += $order->getShippingCost() - $order->getDiscountTotal() + $order->getTaxTotal();
 
-        return $total;
+        return Money::round($total, $currency);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateForwarderTotal(SupplierOrderInterface $order)
+    {
+        $total = $order->getForwarderFee() + $order->getCustomsTax() + $order->getCustomsVat();
+
+        return Money::round($total, $this->defaultCurrency);
     }
 
     /**

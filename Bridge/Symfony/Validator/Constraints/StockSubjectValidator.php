@@ -54,9 +54,11 @@ class StockSubjectValidator extends ConstraintValidator
                 ]),
             ],
             'stockFloor'             => [
+                new Assert\NotNull(),
                 new Assert\GreaterThanOrEqual(['value' => 0]),
             ],
             'minimumOrderQuantity'   => [
+                new Assert\NotNull(),
                 new Assert\GreaterThanOrEqual(['value' => 0]),
             ],
             'inStock'                => [
@@ -69,10 +71,11 @@ class StockSubjectValidator extends ConstraintValidator
             ],
             'virtualStock'           => [
                 new Assert\NotNull(),
+                new Assert\NotNull(),
             ],
             'replenishmentTime'      => [
                 new Assert\NotNull(),
-                new Assert\GreaterThan(['value' => 0]),
+                new Assert\GreaterThanOrEqual(['value' => 0]),
             ],
             'estimatedDateOfArrival' => [
                 new Assert\DateTime(),

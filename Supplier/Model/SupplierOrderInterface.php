@@ -150,22 +150,6 @@ interface SupplierOrderInterface extends
     public function setShippingCost($amount);
 
     /**
-     * Returns the customs duty.
-     *
-     * @return float
-     */
-    public function getCustomsDuty();
-
-    /**
-     * Sets the customs duty.
-     *
-     * @param float $amount
-     *
-     * @return $this|SupplierOrderInterface
-     */
-    public function setCustomsDuty($amount);
-
-    /**
      * Returns the discount total.
      *
      * @return float
@@ -180,6 +164,22 @@ interface SupplierOrderInterface extends
      * @return $this|SupplierOrderInterface
      */
     public function setDiscountTotal($amount);
+
+    /**
+     * Returns the tax total.
+     *
+     * @return float
+     */
+    public function getTaxTotal();
+
+    /**
+     * Sets the tax total.
+     *
+     * @param float $amount
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setTaxTotal($amount);
 
     /**
      * Returns the payment total.
@@ -214,20 +214,116 @@ interface SupplierOrderInterface extends
     public function setPaymentDate(\DateTime $date = null);
 
     /**
-     * Returns the tracking url.
+     * Returns the payment due date.
      *
-     * @return string
+     * @return \DateTime
      */
-    public function getTrackingUrl();
+    public function getPaymentDueDate();
 
     /**
-     * Sets the tracking url.
+     * Sets the payment due date.
      *
-     * @param string $url
+     * @param \DateTime $date
      *
      * @return $this|SupplierOrderInterface
      */
-    public function setTrackingUrl($url);
+    public function setPaymentDueDate(\DateTime $date = null);
+
+    /**
+     * Returns the customs tax.
+     *
+     * @return float
+     */
+    public function getCustomsTax();
+
+    /**
+     * Sets the customs tax.
+     *
+     * @param float $amount
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setCustomsTax($amount);
+
+    /**
+     * Returns the customs VAT amount.
+     *
+     * @return float
+     */
+    public function getCustomsVat();
+
+    /**
+     * Sets the customs VAT amount.
+     *
+     * @param float $amount
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setCustomsVat($amount);
+
+    /**
+     * Returns the "forwarder fee" amount.
+     *
+     * @return float
+     */
+    public function getForwarderFee();
+
+    /**
+     * Sets the "forwarder fee" amount.
+     *
+     * @param float $amount
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setForwarderFee($amount);
+
+    /**
+     * Returns the forwarder total.
+     *
+     * @return float
+     */
+    public function getForwarderTotal();
+
+    /**
+     * Sets the forwarder total.
+     *
+     * @param float $amount
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setForwarderTotal($amount);
+
+    /**
+     * Returns the forwarder payment date.
+     *
+     * @return \DateTime
+     */
+    public function getForwarderDate();
+
+    /**
+     * Sets the forwarder payment date.
+     *
+     * @param \DateTime $date
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setForwarderDate(\DateTime $date = null);
+
+    /**
+     * Returns the forwarder due date.
+     *
+     * @return \DateTime
+     */
+    public function getForwarderDueDate();
+
+    /**
+     * Sets the forwarder due date.
+     *
+     * @param \DateTime $date
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setForwarderDueDate(\DateTime $date = null);
 
     /**
      * Returns the estimated date of arrival.
@@ -244,6 +340,22 @@ interface SupplierOrderInterface extends
      * @return $this|SupplierOrderInterface
      */
     public function setEstimatedDateOfArrival(\DateTime $date = null);
+
+    /**
+     * Returns the tracking urls.
+     *
+     * @return string
+     */
+    public function getTrackingUrls();
+
+    /**
+     * Sets the tracking urls.
+     *
+     * @param array $urls
+     *
+     * @return $this|SupplierOrderInterface
+     */
+    public function setTrackingUrls(array $urls = []);
 
     /**
      * Returns the "ordered at" date.

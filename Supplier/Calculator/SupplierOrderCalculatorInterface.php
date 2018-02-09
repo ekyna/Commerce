@@ -21,6 +21,15 @@ interface SupplierOrderCalculatorInterface
     public function calculatePaymentTotal(SupplierOrderInterface $order);
 
     /**
+     * Calculates the supplier order's forwarder total.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return float
+     */
+    public function calculateForwarderTotal(SupplierOrderInterface $order);
+
+    /**
      * Calculates the supplier order's weight total.
      *
      * @param SupplierOrderInterface $order

@@ -71,12 +71,12 @@
                 <option name="value">0</option>
             </constraint>
         </property>
-        <property name="customsDuty">
+        <property name="discountTotal">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
             </constraint>
         </property>
-        <property name="discountTotal">
+        <property name="taxTotal">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
             </constraint>
@@ -86,14 +86,46 @@
                 <option name="value">0</option>
             </constraint>
         </property>
-        <property name="paymentDate">
-            <constraint name="DateTime"/>
+        <property name="paymentDueDate">
+            <constraint name="Date"/>
         </property>
-        <property name="trackingUrl">
-            <constraint name="Url"/>
+        <property name="paymentDate">
+            <constraint name="Date"/>
+        </property>
+        <property name="customsTax">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="customsVat">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="forwarderFee">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="forwarderTotal">
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="forwarderDueDate">
+            <constraint name="Date"/>
+        </property>
+        <property name="forwarderDate">
+            <constraint name="Date"/>
+        </property>
+        <property name="trackingUrls">
+            <constraint name="All">
+                <constraint name="NotBlank"/>
+                <constraint name="Url"/>
+            </constraint>
         </property>
         <property name="estimatedDateOfArrival">
-            <constraint name="DateTime"/>
+            <constraint name="Date"/>
         </property>
         <property name="createdAt">
             <constraint name="DateTime"/>

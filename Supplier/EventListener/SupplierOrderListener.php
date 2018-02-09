@@ -63,7 +63,7 @@ class SupplierOrderListener extends AbstractListener
 
         $changed |= $this->updateState($order);
 
-        $changed |= $this->updateTotal($order);
+        $changed |= $this->updateTotals($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
@@ -83,7 +83,7 @@ class SupplierOrderListener extends AbstractListener
 
         $changed |= $this->updateState($order);
 
-        $changed |= $this->updateTotal($order);
+        $changed |= $this->updateTotals($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
@@ -134,7 +134,7 @@ class SupplierOrderListener extends AbstractListener
 
         $changed = $this->updateState($order);
 
-        $changed |= $this->updateTotal($order);
+        $changed |= $this->updateTotals($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
@@ -214,23 +214,31 @@ class SupplierOrderListener extends AbstractListener
     }
 
     /**
-     * Updates the payment total.
+     * Updates the payment and forwarder totals.
      *
      * @param SupplierOrderInterface $order
      *
      * @return bool Whether or not the supplier order has been changed.
      */
-    protected function updateTotal(SupplierOrderInterface $order)
+    protected function updateTotals(SupplierOrderInterface $order)
     {
-        $total = $this->calculator->calculatePaymentTotal($order);
+        $changed = false;
 
-        if ($total != $order->getPaymentTotal()) {
-            $order->setPaymentTotal($total);
+        $forwarder = $this->calculator->calculatePaymentTotal($order);
+        if ($forwarder != $order->getPaymentTotal()) {
+            $order->setPaymentTotal($forwarder);
 
-            return true;
+            $changed = true;
         }
 
-        return false;
+        $forwarder = $this->calculator->calculateForwarderTotal($order);
+        if ($forwarder != $order->getForwarderTotal()) {
+            $order->setForwarderTotal($forwarder);
+
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     /**
