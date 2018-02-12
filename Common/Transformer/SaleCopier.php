@@ -165,7 +165,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target)
     {
         $this->copy($source, $target, [
-            'designation', 'reference', 'netPrice', 'weight', 'taxGroup', 'quantity',
+            'designation', 'description', 'reference', 'taxGroup', 'netPrice', 'weight', 'quantity',
             'position', 'compound', 'immutable', 'configurable', 'private', 'data',
         ]);
 
