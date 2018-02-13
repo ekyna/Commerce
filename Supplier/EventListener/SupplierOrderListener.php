@@ -224,18 +224,49 @@ class SupplierOrderListener extends AbstractListener
     {
         $changed = false;
 
-        $forwarder = $this->calculator->calculatePaymentTotal($order);
-        if ($forwarder != $order->getPaymentTotal()) {
-            $order->setPaymentTotal($forwarder);
-
+        $tax = $this->calculator->calculatePaymentTax($order);
+        if ($tax != $order->getTaxTotal()) {
+            $order->setTaxTotal($tax);
             $changed = true;
         }
 
-        $forwarder = $this->calculator->calculateForwarderTotal($order);
-        if ($forwarder != $order->getForwarderTotal()) {
-            $order->setForwarderTotal($forwarder);
-
+        $payment = $this->calculator->calculatePaymentTotal($order);
+        if ($payment != $order->getPaymentTotal()) {
+            $order->setPaymentTotal($payment);
             $changed = true;
+        }
+
+        if (null !== $order->getCarrier()) {
+            $forwarder = $this->calculator->calculateForwarderTotal($order);
+            if ($forwarder != $order->getForwarderTotal()) {
+                $order->setForwarderTotal($forwarder);
+                $changed = true;
+            }
+        } else {
+            if (0 != $order->getForwarderFee()) {
+                $order->setForwarderFee(0);
+                $changed = true;
+            }
+            if (0 != $order->getCustomsTax()) {
+                $order->setCustomsTax(0);
+                $changed = true;
+            }
+            if (0 != $order->getCustomsVat()) {
+                $order->setCustomsVat(0);
+                $changed = true;
+            }
+            if (0 != $order->getForwarderTotal()) {
+                $order->setForwarderTotal(0);
+                $changed = true;
+            }
+            if (null !==  $order->getForwarderDate()) {
+                $order->setForwarderDate(null);
+                $changed = true;
+            }
+            if (null !==  $order->getForwarderDueDate()) {
+                $order->setForwarderDueDate(null);
+                $changed = true;
+            }
         }
 
         return $changed;

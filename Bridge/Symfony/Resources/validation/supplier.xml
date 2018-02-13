@@ -25,9 +25,9 @@
         <property name="currency">
             <constraint name="NotNull" />
         </property>
-        <property name="carrier">
+        <!--<property name="carrier">
             <constraint name="NotNull" />
-        </property>
+        </property>-->
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Identity">
             <!--<option name="required">false</option>-->
         </constraint>
@@ -46,9 +46,6 @@
             </constraint>
         </property>
         <property name="supplier">
-            <constraint name="NotNull" />
-        </property>
-        <property name="carrier">
             <constraint name="NotNull" />
         </property>
         <property name="currency">

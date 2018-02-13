@@ -49,7 +49,7 @@ interface SupplierOrderInterface extends
      *
      * @return $this|SupplierOrderInterface
      */
-    public function setCarrier(SupplierCarrierInterface $carrier);
+    public function setCarrier(SupplierCarrierInterface $carrier = null);
 
     /**
      * Returns whether or not the supplier order has at least one item.
@@ -390,11 +390,13 @@ interface SupplierOrderInterface extends
     public function setCompletedAt(\DateTime $completedAt = null);
 
     /**
-     * Returns whether the order has attachments or not.
+     * Returns whether the order has attachments or not, optionally filtered by type.
+     *
+     * @param string $type
      *
      * @return bool
      */
-    public function hasAttachments();
+    public function hasAttachments($type = null);
 
     /**
      * Returns whether the order has the attachment or not.

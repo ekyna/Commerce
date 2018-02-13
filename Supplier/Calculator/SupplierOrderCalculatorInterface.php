@@ -12,6 +12,15 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 interface SupplierOrderCalculatorInterface
 {
     /**
+     * Calculates the supplier order's payment tax.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return float
+     */
+    public function calculatePaymentTax(SupplierOrderInterface $order);
+
+    /**
      * Calculates the supplier order's payment total.
      *
      * @param SupplierOrderInterface $order
@@ -19,6 +28,15 @@ interface SupplierOrderCalculatorInterface
      * @return float
      */
     public function calculatePaymentTotal(SupplierOrderInterface $order);
+
+    /**
+     * Calculates the supplier order's items total.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return float
+     */
+    public function calculateItemsTotal(SupplierOrderInterface $order);
 
     /**
      * Calculates the supplier order's forwarder total.

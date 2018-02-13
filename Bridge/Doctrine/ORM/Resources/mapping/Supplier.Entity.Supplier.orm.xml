@@ -38,8 +38,12 @@
             <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Pricing\Entity\Tax" field="tax">
+            <join-column name="tax_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierCarrier" field="carrier">
-            <join-column name="carrier_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+            <join-column name="carrier_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
     </mapped-superclass>

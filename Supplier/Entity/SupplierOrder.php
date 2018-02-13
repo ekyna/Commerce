@@ -141,6 +141,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
 
         $this->items = new ArrayCollection();
         $this->deliveries = new ArrayCollection();
+        $this->attachments = new ArrayCollection();
     }
 
     /**
@@ -188,7 +189,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritdoc
      */
-    public function setCarrier(Model\SupplierCarrierInterface $carrier)
+    public function setCarrier(Model\SupplierCarrierInterface $carrier = null)
     {
         $this->carrier = $carrier;
 
@@ -238,9 +239,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     }
 
     /**
-     * Returns the items.
-     *
-     * @return ArrayCollection|Model\SupplierOrderItemInterface[]
+     * @inheritdoc
      */
     public function getItems()
     {
@@ -460,9 +459,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     }
 
     /**
-     * Returns the forwarder total.
-     *
-     * @return float
+     * @inheritdoc
      */
     public function getForwarderTotal()
     {
@@ -470,11 +467,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     }
 
     /**
-     * Sets the forwarder total.
-     *
-     * @param float $amount
-     *
-     * @return SupplierOrder
+     * @inheritdoc
      */
     public function setForwarderTotal($amount)
     {
@@ -484,9 +477,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     }
 
     /**
-     * Returns the forwarder payment date.
-     *
-     * @return \DateTime
+     * @inheritdoc
      */
     public function getForwarderDate()
     {
@@ -494,11 +485,7 @@ class SupplierOrder implements Model\SupplierOrderInterface
     }
 
     /**
-     * Sets the forwarder payment date.
-     *
-     * @param \DateTime $date
-     *
-     * @return SupplierOrder
+     * @inheritdoc
      */
     public function setForwarderDate(\DateTime $date = null)
     {
@@ -600,8 +587,18 @@ class SupplierOrder implements Model\SupplierOrderInterface
     /**
      * @inheritDoc
      */
-    public function hasAttachments()
+    public function hasAttachments($type = null)
     {
+        if (null !== $type) {
+            foreach ($this->attachments as $attachment) {
+                if ($type === $attachment->getType()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         return 0 < $this->attachments->count();
     }
 

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
+use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -26,4 +27,20 @@ interface SupplierCarrierInterface extends ResourceInterface
      * @return $this|SupplierCarrierInterface
      */
     public function setName($name);
+
+    /**
+     * Returns the tax.
+     *
+     * @return TaxInterface
+     */
+    public function getTax();
+
+    /**
+     * Sets the tax.
+     *
+     * @param TaxInterface $tax
+     *
+     * @return $this|SupplierCarrierInterface
+     */
+    public function setTax(TaxInterface $tax = null);
 }

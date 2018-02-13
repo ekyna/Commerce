@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
+use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierCarrierInterface;
 
 /**
@@ -20,6 +21,11 @@ class SupplierCarrier implements SupplierCarrierInterface
      * @var string
      */
     protected $name;
+
+    /**
+     * @var TaxInterface
+     */
+    protected $tax;
 
 
     /**
@@ -41,9 +47,7 @@ class SupplierCarrier implements SupplierCarrierInterface
     }
 
     /**
-     * Returns the name.
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getName()
     {
@@ -51,15 +55,29 @@ class SupplierCarrier implements SupplierCarrierInterface
     }
 
     /**
-     * Sets the name.
-     *
-     * @param string $name
-     *
-     * @return SupplierCarrier
+     * @inheritdoc
      */
     public function setName($name)
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTax()
+    {
+        return $this->tax;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTax(TaxInterface $tax = null)
+    {
+        $this->tax = $tax;
 
         return $this;
     }

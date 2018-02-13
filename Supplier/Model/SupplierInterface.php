@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -94,6 +95,22 @@ interface SupplierInterface extends ResourceInterface, IdentityInterface
     public function setCurrency(CurrencyInterface $currency);
 
     /**
+     * Returns the tax.
+     *
+     * @return TaxInterface
+     */
+    public function getTax();
+
+    /**
+     * Sets the tax.
+     *
+     * @param TaxInterface $tax
+     *
+     * @return $this|SupplierInterface
+     */
+    public function setTax(TaxInterface $tax = null);
+
+    /**
      * Returns the carrier.
      *
      * @return SupplierCarrierInterface
@@ -107,5 +124,5 @@ interface SupplierInterface extends ResourceInterface, IdentityInterface
      *
      * @return $this|SupplierInterface
      */
-    public function setCarrier(SupplierCarrierInterface $carrier);
+    public function setCarrier(SupplierCarrierInterface $carrier = null);
 }

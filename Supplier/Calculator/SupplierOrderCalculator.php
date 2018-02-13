@@ -31,7 +31,36 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
     /**
      * @inheritdoc
      */
+    public function calculatePaymentTax(SupplierOrderInterface $order)
+    {
+        $base = $this->calculatePaymentBase($order);
+
+        $amount = 0;
+        if (null !== $tax = $order->getSupplier()->getTax()) {
+            $currency = $order->getCurrency()->getCode();
+
+            $amount = Money::round($base * $tax->getRate() / 100, $currency);
+        }
+
+        return $amount;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function calculatePaymentTotal(SupplierOrderInterface $order)
+    {
+        $total = $this->calculatePaymentBase($order) + $this->calculatePaymentTax($order);
+
+        $currency = $order->getCurrency()->getCode();
+
+        return Money::round($total, $currency);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function calculateItemsTotal(SupplierOrderInterface $order)
     {
         $total = 0;
 
@@ -41,9 +70,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             $total += Money::round($item->getNetPrice(), $currency) * $item->getQuantity();
         }
 
-        $total += $order->getShippingCost() - $order->getDiscountTotal() + $order->getTaxTotal();
-
-        return Money::round($total, $currency);
+        return $total;
     }
 
     /**
@@ -51,7 +78,18 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
      */
     public function calculateForwarderTotal(SupplierOrderInterface $order)
     {
-        $total = $order->getForwarderFee() + $order->getCustomsTax() + $order->getCustomsVat();
+        if (null === $carrier = $order->getCarrier()) {
+            return 0;
+        }
+
+        $base = $order->getForwarderFee();
+
+        $taxAmount = 0;
+        if (null !== $tax = $carrier->getTax()) {
+            $taxAmount = Money::round($base * $tax->getRate() / 100, $this->defaultCurrency);
+        }
+
+        $total = $base + $taxAmount + $order->getCustomsTax() + $order->getCustomsVat();
 
         return Money::round($total, $this->defaultCurrency);
     }
@@ -68,5 +106,21 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         }
 
         return $total;
+    }
+
+    /**
+     * Calculates the supplier order base.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return float
+     */
+    private function calculatePaymentBase(SupplierOrderInterface $order)
+    {
+        $base = $this->calculateItemsTotal($order) + $order->getShippingCost() - $order->getDiscountTotal();
+
+        $currency = $order->getCurrency()->getCode();
+
+        return Money::round($base, $currency);
     }
 }
