@@ -202,10 +202,12 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
         }
 
         // Filter by :
+        // - Not closed
         // - Not yet linked to a supplier order
         if (!empty($units)) {
             $units = array_filter($units, function (StockUnitInterface $unit) {
-                return null === $unit->getSupplierOrderItem();
+                return (null === $unit->getSupplierOrderItem())
+                    && ($unit->getState() !== StockUnitStates::STATE_CLOSED);
             });
         }
 

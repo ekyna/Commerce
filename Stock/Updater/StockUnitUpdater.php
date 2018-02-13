@@ -229,7 +229,9 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
             // Try to move sold overflow to a linkable stock unit
             if (null !== $targetStockUnit = $this->unitResolver->findLinkable($subject)) {
-                $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
+                if ($targetStockUnit !== $stockUnit) {
+                    $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
+                }
             }
 
             // Move sold overflow to a new stock unit
