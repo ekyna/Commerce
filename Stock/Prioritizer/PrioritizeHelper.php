@@ -55,12 +55,17 @@ class PrioritizeHelper
 
             $candidate = UnitCandidate::build($unit, $sale);
 
+            // Skip if no reservable and no releasable quantity
+            if ((0 >= $candidate->reservable) && (0 >= $candidate->releasable)) {
+                continue;
+            }
+
             if (0 >= $diff = $quantity - $candidate->reservable) {
                 // Unit has enough reservable quantity
                 return $candidate;
             }
 
-            $candidate->getCombination($diff);
+            $candidate->getCombination(min($diff, $candidate->releasable));
 
             $candidates[] = $candidate;
         }
@@ -152,24 +157,24 @@ class PrioritizeHelper
         return false;
     }
 
-    /**
-     * Returns -1 if A's property is greater than
-     *
-     * @param UnitCandidate $a
-     * @param UnitCandidate $b
-     * @param string        $property
-     *
-     * @return bool|int
-     */
-    private function greaterThanComparison(UnitCandidate $a, UnitCandidate $b, $property)
-    {
-        if ($a->{$property} > $b->{$property}) {
-            return -1;
-        }
-        if ($a->{$property} < $b->{$property}) {
-            return 1;
-        }
-
-        return false;
-    }
+//    /**
+//     * Returns -1 if A's property is greater than
+//     *
+//     * @param UnitCandidate $a
+//     * @param UnitCandidate $b
+//     * @param string        $property
+//     *
+//     * @return bool|int
+//     */
+//    private function greaterThanComparison(UnitCandidate $a, UnitCandidate $b, $property)
+//    {
+//        if ($a->{$property} > $b->{$property}) {
+//            return -1;
+//        }
+//        if ($a->{$property} < $b->{$property}) {
+//            return 1;
+//        }
+//
+//        return false;
+//    }
 }
