@@ -92,7 +92,7 @@ trait ShipmentSubjectTrait
         $criteria = Criteria::create();
         $criteria
             ->andWhere(Criteria::expr()->eq('return', false))
-            ->andWhere(Criteria::expr()->eq('state', ShipmentStates::STATE_SHIPPED))
+            ->andWhere(Criteria::expr()->in('state', [ShipmentStates::STATE_READY, ShipmentStates::STATE_SHIPPED]))
             ->orderBy(['createdAt' => Criteria::ASC]);
 
         /** @var ArrayCollection $shipments */

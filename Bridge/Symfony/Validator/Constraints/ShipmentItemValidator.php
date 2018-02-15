@@ -50,6 +50,8 @@ class ShipmentItemValidator extends ConstraintValidator
 
         // Check parent/quantity integrity
         $saleItem = $item->getSaleItem();
+        $shipment = $item->getShipment();
+
         if ($saleItem->isPrivate()) {
             // TODO use packaging format
             $iQty = round(5 * (float)$item->getQuantity());
@@ -69,8 +71,8 @@ class ShipmentItemValidator extends ConstraintValidator
         }
 
         // Return shipment case
-        if ($item->getShipment()->isReturn()) {
-            $max = $this->shipmentCalculator->calculateReturnableQuantity($saleItem, $item->getShipment());
+        if ($shipment->isReturn()) {
+            $max = $this->shipmentCalculator->calculateReturnableQuantity($saleItem, $shipment);
 
             if ($max < $item->getQuantity()) {
                 $this
@@ -89,9 +91,9 @@ class ShipmentItemValidator extends ConstraintValidator
         }
 
         // Regular shipment case
-        $max = $this->shipmentCalculator->calculateShippableQuantity($saleItem, $item->getShipment());
-        if (ShipmentStates::isStockableState($item->getShipment()->getState())) {
-            $max = min($max, $this->shipmentCalculator->calculateAvailableQuantity($item));
+        $max = $this->shipmentCalculator->calculateShippableQuantity($saleItem, $shipment);
+        if (ShipmentStates::isStockableState($shipment->getState())) {
+            $max = min($max, $this->shipmentCalculator->calculateAvailableQuantity($saleItem, $shipment));
         }
         if ($max < $item->getQuantity()) {
             $this

@@ -81,6 +81,7 @@ final class PaymentStates
         return [
             static::STATE_PENDING,
             static::STATE_CAPTURED,
+            static::STATE_AUTHORIZED,
             static::STATE_FAILED,
             static::STATE_REFUNDED,
         ];

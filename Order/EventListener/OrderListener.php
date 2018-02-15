@@ -7,7 +7,6 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
@@ -156,16 +155,6 @@ class OrderListener extends AbstractSaleListener
                     $sale->setAcceptedAt(new \DateTime());
                 }
             } else {
-                // TODO Find a better place for those shipment/invoice states overrides
-                if (in_array($sale->getState(), [OrderStates::STATE_CANCELED, OrderStates::STATE_REFUSED], true)) {
-                    if (!in_array($sale->getShipmentState(), ShipmentStates::getStockableStates(), true)) {
-                        $sale->setShipmentState(ShipmentStates::STATE_CANCELED);
-                    }
-                    if (in_array($sale->getInvoiceState(), [InvoiceStates::STATE_NEW, InvoiceStates::STATE_PENDING], true)) {
-                        $sale->setInvoiceState(InvoiceStates::STATE_CANCELED);
-                    }
-                }
-
                 $sale
                     ->setAcceptedAt(null)
                     ->setCompletedAt(null);

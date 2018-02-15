@@ -95,6 +95,12 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return;
         }
 
+        // Don't assign twice
+        if (!empty($this->getAssignments($item))) {
+            throw new StockLogicException('Item is already assigned.');
+        }
+
+        // Create assignments
         $this->createAssignmentsForQuantity($item, $item->getTotalQuantity());
     }
 
@@ -401,7 +407,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return false;
         }
 
-        if (null === $subject = $this->subjectHelper->resolve($item)) {
+        if (null === $subject = $this->subjectHelper->resolve($item, false)) {
             return false;
         }
 

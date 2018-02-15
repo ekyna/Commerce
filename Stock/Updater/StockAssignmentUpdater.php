@@ -92,9 +92,9 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             if (!$prevent) {
                 $saleItem->removeStockAssignment($assignment);
                 $this->persistenceHelper->remove($assignment, false);
-            }
 
-            return $quantity;
+                return $quantity;
+            }
         }
 
         $assignment->setSoldQuantity($result);

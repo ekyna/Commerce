@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 
 /**
  * Class InvoiceSubjectStateResolver
@@ -87,11 +88,14 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
             return $this->setState($subject, InvoiceStates::STATE_PARTIAL);
         }
 
-        /** @var \Ekyna\Component\Commerce\Common\Model\SaleInterface $subject */
-        if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
-            return $this->setState($subject, InvoiceStates::STATE_CANCELED);
+        // CANCELED If subject has payment(s) and has canceled state
+        if ($subject instanceof PaymentSubjectInterface){
+            if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
+                return $this->setState($subject, InvoiceStates::STATE_CANCELED);
+            }
         }
 
+        // PENDING by default
         return $this->setState($subject, InvoiceStates::STATE_PENDING);
     }
 

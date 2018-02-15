@@ -107,6 +107,8 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
         if ($state !== $subject->getState()) {
             $subject->setState($state);
 
+            $this->postStateResolution($subject);
+
             return true;
         }
 
@@ -121,4 +123,14 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
      * @return string
      */
     abstract protected function resolveState(SaleInterface $sale);
+
+    /**
+     * Post sale state resolution (called if state changed).
+     *
+     * @param SaleInterface $sale
+     */
+    protected function postStateResolution(SaleInterface $sale)
+    {
+
+    }
 }

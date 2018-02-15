@@ -86,7 +86,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
         }
 
         // Compound with only private children
-        if ($item->isCompound() && !$item->hasPublicChildren()) {
+        if ($item->isCompound()) {
             $available = $expected = null;
             foreach ($item->getChildren() as $childItem) {
                 if (null !== $childLine = $this->buildGoodLine($childItem, $invoice)) {
@@ -114,7 +114,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
         $line = null;
 
         // Skip compound with only public children
-        if (!$item->isCompound()) {
+        if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             if (Invoice\InvoiceTypes::isInvoice($invoice)) {
                 // Invoice case
                 $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $invoice);

@@ -53,22 +53,36 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 return OrderStates::STATE_COMPLETED;
             }
 
-            // COMPLETED If fully Refund / Returned / Credited
-            $canceledStates = [
+            // ACCEPTED If outstanding accepted/expired amount
+            if (0 < $sale->getOutstandingAccepted() || 0 < $sale->getOutstandingExpired()) {
+                return OrderStates::STATE_ACCEPTED;
+            }
+
+            // REFUNDED If fully Refund / Returned / Credited
+            $refundablePaymentStates = [
                 PaymentStates::STATE_COMPLETED,
                 PaymentStates::STATE_REFUNDED,
+                PaymentStates::STATE_FAILED,
                 PaymentStates::STATE_CANCELED,
+                PaymentStates::STATE_NEW,
+            ];
+            $refundableShipmentStates = [
+                ShipmentStates::STATE_COMPLETED,
+                ShipmentStates::STATE_RETURNED,
+                ShipmentStates::STATE_PENDING,
+                ShipmentStates::STATE_CANCELED,
+                ShipmentStates::STATE_NEW,
             ];
             if (
-                in_array($paymentState, $canceledStates, true) &&
-                ShipmentStates::STATE_RETURNED === $shipmentState &&
-                InvoiceStates::STATE_CREDITED === $invoiceState
+                InvoiceStates::STATE_CREDITED === $invoiceState &&
+                in_array($paymentState, $refundablePaymentStates, true) &&
+                in_array($shipmentState, $refundableShipmentStates, true)
             ) {
                 return OrderStates::STATE_REFUNDED;
             }
 
-            // ACCEPTED If order has shipment(s), invoice(s) or accepted outstanding.
-            if ($sale->hasShipments() || $sale->hasInvoices() || 0 < $sale->getOutstandingAccepted()) {
+            // ACCEPTED If order has shipment(s) or invoice(s).
+            if ($sale->hasShipments() || $sale->hasInvoices()) {
                 return OrderStates::STATE_ACCEPTED;
             }
 
@@ -105,6 +119,26 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
         }
 
+        // NEW by default
         return OrderStates::STATE_NEW;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function postStateResolution(SaleInterface $sale)
+    {
+        if (!$sale instanceof OrderInterface) {
+            throw new InvalidArgumentException("Expected instance of " . OrderInterface::class);
+        }
+
+        if (in_array($sale->getState(), [OrderStates::STATE_CANCELED, OrderStates::STATE_REFUSED, OrderStates::STATE_REFUNDED], true)) {
+            if (!in_array($sale->getShipmentState(), ShipmentStates::getStockableStates(), true)) {
+                $sale->setShipmentState(ShipmentStates::STATE_CANCELED);
+            }
+            if (in_array($sale->getInvoiceState(), [InvoiceStates::STATE_NEW, InvoiceStates::STATE_PENDING], true)) {
+                $sale->setInvoiceState(InvoiceStates::STATE_CANCELED);
+            }
+        }
     }
 }

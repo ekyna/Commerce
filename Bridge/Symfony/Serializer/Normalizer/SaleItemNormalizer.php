@@ -8,6 +8,9 @@ use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
+use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
 /**
@@ -32,6 +35,11 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
      */
     protected $invoiceCalculator;
 
+    /**
+     * @var SubjectHelperInterface
+     */
+    protected $subjectHelper;
+
 
     /**
      * Constructor.
@@ -39,15 +47,18 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
      * @param Formatter                   $formatter
      * @param ShipmentCalculatorInterface $shipmentCalculator
      * @param InvoiceCalculatorInterface  $invoiceCalculator
+     * @param SubjectHelperInterface      $subjectHelper
      */
     public function __construct(
         Formatter $formatter,
         ShipmentCalculatorInterface $shipmentCalculator,
-        InvoiceCalculatorInterface $invoiceCalculator
+        InvoiceCalculatorInterface $invoiceCalculator,
+        SubjectHelperInterface $subjectHelper
     ) {
         $this->formatter = $formatter;
         $this->shipmentCalculator = $shipmentCalculator;
         $this->invoiceCalculator = $invoiceCalculator;
+        $this->subjectHelper = $subjectHelper;
     }
 
     /**
@@ -70,12 +81,31 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
 
             $sale = $item->getSale();
 
-            $shipmentData = ['shipped' => 0, 'returned' => 0];
+            $shipmentData = [
+                'shipped'   => null,
+                'returned'  => null,
+                'available' => null,
+                'in_stock'  => null,
+            ];
             if ($sale instanceof ShipmentSubjectInterface) {
-                $shipmentData = [
-                    'shipped'  => $this->shipmentCalculator->calculateShippedQuantity($item),
-                    'returned' => $this->shipmentCalculator->calculateReturnedQuantity($item),
-                ];
+                if ($item->isCompound()) {
+                    foreach ($children as $child) {
+                        $quantity = $child['quantity'];
+                        foreach (['shipped', 'returned', 'available', 'in_stock'] as $key) {
+                            $qty = $child[$key] / $quantity;
+                            if (null === $shipmentData[$key] || $shipmentData[$key] > $qty) {
+                                $shipmentData[$key] = $qty;
+                            }
+                        }
+                    }
+                } else {
+                    $shipmentData = [
+                        'shipped'   => $this->shipmentCalculator->calculateShippedQuantity($item),
+                        'returned'  => $this->shipmentCalculator->calculateReturnedQuantity($item),
+                        'available' => $this->shipmentCalculator->calculateAvailableQuantity($item),
+                        'in_stock'  => $this->getInStock($item),
+                    ];
+                }
             }
 
             $invoiceData = ['invoiced' => 0, 'credited' => 0];
@@ -87,15 +117,46 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
             }
 
             $data = array_replace($data, [
-                'designation' => $item->getDesignation(),
-                'reference'   => $item->getReference(),
-                'quantity'    => $item->getTotalQuantity(),
-                'private'     => $item->isPrivate(),
-                'children'    => $children,
+                'designation'      => $item->getDesignation(),
+                'reference'        => $item->getReference(),
+                'quantity'         => $item->getQuantity(),
+                'total_quantity'   => $item->getTotalQuantity(),
+                'private'          => $item->isPrivate(),
+                //'compound'         => $item->isCompound(),
+                //'private_children' => $item->hasPrivateChildren(),
+                'children'         => $children,
             ], $shipmentData, $invoiceData);
         }
 
         return $data;
+    }
+
+    /**
+     * Returns the item subject's in stock quantity.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return float
+     */
+    private function getInStock(SaleItemInterface $item)
+    {
+        if (null === $subject = $this->subjectHelper->resolve($item, false)) {
+            return INF;
+        }
+
+        if (!$subject instanceof StockSubjectInterface) {
+            return INF;
+        }
+
+        if ($subject->isStockCompound()) {
+            return INF;
+        }
+
+        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+            return INF;
+        }
+
+        return $subject->getInStock();
     }
 
     /**

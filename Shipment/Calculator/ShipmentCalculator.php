@@ -82,10 +82,8 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateAvailableQuantity(Shipment\ShipmentItemInterface $item)
+    public function calculateAvailableQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null)
     {
-        $saleItem = $item->getSaleItem();
-
         /** @var Common\SaleItemInterface $saleItem */
         if (!$this->hasStockableSubject($saleItem)) {
             return INF;
@@ -98,12 +96,17 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
             $quantity += $assignment->getShippableQuantity();
         }
 
-        $shipment = $item->getShipment();
         if (
-            null !== $shipment->getId() && !$shipment->isReturn() &&
-            Shipment\ShipmentStates::isStockableState($shipment->getState())
+            null !== $ignore && null !== $ignore->getId() && !$ignore->isReturn() &&
+            Shipment\ShipmentStates::isStockableState($ignore->getState())
         ) {
-            $quantity += $item->getQuantity();
+            foreach ($ignore->getItems() as $item) {
+                if ($item->getSaleItem() === $saleItem) {
+                    $quantity += $item->getQuantity();
+
+                    break;
+                }
+            }
         }
 
         return max($quantity, 0);

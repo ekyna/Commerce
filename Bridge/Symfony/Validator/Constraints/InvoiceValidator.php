@@ -34,7 +34,7 @@ class InvoiceValidator extends ConstraintValidator
         }
 
         // If credit, must have a payment method
-        if (InvoiceTypes::isCredit($invoice) && null === $invoice->getPaymentMethod()) {
+        if (InvoiceTypes::isCredit($invoice) && null === $invoice->getPaymentMethod() && $invoice->getSale()->isPaid()) {
             $this
                 ->context
                 ->buildViolation($constraint->null_credit_method)

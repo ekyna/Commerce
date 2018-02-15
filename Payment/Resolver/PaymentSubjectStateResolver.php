@@ -5,6 +5,8 @@ namespace Ekyna\Component\Commerce\Payment\Resolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -42,6 +44,14 @@ class PaymentSubjectStateResolver implements StateResolverInterface
         }
 
         if (0 === $subject->getPayments()->count()) {
+            // CANCELED subject is invoiceable and is fully credited
+            if ($subject instanceof InvoiceSubjectInterface) {
+                if ($subject->getInvoiceState() === InvoiceStates::STATE_CREDITED) {
+                    return $this->setState($subject, PaymentStates::STATE_CANCELED);
+                }
+            }
+
+            // NEW by default
             return $this->setState($subject, PaymentStates::STATE_NEW);
         }
 
@@ -83,17 +93,24 @@ class PaymentSubjectStateResolver implements StateResolverInterface
             return $this->setState($subject, PaymentStates::STATE_REFUNDED);
         }
 
+        // CANCELED subject has invoice(s) and is fully credited
+        if ($subject instanceof InvoiceSubjectInterface) {
+            if ($subject->getInvoiceState() === InvoiceStates::STATE_CREDITED) {
+                return $this->setState($subject, PaymentStates::STATE_CANCELED);
+            }
+        }
+
         // FAILED total is greater than or equals the grand total
         if ($fullFill($this->paymentCalculator->calculateFailedTotal($subject))) {
             return $this->setState($subject, PaymentStates::STATE_FAILED);
         }
 
-        // FAILED total is greater than or equals the grand total
+        // CANCELED total is greater than or equals the grand total
         if ($fullFill($this->paymentCalculator->calculateCanceledTotal($subject))) {
             return $this->setState($subject, PaymentStates::STATE_CANCELED);
         }
 
-        // NEW (default) state
+        // NEW by default
         return $this->setState($subject, PaymentStates::STATE_NEW);
     }
 

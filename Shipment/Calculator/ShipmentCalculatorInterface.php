@@ -24,11 +24,12 @@ interface ShipmentCalculatorInterface
     /**
      * Calculate the shipment item available quantity.
      *
-     * @param Shipment\ShipmentItemInterface $item
+     * @param Common\SaleItemInterface   $saleItem
+     * @param Shipment\ShipmentInterface $ignore
      *
      * @return float
      */
-    public function calculateAvailableQuantity(Shipment\ShipmentItemInterface $item);
+    public function calculateAvailableQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
 
     /**
      * Calculates the shipment item shippable quantity.

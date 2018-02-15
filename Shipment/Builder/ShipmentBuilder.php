@@ -70,7 +70,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment)
     {
         // If compound with only private children
-        if ($saleItem->isCompound() && !$saleItem->hasPublicChildren()) {
+        if ($saleItem->isCompound()) {
             // Resolve available and expected quantities by building children
             $available = $expected = null;
             foreach ($saleItem->getChildren() as $childSaleItem) {
@@ -100,7 +100,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         $item = null;
 
         // Skip compound with only public children
-        if (!$saleItem->isCompound()) {
+        if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
             $expected = $shipment->isReturn()
                 ? $this->calculator->calculateReturnableQuantity($saleItem, $shipment)
                 : $this->calculator->calculateShippableQuantity($saleItem, $shipment);
@@ -161,7 +161,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
             $item->setAvailable($expected);
         } else {
             if (null === $available) {
-                $available = $this->calculator->calculateAvailableQuantity($item);
+                $available = $this->calculator->calculateAvailableQuantity($saleItem, $shipment);
             }
 
             // Set available quantity

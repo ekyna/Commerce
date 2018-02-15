@@ -298,7 +298,7 @@ abstract class AbstractInvoiceListener
             $method = empty($methodCs) ? $invoice->getPaymentMethod() : $methodCs[0];
             $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[0];
 
-            if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
+            if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
                 $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
             }
 
@@ -329,7 +329,7 @@ abstract class AbstractInvoiceListener
             $method = $methodCs[1];
             $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[1];
         }
-        if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
+        if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
             $this->customerUpdater->updateCreditBalance($customer, $amount, true);
         }
     }
@@ -362,13 +362,17 @@ abstract class AbstractInvoiceListener
      * Prevents some of the invoice's fields to change.
      *
      * @param InvoiceInterface $invoice
+     *
+     * @throws Exception\IllegalOperationException
      */
     protected function preventForbiddenChange(InvoiceInterface $invoice)
     {
         if ($this->persistenceHelper->isChanged($invoice, 'type')) {
             list($old, $new) = $this->persistenceHelper->getChangeSet($invoice, 'type');
             if ($old != $new) {
-                throw new Exception\RuntimeException("Changing the invoice type is not yet supported.");
+                throw new Exception\IllegalOperationException(
+                    "Changing the invoice type is not yet supported."
+                );
             }
         }
     }

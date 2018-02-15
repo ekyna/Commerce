@@ -125,7 +125,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 return 0;
             }
 
-            $invoiced = $this->calculateInvoicedQuantity($subject);
+            $invoiced = $this->calculateInvoicedQuantity($subject, $ignore);
 
             // Shipment must be invoiced once
             return min(1, max(0, 1 - $invoiced));

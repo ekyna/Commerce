@@ -8,8 +8,7 @@ use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
-use Ekyna\Component\Commerce\Exception\IllegalOperationException;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -140,7 +139,7 @@ abstract class AbstractSaleListener
         $sale = $this->getSaleFromEvent($event);
 
         if ($this->handleInsert($sale)) {
-            $this->persistenceHelper->persistAndRecompute($sale);
+            $this->persistenceHelper->persistAndRecompute($sale, false);
         }
     }
 
@@ -194,8 +193,10 @@ abstract class AbstractSaleListener
     {
         $sale = $this->getSaleFromEvent($event);
 
+        $this->preventForbiddenChange($sale);
+
         if ($this->handleUpdate($sale)) {
-            $this->persistenceHelper->persistAndRecompute($sale);
+            $this->persistenceHelper->persistAndRecompute($sale, false);
         }
 
         // Schedule content change
@@ -237,8 +238,11 @@ abstract class AbstractSaleListener
             $changed |= $this->saleUpdater->updatePaymentTerm($sale);
 
             // TODO Update customer's balances
-            // For each payments
+
+            // TODO For each payments
             // If payment is paid or has changed from paid state
+
+            // TODO For each (credit)invoices
         }
 
         // Update discounts
@@ -272,7 +276,7 @@ abstract class AbstractSaleListener
         }
 
         if ($this->handleAddressChange($sale)) {
-            $this->persistenceHelper->persistAndRecompute($sale);
+            $this->persistenceHelper->persistAndRecompute($sale, false);
 
             $this->scheduleContentChangeEvent($sale);
         }
@@ -321,9 +325,12 @@ abstract class AbstractSaleListener
             return;
         }
 
-        if ($this->handleContentChange($sale)) {
-            $this->persistenceHelper->persistAndRecompute($sale);
-        }
+        $this->handleContentChange($sale);
+
+        // Reflect content change on update timestamp
+        $sale->setUpdatedAt(new\DateTime());
+
+        $this->persistenceHelper->persistAndRecompute($sale, false);
     }
 
     /**
@@ -424,7 +431,7 @@ abstract class AbstractSaleListener
      *
      * @param ResourceEventInterface $event
      *
-     * @throws IllegalOperationException
+     * @throws Exception\IllegalOperationException
      */
     public function onPreDelete(ResourceEventInterface $event)
     {
@@ -438,7 +445,9 @@ abstract class AbstractSaleListener
         if (null !== $payments = $sale->getPayments()) {
             foreach ($payments as $payment) {
                 if (!PaymentStates::isDeletableState($payment->getState())) {
-                    throw new IllegalOperationException(); // TODO reason message
+                    throw new Exception\IllegalOperationException(
+                        'Sale has valid payments and therefore cannot be deleted.'
+                    ); // TODO Translation
                 }
             }
         }
@@ -697,12 +706,31 @@ abstract class AbstractSaleListener
     }
 
     /**
+     * Prevent forbidden change(s).
+     *
+     * @param SaleInterface $sale
+     *
+     * @throws Exception\IllegalOperationException
+     */
+    protected function preventForbiddenChange(SaleInterface $sale)
+    {
+        if ($this->persistenceHelper->isChanged($sale, 'customer')) {
+            list($old, $new) = $this->persistenceHelper->getChangeSet($sale, 'customer');
+            if ($old != $new && (0 < $sale->getOutstandingAccepted() || 0 < $sale->getOutstandingExpired())) {
+                throw new Exception\IllegalOperationException(
+                    "Changing the customer while there is pending outstanding is not yet supported."
+                );
+            }
+        }
+    }
+
+    /**
      * Returns the sale from the event.
      *
      * @param ResourceEventInterface $event
      *
      * @return SaleInterface
-     * @throws InvalidArgumentException
+     * @throws Exception\InvalidArgumentException
      */
     abstract protected function getSaleFromEvent(ResourceEventInterface $event);
 

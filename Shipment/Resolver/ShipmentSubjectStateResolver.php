@@ -4,7 +4,10 @@ namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
@@ -73,26 +76,36 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             }
         }
 
-        // If all fully returned
+        // RETURNED If all fully returned
         if ($returnedCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_RETURNED);
         }
 
-        // If all fully shipped
+        // COMPLETED If all fully shipped
         if ($shippedCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
         }
 
-        // If some partially shipped
+        // PARTIAL If some partially shipped
         if (0 < $partialCount || 0 < $shippedCount) {
             return $this->setState($subject, ShipmentStates::STATE_PARTIAL);
         }
 
-        /** @var \Ekyna\Component\Commerce\Common\Model\SaleInterface $subject */
-        if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
-            return $this->setState($subject, ShipmentStates::STATE_CANCELED);
+        // CANCELED If subject has invoice(s) and is fully credited
+        if ($subject instanceof InvoiceSubjectInterface) {
+            if ($subject->getInvoiceState() === InvoiceStates::STATE_CREDITED) {
+                return $this->setState($subject, ShipmentStates::STATE_CANCELED);
+            }
         }
 
+        // CANCELED If subject has payment(s) and has canceled state
+        if ($subject instanceof PaymentSubjectInterface) {
+            if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
+                return $this->setState($subject, ShipmentStates::STATE_CANCELED);
+            }
+        }
+
+        // PENDING by default
         return $this->setState($subject, ShipmentStates::STATE_PENDING);
     }
 
