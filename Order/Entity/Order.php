@@ -243,7 +243,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         if ($this->hasItem($item)) {
             $this->items->removeElement($item);
-            //$item->setOrder(null);
+            $item->setOrder(null);
         }
 
         return $this;
@@ -289,7 +289,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         if ($this->hasAdjustment($adjustment)) {
             $this->adjustments->removeElement($adjustment);
-            //$adjustment->setOrder(null);
+            $adjustment->setOrder(null);
         }
 
         return $this;
@@ -335,7 +335,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         if ($this->hasPayment($payment)) {
             $this->payments->removeElement($payment);
-            //$payment->setOrder(null);
+            $payment->setOrder(null);
         }
 
         return $this;
@@ -381,7 +381,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         if ($this->hasShipment($shipment)) {
             $this->shipments->removeElement($shipment);
-            //$shipment->setOrder(null);
+            $shipment->setOrder(null);
         }
 
         return $this;
@@ -427,7 +427,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         if ($this->hasInvoice($invoice)) {
             $this->invoices->removeElement($invoice);
-            //$invoice->setOrder(null);
+            $invoice->setOrder(null);
         }
 
         return $this;

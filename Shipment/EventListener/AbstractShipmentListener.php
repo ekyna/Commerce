@@ -117,7 +117,7 @@ abstract class AbstractShipmentListener
             $this->persistenceHelper->persistAndRecompute($shipment);
         }
 
-        $sale = $this->getShipmentSale($shipment);
+        $sale = $this->getSaleFromShipment($shipment);
         $sale->addShipment($shipment); // TODO wtf ?
 
         $this->invoiceSynchronizer->synchronize($shipment);
@@ -178,7 +178,7 @@ abstract class AbstractShipmentListener
         $this->invoiceSynchronizer->synchronize($shipment);
 
         if ($changed || $stateChanged) {
-            $this->scheduleSaleContentChangeEvent($this->getShipmentSale($shipment));
+            $this->scheduleSaleContentChangeEvent($this->getSaleFromShipment($shipment));
         }
     }
 
@@ -193,7 +193,7 @@ abstract class AbstractShipmentListener
 
         $this->invoiceSynchronizer->synchronize($shipment);
 
-        $sale = $this->getShipmentSale($shipment);
+        $sale = $this->getSaleFromShipment($shipment);
 
         $sale->removeShipment($shipment);
 
@@ -211,7 +211,7 @@ abstract class AbstractShipmentListener
 
         $this->invoiceSynchronizer->synchronize($shipment);
 
-        $this->scheduleSaleContentChangeEvent($this->getShipmentSale($shipment));
+        $this->scheduleSaleContentChangeEvent($this->getSaleFromShipment($shipment));
     }
 
     /**
@@ -344,7 +344,7 @@ abstract class AbstractShipmentListener
      *
      * @return SaleInterface|ShipmentSubjectInterface
      */
-    protected function getShipmentSale(ShipmentInterface $shipment)
+    protected function getSaleFromShipment(ShipmentInterface $shipment)
     {
         if (null === $sale = $shipment->getSale()) {
             $cs = $this->persistenceHelper->getChangeSet($shipment, $this->getSalePropertyPath());

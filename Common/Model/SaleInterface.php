@@ -18,7 +18,7 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method SaleAdjustmentInterface[] getAdjustments($type = null)
+ * @method Collection|SaleAdjustmentInterface[] getAdjustments($type = null)
  */
 interface SaleInterface extends
     ResourceModel\ResourceInterface,

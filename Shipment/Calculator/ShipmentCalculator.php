@@ -238,10 +238,9 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     {
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            $sold = $item->getTotalQuantity() - $this->invoiceCalculator->calculateCreditedQuantity($item);
-
             $quantities[$item->getId()] = [
-                'sold'     => $sold,
+                'total'    => $item->getTotalQuantity(),
+                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
             ];

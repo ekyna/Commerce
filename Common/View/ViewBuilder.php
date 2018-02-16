@@ -131,8 +131,8 @@ class ViewBuilder
         if ($this->options['private'] && null !== $margin = $this->marginCalculator->calculateSale($sale)) {
             $prefix = $margin->isAverage() ? '~' : '';
             $this->view->setMargin(new MarginView(
-                $prefix.$this->formatter->currency($margin->getAmount()),
-                $prefix.$this->formatter->percent($margin->getPercent())
+                $prefix . $this->formatter->currency($margin->getAmount()),
+                $prefix . $this->formatter->percent($margin->getPercent())
             ));
             $this->view->vars['show_margin'] = true;
         }

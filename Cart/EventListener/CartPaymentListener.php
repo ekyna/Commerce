@@ -37,4 +37,12 @@ class CartPaymentListener extends AbstractPaymentListener
 
         return $resource;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSalePropertyPath()
+    {
+        return 'cart';
+    }
 }

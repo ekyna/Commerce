@@ -49,4 +49,12 @@ class OrderPaymentListener extends AbstractPaymentListener
 
         return $resource;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSalePropertyPath()
+    {
+        return 'order';
+    }
 }

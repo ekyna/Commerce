@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
@@ -49,16 +50,22 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             return $this->setState($subject, ShipmentStates::STATE_NEW);
         }
 
+        $sample = $subject instanceof SaleInterface ? $subject->isSample() : false;
+
         $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
 
         foreach ($quantities as $q) {
             // TODO Use packaging format
-
             // If shipped greater than zero
             if (0 < $q['shipped']) {
-                // If sold equals shipped minus returned, item is fully shipped
-                //if ($q['sold'] == $q['shipped'] - $q['returned']) {
-                if (0 === bccomp($q['sold'], $q['shipped'] - $q['returned'], 3)) {
+                $sold = $q['total'];
+                $shipped = $q['shipped'];
+                if (!$sample) {
+                    $sold -= $q['credited'];
+                    $shipped -= $q['returned'];
+                }
+                // If sold equals shipped, item is fully shipped
+                if (0 === bccomp($sold, $shipped, 3)) {
                     $shippedCount++;
 
                     // If shipped equals returned, item is fully returned
@@ -75,6 +82,7 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
                 continue;
             }
         }
+
 
         // RETURNED If all fully returned
         if ($returnedCount == $itemsCount) {

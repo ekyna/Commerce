@@ -20,15 +20,21 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
      */
     protected $formatter;
 
+    /**
+     * @var int
+     */
+    protected $inStockLimit;
 
     /**
      * Constructor.
      *
      * @param Formatter $formatter
+     * @param int       $inStockLimit
      */
-    public function __construct(Formatter $formatter)
+    public function __construct(Formatter $formatter, $inStockLimit = 100)
     {
         $this->formatter = $formatter;
+        $this->inStockLimit = $inStockLimit;
     }
 
     /**
@@ -58,7 +64,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
                 $aQty = INF;
                 $aMsg = $this->translate('available', [], $short);
-            } else{
+            } else {
                 if (0 < $aQty = $subject->getAvailableStock()) {
                     $aMsg = $this->translate('in_stock', [
                         '%qty%' => $this->formatter->number($aQty),
@@ -149,8 +155,10 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
         }
 
         if ($quantity < $qty = $subject->getAvailableStock()) {
-            if (100 < $qty) {
-                return $this->translate('available', [], $short);
+            if (0 < $this->inStockLimit && $this->inStockLimit < $qty) {
+                return $this->translate('in_stock', [
+                    '%qty%' => $this->inStockLimit . '+',
+                ], $short);
             }
 
             return $this->translate('in_stock', [

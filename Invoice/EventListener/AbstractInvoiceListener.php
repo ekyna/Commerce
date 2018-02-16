@@ -135,7 +135,7 @@ abstract class AbstractInvoiceListener
             $this->persistenceHelper->persistAndRecompute($invoice, false);
         }
 
-        $sale = $this->getInvoiceSale($invoice);
+        $sale = $this->getSaleFromInvoice($invoice);
         if ($sale instanceof InvoiceSubjectInterface) {
             $sale->addInvoice($invoice); // TODO wtf ?
         }
@@ -170,7 +170,7 @@ abstract class AbstractInvoiceListener
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
 
-            $this->scheduleSaleContentChangeEvent($this->getInvoiceSale($invoice));
+            $this->scheduleSaleContentChangeEvent($this->getSaleFromInvoice($invoice));
         }
     }
 
@@ -185,7 +185,7 @@ abstract class AbstractInvoiceListener
 
         $this->updateCustomerBalance($invoice);
 
-        $sale = $this->getInvoiceSale($invoice);
+        $sale = $this->getSaleFromInvoice($invoice);
 
         $sale->removeInvoice($invoice);
 
@@ -209,7 +209,7 @@ abstract class AbstractInvoiceListener
             $this->updateCustomerBalance($invoice);
         }
 
-        $sale = $this->getInvoiceSale($invoice);
+        $sale = $this->getSaleFromInvoice($invoice);
 
         $this->scheduleSaleContentChangeEvent($sale);
     }
@@ -223,11 +223,11 @@ abstract class AbstractInvoiceListener
     {
         $invoice = $this->getInvoiceFromEvent($event);
 
-        if (null !== $invoice->getShipment()) {
+        /*if (null !== $invoice->getShipment()) {
             throw new Exception\IllegalOperationException(
                 "Invoice (or credit) associated with a shipment (or return) can't be modified."
             );
-        }
+        }*/
 
         // Pre load sale's invoices collection
         /** @var InvoiceSubjectInterface $sale */
@@ -282,7 +282,7 @@ abstract class AbstractInvoiceListener
             return;
         }
 
-        $sale = $this->getInvoiceSale($invoice);
+        $sale = $this->getSaleFromInvoice($invoice);
 
         // Abort if no customer
         if (null === $customer = $sale->getCustomer()) {
@@ -384,7 +384,7 @@ abstract class AbstractInvoiceListener
      *
      * @return SaleInterface|InvoiceSubjectInterface
      */
-    protected function getInvoiceSale(InvoiceInterface $invoice)
+    protected function getSaleFromInvoice(InvoiceInterface $invoice)
     {
         if (null === $sale = $invoice->getSale()) {
             $cs = $this->persistenceHelper->getChangeSet($invoice, $this->getSalePropertyPath());

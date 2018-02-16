@@ -98,6 +98,11 @@ abstract class AbstractAdjustmentListener
     public function onPreDelete(ResourceEventInterface $event)
     {
         $this->throwIllegalOperationIfAdjustmentIsImmutable($event);
+
+        $adjustment = $this->getAdjustmentFromEvent($event);
+
+        // Pre load adjustments collection
+        $adjustment->getAdjustable()->getAdjustments()->toArray();
     }
 
     /**

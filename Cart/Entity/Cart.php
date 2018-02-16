@@ -187,7 +187,7 @@ class Cart extends AbstractSale implements Model\CartInterface
 
         if ($this->hasItem($item)) {
             $this->items->removeElement($item);
-            //$item->setCart(null);
+            $item->setCart(null);
         }
 
         return $this;
@@ -233,7 +233,7 @@ class Cart extends AbstractSale implements Model\CartInterface
 
         if ($this->hasAdjustment($adjustment)) {
             $this->adjustments->removeElement($adjustment);
-            //$adjustment->setCart(null);
+            $adjustment->setCart(null);
         }
 
         return $this;
@@ -279,7 +279,7 @@ class Cart extends AbstractSale implements Model\CartInterface
 
         if ($this->hasPayment($payment)) {
             $this->payments->removeElement($payment);
-            //$payment->setCart(null);
+            $payment->setCart(null);
         }
 
         return $this;

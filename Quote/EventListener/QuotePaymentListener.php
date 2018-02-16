@@ -37,4 +37,12 @@ class QuotePaymentListener extends AbstractPaymentListener
 
         return $resource;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getSalePropertyPath()
+    {
+        return 'quote';
+    }
 }

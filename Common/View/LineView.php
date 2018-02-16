@@ -57,7 +57,7 @@ class LineView extends AbstractView
     private $unit;
 
     /**
-     * @var float
+     * @var string
      */
     private $quantity;
 
@@ -311,7 +311,7 @@ class LineView extends AbstractView
     /**
      * Sets the quantity.
      *
-     * @param float $quantity
+     * @param string $quantity
      *
      * @return LineView
      */
@@ -325,7 +325,7 @@ class LineView extends AbstractView
     /**
      * Returns the quantity.
      *
-     * @return float
+     * @return string
      */
     public function getQuantity()
     {

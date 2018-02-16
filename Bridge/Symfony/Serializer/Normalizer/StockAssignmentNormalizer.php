@@ -43,10 +43,13 @@ class StockAssignmentNormalizer extends AbstractResourceNormalizer
 
         if (in_array('StockView', $groups) || in_array('StockAssignment', $groups)) {
             $data = array_replace($data, [
-                'order_id' => $assignment->getSaleItem()->getSale()->getId(),
                 'sold'    => $this->formatter->number($assignment->getSoldQuantity()),
                 'shipped' => $this->formatter->number($assignment->getShippedQuantity()),
             ]);
+
+            if (in_array('StockView', $groups)) {
+                $data['order_id'] = $assignment->getSaleItem()->getSale()->getId();
+            }
 
             if (in_array('StockAssignment', $groups)) {
                 $data['unit'] = $this->normalizeObject($assignment->getStockUnit(), $format, $context);

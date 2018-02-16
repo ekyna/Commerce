@@ -9,8 +9,10 @@ use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -102,7 +104,7 @@ abstract class AbstractPaymentListener
             $this->persistenceHelper->persistAndRecompute($payment);
         }
 
-        $sale = $payment->getSale();
+        $sale = $this->getSaleFromPayment($payment);
 
         $this->customerUpdater->handlePaymentInsert($payment);
 
@@ -147,7 +149,7 @@ abstract class AbstractPaymentListener
         }
 
         if ($this->persistenceHelper->isChanged($payment, ['amount', 'state'])) {
-            $this->scheduleSaleContentChangeEvent($payment->getSale());
+            $this->scheduleSaleContentChangeEvent($this->getSaleFromPayment($payment));
 
             $this->customerUpdater->handlePaymentUpdate($payment);
         }
@@ -189,7 +191,8 @@ abstract class AbstractPaymentListener
 
         $this->customerUpdater->handlePaymentDelete($payment);
 
-        $sale = $payment->getSale();
+        $sale = $this->getSaleFromPayment($payment);
+
         $sale->removePayment($payment);
 
         $this->scheduleSaleContentChangeEvent($sale);
@@ -251,6 +254,29 @@ abstract class AbstractPaymentListener
     }
 
     /**
+     * Returns the shipment's sale.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return SaleInterface|PaymentSubjectInterface
+     */
+    protected function getSaleFromPayment(PaymentInterface $payment)
+    {
+        if (null === $sale = $payment->getSale()) {
+            $cs = $this->persistenceHelper->getChangeSet($payment, $this->getSalePropertyPath());
+            if (!empty($cs)) {
+                $sale = $cs[0];
+            }
+        }
+
+        if (!$sale instanceof SaleInterface) {
+            throw new RuntimeException("Failed to retrieve shipment's sale.");
+        }
+
+        return $sale;
+    }
+
+    /**
      * Schedules the sale content change event.
      *
      * @param SaleInterface $sale
@@ -266,4 +292,11 @@ abstract class AbstractPaymentListener
      * @throws InvalidArgumentException
      */
     abstract protected function getPaymentFromEvent(ResourceEventInterface $event);
+
+    /**
+     * Returns the invoice's sale property path.
+     *
+     * @return string
+     */
+    abstract protected function getSalePropertyPath();
 }

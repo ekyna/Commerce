@@ -26,7 +26,7 @@ class OrderValidator extends ConstraintValidator
             throw new InvalidArgumentException("Expected instance of " . Order::class);
         }
 
-        if ($order->isSample() && ($order->hasPayments() || $order->hasShipments())) {
+        if ($order->isSample() && ($order->hasPayments() || $order->hasInvoices())) {
             $this
                 ->context
                 ->buildViolation($constraint->sample_with_payments_or_invoices)

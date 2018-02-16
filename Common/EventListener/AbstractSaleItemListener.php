@@ -113,6 +113,12 @@ abstract class AbstractSaleItemListener
             throw new RuntimeException('Failed to retrieve the sale.');
         }
 
+        if (null !== $parent = $item->getParent()) {
+            $parent->removeChild($item);
+        } elseif (null !== $parent = $item->getSale()) {
+            $parent->removeItem($item);
+        }
+
         $this->scheduleSaleContentChangeEvent($sale);
     }
 
@@ -120,8 +126,6 @@ abstract class AbstractSaleItemListener
      * Pre update event handler.
      *
      * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
      */
     public function onPreUpdate(ResourceEventInterface $event)
     {
@@ -139,6 +143,10 @@ abstract class AbstractSaleItemListener
     public function onPreDelete(ResourceEventInterface $event)
     {
         $this->throwIllegalOperationIfItemIsImmutable($event);
+
+        $item = $this->getSaleItemFromEvent($event);
+
+        $item->getSale()->getItems()->toArray();
     }
 
     /**
@@ -187,7 +195,11 @@ abstract class AbstractSaleItemListener
     }
 
     /**
-     * @inheritdoc
+     * Returns the item's sale.
+     *
+     * @param Model\SaleItemInterface $item
+     *
+     * @return Model\SaleInterface
      */
     protected function getSaleFromItem(Model\SaleItemInterface $item)
     {

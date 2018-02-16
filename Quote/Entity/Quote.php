@@ -142,7 +142,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
         if ($this->hasAttachment($attachment)) {
             $this->attachments->removeElement($attachment);
-            //$attachment->setQuote(null);
+            $attachment->setQuote(null);
         }
 
         return $this;
@@ -188,7 +188,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
         if ($this->hasItem($item)) {
             $this->items->removeElement($item);
-            //$item->setQuote(null);
+            $item->setQuote(null);
         }
 
         return $this;
@@ -234,7 +234,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
         if ($this->hasAdjustment($adjustment)) {
             $this->adjustments->removeElement($adjustment);
-            //$adjustment->setQuote(null);
+            $adjustment->setQuote(null);
         }
 
         return $this;
@@ -280,7 +280,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
         if ($this->hasPayment($payment)) {
             $this->payments->removeElement($payment);
-            //$payment->setQuote(null);
+            $payment->setQuote(null);
         }
 
         return $this;
