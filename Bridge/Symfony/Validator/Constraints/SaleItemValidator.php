@@ -136,7 +136,7 @@ class SaleItemValidator extends ConstraintValidator
         $qty = $item->getTotalQuantity();
 
         // TODO Use packaging format
-        if (0 < $min && 0 !== bccomp($qty, $min, 3)) {
+        if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $qty, 3)) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_is_lower_than_invoiced, [
@@ -172,7 +172,7 @@ class SaleItemValidator extends ConstraintValidator
 
         // TODO Use packaging format
         //if (0 < $min && $item->getTotalQuantity() < $min) {
-        if (1 === bccomp($min, 0, 5) && 1 === bccomp($item->getTotalQuantity(), $min, 5)) {
+        if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $item->getTotalQuantity(), 3)) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_is_lower_than_shipped, [
