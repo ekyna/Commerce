@@ -31,32 +31,32 @@ class OrderStat
     /**
      * @var float
      */
-    private $revenue;
+    private $revenue = 0;
 
     /**
      * @var float
      */
-    private $shipping;
+    private $shipping = 0;
 
     /**
      * @var float
      */
-    private $margin;
+    private $margin = 0;
 
     /**
      * @var int
      */
-    private $orders;
+    private $orders = 0;
 
     /**
      * @var int
      */
-    private $items;
+    private $items = 0;
 
     /**
      * @var float
      */
-    private $average;
+    private $average = 0;
 
     /**
      * @var \DateTime
@@ -155,7 +155,7 @@ class OrderStat
      */
     public function setRevenue($revenue)
     {
-        $this->revenue = $revenue;
+        $this->revenue = (float)$revenue;
 
         return $this;
     }
@@ -179,7 +179,7 @@ class OrderStat
      */
     public function setShipping($shipping)
     {
-        $this->shipping = $shipping;
+        $this->shipping = (float)$shipping;
 
         return $this;
     }
@@ -203,7 +203,7 @@ class OrderStat
      */
     public function setMargin($margin)
     {
-        $this->margin = $margin;
+        $this->margin = (float)$margin;
 
         return $this;
     }
@@ -225,7 +225,7 @@ class OrderStat
      */
     public function setOrders($orders)
     {
-        $this->orders = $orders;
+        $this->orders = (int)$orders;
     }
 
     /**
@@ -247,7 +247,7 @@ class OrderStat
      */
     public function setItems($items)
     {
-        $this->items = $items;
+        $this->items = (int)$items;
 
         return $this;
     }
@@ -271,7 +271,7 @@ class OrderStat
      */
     public function setAverage($average)
     {
-        $this->average = $average;
+        $this->average = (float)$average;
 
         return $this;
     }
@@ -327,7 +327,7 @@ class OrderStat
 
         foreach (['revenue', 'shipping', 'margin', 'orders', 'items', 'average'] as $property) {
             if ($this->{$property} != $result[$property]) {
-                $this->{$property} = $result[$property] ?: 0;
+                $this->{$property} = $result[$property];
                 $changed = true;
             }
         }

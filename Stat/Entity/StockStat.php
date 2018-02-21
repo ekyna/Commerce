@@ -17,12 +17,12 @@ class StockStat
     /**
      * @var float
      */
-    private $inValue;
+    private $inValue = 0;
 
     /**
      * @var float
      */
-    private $soldValue;
+    private $soldValue = 0;
 
     /**
      * @var string

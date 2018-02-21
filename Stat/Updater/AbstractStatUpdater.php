@@ -44,8 +44,8 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
 
         $stat = $this->createStockStat();
         $stat
-            ->setInValue($result['in_value'] ?: 0)
-            ->setSoldValue($result['sold_value'] ?: 0)
+            ->setInValue($result['in_value'])
+            ->setSoldValue($result['sold_value'])
             ->setDate($date->format('Y-m-d'));
 
         $this->persist($stat);
