@@ -68,10 +68,12 @@ class SupplierOrderStateResolver implements StateResolverInterface
             $resolvedState = SupplierOrderStates::STATE_PARTIAL;
 
             if ($orderedQuantity == $receivedQuantity) {
-                $resolvedState = SupplierOrderStates::STATE_RECEIVED;
+                $resolvedState = SupplierOrderStates::STATE_COMPLETED;
 
-                if (null !== $subject->getPaymentDate() && null !== $subject->getForwarderDate()) {
-                    $resolvedState = SupplierOrderStates::STATE_COMPLETED;
+                if (null === $subject->getPaymentDate()) {
+                    $resolvedState = SupplierOrderStates::STATE_RECEIVED;
+                } elseif (null !== $subject->getCarrier() && null === $subject->getForwarderDate()) {
+                    $resolvedState = SupplierOrderStates::STATE_RECEIVED;
                 }
             }
         }

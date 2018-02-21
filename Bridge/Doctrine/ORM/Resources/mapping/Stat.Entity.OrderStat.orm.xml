@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity name="Ekyna\Component\Commerce\Stat\Entity\OrderStat"
+            repository-class="Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\OrderStatRepository"
+            table="commerce_stat_order">
+
+        <indexes>
+            <index columns="date" name="idx_commerce_stat_order_date"/>
+            <index columns="type" name="idx_commerce_stat_order_type"/>
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="date" name="unique_commerce_stat_order_date"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="type" column="type" type="smallint" nullable="false"/>
+        <field name="date" column="date" type="string" length="10" nullable="false"/>
+
+        <field name="revenue" column="revenue" type="decimal" precision="16" scale="3" nullable="false"/>
+        <field name="shipping" column="shipping" type="decimal" precision="16" scale="3" nullable="false"/>
+        <field name="margin" column="margin" type="decimal" precision="16" scale="3" nullable="false"/>
+        <field name="orders" column="orders" type="integer" nullable="false"/>
+        <field name="items" column="items" type="integer" nullable="false"/>
+        <field name="average" column="average" type="decimal" precision="16" scale="3" nullable="false"/>
+
+        <field name="updatedAt" column="updated_at" type="datetime" nullable="false"/>
+
+    </entity>
+
+</doctrine-mapping>

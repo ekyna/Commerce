@@ -32,4 +32,25 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      * @return array|OrderInterface[]
      */
     public function findByOriginCustomer(CustomerInterface $customer, array $states = []);
+
+    /**
+     * Returns the dues orders.
+     *
+     * @return OrderInterface[]
+     */
+    public function findDueOrders();
+
+    /**
+     * Returns the customers expired due.
+     *
+     * @return float
+     */
+    public function getCustomersExpiredDue();
+
+    /**
+     * Returns the customers fall due.
+     *
+     * @return float
+     */
+    public function getCustomersFallDue();
 }

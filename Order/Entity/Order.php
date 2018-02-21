@@ -36,6 +36,16 @@ class Order extends AbstractSale implements Model\OrderInterface
      */
     protected $completedAt;
 
+    /**
+     * @var float
+     */
+    protected $marginTotal;
+
+    /**
+     * @var int
+     */
+    protected $itemsCount;
+
 
     /**
      * Constructor.
@@ -49,6 +59,9 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         $this->state = Model\OrderStates::STATE_NEW;
         $this->sample = false;
+
+        $this->marginTotal = 0;
+        $this->itemsCount = 0;
     }
 
     /**
@@ -447,6 +460,42 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function setCompletedAt(\DateTime $completedAt = null)
     {
         $this->completedAt = $completedAt;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMarginTotal()
+    {
+        return $this->marginTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setMarginTotal($amount)
+    {
+        $this->marginTotal = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getItemsCount()
+    {
+        return $this->itemsCount;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setItemsCount($count)
+    {
+        $this->itemsCount = (int)$count;
 
         return $this;
     }

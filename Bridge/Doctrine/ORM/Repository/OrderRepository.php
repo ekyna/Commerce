@@ -4,7 +4,9 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 
 /**
  * Class OrderRepository
@@ -77,6 +79,66 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getQuery()
             ->setParameters($parameters)
             ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findDueOrders()
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('o.state', ':state'))
+            ->andWhere($qb->expr()->in('o.paymentState', ':payment_states'))
+            ->addOrderBy('o.outstandingDate', 'DESC')
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameters([
+                'state'          => OrderStates::STATE_ACCEPTED,
+                'payment_states' => [PaymentStates::STATE_CAPTURED, PaymentStates::STATE_OUTSTANDING],
+            ])
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCustomersExpiredDue()
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        return $qb
+            ->select('SUM(o.outstandingExpired)')
+            ->andWhere($qb->expr()->eq('o.state', ':state'))
+            ->andWhere($qb->expr()->eq('o.paymentState', ':payment_state'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameters([
+                'state'         => OrderStates::STATE_ACCEPTED,
+                'payment_state' => PaymentStates::STATE_OUTSTANDING,
+            ])
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCustomersFallDue()
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        return $qb
+            ->select('SUM(o.outstandingAccepted)')
+            ->andWhere($qb->expr()->eq('o.state', ':state'))
+            ->andWhere($qb->expr()->eq('o.paymentState', ':payment_state'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameters([
+                'state'         => OrderStates::STATE_ACCEPTED,
+                'payment_state' => PaymentStates::STATE_CAPTURED,
+            ])
+            ->getSingleScalarResult();
     }
 
     /**

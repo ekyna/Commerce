@@ -60,8 +60,7 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface"
                      field="shipmentMethod">
-            <join-column name="shipment_method_id" referenced-column-name="id" on-delete="RESTRICT"
-                         nullable="true"/>
+            <join-column name="shipment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">

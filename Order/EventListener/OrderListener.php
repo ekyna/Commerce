@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
+use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -26,6 +27,11 @@ class OrderListener extends AbstractSaleListener
      */
     protected $stockAssigner;
 
+    /**
+     * @var MarginCalculatorInterface
+     */
+    protected $marginCalculator;
+
 
     /**
      * Sets the stock assigner.
@@ -35,6 +41,16 @@ class OrderListener extends AbstractSaleListener
     public function setStockAssigner(StockUnitAssignerInterface $stockAssigner)
     {
         $this->stockAssigner = $stockAssigner;
+    }
+
+    /**
+     * Sets the margin calculator.
+     *
+     * @param MarginCalculatorInterface $marginCalculator
+     */
+    public function setMarginCalculator($marginCalculator)
+    {
+        $this->marginCalculator = $marginCalculator;
     }
 
     /**
@@ -103,6 +119,30 @@ class OrderListener extends AbstractSaleListener
 
     /**
      * @inheritDoc
+     *
+     * @param OrderInterface $sale
+     */
+    protected function handleContentChange(SaleInterface $sale)
+    {
+        $changed = parent::handleContentChange($sale);
+
+        $margin = $this->marginCalculator->calculateSale($sale);
+
+        if ($sale->getMarginTotal() != $amount = $margin->getAmount()) {
+            $sale->setMarginTotal($amount);
+            $changed = true;
+        }
+
+        if ($sale->getItemsCount() != $count = $sale->getItems()->count()) {
+            $sale->setItemsCount($count);
+            $changed = true;
+        }
+
+        return $changed;
+    }
+
+    /**
+     * @inheritDoc
      */
     protected function isDiscountUpdateNeeded(SaleInterface $sale)
     {
@@ -139,11 +179,12 @@ class OrderListener extends AbstractSaleListener
 
     /**
      * @inheritdoc
+     *
+     * @param OrderInterface $sale
      */
     protected function updateState(SaleInterface $sale)
     {
         if (parent::updateState($sale)) {
-            /** @var OrderInterface $sale */
             if (in_array($sale->getState(), OrderStates::getStockableStates(), true)) {
                 if (($sale->getState() === OrderStates::STATE_COMPLETED) && (null === $sale->getCompletedAt())) {
                     $sale->setCompletedAt(new \DateTime());

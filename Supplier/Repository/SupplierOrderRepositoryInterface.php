@@ -28,4 +28,32 @@ interface SupplierOrderRepositoryInterface extends ResourceRepositoryInterface
      * @return SupplierOrderInterface[]
      */
     public function findNewBySupplier(SupplierInterface $supplier);
+
+    /**
+     * Returns the suppliers expired due.
+     *
+     * @return float
+     */
+    public function getSuppliersExpiredDue();
+
+    /**
+     * Returns the suppliers fall due.
+     *
+     * @return float
+     */
+    public function getSuppliersFallDue();
+
+    /**
+     * Returns the carriers expired due.
+     *
+     * @return float
+     */
+    public function getCarriersExpiredDue();
+
+    /**
+     * Returns the carriers fall due.
+     *
+     * @return float
+     */
+    public function getCarriersFallDue();
 }

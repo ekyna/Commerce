@@ -54,4 +54,36 @@ interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface,
      * @return $this|OrderInterface
      */
     public function setCompletedAt(\DateTime $completedAt = null);
+
+    /**
+     * Returns the margin total.
+     *
+     * @return float
+     */
+    public function getMarginTotal();
+
+    /**
+     * Sets the margin total.
+     *
+     * @param float $amount
+     *
+     * @return $this|OrderInterface
+     */
+    public function setMarginTotal($amount);
+
+    /**
+     * Returns the items count.
+     *
+     * @return int
+     */
+    public function getItemsCount();
+
+    /**
+     * Sets the items count.
+     *
+     * @param int $count
+     *
+     * @return $this|OrderInterface
+     */
+    public function setItemsCount($count);
 }
