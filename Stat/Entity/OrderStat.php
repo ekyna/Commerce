@@ -327,7 +327,7 @@ class OrderStat
 
         foreach (['revenue', 'shipping', 'margin', 'orders', 'items', 'average'] as $property) {
             if ($this->{$property} != $result[$property]) {
-                $this->{$property} = $result[$property];
+                $this->{$property} = $result[$property] ?: 0;
                 $changed = true;
             }
         }
