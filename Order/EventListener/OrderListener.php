@@ -126,9 +126,13 @@ class OrderListener extends AbstractSaleListener
     {
         $changed = parent::handleContentChange($sale);
 
-        $margin = $this->marginCalculator->calculateSale($sale);
+        if (null !== $margin = $this->marginCalculator->calculateSale($sale)) {
+            $amount = $margin->getAmount();
+        } else {
+            $amount = 0;
+        }
 
-        if ($sale->getMarginTotal() != $amount = $margin->getAmount()) {
+        if ($sale->getMarginTotal() != $amount) {
             $sale->setMarginTotal($amount);
             $changed = true;
         }
