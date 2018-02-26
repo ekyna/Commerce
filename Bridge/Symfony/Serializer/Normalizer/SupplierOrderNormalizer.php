@@ -30,7 +30,8 @@ class SupplierOrderNormalizer extends AbstractResourceNormalizer
             }
 
             $data = array_replace($data, [
-                'items' => $items,
+                'items'       => $items,
+                'description' => $order->getDescription(),
             ]);
         }
 

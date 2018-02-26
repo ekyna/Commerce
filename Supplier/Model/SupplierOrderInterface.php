@@ -358,6 +358,20 @@ interface SupplierOrderInterface extends
     public function setTrackingUrls(array $urls = []);
 
     /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     */
+    public function setDescription($description);
+
+    /**
      * Returns the "ordered at" date.
      *
      * @return \DateTime

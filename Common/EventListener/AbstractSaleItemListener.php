@@ -109,17 +109,19 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
-        if (null === $sale = $this->getSaleFromItem($item)) {
-            throw new RuntimeException('Failed to retrieve the sale.');
-        }
+        // Sale may be null here: if it is schedule for delete,
+        // the persistence tracker won't be able to retrieve it.
+        $sale = $this->getSaleFromItem($item);
 
         if (null !== $parent = $item->getParent()) {
             $parent->removeChild($item);
-        } elseif (null !== $parent = $item->getSale()) {
-            $parent->removeItem($item);
+        } elseif (null !== $sale) {
+            $sale->removeItem($item);
         }
 
-        $this->scheduleSaleContentChangeEvent($sale);
+        if (null !== $sale) {
+            $this->scheduleSaleContentChangeEvent($sale);
+        }
     }
 
     /**
@@ -146,7 +148,30 @@ abstract class AbstractSaleItemListener
 
         $item = $this->getSaleItemFromEvent($event);
 
-        $item->getSale()->getItems()->toArray();
+        if (null === $sale = $item->getSale()) {
+            return;
+        }
+
+        $items = $sale->getItems()->toArray();
+        foreach ($items as $item) {
+            $this->loadItem($item);
+        }
+    }
+
+    /**
+     * Loads the item's children and adjustments recursively.
+     *
+     * @param Model\SaleItemInterface $item
+     */
+    private function loadItem(Model\SaleItemInterface $item)
+    {
+        $item->getAdjustments()->toArray();
+
+        $children = $item->getChildren()->toArray();
+
+        foreach ($children as $child) {
+            $this->loadItem($child);
+        }
     }
 
     /**

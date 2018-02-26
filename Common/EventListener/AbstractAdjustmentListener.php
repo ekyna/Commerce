@@ -102,7 +102,11 @@ abstract class AbstractAdjustmentListener
         $adjustment = $this->getAdjustmentFromEvent($event);
 
         // Pre load adjustments collection
-        $adjustment->getAdjustable()->getAdjustments()->toArray();
+        if (null === $adjustable = $adjustment->getAdjustable()) {
+            return;
+        }
+
+        $adjustable->getAdjustments()->toArray();
     }
 
     /**
@@ -137,14 +141,20 @@ abstract class AbstractAdjustmentListener
     {
         if ($adjustment instanceof Model\SaleAdjustmentInterface) {
             if (null === $sale = $this->getSaleFromAdjustment($adjustment)) {
-                throw new RuntimeException("Failed to retrieve the sale.");
+                // Sale may be scheduled for delete.
+                return;
+                //throw new RuntimeException("Failed to retrieve the sale.");
             }
         } elseif ($adjustment instanceof Model\SaleItemAdjustmentInterface) {
             if (null === $item = $this->getItemFromAdjustment($adjustment)) {
-                throw new RuntimeException("Failed to retrieve the sale item.");
+                // Sale item may be scheduled for delete.
+                return;
+                //throw new RuntimeException("Failed to retrieve the sale item.");
             }
             if (null === $sale = $this->getSaleFromItem($item)) {
-                throw new RuntimeException("Failed to retrieve the sale.");
+                // Sale may be scheduled for delete.
+                return;
+                //throw new RuntimeException("Failed to retrieve the sale.");
             }
         } else {
             throw new InvalidArgumentException("Unexpected adjustment type.");

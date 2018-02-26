@@ -52,7 +52,10 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
         } elseif (0 < $adjusted) {
             // If the whole adjusted quantity (from administrators) has been entirely shipped (to customers)
             if ($adjusted == $stockUnit->getShippedQuantity()) {
-                $resolvedState = StockUnitStates::STATE_CLOSED;
+                // Only if no remaining sold quantity
+                if ($adjusted == $stockUnit->getSoldQuantity()) {
+                    $resolvedState = StockUnitStates::STATE_CLOSED;
+                }
             } else {
                 // Ready for shipment (to customers)
                 $resolvedState = StockUnitStates::STATE_READY;

@@ -63,14 +63,9 @@ class OrderListener extends AbstractSaleListener
         /** @var OrderInterface $order */
         $order = $this->getSaleFromEvent($event);
 
-        // Stop if order has valid shipments
-        if (null !== $shipments = $order->getShipments()) {
-            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface $shipment */
-            foreach ($shipments as $shipment) {
-                if (!ShipmentStates::isDeletableState($shipment->getState())) {
-                    throw new IllegalOperationException(); // TODO Reason message
-                }
-            }
+        // Stop if order has invoices or shipments
+        if ($order->hasInvoices() || $order->hasShipments()) {
+            throw new IllegalOperationException();
         }
     }
 

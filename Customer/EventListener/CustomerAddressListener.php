@@ -42,7 +42,9 @@ class CustomerAddressListener
     {
         $address = $this->getAddressFromEvent($event);
 
-        $customer = $address->getCustomer();
+        if (null === $customer = $address->getCustomer()) {
+            return;
+        }
 
         if ($address->isInvoiceDefault()) {
             if (!($customer->hasParent() && null !== $customer->getParent()->getDefaultInvoiceAddress())) {

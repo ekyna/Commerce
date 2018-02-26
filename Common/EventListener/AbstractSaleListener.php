@@ -439,16 +439,16 @@ abstract class AbstractSaleListener
             return;
         }
 
-        $sale = $this->getSaleFromEvent($event);
+        if (null === $sale = $this->getSaleFromEvent($event)) {
+            return;
+        }
 
         // Stop if sale has valid payments
-        if (null !== $payments = $sale->getPayments()) {
-            foreach ($payments as $payment) {
-                if (!PaymentStates::isDeletableState($payment->getState())) {
-                    throw new Exception\IllegalOperationException(
-                        'Sale has valid payments and therefore cannot be deleted.'
-                    ); // TODO Translation
-                }
+        foreach ($sale->getPayments() as $payment) {
+            if (!PaymentStates::isDeletableState($payment->getState())) {
+                throw new Exception\IllegalOperationException(
+                    'Sale has valid payments and therefore cannot be deleted.'
+                ); // TODO Translation
             }
         }
     }

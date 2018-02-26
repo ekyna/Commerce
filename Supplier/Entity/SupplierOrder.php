@@ -117,6 +117,11 @@ class SupplierOrder implements Model\SupplierOrderInterface
     protected $trackingUrls;
 
     /**
+     * @var string
+     */
+    protected $description;
+
+    /**
      * @var \DateTime
      */
     protected $orderedAt;
@@ -546,6 +551,22 @@ class SupplierOrder implements Model\SupplierOrderInterface
         $this->trackingUrls = $urls;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
     }
 
     /**

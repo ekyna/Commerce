@@ -13,14 +13,21 @@ final class Units
 {
     const PIECE = 'piece';
 
+    // Length
+    const METRE      = 'metre';
+    const CENTIMETRE = 'centimetre';
+    const MILLIMETRE = 'millimetre';
+    const INCH       = 'inch';
+    const FOOT       = 'foot';
+
     // Weight
     const KILOGRAM = 'kilogram';
     const GRAM     = 'gram';
 
     // Volume
-    const CUBIC_METER = 'cubic_meter';
-    const LITER       = 'liter';
-    const MILLILITER  = 'milliliter';
+    const CUBIC_METRE = 'cubic_metre';
+    const LITRE       = 'litre';
+    const MILLILITRE  = 'millilitre';
 
     // Duration
     const DAY    = 'day';
@@ -38,11 +45,20 @@ final class Units
     {
         return [
             static::PIECE,
+            // Length
+            static::METRE,
+            static::CENTIMETRE,
+            static::MILLIMETRE,
+            static::INCH,
+            static::FOOT,
+            // Weight
             static::KILOGRAM,
             static::GRAM,
-            static::CUBIC_METER,
-            static::LITER,
-            static::MILLILITER,
+            // Volume
+            static::CUBIC_METRE,
+            static::LITRE,
+            static::MILLILITRE,
+            // Duration
             static::DAY,
             static::HOUR,
             static::MINUTE,
@@ -83,24 +99,43 @@ final class Units
         switch ($unit) {
             case static::PIECE:
                 return 'pcs';
+
+            // Length
+            case static::METRE:
+                return 'm';
+            case static::CENTIMETRE:
+                return 'cm';
+            case static::MILLIMETRE:
+                return 'mm';
+            case static::INCH:
+                return 'in';
+            case static::FOOT:
+                return 'ft';
+
+            // Weight
             case static::KILOGRAM:
                 return 'kg';
             case static::GRAM:
                 return 'g';
-            case static::CUBIC_METER:
-                return 'm3';
-            case static::LITER:
-                return 'l';
-            case static::MILLILITER:
-                return 'ml';
+
+            // Volume
+            case static::CUBIC_METRE:
+                return 'm³';
+            case static::LITRE:
+                return 'L';
+            case static::MILLILITRE:
+                return 'mL';
+
+            // Duration
             case static::DAY:
-                return 'pcs';
+                return 'days';
             case static::HOUR:
-                return 'pcs';
+                return 'hours';
             case static::MINUTE:
-                return 'pcs';
+                return 'minutes';
             case static::SECOND:
-                return 'pcs';
+                return 's';
+
             default:
                 throw new InvalidArgumentException("Invalid unit '$unit'.");
         }
@@ -117,17 +152,23 @@ final class Units
     {
         switch ($unit) {
             case static::PIECE:
+            case static::MILLIMETRE:
             case static::GRAM:
-            case static::MILLILITER:
+            case static::MILLILITRE:
             case static::DAY:
             case static::MINUTE:
             case static::SECOND:
                 return 0;
+            case static::CENTIMETRE:
+                return 1;
+            case static::INCH:
+            case static::FOOT:
             case static::HOUR:
                 return 2;
+            case static::METRE:
             case static::KILOGRAM:
-            case static::CUBIC_METER:
-            case static::LITER:
+            case static::CUBIC_METRE:
+            case static::LITRE:
                 return 3;
             default:
                 throw new InvalidArgumentException("Invalid unit '$unit'.");

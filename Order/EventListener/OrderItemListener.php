@@ -127,6 +127,7 @@ class OrderItemListener extends AbstractSaleItemListener
                 )
             ) {
                 // Skip this item as the listener will be called on it.
+                /** @see OrderItemListener::onUpdate() */
                 continue;
             }
 
