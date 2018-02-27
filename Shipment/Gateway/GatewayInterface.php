@@ -45,4 +45,13 @@ interface GatewayInterface
      * @return array
      */
     public function getActions(ShipmentInterface $shipment = null);
+
+    /**
+     * REturns the tracking url for the given shipment.
+     *
+     * @param ShipmentInterface $shipment
+     *
+     * @return string|null
+     */
+    public function getTrackingUrl(ShipmentInterface $shipment);
 }

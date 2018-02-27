@@ -65,7 +65,6 @@ class AddressValidator extends ConstraintValidator
                     'max' => 128,
                 ]),
             ],
-            // TODO https://github.com/barbieswimcrew/zip-code-validator/blob/master/src/ZipCodeValidator/Constraints/ZipCodeValidator.php
             'postalCode' => [
                 new Assert\NotBlank(),
                 new Assert\Length([
@@ -95,14 +94,29 @@ class AddressValidator extends ConstraintValidator
             ],
         ];
 
-        $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
-        if (class_exists($zipCodeClass) && (null !== $country = $address->getCountry())) {
-            $config['postalCode'][] = new $zipCodeClass([
-                'message'     => $constraint->invalid_zip_code,
-                'iso'         => $country->getCode(),
-                'ignoreEmpty' => true,
-                'strict'      => false,
-            ]);
+        if (null !== $country = $address->getCountry()) {
+            $config['phone'] = [
+                new PhoneNumber([
+                    'type'          => 'fixed_line',
+                    'defaultRegion' => $country->getCode(),
+                ]),
+            ];
+            $config['mobile'] = [
+                new PhoneNumber([
+                    'type'          => 'mobile',
+                    'defaultRegion' => $country->getCode(),
+                ]),
+            ];
+
+            $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
+            if (class_exists($zipCodeClass)) {
+                $config['postalCode'][] = new $zipCodeClass([
+                    'message'     => $constraint->invalid_zip_code,
+                    'iso'         => $country->getCode(),
+                    'ignoreEmpty' => true,
+                    'strict'      => false,
+                ]);
+            }
         }
 
         if ($constraint->company) {
@@ -135,7 +149,7 @@ class AddressValidator extends ConstraintValidator
         }
 
         IdentityValidator::validateIdentity($this->context, $address, [
-            'required' => $constraint->identity
+            'required' => $constraint->identity,
         ]);
     }
 }

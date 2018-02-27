@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
  * Class AbstractGateway
@@ -66,5 +67,13 @@ abstract class AbstractGateway implements GatewayInterface, Shipment\WeightCalcu
     public function getActions(Shipment\ShipmentInterface $shipment = null)
     {
         return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTrackingUrl(ShipmentInterface $shipment)
+    {
+        return null;
     }
 }
