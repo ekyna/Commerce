@@ -64,6 +64,10 @@ class StockUnitLinker implements StockUnitLinkerInterface
      */
     public function linkItem(SupplierOrderItemInterface $supplierOrderItem)
     {
+        if (!$supplierOrderItem->hasSubjectIdentity()) {
+            return;
+        }
+
         // Find 'unlinked' stock units ordered (+ Cached 'new' stock units look up)
         if (null !== $stockUnit = $this->unitResolver->findLinkable($supplierOrderItem)) {
             $stockUnit->setSupplierOrderItem($supplierOrderItem);
@@ -78,27 +82,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
         $this->updatePrice($stockUnit);
 
         $this->stockUnitUpdater->updateOrdered($stockUnit, $supplierOrderItem->getQuantity(), false);
-
-        /*// We want the sold quantity to be equal to the ordered quantity.
-        // We don't care about shipped quantity as 'new' stock units can't be shipped.
-        $overflow = $stockUnit->getSoldQuantity() - $stockUnit->getOrderedQuantity() + $stockUnit->getAdjustedQuantity();
-        if (0 >= $overflow) {
-            $this->persistStockUnit($stockUnit);
-
-            return;
-        }
-
-        // TODO What about pending stock units for the same sale item ?
-
-        // New 'unlinked' stock unit for the sold quantity overflow
-        $newStockUnit = $this->unitResolver->createBySubjectRelative($supplierOrderItem);
-        $this->persistenceHelper->persistAndRecompute($newStockUnit);
-
-        $overflow -= $this->moveAssignments($stockUnit, $newStockUnit, $overflow);
-
-        if (0 < $overflow) {
-            throw new StockLogicException("Failed to dispatch assignments.");
-        }*/
     }
 
     /**
@@ -106,6 +89,10 @@ class StockUnitLinker implements StockUnitLinkerInterface
      */
     public function applyItem(SupplierOrderItemInterface $supplierOrderItem)
     {
+        if (!$supplierOrderItem->hasSubjectIdentity()) {
+            return false;
+        }
+
         // Supplier order item has been previously linked to a stock unit.
         $stockUnit = $supplierOrderItem->getStockUnit();
 
@@ -129,63 +116,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
         }
 
         return $changed;
-
-        /*// Sync the ordered quantity
-        $stockUnit->setOrderedQuantity($supplierOrderItem->getQuantity());
-
-        // TODO update stock unit's net price if changed ?
-
-        if ($stockUnit->getOrderedQuantity() < $stockUnit->getReceivedQuantity()) {
-            throw new StockLogicException("Stock unit's ordered quantity can't be lower than received quantity.");
-        }
-
-        // We don't care about shipped quantities because of the 'ordered > received > shipped' rule.
-        $overflow = $stockUnit->getSoldQuantity() - $stockUnit->getOrderedQuantity() + $stockUnit->getAdjustedQuantity();
-        // Abort if no overflow
-        if (0 == $overflow) {
-            $this->persistStockUnit($stockUnit);
-
-            return;
-        }
-
-        // Negative case : too much sold quantity
-        if (0 < $overflow) {
-            // Try to move sold overflow to other pending/ready stock units
-            $targetStockUnits = $this->unitResolver->findPendingOrReady($supplierOrderItem);
-            foreach ($targetStockUnits as $targetStockUnit) {
-                // Skip the stock unit we're applying
-                if ($targetStockUnit === $stockUnit) {
-                    continue;
-                }
-
-                $overflow -= $this->moveAssignments($stockUnit, $targetStockUnit, $overflow);
-
-                if (0 == $overflow) {
-                    break; // We're done dispatching sold quantity
-                }
-            }
-
-            // Move sold overflow to a new stock unit
-            if (0 < $overflow) {
-                // New 'unlinked' stock unit for the sold quantity overflow
-                $newStockUnit = $this->unitResolver->createBySubjectRelative($supplierOrderItem);
-
-                $overflow -= $this->moveAssignments($stockUnit, $newStockUnit, $overflow);
-            }
-
-            if (0 != $overflow) {
-                throw new StockLogicException("Failed to apply supplier order item.");
-            }
-
-            return;
-        }
-
-        // Positive case : not enough sold quantity
-        if (null !== $sourceUnit = $this->unitResolver->findLinkable($supplierOrderItem)) {
-            $this->moveAssignments($sourceUnit, $stockUnit, -$overflow);
-        }
-
-        // Overflow may remain here, as we won't always get a source unit*/
     }
 
     /**
@@ -193,6 +123,10 @@ class StockUnitLinker implements StockUnitLinkerInterface
      */
     public function unlinkItem(SupplierOrderItemInterface $supplierOrderItem)
     {
+        if (!$supplierOrderItem->hasSubjectIdentity()) {
+            return;
+        }
+
         if (null === $stockUnit = $supplierOrderItem->getStockUnit()) {
             return;
         }
@@ -208,44 +142,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
             ->setEstimatedDateOfArrival(null);
 
         $this->stockUnitUpdater->updateOrdered($stockUnit, 0, false);
-
-        /*if ($stockUnit->isEmpty()) {
-            // Stock has no assignment
-            // Remove the stock unit without scheduling event
-            $this->persistenceHelper->remove($stockUnit, true);
-
-            return;
-        }
-
-        $overflow = $stockUnit->getSoldQuantity() - $stockUnit->getAdjustedQuantity();
-
-        if (0 < $overflow) {
-            // Try to move assignments to not closed stock units
-            // TODO stock unit sort/priority
-            $targetStockUnits = $this->unitResolver->findPendingOrReady($supplierOrderItem);
-            foreach ($targetStockUnits as $targetStockUnit) {
-                // Skip the stock unit we're unlinking
-                if ($targetStockUnit === $stockUnit) {
-                    continue;
-                }
-
-                $overflow -= $this->moveAssignments($stockUnit, $targetStockUnit, $overflow);
-
-                if (0 == $overflow) {
-                    break; // We're done with re-assignment
-                }
-            }
-
-            if (0 < $overflow) {
-                // Try to merge assignments with a linkable stock unit's assignments
-                $targetStockUnit = $this->unitResolver->findLinkable($supplierOrderItem);
-                if (null !== $targetStockUnit && $stockUnit !== $targetStockUnit) {
-                    $this->moveAssignments($stockUnit, $targetStockUnit, $overflow);
-                }
-            }
-        }
-
-        $this->persistStockUnit($stockUnit);*/
     }
 
     /**

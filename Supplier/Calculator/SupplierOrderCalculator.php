@@ -102,7 +102,9 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         $total = 0;
 
         foreach ($order->getItems() as $item) {
-            $total += $item->getProduct()->getWeight() * $item->getQuantity();
+            if (null !== $product = $item->getProduct()) {
+                $total += $product->getWeight() * $item->getQuantity();
+            }
         }
 
         return $total;

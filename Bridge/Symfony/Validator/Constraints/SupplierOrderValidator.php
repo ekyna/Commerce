@@ -43,7 +43,9 @@ class SupplierOrderValidator extends ConstraintValidator
         // Supplier products duplication
         $products = [];
         foreach ($order->getItems() as $item) {
-            $product = $item->getProduct();
+            if (null === $product = $item->getProduct()) {
+                continue;
+            }
             if (in_array ($product, $products, true)) {
                 $this
                     ->context

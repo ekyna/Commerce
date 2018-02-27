@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Supplier\EventListener;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
@@ -117,8 +118,15 @@ class SupplierOrderListener extends AbstractListener
         ) {
             // Update stock units estimated date of arrival
             foreach ($order->getItems() as $item) {
-                $this->stockUnitUpdater
-                    ->updateEstimatedDateOfArrival($item->getStockUnit(), $order->getEstimatedDateOfArrival());
+                if (!$item->hasSubjectIdentity()) {
+                    continue;
+                }
+
+                if (null === $stockUnit = $item->getStockUnit()) {
+                    throw new RuntimeException("Failed to retrieve stock unit.");
+                }
+
+                $this->stockUnitUpdater->updateEstimatedDateOfArrival($stockUnit, $order->getEstimatedDateOfArrival());
             }
         }
     }

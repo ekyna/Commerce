@@ -29,18 +29,20 @@ class SupplierDeliveryItemListener extends AbstractListener
         if (null === $orderItem = $item->getOrderItem()) {
             throw new RuntimeException("OrderItem must be set.");
         }
-        if (null === $stockUnit = $orderItem->getStockUnit()) {
-            throw new RuntimeException("StockUnit must be set.");
+
+        if (null !== $stockUnit = $orderItem->getStockUnit()) {
+            $stockUnit->addGeocode($item->getGeocode());
+
+            $this->stockUnitUpdater->updateReceived($stockUnit, $item->getQuantity(), true);
+        } elseif ($orderItem->hasSubjectIdentity()) {
+            throw new RuntimeException("Failed to retrieve stock unit.");
         }
-
-        $stockUnit->addGeocode($item->getGeocode());
-
-        $this->stockUnitUpdater->updateReceived($stockUnit, $item->getQuantity(), true);
 
         // Dispatch supplier order content change event
         if (null === $order = $orderItem->getOrder()) {
             throw new RuntimeException("Order must be set.");
         }
+
         $this->scheduleSupplierOrderContentChangeEvent($order);
     }
 
@@ -58,16 +60,16 @@ class SupplierDeliveryItemListener extends AbstractListener
         }
 
         if ($this->persistenceHelper->isChanged($item, 'geocode')) {
-            if (null === $stockUnit = $orderItem->getStockUnit()) {
-                throw new RuntimeException("StockUnit must be set.");
+            if (null !== $stockUnit = $orderItem->getStockUnit()) {
+                $gCs = $this->persistenceHelper->getChangeSet($item, 'geocode');
+
+                $stockUnit->removeGeocode($gCs[0]);
+                $stockUnit->addGeocode($gCs[1]);
+
+                $this->persistenceHelper->persistAndRecompute($stockUnit, false);
+            } elseif ($orderItem->hasSubjectIdentity()) {
+                throw new RuntimeException("Failed to retrieve stock unit.");
             }
-
-            $gCs = $this->persistenceHelper->getChangeSet($item, 'geocode');
-
-            $stockUnit->removeGeocode($gCs[0]);
-            $stockUnit->addGeocode($gCs[1]);
-
-            $this->persistenceHelper->persistAndRecompute($stockUnit, false);
         }
 
         if ($this->persistenceHelper->isChanged($item, 'quantity')) {
@@ -100,19 +102,23 @@ class SupplierDeliveryItemListener extends AbstractListener
         if (null === $orderItem = $item->getOrderItem()) {
             throw new RuntimeException("OrderItem must be set.");
         }
-        if (null === $stockUnit = $orderItem->getStockUnit()) {
-            throw new RuntimeException("StockUnit must be set.");
-        }
 
-        $stockUnit->removeGeocode($item->getGeocode());
+        if (null !== $stockUnit = $orderItem->getStockUnit()) {
+            $stockUnit->removeGeocode($item->getGeocode());
+        } elseif ($orderItem->hasSubjectIdentity()) {
+            throw new RuntimeException("Failed to retrieve stock unit.");
+        }
 
         if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
             $this->handleQuantityChange($item);
         } else {
-            // Debit stock unit received quantity
-            $this->stockUnitUpdater->updateReceived($stockUnit, -$item->getQuantity(), true);
+            if (null !== $stockUnit) {
+                // Debit stock unit received quantity
+                $this->stockUnitUpdater->updateReceived($stockUnit, -$item->getQuantity(), true);
+            }
 
             // Trigger the supplier order update
+            // TODO get from change set
             if (null === $order = $orderItem->getOrder()) {
                 throw new RuntimeException("Failed to retrieve supplier order.");
             }
@@ -139,13 +145,14 @@ class SupplierDeliveryItemListener extends AbstractListener
         if (null === $orderItem = $item->getOrderItem()) {
             throw new RuntimeException("Failed to retrieve order item.");
         }
-        if (null === $stockUnit = $orderItem->getStockUnit()) {
+        if (null !== $stockUnit = $orderItem->getStockUnit()) {
+            // TODO use packaging format
+            if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
+                // Update stock unit received quantity
+                $this->stockUnitUpdater->updateReceived($stockUnit, $deltaQuantity, true);
+            }
+        } elseif ($orderItem->hasSubjectIdentity()) {
             throw new RuntimeException("Failed to retrieve stock unit.");
-        }
-        // TODO use packaging format
-        if (0 != $deltaQuantity = floatval($changeSet['quantity'][1]) - floatval($changeSet['quantity'][0])) {
-            // Update stock unit received quantity
-            $this->stockUnitUpdater->updateReceived($stockUnit, $deltaQuantity, true);
         }
 
         // Trigger the supplier order update
