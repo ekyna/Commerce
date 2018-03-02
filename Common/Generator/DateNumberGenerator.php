@@ -26,6 +26,10 @@ class DateNumberGenerator extends DefaultNumberGenerator
             $number = intval(substr($number, strlen($datePrefix)));
         }
 
+        if ($this->debug && 9999 > $number) {
+            $number = 9999;
+        }
+
         return $datePrefix . str_pad($number + 1, $this->length - strlen($datePrefix), '0', STR_PAD_LEFT);
     }
 }

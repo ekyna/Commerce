@@ -82,7 +82,7 @@ class AddressValidator extends ConstraintValidator
             'country'    => [
                 new Assert\NotNull(),
             ],
-            'phone'      => [
+            /*TODO 'phone'      => [
                 new PhoneNumber([
                     'type' => 'fixed_line',
                 ]),
@@ -91,11 +91,11 @@ class AddressValidator extends ConstraintValidator
                 new PhoneNumber([
                     'type' => 'mobile',
                 ]),
-            ],
+            ],*/
         ];
 
         if (null !== $country = $address->getCountry()) {
-            $config['phone'] = [
+            /*TODO $config['phone'] = [
                 new PhoneNumber([
                     'type'          => 'fixed_line',
                     'defaultRegion' => $country->getCode(),
@@ -106,7 +106,7 @@ class AddressValidator extends ConstraintValidator
                     'type'          => 'mobile',
                     'defaultRegion' => $country->getCode(),
                 ]),
-            ];
+            ];*/
 
             $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
             if (class_exists($zipCodeClass)) {

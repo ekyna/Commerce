@@ -32,6 +32,10 @@ class DefaultNumberGenerator implements NumberGeneratorInterface
      */
     protected $length;
 
+    /**
+     * @var bool
+     */
+    protected $debug;
 
     /**
      * Constructor.
@@ -39,12 +43,14 @@ class DefaultNumberGenerator implements NumberGeneratorInterface
      * @param string $filePath The number file path
      * @param string $prefix   The number prefix
      * @param int    $length   The total number length
+     * @param bool   $debug
      */
-    public function __construct($filePath, $prefix = 'ym', $length = 10)
+    public function __construct($filePath, $prefix = 'ym', $length = 10, $debug = false)
     {
         $this->filePath = $filePath;
         $this->prefix = $prefix;
         $this->length = $length;
+        $this->debug = $debug;
     }
 
     /**
@@ -84,6 +90,10 @@ class DefaultNumberGenerator implements NumberGeneratorInterface
             }
         } else {
             $number = intval($number);
+        }
+
+        if ($this->debug && 999999 > $number) {
+            $number = 999999;
         }
 
         return $this->prefix . str_pad($number + 1, $this->length - strlen($this->prefix), '0', STR_PAD_LEFT);

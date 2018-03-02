@@ -81,8 +81,8 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 return OrderStates::STATE_REFUNDED;
             }
 
-            // ACCEPTED If order has shipment(s) or invoice(s).
-            if ($sale->hasShipments() || $sale->hasInvoices()) {
+            // ACCEPTED If order has paid or pending total or shipment(s) or invoice(s).
+            if (0 < $sale->getPaidTotal() || 0 < $sale->getPendingTotal() || $sale->hasShipments() || $sale->hasInvoices()) {
                 return OrderStates::STATE_ACCEPTED;
             }
 
