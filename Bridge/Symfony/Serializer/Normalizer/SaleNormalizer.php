@@ -16,22 +16,6 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 class SaleNormalizer extends AbstractResourceNormalizer
 {
     /**
-     * @var Formatter
-     */
-    protected $formatter;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Formatter $formatter
-     */
-    public function __construct(Formatter $formatter)
-    {
-        $this->formatter = $formatter;
-    }
-
-    /**
      * @inheritdoc
      */
     public function normalize($sale, $format = null, array $context = [])
