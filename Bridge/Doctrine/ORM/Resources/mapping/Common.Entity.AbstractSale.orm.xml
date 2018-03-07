@@ -40,6 +40,7 @@
         <field name="originNumber" column="origin_number" type="string" length="16" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
         <field name="comment" column="comment" type="text" nullable="true"/>
+        <field name="documentComment" column="document_comment" type="text" nullable="true"/>
 
         <field name="acceptedAt" column="accepted_at" type="datetime" nullable="true"/>
 

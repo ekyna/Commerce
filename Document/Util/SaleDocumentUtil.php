@@ -24,11 +24,7 @@ final class SaleDocumentUtil
         $types = [];
 
         foreach (DocumentTypes::getTypes() as $type) {
-            if (null === $class = DocumentTypes::getClass($type)) {
-                continue;
-            }
-
-            if (!is_subclass_of($sale, $class)) {
+            if (!static::isSaleSupportsDocumentType($sale, $type)) {
                 continue;
             }
 
@@ -42,6 +38,31 @@ final class SaleDocumentUtil
         }
 
         return $types;
+    }
+
+    /**
+     * Returns whether the sale supports the given document type.
+     *
+     * @param SaleInterface $sale
+     * @param string        $type
+     *
+     * @return bool
+     */
+    static public function isSaleSupportsDocumentType(SaleInterface $sale, $type)
+    {
+        if (!DocumentTypes::isValidType($type)) {
+            return false;
+        }
+
+        if (null === $class = DocumentTypes::getClass($type)) {
+            return false;
+        }
+
+        if (is_subclass_of($sale, $class)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

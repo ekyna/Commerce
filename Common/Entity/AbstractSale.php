@@ -112,6 +112,11 @@ abstract class AbstractSale implements Common\SaleInterface
     protected $comment;
 
     /**
+     * @var string
+     */
+    protected $documentComment;
+
+    /**
      * @var \DateTime
      */
     protected $acceptedAt;
@@ -425,6 +430,30 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setComment($comment)
     {
         $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * Returns the document comment.
+     *
+     * @return string
+     */
+    public function getDocumentComment()
+    {
+        return $this->documentComment;
+    }
+
+    /**
+     * Sets the document comment.
+     *
+     * @param string $comment
+     *
+     * @return AbstractSale
+     */
+    public function setDocumentComment($comment)
+    {
+        $this->documentComment = $comment;
 
         return $this;
     }

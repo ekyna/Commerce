@@ -97,6 +97,12 @@ class DocumentBuilder implements DocumentBuilderInterface
             $changed = true;
         }
 
+        // Comment
+        if (empty($document->getComment()) && !empty($comment = $sale->getDocumentComment())) {
+            $document->setComment($comment);
+            $changed = true;
+        }
+
         return $changed;
     }
 

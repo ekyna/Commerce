@@ -23,7 +23,8 @@
         <field name="taxesDetails" column="taxes_details" type="json_array"/>
         <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
 
-        <field name="description" column="description" type="string" length="255" nullable="true"/>
+        <field name="comment" column="comment" type="text" nullable="true"/>
+        <field name="description" column="description" type="text" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

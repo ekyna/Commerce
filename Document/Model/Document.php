@@ -46,6 +46,11 @@ class Document implements DocumentInterface
     /**
      * @var string
      */
+    protected $comment;
+
+    /**
+     * @var string
+     */
     protected $description;
 
     /**
@@ -286,6 +291,24 @@ class Document implements DocumentInterface
         foreach ($lines as $line) {
             $this->addLine($line);
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setComment($comment)
+    {
+        $this->comment = $comment;
 
         return $this;
     }

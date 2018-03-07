@@ -25,11 +25,6 @@
             <constraint name="NotBlank"/>
             <constraint name="Currency"/>
         </property>-->
-        <property name="description">
-            <constraint name="Length">
-                <option name="max">255</option>
-            </constraint>
-        </property>
         <property name="lines">
             <constraint name="Valid"/>
             <constraint name="Count">

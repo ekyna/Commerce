@@ -281,6 +281,22 @@ interface SaleInterface extends
     public function setComment($comment);
 
     /**
+     * Returns the document comment.
+     *
+     * @return string
+     */
+    public function getDocumentComment();
+
+    /**
+     * Sets the document comment.
+     *
+     * @param string $comment
+     *
+     * @return $this|SaleInterface
+     */
+    public function setDocumentComment($comment);
+
+    /**
      * Returns the "accepted at" datetime.
      *
      * @return \DateTime

@@ -177,6 +177,22 @@ interface DocumentInterface
     public function setLines(ArrayCollection $lines);
 
     /**
+     * Returns the comment.
+     *
+     * @return string
+     */
+    public function getComment();
+
+    /**
+     * Sets the comment.
+     *
+     * @param string $comment
+     *
+     * @return $this|DocumentInterface
+     */
+    public function setComment($comment);
+
+    /**
      * Returns the description.
      *
      * @return string
