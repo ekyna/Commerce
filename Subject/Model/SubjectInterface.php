@@ -12,9 +12,44 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
 interface SubjectInterface extends ResourceInterface
 {
     /**
-     * Returns the provider name.
+     * Returns the subject provider name.
      *
      * @return string
      */
-    static public function getProviderName();
+    public static function getProviderName();
+
+    /**
+     * Returns the subject identifier.
+     *
+     * @return int|string
+     */
+    public function getIdentifier();
+
+    /**
+     * Returns the designation.
+     *
+     * @return string
+     */
+    public function getDesignation();
+
+    /**
+     * Returns the reference.
+     *
+     * @return string
+     */
+    public function getReference();
+
+    /**
+     * Returns the net price.
+     *
+     * @return float
+     */
+    public function getNetPrice();
+
+    /**
+     * Returns the weight (kilograms).
+     *
+     * @return float
+     */
+    public function getWeight();
 }

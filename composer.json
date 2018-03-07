@@ -23,6 +23,7 @@
         "symfony/intl": "~3.0",
         "symfony/config": "~3.0",
         "symfony/options-resolver": "~3.0",
+        "symfony/event-dispatcher": "~3.0",
         "ekyna/resource": "0.7.x-dev",
         "giggsey/libphonenumber-for-php": "^8.0",
         "antalaron/vat-number-validator": "^1.0"

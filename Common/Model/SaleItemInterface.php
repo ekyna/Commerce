@@ -361,4 +361,13 @@ interface SaleItemInterface extends
      * @return Margin
      */
     public function getMargin();
+
+    /**
+     * Returns the unique hash.
+     *
+     * @param bool $encode Whether to return the plain array data or the encoded string.
+     *
+     * @return array|string
+     */
+    public function getHash($encode = true);
 }

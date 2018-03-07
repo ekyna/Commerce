@@ -501,27 +501,50 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritDoc
      */
-    public function compareTo($other)
+    public function getHash($encode = true)
     {
-        // TODO
-        /** @see https://github.com/Atlantic18/DoctrineExtensions/issues/1726 */
-        // return 1 if this object is considered greater than the compare value
-        // return -1 if this object is considered less than the compare value
-        // return 0 if this object is considered equal to the compare value
-
-        return 0;
-    }
-
-    public function getHash()
-    {
-        $parts = [];
+        $data = [
+            'r' => $this->reference,
+        ];
 
         if ($this->hasSubjectIdentity()) {
-            $parts[] = $this->getSubjectIdentity()->getProvider() . ':' . $this->getSubjectIdentity()->getIdentifier();
-        } else {
-            $parts[] = $this->getReference();
+            $data['p'] = $this->subjectIdentity->getProvider();
+            $data['i'] = $this->subjectIdentity->getIdentifier();
         }
 
-        return implode('-', $parts);
+        if (!empty($this->data)) {
+            $data['d'] = $this->data;
+        }
+
+        if (null === $this->parent) {
+            $data['q'] = floatval($this->quantity); // TODO Packaging format
+        }
+
+        if (0 < $this->children->count()) {
+            $data['c'] = [];
+            foreach ($this->children as $child) {
+                $data['c'][] = $child->getHash(false);
+            }
+        }
+
+        if ($encode) {
+            return md5(json_encode($data));
+        }
+
+        return $data;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @see https://github.com/Atlantic18/DoctrineExtensions/issues/1726
+     */
+    public function compareTo($other)
+    {
+        if ($other instanceof SaleItemInterface) {
+            return $this->position - $other->getPosition();
+        }
+
+        return 0;
     }
 }
