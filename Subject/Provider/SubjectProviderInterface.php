@@ -14,8 +14,9 @@ interface SubjectProviderInterface
 {
     const DATA_KEY = 'provider';
 
-    const CONTEXT_SALE     = 'sale';
-    const CONTEXT_SUPPLIER = 'supplier';
+    const CONTEXT_ITEM     = 'item';     // Sale item subject
+    const CONTEXT_SALE     = 'sale';     // Sale item search
+    const CONTEXT_SUPPLIER = 'supplier'; // Supplier item subject
 
 
     /**

@@ -52,4 +52,32 @@ interface SubjectInterface extends ResourceInterface
      * @return float
      */
     public function getWeight();
+
+    /**
+     * Returns the height (millimeters).
+     *
+     * @return int
+     */
+    public function getHeight();
+
+    /**
+     * Returns the width (millimeters).
+     *
+     * @return int
+     */
+    public function getWidth();
+
+    /**
+     * Returns the depth (millimeters).
+     *
+     * @return int
+     */
+    public function getDepth();
+
+    /**
+     * Returns the quantity unit.
+     *
+     * @return string
+     */
+    public function getUnit();
 }
