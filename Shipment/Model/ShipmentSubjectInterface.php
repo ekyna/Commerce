@@ -69,9 +69,11 @@ interface ShipmentSubjectInterface extends ShipmentDataInterface
     public function removeShipment(ShipmentInterface $shipment);
 
     /**
-     * Returns the first shipment date.
+     * Returns the shipment date.
+     *
+     * @param bool $latest Whether to return the last shipment date instead of the first
      *
      * @return \DateTime|null
      */
-    public function getShippedAt();
+    public function getShippedAt($latest = false);
 }

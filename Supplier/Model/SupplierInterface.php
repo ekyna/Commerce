@@ -6,13 +6,14 @@ use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\TimestampableInterface;
 
 /**
  * Class SupplierInterface
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SupplierInterface extends ResourceInterface, IdentityInterface
+interface SupplierInterface extends ResourceInterface, IdentityInterface, TimestampableInterface
 {
     /**
      * Returns the name.
@@ -125,4 +126,20 @@ interface SupplierInterface extends ResourceInterface, IdentityInterface
      * @return $this|SupplierInterface
      */
     public function setCarrier(SupplierCarrierInterface $carrier = null);
+
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription();
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return $this|SupplierInterface
+     */
+    public function setDescription($description);
 }

@@ -46,8 +46,11 @@ class ConvertAction implements ActionInterface, GatewayAwareInterface
             $model['amount'] = abs($payment->getAmount() * pow(10, $currency->exp));
         }
 
+        $sale = $payment->getSale();
+
         if (false == $model['order_id']) {
-            $model['order_id'] = $payment->getNumber();
+            // TODO sale number + Payment number
+            $model['order_id'] = $sale->getNumber();
         }
 
         $sale = $payment->getSale();

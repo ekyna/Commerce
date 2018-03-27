@@ -81,20 +81,29 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
                 $partialCount++;
                 continue;
             }
+
+            if (0 === bccomp($q['total'] - $q['credited'], 0, 3)) {
+                // Item is canceled
+                $canceledCount++;
+            }
         }
 
+        // CANCELED If fully canceled
+        if ($canceledCount == $itemsCount) {
+            return $this->setState($subject, ShipmentStates::STATE_CANCELED);
+        }
 
-        // RETURNED If all fully returned
-        if ($returnedCount == $itemsCount) {
+        // RETURNED If fully returned/canceled
+        if ($returnedCount + $canceledCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_RETURNED);
         }
 
-        // COMPLETED If all fully shipped
-        if ($shippedCount == $itemsCount) {
+        // COMPLETED If fully shipped/canceled
+        if ($shippedCount + $canceledCount == $itemsCount) {
             return $this->setState($subject, ShipmentStates::STATE_COMPLETED);
         }
 
-        // PARTIAL If some partially shipped
+        // PARTIAL If partially shipped
         if (0 < $partialCount || 0 < $shippedCount) {
             return $this->setState($subject, ShipmentStates::STATE_PARTIAL);
         }

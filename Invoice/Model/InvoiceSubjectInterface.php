@@ -101,9 +101,11 @@ interface InvoiceSubjectInterface
     public function removeInvoice(InvoiceInterface $invoice);
 
     /**
-     * Returns the first invoice date.
+     * Returns the invoice date.
+     *
+     * @param bool $latest Whether to return the last invoice date instead of the first.
      *
      * @return \DateTime|null
      */
-    public function getInvoicedAt();
+    public function getInvoicedAt($latest = false);
 }

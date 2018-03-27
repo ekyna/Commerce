@@ -32,6 +32,14 @@ class SaleValidator extends ConstraintValidator
 
         $this->validateIdentity($sale, $constraint);
         $this->validateDeliveryAddress($sale, $constraint);
+        $this->validatePaymentTermAndOutstandingLimit($sale, $constraint);
+
+        if (0 < $sale->getDepositTotal() && $sale->getDepositTotal() >= $sale->getGrandTotal()) {
+            $this->context
+                ->buildViolation($constraint->deposit_greater_than_grand_total)
+                ->atPath('depositTotal')
+                ->addViolation();
+        }
     }
 
     /**
@@ -81,6 +89,38 @@ class SaleValidator extends ConstraintValidator
             }
 
             IdentityValidator::validateIdentity($this->context, $sale);
+        }
+    }
+
+    /**
+     * Validates the sale identity.
+     *
+     * @param SaleInterface $sale
+     * @param Constraint    $constraint
+     */
+    protected function validatePaymentTermAndOutstandingLimit(SaleInterface $sale, Constraint $constraint)
+    {
+        if (0 >= $sale->getOutstandingLimit()) {
+            return;
+        }
+
+        if (null === $term = $sale->getPaymentTerm()) {
+            if (null !== $customer = $sale->getCustomer()) {
+                // From parent if available
+                if ($customer->hasParent()) {
+                    $term = $customer->getParent()->getPaymentTerm();
+                } else {
+                    $term = $customer->getPaymentTerm();
+                }
+            }
+        }
+
+        if (null === $term) {
+            /** @var Sale $constraint */
+            $this->context
+                ->buildViolation($constraint->outstanding_limit_require_term)
+                ->atPath('outstandingLimit')
+                ->addViolation();
         }
     }
 }

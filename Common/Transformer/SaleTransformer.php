@@ -17,13 +17,14 @@ use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @TODO    Use a "resource service factory" to get operators
+ * @TODO    Use event dispatcher for pre/post copy and pre/post transform
  */
 class SaleTransformer implements SaleTransformerInterface
 {
     /**
-     * @var SaleCopierInterface
+     * @var SaleCopierFactoryInterface
      */
-    private $saleCopier;
+    private $saleCopierFactory;
 
     /**
      * @var ResourceOperatorInterface
@@ -59,20 +60,20 @@ class SaleTransformer implements SaleTransformerInterface
     /**
      * Constructor.
      *
-     * @param SaleCopierInterface       $saleCopier
+     * @param SaleCopierFactoryInterface $saleCopierFactory
      * @param ResourceOperatorInterface $cartOperator
      * @param ResourceOperatorInterface $quoteOperator
      * @param ResourceOperatorInterface $orderOperator
      * @param UploadableListener        $uploadableListener
      */
     public function __construct(
-        SaleCopierInterface $saleCopier,
+        SaleCopierFactoryInterface $saleCopierFactory,
         ResourceOperatorInterface $cartOperator,
         ResourceOperatorInterface $quoteOperator,
         ResourceOperatorInterface $orderOperator,
         UploadableListener $uploadableListener
     ) {
-        $this->saleCopier = $saleCopier;
+        $this->saleCopierFactory = $saleCopierFactory;
         $this->cartOperator = $cartOperator;
         $this->quoteOperator = $quoteOperator;
         $this->orderOperator = $orderOperator;
@@ -87,9 +88,12 @@ class SaleTransformer implements SaleTransformerInterface
         $this->source = $source;
         $this->target = $target;
 
-        $this->saleCopier->copySale($this->source, $this->target);
+        $this
+            ->saleCopierFactory
+            ->create($this->source, $this->target)
+            ->copySale();
 
-        $this->postCopy();
+        $this->postCopy(); // TODO Use event
 
         return $this->getOperator($this->target)->initialize($this->target);
     }
@@ -107,7 +111,7 @@ class SaleTransformer implements SaleTransformerInterface
             throw new LogicException("Please call initialize first.");
         }
 
-        $this->preTransform();
+        $this->preTransform(); // TODO Use event
 
         // Persist the target sale
         $event = $this->getOperator($this->target)->persist($this->target);
@@ -125,7 +129,7 @@ class SaleTransformer implements SaleTransformerInterface
             $this->uploadableListener->setEnabled(true);
         }
 
-        $this->postTransform();
+        $this->postTransform(); // TODO Use event
 
         // Unset source and target sales
         $this->source = null;

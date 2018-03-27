@@ -18,6 +18,11 @@ trait PaymentSubjectTrait
     /**
      * @var float
      */
+    protected $depositTotal;
+
+    /**
+     * @var float
+     */
     protected $grandTotal;
 
     /**
@@ -66,6 +71,7 @@ trait PaymentSubjectTrait
      */
     protected function initializePaymentSubject()
     {
+        $this->depositTotal = 0;
         $this->grandTotal = 0;
         $this->paidTotal = 0;
         $this->pendingTotal = 0;
@@ -75,6 +81,30 @@ trait PaymentSubjectTrait
 
         $this->paymentState = PaymentStates::STATE_NEW;
         $this->payments = new ArrayCollection();
+    }
+
+    /**
+     * Returns the deposit total.
+     *
+     * @return float
+     */
+    public function getDepositTotal()
+    {
+        return $this->depositTotal;
+    }
+
+    /**
+     * Sets the deposit total.
+     *
+     * @param float $depositTotal
+     *
+     * @return PaymentSubjectTrait
+     */
+    public function setDepositTotal($depositTotal)
+    {
+        $this->depositTotal = $depositTotal;
+
+        return $this;
     }
 
     /**
@@ -310,10 +340,25 @@ trait PaymentSubjectTrait
         $amount = 0;
         $currency = $this->getCurrency()->getCode();
 
-        $c = Money::compare($this->grandTotal, $this->paidTotal + $this->outstandingAccepted + $this->pendingTotal, $currency);
+        $hasDeposit = 1 === Money::compare($this->depositTotal, 0, $currency);
+
+        // If deposit total is greater than zero and paid total is lower than deposit total
+        if ($hasDeposit && (-1 === Money::compare($this->paidTotal, $this->depositTotal, $currency))) {
+            // Pay deposit
+            $total = $this->depositTotal;
+        } else {
+            // Pay grand total
+            $total = $this->grandTotal;
+        }
+
+        $c = Money::compare($total, $this->paidTotal + $this->outstandingAccepted + $this->pendingTotal, $currency);
+
+        // If (paid total + accepted outstanding + pending total) is lower limit
         if (1 === $c) {
-            $amount = $this->grandTotal - $this->paidTotal - $this->outstandingAccepted - $this->pendingTotal;
+            // Pay difference
+            $amount = $total - $this->paidTotal - $this->outstandingAccepted - $this->pendingTotal;
         } else if (0 === $c && 0 < $this->outstandingAccepted) {
+            // Pay outstanding
             $amount = $this->outstandingAccepted;
         }
 

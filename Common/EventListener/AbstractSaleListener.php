@@ -344,14 +344,14 @@ abstract class AbstractSaleListener
      */
     protected function handleContentChange(SaleInterface $sale)
     {
-        // Update outstanding date
-        $changed = $this->saleUpdater->updateOutstandingDate($sale);
-
         // Update totals
-        $changed |= $this->saleUpdater->updateTotals($sale);
+        $changed = $this->saleUpdater->updateTotals($sale);
 
         // Update state
         $changed |= $this->updateState($sale);
+
+        // Update outstanding date
+        $changed |= $this->saleUpdater->updateOutstandingDate($sale);
 
         return $changed;
     }

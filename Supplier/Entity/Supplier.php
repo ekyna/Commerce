@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierAddressInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierCarrierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
+use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
  * Class Supplier
@@ -16,7 +17,8 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
  */
 class Supplier implements SupplierInterface
 {
-    use IdentityTrait;
+    use IdentityTrait,
+        TimestampableTrait;
 
     /**
      * @var int
@@ -57,6 +59,11 @@ class Supplier implements SupplierInterface
      * @var SupplierCarrierInterface
      */
     protected $carrier;
+
+    /**
+     * @var string
+     */
+    protected $description;
 
 
     /**
@@ -199,6 +206,24 @@ class Supplier implements SupplierInterface
     public function setCarrier(SupplierCarrierInterface $carrier = null)
     {
         $this->carrier = $carrier;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
 
         return $this;
     }

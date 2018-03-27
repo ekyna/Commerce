@@ -62,6 +62,22 @@ interface PaymentTermInterface extends TranslatableInterface
     public function setEndOfMonth($endOfMonth);
 
     /**
+     * Returns the trigger.
+     *
+     * @return string
+     */
+    public function getTrigger();
+
+    /**
+     * Sets the trigger.
+     *
+     * @param string $trigger
+     *
+     * @return $this|PaymentTermInterface
+     */
+    public function setTrigger($trigger);
+
+    /**
      * Returns the title (translation alias).
      *
      * @return string

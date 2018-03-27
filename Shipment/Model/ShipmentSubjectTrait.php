@@ -79,11 +79,13 @@ trait ShipmentSubjectTrait
     }
 
     /**
-     * Returns the first shipment date.
+     * Returns the shipment date.
+     *
+     * @param bool $latest Whether to return the last shipment date instead of the first
      *
      * @return \DateTime|null
      */
-    public function getShippedAt()
+    public function getShippedAt($latest = false)
     {
         if (0 == $this->shipments->count()) {
             return null;
@@ -93,7 +95,7 @@ trait ShipmentSubjectTrait
         $criteria
             ->andWhere(Criteria::expr()->eq('return', false))
             ->andWhere(Criteria::expr()->in('state', [ShipmentStates::STATE_READY, ShipmentStates::STATE_SHIPPED]))
-            ->orderBy(['createdAt' => Criteria::ASC]);
+            ->orderBy(['createdAt' => $latest ? Criteria::DESC : Criteria::ASC]);
 
         /** @var ArrayCollection $shipments */
         $shipments = $this->shipments;

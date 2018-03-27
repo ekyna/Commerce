@@ -24,6 +24,7 @@ final class PaymentStates
 
     // For sale
     const STATE_OUTSTANDING = 'outstanding';
+    const STATE_DEPOSIT     = 'deposit';
     const STATE_COMPLETED   = 'completed';
 
 
@@ -46,6 +47,7 @@ final class PaymentStates
             static::STATE_EXPIRED,
             static::STATE_UNKNOWN,
             static::STATE_OUTSTANDING,
+            static::STATE_DEPOSIT,
             static::STATE_COMPLETED,
         ];
     }

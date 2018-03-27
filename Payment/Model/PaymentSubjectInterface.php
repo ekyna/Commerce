@@ -12,6 +12,22 @@ use Ekyna\Component\Commerce\Common\Model\CurrencySubjectInterface;
 interface PaymentSubjectInterface extends CurrencySubjectInterface
 {
     /**
+     * Returns the deposit total.
+     *
+     * @return float
+     */
+    public function getDepositTotal();
+
+    /**
+     * Sets the deposit total.
+     *
+     * @param float $total
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setDepositTotal($total);
+
+    /**
      * Returns the grand total.
      *
      * @return float

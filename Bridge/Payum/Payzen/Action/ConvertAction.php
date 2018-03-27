@@ -51,6 +51,9 @@ class ConvertAction implements ActionInterface, GatewayAwareInterface
         if (false == $model['vads_order_id']) {
             $model['vads_order_id'] = $sale->getNumber();
         }
+        if (false == $model['vads_order_info']) {
+            $model['vads_order_info'] = 'Payment ID: ' . $payment->getNumber();
+        }
         if (false == $model['vads_cust_id'] && null !== $customer = $sale->getCustomer()) {
             $model['vads_cust_id'] = $customer->getNumber();
         }

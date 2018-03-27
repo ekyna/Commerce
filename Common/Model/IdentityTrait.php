@@ -106,4 +106,18 @@ trait IdentityTrait
     {
         return empty($this->gender) && empty($this->firstName) && empty($this->lastName);
     }
+
+    /**
+     * Clears the identity.
+     *
+     * @return IdentityInterface|$this
+     */
+    public function clearIdentity()
+    {
+        $this->gender = null;
+        $this->firstName = null;
+        $this->lastName = null;
+
+        return $this;
+    }
 }

@@ -63,4 +63,11 @@ interface IdentityInterface
      * @return bool
      */
     public function isIdentityEmpty();
+
+    /**
+     * Clears the identity.
+     *
+     * @return IdentityInterface|$this
+     */
+    public function clearIdentity();
 }

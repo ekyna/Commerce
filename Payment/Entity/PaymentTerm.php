@@ -28,13 +28,30 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     /**
      * @var int
      */
-    protected $days = 0;
+    protected $days;
 
     /**
      * @var boolean
      */
-    protected $endOfMonth = false;
+    protected $endOfMonth;
 
+    /**
+     * @var string
+     */
+    protected $trigger;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->days = 0;
+        $this->endOfMonth = false;
+        $this->trigger = Pay\PaymentTermTriggers::TRIGGER_INVOICED;
+    }
 
     /**
      * Returns the string representation.
@@ -104,6 +121,24 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     public function setEndOfMonth($endOfMonth)
     {
         $this->endOfMonth = (bool)$endOfMonth;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTrigger()
+    {
+        return $this->trigger;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTrigger($trigger)
+    {
+        $this->trigger = $trigger;
 
         return $this;
     }

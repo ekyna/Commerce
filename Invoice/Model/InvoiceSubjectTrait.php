@@ -145,11 +145,13 @@ trait InvoiceSubjectTrait
     }
 
     /**
-     * Returns the first invoice date.
+     * Returns the invoice date.
+     *
+     * @param bool $latest Whether to return the last invoice date instead of the first.
      *
      * @return \DateTime|null
      */
-    public function getInvoicedAt()
+    public function getInvoicedAt($latest = false)
     {
         if (0 == $this->invoices->count()) {
             return null;
@@ -158,7 +160,7 @@ trait InvoiceSubjectTrait
         $criteria = Criteria::create();
         $criteria
             ->andWhere(Criteria::expr()->eq('type', InvoiceTypes::TYPE_INVOICE))
-            ->orderBy(['createdAt' => Criteria::ASC]);
+            ->orderBy(['createdAt' => $latest ? Criteria::DESC : Criteria::ASC]);
 
         /** @var ArrayCollection $invoices */
         $invoices = $this->invoices;

@@ -2,9 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
-use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
-
 /**
  * Interface SaleCopierInterface
  * @package Ekyna\Component\Commerce\Common\Transformer
@@ -13,42 +10,65 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 interface SaleCopierInterface
 {
     /**
-     * Copy the source sale into the target sale.
+     * Copies the whole source sale into the target sale.
      *
-     * @param Model\SaleInterface $source
-     * @param Model\SaleInterface $target
+     * @return SaleCopierInterface
      */
-    public function copySale(Model\SaleInterface $source, Model\SaleInterface $target);
+    public function copySale();
 
     /**
-     * Copy the source adjustment into the target adjustment.
+     * Copies the source sale's data into the target sale.
      *
-     * @param Model\SaleAddressInterface $source
-     * @param Model\SaleAddressInterface $target
+     * @return SaleCopierInterface
      */
-    public function copyAddress(Model\SaleAddressInterface $source, Model\SaleAddressInterface $target);
+    public function copyData();
 
     /**
-     * Copy the source adjustment into the target adjustment.
+     * Copies the source sale's addresses into the target sale.
      *
-     * @param Model\AdjustmentInterface $source
-     * @param Model\AdjustmentInterface $target
+     * @return SaleCopierInterface
      */
-    public function copyAdjustment(Model\AdjustmentInterface $source, Model\AdjustmentInterface $target);
+    public function copyAddresses();
 
     /**
-     * Copy the source payment into the target payment.
+     * Copies the source sale's attachments into the target sale.
      *
-     * @param PaymentInterface $source
-     * @param PaymentInterface $target
+     * @return SaleCopierInterface
      */
-    public function copyPayment(PaymentInterface $source, PaymentInterface $target);
+    public function copyAttachments();
 
     /**
-     * Copy the source item into the target item.
+     * Copies the source sale's adjustments into the target sale.
      *
-     * @param Model\SaleItemInterface $source
-     * @param Model\SaleItemInterface $target
+     * @return SaleCopierInterface
      */
-    public function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target);
+    public function copyAdjustments();
+
+    /**
+     * Copies the source sale's items into the target sale.
+     *
+     * @return SaleCopierInterface
+     */
+    public function copyItems();
+
+    /**
+     * Copies the source sale's payments into the target sale.
+     *
+     * @return SaleCopierInterface
+     */
+    public function copyPayments();
+
+    /**
+     * Copies the source sale's shipments into the target sale.
+     *
+     * @return SaleCopierInterface
+     */
+    //public function copyShipments();
+
+    /**
+     * Copies the source sale's invoices into the target sale.
+     *
+     * @return SaleCopierInterface
+     */
+    //public function copyInvoices();
 }

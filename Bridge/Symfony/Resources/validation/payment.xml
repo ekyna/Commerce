@@ -149,6 +149,15 @@
                 <option name="value">0</option>
             </constraint>
         </property>
+        <property name="trigger">
+            <constraint name="NotNull"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers</value>
+                    <value>getTriggers</value>
+                </option>
+            </constraint>
+        </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
         </constraint>
@@ -156,6 +165,7 @@
             <option name="fields">
                 <value>days</value>
                 <value>endOfMonth</value>
+                <value>trigger</value>
             </option>
         </constraint>
     </class>

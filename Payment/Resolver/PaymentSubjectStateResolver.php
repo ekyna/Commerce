@@ -47,6 +47,7 @@ class PaymentSubjectStateResolver implements StateResolverInterface
             // CANCELED subject is invoiceable and is fully credited
             if ($subject instanceof InvoiceSubjectInterface) {
                 if ($subject->getInvoiceState() === InvoiceStates::STATE_CREDITED) {
+                    // TODO Keep refunded state
                     return $this->setState($subject, PaymentStates::STATE_CANCELED);
                 }
             }
@@ -76,6 +77,13 @@ class PaymentSubjectStateResolver implements StateResolverInterface
         // CAPTURED paid total plus accepted outstanding total is greater than grand total
         if ($fullFill($subject->getPaidTotal() + $subject->getOutstandingAccepted())) {
             return $this->setState($subject, PaymentStates::STATE_CAPTURED);
+        }
+
+        // DEPOSIT paid total is greater than deposit total
+        if (0 < $subject->getDepositTotal()) {
+            if (0 <= Money::compare($subject->getPaidTotal(), $subject->getDepositTotal(), $currency)) {
+                return $this->setState($subject, PaymentStates::STATE_DEPOSIT);
+            }
         }
 
         // OUTSTANDING expired total is greater than zero
