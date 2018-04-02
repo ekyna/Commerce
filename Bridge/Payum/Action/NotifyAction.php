@@ -46,7 +46,7 @@ class NotifyAction implements ActionInterface, GatewayAwareInterface
     public function supports($request)
     {
         return $request instanceof Notify
-            && $request->getToken()
+            //&& $request->getToken()
             && $request->getModel() instanceof PaymentInterface;
     }
 }

@@ -46,7 +46,7 @@ class StatusAction implements ActionInterface, GatewayAwareInterface
     public function supports($request)
     {
         return $request instanceof Status
-            && $request->getToken()
+            //&& $request->getToken()
             && $request->getModel() instanceof PaymentInterface;
     }
 }
