@@ -21,7 +21,7 @@ final class AddressUtil
      */
     static public function equals(AddressInterface $source, AddressInterface $target)
     {
-        return $source->getCompany() === $target->getCompany()
+        if (!($source->getCompany() === $target->getCompany()
             && $source->getGender() === $target->getGender()
             && $source->getFirstName() === $target->getFirstName()
             && $source->getLastName() === $target->getLastName()
@@ -29,11 +29,35 @@ final class AddressUtil
             && $source->getComplement() === $target->getComplement()
             && $source->getSupplement() === $target->getSupplement()
             && $source->getCity() === $target->getCity()
-            && $source->getPostalCode() === $target->getPostalCode()
-            && $source->getCountry() === $target->getCountry()
-            && $source->getState() === $target->getState()
-            && $source->getPhone() === $target->getPhone()
-            && $source->getMobile() === $target->getMobile();
+            && $source->getPostalCode() === $target->getPostalCode())) {
+            return false;
+        }
+
+        $sourceCountryId = $source->getCountry() ? $source->getCountry()->getId() : null;
+        $targetCountryId = $target->getCountry() ? $target->getCountry()->getId() : null;
+        if ($sourceCountryId != $targetCountryId) {
+            return false;
+        }
+
+        $sourceStateId = $source->getState() ? $source->getState()->getId() : null;
+        $targetStateId = $target->getState() ? $target->getState()->getId() : null;
+        if ($sourceStateId != $targetStateId) {
+            return false;
+        }
+        
+        $sourcePhone = (string) $source->getPhone();
+        $targetPhone = (string) $target->getPhone();
+        if ($sourcePhone !== $targetPhone) {
+            return false;
+        }
+        
+        $sourceMobile = (string) $source->getMobile();
+        $targetMobile = (string) $target->getMobile();
+        if ($sourceMobile !== $targetMobile) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -55,8 +79,18 @@ final class AddressUtil
             ->setCity($source->getCity())
             ->setPostalCode($source->getPostalCode())
             ->setCountry($source->getCountry())
-            ->setState($source->getState())
-            ->setPhone($source->getPhone())
-            ->setMobile($source->getMobile());
+            ->setState($source->getState());
+
+        if (is_object($phone = $source->getPhone())) {
+            $target->setPhone(clone $phone);
+        } else {
+            $target->setPhone($phone);
+        }
+
+        if (is_object($mobile = $source->getMobile())) {
+            $target->setMobile(clone $mobile);
+        } else {
+            $target->setMobile($mobile);
+        }
     }
 }

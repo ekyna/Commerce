@@ -124,7 +124,7 @@ interface AddressInterface extends IdentityInterface
     /**
      * Returns the state.
      *
-     * @return string
+     * @return StateInterface
      */
     public function getState();
 
