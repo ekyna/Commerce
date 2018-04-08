@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Doctrine\ORM\Event\OnClearEventArgs;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -62,5 +63,17 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
             ->getQuery()
             ->setParameter('code', strtoupper($code))
             ->getOneOrNullResult();
+    }
+
+    /**
+     * On clear event handler.
+     *
+     * @param OnClearEventArgs $event
+     */
+    public function onClear(OnClearEventArgs $event)
+    {
+        if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
+            $this->defaultCountry = null;
+        }
     }
 }

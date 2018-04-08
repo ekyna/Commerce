@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Doctrine\ORM\Event\OnClearEventArgs;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -62,5 +63,17 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
             ->getQuery()
             ->setParameter('code', strtoupper($code))
             ->getOneOrNullResult();
+    }
+
+    /**
+     * On clear event handler.
+     *
+     * @param OnClearEventArgs $event
+     */
+    public function onClear(OnClearEventArgs $event)
+    {
+        if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
+            $this->defaultCurrency = null;
+        }
     }
 }
