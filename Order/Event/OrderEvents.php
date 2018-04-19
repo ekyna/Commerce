@@ -20,6 +20,7 @@ final class OrderEvents
     const ADDRESS_CHANGE = 'ekyna_commerce.order.address_change';
 
     const INITIALIZE     = 'ekyna_commerce.order.initialize';
+    const PREPARE        = 'ekyna_commerce.order.prepare';
 
     const PRE_CREATE     = 'ekyna_commerce.order.pre_create';
     const POST_CREATE    = 'ekyna_commerce.order.post_create';

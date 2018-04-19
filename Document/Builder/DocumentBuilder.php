@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
 use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -94,6 +95,15 @@ class DocumentBuilder implements DocumentBuilderInterface
             : null;
         if ($document->getDeliveryAddress() !== $data) {
             $document->setDeliveryAddress($data);
+            $changed = true;
+        }
+
+        // RelayPoint
+        if (null !== $data = $sale->getRelayPoint()) {
+            $data = $this->buildAddressData($data);
+        }
+        if ($document->getRelayPoint() !== $data) {
+            $document->setRelayPoint($data);
             $changed = true;
         }
 
@@ -250,7 +260,7 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // TODO if empty full customer name
 
-        return [
+        $data = [
             'company'     => $address->getCompany(),
             'full_name'   => $fullName,
             'street'      => $address->getStreet(),
@@ -263,6 +273,12 @@ class DocumentBuilder implements DocumentBuilderInterface
             'phone'       => $this->formatPhoneNumber($address->getPhone()),
             'mobile'      => $this->formatPhoneNumber($address->getMobile()),
         ];
+
+        if ($address instanceof RelayPointInterface) {
+            $data['number'] = $address->getNumber();
+        }
+
+        return $data;
     }
 
     /**

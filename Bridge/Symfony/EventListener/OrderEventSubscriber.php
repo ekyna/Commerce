@@ -25,6 +25,7 @@ class OrderEventSubscriber extends OrderListener implements EventSubscriberInter
             OrderEvents::ADDRESS_CHANGE => ['onAddressChange', 0],
             OrderEvents::STATE_CHANGE   => ['onStateChange', 0],
             OrderEvents::INITIALIZE     => ['onInitialize', 0],
+            OrderEvents::PREPARE        => ['onPrepare', 0],
             OrderEvents::PRE_CREATE     => ['onPreCreate', 0],
             OrderEvents::PRE_UPDATE     => ['onPreUpdate', 0],
             OrderEvents::PRE_DELETE     => ['onPreDelete', 0],

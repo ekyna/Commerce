@@ -203,11 +203,11 @@ class MarginCalculator implements MarginCalculatorInterface
      */
     public function calculateSaleShipment(Model\SaleInterface $sale): Margin
     {
-        $margin = new Margin(0, $sale->getShipmentAmount());
+        $margin = new Margin(0, (float)$sale->getShipmentAmount());
 
         if ($sale instanceof ShipmentSubjectInterface) {
             foreach ($sale->getShipments() as $shipment) {
-                $deliveryAddress = $this->shipmentAddressResolver->resolveReceiverAddress($shipment);
+                $deliveryAddress = $this->shipmentAddressResolver->resolveReceiverAddress($shipment, true);
                 $country = $deliveryAddress->getCountry();
                 $method = $shipment->getMethod();
 

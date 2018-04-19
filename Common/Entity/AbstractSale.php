@@ -27,7 +27,7 @@ abstract class AbstractSale implements Common\SaleInterface
         Common\AdjustableTrait,
         Payment\PaymentSubjectTrait,
         Payment\PaymentTermSubjectTrait,
-        Shipment\ShipmentDataTrait,
+        Shipment\ShippableTrait,
         VatNumberSubjectTrait,
         TimestampableTrait;
 
@@ -171,7 +171,7 @@ abstract class AbstractSale implements Common\SaleInterface
 
         $this->initializeAdjustments();
         $this->initializePaymentSubject();
-        $this->initializeShipmentData();
+        $this->initializeShippable();
     }
 
     /**

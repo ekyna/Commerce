@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 /**
  * Interface ShipmentDataInterface
  * @package Ekyna\Component\Commerce\Shipment\Model
@@ -10,66 +12,89 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 interface ShipmentDataInterface
 {
     /**
-     * Returns the weight total (kilograms).
+     * Returns the weight.
      *
      * @return float
      */
-    public function getWeightTotal();
+    public function getWeight();
 
     /**
-     * Sets the weight total (kilograms).
+     * Sets the weight.
      *
-     * @param float $total
+     * @param float $weight
      *
      * @return $this|ShipmentDataInterface
      */
-    public function setWeightTotal($total);
+    public function setWeight($weight);
 
     /**
-     * Returns the shipment method.
-     *
-     * @return ShipmentMethodInterface
-     */
-    public function getShipmentMethod();
-
-    /**
-     * Sets the shipment method.
-     *
-     * @param ShipmentMethodInterface $method
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function setShipmentMethod(ShipmentMethodInterface $method = null);
-
-    /**
-     * Returns the shipment amount.
+     * Returns the valorization.
      *
      * @return float
      */
-    public function getShipmentAmount();
+    public function getValorization();
 
     /**
-     * Sets the shipment amount.
+     * Sets the valorization.
      *
-     * @param float $amount
-     *
-     * @return $this|ShipmentDataInterface
+     * @param float $valorization
      */
-    public function setShipmentAmount($amount);
+    public function setValorization($valorization);
 
     /**
-     * Returns the relay point identifier.
+     * Returns the tracking number.
      *
      * @return string
      */
-    public function getRelayPoint();
+    public function getTrackingNumber();
 
     /**
-     * Sets the relay point identifier.
+     * Sets the tracking number.
      *
-     * @param string $relayPoint
+     * @param string $number
      *
      * @return $this|ShipmentDataInterface
      */
-    public function setRelayPoint($relayPoint);
+    public function setTrackingNumber($number);
+
+    /**
+     * Returns the labels.
+     *
+     * @return ArrayCollection|ShipmentLabelInterface[]
+     */
+    public function getLabels();
+
+    /**
+     * Returns whether the shipment/parcel has label(s).
+     *
+     * @return bool
+     */
+    public function hasLabels();
+
+    /**
+     * Returns whether the shipment/parcel has the given label.
+     *
+     * @param ShipmentLabelInterface $label
+     *
+     * @return bool
+     */
+    public function hasLabel(ShipmentLabelInterface $label);
+
+    /**
+     * Adds the label.
+     *
+     * @param ShipmentLabelInterface $label
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function addLabel(ShipmentLabelInterface $label);
+
+    /**
+     * Removes the label.
+     *
+     * @param ShipmentLabelInterface $label
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function removeLabel(ShipmentLabelInterface $label);
 }

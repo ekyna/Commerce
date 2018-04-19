@@ -34,6 +34,12 @@
                 <option name="min">1</option>
             </constraint>
         </property>
+        <property name="parcels">
+            <constraint name="Valid"/>
+        </property>
+        <property name="labels">
+            <constraint name="Valid"/>
+        </property>
         <property name="createdAt">
             <constraint name="DateTime"/>
         </property>
@@ -47,6 +53,9 @@
             <option name="fields">number</option>
         </constraint>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Shipment"/>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\RelayPoint">
+            <option name="shipmentMethodPath">method</option>
+        </constraint>
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentItem">
@@ -62,6 +71,53 @@
             </constraint>
         </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\ShipmentItem"/>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentParcel">
+        <property name="shipment">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="weight">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="labels">
+            <constraint name="Valid"/>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentLabel">
+        <property name="type">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentLabel</value>
+                    <value>getTypes</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="format">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentLabel</value>
+                    <value>getFormats</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="size">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentLabel</value>
+                    <value>getSizes</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="content">
+            <constraint name="NotNull"/>
+        </property>
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod">

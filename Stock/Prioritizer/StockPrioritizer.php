@@ -256,6 +256,7 @@ class StockPrioritizer implements StockPrioritizerInterface
 
                 // Debit quantity from source assignment
                 $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
+                $assignment->setSoldQuantity(0);
                 $this->manager->remove($assignment);
             } else {
                 // Move source assignment to target unit

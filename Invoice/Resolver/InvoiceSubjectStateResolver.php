@@ -95,8 +95,8 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
             }
         }
 
-        // PENDING by default
-        return $this->setState($subject, InvoiceStates::STATE_PENDING);
+        // NEW by default
+        return $this->setState($subject, InvoiceStates::STATE_NEW);
     }
 
     /**

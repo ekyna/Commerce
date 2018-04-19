@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentSubjectInterface extends ShipmentDataInterface
+interface ShipmentSubjectInterface extends ShippableInterface
 {
     /**
      * Returns the shipment state.
@@ -35,7 +35,7 @@ interface ShipmentSubjectInterface extends ShipmentDataInterface
     /**
      * Returns the shipments.
      *
-     * @param bool $filter TRUE for returns, FALSE for shipments, NULL for all
+     * @param bool $filter TRUE for shipments, FALSE for returns, NULL for all
      *
      * @return \Doctrine\Common\Collections\Collection|ShipmentInterface[]
      */

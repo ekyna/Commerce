@@ -13,7 +13,8 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 class Registry implements RegistryInterface
 {
     use Shipment\AddressResolverAwareTrait,
-        Shipment\WeightCalculatorAwareTrait;
+        Shipment\WeightCalculatorAwareTrait,
+        PersisterAwareTrait;
 
     /**
      * @var array|ProviderInterface[]
@@ -66,13 +67,6 @@ class Registry implements RegistryInterface
 
         $platform->setRegistry($this);
 
-        if ($platform instanceof Shipment\AddressResolverAwareInterface) {
-            $platform->setAddressResolver($this->addressResolver);
-        }
-        if ($platform instanceof Shipment\WeightCalculatorAwareInterface) {
-            $platform->setWeightCalculator($this->weightCalculator);
-        }
-
         $this->platforms[$name] = $platform;
 
         return $this;
@@ -105,7 +99,7 @@ class Registry implements RegistryInterface
      */
     public function getPlatformNames()
     {
-        return array_map(function(PlatformInterface $platform) {
+        return array_map(function (PlatformInterface $platform) {
             return $platform->getName();
         }, $this->platforms);
     }

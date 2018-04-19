@@ -48,6 +48,16 @@ class ShipmentAddressTransformer
     }
 
     /**
+     * Returns the country repository.
+     *
+     * @return CountryRepositoryInterface
+     */
+    public function getCountryRepository()
+    {
+        return $this->countryRepository;
+    }
+
+    /**
      * Transforms an array into a shipment address.
      *
      * @param array $data

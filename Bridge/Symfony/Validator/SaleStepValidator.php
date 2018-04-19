@@ -76,6 +76,7 @@ class SaleStepValidator implements SaleStepValidatorInterface
 
         if ($step === static::PAYMENT_STEP) {
             $constraints[] = new Constraints\SaleShipmentStep();
+            $constraints[] = new Constraints\RelayPoint();
             $constraints[] = new Constraints\SalePaymentStep();
         }
 

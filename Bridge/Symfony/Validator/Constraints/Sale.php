@@ -12,12 +12,12 @@ use Symfony\Component\Validator\Constraint;
 class Sale extends Constraint
 {
     public $customer_group_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.customer_group_is_required';
-    public $email_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.email_is_required';
-    public $identity_is_required_if_no_customer = 'ekyna_commerce.sale.no_customer.identity_is_required';
-    public $delivery_address_is_required = 'ekyna_commerce.sale.delivery_address.is_required';
-    public $delivery_address_should_be_null = 'ekyna_commerce.sale.delivery_address.should_be_null';
-    public $outstanding_limit_require_term = 'ekyna_commerce.sale.outstanding_limit_require_term';
-    public $deposit_greater_than_grand_total = 'ekyna_commerce.sale.deposit_greater_than_grand_total';
+    public $email_is_required_if_no_customer          = 'ekyna_commerce.sale.no_customer.email_is_required';
+    public $identity_is_required_if_no_customer       = 'ekyna_commerce.sale.no_customer.identity_is_required';
+    public $delivery_address_is_required              = 'ekyna_commerce.sale.delivery_address.is_required';
+    public $delivery_address_should_be_null           = 'ekyna_commerce.sale.delivery_address.should_be_null';
+    public $outstanding_limit_require_term            = 'ekyna_commerce.sale.outstanding_limit_require_term';
+    public $deposit_greater_than_grand_total          = 'ekyna_commerce.sale.deposit_greater_than_grand_total';
 
 
     /**

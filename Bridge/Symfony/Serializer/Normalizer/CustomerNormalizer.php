@@ -14,25 +14,44 @@ class CustomerNormalizer extends AbstractResourceNormalizer
 {
     /**
      * @inheritdoc
+     *
+     * @param CustomerInterface $customer
      */
     public function normalize($customer, $format = null, array $context = [])
     {
         $data = parent::normalize($customer, $format, $context);
 
-        /** @var CustomerInterface $customer */
         $groups = isset($context['groups']) ? (array)$context['groups'] : [];
 
-        if (in_array('Default', $groups) || in_array('Search', $groups)) {
-            $parent = $customer->getParent();
+        $parent = $customer->getParent();
 
+        if (0 < count(array_intersect(['Default', 'Search', 'Summary'], $groups))) {
+            //if (in_array('Default', $groups) || in_array('Search', $groups)) {
             $data = array_replace($data, [
                 'number'     => $customer->getNumber(),
                 'company'    => $customer->getCompany(),
                 'email'      => $customer->getEmail(),
                 'first_name' => $customer->getFirstName(),
                 'last_name'  => $customer->getLastName(),
+                'phone'      => $this->normalizeObject($customer->getPhone(), $format, $context),
+                'mobile'     => $this->normalizeObject($customer->getMobile(), $format, $context),
                 'parent'     => $parent ? $parent->getId() : null,
-                'vatValid'   => $customer->isVatValid(),
+            ]);
+        }
+
+        if (in_array('Summary', $groups)) {
+            $payment = $parent ? $parent : $customer;
+
+            $data = array_replace($data, [
+                'group'               => (string)$customer->getCustomerGroup(),
+                'parent'              => (string)$parent,
+                'vat_number'          => $payment->getVatNumber(),
+                'vat_valid'           => $payment->isVatValid(),
+                'payment_term'        => (string)$payment->getPaymentTerm(),
+                'outstanding_limit'   => $payment->getOutstandingLimit(),
+                'outstanding_balance' => $payment->getOutstandingBalance(),
+                'credit_balance'      => $payment->getCreditBalance(),
+                'description'         => $payment->getDescription(),
             ]);
         }
 

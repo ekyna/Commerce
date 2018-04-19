@@ -43,15 +43,6 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
         $this->deliveryDefault = false;
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return sprintf('%s %s %s', $this->street, $this->postalCode, $this->city);
-    }
 
     /**
      * @inheritdoc

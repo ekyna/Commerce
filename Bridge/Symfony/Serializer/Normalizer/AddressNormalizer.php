@@ -25,19 +25,20 @@ class AddressNormalizer extends AbstractResourceNormalizer
 
         if (in_array('Default', $groups)) {
             $data = array_replace($data, [
-                'company'     => $address->getCompany(),
-                'gender'      => $address->getGender(),
-                'first_name'  => $address->getFirstName(),
-                'last_name'   => $address->getLastName(),
-                'street'      => $address->getStreet(),
-                'complement'  => $address->getComplement(),
-                'supplement'  => $address->getSupplement(),
-                'postal_code' => $address->getPostalCode(),
-                'city'        => $address->getCity(),
-                'country'     => $address->getCountry()->getId(),
+                'company'      => $address->getCompany(),
+                'gender'       => $address->getGender(),
+                'first_name'   => $address->getFirstName(),
+                'last_name'    => $address->getLastName(),
+                'street'       => $address->getStreet(),
+                'complement'   => $address->getComplement(),
+                'supplement'   => $address->getSupplement(),
+                'postal_code'  => $address->getPostalCode(),
+                'city'         => $address->getCity(),
+                'country_name' => $address->getCountry()->getName(),
+                'country'      => $address->getCountry()->getCode(),
                 //'state'        => $address->getCity(),
-                'phone'       => $this->normalizeObject($address->getPhone(), $format, $context),
-                'mobile'      => $this->normalizeObject($address->getMobile(), $format, $context),
+                'phone'        => $this->normalizeObject($address->getPhone(), $format, $context),
+                'mobile'       => $this->normalizeObject($address->getMobile(), $format, $context),
             ]);
 
             if ($address instanceof CustomerAddressInterface) {

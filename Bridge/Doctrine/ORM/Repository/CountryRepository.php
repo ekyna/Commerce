@@ -25,6 +25,11 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
      */
     private $defaultCountry;
 
+    /**
+     * @var array
+     */
+    private $cache = [];
+
 
     /**
      * Sets the default code.
@@ -33,7 +38,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
      */
     public function setDefaultCode($code)
     {
-        $this->defaultCode = $code;
+        $this->defaultCode = strtoupper($code);
     }
 
     /**
@@ -57,11 +62,17 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
      */
     public function findOneByCode($code)
     {
-        return $this
+        $code = strtoupper($code);
+
+        if (isset($this->cache[$code])) {
+            return $this->cache[$code];
+        }
+
+        return $this->cache[$code] = $this
             ->getQueryBuilder('c')
             ->andWhere('c.code = :code')
             ->getQuery()
-            ->setParameter('code', strtoupper($code))
+            ->setParameter('code', $code)
             ->getOneOrNullResult();
     }
 
@@ -74,6 +85,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     {
         if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
             $this->defaultCountry = null;
+            $this->cache = [];
         }
     }
 }

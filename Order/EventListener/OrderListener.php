@@ -11,7 +11,6 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
@@ -54,6 +53,25 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
+     * Prepare event handler.
+     *
+     * @param ResourceEventInterface $event
+     *
+     * @throws IllegalOperationException
+     */
+    public function onPrepare(ResourceEventInterface $event)
+    {
+        /** @var OrderInterface $order */
+        $order = $this->getSaleFromEvent($event);
+
+        if (OrderStates::isStockableState($order->getState())) {
+            throw new IllegalOperationException(
+                "Order is not ready for shipment preparation"
+            );
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     public function onPreDelete(ResourceEventInterface $event)
@@ -65,7 +83,9 @@ class OrderListener extends AbstractSaleListener
 
         // Stop if order has invoices or shipments
         if ($order->hasInvoices() || $order->hasShipments()) {
-            throw new IllegalOperationException();
+            throw new IllegalOperationException(
+                "Order with invoices or shipments can't be deleted."
+            );
         }
     }
 

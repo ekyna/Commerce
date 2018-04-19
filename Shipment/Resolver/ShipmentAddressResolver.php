@@ -33,8 +33,20 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
     /**
      * @inheritDoc
      */
-    public function resolveSenderAddress(ShipmentInterface $shipment)
+    public function getCountryRepository()
     {
+        return $this->transformer->getCountryRepository();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function resolveSenderAddress(ShipmentInterface $shipment, bool $ignoreRelay = false)
+    {
+        if (!$ignoreRelay && $shipment->isReturn() && null !== $address = $shipment->getRelayPoint()) {
+            return $address;
+        }
+
         if (!empty($address = $shipment->getSenderAddress())) {
             return $this->transformer->transform($address);
         }
@@ -49,8 +61,12 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
     /**
      * @inheritDoc
      */
-    public function resolveReceiverAddress(ShipmentInterface $shipment)
+    public function resolveReceiverAddress(ShipmentInterface $shipment, bool $ignoreRelay = false)
     {
+        if (!$ignoreRelay && !$shipment->isReturn() && null !== $address = $shipment->getRelayPoint()) {
+            return $address;
+        }
+
         if (!empty($address = $shipment->getReceiverAddress())) {
             return $this->transformer->transform($address);
         }

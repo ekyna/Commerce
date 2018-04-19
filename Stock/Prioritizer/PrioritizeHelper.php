@@ -65,9 +65,9 @@ class PrioritizeHelper
                 return $candidate;
             }
 
-            $candidate->getCombination(min($diff, $candidate->releasable));
-
-            $candidates[] = $candidate;
+            if (null !== $candidate->getCombination(min($diff, $candidate->releasable))) {
+                $candidates[] = $candidate;
+            }
         }
 
         if (empty($candidates)) {

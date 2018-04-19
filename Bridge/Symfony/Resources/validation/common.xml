@@ -246,6 +246,12 @@
                 <value>Checkout</value>
             </option>
         </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\RelayPoint">
+            <option name="groups">
+                <value>Default</value>
+                <value>Checkout</value>
+            </option>
+        </constraint>
     </class>
 
     <!-- Sale Item -->

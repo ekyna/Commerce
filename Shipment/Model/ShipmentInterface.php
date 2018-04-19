@@ -17,7 +17,8 @@ interface ShipmentInterface extends
     Resource\ResourceInterface,
     Resource\TimestampableInterface,
     Common\NumberSubjectInterface,
-    Common\StateSubjectInterface
+    Common\StateSubjectInterface,
+    ShipmentDataInterface
 {
     /**
      * Returns the sale.
@@ -57,22 +58,6 @@ interface ShipmentInterface extends
      * @return $this|ShipmentInterface
      */
     public function setMethod(ShipmentMethodInterface $method);
-
-    /**
-     * Returns whether or not an equivalent invoice should be generated automatically.
-     *
-     * @return bool
-     */
-    public function isAutoInvoice();
-
-    /**
-     * Sets whether or not an equivalent invoice should be generated automatically.
-     *
-     * @param bool $auto
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setAutoInvoice($auto);
 
     /**
      * Returns whether the shipment has at least one item or not.
@@ -122,7 +107,73 @@ interface ShipmentInterface extends
      *
      * @return $this|ShipmentInterface
      */
-    public function setItems(ArrayCollection $items);
+    //public function setItems(ArrayCollection $items);
+
+    /**
+     * Returns whether the shipment has at least one parcel or not.
+     *
+     * @return bool
+     */
+    public function hasParcels();
+
+    /**
+     * Returns the parcels.
+     *
+     * @return ArrayCollection|ShipmentParcelInterface[]
+     */
+    public function getParcels();
+
+    /**
+     * Returns whether the shipment has the parcel or not.
+     *
+     * @param ShipmentParcelInterface $parcel
+     *
+     * @return bool
+     */
+    public function hasParcel(ShipmentParcelInterface $parcel);
+
+    /**
+     * Adds the parcel.
+     *
+     * @param ShipmentParcelInterface $parcel
+     *
+     * @return $this
+     */
+    public function addParcel(ShipmentParcelInterface $parcel);
+
+    /**
+     * Removes the parcel.
+     *
+     * @param ShipmentParcelInterface $parcel
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function removeParcel(ShipmentParcelInterface $parcel);
+
+    /**
+     * Sets the shipment parcels.
+     *
+     * @param ArrayCollection|ShipmentParcelInterface[] $parcels
+     *
+     * @return $this|ShipmentInterface
+     */
+    //public function setParcels(ArrayCollection $parcels);
+
+    /**
+     * Returns whether or not an equivalent invoice should be generated automatically.
+     *
+     * @return bool
+     */
+    public function isAutoInvoice();
+
+    /**
+     * Sets whether or not an equivalent invoice should be generated automatically.
+     *
+     * @param bool $auto
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setAutoInvoice($auto);
 
     /**
      * Returns whether or not the shipment is a return.
@@ -141,22 +192,6 @@ interface ShipmentInterface extends
     public function setReturn($return);
 
     /**
-     * Returns the weight.
-     *
-     * @return float
-     */
-    public function getWeight();
-
-    /**
-     * Sets the weight.
-     *
-     * @param float $weight
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setWeight($weight);
-
-    /**
      * Returns the description.
      *
      * @return string
@@ -171,22 +206,6 @@ interface ShipmentInterface extends
      * @return $this|ShipmentInterface
      */
     public function setDescription($description);
-
-    /**
-     * Returns the tracking number.
-     *
-     * @return string
-     */
-    public function getTrackingNumber();
-
-    /**
-     * Sets the tracking number.
-     *
-     * @param string $number
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setTrackingNumber($number);
 
     /**
      * Returns the platform name.
@@ -281,8 +300,23 @@ interface ShipmentInterface extends
     public function setReceiverAddress($data);
 
     /**
+     * Returns the relay point.
+     *
+     * @return RelayPointInterface
+     */
+    public function getRelayPoint();
+
+    /**
+     * Sets the relay point.
+     *
+     * @param RelayPointInterface $relayPoint
+     *
+     * @return $this|ShipmentInterface
+     */
+    public function setRelayPoint(RelayPointInterface $relayPoint = null);
+
+    /**
      * Returns the credit method.
-     * (non mapped, for credit synchronisation)
      *
      * @return Payment\PaymentMethodInterface
      */
@@ -290,11 +324,18 @@ interface ShipmentInterface extends
 
     /**
      * Sets the credit method.
-     * (non mapped, for credit synchronisation)
      *
      * @param Payment\PaymentMethodInterface $method
      *
      * @return $this|ShipmentInterface
      */
-    public function setCreditMethod(Payment\PaymentMethodInterface $method);
+    public function setCreditMethod(Payment\PaymentMethodInterface $method = null);
+
+    /**
+     * Returns whether the shipment is empty
+     * (do not have at least one item with quantity greater than zero).
+     *
+     * @return bool
+     */
+    public function isEmpty();
 }

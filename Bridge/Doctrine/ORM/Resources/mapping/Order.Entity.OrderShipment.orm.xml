@@ -32,6 +32,20 @@
             </cascade>
         </one-to-many>
 
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipmentParcel"
+                     field="parcels" mapped-by="shipment" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipmentLabel"
+                     field="labels" mapped-by="shipment" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface"
                      field="order" inversed-by="shipments">
             <join-column name="order_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>

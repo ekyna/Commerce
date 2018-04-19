@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
@@ -27,6 +28,12 @@ class UnitCandidate
         foreach ($unit->getStockAssignments() as $a) {
             // Ignore assignments from the same sale (Should be impossible)
             if ($sale === $a->getSaleItem()->getSale()) {
+                continue;
+            }
+
+            // Ignore assignments from preparation sales
+            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface $sale */
+            if ($sale->getShipmentState() === ShipmentStates::STATE_PREPARATION) {
                 continue;
             }
 

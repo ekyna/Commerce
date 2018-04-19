@@ -3,8 +3,6 @@
 namespace Ekyna\Component\Commerce\Shipment\Gateway\Noop;
 
 use Ekyna\Component\Commerce\Shipment\Gateway\AbstractGateway;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class NoopGateway
@@ -13,5 +11,11 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class NoopGateway extends AbstractGateway
 {
-
+    /**
+     * @inheritDoc
+     */
+    public function getCapabilities()
+    {
+        return static::CAPABILITY_SHIPMENT | static::CAPABILITY_RETURN;
+    }
 }

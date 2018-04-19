@@ -7,7 +7,10 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Entity\AbstractShipment;
+use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentLabelInterface;
 
 /**
  * Class OrderShipment
@@ -97,5 +100,77 @@ class OrderShipment extends AbstractShipment implements OrderShipmentInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addItem(Shipment\ShipmentItemInterface $item)
+    {
+        if (!$item instanceof OrderShipmentItemInterface) {
+            throw new InvalidArgumentException("Expected instance of " . OrderShipmentItemInterface::class);
+        }
+
+        return parent::addItem($item);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeItem(Shipment\ShipmentItemInterface $item)
+    {
+        if (!$item instanceof OrderShipmentItemInterface) {
+            throw new InvalidArgumentException("Expected instance of " . OrderShipmentItemInterface::class);
+        }
+
+        return parent::removeItem($item);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addParcel(Shipment\ShipmentParcelInterface $parcel)
+    {
+        if (!$parcel instanceof OrderShipmentParcel) {
+            throw new InvalidArgumentException("Expected instance of " . OrderShipmentParcel::class);
+        }
+
+        return parent::addParcel($parcel);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeParcel(Shipment\ShipmentParcelInterface $parcel)
+    {
+        if (!$parcel instanceof OrderShipmentParcel) {
+            throw new InvalidArgumentException("Expected instance of " . OrderShipmentParcel::class);
+        }
+
+        return parent::removeParcel($parcel);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addLabel(ShipmentLabelInterface $label)
+    {
+        if (!$label instanceof OrderShipmentLabel) {
+            throw new InvalidArgumentException("Expected instance of " . OrderShipmentLabel::class);
+        }
+
+        return parent::addLabel($label);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeLabel(ShipmentLabelInterface $label)
+    {
+        if (!$label instanceof OrderShipmentLabel) {
+            throw new InvalidArgumentException("Expected instance of " . OrderShipmentLabel::class);
+        }
+
+        return parent::removeLabel($label);
     }
 }

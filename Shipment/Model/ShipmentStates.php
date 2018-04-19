@@ -11,20 +11,23 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class ShipmentStates
 {
+    // Common
     const STATE_NEW         = 'new';
-//    const STATE_CHECKOUT    = 'checkout';
-//    const STATE_ONHOLD      = 'onhold';
+    const STATE_CANCELED    = 'canceled';
+
+    // Shipment
+    const STATE_PREPARATION = 'preparation';
+    const STATE_READY       = 'ready';
+    const STATE_SHIPPED     = 'shipped';
+
+    // Return
     const STATE_PENDING     = 'pending';
-//    const STATE_BACKORDERED = 'backordered';
-    const STATE_READY     = 'ready';
-    const STATE_SHIPPED   = 'shipped';
-    const STATE_PARTIAL   = 'partial';
-    const STATE_RETURNED  = 'returned';
-    const STATE_CANCELED  = 'canceled';
+    const STATE_RETURNED    = 'returned';
 
     // For sale
     const STATE_NONE        = 'none';
-    const STATE_COMPLETED = 'completed';
+    const STATE_PARTIAL     = 'partial';
+    const STATE_COMPLETED   = 'completed';
 
 
     /**
@@ -36,16 +39,14 @@ final class ShipmentStates
     {
         return [
             static::STATE_NEW,
-//            static::STATE_CHECKOUT,
-//            static::STATE_ONHOLD,
-            static::STATE_PENDING,
-//            static::STATE_BACKORDERED,
+            static::STATE_CANCELED,
+            static::STATE_PREPARATION,
             static::STATE_READY,
             static::STATE_SHIPPED,
-            static::STATE_PARTIAL,
+            static::STATE_PENDING,
             static::STATE_RETURNED,
-            static::STATE_CANCELED,
             static::STATE_NONE,
+            static::STATE_PARTIAL,
             static::STATE_COMPLETED,
         ];
     }
@@ -71,6 +72,7 @@ final class ShipmentStates
     {
         return [
             static::STATE_READY,
+            static::STATE_RETURNED,
             static::STATE_SHIPPED,
         ];
     }
@@ -94,6 +96,7 @@ final class ShipmentStates
      *
      * @return bool
      *
+     * @TODO remove
      * @deprecated No longer used
      */
     static public function isDone(ShipmentInterface $shipment)
@@ -118,6 +121,7 @@ final class ShipmentStates
     {
         return [
             static::STATE_NEW,
+            static::STATE_NONE,
             static::STATE_CANCELED,
         ];
     }
@@ -132,6 +136,32 @@ final class ShipmentStates
     static public function isDeletableState($state)
     {
         return is_null($state) || in_array($state, static::getDeletableStates(), true);
+    }
+
+    /**
+     * Returns the preparable states.
+     *
+     * @return array
+     */
+    static public function getPreparableStates()
+    {
+        return [
+            static::STATE_NEW,
+            static::STATE_NONE,
+            static::STATE_PARTIAL,
+        ];
+    }
+
+    /**
+     * Returns whether the given state is a preparable state.
+     *
+     * @param string $state
+     *
+     * @return bool
+     */
+    static public function isPreparableState($state)
+    {
+        return is_null($state) || in_array($state, static::getPreparableStates(), true);
     }
 
     /**
@@ -176,6 +206,7 @@ final class ShipmentStates
             static::STATE_PARTIAL, // This is a sale state
             static::STATE_SHIPPED,
             static::STATE_RETURNED,
+            static::STATE_COMPLETED,
         ];
     }
 

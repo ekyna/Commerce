@@ -109,6 +109,22 @@ interface DocumentInterface
     public function setDeliveryAddress(array $data = null);
 
     /**
+     * Returns the relay point data.
+     *
+     * @return array
+     */
+    public function getRelayPoint();
+
+    /**
+     * Sets the relay point data.
+     *
+     * @param array|null $data
+     *
+     * @return $this|DocumentInterface
+     */
+    public function setRelayPoint(array $data = null);
+
+    /**
      * Returns whether the invoice has at least one line or not.
      *
      * @return bool

@@ -39,6 +39,11 @@ class Document implements DocumentInterface
     protected $deliveryAddress;
 
     /**
+     * @var array
+     */
+    protected $relayPoint;
+
+    /**
      * @var ArrayCollection|DocumentLineInterface[]
      */
     protected $lines;
@@ -183,6 +188,24 @@ class Document implements DocumentInterface
     public function setDeliveryAddress(array $data = null)
     {
         $this->deliveryAddress = $data;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelayPoint()
+    {
+        return $this->relayPoint;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRelayPoint(array $data = null)
+    {
+        $this->relayPoint = $data;
 
         return $this;
     }

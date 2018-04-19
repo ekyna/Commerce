@@ -26,11 +26,11 @@ interface ShipmentPriceResolverInterface
      * Returns the available shipment methods by sale.
      *
      * @param SaleInterface $sale
-     * @param bool          $availableMethods
+     * @param bool          $availableOnly
      *
      * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
      */
-    public function getAvailablePricesBySale(SaleInterface $sale, $availableMethods);
+    public function getAvailablePricesBySale(SaleInterface $sale, $availableOnly = true);
 
     /**
      * Returns the shipment price by country, method and weight.

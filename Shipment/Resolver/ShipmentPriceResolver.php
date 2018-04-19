@@ -46,10 +46,10 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
     /**
      * @inheritdoc
      */
-    public function getAvailablePricesBySale(SaleInterface $sale, $availableMethods = true)
+    public function getAvailablePricesBySale(SaleInterface $sale, $availableOnly = true)
     {
         if (null !== $country = $sale->getDeliveryCountry()) {
-            return $this->priceRepository->findByCountryAndWeight($country, $sale->getWeightTotal(), $availableMethods);
+            return $this->priceRepository->findByCountryAndWeight($country, $sale->getWeightTotal(), $availableOnly);
         }
 
         return [];

@@ -27,6 +27,14 @@ class NoopPlatform extends AbstractPlatform
      */
     public function createGateway($name, array $config = [])
     {
-        return new NoopGateway($name, $this->processGatewayConfig($config));
+        return new NoopGateway($this, $name, $this->processGatewayConfig($config));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getActions()
+    {
+        return [];
     }
 }

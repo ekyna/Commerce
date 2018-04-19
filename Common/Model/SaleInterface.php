@@ -10,7 +10,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentDataInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShippableInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
 
 /**
@@ -30,7 +30,7 @@ interface SaleInterface extends
     StateSubjectInterface,
     PaymentSubjectInterface,
     PaymentTermSubjectInterface,
-    ShipmentDataInterface,
+    ShippableInterface,
     VatNumberSubjectInterface
 {
     /**

@@ -94,6 +94,9 @@ abstract class AbstractProvider implements ProviderInterface
         if ($gateway instanceof Shipment\WeightCalculatorAwareInterface) {
             $gateway->setWeightCalculator($this->registry->getWeightCalculator());
         }
+        if ($gateway instanceof PersisterAwareInterface) {
+            $gateway->setPersister($this->registry->getPersister());
+        }
 
         $this->gateways[$name] = $gateway;
     }

@@ -25,6 +25,11 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
      */
     private $defaultCurrency;
 
+    /**
+     * @var array
+     */
+    private $cache = [];
+
 
     /**
      * Sets the default code.
@@ -33,7 +38,7 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
      */
     public function setDefaultCode($code)
     {
-        $this->defaultCode = $code;
+        $this->defaultCode = strtoupper($code);
     }
 
     /**
@@ -57,7 +62,13 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
      */
     public function findOneByCode($code)
     {
-        return $this
+        $code = strtoupper($code);
+
+        if (isset($this->cache[$code])) {
+            return $this->cache[$code];
+        }
+
+        return $this->cache[$code] = $this
             ->getQueryBuilder('c')
             ->andWhere('c.code = :code')
             ->getQuery()
@@ -74,6 +85,7 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
     {
         if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
             $this->defaultCurrency = null;
+            $this->cache = [];
         }
     }
 }

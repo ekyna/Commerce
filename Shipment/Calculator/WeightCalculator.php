@@ -18,6 +18,14 @@ class WeightCalculator implements WeightCalculatorInterface
     {
         $total = .0;
 
+        if ($shipment->hasParcels()) {
+            foreach ($shipment->getParcels() as $parcel) {
+                $total += $parcel->getWeight();
+            }
+
+            return $total;
+        }
+
         foreach ($shipment->getItems() as $item) {
             $total += $this->calculateShipmentItem($item);
         }

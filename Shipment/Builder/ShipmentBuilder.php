@@ -6,6 +6,8 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\GatewayInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\RegistryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 
@@ -22,6 +24,11 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     private $factory;
 
     /**
+     * @var RegistryInterface
+     */
+    private $registry;
+
+    /**
      * @var ShipmentCalculatorInterface
      */
     private $calculator;
@@ -31,11 +38,17 @@ class ShipmentBuilder implements ShipmentBuilderInterface
      * Constructor.
      *
      * @param SaleFactoryInterface        $factory
+     * @param RegistryInterface           $registry
      * @param ShipmentCalculatorInterface $calculator
      */
-    public function __construct(SaleFactoryInterface $factory, ShipmentCalculatorInterface $calculator)
-    {
+    public function __construct(
+        SaleFactoryInterface $factory,
+        RegistryInterface $registry,
+        ShipmentCalculatorInterface $calculator
+
+    ) {
         $this->factory = $factory;
+        $this->registry = $registry;
         $this->calculator = $calculator;
     }
 
@@ -48,14 +61,86 @@ class ShipmentBuilder implements ShipmentBuilderInterface
             throw new LogicException("Sale must be set.");
         }
 
-        // If shipment method is not defined and preferred method if defined
-        if (null === $shipment->getMethod() && null !== $method = $sale->getShipmentMethod()) {
-            // Set preferred method
-            $shipment->setMethod($method);
+        if (!$shipment->isReturn()) {
+            $shipment->setAutoInvoice(true);
         }
+
+        $this->initializeMethod($shipment);
+        $this->initializeRelayPoint($shipment);
 
         foreach ($sale->getItems() as $saleItem) {
             $this->buildItem($saleItem, $shipment);
+        }
+    }
+
+    /**
+     * Initializes the shipment's method.
+     *
+     * @param ShipmentInterface $shipment
+     */
+    private function initializeMethod(ShipmentInterface $shipment)
+    {
+        // Abort if shipment's method is defined
+        if (null !== $shipment->getMethod()) {
+            return;
+        }
+
+        $sale = $shipment->getSale();
+
+        // Abort if default method is not defined
+        if (null === $method = $sale->getShipmentMethod()) {
+            return;
+        }
+
+        $gateway = $this->registry->getGateway($method->getGatewayName());
+
+        // Set shipment method if supported
+        if (!$shipment->isReturn() && $gateway->support(GatewayInterface::CAPABILITY_SHIPMENT)) {
+            $shipment->setMethod($method);
+
+            return;
+        }
+
+        // Set return method if supported
+        if ($shipment->isReturn() && $gateway->support(GatewayInterface::CAPABILITY_RETURN)) {
+            $shipment->setMethod($method);
+
+            return;
+        }
+    }
+
+    /**
+     * Initializes the shipment's relay point.
+     *
+     * @param ShipmentInterface $shipment
+     */
+    private function initializeRelayPoint(ShipmentInterface $shipment)
+    {
+        // Abort if shipment method is not defined
+        if (null === $method = $shipment->getMethod()) {
+            // Clear the relay point if it is set
+            if (null !== $shipment->getRelayPoint()) {
+                $shipment->setRelayPoint(null);
+            }
+
+            return;
+        }
+
+        $gateway = $this->registry->getGateway($method->getGatewayName());
+
+        // If gateway does not support relay point
+        if (!$gateway->support(GatewayInterface::CAPABILITY_RELAY)) {
+            // Clear the relay point if it is set
+            if (null !== $shipment->getRelayPoint()) {
+                $shipment->setRelayPoint(null);
+            }
+
+            return;
+        }
+
+        // Set default relay point
+        if (null !== $relayPoint = $shipment->getSale()->getRelayPoint()) {
+            $shipment->setRelayPoint($relayPoint);
         }
     }
 

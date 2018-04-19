@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentLabel">
+
+        <field name="type" column="type" type="string" length="16" nullable="false"/>
+        <field name="format" column="format" type="string" length="16" nullable="false"/>
+        <field name="size" column="size" type="string" length="16" nullable="false"/>
+        <field name="content" column="content" type="blob" nullable="false"/>
+
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

@@ -45,6 +45,20 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             throw new InvalidArgumentException("Expected instance of " . ShipmentSubjectInterface::class);
         }
 
+        // If has at least one preparation shipment
+        foreach ($subject->getShipments(true) as $shipment) {
+            if ($shipment->getState() === ShipmentStates::STATE_PREPARATION) {
+                return $this->setState($subject, ShipmentStates::STATE_PREPARATION);
+            }
+        }
+
+        // If has at least one pending return
+        foreach ($subject->getShipments(false) as $return) {
+            if ($return->getState() === ShipmentStates::STATE_PENDING) {
+                return $this->setState($subject, ShipmentStates::STATE_PENDING);
+            }
+        }
+
         $quantities = $this->calculator->buildShipmentQuantityMap($subject);
         if (0 === $itemsCount = count($quantities)) {
             return $this->setState($subject, ShipmentStates::STATE_NEW);
@@ -122,8 +136,8 @@ class ShipmentSubjectStateResolver implements StateResolverInterface
             }
         }
 
-        // PENDING by default
-        return $this->setState($subject, ShipmentStates::STATE_PENDING);
+        // NEW by default
+        return $this->setState($subject, ShipmentStates::STATE_NEW);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection;
 
+use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Type\OpeningHours;
 use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Customer;
 use Ekyna\Component\Commerce\Order;
@@ -18,6 +19,21 @@ use Ekyna\Component\Commerce\Supplier;
  */
 class DoctrineBundleMapping
 {
+    /**
+     * Returns the doctrine ORM mapping config for the doctrine bundle (doctrine.orm.mappings)
+     *
+     * @return array
+     */
+    static function buildTypesConfiguration()
+    {
+        return [
+            OpeningHours::NAME => [
+                'class'     => OpeningHours::class,
+                'commented' => true,
+            ],
+        ];
+    }
+
     /**
      * Returns the doctrine ORM mapping config for the doctrine bundle (doctrine.orm.mappings)
      *
@@ -42,29 +58,29 @@ class DoctrineBundleMapping
     static function getDefaultImplementations()
     {
         return [
-            Cart\Model\CartInterface::class                  => Cart\Entity\Cart::class,
-            Cart\Model\CartAddressInterface::class           => Cart\Entity\CartAddress::class,
+            Cart\Model\CartInterface::class        => Cart\Entity\Cart::class,
+            Cart\Model\CartAddressInterface::class => Cart\Entity\CartAddress::class,
 
-            Customer\Model\CustomerInterface::class          => Customer\Entity\Customer::class,
-            Customer\Model\CustomerGroupInterface::class     => Customer\Entity\CustomerGroup::class,
-            Customer\Model\CustomerAddressInterface::class   => Customer\Entity\CustomerAddress::class,
+            Customer\Model\CustomerInterface::class        => Customer\Entity\Customer::class,
+            Customer\Model\CustomerGroupInterface::class   => Customer\Entity\CustomerGroup::class,
+            Customer\Model\CustomerAddressInterface::class => Customer\Entity\CustomerAddress::class,
 
-            Order\Model\OrderInterface::class                => Order\Entity\Order::class,
-            Order\Model\OrderAddressInterface::class         => Order\Entity\OrderAddress::class,
+            Order\Model\OrderInterface::class        => Order\Entity\Order::class,
+            Order\Model\OrderAddressInterface::class => Order\Entity\OrderAddress::class,
 
-            Payment\Model\PaymentMethodInterface::class      => Payment\Entity\PaymentMethod::class,
-            Payment\Model\PaymentTermInterface::class        => Payment\Entity\PaymentTerm::class,
+            Payment\Model\PaymentMethodInterface::class => Payment\Entity\PaymentMethod::class,
+            Payment\Model\PaymentTermInterface::class   => Payment\Entity\PaymentTerm::class,
 
-            Quote\Model\QuoteInterface::class                => Quote\Entity\Quote::class,
-            Quote\Model\QuoteAddressInterface::class         => Quote\Entity\QuoteAddress::class,
+            Quote\Model\QuoteInterface::class        => Quote\Entity\Quote::class,
+            Quote\Model\QuoteAddressInterface::class => Quote\Entity\QuoteAddress::class,
 
-            Shipment\Model\ShipmentMethodInterface::class    => Shipment\Entity\ShipmentMethod::class,
+            Shipment\Model\ShipmentMethodInterface::class => Shipment\Entity\ShipmentMethod::class,
 
-            Supplier\Model\SupplierInterface::class          => Supplier\Entity\Supplier::class,
-            Supplier\Model\SupplierAddressInterface::class   => Supplier\Entity\SupplierAddress::class,
-            Supplier\Model\SupplierDeliveryInterface::class  => Supplier\Entity\SupplierDelivery::class,
-            Supplier\Model\SupplierOrderInterface::class     => Supplier\Entity\SupplierOrder::class,
-            Supplier\Model\SupplierProductInterface::class   => Supplier\Entity\SupplierProduct::class,
+            Supplier\Model\SupplierInterface::class         => Supplier\Entity\Supplier::class,
+            Supplier\Model\SupplierAddressInterface::class  => Supplier\Entity\SupplierAddress::class,
+            Supplier\Model\SupplierDeliveryInterface::class => Supplier\Entity\SupplierDelivery::class,
+            Supplier\Model\SupplierOrderInterface::class    => Supplier\Entity\SupplierOrder::class,
+            Supplier\Model\SupplierProductInterface::class  => Supplier\Entity\SupplierProduct::class,
         ];
     }
 }

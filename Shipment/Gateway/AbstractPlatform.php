@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
-use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Symfony\Component\Config\Definition;
 
 /**
@@ -24,7 +26,31 @@ abstract class AbstractPlatform implements PlatformInterface
 
 
     /**
-     * @inheritDoc
+     * @inheritdoc
+     */
+    public function supports(string $action)
+    {
+        return in_array($action, $this->getActions(), true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function export(array $shipments)
+    {
+        $this->throwUnsupportedOperation('export');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function import($path)
+    {
+        $this->throwUnsupportedOperation('import');
+    }
+
+    /**
+     * @inheritdoc
      */
     public function setRegistry(RegistryInterface $registry)
     {
@@ -48,7 +74,7 @@ abstract class AbstractPlatform implements PlatformInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getConfigDefaults()
     {
@@ -56,7 +82,7 @@ abstract class AbstractPlatform implements PlatformInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function processGatewayConfig(array $config)
     {
@@ -76,26 +102,33 @@ abstract class AbstractPlatform implements PlatformInterface
     }
 
     /**
-     * @inheritDoc
+     * Asserts that the given shipment is supported by this platform.
+     *
+     * @param ShipmentInterface $shipment
+     *
+     * @throws InvalidArgumentException
      */
-    public function execute(ActionInterface $action)
+    protected function assertShipmentPlatform(ShipmentInterface $shipment)
     {
-        return null;
+        if ($shipment->getPlatformName() !== $this->getName()) {
+            throw new InvalidArgumentException(sprintf(
+                "Platform %s does not support shipment %s.",
+                $this->getName(), $shipment->getNumber()
+            ));
+        }
     }
 
     /**
-     * @inheritDoc
+     * Throws an unsupported operation exception.
+     *
+     * @param string $operation
+     *
+     * @throws RuntimeException
      */
-    public function supports(ActionInterface $action)
+    protected function throwUnsupportedOperation($operation)
     {
-        return false;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getActions()
-    {
-        return [];
+        throw new RuntimeException(
+            "The shipment platform '{$this->getName()}' does not support '$operation' operation."
+        );
     }
 }

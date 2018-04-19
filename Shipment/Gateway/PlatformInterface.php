@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
-use Ekyna\Component\Commerce\Shipment\Gateway\Action\ActionInterface;
 use Symfony\Component\Config\Definition\NodeInterface;
 
 /**
@@ -13,6 +12,38 @@ use Symfony\Component\Config\Definition\NodeInterface;
 interface PlatformInterface
 {
     /**
+     * Returns the platform name.
+     *
+     * @return string
+     */
+    public function getName();
+
+    /**
+     * Returns the platform capabilities.
+     *
+     * @return array
+     */
+    public function getActions();
+
+    /**
+     * Exports the given shipments.
+     *
+     * @param array $shipments The shipments to export
+     *
+     * @return string The exported file path.
+     */
+    public function export(array $shipments);
+
+    /**
+     * Imports the given tracking information.
+     *
+     * @param string $path The file path to import
+     *
+     * @return bool Whether the importation succeed.
+     */
+    public function import($path);
+
+    /**
      * Sets the registry.
      *
      * @param RegistryInterface $registry
@@ -20,13 +51,6 @@ interface PlatformInterface
      * @return mixed
      */
     public function setRegistry(RegistryInterface $registry);
-
-    /**
-     * Returns the platform name.
-     *
-     * @return string
-     */
-    public function getName();
 
     /**
      * Returns gateway config definition.
@@ -62,27 +86,11 @@ interface PlatformInterface
     public function createGateway($name, array $config = []);
 
     /**
-     * Executes the given action.
-     *
-     * @param ActionInterface $action
-     *
-     * @return \Psr\Http\Message\ResponseInterface|null
-     */
-    public function execute(ActionInterface $action);
-
-    /**
      * Returns whether the given action is supported.
      *
-     * @param ActionInterface $action
+     * @param string $action
      *
      * @return bool
      */
-    public function supports(ActionInterface $action);
-
-    /**
-     * Returns the FQCN of the supported actions.
-     *
-     * @return array
-     */
-    public function getActions();
+    public function supports(string $action);
 }

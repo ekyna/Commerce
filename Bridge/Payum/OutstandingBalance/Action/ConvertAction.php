@@ -47,15 +47,21 @@ class ConvertAction implements ActionInterface
             $customer = $customer->getParent();
         }
 
-        if (0 == $limit = $sale->getOutstandingLimit()) {
+        // If sale has a customer limit
+        if (0 < $limit = $sale->getOutstandingLimit()) {
+            // Use sale's balance
+            $balance = - $sale->getOutstandingAccepted() - $sale->getOutstandingExpired();
+        } else {
+            // Use customer's limit and balance
             $limit = $customer->getOutstandingLimit();
+            $balance = $customer->getOutstandingBalance();
         }
 
         $details->defaults(array(
             Constants::FIELD_STATUS  => null,
             Constants::FIELD_AMOUNT  => $payment->getAmount(),
             Constants::FIELD_LIMIT   => $limit,
-            Constants::FIELD_BALANCE => $customer->getOutstandingBalance(),
+            Constants::FIELD_BALANCE => $balance,
         ));
 
         $request->setResult((array) $details);

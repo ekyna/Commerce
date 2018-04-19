@@ -191,7 +191,7 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        $this->invoiceSynchronizer->synchronize($shipment);
+        //$this->invoiceSynchronizer->synchronize($shipment);
 
         $sale = $this->getSaleFromShipment($shipment);
 
@@ -209,7 +209,7 @@ abstract class AbstractShipmentListener
     {
         $shipment = $this->getShipmentFromEvent($event);
 
-        $this->invoiceSynchronizer->synchronize($shipment);
+        //$this->invoiceSynchronizer->synchronize($shipment);
 
         $this->scheduleSaleContentChangeEvent($this->getSaleFromShipment($shipment));
     }

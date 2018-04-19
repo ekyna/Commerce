@@ -11,7 +11,16 @@ use Symfony\Component\Validator\Constraint;
  */
 class Shipment extends Constraint
 {
-    public $shipped_state_denied = 'ekyna_commerce.shipment.shipped_state_denied';
+    public $method_does_not_support_parcel       = 'ekyna_commerce.shipment.method_does_not_support_parcel';
+    public $method_does_not_support_return       = 'ekyna_commerce.shipment.method_does_not_support_return';
+    public $method_does_not_support_shipment     = 'ekyna_commerce.shipment.method_does_not_support_shipment';
+    public $shipped_state_denied                 = 'ekyna_commerce.shipment.shipped_state_denied';
+    public $weight_or_parcels_but_not_both       = 'ekyna_commerce.shipment.weight_or_parcels_but_not_both';
+    public $valorization_or_parcels_but_not_both = 'ekyna_commerce.shipment.valorization_or_parcels_but_not_both';
+    public $at_least_two_parcels_or_none         = 'ekyna_commerce.shipment.at_least_two_parcels_or_none';
+    public $relay_point_is_required              = 'ekyna_commerce.shipment.relay_point_is_required';
+    public $credit_method_is_required            = 'ekyna_commerce.shipment.credit_method_is_required';
+    public $credit_method_must_be_null           = 'ekyna_commerce.shipment.credit_method_must_be_null';
 
 
     /**

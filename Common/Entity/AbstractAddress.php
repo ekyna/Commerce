@@ -63,6 +63,26 @@ abstract class AbstractAddress implements Model\AddressInterface
      */
     protected $mobile;
 
+    /**
+     * @var string
+     */
+    protected $longitude;
+
+    /**
+     * @var string
+     */
+    protected $latitude;
+
+
+    /**
+     * Returns the string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return sprintf('%s %s %s', $this->street, $this->postalCode, $this->city);
+    }
 
     /**
      * @inheritdoc
@@ -240,6 +260,42 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setMobile($mobile)
     {
         $this->mobile = $mobile;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLongitude()
+    {
+        return $this->longitude;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLongitude($longitude)
+    {
+        $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLatitude()
+    {
+        return $this->latitude;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLatitude($latitude)
+    {
+        $this->latitude = $latitude;
 
         return $this;
     }

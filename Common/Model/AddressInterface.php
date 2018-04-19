@@ -168,4 +168,36 @@ interface AddressInterface extends IdentityInterface
      * @return $this|AddressInterface
      */
     public function setMobile($mobile);
+
+    /**
+     * Returns the longitude.
+     *
+     * @return float
+     */
+    public function getLongitude();
+
+    /**
+     * Sets the longitude.
+     *
+     * @param float $longitude
+     *
+     * @return $this|AddressInterface
+     */
+    public function setLongitude($longitude);
+
+    /**
+     * Returns the latitude.
+     *
+     * @return float
+     */
+    public function getLatitude();
+
+    /**
+     * Sets the latitude.
+     *
+     * @param float $latitude
+     *
+     * @return $this|AddressInterface
+     */
+    public function setLatitude($latitude);
 }

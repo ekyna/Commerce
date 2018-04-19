@@ -93,7 +93,7 @@ class SaleValidator extends ConstraintValidator
     }
 
     /**
-     * Validates the sale identity.
+     * Validates the sale payment term and outstanding limit.
      *
      * @param SaleInterface $sale
      * @param Constraint    $constraint

@@ -10,7 +10,10 @@ use Ekyna\Component\Commerce\Shipment\Model\WeightCalculatorAwareInterface;
  * @package Ekyna\Component\Commerce\Shipment\Gateway
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface RegistryInterface extends AddressResolverAwareInterface, WeightCalculatorAwareInterface
+interface RegistryInterface extends
+    AddressResolverAwareInterface,
+    WeightCalculatorAwareInterface,
+    PersisterAwareInterface
 {
     /**
      * Registers the provider.

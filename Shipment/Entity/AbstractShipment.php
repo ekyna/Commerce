@@ -18,7 +18,8 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
 {
     use Common\NumberSubjectTrait,
         Common\StateSubjectTrait,
-        TimestampableTrait;
+        TimestampableTrait,
+        Shipment\ShipmentDataTrait;
 
     /**
      * @var int
@@ -31,14 +32,19 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $method;
 
     /**
-     * @var bool
-     */
-    protected $autoInvoice;
-
-    /**
      * @var ArrayCollection|Shipment\ShipmentItemInterface[]
      */
     protected $items;
+
+    /**
+     * @var ArrayCollection|Shipment\ShipmentParcelInterface[]
+     */
+    protected $parcels;
+
+    /**
+     * @var bool
+     */
+    protected $autoInvoice;
 
     /**
      * @var bool
@@ -46,19 +52,9 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $return;
 
     /**
-     * @var float
-     */
-    protected $weight;
-
-    /**
      * @var string
      */
     protected $description;
-
-    /**
-     * @var string
-     */
-    protected $trackingNumber;
 
     /**
      * @var array
@@ -86,6 +82,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     protected $receiverAddress;
 
     /**
+     * @var Shipment\RelayPointInterface
+     */
+    protected $relayPoint;
+
+    /**
      * @var Payment\PaymentMethodInterface
      */
     protected $creditMethod;
@@ -98,8 +99,11 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     {
         $this->state = Shipment\ShipmentStates::STATE_NEW;
         $this->items = new ArrayCollection();
+        $this->parcels = new ArrayCollection();
         $this->return = false;
         $this->autoInvoice = true;
+
+        $this->initializeShipmentData();
     }
 
     /**
@@ -207,18 +211,48 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function setItems(ArrayCollection $items)
+    public function hasParcels()
     {
-        foreach ($this->items as $item) {
-            if (!$items->contains($item)) {
-                $this->items->removeElement($item);
-            }
+        return 0 < $this->parcels->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getParcels()
+    {
+        return $this->parcels;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasParcel(Shipment\ShipmentParcelInterface $parcel)
+    {
+        return $this->parcels->contains($parcel);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addParcel(Shipment\ShipmentParcelInterface $parcel)
+    {
+        if (!$this->hasParcel($parcel)) {
+            $this->parcels->add($parcel);
+            $parcel->setShipment($this);
         }
 
-        $this->items = new ArrayCollection();
+        return $this;
+    }
 
-        foreach ($items as $item) {
-            $this->addItem($item);
+    /**
+     * @inheritdoc
+     */
+    public function removeParcel(Shipment\ShipmentParcelInterface $parcel)
+    {
+        if ($this->hasParcel($parcel)) {
+            $this->parcels->removeElement($parcel);
+            $parcel->setShipment(null);
         }
 
         return $this;
@@ -245,24 +279,6 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     /**
      * @inheritdoc
      */
-    public function getWeight()
-    {
-        return $this->weight;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setWeight($weight)
-    {
-        $this->weight = 0 < $weight ? (float)$weight : null;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getDescription()
     {
         return $this->description;
@@ -274,24 +290,6 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function setDescription($description)
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTrackingNumber()
-    {
-        return $this->trackingNumber;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTrackingNumber($number)
-    {
-        $this->trackingNumber = $number;
 
         return $this;
     }
@@ -413,10 +411,25 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Returns the credit method.
-     * (non mapped, for credit synchronisation)
-     *
-     * @return Payment\PaymentMethodInterface
+     * @inheritDoc
+     */
+    public function getRelayPoint()
+    {
+        return $this->relayPoint;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRelayPoint(Shipment\RelayPointInterface $relayPoint = null)
+    {
+        $this->relayPoint = $relayPoint;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function getCreditMethod()
     {
@@ -424,17 +437,26 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Sets the credit method.
-     * (non mapped, for credit synchronisation)
-     *
-     * @param Payment\PaymentMethodInterface $method
-     *
-     * @return AbstractShipment
+     * @inheritDoc
      */
-    public function setCreditMethod(Payment\PaymentMethodInterface $method)
+    public function setCreditMethod(Payment\PaymentMethodInterface $method = null)
     {
         $this->creditMethod = $method;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEmpty()
+    {
+        foreach ($this->items as $item) {
+            if (0 < $item->getQuantity()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

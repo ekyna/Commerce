@@ -79,7 +79,9 @@ final class AddressUtil
             ->setCity($source->getCity())
             ->setPostalCode($source->getPostalCode())
             ->setCountry($source->getCountry())
-            ->setState($source->getState());
+            ->setState($source->getState())
+            ->setLatitude($source->getLatitude())
+            ->setLongitude($source->getLongitude());
 
         if (is_object($phone = $source->getPhone())) {
             $target->setPhone(clone $phone);

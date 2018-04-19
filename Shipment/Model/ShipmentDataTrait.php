@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 /**
  * Trait ShipmentDataTrait
  * @package Ekyna\Component\Commerce\Shipment\Model
@@ -12,22 +14,22 @@ trait ShipmentDataTrait
     /**
      * @var float
      */
-    protected $weightTotal;
-
-    /**
-     * @var ShipmentMethodInterface
-     */
-    protected $shipmentMethod;
+    protected $weight;
 
     /**
      * @var float
      */
-    protected $shipmentAmount;
+    protected $valorization;
 
     /**
      * @var string
      */
-    protected $relayPoint;
+    protected $trackingNumber;
+
+    /**
+     * @var ArrayCollection|ShipmentLabelInterface[]
+     */
+    protected $labels;
 
 
     /**
@@ -35,102 +37,149 @@ trait ShipmentDataTrait
      */
     protected function initializeShipmentData()
     {
-        $this->weightTotal = 0;
-        $this->shipmentAmount = 0;
+        $this->labels = new ArrayCollection();
     }
 
     /**
-     * Returns the weight total (kilograms).
+     * Returns the weight.
      *
      * @return float
      */
-    public function getWeightTotal()
+    public function getWeight()
     {
-        return $this->weightTotal;
+        return $this->weight;
     }
 
     /**
-     * Sets the weight total (kilograms).
+     * Sets the weight.
      *
-     * @param float $total
+     * @param float $weight
      *
      * @return $this|ShipmentDataInterface
      */
-    public function setWeightTotal($total)
+    public function setWeight($weight)
     {
-        $this->weightTotal = $total;
+        $this->weight = (float)$weight;
 
         return $this;
     }
 
     /**
-     * Returns the preferred shipment method.
-     *
-     * @return ShipmentMethodInterface
-     */
-    public function getShipmentMethod()
-    {
-        return $this->shipmentMethod;
-    }
-
-    /**
-     * Sets the preferred shipment method.
-     *
-     * @param ShipmentMethodInterface $method
-     *
-     * @return $this|ShipmentDataInterface
-     */
-    public function setShipmentMethod(ShipmentMethodInterface $method = null)
-    {
-        $this->shipmentMethod = $method;
-
-        return $this;
-    }
-
-    /**
-     * Returns the shipment amount.
+     * Returns the valorization.
      *
      * @return float
      */
-    public function getShipmentAmount()
+    public function getValorization()
     {
-        return $this->shipmentAmount;
+        return $this->valorization;
     }
 
     /**
-     * Sets the shipment amount.
+     * Sets the valorization.
      *
-     * @param float $amount
-     *
-     * @return $this|ShipmentDataInterface
+     * @param float $valorization
      */
-    public function setShipmentAmount($amount)
+    public function setValorization($valorization)
     {
-        $this->shipmentAmount = $amount;
-
-        return $this;
+        $this->valorization = (float)$valorization;
     }
 
     /**
-     * Returns the relay point identifier.
+     * Returns the tracking number.
      *
      * @return string
      */
-    public function getRelayPoint()
+    public function getTrackingNumber()
     {
-        return $this->relayPoint;
+        return $this->trackingNumber;
     }
 
     /**
-     * Sets the relay point identifier.
+     * Sets the tracking number.
      *
-     * @param string $relayPoint
+     * @param string $number
      *
      * @return $this|ShipmentDataInterface
      */
-    public function setRelayPoint($relayPoint)
+    public function setTrackingNumber($number)
     {
-        $this->relayPoint = $relayPoint;
+        $this->trackingNumber = $number;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether the shipment/parcel has labels.
+     *
+     * @return bool
+     */
+    public function hasLabels()
+    {
+        return 0 < $this->labels->count();
+    }
+
+    /**
+     * Returns the labels.
+     *
+     * @return ArrayCollection|ShipmentLabelInterface[]
+     */
+    public function getLabels()
+    {
+        return $this->labels;
+    }
+
+    /**
+     * Returns whether the shipment/parcel has the given label.
+     *
+     * @param ShipmentLabelInterface $label
+     *
+     * @return bool
+     */
+    public function hasLabel(ShipmentLabelInterface $label)
+    {
+        return $this->labels->contains($label);
+    }
+
+    /**
+     * Adds the label.
+     *
+     * @param ShipmentLabelInterface $label
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function addLabel(ShipmentLabelInterface $label)
+    {
+        if (!$this->hasLabel($label)) {
+            $this->labels->add($label);
+
+            if ($this instanceof ShipmentInterface) {
+                $label->setShipment($this)->setParcel(null);
+            } else {
+                $label->setParcel($this)->setShipment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Removes the label.
+     *
+     * @param ShipmentLabelInterface $label
+     *
+     * @return $this|ShipmentDataInterface
+     */
+    public function removeLabel(ShipmentLabelInterface $label)
+    {
+        if ($this->hasLabel($label)) {
+            $this->labels->removeElement($label);
+
+            if ($this instanceof ShipmentInterface) {
+                $label->setShipment(null);
+            } else {
+                $label->setParcel(null);
+            }
+        }
 
         return $this;
     }
