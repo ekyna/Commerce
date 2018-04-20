@@ -25,4 +25,12 @@ final class ShipmentMethodEvents
 
     const PRE_DELETE  = 'ekyna_commerce.shipment_method.pre_delete';
     const POST_DELETE = 'ekyna_commerce.shipment_method.post_delete';
+
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

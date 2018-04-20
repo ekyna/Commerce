@@ -86,9 +86,25 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @inheritDoc
      */
-    public function support(int $capability)
+    public function getRequirements()
+    {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supports(int $capability)
     {
         return (bool)($capability & $this->getCapabilities());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function requires(int $requirement)
+    {
+        return (bool)($requirement & $this->getRequirements());
     }
 
     /**
@@ -280,7 +296,7 @@ abstract class AbstractGateway implements GatewayInterface
         }
 
         // Assert shipment support
-        if (!$shipment->isReturn() && !$this->support(static::CAPABILITY_SHIPMENT)) {
+        if (!$shipment->isReturn() && !$this->supports(static::CAPABILITY_SHIPMENT)) {
             if ($throw) {
                 $this->throwUnsupportedShipment($shipment, "Shipments are not supported.");
             }
@@ -289,7 +305,7 @@ abstract class AbstractGateway implements GatewayInterface
         }
 
         // Assert return support
-        if ($shipment->isReturn() && !$this->support(static::CAPABILITY_RETURN)) {
+        if ($shipment->isReturn() && !$this->supports(static::CAPABILITY_RETURN)) {
             if ($throw) {
                 $this->throwUnsupportedShipment($shipment, "Returns are not supported.");
             }
@@ -298,7 +314,7 @@ abstract class AbstractGateway implements GatewayInterface
         }
 
         // Assert parcel support
-        if ($shipment->hasParcels() && !$this->support(static::CAPABILITY_PARCEL)) {
+        if ($shipment->hasParcels() && !$this->supports(static::CAPABILITY_PARCEL)) {
             if ($throw) {
                 $this->throwUnsupportedShipment($shipment, "Parcels are not supported.");
             }

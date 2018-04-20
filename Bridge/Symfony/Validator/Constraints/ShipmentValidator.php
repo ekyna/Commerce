@@ -74,13 +74,13 @@ class ShipmentValidator extends ConstraintValidator
 
         $gateway = $this->registry->getGateway($method->getGatewayName());
 
-        if ($shipment->isReturn() && !$gateway->support(Gateway\GatewayInterface::CAPABILITY_RETURN)) {
+        if ($shipment->isReturn() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_RETURN)) {
             $this
                 ->context
                 ->buildViolation($constraint->method_does_not_support_return)
                 ->atPath('method')
                 ->addViolation();
-        } elseif (!$shipment->isReturn() && !$gateway->support(Gateway\GatewayInterface::CAPABILITY_SHIPMENT)) {
+        } elseif (!$shipment->isReturn() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_SHIPMENT)) {
             $this
                 ->context
                 ->buildViolation($constraint->method_does_not_support_shipment)
@@ -88,7 +88,7 @@ class ShipmentValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        if ($shipment->hasParcels() && !$gateway->support(Gateway\GatewayInterface::CAPABILITY_PARCEL)) {
+        if ($shipment->hasParcels() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_PARCEL)) {
             $this
                 ->context
                 ->buildViolation($constraint->method_does_not_support_parcel)

@@ -19,7 +19,8 @@ interface GatewayInterface extends
     const CAPABILITY_RETURN   = 2;
     const CAPABILITY_PARCEL   = 4;
     const CAPABILITY_RELAY    = 8;
-    const CAPABILITY_MOBILE   = 16;
+
+    const REQUIREMENT_MOBILE  = 1;
 
 
     /**
@@ -144,13 +145,29 @@ interface GatewayInterface extends
     public function getCapabilities();
 
     /**
+     * Returns the gateway requirements.
+     *
+     * @return int
+     */
+    public function getRequirements();
+
+    /**
      * Returns whether this gateway supports the given capability.
      *
      * @param int $capability
      *
      * @return bool
      */
-    public function support(int $capability);
+    public function supports(int $capability);
+
+    /**
+     * Returns whether this gateway has the given requirement.
+     *
+     * @param int $requirement
+     *
+     * @return bool
+     */
+    public function requires(int $requirement);
 
     /**
      * Returns whether the gateway supports the given shipment.

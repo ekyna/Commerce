@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -14,6 +15,22 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class SalePaymentStepValidator extends ConstraintValidator
 {
+    /**
+     * @var Gateway\RegistryInterface
+     */
+    private $gatewayRegistry;
+
+
+    /**
+     * Constructor.
+     *
+     * @param Gateway\RegistryInterface $gatewayRegistry
+     */
+    public function __construct(Gateway\RegistryInterface $gatewayRegistry)
+    {
+        $this->gatewayRegistry = $gatewayRegistry;
+    }
+
     /**
      * @inheritdoc
      */
@@ -30,10 +47,32 @@ class SalePaymentStepValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SalePaymentStep::class);
         }
 
-        if (null === $sale->getShipmentMethod()) {
+        if (null === $method = $sale->getShipmentMethod()) {
             $this->context
                 ->buildViolation($constraint->shipment_method_must_be_set)
+                ->atPath('shipmentMethod')
                 ->addViolation();
+
+            return;
+        }
+
+        $gateway = $this->gatewayRegistry->getGateway($method->getGatewayName());
+
+        if ($gateway->requires(Gateway\GatewayInterface::REQUIREMENT_MOBILE)) {
+            if ($sale->isSameAddress()) {
+                $address = $sale->getInvoiceAddress();
+                $path = 'invoiceAddress';
+            } else {
+                $address = $sale->getDeliveryAddress();
+                $path = 'deliveryAddress';
+            }
+
+            if (is_null($address->getMobile())) {
+                $this->context
+                    ->buildViolation($constraint->shipment_method_require_mobile)
+                    ->atPath($path . '.mobile')
+                    ->addViolation();
+            }
         }
     }
 }

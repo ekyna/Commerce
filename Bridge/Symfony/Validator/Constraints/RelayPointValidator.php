@@ -63,7 +63,7 @@ class RelayPointValidator extends ConstraintValidator
         $gateway = $this->gatewayRegistry->getGateway($method->getGatewayName());
 
         // If gateway does not support relay point
-        if (!$gateway->support(Gateway\GatewayInterface::CAPABILITY_RELAY)) {
+        if (!$gateway->supports(Gateway\GatewayInterface::CAPABILITY_RELAY)) {
             if (null !== $point) {
                 $this->context
                     ->buildViolation($constraint->relay_point_must_be_null)

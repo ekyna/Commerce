@@ -95,14 +95,14 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         $gateway = $this->registry->getGateway($method->getGatewayName());
 
         // Set shipment method if supported
-        if (!$shipment->isReturn() && $gateway->support(GatewayInterface::CAPABILITY_SHIPMENT)) {
+        if (!$shipment->isReturn() && $gateway->supports(GatewayInterface::CAPABILITY_SHIPMENT)) {
             $shipment->setMethod($method);
 
             return;
         }
 
         // Set return method if supported
-        if ($shipment->isReturn() && $gateway->support(GatewayInterface::CAPABILITY_RETURN)) {
+        if ($shipment->isReturn() && $gateway->supports(GatewayInterface::CAPABILITY_RETURN)) {
             $shipment->setMethod($method);
 
             return;
@@ -129,7 +129,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         $gateway = $this->registry->getGateway($method->getGatewayName());
 
         // If gateway does not support relay point
-        if (!$gateway->support(GatewayInterface::CAPABILITY_RELAY)) {
+        if (!$gateway->supports(GatewayInterface::CAPABILITY_RELAY)) {
             // Clear the relay point if it is set
             if (null !== $shipment->getRelayPoint()) {
                 $shipment->setRelayPoint(null);
