@@ -2,10 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Tests\Order\Entity;
 
-use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
+use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
-use Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment;
-use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 
 /**
  * Class OrderItemTest
@@ -16,68 +14,85 @@ use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
  */
 class OrderItemTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var OrderItemInterface
-     */
-    private $item;
-
-    public function setUp()
-    {
-        $this->item = new OrderItem();
-        $this->item
-            ->setDesignation('Test order item 1')
-            ->setReference('TEST-ITEM-1')
-            ->setNetPrice(10)
-            ->setTaxName('Tax 1')
-            ->setTaxRate(0.2)
-            ->setWeight(0.2)
-            ->setQuantity(1)
-            ->addChild($this->getTestChildItemOne())
-            ->addAdjustment($this->getTestItemAdjustmentOne());
-    }
-
-    public function tearDown()
-    {
-        $this->item = null;
-    }
-
-    private function getTestChildItemOne()
+    public function test_setOrder_withOrder()
     {
         $item = new OrderItem();
-        $item
-            ->setDesignation('Test child item 1')
-            ->setReference('TEST-CHILD-1')
-            ->setTaxName('Tax 1');
-        return $item;
+        $order = new Order();
+
+        $item->setOrder($order);
+
+        $this->assertEquals($order, $item->getOrder());
+        $this->assertTrue($order->hasItem($item));
     }
 
-    private function getTestChildItemTwo()
+    public function test_setOrder_withNull()
     {
         $item = new OrderItem();
-        $item
-            ->setDesignation('Test child item 2')
-            ->setReference('TEST-CHILD-2')
-            ->setTaxName('Tax 2');
-        return $item;
+        $order = new Order();
+
+        $item->setOrder($order);
+        $item->setOrder(null);
+
+        $this->assertEquals(null, $item->getOrder());
+        $this->assertFalse($order->hasItem($item));
     }
 
-    private function getTestItemAdjustmentOne()
+    public function test_setOrder_withAnotherOrder()
     {
-        $adjustment = new OrderItemAdjustment();
-        $adjustment
-            ->setDesignation('Test item adjustment 1')
-            ->setAmount(10);
-        return $adjustment;
+        $item = new OrderItem();
+        $orderA = new Order();
+        $orderB = new Order();
+
+        $item->setOrder($orderA);
+        $item->setOrder($orderB);
+
+        $this->assertEquals($orderB, $item->getOrder());
+        $this->assertTrue($orderB->hasItem($item));
+        $this->assertFalse($orderA->hasItem($item));
     }
 
-    private function getTestItemAdjustmentTwo()
+    public function test_setParent_withItem()
     {
-        $adjustment = new OrderItemAdjustment();
-        $adjustment
-            ->setDesignation('Test item adjustment 2')
-            ->setAmount(5)
-            ->setMode(AdjustmentModes::MODE_PERCENT);
-        return $adjustment;
+        $item = new OrderItem();
+        $parent = new OrderItem();
+
+        $item->setParent($parent);
+
+        $this->assertEquals($parent, $item->getParent());
+        $this->assertTrue($parent->hasChild($item));
+    }
+
+    public function test_setParent_withNull()
+    {
+        $item = new OrderItem();
+        $parent = new OrderItem();
+
+        $item->setParent($parent);
+        $item->setParent(null);
+
+        $this->assertEquals(null, $item->getParent());
+        $this->assertFalse($parent->hasChild($item));
+    }
+
+    public function test_setParent_withAnotherItem()
+    {
+        $item = new OrderItem();
+        $parentA = new OrderItem();
+        $parentB = new OrderItem();
+
+        $item->setParent($parentA);
+        $item->setParent($parentB);
+
+        $this->assertEquals($parentB, $item->getParent());
+        $this->assertTrue($parentB->hasChild($item));
+        $this->assertFalse($parentA->hasChild($item));
+    }
+
+    public function test_createChild()
+    {
+        $item = new OrderItem();
+
+        $this->assertInstanceOf(OrderItem::class, $item->createChild());
     }
 
     /**
@@ -97,17 +112,19 @@ class OrderItemTest extends \PHPUnit_Framework_TestCase
             $item->getAdjustments(),
             'OrderItem is not initialized with an empty adjustment collection.'
         );
-        $this->assertNull(
+        $this->assertEquals(
+            0,
             $item->getNetPrice(),
-            'OrderItem is not initialized with a null net price'
+            'OrderItem is not initialized with a zero net price'
+        );
+        $this->assertEquals(
+            0,
+            $item->getWeight(),
+            'OrderItem is not initialized with a zero weight'
         );
         $this->assertNull(
             $item->getTaxGroup(),
-            'OrderItem is not initialized with a null tax name'
-        );
-        $this->assertNull(
-            $item->getWeight(),
-            'OrderItem is not initialized with a null weight'
+            'OrderItem is not initialized with a null tax group'
         );
         $this->assertEquals(
             1,

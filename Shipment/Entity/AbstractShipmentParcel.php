@@ -54,14 +54,12 @@ abstract class AbstractShipmentParcel implements Model\ShipmentParcelInterface
     public function setShipment(Model\ShipmentInterface $shipment = null)
     {
         if ($this->shipment !== $shipment) {
-            $previous = $this->shipment;
-            $this->shipment = $shipment;
-
-            if ($previous) {
+            if ($previous = $this->shipment) {
+                $this->shipment = null;
                 $previous->removeParcel($this);
             }
 
-            if ($this->shipment) {
+            if ($this->shipment = $shipment) {
                 $this->shipment->addParcel($this);
             }
         }

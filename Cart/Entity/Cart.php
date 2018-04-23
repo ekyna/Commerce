@@ -47,7 +47,7 @@ class Cart extends AbstractSale implements Model\CartInterface
      */
     public function setInvoiceAddress(Common\SaleAddressInterface $address = null)
     {
-        if (null !== $address && !$address instanceof Model\CartAddressInterface) {
+        if ($address && !$address instanceof Model\CartAddressInterface) {
             throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
         }
 
@@ -82,7 +82,7 @@ class Cart extends AbstractSale implements Model\CartInterface
      */
     public function setDeliveryAddress(Common\SaleAddressInterface $address = null)
     {
-        if (null !== $address && !$address instanceof Model\CartAddressInterface) {
+        if ($address && !$address instanceof Model\CartAddressInterface) {
             throw new InvalidArgumentException('Expected instance of CartAddressInterface.');
         }
 
@@ -141,7 +141,7 @@ class Cart extends AbstractSale implements Model\CartInterface
 
         if ($this->hasAttachment($attachment)) {
             $this->attachments->removeElement($attachment);
-            //$attachment->setCart(null);
+            $attachment->setCart(null);
         }
 
         return $this;

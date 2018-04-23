@@ -90,7 +90,10 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             }
 
             if (!$prevent) {
-                $saleItem->removeStockAssignment($assignment);
+                $assignment
+                    ->setSaleItem(null)
+                    ->setStockUnit(null);
+
                 $this->persistenceHelper->remove($assignment, false);
 
                 return $quantity;

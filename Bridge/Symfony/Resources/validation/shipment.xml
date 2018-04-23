@@ -121,6 +121,9 @@
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod">
+        <property name="prices">
+            <constraint name="Valid"/>
+        </property>
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethodMessage">
@@ -136,6 +139,12 @@
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentPrice">
+        <property name="method">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="zone">
+            <constraint name="NotNull"/>
+        </property>
         <property name="weight">
             <constraint name="NotBlank"/>
             <constraint name="GreaterThan">
@@ -153,6 +162,25 @@
             <!-- TODO <constraint name="LessThan">
                 <option name="value">10000</option>
             </constraint>-->
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\ShipmentPrice"/>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentZone">
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">3</option>
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="countries">
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+        <property name="prices">
+            <constraint name="Valid"/>
         </property>
     </class>
 

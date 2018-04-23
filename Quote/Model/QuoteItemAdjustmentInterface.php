@@ -11,12 +11,5 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;
  */
 interface QuoteItemAdjustmentInterface extends SaleItemAdjustmentInterface
 {
-    /**
-     * Sets the quote item.
-     *
-     * @param QuoteItemInterface $item
-     *
-     * @return $this|QuoteAdjustmentInterface
-     */
-    public function setItem(QuoteItemInterface $item = null);
+
 }

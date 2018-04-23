@@ -163,7 +163,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remove stock assignments and schedule events
         foreach ($assignments as $assignment) {
-            $item->removeStockAssignment($assignment);
             $this->removeAssignment($assignment);
         }
     }
@@ -456,6 +455,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     protected function removeAssignment(StockAssignmentInterface $assignment)
     {
         $this->unitUpdater->updateSold($assignment->getStockUnit(), -$assignment->getSoldQuantity(), true);
+
+        $assignment
+            ->setSaleItem(null)
+            ->setStockUnit(null);
 
         $this->persistenceHelper->remove($assignment);
     }

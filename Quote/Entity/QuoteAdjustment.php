@@ -41,14 +41,12 @@ class QuoteAdjustment extends AbstractSaleAdjustment implements QuoteAdjustmentI
     public function setQuote(QuoteInterface $quote = null)
     {
         if ($quote !== $this->quote) {
-            $previous = $this->quote;
-            $this->quote = $quote;
-
-            if ($previous) {
+            if ($previous = $this->quote) {
+                $this->quote = null;
                 $previous->removeAdjustment($this);
             }
 
-            if ($this->quote) {
+            if ($this->quote = $quote) {
                 $this->quote->addAdjustment($this);
             }
         }

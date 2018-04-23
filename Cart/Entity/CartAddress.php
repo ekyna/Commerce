@@ -50,14 +50,12 @@ class CartAddress extends AbstractAddress implements Model\CartAddressInterface
     public function setInvoiceCart(Model\CartInterface $cart = null)
     {
         if ($cart !== $this->invoiceCart) {
-            $previous = $this->invoiceCart;
-            $this->invoiceCart = $cart;
-
-            if ($previous) {
+            if ($previous = $this->invoiceCart) {
+                $this->invoiceCart = null;
                 $previous->setInvoiceAddress(null);
             }
 
-            if ($this->invoiceCart) {
+            if ($this->invoiceCart = $cart) {
                 $this->invoiceCart->setInvoiceAddress($this);
             }
         }
@@ -79,14 +77,12 @@ class CartAddress extends AbstractAddress implements Model\CartAddressInterface
     public function setDeliveryCart(Model\CartInterface $cart = null)
     {
         if ($cart !== $this->deliveryCart) {
-            $previous = $this->deliveryCart;
-            $this->deliveryCart = $cart;
-
-            if ($previous) {
+            if ($previous = $this->deliveryCart) {
+                $this->deliveryCart = null;
                 $previous->setDeliveryAddress(null);
             }
 
-            if ($this->deliveryCart) {
+            if ($this->deliveryCart = $cart) {
                 $this->deliveryCart->setDeliveryAddress($this);
             }
         }

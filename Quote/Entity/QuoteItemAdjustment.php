@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItemAdjustment;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Quote\Model\QuoteItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteItemInterface;
 
@@ -11,50 +13,15 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteItemInterface;
  * @package Ekyna\Component\Commerce\Quote\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class QuoteItemAdjustment extends AbstractAdjustment implements QuoteItemAdjustmentInterface
+class QuoteItemAdjustment extends AbstractSaleItemAdjustment implements QuoteItemAdjustmentInterface
 {
     /**
-     * @var QuoteItemInterface
+     * @inheritDoc
      */
-    protected $item;
-
-
-    /**
-     * @inheritdoc
-     *
-     * @return QuoteItemInterface
-     */
-    public function getItem()
+    protected function assertSaleItemClass(SaleItemInterface $item)
     {
-        return $this->item;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setItem(QuoteItemInterface $item = null)
-    {
-        if ($item !== $this->item) {
-            $previous = $this->item;
-            $this->item = $item;
-
-            if ($previous) {
-                $previous->removeAdjustment($this);
-            }
-
-            if ($this->item) {
-                $this->item->addAdjustment($this);
-            }
+        if (!$item instanceof QuoteItemInterface) {
+            throw new InvalidArgumentException("Expected instance of " . QuoteItemInterface::class);
         }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdjustable()
-    {
-        return $this->item;
     }
 }

@@ -58,14 +58,12 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
     public function setOrder(Model\OrderInterface $order = null)
     {
         if ($order !== $this->order) {
-            $previous = $this->order;
-            $this->order = $order;
-
-            if ($previous) {
+            if ($previous = $this->order) {
+                $this->order = null;
                 $previous->removeInvoice($this);
             }
 
-            if ($this->order) {
+            if ($this->order = $order) {
                 $this->order->addInvoice($this);
             }
         }
@@ -93,14 +91,12 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
         }
 
         if ($this->shipment !== $shipment) {
-            $previous = $this->shipment;
-            $this->shipment = $shipment;
-
-            if ($previous) {
+            if ($previous = $this->shipment) {
+                $this->shipment = null;
                 $previous->setInvoice(null);
             }
 
-            if ($this->shipment) {
+            if ($this->shipment = $shipment) {
                 $this->shipment->setInvoice($this);
             }
         }

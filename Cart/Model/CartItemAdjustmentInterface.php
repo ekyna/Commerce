@@ -11,12 +11,5 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;
  */
 interface CartItemAdjustmentInterface extends SaleItemAdjustmentInterface
 {
-    /**
-     * Sets the cart item.
-     *
-     * @param CartItemInterface $item
-     *
-     * @return $this|CartAdjustmentInterface
-     */
-    public function setItem(CartItemInterface $item = null);
+
 }

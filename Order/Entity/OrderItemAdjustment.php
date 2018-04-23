@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAdjustment;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItemAdjustment;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 
@@ -11,48 +13,15 @@ use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderItemAdjustment extends AbstractAdjustment implements OrderItemAdjustmentInterface
+class OrderItemAdjustment extends AbstractSaleItemAdjustment implements OrderItemAdjustmentInterface
 {
     /**
-     * @var OrderItemInterface
+     * @inheritDoc
      */
-    protected $item;
-
-
-    /**
-     * @inheritdoc
-     */
-    public function getItem()
+    protected function assertSaleItemClass(SaleItemInterface $item)
     {
-        return $this->item;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setItem(OrderItemInterface $item = null)
-    {
-        if ($item !== $this->item) {
-            $previous = $this->item;
-            $this->item = $item;
-
-            if ($previous) {
-                $previous->removeAdjustment($this);
-            }
-
-            if ($this->item) {
-                $this->item->addAdjustment($this);
-            }
+        if (!$item instanceof OrderItemInterface) {
+            throw new InvalidArgumentException("Expected instance of " . OrderItemInterface::class);
         }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdjustable()
-    {
-        return $this->item;
     }
 }

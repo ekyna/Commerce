@@ -70,6 +70,15 @@ interface SaleItemInterface extends
     public function createChild();
 
     /**
+     * Returns whether the current item has the given child item.
+     *
+     * @param SaleItemInterface $child
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function hasChild(SaleItemInterface $child);
+
+    /**
      * Adds the child item.
      *
      * @param SaleItemInterface $child

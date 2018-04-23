@@ -41,14 +41,12 @@ class OrderAdjustment extends AbstractSaleAdjustment implements OrderAdjustmentI
     public function setOrder(OrderInterface $order = null)
     {
         if ($order !== $this->order) {
-            $previous = $this->order;
-            $this->order = $order;
-
-            if ($previous) {
+            if ($previous = $this->order) {
+                $this->order = null;
                 $previous->removeAdjustment($this);
             }
 
-            if ($this->order) {
+            if ($this->order = $order) {
                 $this->order->addAdjustment($this);
             }
         }

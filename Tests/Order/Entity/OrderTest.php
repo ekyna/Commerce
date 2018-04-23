@@ -5,8 +5,9 @@ namespace Ekyna\Component\Commerce\Tests\Order\Entity;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderAdjustment;
+use Ekyna\Component\Commerce\Order\Entity\OrderAttachment;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 
 /**
  * Class OrderItem
@@ -18,21 +19,30 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 class OrderTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var OrderInterface
+     * @var Order
      */
     private $order;
 
+    /**
+     * @var TaxGroup
+     */
+    private $taxGroup;
+
     public function setUp()
     {
+        $this->taxGroup = new TaxGroup();
+
         $this->order = new Order();
         $this->order
             ->addItem($this->getTestItemOne())
-            ->addAdjustment($this->getTestAdjustmentOne());
+            ->addAdjustment($this->getTestAdjustmentOne())
+            ->addAttachment($this->getTestAttachmentOne());
     }
 
     public function tearDown()
     {
         $this->order = null;
+        $this->taxGroup = null;
     }
 
     private function getTestItemOne()
@@ -41,7 +51,8 @@ class OrderTest extends \PHPUnit_Framework_TestCase
         $item
             ->setDesignation('Test order item 1')
             ->setReference('TEST-ITEM-1')
-            ->setTaxName('Tax 1');
+            ->setTaxGroup($this->taxGroup);
+
         return $item;
     }
 
@@ -51,7 +62,8 @@ class OrderTest extends \PHPUnit_Framework_TestCase
         $item
             ->setDesignation('Test order item 2')
             ->setReference('TEST-ITEM-2')
-            ->setTaxName('Tax 2');
+            ->setTaxGroup($this->taxGroup);
+
         return $item;
     }
 
@@ -61,6 +73,7 @@ class OrderTest extends \PHPUnit_Framework_TestCase
         $adjustment
             ->setDesignation('Test adjustment 1')
             ->setAmount(10);
+
         return $adjustment;
     }
 
@@ -71,7 +84,24 @@ class OrderTest extends \PHPUnit_Framework_TestCase
             ->setDesignation('Test adjustment 2')
             ->setAmount(5)
             ->setMode(AdjustmentModes::MODE_PERCENT);
+
         return $adjustment;
+    }
+
+    private function getTestAttachmentOne()
+    {
+        $attachment = new OrderAttachment();
+        $attachment->setTitle('Test attachment 1');
+
+        return $attachment;
+    }
+
+    private function getTestAttachmentTwo()
+    {
+        $attachment = new OrderAttachment();
+        $attachment->setTitle('Test attachment 2');
+
+        return $attachment;
     }
 
     /**
@@ -226,6 +256,74 @@ class OrderTest extends \PHPUnit_Framework_TestCase
             $return,
             $this->order,
             'Order::removeAdjustment() is not fluent.'
+        );
+    }
+
+    /**
+     * @covers ::hasAttachment
+     */
+    public function testHasAttachment()
+    {
+        $attachment = $this->order->getAttachments()->last();
+
+        $this->assertTrue(
+            $this->order->hasAttachment($attachment),
+            'Order::hasAttachment() does not return true with the same attachment.'
+        );
+        $this->assertFalse(
+            $this->order->hasAttachment($this->getTestAttachmentTwo()),
+            'Order::hasAttachment() does not return false with a different attachment.'
+        );
+    }
+
+    /**
+     * @covers ::addAttachment
+     */
+    public function testAddAttachment()
+    {
+        $attachment = $this->getTestAttachmentTwo();
+
+        $return = $this->order->addAttachment($attachment);
+
+        $this->assertEquals(
+            $this->order->getAttachments()->count(),
+            2,
+            'Order::addAttachment() does not add the attachment.'
+        );
+        $this->assertEquals(
+            $attachment->getOrder(),
+            $this->order,
+            'Order::addAttachment() does not set the order reference.'
+        );
+        $this->assertEquals(
+            $return,
+            $this->order,
+            'Order::addAttachment() is not fluent.'
+        );
+    }
+
+    /**
+     * @covers ::removeAttachment
+     */
+    public function testRemoveAttachment()
+    {
+        $attachment = $this->order->getAttachments()->last();
+
+        $return = $this->order->removeAttachment($attachment);
+
+        $this->assertEquals(
+            $this->order->getAttachments()->count(),
+            0,
+            'Order::removeAttachment() does not remove the attachment.'
+        );
+        $this->assertNull(
+            $attachment->getOrder(),
+            'Order::removeAttachment() does not remove the order reference.'
+        );
+        $this->assertEquals(
+            $return,
+            $this->order,
+            'Order::removeAttachment() is not fluent.'
         );
     }
 }

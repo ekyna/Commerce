@@ -210,7 +210,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         if ($this->hasAttachment($attachment)) {
             $this->attachments->removeElement($attachment);
-            //$attachment->setOrder(null);
+            $attachment->setOrder(null);
         }
 
         return $this;

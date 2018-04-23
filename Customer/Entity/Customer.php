@@ -257,13 +257,14 @@ class Customer implements Model\CustomerInterface
     public function setParent(Model\CustomerInterface $parent = null)
     {
         if ($parent !== $this->parent) {
-            if (null !== $this->parent) {
+            if ($previous = $this->parent) {
+                $previous = null;
                 $this->parent->removeChild($this);
             }
-            if (null !== $parent) {
+
+            if ($this->parent = $parent) {
                 $parent->addChild($this);
             }
-            $this->parent = $parent;
         }
 
         return $this;
@@ -292,6 +293,7 @@ class Customer implements Model\CustomerInterface
     {
         if (!$this->hasChild($child)) {
             $this->children->add($child);
+            $child->setParent($this);
         }
 
         return $this;
@@ -304,6 +306,7 @@ class Customer implements Model\CustomerInterface
     {
         if ($this->hasChild($child)) {
             $this->children->removeElement($child);
+            $child->setParent(null);
         }
 
         return $this;
@@ -357,8 +360,8 @@ class Customer implements Model\CustomerInterface
     public function addAddress(Model\CustomerAddressInterface $address)
     {
         if (!$this->hasAddress($address)) {
-            $address->setCustomer($this);
             $this->addresses->add($address);
+            $address->setCustomer($this);
         }
 
         return $this;
@@ -370,8 +373,8 @@ class Customer implements Model\CustomerInterface
     public function removeAddress(Model\CustomerAddressInterface $address)
     {
         if ($this->hasAddress($address)) {
-            $address->setCustomer(null);
             $this->addresses->removeElement($address);
+            $address->setCustomer(null);
         }
 
         return $this;

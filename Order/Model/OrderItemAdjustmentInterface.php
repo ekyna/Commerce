@@ -11,12 +11,5 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;
  */
 interface OrderItemAdjustmentInterface extends SaleItemAdjustmentInterface
 {
-    /**
-     * Sets the order item.
-     *
-     * @param OrderItemInterface $item
-     *
-     * @return $this|OrderAdjustmentInterface
-     */
-    public function setItem(OrderItemInterface $item = null);
+
 }

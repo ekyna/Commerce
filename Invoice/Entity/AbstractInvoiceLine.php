@@ -90,14 +90,12 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
     public function setInvoice(Model\InvoiceInterface $invoice = null)
     {
         if ($this->invoice !== $invoice) {
-            $previous = $this->invoice;
-            $this->invoice = $invoice;
-
-            if ($previous) {
+            if ($previous = $this->invoice) {
+                $this->invoice = null;
                 $previous->removeLine($this);
             }
 
-            if ($this->invoice) {
+            if ($this->invoice = $invoice) {
                 $this->invoice->addLine($this);
             }
         }

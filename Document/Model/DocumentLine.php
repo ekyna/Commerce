@@ -118,14 +118,12 @@ class DocumentLine implements DocumentLineInterface
     public function setDocument(DocumentInterface $document = null)
     {
         if ($this->document !== $document) {
-            $previous = $this->document;
-            $this->document = $document;
-
-            if ($previous) {
+            if ($previous = $this->document) {
+                $this->document = null;
                 $previous->removeLine($this);
             }
 
-            if ($this->document) {
+            if ($this->document = $document) {
                 $this->document->addLine($this);
             }
         }

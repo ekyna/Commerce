@@ -9,6 +9,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Shipment\Builder\ShipmentBuilderInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizerInterface;
@@ -88,6 +89,8 @@ class SalePreparer implements SalePreparerInterface
 
         $this->shipmentBuilder->build($shipment);
 
+        $this->purge($shipment);
+
         if ($shipment->isEmpty()) {
             $sale->removeShipment($shipment);
 
@@ -97,6 +100,20 @@ class SalePreparer implements SalePreparerInterface
         $shipment->setState(ShipmentStates::STATE_PREPARATION);
 
         return $shipment;
+    }
+
+    /**
+     * Purges the shipment by removing items which are not available.
+     *
+     * @param ShipmentInterface $shipment
+     */
+    protected function purge(ShipmentInterface $shipment)
+    {
+        foreach ($shipment->getItems() as $item) {
+            if (0 == $item->getAvailable()) {
+                $shipment->removeItem($item);
+            }
+        }
     }
 
     /**

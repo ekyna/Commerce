@@ -10,6 +10,15 @@ namespace Ekyna\Component\Commerce\Stock\Model;
 interface StockAssignmentsInterface
 {
     /**
+     * Returns whether the current object has the given assignment.
+     *
+     * @param StockAssignmentInterface $assignment
+     *
+     * @return bool
+     */
+    public function hasStockAssignment(StockAssignmentInterface $assignment);
+
+    /**
      * Adds the stock assignment.
      *
      * @param StockAssignmentInterface $assignment

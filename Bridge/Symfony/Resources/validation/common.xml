@@ -142,9 +142,21 @@
         <property name="name">
             <constraint name="NotBlank"/>
         </property>
+        <property name="messages">
+            <constraint name="Valid"/>
+        </property>
     </class>
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMethodTranslation">
-        <!-- TODO -->
+        <property name="title">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">3</option>
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="description">
+            <constraint name="NotBlank"/>
+        </property>
     </class>
 
     <!-- Sale -->

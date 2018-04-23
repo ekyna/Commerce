@@ -50,14 +50,12 @@ class OrderAddress extends AbstractAddress implements Model\OrderAddressInterfac
     public function setInvoiceOrder(Model\OrderInterface $order = null)
     {
         if ($order !== $this->invoiceOrder) {
-            $previous = $this->invoiceOrder;
-            $this->invoiceOrder = $order;
-
-            if ($previous) {
+            if ($previous = $this->invoiceOrder) {
+                $this->invoiceOrder = null;
                 $previous->setInvoiceAddress(null);
             }
 
-            if ($this->invoiceOrder) {
+            if ($this->invoiceOrder = $order) {
                 $this->invoiceOrder->setInvoiceAddress($this);
             }
         }
@@ -79,14 +77,12 @@ class OrderAddress extends AbstractAddress implements Model\OrderAddressInterfac
     public function setDeliveryOrder(Model\OrderInterface $order = null)
     {
         if ($order !== $this->deliveryOrder) {
-            $previous = $this->deliveryOrder;
-            $this->deliveryOrder = $order;
-
-            if ($previous) {
+            if ($previous = $this->deliveryOrder) {
+                $this->deliveryOrder = null;
                 $previous->setDeliveryAddress(null);
             }
 
-            if ($this->deliveryOrder) {
+            if ($this->deliveryOrder = $order) {
                 $this->deliveryOrder->setDeliveryAddress($this);
             }
         }

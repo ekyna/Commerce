@@ -3,23 +3,19 @@
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
-use Ekyna\Component\Commerce\Quote\Model\QuoteItemAdjustmentInterface;
-use Ekyna\Component\Commerce\Quote\Model\QuoteItemInterface;
+use Ekyna\Component\Commerce\Quote\Model;
 
 /**
  * Class QuoteItem
  * @package Ekyna\Component\Commerce\Quote\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
+class QuoteItem extends AbstractSaleItem implements Model\QuoteItemInterface
 {
     /**
-     * @var QuoteInterface
+     * @var Model\QuoteInterface
      */
     protected $quote;
 
@@ -45,11 +41,9 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
     /**
      * @inheritdoc
      */
-    public function setSale(SaleInterface $sale = null)
+    public function setSale(Common\SaleInterface $sale = null)
     {
-        if (null !== $sale && !$sale instanceof QuoteInterface) {
-            throw new InvalidArgumentException('Expected instance of QuoteInterface');
-        }
+        $sale && $this->assertSaleClass($sale);
 
         $this->setQuote($sale);
 
@@ -67,17 +61,15 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
     /**
      * @inheritdoc
      */
-    public function setQuote(QuoteInterface $quote = null)
+    public function setQuote(Model\QuoteInterface $quote = null)
     {
         if ($quote !== $this->quote) {
-            $previous = $this->quote;
-            $this->quote = $quote;
-
-            if ($previous) {
+            if ($previous = $this->quote) {
+                $this->quote = null;
                 $previous->removeItem($this);
             }
 
-            if ($this->quote) {
+            if ($this->quote = $quote) {
                 $this->quote->addItem($this);
             }
         }
@@ -88,117 +80,30 @@ class QuoteItem extends AbstractSaleItem implements QuoteItemInterface
     /**
      * @inheritdoc
      */
-    public function setParent(SaleItemInterface $parent = null)
+    protected function assertSaleClass(Common\SaleInterface $sale)
     {
-        if ($parent && !$parent instanceof QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
+        if (!$sale instanceof Model\QuoteInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Model\QuoteInterface::class);
         }
-
-        if ($parent !== $this->parent) {
-            $previous = $this->parent;
-            $this->parent = $parent;
-
-            if ($previous) {
-                $previous->removeChild($this);
-            }
-
-            if ($this->parent) {
-                $this->parent->addChild($this);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createChild()
-    {
-        $child = new static;
-
-        $this->addChild($child);
-
-        return $child;
     }
 
     /**
      * @inheritdoc
      */
-    public function addChild(SaleItemInterface $child)
+    protected function assertItemClass(Common\SaleItemInterface $child)
     {
-        if (!$child instanceof QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
+        if (!$child instanceof Model\QuoteItemInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Model\QuoteItemInterface::class);
         }
-
-        if (!$this->children->contains($child)) {
-            $this->children->add($child);
-            $child->setParent($this);
-        }
-
-        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function removeChild(SaleItemInterface $child)
+    protected function assertItemAdjustmentClass(Common\AdjustmentInterface $adjustment)
     {
-        if (!$child instanceof QuoteItemInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteItemInterface.");
+        if (!$adjustment instanceof Model\QuoteItemAdjustmentInterface) {
+            throw new InvalidArgumentException("Expected instance of " . Model\QuoteItemAdjustmentInterface::class);
         }
-
-        if ($this->children->contains($child)) {
-            $this->children->removeElement($child);
-            $child->setParent(null);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasAdjustment(AdjustmentInterface $adjustment)
-    {
-        if (!$adjustment instanceof QuoteItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteItemAdjustmentInterface.");
-        }
-
-        return $this->adjustments->contains($adjustment);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function addAdjustment(AdjustmentInterface $adjustment)
-    {
-        if (!$adjustment instanceof QuoteItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteItemAdjustmentInterface.");
-        }
-
-        if (!$this->adjustments->contains($adjustment)) {
-            $this->adjustments->add($adjustment);
-            $adjustment->setItem($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function removeAdjustment(AdjustmentInterface $adjustment)
-    {
-        if (!$adjustment instanceof QuoteItemAdjustmentInterface) {
-            throw new InvalidArgumentException("Expected instance of QuoteItemAdjustmentInterface.");
-        }
-
-        if ($this->adjustments->contains($adjustment)) {
-            $this->adjustments->removeElement($adjustment);
-            $adjustment->setItem(null);
-        }
-
-        return $this;
     }
 }

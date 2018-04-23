@@ -26,7 +26,7 @@ interface CustomerAddressInterface extends ResourceInterface, AddressInterface
      *
      * @return $this|CustomerAddressInterface
      */
-    public function setCustomer(CustomerInterface $customer);
+    public function setCustomer(CustomerInterface $customer = null);
 
     /**
      * Returns whether this is the default invoice address or not.

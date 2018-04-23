@@ -205,14 +205,13 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null)
     {
-        if ($item !== $previous = $this->supplierOrderItem) {
-            if ($previous) {
+        if ($item !== $this->supplierOrderItem) {
+            if ($previous = $this->supplierOrderItem) {
+                $this->supplierOrderItem = null;
                 $previous->setStockUnit(null);
             }
 
-            $this->supplierOrderItem = $item;
-
-            if ($this->supplierOrderItem) {
+            if ($this->supplierOrderItem = $item) {
                 $this->supplierOrderItem->setStockUnit($this);
             }
         }
@@ -425,11 +424,19 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function hasStockAdjustment(Model\StockAdjustmentInterface $adjustment)
+    {
+        return $this->stockAdjustments->contains($adjustment);
+    }
+
+    /**
      * @inheritdoc
      */
     public function addStockAdjustment(Model\StockAdjustmentInterface $adjustment)
     {
-        if (!$this->stockAdjustments->contains($adjustment)) {
+        if (!$this->hasStockAdjustment($adjustment)) {
             $this->stockAdjustments->add($adjustment);
             $adjustment->setStockUnit($this);
         }
@@ -442,9 +449,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function removeStockAdjustment(Model\StockAdjustmentInterface $adjustment)
     {
-        if ($this->stockAdjustments->contains($adjustment)) {
+        if ($this->hasStockAdjustment($adjustment)) {
             $this->stockAdjustments->removeElement($adjustment);
-            //$adjustment->setStockUnit(null);
+            $adjustment->setStockUnit(null);
         }
 
         return $this;

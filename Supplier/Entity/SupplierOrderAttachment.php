@@ -33,14 +33,12 @@ class SupplierOrderAttachment extends AbstractAttachment implements SupplierOrde
     public function setSupplierOrder(SupplierOrderInterface $order = null)
     {
         if ($order !== $this->supplierOrder) {
-            $previous = $this->supplierOrder;
-            $this->supplierOrder = $order;
-
-            if ($previous) {
+            if ($previous = $this->supplierOrder) {
+                $this->supplierOrder = null;
                 $previous->removeAttachment($this);
             }
 
-            if ($this->supplierOrder) {
+            if ($this->supplierOrder = $order) {
                 $this->supplierOrder->addAttachment($this);
             }
         }

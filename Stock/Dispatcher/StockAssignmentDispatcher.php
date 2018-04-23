@@ -186,7 +186,10 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
     {
         // Remove if empty
         if (0 == $assignment->getSoldQuantity()) {
-            $assignment->setStockUnit(null);
+            $assignment
+                ->setSaleItem(null)
+                ->setStockUnit(null);
+
             $this->persistenceHelper->remove($assignment, true);
 
             return;

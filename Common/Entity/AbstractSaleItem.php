@@ -6,6 +6,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Common\Model\AdjustableTrait;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
@@ -145,9 +148,82 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
+    public function setParent(SaleItemInterface $parent = null)
+    {
+        $parent && $this->assertItemClass($parent);
+
+        if ($parent !== $this->parent) {
+            if ($previous = $this->parent) {
+                $this->parent = null;
+                $previous->removeChild($this);
+            }
+
+            if ($this->parent = $parent) {
+                $this->parent->addChild($this);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasChildren()
     {
         return 0 < $this->children->count();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createChild()
+    {
+        $child = new static();
+
+        $this->addChild($child);
+
+        return $child;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasChild(SaleItemInterface $child)
+    {
+        $this->assertItemClass($child);
+
+        return $this->children->contains($child);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addChild(SaleItemInterface $child)
+    {
+        $this->assertItemClass($child);
+
+        if (!$this->children->contains($child)) {
+            $this->children->add($child);
+            $child->setParent($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeChild(SaleItemInterface $child)
+    {
+        $this->assertItemClass($child);
+
+        if ($this->children->contains($child)) {
+            $this->children->removeElement($child);
+            $child->setParent(null);
+        }
+
+        return $this;
     }
 
     /**
@@ -156,6 +232,48 @@ abstract class AbstractSaleItem implements SaleItemInterface
     public function getChildren()
     {
         return $this->children;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasAdjustment(AdjustmentInterface $adjustment)
+    {
+        $this->assertItemAdjustmentClass($adjustment);
+
+        return $this->adjustments->contains($adjustment);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addAdjustment(AdjustmentInterface $adjustment)
+    {
+        $this->assertItemAdjustmentClass($adjustment);
+
+        /** @var SaleItemAdjustmentInterface $adjustment*/
+        if (!$this->adjustments->contains($adjustment)) {
+            $this->adjustments->add($adjustment);
+            $adjustment->setItem($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeAdjustment(AdjustmentInterface $adjustment)
+    {
+        $this->assertItemAdjustmentClass($adjustment);
+
+        /** @var AbstractSaleItemAdjustment $adjustment*/
+        if ($this->adjustments->contains($adjustment)) {
+            $this->adjustments->removeElement($adjustment);
+            $adjustment->setItem(null);
+        }
+
+        return $this;
     }
 
     /**
@@ -547,4 +665,25 @@ abstract class AbstractSaleItem implements SaleItemInterface
 
         return 0;
     }
+
+    /**
+     * Asserts that the given sale is an instance of the expected class.
+     *
+     * @param SaleInterface $sale
+     */
+    abstract protected function assertSaleClass(SaleInterface $sale);
+
+    /**
+     * Asserts that the given sale item is an instance of the expected class.
+     *
+     * @param SaleItemInterface $child
+     */
+    abstract protected function assertItemClass(SaleItemInterface $child);
+
+    /**
+     * Asserts that the given adjustment is an instance of the expected class.
+     *
+     * @param AdjustmentInterface $adjustment
+     */
+    abstract protected function assertItemAdjustmentClass(AdjustmentInterface $adjustment);
 }

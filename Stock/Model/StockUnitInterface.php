@@ -267,6 +267,15 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function getStockAssignments();
 
     /**
+     * Returns whether this stock unit has the given stock adjustment.
+     *
+     * @param StockAdjustmentInterface $adjustment
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function hasStockAdjustment(StockAdjustmentInterface $adjustment);
+
+    /**
      * Adds the stock adjustments.
      *
      * @param StockAdjustmentInterface $adjustment

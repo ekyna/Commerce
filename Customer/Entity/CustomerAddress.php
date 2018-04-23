@@ -63,9 +63,18 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
     /**
      * @inheritdoc
      */
-    public function setCustomer(CustomerInterface $customer)
+    public function setCustomer(CustomerInterface $customer = null)
     {
-        $this->customer = $customer;
+        if ($this->customer !== $customer) {
+            if ($previous = $this->customer) {
+                $this->customer = null;
+                $previous->removeAddress($this);
+            }
+
+            if ($this->customer = $customer) {
+                $this->customer->addAddress($this);
+            }
+        }
 
         return $this;
     }

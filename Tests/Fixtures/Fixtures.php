@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Order\Model as OrderM;
 use Ekyna\Component\Commerce\Pricing\Entity as PricingE;
 use Ekyna\Component\Commerce\Pricing\Model as PricingM;
 use Ekyna\Component\Commerce\Shipment\Model as ShipmentM;
+use Ekyna\Component\Commerce\Stock\Entity\StockAdjustment;
 use Ekyna\Component\Commerce\Stock\Model as StockM;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
@@ -324,6 +325,10 @@ class Fixtures
     {
         $unit = new Acme\StockUnit();
 
+        if (null === $subject) {
+            $subject = static::createSubject();
+        }
+
         if ($subject) $unit->setSubject($subject);
         if ($item) $unit->setSupplierOrderItem($item);
 
@@ -339,19 +344,57 @@ class Fixtures
     }
 
     /**
-     * Creates a new product (stock subject).
+     * Creates a new stock adjustment.
+     *
+     * @param StockM\StockUnitInterface $unit
+     * @param float                     $quantity
+     * @param bool                      $debit
+     *
+     * @return StockAdjustment
+     */
+    public static function createStockAdjustment($unit, $quantity, $debit = false)
+    {
+        $adjustment = new StockAdjustment();
+        $adjustment
+            ->setStockUnit($unit)
+            ->setQuantity($quantity)
+            ->setReason($debit ? StockM\StockAdjustmentReasons::REASON_DEBIT : StockM\StockAdjustmentReasons::REASON_CREDIT);
+
+        $adjusted = $unit->getAdjustedQuantity();
+        $adjusted += $debit ? -$quantity : $quantity;
+        $unit->setAdjustedQuantity($adjusted);
+
+        return $adjustment;
+    }
+
+    /**
+     * Creates a new subject (acme product).
+     *
+     * @param null $designation
+     * @param null $reference
+     * @param null $price
+     * @param null $weight
      *
      * @return Acme\Product
      */
-    public static function createProduct()
+    public static function createSubject($designation = null, $reference = null, $price = null, $weight = null)
     {
         $subject = new Acme\Product();
 
+        if (empty($designation)) $designation = 'Apple iPhone';
+        if (empty($reference)) $reference = 'APPL-IPHO';
+        if (empty($price)) $price = 249.0;
+        if (empty($weight)) $weight = 0.8;
+
+        $rc = new \ReflectionProperty(Acme\Product::class, 'id');
+        $rc->setAccessible(true);
+        $rc->setValue($subject, rand(1, 9999)); // TODO Oops
+
         $subject
-            ->setDesignation('Apple iPhone')
-            ->setReference('APPL-IPHO')
-            ->setNetPrice(249.0)
-            ->setWeight(0.8);
+            ->setDesignation($designation)
+            ->setReference($reference)
+            ->setNetPrice($price)
+            ->setWeight($weight);
 
         return $subject;
     }
@@ -382,14 +425,28 @@ class Fixtures
     /**
      * Creates a new supplier order item.
      *
-     * @param float $quantity
-     * @param float $netPrice
+     * @param StockM\StockSubjectInterface $subject
+     * @param float                        $quantity
+     * @param float                        $netPrice
      *
      * @return SupplierE\SupplierOrderItem
      */
-    public static function createSupplierOrderItem($quantity = 1., $netPrice = .0)
+    public static function createSupplierOrderItem($subject = null, $quantity = 1., $netPrice = .0)
     {
         $item = new SupplierE\SupplierOrderItem();
+
+        if (null === $subject) {
+            $subject = static::createSubject();
+        }
+
+        if ($subject) {
+            $item
+                ->getSubjectIdentity()
+                ->setSubject($subject)
+                ->setProvider($subject::getProviderName())
+                ->setIdentifier($subject->getIdentifier());
+        }
+
         $item
             ->setQuantity($quantity)
             ->setNetPrice($netPrice);

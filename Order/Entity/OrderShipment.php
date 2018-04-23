@@ -54,14 +54,12 @@ class OrderShipment extends AbstractShipment implements OrderShipmentInterface
     public function setOrder(OrderInterface $order = null)
     {
         if ($order !== $this->order) {
-            $previous = $this->order;
-            $this->order = $order;
-
-            if ($previous) {
+            if ($previous = $this->order) {
+                $this->order = null;
                 $previous->removeShipment($this);
             }
 
-            if ($this->order) {
+            if ($this->order = $order) {
                 $this->order->addShipment($this);
             }
         }
@@ -87,15 +85,13 @@ class OrderShipment extends AbstractShipment implements OrderShipmentInterface
         }
 
         if ($invoice !== $this->invoice) {
-            $previous = $this->invoice;
-            $this->invoice = $invoice;
-
-            if (null !== $previous) {
+            if ($previous = $this->invoice) {
+                $this->invoice = null;
                 $previous->setShipment(null);
             }
 
-            if (null !== $invoice) {
-                $invoice->setShipment($this);
+            if ($this->invoice = $invoice) {
+                $this->invoice->setShipment($this);
             }
         }
 

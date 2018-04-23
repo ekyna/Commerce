@@ -74,14 +74,12 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
     public function setShipment(Model\ShipmentInterface $shipment = null)
     {
         if ($this->shipment !== $shipment) {
-            $previous = $this->shipment;
-            $this->shipment = $shipment;
-
-            if ($previous) {
+            if ($previous = $this->shipment) {
+                $this->shipment = null;
                 $previous->removeLabel($this);
             }
 
-            if ($this->shipment) {
+            if ($this->shipment = $shipment) {
                 $this->shipment->addLabel($this);
             }
         }
@@ -103,14 +101,12 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
     public function setParcel(Model\ShipmentParcelInterface $parcel = null)
     {
         if ($this->parcel !== $parcel) {
-            $previous = $this->parcel;
-            $this->parcel = $parcel;
-
-            if ($previous) {
+            if ($previous = $this->parcel) {
+                $this->parcel = null;
                 $previous->removeLabel($this);
             }
 
-            if ($this->parcel) {
+            if ($this->parcel = $parcel) {
                 $this->parcel->addLabel($this);
             }
         }
