@@ -124,13 +124,13 @@
         <property name="method">
             <constraint name="NotNull"/>
         </property>
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+        <!-- TODO (buggy on create) <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">
                 <value>method</value>
                 <value>state</value>
             </option>
             <option name="message">ekyna_commerce.message.already_exists</option>
-        </constraint>
+        </constraint>-->
     </class>
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMessageTranslation">
         <!-- TODO -->
