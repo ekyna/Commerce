@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -14,6 +15,22 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class SaleValidator extends ConstraintValidator
 {
+    /**
+     * @var Gateway\RegistryInterface
+     */
+    private $gatewayRegistry;
+
+
+    /**
+     * Constructor.
+     *
+     * @param Gateway\RegistryInterface $gatewayRegistry
+     */
+    public function __construct(Gateway\RegistryInterface $gatewayRegistry)
+    {
+        $this->gatewayRegistry = $gatewayRegistry;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -32,6 +49,7 @@ class SaleValidator extends ConstraintValidator
 
         $this->validateIdentity($sale, $constraint);
         $this->validateDeliveryAddress($sale, $constraint);
+        $this->validateShipmentMethodRequirements($sale, $constraint);
         $this->validatePaymentTermAndOutstandingLimit($sale, $constraint);
 
         if (0 < $sale->getDepositTotal() && $sale->getDepositTotal() >= $sale->getGrandTotal()) {
@@ -39,6 +57,42 @@ class SaleValidator extends ConstraintValidator
                 ->buildViolation($constraint->deposit_greater_than_grand_total)
                 ->atPath('depositTotal')
                 ->addViolation();
+        }
+    }
+
+    /**
+     * Validates the shipment method requirements.
+     *
+     * @param SaleInterface $sale
+     * @param Constraint    $constraint
+     */
+    protected function validateShipmentMethodRequirements(SaleInterface $sale, Constraint $constraint)
+    {
+        if (null === $method = $sale->getShipmentMethod()) {
+            return;
+        }
+
+        if ($sale->isSameAddress()) {
+            $address = $sale->getInvoiceAddress();
+            $path = 'invoiceAddress';
+        } else {
+            $address = $sale->getDeliveryAddress();
+            $path = 'deliveryAddress';
+        }
+
+        if (null === $address) {
+            return;
+        }
+
+        $gateway = $this->gatewayRegistry->getGateway($method->getGatewayName());
+
+        if ($gateway->requires(Gateway\GatewayInterface::REQUIREMENT_MOBILE)) {
+            if (is_null($address->getMobile())) {
+                $this->context
+                    ->buildViolation($constraint->shipment_method_require_mobile)
+                    ->atPath($path . '.mobile')
+                    ->addViolation();
+            }
         }
     }
 

@@ -84,5 +84,5 @@ interface SubjectHelperInterface
      *
      * @return null|string
      */
-    public function generatePrivateUrl($subject, $path);
+    public function generatePrivateUrl($subject, $path = true);
 }

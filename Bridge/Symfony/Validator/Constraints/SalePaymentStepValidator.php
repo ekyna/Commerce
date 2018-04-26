@@ -16,22 +16,6 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class SalePaymentStepValidator extends ConstraintValidator
 {
     /**
-     * @var Gateway\RegistryInterface
-     */
-    private $gatewayRegistry;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Gateway\RegistryInterface $gatewayRegistry
-     */
-    public function __construct(Gateway\RegistryInterface $gatewayRegistry)
-    {
-        $this->gatewayRegistry = $gatewayRegistry;
-    }
-
-    /**
      * @inheritdoc
      */
     public function validate($sale, Constraint $constraint)
@@ -54,25 +38,6 @@ class SalePaymentStepValidator extends ConstraintValidator
                 ->addViolation();
 
             return;
-        }
-
-        $gateway = $this->gatewayRegistry->getGateway($method->getGatewayName());
-
-        if ($gateway->requires(Gateway\GatewayInterface::REQUIREMENT_MOBILE)) {
-            if ($sale->isSameAddress()) {
-                $address = $sale->getInvoiceAddress();
-                $path = 'invoiceAddress';
-            } else {
-                $address = $sale->getDeliveryAddress();
-                $path = 'deliveryAddress';
-            }
-
-            if (is_null($address->getMobile())) {
-                $this->context
-                    ->buildViolation($constraint->shipment_method_require_mobile)
-                    ->atPath($path . '.mobile')
-                    ->addViolation();
-            }
         }
     }
 }

@@ -459,4 +459,66 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
 
         return true;
     }
+
+    /**
+     * Returns whether this shipment is a partial one.
+     *
+     * @return bool
+     */
+    public function isPartial()
+    {
+        $coveredIds = [];
+
+        // For each shipment items
+        foreach ($this->items as $item) {
+            // Retain sale item id
+            $coveredIds[] = $item->getSaleItem()->getId();
+            // If shipment item quantity does not equal sale item total quantity
+            if ($item->getQuantity() != $item->getSaleItem()->getTotalQuantity()) {
+                // Shipment is partial
+                return true;
+            }
+        }
+
+        $sale = $this->getSale();
+        // For each sale items
+        foreach ($sale->getItems() as $saleItem) {
+            // IF sale item id is not in retained sale items ids
+            if (!$this->isSaleItemCovered($saleItem, $coveredIds)) {
+                // Shipment is partial
+                return true;
+            }
+        }
+
+        // Shipment is not partial
+        return false;
+    }
+
+    /**
+     * Returns whether the given sale item is covered by this shipment.
+     *
+     * @param Common\SaleItemInterface $saleItem
+     * @param array                    $coveredIds
+     *
+     * @return bool
+     */
+    private function isSaleItemCovered(Common\SaleItemInterface $saleItem, array $coveredIds)
+    {
+        // Skip compound with only public children
+        if ($saleItem->isCompound() && !$saleItem->hasPrivateChildren()) {
+            return true;
+        }
+
+        if (!in_array($saleItem->getId(), $coveredIds, true)) {
+            return false;
+        }
+
+        foreach ($saleItem->getChildren() as $child) {
+            if (!$this->isSaleItemCovered($child, $coveredIds)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

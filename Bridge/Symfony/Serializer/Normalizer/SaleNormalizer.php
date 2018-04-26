@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
@@ -47,6 +46,7 @@ class SaleNormalizer extends AbstractResourceNormalizer
                 'comment'          => $sale->getComment(),
                 'payment_term'     => null,
                 'outstanding_date' => null,
+                'created_at'       => $sale->getCreatedAt()->format('Y-m-d'),
                 'shipped_at'       => null,
                 'invoiced_at'      => null,
             ]);

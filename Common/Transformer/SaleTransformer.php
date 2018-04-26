@@ -8,7 +8,10 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
+use Ekyna\Component\Resource\Event\ResourceEvent;
+use Ekyna\Component\Resource\Event\ResourceMessage;
 use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
 
 /**
@@ -85,6 +88,20 @@ class SaleTransformer implements SaleTransformerInterface
      */
     public function initialize(SaleInterface $source, SaleInterface $target)
     {
+        // TODO Use event
+        if ($source instanceof OrderInterface) {
+            // Prevent if order is not 'new'
+            if ($source->getState() !== OrderStates::STATE_NEW) {
+                $event = new ResourceEvent();
+                $event->addMessage(new ResourceMessage(
+                    'ekyna_commerce.sale.message.transform_prevented',
+                    ResourceMessage::TYPE_ERROR
+                ));
+
+                return $event;
+            }
+        }
+
         $this->source = $source;
         $this->target = $target;
 

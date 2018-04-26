@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 
 /**
@@ -31,6 +32,9 @@ final class TransformationTargets
         if ($sale instanceof CartInterface) {
             return [static::TARGET_ORDER, static::TARGET_QUOTE];
         } elseif ($sale instanceof OrderInterface) {
+            if ($sale->getState() !== OrderStates::STATE_NEW) {
+                return [];
+            }
             return [static::TARGET_QUOTE/*, static::TARGET_CART*/];
         } elseif ($sale instanceof QuoteInterface) {
             return [static::TARGET_ORDER/*, static::TARGET_CART*/];

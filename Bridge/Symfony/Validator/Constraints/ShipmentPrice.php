@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraint;
  */
 class ShipmentPrice extends Constraint
 {
-    public $max_weight = 'ekyna_commerce.shipment_price.max_weight';
+    public $max_weight = 'ekyna_commerce.shipment_max_weight';
 
 
     /**
