@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
 use Symfony\Component\Validator\Constraint;
@@ -45,6 +47,16 @@ class StockAdjustmentValidator extends ConstraintValidator
 
             $max += StockAdjustmentReasons::isDebitReason($a->getReason())
                 ? -$a->getQuantity() : $a->getQuantity();
+        }
+
+        foreach ($unit->getStockAssignments() as $assignment) {
+            $sale = $assignment->getSaleItem()->getSale();
+            if (
+                $sale instanceof ShipmentSubjectInterface &&
+                $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION
+            ) {
+                $max -= $assignment->getShippableQuantity();
+            }
         }
 
         if ($max < $adjustment->getQuantity()) {

@@ -4,6 +4,8 @@ namespace Ekyna\Component\Commerce\Stock\Dispatcher;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
@@ -98,13 +100,22 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
              * @see \Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizer::moveAssignment()
              */
 
+            $saleItem = $assignment->getSaleItem();
+
+            // Don't move assignments of preparation sales.
+            $sale = $saleItem->getSale();
+            if (
+                $sale instanceof ShipmentSubjectInterface &&
+                $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION
+            ) {
+                continue;
+            }
+
             // Don't move shipped quantity
             $delta = min($quantity, $assignment->getSoldQuantity() - $assignment->getShippedQuantity());
             if (0 >= $delta) {
                 continue;
             }
-
-            $saleItem = $assignment->getSaleItem();
 
             // Add quantity to target unit
             $this->logger->unitSold($targetUnit, $delta);
