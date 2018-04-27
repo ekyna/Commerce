@@ -80,4 +80,11 @@ interface SubjectInterface extends ResourceInterface
      * @return string
      */
     public function getUnit();
+
+    /**
+     * Returns whether all the dimensions are set.
+     *
+     * @return bool
+     */
+    public function hasDimensions();
 }
