@@ -19,9 +19,13 @@ class CustomerNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($customer, $format = null, array $context = [])
     {
-        $data = parent::normalize($customer, $format, $context);
-
         $groups = isset($context['groups']) ? (array)$context['groups'] : [];
+
+        if ($format === 'csv' && in_array('TableExport', $groups)) {
+            return (string)$customer;
+        }
+
+        $data = parent::normalize($customer, $format, $context);
 
         $parent = $customer->getParent();
 

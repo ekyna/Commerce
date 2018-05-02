@@ -16,13 +16,18 @@ class SaleNormalizer extends AbstractResourceNormalizer
 {
     /**
      * @inheritdoc
+     *
+     * @param SaleInterface $sale
      */
     public function normalize($sale, $format = null, array $context = [])
     {
-        $data = parent::normalize($sale, $format, $context);
-
-        /** @var SaleInterface $sale */
         $groups = isset($context['groups']) ? (array)$context['groups'] : [];
+
+        if ($format === 'csv' && in_array('TableExport', $groups)) {
+            return (string)$sale;
+        }
+
+        $data = parent::normalize($sale, $format, $context);
 
         if (in_array('Default', $groups) || in_array('Search', $groups)) {
             $data = array_replace($data, [
@@ -61,6 +66,15 @@ class SaleNormalizer extends AbstractResourceNormalizer
             }
             if ($sale instanceof InvoiceSubjectInterface && null !== $date = $sale->getInvoicedAt()) {
                 $data['invoiced_at'] = $date->format('Y-m-d');
+
+                $data['invoices'] = [];
+                foreach ($sale->getInvoices(true) as $invoice) {
+                    $data['invoices'][] = [
+                        'number'      => $invoice->getNumber(),
+                        'grand_total' => $invoice->getGrandTotal(),
+                        'created_at'  => $invoice->getCreatedAt()->format('Y-m-d'),
+                    ];
+                }
             }
         }
 
