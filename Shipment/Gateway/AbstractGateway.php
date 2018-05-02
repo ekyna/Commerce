@@ -72,6 +72,7 @@ abstract class AbstractGateway implements GatewayInterface
         return [
             GatewayActions::SHIP,
             GatewayActions::CANCEL,
+            GatewayActions::COMPLETE,
         ];
     }
 
@@ -253,16 +254,32 @@ abstract class AbstractGateway implements GatewayInterface
 
         switch ($action) {
             case GatewayActions::SHIP:
-                return !$this->hasTrackingNumber($shipment);
+                // TODO (?) If supports tracking and has tracking number -> return false
+                /*if ($this->hasTrackingNumber($shipment)) {
+                    return false;
+                }*/
+
+                if ($shipment->isReturn()) {
+                    return !in_array($shipment->getState(), [
+                        Shipment\ShipmentStates::STATE_PENDING,
+                        Shipment\ShipmentStates::STATE_COMPLETED
+                    ], true);
+                }
+
+                return !in_array($shipment->getState(), [
+                    Shipment\ShipmentStates::STATE_SHIPPED,
+                    Shipment\ShipmentStates::STATE_COMPLETED
+                ], true);
 
             case GatewayActions::CANCEL:
                 return $shipment->getState() !== Shipment\ShipmentStates::STATE_CANCELED;
                 //return $this->hasTrackingNumber($shipment);
 
             case GatewayActions::COMPLETE:
-                if (!$this->hasTrackingNumber($shipment)) {
+                // TODO (?) If support tracking and not has tracking number -> return false
+                /*if (!$this->hasTrackingNumber($shipment)) {
                     return false;
-                }
+                }*/
                 if ($shipment->isReturn()) {
                     return $shipment->getState() === Shipment\ShipmentStates::STATE_PENDING;
                 }
@@ -349,22 +366,6 @@ abstract class AbstractGateway implements GatewayInterface
     public function getMaxWeight()
     {
         return null;
-    }
-
-    /**
-     * Throws an unsupported operation exception.
-     *
-     * @param Shipment\ShipmentInterface $shipment
-     * @param string                     $reason
-     *
-     * @throws ShipmentGatewayException
-     */
-    protected function throwUnsupportedShipment(Shipment\ShipmentInterface $shipment, $reason = null)
-    {
-        throw new ShipmentGatewayException(sprintf(
-            "Gateway '%s' does not support shipment '%s'. %s",
-            $this->getName(), $shipment->getNumber(), $reason
-        ));
     }
 
     /**
@@ -494,6 +495,22 @@ abstract class AbstractGateway implements GatewayInterface
         }
 
         return round($value, 2); // TODO Convert/Round regarding to gateway and sale currencies
+    }
+
+    /**
+     * Throws an unsupported operation exception.
+     *
+     * @param Shipment\ShipmentInterface $shipment
+     * @param string                     $reason
+     *
+     * @throws ShipmentGatewayException
+     */
+    protected function throwUnsupportedShipment(Shipment\ShipmentInterface $shipment, $reason = null)
+    {
+        throw new ShipmentGatewayException(sprintf(
+            "Gateway '%s' does not support shipment '%s'. %s",
+            $this->getName(), $shipment->getNumber(), $reason
+        ));
     }
 
     /**
