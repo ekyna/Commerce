@@ -256,11 +256,11 @@ abstract class AbstractGateway implements GatewayInterface
                 if ($shipment->isReturn()) {
                     return !in_array($shipment->getState(), [
                         Shipment\ShipmentStates::STATE_PENDING,
-                        Shipment\ShipmentStates::STATE_COMPLETED
+                        Shipment\ShipmentStates::STATE_RETURNED
                     ], true);
                 }
 
-                return $shipment->getState() !== Shipment\ShipmentStates::STATE_COMPLETED;
+                return $shipment->getState() !== Shipment\ShipmentStates::STATE_SHIPPED;
 
             case GatewayActions::CANCEL:
                 return $shipment->getState() !== Shipment\ShipmentStates::STATE_CANCELED;
