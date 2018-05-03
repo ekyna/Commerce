@@ -174,25 +174,19 @@ abstract class AbstractGateway implements GatewayInterface
     {
         $this->supportShipment($shipment);
 
-        $doPersist = false;
-        if ($shipment->isReturn()) {
-            $fromStates = [Shipment\ShipmentStates::STATE_PENDING];
-            $toState = Shipment\ShipmentStates::STATE_RETURNED;
-        } else {
-            $fromStates = [Shipment\ShipmentStates::STATE_SHIPPED];
-            $toState = Shipment\ShipmentStates::STATE_COMPLETED;
+        if (!$shipment->isReturn()) {
+            return false;
         }
 
-        if (in_array($shipment->getState(), $fromStates, true)) {
-            $shipment->setState($toState);
-            $doPersist = true;
+        if ($shipment->getState() !== Shipment\ShipmentStates::STATE_PENDING) {
+            return false;
         }
 
-        if ($doPersist) {
-            $this->persister->persist($shipment);
-        }
+        $shipment->setState(Shipment\ShipmentStates::STATE_RETURNED);
 
-        return $doPersist;
+        $this->persister->persist($shipment);
+
+        return true;
     }
 
     /**
@@ -266,25 +260,17 @@ abstract class AbstractGateway implements GatewayInterface
                     ], true);
                 }
 
-                return !in_array($shipment->getState(), [
-                    Shipment\ShipmentStates::STATE_SHIPPED,
-                    Shipment\ShipmentStates::STATE_COMPLETED
-                ], true);
+                return $shipment->getState() !== Shipment\ShipmentStates::STATE_COMPLETED;
 
             case GatewayActions::CANCEL:
                 return $shipment->getState() !== Shipment\ShipmentStates::STATE_CANCELED;
-                //return $this->hasTrackingNumber($shipment);
 
             case GatewayActions::COMPLETE:
-                // TODO (?) If support tracking and not has tracking number -> return false
-                /*if (!$this->hasTrackingNumber($shipment)) {
+                if (!$shipment->isReturn()) {
                     return false;
-                }*/
-                if ($shipment->isReturn()) {
-                    return $shipment->getState() === Shipment\ShipmentStates::STATE_PENDING;
                 }
 
-                return $shipment->getState() === Shipment\ShipmentStates::STATE_SHIPPED;
+                return $shipment->getState() === Shipment\ShipmentStates::STATE_PENDING;
         }
 
         return true;
