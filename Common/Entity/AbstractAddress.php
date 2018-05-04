@@ -36,6 +36,11 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @var string
      */
+    protected $extra;
+
+    /**
+     * @var string
+     */
     protected $postalCode;
 
     /**
@@ -62,6 +67,21 @@ abstract class AbstractAddress implements Model\AddressInterface
      * @var string
      */
     protected $mobile;
+
+    /**
+     * @var string
+     */
+    protected $digicode1;
+
+    /**
+     * @var string
+     */
+    protected $digicode2;
+
+    /**
+     * @var string
+     */
+    protected $intercom;
 
     /**
      * @var string
@@ -159,6 +179,22 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritdoc
      */
+    public function getExtra()
+    {
+        return $this->extra;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setExtra($extra)
+    {
+        $this->extra = $extra;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getPostalCode()
     {
         return $this->postalCode;
@@ -226,6 +262,54 @@ abstract class AbstractAddress implements Model\AddressInterface
         $this->state = $state;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDigicode1()
+    {
+        return $this->digicode1;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDigicode1($digicode1)
+    {
+        $this->digicode1 = $digicode1;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDigicode2()
+    {
+        return $this->digicode2;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDigicode2($digicode2)
+    {
+        $this->digicode2 = $digicode2;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIntercom()
+    {
+        return $this->intercom;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setIntercom($intercom)
+    {
+        $this->intercom = $intercom;
     }
 
     /**

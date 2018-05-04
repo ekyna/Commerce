@@ -399,14 +399,14 @@ class LoadMetadataListener implements EventSubscriber
                 'fieldName'  => 'firstName',
                 'columnName' => 'first_name',
                 'type'       => 'string',
-                'length'     => 64,
+                'length'     => 64, // TODO length 32
                 'nullable'   => true,
             ],
             [
                 'fieldName'  => 'lastName',
                 'columnName' => 'last_name',
                 'type'       => 'string',
-                'length'     => 64,
+                'length'     => 64, // TODO length 32
                 'nullable'   => true,
             ],
         ];

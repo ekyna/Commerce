@@ -16,7 +16,7 @@
         <property name="company">
             <constraint name="Length">
                 <option name="min">2</option>
-                <option name="max">64</option>
+                <option name="max">35</option>
                 <option name="groups">
                     <value>Default</value>
                     <value>Registration</value>

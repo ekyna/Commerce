@@ -43,44 +43,65 @@ class AddressValidator extends ConstraintValidator
             'company'    => [
                 new Assert\Length([
                     'min' => 2,
-                    'max' => 64,
+                    'max' => 35,
                 ]),
             ],
             'street'     => [
                 new Assert\NotBlank(),
                 new Assert\Length([
                     'min' => 2,
-                    'max' => 128,
+                    'max' => 35,
                 ]),
             ],
             'complement' => [
                 new Assert\Length([
                     'min' => 2,
-                    'max' => 128,
+                    'max' => 35,
                 ]),
             ],
             'supplement' => [
                 new Assert\Length([
                     'min' => 2,
-                    'max' => 128,
+                    'max' => 35,
+                ]),
+            ],
+            'extra' => [
+                new Assert\Length([
+                    'min' => 2,
+                    'max' => 35,
                 ]),
             ],
             'postalCode' => [
                 new Assert\NotBlank(),
                 new Assert\Length([
                     'min' => 2,
-                    'max' => 16,
+                    'max' => 10,
                 ]),
             ],
             'city'       => [
                 new Assert\NotBlank(),
                 new Assert\Length([
                     'min' => 2,
-                    'max' => 64,
+                    'max' => 35,
                 ]),
             ],
             'country'    => [
                 new Assert\NotNull(),
+            ],
+            'digicode1' => [
+                new Assert\Length([
+                    'max' => 8,
+                ]),
+            ],
+            'digicode2' => [
+                new Assert\Length([
+                    'max' => 8,
+                ]),
+            ],
+            'intercom' => [
+                new Assert\Length([
+                    'max' => 10,
+                ]),
             ],
             /*TODO 'phone'      => [
                 new PhoneNumber([
@@ -95,7 +116,7 @@ class AddressValidator extends ConstraintValidator
         ];
 
         if (null !== $country = $address->getCountry()) {
-            /*TODO $config['phone'] = [
+            $config['phone'] = [
                 new PhoneNumber([
                     'type'          => 'fixed_line',
                     'defaultRegion' => $country->getCode(),
@@ -106,7 +127,7 @@ class AddressValidator extends ConstraintValidator
                     'type'          => 'mobile',
                     'defaultRegion' => $country->getCode(),
                 ]),
-            ];*/
+            ];
 
             $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
             if (class_exists($zipCodeClass)) {

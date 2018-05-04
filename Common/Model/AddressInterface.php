@@ -74,6 +74,20 @@ interface AddressInterface extends IdentityInterface
     public function setSupplement($supplement);
 
     /**
+     * Returns the extra.
+     *
+     * @return string
+     */
+    public function getExtra();
+
+    /**
+     * Sets the extra.
+     *
+     * @param string $extra
+     */
+    public function setExtra($extra);
+
+    /**
      * Returns the postalCode.
      *
      * @return string
@@ -168,6 +182,48 @@ interface AddressInterface extends IdentityInterface
      * @return $this|AddressInterface
      */
     public function setMobile($mobile);
+
+    /**
+     * Returns the digicode 1.
+     *
+     * @return string
+     */
+    public function getDigicode1();
+
+    /**
+     * Sets the digicode 1.
+     *
+     * @param string $digicode1
+     */
+    public function setDigicode1($digicode1);
+
+    /**
+     * Returns the digicode 2.
+     *
+     * @return string
+     */
+    public function getDigicode2();
+
+    /**
+     * Sets the digicode 2.
+     *
+     * @param string $digicode2
+     */
+    public function setDigicode2($digicode2);
+
+    /**
+     * Returns the intercom.
+     *
+     * @return string
+     */
+    public function getIntercom();
+
+    /**
+     * Sets the intercom.
+     *
+     * @param string $intercom
+     */
+    public function setIntercom($intercom);
 
     /**
      * Returns the longitude.
