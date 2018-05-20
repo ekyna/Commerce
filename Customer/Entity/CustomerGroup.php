@@ -50,6 +50,11 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
      */
     protected $freeShipping;
 
+    /**
+     * @var string|null
+     */
+    protected $vatDisplayMode;
+
 
     /**
      * Constructor.
@@ -189,6 +194,24 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     public function setFreeShipping($free)
     {
         $this->freeShipping = (bool)$free;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getVatDisplayMode()
+    {
+        return $this->vatDisplayMode;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setVatDisplayMode($mode)
+    {
+        $this->vatDisplayMode = $mode;
 
         return $this;
     }

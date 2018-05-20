@@ -56,9 +56,8 @@ class AmountCalculator implements AmountCalculatorInterface
         $this->calculateSaleShipment($sale, $final);
 
         // Round/finalize results.
-        $currency = $sale->getCurrency()->getCode();
-        $gross->round($currency);
-        $final->finalize($currency);
+        $gross->round();
+        $final->finalize();
 
         // Store the results
         $sale->setGrossResult($gross);
@@ -106,10 +105,10 @@ class AmountCalculator implements AmountCalculatorInterface
         if ($item->isPrivate()) {
             // Private case : we just need unit amount
             $gross = $unit * $item->getTotalQuantity();
-            $result = new Amount($unit, $gross, 0 , $gross);
+            $result = new Amount($currency, $unit, $gross, 0 , $gross);
         } elseif ($item->getSale()->isSample()) {
             // Sample sale case : zero amounts
-            $result = new Amount();
+            $result = new Amount($currency);
         } else {
             // Regular case
             $discounts = $taxes = [];
@@ -150,7 +149,7 @@ class AmountCalculator implements AmountCalculatorInterface
             $total = Money::round($base + $tax, $currency);
 
             // Result
-            $result = new Amount($unit, $gross, $discount, $base, $tax, $total, $discounts, $taxes);
+            $result = new Amount($currency, $unit, $gross, $discount, $base, $tax, $total, $discounts, $taxes);
         }
 
         // Store the result
@@ -173,19 +172,18 @@ class AmountCalculator implements AmountCalculatorInterface
 
         /** @var Model\SaleInterface $sale */
         $sale = $adjustment->getAdjustable();
+        $currency = $sale->getCurrency()->getCode();
 
         // Sample sale case
         if ($sale->isSample()) {
-            $result = new Amount();
+            $result = new Amount($currency);
             $adjustment->setResult($result);
 
             return $result;
         }
-
-        $currency = $sale->getCurrency()->getCode();
         $base = $gross->getBase();
 
-        $result = new Amount();
+        $result = new Amount($currency);
 
         $mode = $adjustment->getMode();
         if (Model\AdjustmentModes::MODE_PERCENT === $mode) {
@@ -256,18 +254,19 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
+        $currency = $sale->getCurrency()->getCode();
+
         // Sample sale case
         if ($sale->isSample()) {
-            $result = new Amount();
+            $result = new Amount($currency);
             $sale->setShipmentResult($result);
 
             return $result;
         }
 
         // Abort if shipment cost is lower than or equals zero
-        $currency = $sale->getCurrency()->getCode();
         $base = (float)$sale->getShipmentAmount();
-        $result = new Amount($base, $base, 0, $base, 0, $base);
+        $result = new Amount($currency, $base, $base, 0, $base, 0, $base);
 
         if (1 === Money::compare($base, 0, $currency)) {
             // Shipment taxation
@@ -311,7 +310,7 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
-        $result = new Amount();
+        $result = new Amount($sale->getCurrency()->getCode());
 
         // Sum public
         foreach ($sale->getItems() as $item) {

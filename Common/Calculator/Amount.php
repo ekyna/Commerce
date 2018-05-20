@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 
 /**
  * Class Amount
@@ -11,6 +12,11 @@ use Ekyna\Component\Commerce\Common\Util\Money;
  */
 class Amount
 {
+    /**
+     * @var string
+     */
+    private $currency;
+
     /**
      * @var float
      */
@@ -55,6 +61,7 @@ class Amount
     /**
      * Constructor.
      *
+     * @param string       $currency
      * @param float        $unit
      * @param float        $gross
      * @param float        $discount
@@ -65,6 +72,7 @@ class Amount
      * @param Adjustment[] $taxes
      */
     public function __construct(
+        string $currency = 'USD',
         float $unit = .0,
         float $gross = .0,
         float $discount = .0,
@@ -74,6 +82,7 @@ class Amount
         array $discounts = [],
         array $taxes = []
     ) {
+        $this->currency = $currency;
         $this->unit = $unit;
         $this->gross = $gross;
         $this->discount = $discount;
@@ -86,13 +95,25 @@ class Amount
     }
 
     /**
+     * Returns the currency.
+     *
+     * @return string
+     */
+    public function getCurrency()
+    {
+        return $this->currency;
+    }
+
+    /**
      * Returns the unit.
+     *
+     * @param bool $ati
      *
      * @return float
      */
-    public function getUnit(): float
+    public function getUnit(bool $ati = false): float
     {
-        return $this->unit;
+        return $ati ? $this->ati($this->unit) : $this->unit;
     }
 
     /**
@@ -108,11 +129,13 @@ class Amount
     /**
      * Returns the gross.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getGross(): float
+    public function getGross(bool $ati = false): float
     {
-        return $this->gross;
+        return $ati ? $this->ati($this->gross) : $this->gross;
     }
 
     /**
@@ -156,11 +179,13 @@ class Amount
     /**
      * Returns the discount.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getDiscount(): float
+    public function getDiscount(bool $ati = false): float
     {
-        return $this->discount;
+        return $ati ? $this->ati($this->discount) : $this->discount;
     }
 
     /**
@@ -176,11 +201,13 @@ class Amount
     /**
      * Returns the base.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getBase(): float
+    public function getBase(bool $ati = false): float
     {
-        return $this->base;
+        return $ati ? $this->ati($this->base) : $this->base;
     }
 
     /**
@@ -262,6 +289,42 @@ class Amount
     }
 
     /**
+     * Returns the ATI unit amount.
+     *
+     * @param string $currency
+     *
+     * @return float
+     */
+    public function getAtiUnit(string $currency): float
+    {
+        $result = $this->unit;
+
+        foreach ($this->taxes as $tax) {
+            $result += $this->unit * $tax->getRate() / 100;
+        }
+
+        return Money::round($result, $currency);
+    }
+
+    /**
+     * Adds the taxes to the given amount.
+     *
+     * @param float $amount
+     *
+     * @return float
+     */
+    private function ati(float $amount): float
+    {
+        $result = $amount;
+
+        foreach ($this->taxes as $tax) {
+            $result += $amount * $tax->getRate() / 100;
+        }
+
+        return Money::round($result, $this->currency);
+    }
+
+    /**
      * Merges the given amounts (by sum).
      *
      * @param Amount[] $amounts
@@ -269,6 +332,9 @@ class Amount
     public function merge(Amount ...$amounts): void
     {
         foreach ($amounts as $amount) {
+            if ($amount->getCurrency() !== $this->currency) {
+                throw new RuntimeException("Currencies miss match.");
+            }
             $this->unit += $amount->getUnit();
             $this->gross += $amount->getGross();
             $this->discount += $amount->getDiscount();
@@ -296,12 +362,10 @@ class Amount
 
     /**
      * Rounds the tax adjustments amounts.
-     *
-     * @param string $currency
      */
-    public function finalize(string $currency): void
+    public function finalize(): void
     {
-        $this->round($currency);
+        $this->round();
 
         $old = $this->taxes;
 
@@ -317,7 +381,7 @@ class Amount
         $new = [];
         $total = 0;
         foreach ($old as $tax) {
-            $amount = Money::round($tax->getAmount(), $currency);
+            $amount = Money::round($tax->getAmount(), $this->currency);
 
             // Fix overflow
             if ($total + $amount > $this->tax) {
@@ -338,17 +402,15 @@ class Amount
 
     /**
      * Rounds the amounts.
-     *
-     * @param string $currency
      */
-    public function round(string $currency): void
+    public function round(): void
     {
-        $this->unit = Money::round($this->unit, $currency);
-        $this->gross = Money::round($this->gross, $currency);
-        $this->discount = Money::round($this->discount, $currency);
-        $this->base = Money::round($this->base, $currency);
-        $this->total = Money::round($this->total, $currency);
-        $this->tax = Money::round($this->total - $this->base, $currency);
+        $this->unit = Money::round($this->unit, $this->currency);
+        $this->gross = Money::round($this->gross, $this->currency);
+        $this->discount = Money::round($this->discount, $this->currency);
+        $this->base = Money::round($this->base, $this->currency);
+        $this->total = Money::round($this->total, $this->currency);
+        $this->tax = Money::round($this->total - $this->base, $this->currency);
     }
 
     /**
@@ -361,6 +423,7 @@ class Amount
     public static function createFinalFromGross(Amount $gross): Amount
     {
         $final = new Amount(
+            $gross->getCurrency(),
             $gross->getBase(),
             $gross->getBase(),
             0,

@@ -4,7 +4,9 @@ namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentPriceRepositoryInterface;
 
 /**
@@ -19,16 +21,24 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      */
     private $priceRepository;
 
+    /**
+     * @var TaxResolverInterface
+     */
+    private $taxResolver;
+
 
     /**
      * Constructor.
      *
-     * @param ShipmentPriceRepositoryInterface  $priceRepository
+     * @param ShipmentPriceRepositoryInterface $priceRepository
+     * @param TaxResolverInterface             $taxResolver
      */
     public function __construct(
-        ShipmentPriceRepositoryInterface $priceRepository
+        ShipmentPriceRepositoryInterface $priceRepository,
+        TaxResolverInterface $taxResolver
     ) {
         $this->priceRepository = $priceRepository;
+        $this->taxResolver = $taxResolver;
     }
 
     /**
@@ -49,7 +59,15 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
     public function getAvailablePricesBySale(SaleInterface $sale, $availableOnly = true)
     {
         if (null !== $country = $sale->getDeliveryCountry()) {
-            return $this->priceRepository->findByCountryAndWeight($country, $sale->getWeightTotal(), $availableOnly);
+            $prices = $this
+                ->priceRepository
+                ->findByCountryAndWeight($country, $sale->getWeightTotal(), $availableOnly);
+
+            foreach ($prices as $price) {
+                $this->addTaxes($price, $country);
+            }
+
+            return $prices;
         }
 
         return [];
@@ -63,8 +81,25 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         ShipmentMethodInterface $method,
         $weight
     ) {
-        return $this
+        $price = $this
             ->priceRepository
             ->findOneByCountryAndMethodAndWeight($country, $method, $weight);
+
+        if (null !== $price) {
+            $this->addTaxes($price, $country);
+        }
+
+        return $price;
+    }
+
+    /**
+     * Add taxes to the shipment prices.
+     *
+     * @param ShipmentPriceInterface $price
+     * @param CountryInterface       $country
+     */
+    protected function addTaxes(ShipmentPriceInterface $price, CountryInterface $country)
+    {
+        $price->setTaxes($this->taxResolver->resolveTaxes($price->getMethod(), $country));
     }
 }

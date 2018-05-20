@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Document\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Util\Money;
 
 /**
  * Class DocumentLine
@@ -206,9 +207,9 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getUnit()
+    public function getUnit(bool $ati = false)
     {
-        return $this->unit;
+        return $ati ? $this->ati($this->unit) : $this->unit;
     }
 
     /**
@@ -242,9 +243,9 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getGross()
+    public function getGross(bool $ati = false)
     {
-        return $this->gross;
+        return $ati ? $this->ati($this->gross) : $this->gross;
     }
 
     /**
@@ -260,9 +261,9 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getDiscount()
+    public function getDiscount(bool $ati = false)
     {
-        return $this->discount;
+        return $ati ? $this->ati($this->discount) : $this->discount;
     }
 
     /**
@@ -296,9 +297,9 @@ class DocumentLine implements DocumentLineInterface
     /**
      * @inheritdoc
      */
-    public function getBase()
+    public function getBase(bool $ati = false)
     {
-        return $this->base;
+        return $ati ? $this->ati($this->base) : $this->base;
     }
 
     /**
@@ -413,5 +414,23 @@ class DocumentLine implements DocumentLineInterface
         $this->saleAdjustment = $adjustment;
 
         return $this;
+    }
+
+    /**
+     * Adds the taxes to the given amount.
+     *
+     * @param float $amount
+     *
+     * @return float
+     */
+    private function ati(float $amount)
+    {
+        $result = $amount;
+
+        foreach ($this->taxRates as $rate) {
+            $result += $amount * $rate / 100;
+        }
+
+        return Money::round($result, $this->getDocument()->getCurrency());
     }
 }

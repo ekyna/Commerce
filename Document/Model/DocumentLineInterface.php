@@ -133,9 +133,11 @@ interface DocumentLineInterface
     /**
      * Returns the unit net price.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getUnit();
+    public function getUnit(bool $ati = false);
 
     /**
      * Sets the unit net price.
@@ -165,9 +167,11 @@ interface DocumentLineInterface
     /**
      * Returns the base total.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getGross();
+    public function getGross(bool $ati = false);
 
     /**
      * Sets the base total.
@@ -181,9 +185,11 @@ interface DocumentLineInterface
     /**
      * Returns the discount total.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getDiscount();
+    public function getDiscount(bool $ati = false);
 
     /**
      * Sets the discount total.
@@ -213,9 +219,11 @@ interface DocumentLineInterface
     /**
      * Returns the net total.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getBase();
+    public function getBase(bool $ati = false);
 
     /**
      * Sets the net total.

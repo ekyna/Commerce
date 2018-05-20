@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Common\Calculator\Margin;
+use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -150,6 +151,11 @@ abstract class AbstractSale implements Common\SaleInterface
      * @var Margin
      */
     private $margin;
+
+    /**
+     * @var ContextInterface
+     */
+    private $context;
 
 
     /**
@@ -608,5 +614,21 @@ abstract class AbstractSale implements Common\SaleInterface
     public function getMargin()
     {
         return $this->margin;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setContext(ContextInterface $context)
+    {
+        $this->context = $context;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContext()
+    {
+        return $this->context;
     }
 }

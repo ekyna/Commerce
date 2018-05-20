@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
@@ -37,6 +38,11 @@ class ShipmentPrice implements ShipmentPriceInterface
      * @var float
      */
     protected $netPrice;
+
+    /**
+     * @var TaxInterface[]
+     */
+    protected $taxes;
 
 
     /**
@@ -127,6 +133,30 @@ class ShipmentPrice implements ShipmentPriceInterface
     public function setNetPrice($price)
     {
         $this->netPrice = (float)$price;
+
+        return $this;
+    }
+
+    /**
+     * Returns the taxes (non-mapped).
+     *
+     * @return TaxInterface[]
+     */
+    public function getTaxes()
+    {
+        return $this->taxes;
+    }
+
+    /**
+     * Sets the taxes (non-mapped).
+     *
+     * @param TaxInterface[] $taxes
+     *
+     * @return ShipmentPrice
+     */
+    public function setTaxes(array $taxes)
+    {
+        $this->taxes = $taxes;
 
         return $this;
     }

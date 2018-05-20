@@ -18,12 +18,12 @@ class AmountTest extends AbstractAmountTest
     public function test_merge()
     {
         $a = new Amount(
-            12.34, 185.1, 9.26, 175.84, 9.67, 185.51,
+            'USD', 12.34, 185.1, 9.26, 175.84, 9.67, 185.51,
             [new Adjustment('Discount 5%', 6.84, 5)],
             [new Adjustment('Tax 5.5%', 9.67, 5.5)]
         );
         $b = new Amount(
-            47.99, 1151.76, 115.18, 1036.58, 57.01, 1093.59,
+            'USD', 47.99, 1151.76, 115.18, 1036.58, 57.01, 1093.59,
             [new Adjustment('Discount 10%', 115.18, 10)],
             [new Adjustment('Tax 5.5%', 57.01, 5.5)]
         );

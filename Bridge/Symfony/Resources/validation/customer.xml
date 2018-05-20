@@ -134,6 +134,14 @@
                 <option name="max">64</option>
             </constraint>
         </property>
+        <property name="vatDisplayMode">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes</value>
+                    <value>getModes</value>
+                </option>
+            </constraint>
+        </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
         </constraint>

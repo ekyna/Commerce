@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
+use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -74,4 +75,20 @@ interface ShipmentPriceInterface extends ResourceInterface
      * @return $this|ShipmentPriceInterface
      */
     public function setNetPrice($price);
+
+    /**
+     * Returns the taxes (non-mapped).
+     *
+     * @return TaxInterface[]
+     */
+    public function getTaxes();
+
+    /**
+     * Sets the taxes (non-mapped).
+     *
+     * @param TaxInterface[] $taxes
+     *
+     * @return $this|ShipmentPriceInterface
+     */
+    public function setTaxes(array $taxes);
 }

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Document\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**
@@ -17,6 +18,11 @@ class Document implements DocumentInterface
      * @var string
      */
     protected $type;
+
+    /**
+     * @var bool
+     */
+    protected $ati;
 
     /**
      * @var string
@@ -116,6 +122,24 @@ class Document implements DocumentInterface
     public function setType($type)
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAti()
+    {
+        return $this->ati;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAti(bool $ati)
+    {
+        $this->ati = $ati;
 
         return $this;
     }
@@ -357,9 +381,9 @@ class Document implements DocumentInterface
     /**
      * @inheritdoc
      */
-    public function getGoodsBase()
+    public function getGoodsBase(bool $ati = false)
     {
-        return $this->goodsBase;
+        return $ati ? $this->ati($this->goodsBase) : $this->goodsBase;
     }
 
     /**
@@ -375,9 +399,9 @@ class Document implements DocumentInterface
     /**
      * @inheritdoc
      */
-    public function getDiscountBase()
+    public function getDiscountBase(bool $ati = false)
     {
-        return $this->discountBase;
+        return $ati ? $this->ati($this->discountBase) : $this->discountBase;
     }
 
     /**
@@ -393,9 +417,9 @@ class Document implements DocumentInterface
     /**
      * @inheritdoc
      */
-    public function getShipmentBase()
+    public function getShipmentBase(bool $ati = false)
     {
-        return $this->shipmentBase;
+        return $ati ? $this->ati($this->shipmentBase) : $this->shipmentBase;
     }
 
     /**
@@ -500,5 +524,23 @@ class Document implements DocumentInterface
     public function hasMultipleTaxes()
     {
         return 1 < count($this->taxesDetails);
+    }
+
+    /**
+     * Adds the taxes to the given amount.
+     *
+     * @param float $amount
+     *
+     * @return float
+     */
+    private function ati(float $amount)
+    {
+        $result = $amount;
+
+        foreach ($this->taxesDetails as $tax) {
+            $result += $amount * $tax['rate'] / 100;
+        }
+
+        return Money::round($result, $this->currency);
     }
 }

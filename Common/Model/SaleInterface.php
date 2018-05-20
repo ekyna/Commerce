@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Model;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Common\Calculator\Margin;
+use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -483,4 +484,18 @@ interface SaleInterface extends
      * @return Margin
      */
     public function getMargin();
+
+    /**
+     * Sets the context.
+     *
+     * @param ContextInterface $context
+     */
+    public function setContext(ContextInterface $context);
+
+    /**
+     * Returns the context.
+     *
+     * @return ContextInterface
+     */
+    public function getContext();
 }

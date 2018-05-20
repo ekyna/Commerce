@@ -15,6 +15,11 @@ class SaleView extends AbstractView
     private $template;
 
     /**
+     * @var bool
+     */
+    private $ati;
+
+    /**
      * @var TotalView
      */
     private $gross;
@@ -59,10 +64,12 @@ class SaleView extends AbstractView
      * Constructor.
      *
      * @param string $template
+     * @param bool   $ati
      */
-    public function __construct($template)
+    public function __construct($template, $ati = true)
     {
         $this->template = $template;
+        $this->ati = $ati;
 
         $this->items = [];
         $this->discounts = [];
@@ -97,6 +104,16 @@ class SaleView extends AbstractView
     public function getTemplate()
     {
         return $this->template;
+    }
+
+    /**
+     * Returns the ati.
+     *
+     * @return bool
+     */
+    public function isAti()
+    {
+        return $this->ati;
     }
 
     /**
@@ -301,9 +318,11 @@ class SaleView extends AbstractView
             'reference'      => 'Reference',
             'availability'   => 'Avai.',
             'unit_net_price' => 'Unit Price',
+            'unit_ati_price' => 'Unit Price',
             'quantity'       => 'Quantity',
 
-            'gross'    => 'Gross',
+            'net_gross'    => 'Gross',
+            'ati_gross'    => 'Gross',
             'discount' => 'Discount',
 
             'tax_rate'   => 'Tax rate',

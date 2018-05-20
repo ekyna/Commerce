@@ -110,6 +110,22 @@ interface CustomerGroupInterface extends TranslatableInterface
     public function setFreeShipping($free);
 
     /**
+     * Returns the vat display mode.
+     *
+     * @return string|null
+     */
+    public function getVatDisplayMode();
+
+    /**
+     * Sets the vat display mode.
+     *
+     * @param string|null $mode
+     *
+     * @return $this|CustomerGroupInterface
+     */
+    public function setVatDisplayMode($mode);
+
+    /**
      * Returns the (translated) title.
      *
      * @return string

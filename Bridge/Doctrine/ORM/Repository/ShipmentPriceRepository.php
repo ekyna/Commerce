@@ -116,11 +116,9 @@ class ShipmentPriceRepository extends ResourceRepository implements ShipmentPric
                 ->andWhere($qb->expr()->isMemberOf(':country', 'z.countries'))
                 ->andWhere($qb->expr()->gte('o.weight', ':weight'))
                 ->andWhere($qb->expr()->eq('o.method', ':method'))
-//                ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
-//                ->andWhere($qb->expr()->eq('m.available', ':available'))
-                ->addGroupBy('m.id')
                 ->addOrderBy('o.weight', 'ASC')
-                ->setMaxResults(1);
+                ->setMaxResults(1)
+            ;
 
             $this->findOneByCountryAndMethodAndWeightQuery = $qb->getQuery();
         }

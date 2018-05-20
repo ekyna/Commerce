@@ -27,6 +27,7 @@
         <field name="registration" column="is_registration" type="boolean"/>
         <field name="quoteAllowed" column="is_quote_allowed" type="boolean"/>
         <field name="freeShipping" column="is_free_shipping" type="boolean"/>
+        <field name="vatDisplayMode" column="vat_display_mode" type="string" length="3" nullable="true"/>
 
     </mapped-superclass>
 

@@ -45,6 +45,22 @@ interface DocumentInterface
     public function setType($type);
 
     /**
+     * Returns the ati.
+     *
+     * @return bool
+     */
+    public function isAti();
+
+    /**
+     * Sets the ati.
+     *
+     * @param bool $ati
+     *
+     * @return Document
+     */
+    public function setAti(bool $ati);
+
+    /**
      * Returns the currency.
      *
      * @return string
@@ -227,9 +243,11 @@ interface DocumentInterface
     /**
      * Returns the goods base (after discounts).
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getGoodsBase();
+    public function getGoodsBase(bool $ati = false);
 
     /**
      * Sets the goods base (after discounts).
@@ -243,9 +261,11 @@ interface DocumentInterface
     /**
      * Returns the discount base.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getDiscountBase();
+    public function getDiscountBase(bool $ati = false);
 
     /**
      * Sets the discount base.
@@ -259,9 +279,11 @@ interface DocumentInterface
     /**
      * Returns the shipment base.
      *
+     * @param bool $ati
+     *
      * @return float
      */
-    public function getShipmentBase();
+    public function getShipmentBase(bool $ati = false);
 
     /**
      * Sets the shipment base.

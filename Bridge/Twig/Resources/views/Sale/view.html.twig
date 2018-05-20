@@ -19,16 +19,16 @@
     {% if view.vars.show_availability -%}
     <th class="text-right">{{ view.translations.availability }}</th>
     {%- endif %}
-    <th class="text-right">{{ view.translations.unit_net_price }}</th>
+    <th class="text-right">{{ view.ati ? view.translations.unit_ati_price : view.translations.unit_net_price }}</th>
     {% if view.vars.show_taxes -%}
     <th class="text-right">{{ view.translations.tax_rate }}</th>
     {%- endif %}
     <th class="text-right">{{ view.translations.quantity }}</th>
     {% if view.vars.show_discounts -%}
-    <th class="text-right">{{ view.translations.gross }}</th>
+    <th class="text-right">{{ view.ati ? view.translations.ati_gross : view.translations.net_gross }}</th>
     <th class="text-center" colspan="2">{{ 'ekyna_commerce.sale.field.discount'|trans }}</th>
     {%- endif %}
-    <th class="text-right">{{ view.translations.net_total }}</th>
+    <th class="text-right">{{ view.ati ? view.translations.ati_total : view.translations.net_total }}</th>
     {% if view.vars.show_margin -%}
     <th class="text-right">{{ view.translations.margin }}</th>
     {%- endif %}
@@ -187,21 +187,17 @@
     <tbody>
         <tr>
             <th>&nbsp;</th>
-            <th class="text-right" colspan="{# TODO simplify #}{% if view.vars.show_discounts -%}
-                        {{- view.vars.columns_count - 6 -}}
-                    {%- else -%}
-                        {{- view.vars.columns_count - 3 -}}
-                    {%- endif -%}">
+            <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 7 : 4) }}">
                 <strong>{{ view.translations.gross_totals }}</strong>
             </th>
-            {%- if view.vars.show_discounts -%}
-                <th class="text-right sale-detail-gross" id="gross_base">
-                    {{- view.gross.base -}}
-                </th>
-                <th class="text-right sale-detail-gross" colspan="2" id="gross_base">
-                    -{{- view.gross.adjustment -}}
-                </th>
-            {%- endif -%}
+            {% if view.vars.show_discounts -%}
+            <th class="text-right sale-detail-gross" id="gross_base">
+                {{- view.gross.base -}}
+            </th>
+            <th class="text-right sale-detail-gross" colspan="2" id="gross_base">
+                -{{- view.gross.adjustment -}}
+            </th>
+            {%- endif %}
             <th class="text-right sale-detail-gross" id="gross_base">
                 {{- view.gross.total -}}
             </th>
@@ -226,7 +222,7 @@
     <td class="text-right" colspan="{{ view.vars.show_availability ? 3 : 2 }}">&nbsp;</td>
     {%- if view.vars.show_taxes %}{{ block('line_taxes') }}{% endif -%}
     <td{% if view.vars.show_discounts %} colspan="4"{% endif %}>&nbsp;</td>
-    <td class="text-right" id="{{ line.id }}_base">-{{- line.base -}}</td>
+    <td class="text-right" id="{{ line.id }}_base">-{{ view.ati ? line.total : line.base }}</td>
     {%- if view.vars.show_margin %}<td>&nbsp;</td>{% endif -%}
 {% endspaceless %}
 {% endblock discount %}
@@ -259,7 +255,7 @@
     <td class="text-right" colspan="{{ view.vars.show_availability ? 3 : 2 }}">&nbsp;</td>
     {%- if view.vars.show_taxes %}{{ block('line_taxes') }}{% endif -%}
     <td{% if view.vars.show_discounts %} colspan="4"{% endif %}>&nbsp;</td>
-    <td class="text-right" id="{{ line.id }}_base">{{ line.base }}</td>
+    <td class="text-right" id="{{ line.id }}_base">{{ view.ati ? line.total : line.base }}</td>
     {%- if view.vars.show_margin %}<td>&nbsp;</td>{% endif -%}
 {% endspaceless %}
 {% endblock shipment %}
@@ -269,31 +265,26 @@
 {% spaceless %}
     <tbody>
     <tr>
-        <th colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 3 : 2) }}" rowspan="{{ view.vars.show_margin ? 4 : 3 }}">&nbsp;</th>
-        <th>{{ view.translations.net_total|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_base">
-            {{- view.final.base -}}
-        </td>
-        {%- if view.vars.show_margin %}<td rowspan="4">&nbsp;</td>{% endif -%}
+        <th colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 3 : 2) }}"
+            rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}">&nbsp;</th>
+        <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
+        <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total : view.final.base }}</td>
+        {%- if view.vars.show_margin %}<td rowspan="{{ view.ati ? 3 : 4 }}">&nbsp;</td>{% endif -%}
     </tr>
     <tr>
         <th>{{ view.translations.tax_total|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_tax">
-            {{- view.final.adjustment -}}
-        </td>
+        <td class="text-right sale-detail-total" id="final_tax">{{ view.final.adjustment }}</td>
     </tr>
+    {% if not view.ati -%}
     <tr>
-        <th>{{ view.translations.grand_total|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_total">
-            {{- view.final.total -}}
-        </td>
+        <th>{{ view.translations.ati_total|upper }}</th>
+        <td class="text-right sale-detail-total" id="final_total">{{ view.final.total }}</td>
     </tr>
+    {%- endif %}
     {% if view.vars.show_margin -%}
     <tr>
         <th>{{ view.translations.margin|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_margin">
-            {{- view.margin.amount }}<br>({{ view.margin.percent -}})
-        </td>
+        <td class="text-right sale-detail-total" id="final_margin">{{ view.margin.amount }}<br>({{ view.margin.percent }})</td>
     </tr>
     {%- endif %}
     </tbody>

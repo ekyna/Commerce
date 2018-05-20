@@ -80,11 +80,7 @@
     <tbody>
     <tr id="sale_gross">
         <th>&nbsp;</th>
-        <th class="text-right" colspan="{% if view.vars.show_discounts -%}
-                    {{- view.vars.columns_count - 6 -}}
-                {%- else -%}
-                    {{- view.vars.columns_count - 3 -}}
-                {%- endif -%}">
+        <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 7 : 4) }}">
             <strong>{{ view.translations.gross_totals }}</strong>
         </th>
         {%- if view.vars.show_discounts -%}
@@ -126,33 +122,27 @@
     <tbody>
     <tr>
         <th colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
-            rowspan="{{ view.vars.show_margin ? 4 : 3 }}" class="sale-detail-buttons">
-            {{ form_widget(view.vars.form.submit) }}
+            rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}" class="sale-detail-buttons">
+            {{- form_widget(view.vars.form.submit) -}}
         </th>
-        <th>{{ view.translations.net_total|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_base">
-            {{- view.final.base -}}
-        </td>
+        <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
+        <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total : view.final.base }}</td>
         <th{% if view.vars.show_margin %} colspan="2" rowspan="4"{% else %} rowspan="3"{% endif %}>&nbsp;</th>
     </tr>
     <tr>
         <th>{{ view.translations.tax_total|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_tax">
-            {{- view.final.adjustment -}}
-        </td>
+        <td class="text-right sale-detail-total" id="final_tax">{{ view.final.adjustment }}</td>
     </tr>
+    {% if not view.ati -%}
     <tr>
-        <th>{{ view.translations.grand_total|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_total">
-            {{- view.final.total -}}
-        </td>
+        <th>{{ view.translations.ati_total|upper }}</th>
+        <td class="text-right sale-detail-total" id="final_total">{{ view.final.total }}</td>
     </tr>
+    {%- endif %}
     {% if view.vars.show_margin -%}
     <tr>
         <th>{{ view.translations.margin|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_margin">
-            {{- view.margin.amount }}<br>({{ view.margin.percent -}})
-        </td>
+        <td class="text-right sale-detail-total" id="final_margin">{{ view.margin.amount }}<br>({{ view.margin.percent }})</td>
     </tr>
     {%- endif %}
     </tbody>

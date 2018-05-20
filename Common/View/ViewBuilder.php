@@ -4,9 +4,12 @@ namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Context\ContextInterface;
+use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -21,6 +24,11 @@ class ViewBuilder
      * @var ViewTypeRegistryInterface
      */
     private $registry;
+
+    /**
+     * @var ContextProviderInterface
+     */
+    private $contextProvider;
 
     /**
      * @var AmountCalculatorInterface
@@ -53,6 +61,11 @@ class ViewBuilder
     private $options;
 
     /**
+     * @var ContextInterface
+     */
+    private $context;
+
+    /**
      * @var SaleView
      */
     private $view;
@@ -77,6 +90,7 @@ class ViewBuilder
      * Constructor.
      *
      * @param ViewTypeRegistryInterface $registry
+     * @param ContextProviderInterface  $contextProvider
      * @param AmountCalculatorInterface $amountCalculator
      * @param MarginCalculatorInterface $marginCalculator
      * @param string                    $defaultTemplate
@@ -84,12 +98,14 @@ class ViewBuilder
      */
     public function __construct(
         ViewTypeRegistryInterface $registry,
+        ContextProviderInterface $contextProvider,
         AmountCalculatorInterface $amountCalculator,
         MarginCalculatorInterface $marginCalculator,
         $defaultTemplate = '@Commerce/Sale/view.html.twig',
         $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
         $this->registry = $registry;
+        $this->contextProvider = $contextProvider;
         $this->amountCalculator = $amountCalculator;
         $this->marginCalculator = $marginCalculator;
         $this->defaultTemplate = $defaultTemplate;
@@ -108,16 +124,19 @@ class ViewBuilder
     {
         $this->initialize($sale, $options);
 
-        $this->view = new SaleView($this->options['template']);
+        $this->view = new SaleView(
+            $this->options['template'],
+            $this->context->getVatDisplayMode() === VatDisplayModes::MODE_ATI
+        );
 
         $this->amountCalculator->calculateSale($sale);
 
         // Gross total view
         $grossResult = $sale->getGrossResult();
         $this->view->setGross(new TotalView(
-            $this->formatter->currency($grossResult->getGross()),
-            $this->formatter->currency($grossResult->getDiscount()),
-            $this->formatter->currency($grossResult->getBase())
+            $this->formatter->currency($grossResult->getGross($this->view->isAti())),
+            $this->formatter->currency($grossResult->getDiscount($this->view->isAti())),
+            $this->formatter->currency($grossResult->getBase($this->view->isAti()))
         ));
 
         // Final total view
@@ -181,6 +200,7 @@ class ViewBuilder
     private function initialize(Model\SaleInterface $sale, array $options = [])
     {
         $this->options = $this->getOptionsResolver()->resolve($options);
+        $this->context = $this->contextProvider->getContext($sale, false);
         $this->lineNumber = 1;
 
         $currency = $sale->getCurrency()->getCode();
@@ -283,13 +303,14 @@ class ViewBuilder
         $unit = $gross = $discountRates = $discountAmount = $base = $taxRates = $taxAmount = $total = null;
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            $unit = $this->formatter->currency($result->getUnit());
-            $gross = $this->formatter->currency($result->getGross());
+            $ati = $this->view->isAti();
+            $unit = $this->formatter->currency($result->getUnit($ati)); // TODO ati ?
+            $gross = $this->formatter->currency($result->getGross($ati));
             $discountRates = $this->formatter->rates(...$result->getDiscountAdjustments());
-            if (0 < $discount = $result->getDiscount()) {
+            if (0 < $discount = $result->getDiscount($ati)) {
                 $discountAmount = $this->formatter->currency($discount);
             }
-            $base = $this->formatter->currency($result->getBase());
+            $base = $this->formatter->currency($result->getBase($ati));
             $taxRates = $this->formatter->rates(...$result->getTaxAdjustments());
             if (0 < $tax = $result->getTax()) {
                 $taxAmount = $this->formatter->currency($tax);

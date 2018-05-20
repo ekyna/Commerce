@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Builder;
 
+use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
@@ -38,18 +39,20 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * Constructor.
      *
+     * @param ContextProviderInterface    $contextProvider
      * @param SaleFactoryInterface        $factory
      * @param InvoiceCalculatorInterface  $invoiceCalculator
      * @param ShipmentCalculatorInterface $shipmentCalculator
      * @param PhoneNumberUtil             $phoneNumberUtil
      */
     public function __construct(
+        ContextProviderInterface $contextProvider,
         SaleFactoryInterface $factory,
         InvoiceCalculatorInterface $invoiceCalculator,
         ShipmentCalculatorInterface $shipmentCalculator,
         PhoneNumberUtil $phoneNumberUtil = null
     ) {
-        parent::__construct($phoneNumberUtil);
+        parent::__construct($contextProvider, $phoneNumberUtil);
 
         $this->saleFactory = $factory;
         $this->invoiceCalculator = $invoiceCalculator;
@@ -211,8 +214,8 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      *
      * @param Invoice\InvoiceInterface $invoice
      * @param Common\SaleItemInterface $item
-     * @param float                         $available
-     * @param float                     $expected
+     * @param float                    $available
+     * @param float                    $expected
      *
      * @return Invoice\InvoiceLineInterface
      */

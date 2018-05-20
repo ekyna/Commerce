@@ -9,6 +9,7 @@
     <mapped-superclass name="Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice">
 
         <field name="type" column="type" type="string" length="16"/>
+        <field name="ati" column="ati" type="boolean"/>
         <field name="number" column="number" type="string" length="16"/>
         <field name="currency" column="currency" type="string" length="8"/>
 

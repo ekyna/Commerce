@@ -81,8 +81,8 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         // Round/finalize results.
-        $gross->round($currency);
-        $final->finalize($currency);
+        $gross->round();
+        $final->finalize();
 
         // Document goods base (after discounts)
         if ($document->getGoodsBase() !== $gross->getBase()) {
@@ -143,7 +143,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
      */
     protected function calculateGoodLines(Model\DocumentInterface $document): Amount
     {
-        $gross = new Amount();
+        $gross = new Amount($document->getCurrency());
 
         foreach ($document->getLinesByType(Model\DocumentLineTypes::TYPE_GOOD) as $line) {
             if (null !== $result = $this->calculateGoodLine($line)) {

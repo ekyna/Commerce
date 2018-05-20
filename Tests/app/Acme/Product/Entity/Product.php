@@ -3,6 +3,7 @@
 namespace Acme\Product\Entity;
 
 use Acme\Product\Provider\ProductProvider;
+use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Pricing\Model as Pricing;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\Model as Subject;
@@ -69,6 +70,14 @@ class Product implements Pricing\TaxableInterface, Stock\StockSubjectInterface, 
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIdentifier()
+    {
+        return $this->getId();
     }
 
     /**
@@ -165,6 +174,46 @@ class Product implements Pricing\TaxableInterface, Stock\StockSubjectInterface, 
         $this->weight = $weight;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeight()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getWidth()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDepth()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUnit()
+    {
+        return Units::PIECE;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasDimensions()
+    {
+        return !empty($this->width) && !empty($this->height) && !empty($this->depth);
     }
 
     /**
