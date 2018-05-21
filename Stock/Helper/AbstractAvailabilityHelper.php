@@ -6,7 +6,6 @@ use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Stock\Model\Availability;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 
 /**
  * Class AvailabilityHelper
@@ -47,10 +46,12 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
      */
     public function getAvailability(StockSubjectInterface $subject, bool $short = false)
     {
-        $minQty = $maxQty = $aQty = $rQty = 0;
+        $minQty = $aQty = $rQty = 0;
+        $maxQty = INF;
         $minMsg = $maxMsg = $aMsg = $rMsg = null;
 
         if ($subject->isQuoteOnly()) {
+            $maxQty = 0;
             $oMsg = $maxMsg = $this->translate('quote_only', [], $short);
         } else {
             // Minimum quantity/message
@@ -64,34 +65,34 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
                 $aQty = INF;
                 $aMsg = $this->translate('available', [], $short);
-            } else {
-                if (0 < $aQty = $subject->getAvailableStock()) {
-                    $aMsg = $this->translate('in_stock', [
-                        '%qty%' => $this->formatter->number($aQty),
-                    ], $short);
-                }
+            } elseif (0 < $aQty = $subject->getAvailableStock()) {
+                $maxQty = $aQty;
+                $aMsg = $this->translate('in_stock', [
+                    '%qty%' => $this->formatter->number($aQty),
+                ], $short);
             }
 
+
             // Resupply quantity/message
-            // TODO Only if stock mode === JUST_IN_TIME (?)
             if ((0 < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
                 $today = new \DateTime();
                 $today->setTime(23, 59, 59);
-                if ($today < $eda) {
-                    $rQty = $qty;
+                if ($today < $eda && 0 < $rQty = $qty - $aQty) {
                     $rMsg = $this->translate('pre_order', [
                         '%eda%' => $this->formatter->date($eda),
                         '%qty%' => $this->formatter->number($qty),
                     ], $short);
+                    $maxQty = $qty;
                 }
             }
-
-            $maxQty = $aQty + $rQty;
 
             // Overflow message
             if ($subject->isEndOfLife()) {
                 $oMsg = $this->translate('end_of_life', [], $short);
-            } elseif (0 < $days = $subject->getReplenishmentTime()) {
+            } elseif (
+                $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME &&
+                0 < $days = $subject->getReplenishmentTime()
+            ) {
                 $maxQty = INF;
                 $oMsg = $this->translate('replenishment', [
                     '%days%' => $days,
@@ -102,39 +103,12 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
 
             if (0 < $maxQty && $maxQty !== INF) {
                 $maxMsg = $this->translate('max_quantity', [
-                    '%max%' => $this->formatter->number($minQty),
+                    '%max%' => $this->formatter->number($maxQty),
                 ], $short);
             }
         }
 
         return new Availability($oMsg, $minQty, $minMsg, $maxQty, $maxMsg, $aQty, $aMsg, $rQty, $rMsg);
-    }
-
-    /**
-     * @inheritdoc
-     *
-     * @TODO rename to "buyable quantity"
-     */
-    public function getAvailableQuantity(StockSubjectInterface $subject, $quantity = null)
-    {
-        if ($subject->isQuoteOnly()) {
-            return 0;
-        }
-
-        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
-            return INF;
-        }
-
-        if ($subject->getStockState() === StockSubjectStates::STATE_IN_STOCK) {
-            return $subject->getAvailableStock();
-        }
-
-        // TODO Only if stock mode === JUST_IN_TIME (?)
-        if ((0 < $qty = $subject->getVirtualStock()) && (null !== $subject->getEstimatedDateOfArrival())) {
-            return $qty;
-        }
-
-        return 0;
     }
 
     /**

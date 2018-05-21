@@ -97,6 +97,9 @@ class SaleStepValidator implements SaleStepValidatorInterface
         if ($step === static::CHECKOUT_STEP) {
             $groups[] = 'Checkout';
             $groups[] = 'Identity';
+            $groups[] = 'Availability';
+        } elseif ($step === static::SHIPMENT_STEP) {
+            $groups[] = 'Availability';
         }
 
         return $groups;

@@ -89,6 +89,14 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
      */
     private function validateItem(SaleItemInterface $item)
     {
+        foreach ($item->getChildren() as $child) {
+            $this->validateItem($child);
+        }
+
+        if ($item->isCompound()) {
+            return;
+        }
+
         if (null === $subject = $this->subjectHelper->resolve($item, false)) {
             return;
         }

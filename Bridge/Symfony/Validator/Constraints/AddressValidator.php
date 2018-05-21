@@ -103,16 +103,6 @@ class AddressValidator extends ConstraintValidator
                     'max' => 10,
                 ]),
             ],
-            /*TODO 'phone'      => [
-                new PhoneNumber([
-                    'type' => 'fixed_line',
-                ]),
-            ],
-            'mobile'     => [
-                new PhoneNumber([
-                    'type' => 'mobile',
-                ]),
-            ],*/
         ];
 
         if (null !== $country = $address->getCountry()) {

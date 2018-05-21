@@ -20,7 +20,7 @@
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAdjustable">
         <property name="adjustments">
-            <constraint name="Valid" />
+            <constraint name="Valid"/>
         </property>
     </class>
 
@@ -109,9 +109,9 @@
     <!-- Attachment -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAttachment">
-        <constraint name="Ekyna\Bundle\CoreBundle\Validator\Constraints\Uploadable" />
+        <constraint name="Ekyna\Bundle\CoreBundle\Validator\Constraints\Uploadable"/>
         <property name="file">
-            <constraint name="File" />
+            <constraint name="File"/>
         </property>
     </class>
 
@@ -175,7 +175,7 @@
             </constraint>
         </property>
         <property name="customer">
-            <constraint name="Valid" />
+            <constraint name="Valid"/>
         </property>
         <property name="email">
             <constraint name="Email">
@@ -203,13 +203,13 @@
                     <value>Checkout</value>
                 </option>
             </constraint>
-            <constraint name="Valid" />
+            <constraint name="Valid"/>
         </property>
         <property name="deliveryAddress">
             <constraint name="Valid"/>
         </property>
         <property name="currency">
-            <constraint name="NotNull" />
+            <constraint name="NotNull"/>
         </property>
         <property name="state">
             <constraint name="NotBlank"/>
@@ -233,7 +233,7 @@
             </constraint>
         </property>
         <property name="items">
-            <constraint name="Valid" />
+            <constraint name="Valid"/>
         </property>
         <!--<property name="payments">
             <constraint name="Valid" />
@@ -349,7 +349,7 @@
             <constraint name="Valid"/>
         </getter>
         <property name="children">
-            <constraint name="Valid" />
+            <constraint name="Valid"/>
         </property>
         <!--<property name="adjustments">
             TODO Not with mode == FLAT
@@ -358,6 +358,11 @@
             <option name="groups">
                 <value>Default</value>
                 <value>Calculation</value>
+            </option>
+        </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SaleItemAvailability">
+            <option name="groups">
+                <value>Availability</value>
             </option>
         </constraint>
     </class>
@@ -423,7 +428,7 @@
             </constraint>
         </property>
         <property name="country">
-            <constraint name="NotNull" />
+            <constraint name="NotNull"/>
         </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">country,name</option>

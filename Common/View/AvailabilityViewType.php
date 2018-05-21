@@ -66,7 +66,9 @@ class AvailabilityViewType extends AbstractViewType
             '<span class="availability-' . max(count($messages), 1) . '">' . implode('<br>', $messages) . '</span>'
         );
 
-        if (!$availability->isAvailableForQuantity($quantity)) {
+        if ($quantity > $availability->getMaximumQuantity()) {
+            $view->addClass('danger');
+        } elseif (!$availability->isAvailableForQuantity($quantity)) {
             $view->addClass('warning');
         }
     }

@@ -23,15 +23,6 @@ interface AvailabilityHelperInterface
     public function getAvailability(StockSubjectInterface $subject, bool $short = false);
 
     /**
-     * Returns the subject's available quantity.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return float|int
-     */
-    public function getAvailableQuantity(StockSubjectInterface $subject);
-
-    /**
      * Returns the subject's availability message.
      *
      * @param StockSubjectInterface $subject
