@@ -70,8 +70,9 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
                 $aMsg = $this->translate('in_stock', [
                     '%qty%' => $this->formatter->number($aQty),
                 ], $short);
+            } else {
+                $maxQty = 0;
             }
-
 
             // Resupply quantity/message
             if ((0 < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
@@ -105,6 +106,8 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
                 $maxMsg = $this->translate('max_quantity', [
                     '%max%' => $this->formatter->number($maxQty),
                 ], $short);
+            } elseif (0 == $maxQty) {
+                $maxMsg = $oMsg;
             }
         }
 
@@ -150,17 +153,16 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
                     '%qty%' => $this->formatter->number($qty),
                 ], $short);
             }
-
-            return $this->translate('replenishment', [
-                '%days%' => $subject->getReplenishmentTime() ?: 20,
-            ], $short);
         }
 
         if ($subject->isEndOfLife()) {
             return $this->translate('end_of_life', [], $short);
         }
 
-        if (0 < $days = $subject->getReplenishmentTime()) {
+        if (
+            $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME &&
+            0 < $days = $subject->getReplenishmentTime()
+        ) {
             return $this->translate('replenishment', [
                 '%days%' => $days,
             ], $short);
