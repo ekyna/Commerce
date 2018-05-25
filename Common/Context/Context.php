@@ -158,7 +158,7 @@ class Context implements ContextInterface
      */
     public function getVatDisplayMode()
     {
-        return $this->vatDisplayMode;
+        return $this->vatDisplayMode ? $this->vatDisplayMode : $this->customerGroup->getVatDisplayMode();
     }
 
     /**
