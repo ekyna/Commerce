@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
+use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -33,6 +34,11 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      */
     private $taxResolver;
 
+    /**
+     * @var ContextProviderInterface
+     */
+    protected $contextProvider;
+
 
     /**
      * Constructor.
@@ -40,15 +46,18 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      * @param ShipmentPriceRepositoryInterface $priceRepository
      * @param ShipmentRuleRepositoryInterface  $ruleRepository
      * @param TaxResolverInterface             $taxResolver
+     * @param ContextProviderInterface         $contextProvider
      */
     public function __construct(
         ShipmentPriceRepositoryInterface $priceRepository,
         ShipmentRuleRepositoryInterface $ruleRepository,
-        TaxResolverInterface $taxResolver
+        TaxResolverInterface $taxResolver,
+        ContextProviderInterface $contextProvider
     ) {
         $this->priceRepository = $priceRepository;
         $this->ruleRepository = $ruleRepository;
         $this->taxResolver = $taxResolver;
+        $this->contextProvider = $contextProvider;
     }
 
     /**
@@ -64,34 +73,32 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      */
     public function getAvailablePricesBySale(SaleInterface $sale, $availableOnly = true)
     {
-        if (null !== $country = $sale->getDeliveryCountry()) {
-            $prices = $this
-                ->priceRepository
-                ->findByCountryAndWeight($country, $sale->getWeightTotal(), $availableOnly);
+        $context = $this->contextProvider->getContext($sale);
 
-            foreach ($prices as $price) {
-                $this->addTaxes($price, $country);
-                $price->setFree($this->hasFreeShipping($sale, $price->getMethod()));
-            }
+        $prices = $this
+            ->priceRepository
+            ->findByCountryAndWeight($context->getDeliveryCountry(), $sale->getWeightTotal(), $availableOnly);
 
-            usort($prices, function(ShipmentPriceInterface $a, ShipmentPriceInterface $b) {
-                $aFree = $a->isFree() || 0 === $a->getNetPrice();
-                $bFree = $b->isFree() || 0 === $b->getNetPrice();
-
-                if ($aFree && !$bFree) {
-                    return -1;
-                }
-                if (!$aFree && $bFree) {
-                    return 1;
-                }
-
-                return $a->getNetPrice() >= $b->getNetPrice() ? 1 : -1;
-            });
-
-            return $prices;
+        foreach ($prices as $price) {
+            $this->addTaxes($price, $context->getDeliveryCountry());
+            $price->setFree($this->hasFreeShipping($sale, $price->getMethod()));
         }
 
-        return [];
+        usort($prices, function (ShipmentPriceInterface $a, ShipmentPriceInterface $b) {
+            $aFree = $a->isFree() || 0 === $a->getNetPrice();
+            $bFree = $b->isFree() || 0 === $b->getNetPrice();
+
+            if ($aFree && !$bFree) {
+                return -1;
+            }
+            if (!$aFree && $bFree) {
+                return 1;
+            }
+
+            return $a->getNetPrice() >= $b->getNetPrice() ? 1 : -1;
+        });
+
+        return $prices;
     }
 
     /**
@@ -99,19 +106,18 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
      */
     public function getPriceBySale(SaleInterface $sale)
     {
-        if (null === $country = $sale->getDeliveryCountry()) {
-            throw new RuntimeException("Sale's delivery address country must be set.");
-        }
         if (null === $method = $sale->getShipmentMethod()) {
             throw new RuntimeException("Sale's shipment method must be set.");
         }
 
+        $context = $this->contextProvider->getContext($sale);
+
         $price = $this
             ->priceRepository
-            ->findOneByCountryAndMethodAndWeight($country, $method, $sale->getWeightTotal());
+            ->findOneByCountryAndMethodAndWeight($context->getDeliveryCountry(), $method, $sale->getWeightTotal());
 
         if ($price) {
-            $this->addTaxes($price, $country);
+            $this->addTaxes($price, $context->getDeliveryCountry());
             $price->setFree($this->hasFreeShipping($sale, $price->getMethod()));
         }
 
@@ -136,7 +142,6 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
         return $price;
     }
-
 
 
     /**
