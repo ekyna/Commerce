@@ -135,18 +135,20 @@ class CartListener extends AbstractSaleListener
         }
 
         // If sale does not have a shipment method, set the cheaper one
-        if (null === $sale->getShipmentMethod()) {
+        if (null === $method = $sale->getShipmentMethod()) {
             /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface $price */
             if (false !== $price = reset($prices)) {
-                $sale->setShipmentMethod($price->getMethod());
+                $sale->setShipmentMethod($method = $price->getMethod());
                 $updated = true;
             }
         }
 
         // Resolve shipping cost
         $amount = 0;
-        if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
-            $amount = $price->isFree() ? 0 : $price->getNetPrice();
+        if (null !== $method) {
+            if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
+                $amount = $price->isFree() ? 0 : $price->getNetPrice();
+            }
         }
 
         // Update sale's shipping cost if needed
