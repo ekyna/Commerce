@@ -166,6 +166,32 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\ShipmentPrice"/>
     </class>
 
+    <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentRule">
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">3</option>
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="grossTotal">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="vatMode">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes</value>
+                    <value>getModes</value>
+                </option>
+            </constraint>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\ShipmentRule"/>
+    </class>
+
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentZone">
         <property name="name">
             <constraint name="NotBlank"/>

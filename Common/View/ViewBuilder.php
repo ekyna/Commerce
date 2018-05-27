@@ -304,7 +304,7 @@ class ViewBuilder
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $ati = $this->view->isAti();
-            $unit = $this->formatter->currency($result->getUnit($ati)); // TODO ati ?
+            $unit = $this->formatter->currency($result->getUnit($ati));
             $gross = $this->formatter->currency($result->getGross($ati));
             $discountRates = $this->formatter->rates(...$result->getDiscountAdjustments());
             if (0 < $discount = $result->getDiscount($ati)) {

@@ -94,22 +94,6 @@ interface CustomerGroupInterface extends TranslatableInterface
     public function setQuoteAllowed($allowed);
 
     /**
-     * Returns whether the group has free shipping.
-     *
-     * @return bool
-     */
-    public function isFreeShipping();
-
-    /**
-     * Sets whether the group has free shipping.
-     *
-     * @param bool $free
-     *
-     * @return $this|CustomerGroupInterface
-     */
-    public function setFreeShipping($free);
-
-    /**
      * Returns the vat display mode.
      *
      * @return string|null

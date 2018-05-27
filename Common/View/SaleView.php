@@ -55,6 +55,11 @@ class SaleView extends AbstractView
     private $taxes;
 
     /**
+     * @var string[]
+     */
+    private $messages;
+
+    /**
      * @var array
      */
     private $translations;
@@ -74,6 +79,7 @@ class SaleView extends AbstractView
         $this->items = [];
         $this->discounts = [];
         $this->taxes = [];
+        $this->messages = [];
 
         $this->translations = $this->getDefaultTranslations();
 
@@ -278,6 +284,30 @@ class SaleView extends AbstractView
     public function getTaxes()
     {
         return $this->taxes;
+    }
+
+    /**
+     * Adds the message.
+     *
+     * @param string $message
+     *
+     * @return SaleView
+     */
+    public function addMessage($message)
+    {
+        $this->messages[] = $message;
+
+        return $this;
+    }
+
+    /**
+     * Returns the messages.
+     *
+     * @return string[]
+     */
+    public function getMessages()
+    {
+        return $this->messages;
     }
 
     /**

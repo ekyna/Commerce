@@ -289,24 +289,6 @@ class Amount
     }
 
     /**
-     * Returns the ATI unit amount.
-     *
-     * @param string $currency
-     *
-     * @return float
-     */
-    public function getAtiUnit(string $currency): float
-    {
-        $result = $this->unit;
-
-        foreach ($this->taxes as $tax) {
-            $result += $this->unit * $tax->getRate() / 100;
-        }
-
-        return Money::round($result, $currency);
-    }
-
-    /**
      * Adds the taxes to the given amount.
      *
      * @param float $amount

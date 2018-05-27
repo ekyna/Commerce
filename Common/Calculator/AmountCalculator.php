@@ -240,12 +240,7 @@ class AmountCalculator implements AmountCalculatorInterface
     }
 
     /**
-     * Calculates the shipment result.
-     *
-     * @param Model\SaleInterface $sale  The sale
-     * @param Amount              $final The final result to add the shipment result to.
-     *
-     * @return Amount
+     * @inheritdoc
      */
     public function calculateSaleShipment(Model\SaleInterface $sale, Amount $final): ?Amount
     {
@@ -296,15 +291,9 @@ class AmountCalculator implements AmountCalculatorInterface
     }
 
     /**
-     * Calculates the sale's items amounts.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return Amount
-     *
-     * @throws Exception\LogicException If a root item is private.
+     * @inheritdoc
      */
-    protected function calculateSaleItems(Model\SaleInterface $sale): Amount
+    public function calculateSaleItems(Model\SaleInterface $sale): Amount
     {
         if ($this->cache && null !== $result = $sale->getGrossResult()) {
             return $result;

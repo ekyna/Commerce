@@ -91,4 +91,20 @@ interface ShipmentPriceInterface extends ResourceInterface
      * @return $this|ShipmentPriceInterface
      */
     public function setTaxes(array $taxes);
+
+    /**
+     * Returns whether the price is free (non-mapped).
+     *
+     * @return bool
+     */
+    public function isFree();
+
+    /**
+     * Sets whether the price is free (non-mapped).
+     *
+     * @param bool $free
+     *
+     * @return $this|ShipmentPriceInterface
+     */
+    public function setFree($free);
 }

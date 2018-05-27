@@ -372,6 +372,13 @@ interface SaleItemInterface extends
     public function getMargin();
 
     /**
+     * Returns whether the item is the last one (by position).
+     *
+     * @return bool
+     */
+    public function isLast();
+
+    /**
      * Returns the unique hash.
      *
      * @param bool $encode Whether to return the plain array data or the encoded string.

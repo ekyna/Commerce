@@ -95,7 +95,6 @@ class ShipmentMethodRepository extends TranslatableResourceRepository implements
                 ->andWhere($qb->expr()->gte('p.weight', ':weight'))
                 ->andWhere($qb->expr()->eq('o.enabled', ':enabled'))
                 ->andWhere($qb->expr()->eq('o.available', ':available'))
-                ->addGroupBy('o.id')
                 ->addOrderBy('o.position', 'ASC')
                 ->getQuery();
         }

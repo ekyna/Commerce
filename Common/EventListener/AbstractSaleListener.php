@@ -462,12 +462,23 @@ abstract class AbstractSaleListener
      */
     protected function isDiscountUpdateNeeded(SaleInterface $sale)
     {
-        $saleCs = $this->persistenceHelper->getChangeSet($sale);
-
-        // Watch for auto discount, customer group or customer change
-        if (isset($saleCs['autoDiscount']) || isset($saleCs['customerGroup']) || isset($saleCs['customer'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount', 'customerGroup', 'customer'])) {
             return true;
         }
+
+        return $this->didInvoiceCountryChanged($sale);
+    }
+
+    /**
+     * Returns whether the invoice address has changed.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function didInvoiceCountryChanged(SaleInterface $sale)
+    {
+        $saleCs = $this->persistenceHelper->getChangeSet($sale);
 
         // Watch for invoice country change
         $oldCountry = $newCountry = null;
@@ -503,12 +514,23 @@ abstract class AbstractSaleListener
 
         // TODO Get tax resolution mode. (by invoice/delivery/origin).
 
-        $saleCs = $this->persistenceHelper->getChangeSet($sale);
-
-        // Watch for tax exempt, customer or vatValid change
-        if (isset($saleCs['taxExempt']) || isset($saleCs['customer']) || isset($saleCs['vatValid'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['taxExempt', 'customer', 'vatValid'])) {
             return true;
         }
+
+        return $this->didDeliveryCountryChanged($sale);
+    }
+
+    /**
+     * Returns whether the delivery country changed.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function didDeliveryCountryChanged(SaleInterface $sale)
+    {
+        $saleCs = $this->persistenceHelper->getChangeSet($sale);
 
         // Watch for delivery country change
         $oldCountry = $newCountry = null;

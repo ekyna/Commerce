@@ -16,14 +16,22 @@
 {% block actions %}
 {% spaceless %}
     <td class="sale-detail-actions">
-    {% if line.vars.actions is defined %}
-        {% for action in line.vars.actions %}
-            {% set attr = action.attributes %}
-            <a href="{{ action.path }}" {{ block('attributes') }}>
+    {% if line.vars.actions is defined -%}
+        {% if 2 < line.vars.actions|length -%}
+            <div>
+        {%- endif %}
+            {% for action in line.vars.actions -%}
+            <a href="{{ action.path }}"{% with {attr: action.attributes} %} {{ block('attributes') }}{% endwith %}>
                 <i class="{{ action.icon }}"></i>
             </a>
-        {% endfor %}
-    {% endif %}
+            {%- endfor %}
+        {% if 2 < line.vars.actions|length -%}
+            <a href="javascript: void(0)" class="text-muted">
+                <i class="fa fa-ellipsis-h"></i>
+            </a>
+        </div>
+        {%- endif %}
+    {%- endif %}
     </td>
 {% endspaceless %}
 {% endblock actions %}
@@ -121,10 +129,11 @@
 {% spaceless %}
     <tbody>
     <tr>
-        <th colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
+        <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
             rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}" class="sale-detail-buttons">
-            {{- form_widget(view.vars.form.submit) -}}
-        </th>
+            {{ block('messages') -}}
+            {{ form_widget(view.vars.form.submit) -}}
+        </td>
         <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
         <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total : view.final.base }}</td>
         <th{% if view.vars.show_margin %} colspan="2" rowspan="4"{% else %} rowspan="3"{% endif %}>&nbsp;</th>

@@ -16,14 +16,15 @@ interface ShipmentPriceResolverInterface
     /**
      * Returns whether the sale has free shipping.
      *
-     * @param SaleInterface $sale
+     * @param SaleInterface           $sale
+     * @param ShipmentMethodInterface $method
      *
      * @return bool
      */
-    public function hasFreeShipping(SaleInterface $sale);
+    public function hasFreeShipping(SaleInterface $sale, ShipmentMethodInterface $method = null);
 
     /**
-     * Returns the available shipment methods by sale.
+     * Returns the available shipment prices by sale.
      *
      * @param SaleInterface $sale
      * @param bool          $availableOnly
@@ -31,6 +32,15 @@ interface ShipmentPriceResolverInterface
      * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
      */
     public function getAvailablePricesBySale(SaleInterface $sale, $availableOnly = true);
+
+    /**
+     * Returns the shipment price by sale.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface|null
+     */
+    public function getPriceBySale(SaleInterface $sale);
 
     /**
      * Returns the shipment price by country, method and weight.

@@ -26,7 +26,7 @@
     <th class="text-right">{{ view.translations.quantity }}</th>
     {% if view.vars.show_discounts -%}
     <th class="text-right">{{ view.ati ? view.translations.ati_gross : view.translations.net_gross }}</th>
-    <th class="text-center" colspan="2">{{ 'ekyna_commerce.sale.field.discount'|trans }}</th>
+    <th class="text-center" colspan="2">{{ view.translations.discount }}</th>
     {%- endif %}
     <th class="text-right">{{ view.ati ? view.translations.ati_total : view.translations.net_total }}</th>
     {% if view.vars.show_margin -%}
@@ -121,13 +121,13 @@
             {%- if line.vars.link_path is defined -%}
                 <a href="{{ line.vars.link_path }}"
                     {% if line.vars.link_title is defined %} title="{{ line.vars.link_title }}"{% endif %}>
-                    {{ line.designation }}
+                    {{ line.designation|raw }}
                 </a>
             {%- else -%}
-                {{ line.designation }}
+                {{ line.designation|raw }}
             {%- endif -%}
             {%- if line.description is not empty -%}
-                <br><em>{{ line.description }}</em>
+                <br><em>{{ line.description|raw }}</em>
             {%- endif -%}
             </span>
         </td>
@@ -213,9 +213,9 @@
     <td class="sale-detail-number">{#{{ line.number }}#}</td>
     <td class="sale-detail-designation" id="{{ line.id }}_designation">
         <span>
-            {{- line.designation -}}
+            {{- line.designation|raw -}}
             {%- if line.description is not empty -%}
-                <br><em>{{ line.description }}</em>
+                <br><em>{{ line.description|raw }}</em>
             {%- endif -%}
         </span>
     </td>
@@ -246,9 +246,9 @@
     <td class="sale-detail-number">{#{{ line.number }}#}</td>
     <td class="sale-detail-designation" id="{{ line.id }}_designation">
         <span>
-            {{- line.designation -}}
+            {{- line.designation|raw -}}
             {%- if line.description is not empty -%}
-                <br><em>{{ line.description }}</em>
+                <br><em>{{ line.description|raw }}</em>
             {%- endif -%}
         </span>
     </td>
@@ -261,12 +261,29 @@
 {% endblock shipment %}
 
 
+{% block messages %}
+{% spaceless %}
+    {% if view.messages is not empty %}
+    <p>
+        {%- for message in view.messages -%}
+            {{ message|raw }}<br>
+        {%- endfor -%}
+    </p>
+    {% else %}
+        &nbsp;
+    {% endif %}
+{% endspaceless %}
+{% endblock messages %}
+
+
 {% block gran_totals %}
 {% spaceless %}
     <tbody>
     <tr>
-        <th colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 3 : 2) }}"
-            rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}">&nbsp;</th>
+        <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 3 : 2) }}"
+            rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}">
+            {{ block('messages') }}
+        </td>
         <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
         <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total : view.final.base }}</td>
         {%- if view.vars.show_margin %}<td rowspan="{{ view.ati ? 3 : 4 }}">&nbsp;</td>{% endif -%}

@@ -40,9 +40,16 @@ class ShipmentPrice implements ShipmentPriceInterface
     protected $netPrice;
 
     /**
+     * (non-mapped)
      * @var TaxInterface[]
      */
-    protected $taxes;
+    protected $taxes = [];
+
+    /**
+     * (non-mapped)
+     * @var bool
+     */
+    protected $free = false;
 
 
     /**
@@ -138,9 +145,7 @@ class ShipmentPrice implements ShipmentPriceInterface
     }
 
     /**
-     * Returns the taxes (non-mapped).
-     *
-     * @return TaxInterface[]
+     * @inheritdoc
      */
     public function getTaxes()
     {
@@ -148,15 +153,29 @@ class ShipmentPrice implements ShipmentPriceInterface
     }
 
     /**
-     * Sets the taxes (non-mapped).
-     *
-     * @param TaxInterface[] $taxes
-     *
-     * @return ShipmentPrice
+     * @inheritdoc
      */
     public function setTaxes(array $taxes)
     {
         $this->taxes = $taxes;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFree()
+    {
+        return $this->free;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFree($free)
+    {
+        $this->free = (bool)$free;
 
         return $this;
     }

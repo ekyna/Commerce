@@ -617,6 +617,18 @@ abstract class AbstractSaleItem implements SaleItemInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function isLast()
+    {
+        if (null !== $this->parent) {
+            return $this->position === $this->parent->getChildren()->last()->getPosition();
+        }
+
+        return $this->position === $this->getSale()->getItems()->last()->getPosition();
+    }
+
+    /**
      * @inheritDoc
      */
     public function getHash($encode = true)

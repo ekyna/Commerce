@@ -28,6 +28,17 @@ interface AmountCalculatorInterface
     public function calculateSale(Model\SaleInterface $sale): Amount;
 
     /**
+     * Calculates the sale's items amounts.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return Amount
+     *
+     * @throws \Ekyna\Component\Commerce\Exception\LogicException If a root item is private.
+     */
+    public function calculateSaleItems(Model\SaleInterface $sale): Amount;
+
+    /**
      * Calculates the sale item amounts.
      *
      * @param Model\SaleItemInterface $item     The sale item
