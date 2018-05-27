@@ -55,6 +55,8 @@ class TaxResolver implements TaxResolverInterface
      */
     public function resolveTaxes(TaxableInterface $taxable, $target = null)
     {
+        // TODO @param ContextInterface $context (instead of $target)
+
         // Abort if taxable does not have tax group
         if (null === $taxGroup = $taxable->getTaxGroup()) {
             return [];
