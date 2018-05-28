@@ -344,8 +344,13 @@ abstract class AbstractSaleListener
      */
     protected function handleContentChange(SaleInterface $sale)
     {
+        $changed = false;
+        if ($this->isShipmentTaxationUpdateNeeded($sale)) {
+            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true);
+        }
+
         // Update totals
-        $changed = $this->saleUpdater->updateTotals($sale);
+        $changed |= $this->saleUpdater->updateTotals($sale);
 
         // Update state
         $changed |= $this->updateState($sale);

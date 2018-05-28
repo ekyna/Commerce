@@ -70,11 +70,13 @@ class CartListener extends AbstractSaleListener
      */
     protected function handleUpdate(SaleInterface $sale)
     {
-        $changed = parent::handleUpdate($sale);
+        $changed = false;
 
         if ($this->persistenceHelper->isChanged($sale, ['shipmentMethod', 'customerGroup'])) {
-            $changed |= $this->updateShipmentMethodAndAmount($sale);
+            $changed = $this->updateShipmentMethodAndAmount($sale);
         }
+
+        $changed |= parent::handleUpdate($sale);
 
         $changed |= $this->updateExpiresAt($sale);
 
