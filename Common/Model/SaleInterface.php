@@ -179,6 +179,29 @@ interface SaleInterface extends
     public function setTaxExempt($exempt);
 
     /**
+     * Returns the vat display mode.
+     *
+     * @return string
+     */
+    public function getVatDisplayMode();
+
+    /**
+     * Sets the vat display mode.
+     *
+     * @param string $mode
+     *
+     * @return $this|SaleInterface
+     */
+    public function setVatDisplayMode($mode);
+
+    /**
+     * Returns whether prices should be displayed "all taxes included".
+     *
+     * @return bool
+     */
+    public function isAtiDisplayMode();
+
+    /**
      * Returns whether the sale contains sample items.
      *
      * @return bool

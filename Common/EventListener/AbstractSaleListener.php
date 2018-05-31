@@ -56,6 +56,11 @@ abstract class AbstractSaleListener
      */
     protected $stateResolver;
 
+    /**
+     * @var string
+     */
+    protected $defaultVatDisplayMode;
+
 
     /**
      * Sets the persistence helper.
@@ -125,6 +130,16 @@ abstract class AbstractSaleListener
     public function setStateResolver(StateResolverInterface $resolver)
     {
         $this->stateResolver = $resolver;
+    }
+
+    /**
+     * Sets the default vat display mode.
+     *
+     * @param string $mode
+     */
+    public function setDefaultVatDisplayMode(string $mode)
+    {
+        $this->defaultVatDisplayMode = $mode;
     }
 
     /**
@@ -200,7 +215,7 @@ abstract class AbstractSaleListener
         }
 
         // Schedule content change
-        if ($this->persistenceHelper->isChanged($sale, ['paymentTerm', 'shipmentAmount'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['vatDisplayMode', 'paymentTerm', 'shipmentAmount'])) {
             $this->scheduleContentChangeEvent($sale);
         }
 
@@ -680,6 +695,9 @@ abstract class AbstractSaleListener
             }
         }
 
+        // Vat display mode
+        $changed |= $this->updateVatDisplayMode($sale);
+
         return $changed;
     }
 
@@ -710,6 +728,37 @@ abstract class AbstractSaleListener
         }
 
         return $changed;
+    }
+
+    /**
+     * Updates the vat display mode.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function updateVatDisplayMode(SaleInterface $sale)
+    {
+        // Vat display mode must not change if sale has payments
+        if ($sale->hasPayments()) {
+            return false;
+        }
+
+        $mode = null;
+        if (null !== $group = $sale->getCustomerGroup()) {
+            $mode = $group->getVatDisplayMode();
+        }
+        if (null === $mode) {
+            $mode = $this->defaultVatDisplayMode;
+        }
+
+        if ($mode !== $sale->getVatDisplayMode()) {
+            $sale->setVatDisplayMode($mode);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

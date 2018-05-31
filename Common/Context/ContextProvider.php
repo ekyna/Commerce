@@ -139,7 +139,9 @@ class ContextProvider implements ContextProviderInterface
         $context = $this->createContext();
 
         if (null !== $group = $sale->getCustomerGroup()) {
-            $context->setCustomerGroup($group);
+            $context
+                ->setCustomerGroup($group)
+                ->setBusiness($group->isBusiness());
         }
         if (null !== $address = $sale->getInvoiceAddress()) {
             $context->setInvoiceCountry($address->getCountry());
@@ -150,9 +152,14 @@ class ContextProvider implements ContextProviderInterface
         if (null !== $currency = $sale->getCurrency()) {
             $context->setCurrency($currency);
         }
+        if (null !== $mode = $sale->getVatDisplayMode()) {
+            $context->setVatDisplayMode($mode);
+        }
         if ($sale instanceof OrderInterface && null !== $date = $sale->getCreatedAt()) {
             $context->setDate($date);
         }
+
+        $context->setTaxExempt($sale->isTaxExempt());
 
         if (null !== $customer = $sale->getCustomer()) {
             $this->fillFromCustomer($context, $customer);
@@ -238,10 +245,12 @@ class ContextProvider implements ContextProviderInterface
         if (null === $context->getLocale()) {
             $context->setLocale($this->localProvider->getCurrentLocale());
         }
-        if (null !== $mode = $context->getCustomerGroup()->getVatDisplayMode()) {
-            $context->setVatDisplayMode($mode);
-        } else {
-            $context->setVatDisplayMode($this->defaultVatDisplayMode);
+        if (null === $context->getVatDisplayMode()) {
+            if (null !== $mode = $context->getCustomerGroup()->getVatDisplayMode()) {
+                $context->setVatDisplayMode($mode);
+            } else {
+                $context->setVatDisplayMode($this->defaultVatDisplayMode);
+            }
         }
     }
 

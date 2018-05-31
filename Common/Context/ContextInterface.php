@@ -105,9 +105,41 @@ interface ContextInterface
      *
      * @param string $mode
      *
-     * @return Context
+     * @return $this|ContextInterface
      */
-    public function setVatDisplayMode($mode);
+    public function setVatDisplayMode(string $mode);
+
+    /**
+     * Returns whether the context is business.
+     *
+     * @return bool
+     */
+    public function isBusiness();
+
+    /**
+     * Sets whether the context is business.
+     *
+     * @param bool $business
+     *
+     * @return $this|ContextInterface
+     */
+    public function setBusiness(bool $business);
+
+    /**
+     * Returns the whether the context is tax exempt.
+     *
+     * @return bool
+     */
+    public function isTaxExempt();
+
+    /**
+     * Sets whether the context is tax exempt.
+     *
+     * @param bool $exempt
+     *
+     * @return $this|ContextInterface
+     */
+    public function setTaxExempt(bool $exempt);
 
     /**
      * Returns the date.
@@ -121,7 +153,7 @@ interface ContextInterface
      *
      * @param \DateTime $date
      *
-     * @return Context
+     * @return $this|ContextInterface
      */
     public function setDate(\DateTime $date);
 

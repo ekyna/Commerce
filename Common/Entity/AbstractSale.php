@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
@@ -81,6 +82,11 @@ abstract class AbstractSale implements Common\SaleInterface
      * @var bool
      */
     protected $taxExempt;
+
+    /**
+     * @var string
+     */
+    protected $vatDisplayMode;
 
     /**
      * @var float
@@ -322,6 +328,32 @@ abstract class AbstractSale implements Common\SaleInterface
         $this->taxExempt = $exempt;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getVatDisplayMode()
+    {
+        return $this->vatDisplayMode;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setVatDisplayMode($mode)
+    {
+        $this->vatDisplayMode = $mode;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isAtiDisplayMode()
+    {
+        return $this->vatDisplayMode === VatDisplayModes::MODE_ATI;
     }
 
     /**

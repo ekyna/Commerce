@@ -4,12 +4,9 @@ namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
-use Ekyna\Component\Commerce\Common\Context\ContextInterface;
-use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -24,11 +21,6 @@ class ViewBuilder
      * @var ViewTypeRegistryInterface
      */
     private $registry;
-
-    /**
-     * @var ContextProviderInterface
-     */
-    private $contextProvider;
 
     /**
      * @var AmountCalculatorInterface
@@ -61,11 +53,6 @@ class ViewBuilder
     private $options;
 
     /**
-     * @var ContextInterface
-     */
-    private $context;
-
-    /**
      * @var SaleView
      */
     private $view;
@@ -90,7 +77,6 @@ class ViewBuilder
      * Constructor.
      *
      * @param ViewTypeRegistryInterface $registry
-     * @param ContextProviderInterface  $contextProvider
      * @param AmountCalculatorInterface $amountCalculator
      * @param MarginCalculatorInterface $marginCalculator
      * @param string                    $defaultTemplate
@@ -98,14 +84,12 @@ class ViewBuilder
      */
     public function __construct(
         ViewTypeRegistryInterface $registry,
-        ContextProviderInterface $contextProvider,
         AmountCalculatorInterface $amountCalculator,
         MarginCalculatorInterface $marginCalculator,
         $defaultTemplate = '@Commerce/Sale/view.html.twig',
         $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
         $this->registry = $registry;
-        $this->contextProvider = $contextProvider;
         $this->amountCalculator = $amountCalculator;
         $this->marginCalculator = $marginCalculator;
         $this->defaultTemplate = $defaultTemplate;
@@ -124,10 +108,7 @@ class ViewBuilder
     {
         $this->initialize($sale, $options);
 
-        $this->view = new SaleView(
-            $this->options['template'],
-            $this->context->getVatDisplayMode() === VatDisplayModes::MODE_ATI
-        );
+        $this->view = new SaleView($this->options['template'], $sale->isAtiDisplayMode());
 
         $this->amountCalculator->calculateSale($sale);
 
@@ -200,7 +181,6 @@ class ViewBuilder
     private function initialize(Model\SaleInterface $sale, array $options = [])
     {
         $this->options = $this->getOptionsResolver()->resolve($options);
-        $this->context = $this->contextProvider->getContext($sale, false);
         $this->lineNumber = 1;
 
         $currency = $sale->getCurrency()->getCode();

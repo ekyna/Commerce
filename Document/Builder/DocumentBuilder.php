@@ -2,12 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Document\Builder;
 
-use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
 use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
@@ -22,11 +20,6 @@ use Symfony\Component\Intl\Intl;
 class DocumentBuilder implements DocumentBuilderInterface
 {
     /**
-     * @var ContextProviderInterface
-     */
-    private $contextProvider;
-
-    /**
      * @var PhoneNumberUtil
      */
     private $phoneNumberUtil;
@@ -35,14 +28,10 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * Constructor.
      *
-     * @param ContextProviderInterface $contextProvider
-     * @param PhoneNumberUtil          $phoneNumberUtil
+     * @param PhoneNumberUtil $phoneNumberUtil
      */
-    public function __construct(
-        ContextProviderInterface $contextProvider,
-        PhoneNumberUtil $phoneNumberUtil = null
-    ) {
-        $this->contextProvider = $contextProvider;
+    public function __construct(PhoneNumberUtil $phoneNumberUtil = null)
+    {
         $this->phoneNumberUtil = $phoneNumberUtil ?: PhoneNumberUtil::getInstance();
     }
 
@@ -77,15 +66,6 @@ class DocumentBuilder implements DocumentBuilderInterface
         }
 
         $changed = false;
-
-        $context = $this->contextProvider->getContext($sale);
-
-        // Ati display
-        $ati = $context->getVatDisplayMode() === VatDisplayModes::MODE_ATI;
-        if ($document->isAti() !== $ati) {
-            $document->setAti($ati);
-            $changed = true;
-        }
 
         // Currency
         $code = $sale->getCurrency()->getCode();

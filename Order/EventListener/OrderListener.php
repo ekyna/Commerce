@@ -197,6 +197,21 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
+     * @inheritDoc
+     *
+     * @param OrderInterface $sale
+     */
+    protected function updateVatDisplayMode(SaleInterface $sale)
+    {
+        // Vat display mode must not change if order has shipments or invoices.
+        if ($sale->hasShipments() || $sale->hasInvoices()) {
+            return false;
+        }
+
+        return parent::updateVatDisplayMode($sale);
+    }
+
+    /**
      * @inheritdoc
      *
      * @param OrderInterface $sale

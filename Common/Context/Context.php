@@ -47,7 +47,12 @@ class Context implements ContextInterface
     /**
      * @var bool
      */
-    protected $taxExempt; // TODO if sale.isTaxExempt() || sale.isSample()
+    protected $business;
+
+    /**
+     * @var bool
+     */
+    protected $taxExempt;
 
     /**
      * @var \DateTime
@@ -60,6 +65,8 @@ class Context implements ContextInterface
      */
     public function __construct()
     {
+        $this->business = false;
+        $this->taxExempt = false;
         $this->date = new \DateTime();
     }
 
@@ -164,9 +171,57 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setVatDisplayMode($mode)
+    public function setVatDisplayMode(string $mode)
     {
         $this->vatDisplayMode = $mode;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether the context is business.
+     *
+     * @return bool
+     */
+    public function isBusiness()
+    {
+        return $this->business;
+    }
+
+    /**
+     * Sets whether the context is business.
+     *
+     * @param bool $business
+     *
+     * @return Context
+     */
+    public function setBusiness(bool $business)
+    {
+        $this->business = $business;
+
+        return $this;
+    }
+
+    /**
+     * Returns the whether the context is tax exempt.
+     *
+     * @return bool
+     */
+    public function isTaxExempt()
+    {
+        return $this->taxExempt;
+    }
+
+    /**
+     * Sets whether the context is tax exempt.
+     *
+     * @param bool $exempt
+     *
+     * @return Context
+     */
+    public function setTaxExempt(bool $exempt)
+    {
+        $this->taxExempt = $exempt;
 
         return $this;
     }

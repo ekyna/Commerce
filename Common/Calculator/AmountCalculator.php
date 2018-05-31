@@ -82,9 +82,14 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
-        $currency = $item->getSale()->getCurrency()->getCode();
+        $sale = $item->getSale();
+        $currency = $sale->getCurrency()->getCode();
+        $ati = $sale->isAtiDisplayMode();
+
         $taxGroup = $item->getTaxGroup();
-        $unit = Money::round($item->getNetPrice(), $currency);
+
+        // Round unit price only for 'net' calculation
+        $unit = $ati ? (float)$item->getNetPrice() : Money::round($item->getNetPrice(), $currency);
 
         // Add private items unit prices
         foreach ($item->getChildren() as $child) {
@@ -98,7 +103,9 @@ class AmountCalculator implements AmountCalculatorInterface
                     throw new Exception\LogicException("Private items can't have discount adjustment.");
                 }
 
-                $unit += Money::round($childResult->getUnit(), $currency) * $child->getQuantity();
+                $unit += $ati
+                    ? $childResult->getUnit()
+                    : Money::round($childResult->getUnit(), $currency) * $child->getQuantity();
             }
         }
 

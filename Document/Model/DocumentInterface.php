@@ -45,22 +45,6 @@ interface DocumentInterface
     public function setType($type);
 
     /**
-     * Returns the ati.
-     *
-     * @return bool
-     */
-    public function isAti();
-
-    /**
-     * Sets the ati.
-     *
-     * @param bool $ati
-     *
-     * @return Document
-     */
-    public function setAti(bool $ati);
-
-    /**
      * Returns the currency.
      *
      * @return string
@@ -356,4 +340,10 @@ interface DocumentInterface
      */
     public function hasMultipleTaxes();
 
+    /**
+     * Returns the ati.
+     *
+     * @return bool
+     */
+    public function isAti();
 }

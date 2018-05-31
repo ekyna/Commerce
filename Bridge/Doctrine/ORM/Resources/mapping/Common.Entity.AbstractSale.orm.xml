@@ -21,6 +21,7 @@
 
         <field name="autoDiscount" column="auto_discount" type="boolean"/>
         <field name="taxExempt" column="tax_exempt" type="boolean"/>
+        <field name="vatDisplayMode" column="vat_display_mode" type="string" length="4"/>
 
         <field name="netTotal" column="net_total" type="decimal" precision="12" scale="5"/>
         <field name="adjustmentTotal" column="adjustment_total" type="decimal" precision="10" scale="5"/>

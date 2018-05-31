@@ -52,6 +52,8 @@ class TaxResolver implements TaxResolverInterface
 
     /**
      * @inheritdoc
+     *
+     * @see https://ec.europa.eu/taxation_customs/business/vat/eu-vat-rules-topic/where-tax_fr
      */
     public function resolveTaxes(TaxableInterface $taxable, $target = null)
     {
@@ -103,32 +105,6 @@ class TaxResolver implements TaxResolverInterface
     }
 
     /**
-     * Resolves the sale's tax rule.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
-     */
-    public function resolveSaleTaxRule(SaleInterface $sale)
-    {
-        if (null === $country = $this->resolveSaleTargetCountry($sale)) {
-            return null;
-        }
-
-        return $this->resolveTaxRule($country, $sale->isBusiness());
-    }
-
-    /**
-     * Returns the fallback country.
-     *
-     * @return CountryInterface
-     */
-    protected function getFallbackCountry()
-    {
-        return $this->countryRepository->findDefault();
-    }
-
-    /**
      * Resolves the target country.
      *
      * @param mixed $target
@@ -137,6 +113,10 @@ class TaxResolver implements TaxResolverInterface
      */
     protected function resolveTargetCountry($target)
     {
+        if (null === $target) {
+            return $this->countryRepository->findDefault();
+        }
+
         if ($target instanceof CountryInterface) {
             return $target;
         }
@@ -151,7 +131,7 @@ class TaxResolver implements TaxResolverInterface
             throw new InvalidArgumentException("Unexpected taxation target.");
         }
 
-        return $country ?: $this->getFallbackCountry();
+        return $country ?: $this->countryRepository->findDefault();
     }
 
     /**

@@ -20,11 +20,6 @@ class Document implements DocumentInterface
     protected $type;
 
     /**
-     * @var bool
-     */
-    protected $ati;
-
-    /**
      * @var string
      */
     protected $currency;
@@ -122,24 +117,6 @@ class Document implements DocumentInterface
     public function setType($type)
     {
         $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isAti()
-    {
-        return $this->ati;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setAti(bool $ati)
-    {
-        $this->ati = $ati;
 
         return $this;
     }
@@ -542,5 +519,13 @@ class Document implements DocumentInterface
         }
 
         return Money::round($result, $this->currency);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAti()
+    {
+        return $this->getSale()->isAtiDisplayMode();
     }
 }
