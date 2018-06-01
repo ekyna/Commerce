@@ -141,7 +141,9 @@ class AmountCalculator implements AmountCalculatorInterface
             }
 
             // Base
-            $base = Money::round($gross - $discount, $currency);
+            $base = $ati
+                ? round($gross - $discount, 5)
+                : Money::round($gross - $discount, $currency);
 
             // Tax amount and result adjustments
             $taxAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
