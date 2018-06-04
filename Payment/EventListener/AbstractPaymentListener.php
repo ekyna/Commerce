@@ -273,6 +273,9 @@ abstract class AbstractPaymentListener
             throw new RuntimeException("Failed to retrieve shipment's sale.");
         }
 
+        // Pre-load / initialize the sale
+        $sale->getState();
+
         return $sale;
     }
 
