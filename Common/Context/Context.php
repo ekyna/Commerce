@@ -59,6 +59,11 @@ class Context implements ContextInterface
      */
     protected $date;
 
+    /**
+     * @var bool
+     */
+    protected $admin;
+
 
     /**
      * Constructor.
@@ -68,6 +73,7 @@ class Context implements ContextInterface
         $this->business = false;
         $this->taxExempt = false;
         $this->date = new \DateTime();
+        $this->admin = false;
     }
 
     /**
@@ -240,6 +246,24 @@ class Context implements ContextInterface
     public function setDate(\DateTime $date)
     {
         $this->date = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAdmin()
+    {
+        return $this->admin;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAdmin(bool $admin)
+    {
+        $this->admin = $admin;
 
         return $this;
     }

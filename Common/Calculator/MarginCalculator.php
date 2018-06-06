@@ -132,10 +132,13 @@ class MarginCalculator implements MarginCalculatorInterface
 
         if (!$item->isCompound()) {
             if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
-                // TODO Currency conversion if sale currency is different than the stock unit (commerce default) currency
                 foreach ($item->getStockAssignments() as $assignment) {
                     if (0 < $netPrice = $assignment->getStockUnit()->getNetPrice()) {
                         $margin->addPurchaseCost($assignment->getSoldQuantity() * $netPrice);
+                    } elseif (null !== $cost = $this->getPurchaseCost($item)) {
+                        $margin
+                            ->addPurchaseCost($cost * $assignment->getSoldQuantity())
+                            ->setAverage(true);
                     } else {
                         $margin->setAverage(true);
                     }
@@ -189,11 +192,6 @@ class MarginCalculator implements MarginCalculatorInterface
         if (null !== $cost = $this->purchaseCostGuesser->guess($subject, $currency)) {
             return $cost;
         }
-
-        /* TODO if (null !== $cost = $subject->getPurchaseCost()) {
-            // TODO Currency conversion
-            $margin->addPurchaseCost($cost);
-        }*/
 
         return null;
     }

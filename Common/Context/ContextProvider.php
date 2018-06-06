@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Common\Context;
 
 use Ekyna\Component\Commerce\Cart\Provider\CartProviderInterface;
+use Ekyna\Component\Commerce\Common\Event\ContextEvent;
+use Ekyna\Component\Commerce\Common\Event\ContextEvents;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
@@ -12,6 +14,7 @@ use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterfac
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class ContextProvider
@@ -20,6 +23,11 @@ use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
  */
 class ContextProvider implements ContextProviderInterface
 {
+    /**
+     * @var EventDispatcherInterface
+     */
+    protected $eventDispatcher;
+
     /**
      * @var CustomerProviderInterface
      */
@@ -69,6 +77,7 @@ class ContextProvider implements ContextProviderInterface
     /**
      * Constructor.
      *
+     * @param EventDispatcherInterface         $eventDispatcher
      * @param CartProviderInterface            $cartProvider
      * @param CustomerProviderInterface        $customerProvider
      * @param LocaleProviderInterface          $localProvider
@@ -79,6 +88,7 @@ class ContextProvider implements ContextProviderInterface
      * @param string                           $contextClass
      */
     public function __construct(
+        EventDispatcherInterface $eventDispatcher,
         CartProviderInterface $cartProvider,
         CustomerProviderInterface $customerProvider,
         LocaleProviderInterface $localProvider,
@@ -88,6 +98,7 @@ class ContextProvider implements ContextProviderInterface
         $defaultVatDisplayMode = VatDisplayModes::MODE_ATI,
         $contextClass = Context::class
     ) {
+        $this->eventDispatcher = $eventDispatcher;
         $this->customerProvider = $customerProvider;
         $this->cartProvider = $cartProvider;
         $this->localProvider = $localProvider;
@@ -101,15 +112,15 @@ class ContextProvider implements ContextProviderInterface
     /**
      * @inheritdoc
      */
-    public function getContext(SaleInterface $sale = null, $fallback = true)
+    public function getContext(SaleInterface $sale = null)
     {
         if ($sale) {
-            // TODO Check
+            // TODO Check if up to date
             if (null !== $context = $sale->getContext()) {
                 return $context;
             }
 
-            return $this->createSaleContext($sale, $fallback);
+            return $this->createSaleContext($sale);
         }
 
         if (null !== $this->context) {
@@ -117,24 +128,20 @@ class ContextProvider implements ContextProviderInterface
         }
 
         if ($this->cartProvider->hasCart()) {
-            return $this->context = $this->createSaleContext(
-                $this->cartProvider->getCart(),
-                $fallback
-            );
+            return $this->context = $this->createSaleContext($this->cartProvider->getCart());
         }
 
-        return $this->context = $this->createDefaultContext($fallback);
+        return $this->context = $this->createDefaultContext();
     }
 
     /**
      * Creates and sets the sale context.
      *
      * @param SaleInterface $sale     The sale
-     * @param bool          $fallback Whether to fallback to logged in customer.
      *
      * @return ContextInterface
      */
-    protected function createSaleContext(SaleInterface $sale, $fallback = true)
+    protected function createSaleContext(SaleInterface $sale)
     {
         $context = $this->createContext();
 
@@ -163,7 +170,7 @@ class ContextProvider implements ContextProviderInterface
 
         if (null !== $customer = $sale->getCustomer()) {
             $this->fillFromCustomer($context, $customer);
-        } elseif ($fallback && $this->customerProvider->hasCustomer()) {
+        } elseif ($this->customerProvider->hasCustomer()) {
             $this->fillFromCustomer($context, $this->customerProvider->getCustomer());
         }
 
@@ -177,15 +184,13 @@ class ContextProvider implements ContextProviderInterface
     /**
      * Creates a default context.
      *
-     * @param bool $fallback Whether to fallback to logged in customer.
-     *
      * @return ContextInterface
      */
-    protected function createDefaultContext($fallback = true)
+    protected function createDefaultContext()
     {
         $context = $this->createContext();
 
-        if ($fallback && $this->customerProvider->hasCustomer()) {
+        if ($this->customerProvider->hasCustomer()) {
             $this->fillFromCustomer($context, $this->customerProvider->getCustomer());
         }
 
@@ -252,6 +257,8 @@ class ContextProvider implements ContextProviderInterface
                 $context->setVatDisplayMode($this->defaultVatDisplayMode);
             }
         }
+
+        $this->eventDispatcher->dispatch(ContextEvents::BUILD, new ContextEvent($context));
     }
 
     /**

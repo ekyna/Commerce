@@ -158,6 +158,22 @@ interface ContextInterface
     public function setDate(\DateTime $date);
 
     /**
+     * Returns whether the user is an admin.
+     *
+     * @return bool
+     */
+    public function isAdmin();
+
+    /**
+     * Sets whether the user is an admin.
+     *
+     * @param bool $admin
+     *
+     * @return Context
+     */
+    public function setAdmin(bool $admin);
+
+    /**
      * Returns whether prices should be displayed "all taxes included".
      *
      * @return bool

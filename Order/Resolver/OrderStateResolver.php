@@ -98,11 +98,6 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 return OrderStates::STATE_ACCEPTED;
             }
 
-            // PENDING If order has pending offline payments
-            if (PaymentStates::STATE_PENDING === $paymentState) {
-                return OrderStates::STATE_PENDING;
-            }
-
             // REFUNDED If order has been refunded
             if (PaymentStates::STATE_REFUNDED === $paymentState) {
                 return OrderStates::STATE_REFUNDED;

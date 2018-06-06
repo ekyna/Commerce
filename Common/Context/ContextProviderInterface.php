@@ -14,10 +14,9 @@ interface ContextProviderInterface
     /**
      * Returns the context.
      *
-     * @param SaleInterface $sale     The sale to build the context for, if any.
-     * @param bool          $fallback Whether to fallback to logged in customer.
+     * @param SaleInterface $sale The sale to build the context for, if any.
      *
      * @return ContextInterface
      */
-    public function getContext(SaleInterface $sale = null, $fallback = true);
+    public function getContext(SaleInterface $sale = null);
 }
