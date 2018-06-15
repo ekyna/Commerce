@@ -58,7 +58,7 @@ class DefaultNumberGenerator implements NumberGeneratorInterface
      */
     public function generate(NumberSubjectInterface $subject)
     {
-        if (null !== $subject->getNumber()) {
+        if (!empty($subject->getNumber())) {
             return $this;
         }
 

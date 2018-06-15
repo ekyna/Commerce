@@ -42,20 +42,27 @@ class SwapCurrencyConverter implements CurrencyConverterInterface
     public function convert($amount, $base, $quote = null, \DateTime $date = null)
     {
         $base = strtoupper($base);
-        $quote = $quote ? strtoupper($quote) : $this->defaultCurrency;
+        $quote = strtoupper($quote ? $quote : $this->defaultCurrency);
 
         if ($base === $quote) {
             return $amount;
         }
 
-        $pair = "$base/$quote";
+        if ($base !== $this->defaultCurrency) {
+            $invert = true;
+            $pair = "$quote/$base";
+        } else {
+            $invert = false;
+            $pair = "$base/$quote";
+        }
+
         if (null !== $date && $date <= new \DateTime()) {
             $rate = $this->swap->historical($pair, $date)->getValue();
         } else {
             $rate = $this->swap->latest($pair)->getValue();
         }
 
-        return Money::round($amount * $rate, $quote);
+        return Money::round($invert ? $amount / $rate : $amount * $rate, $quote);
     }
 
     /**

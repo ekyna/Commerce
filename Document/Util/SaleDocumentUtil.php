@@ -54,12 +54,14 @@ final class SaleDocumentUtil
             return false;
         }
 
-        if (null === $class = DocumentTypes::getClass($type)) {
+        if (empty($classes = DocumentTypes::getClasses($type))) {
             return false;
         }
 
-        if (is_subclass_of($sale, $class)) {
-            return true;
+        foreach ($classes as $class) {
+            if (is_subclass_of($sale, $class)) {
+                return true;
+            }
         }
 
         return false;

@@ -461,9 +461,7 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * Returns whether this shipment is a partial one.
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function isPartial()
     {

@@ -103,6 +103,15 @@ interface MethodInterface extends ResourceModel\TranslatableInterface, ResourceM
     public function getMessages();
 
     /**
+     * Returns the messages for the given state.
+     *
+     * @param string $state
+     *
+     * @return MessageInterface|null
+     */
+    public function getMessageByState($state);
+
+    /**
      * Returns whether the method is enabled or not.
      *
      * @return boolean

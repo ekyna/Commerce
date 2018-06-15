@@ -159,6 +159,40 @@
         </property>
     </class>
 
+    <!-- Notification -->
+
+    <class name="Ekyna\Component\Commerce\Common\Model\Notify">
+        <property name="from">
+            <constraint name="NotNull"/>
+            <constraint name="Valid"/>
+        </property>
+        <property name="recipients">
+            <constraint name="Valid"/>
+        </property>
+        <property name="extraRecipients">
+            <constraint name="Valid"/>
+        </property>
+        <property name="copies">
+            <constraint name="Valid"/>
+        </property>
+        <property name="extraCopies">
+            <constraint name="Valid"/>
+        </property>
+        <property name="subject">
+            <constraint name="NotBlank"/>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Notify"/>
+    </class>
+
+    <!-- Recipient -->
+
+    <class name="Ekyna\Component\Commerce\Common\Model\Recipient">
+        <property name="email">
+            <constraint name="NotBlank"/>
+            <constraint name="Email"/>
+        </property>
+    </class>
+
     <!-- Sale -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">

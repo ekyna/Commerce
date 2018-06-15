@@ -27,11 +27,13 @@ abstract class AbstractSale implements Common\SaleInterface
         Common\NumberSubjectTrait,
         Common\StateSubjectTrait,
         Common\AdjustableTrait,
+        Common\NotifiableTrait,
         Payment\PaymentSubjectTrait,
         Payment\PaymentTermSubjectTrait,
         Shipment\ShippableTrait,
         VatNumberSubjectTrait,
         TimestampableTrait;
+
 
     /**
      * @var int
@@ -182,6 +184,7 @@ abstract class AbstractSale implements Common\SaleInterface
         $this->items = new ArrayCollection();
 
         $this->initializeAdjustments();
+        $this->initializeNotifications();
         $this->initializePaymentSubject();
         $this->initializeShippable();
     }

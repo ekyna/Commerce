@@ -12,6 +12,7 @@
             <entity-listener class="Ekyna\Component\Commerce\Common\Listener\UploadableListener"/>
         </entity-listeners>
 
+        <!-- TODO move from mapped-superclass to entity (?) -->
         <id name="id" column="id" type="integer">
             <generator strategy="AUTO"/>
         </id>

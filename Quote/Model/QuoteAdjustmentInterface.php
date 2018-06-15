@@ -22,6 +22,7 @@ interface QuoteAdjustmentInterface extends SaleAdjustmentInterface
      * Sets the quote.
      *
      * @param QuoteInterface $quote
+     *
      * @return $this|QuoteAdjustmentInterface
      */
     public function setQuote(QuoteInterface $quote = null);

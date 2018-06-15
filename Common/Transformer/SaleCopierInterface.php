@@ -38,6 +38,13 @@ interface SaleCopierInterface
     public function copyAttachments();
 
     /**
+     * Copies the source sale's notifications into the target sale.
+     *
+     * @return SaleCopierInterface
+     */
+    public function copyNotifications();
+
+    /**
      * Copies the source sale's adjustments into the target sale.
      *
      * @return SaleCopierInterface

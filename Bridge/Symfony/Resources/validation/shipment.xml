@@ -174,7 +174,7 @@
                 <option name="max">255</option>
             </constraint>
         </property>
-        <property name="grossTotal">
+        <property name="baseTotal">
             <constraint name="NotBlank"/>
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>

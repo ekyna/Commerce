@@ -98,6 +98,14 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * @inheritdoc
      */
+    public function createNotificationForSale(Model\SaleInterface $sale)
+    {
+        return $this->resolveClassAndCreateObject('notification', $sale);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function createAdjustmentFor(Model\AdjustableInterface $adjustable)
     {
         if ($adjustable instanceof Model\SaleInterface) {
@@ -226,6 +234,11 @@ class SaleFactory implements SaleFactoryInterface
                 Cart\Model\CartInterface::class   => Cart\Entity\CartAttachment::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderAttachment::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAttachment::class,
+            ],
+            'notification'          => [
+                Cart\Model\CartInterface::class   => Cart\Entity\CartNotification::class,
+                Order\Model\OrderInterface::class => Order\Entity\OrderNotification::class,
+                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteNotification::class,
             ],
             'item'                  => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartItem::class,

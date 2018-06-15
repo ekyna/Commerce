@@ -3,16 +3,16 @@
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
+use Ekyna\Component\Commerce\Common\Event\SaleTransformEvent;
+use Ekyna\Component\Commerce\Common\Event\SaleTransformEvents;
 use Ekyna\Component\Commerce\Common\Listener\UploadableListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
-use Ekyna\Component\Resource\Event\ResourceEvent;
-use Ekyna\Component\Resource\Event\ResourceMessage;
 use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class SaleTransformer
@@ -20,7 +20,6 @@ use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @TODO    Use a "resource service factory" to get operators
- * @TODO    Use event dispatcher for pre/post copy and pre/post transform
  */
 class SaleTransformer implements SaleTransformerInterface
 {
@@ -50,6 +49,11 @@ class SaleTransformer implements SaleTransformerInterface
     private $uploadableListener;
 
     /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
      * @var SaleInterface
      */
     protected $source;
@@ -64,23 +68,26 @@ class SaleTransformer implements SaleTransformerInterface
      * Constructor.
      *
      * @param SaleCopierFactoryInterface $saleCopierFactory
-     * @param ResourceOperatorInterface $cartOperator
-     * @param ResourceOperatorInterface $quoteOperator
-     * @param ResourceOperatorInterface $orderOperator
-     * @param UploadableListener        $uploadableListener
+     * @param ResourceOperatorInterface  $cartOperator
+     * @param ResourceOperatorInterface  $quoteOperator
+     * @param ResourceOperatorInterface  $orderOperator
+     * @param UploadableListener         $uploadableListener
+     * @param EventDispatcherInterface   $eventDispatcher
      */
     public function __construct(
         SaleCopierFactoryInterface $saleCopierFactory,
         ResourceOperatorInterface $cartOperator,
         ResourceOperatorInterface $quoteOperator,
         ResourceOperatorInterface $orderOperator,
-        UploadableListener $uploadableListener
+        UploadableListener $uploadableListener,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->saleCopierFactory = $saleCopierFactory;
         $this->cartOperator = $cartOperator;
         $this->quoteOperator = $quoteOperator;
         $this->orderOperator = $orderOperator;
         $this->uploadableListener = $uploadableListener;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -88,29 +95,25 @@ class SaleTransformer implements SaleTransformerInterface
      */
     public function initialize(SaleInterface $source, SaleInterface $target)
     {
-        // TODO Use event
-        if ($source instanceof OrderInterface) {
-            // Prevent if order is not 'new'
-            if ($source->getState() !== OrderStates::STATE_NEW) {
-                $event = new ResourceEvent();
-                $event->addMessage(new ResourceMessage(
-                    'ekyna_commerce.sale.message.transform_prevented',
-                    ResourceMessage::TYPE_ERROR
-                ));
-
-                return $event;
-            }
-        }
-
         $this->source = $source;
         $this->target = $target;
+
+        $event = new SaleTransformEvent($this->source, $this->target);
+
+        $this->eventDispatcher->dispatch(SaleTransformEvents::PRE_COPY, $event);
+        if ($event->isPropagationStopped()) {
+            return $event;
+        }
 
         $this
             ->saleCopierFactory
             ->create($this->source, $this->target)
             ->copySale();
 
-        $this->postCopy(); // TODO Use event
+        $this->eventDispatcher->dispatch(SaleTransformEvents::POST_COPY, $event);
+        if ($event->isPropagationStopped()) {
+            return $event;
+        }
 
         return $this->getOperator($this->target)->initialize($this->target);
     }
@@ -128,84 +131,39 @@ class SaleTransformer implements SaleTransformerInterface
             throw new LogicException("Please call initialize first.");
         }
 
-        $this->preTransform(); // TODO Use event
+        $event = new SaleTransformEvent($this->source, $this->target);
+
+        $this->eventDispatcher->dispatch(SaleTransformEvents::PRE_TRANSFORM, $event);
+        if ($event->hasErrors() || $event->isPropagationStopped()) {
+            return $event;
+        }
 
         // Persist the target sale
-        $event = $this->getOperator($this->target)->persist($this->target);
-        if (!$event->isPropagationStopped() && !$event->hasErrors()) {
+        $targetEvent = $this->getOperator($this->target)->persist($this->target);
+        if (!$targetEvent->isPropagationStopped() && !$targetEvent->hasErrors()) {
             // Disable the uploadable listener
             $this->uploadableListener->setEnabled(false);
 
             // Delete the source sale
             $sourceEvent = $this->getOperator($this->source)->delete($this->source, true); // Hard delete
             if (!$sourceEvent->isPropagationStopped() && !$sourceEvent->hasErrors()) {
-                $event = null;
+                $targetEvent = null;
             }
 
             // Enable the uploadable listener
             $this->uploadableListener->setEnabled(true);
         }
 
-        $this->postTransform(); // TODO Use event
+        $this->eventDispatcher->dispatch(SaleTransformEvents::POST_TRANSFORM, $event);
+        if ($event->hasErrors() || $event->isPropagationStopped()) {
+            return $event;
+        }
 
         // Unset source and target sales
         $this->source = null;
         $this->target = null;
 
-        return $event;
-    }
-
-    /**
-     * Post copy handler.
-     */
-    protected function postCopy()
-    {
-        // Origin number
-        if ($this->source instanceof QuoteInterface || $this->source instanceof OrderInterface) {
-            $this->target->setOriginNumber($this->source->getNumber());
-        }
-
-        // Abort if source sale has no customer
-        if (null === $customer = $this->source->getCustomer()) {
-            return;
-        }
-
-        // If target sale is order and source customer has parent
-        if ($this->target instanceof OrderInterface && $customer->hasParent()) {
-            // Sets the parent as customer
-            $this->target->setCustomer($customer->getParent());
-        }
-    }
-
-    /**
-     * Pre transform handler.
-     */
-    protected function preTransform()
-    {
-        // Abort if source sale has no customer
-        if (null === $customer = $this->source->getCustomer()) {
-            return;
-        }
-
-        // Order specific: origin customer
-        if ($this->target instanceof OrderInterface) {
-            // If target sale has no origin customer
-            if (null === $this->target->getOriginCustomer()) {
-                // If the source customer is different from the target sale's customer
-                if ($customer !== $this->target->getCustomer()) {
-                    // Set origin customer
-                    $this->target->setOriginCustomer($customer);
-                }
-            }
-        }
-    }
-
-    /**
-     * Post transform handler.
-     */
-    protected function postTransform()
-    {
-
+        return $targetEvent;
     }
 
     /**

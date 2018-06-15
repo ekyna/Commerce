@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractNotification">
+
+        <field name="type" column="type" type="string" length="64"/>
+        <field name="data" column="data" type="json_array"/>
+        <field name="sentAt" column="sent_at" type="datetime"/>
+        <field name="details" column="details" type="text" length="16"/>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

@@ -38,24 +38,25 @@ final class DocumentTypes
     }
 
     /**
-     * Returns the sale class supported by the given type for document generation.
+     * Returns the sale classes supported by the given type for document generation.
      *
      * @param string $type
      *
-     * @return string
+     * @return array
      */
-    static public function getClass($type)
+    static public function getClasses($type)
     {
         switch ($type) {
             case static::TYPE_FORM:
-                return CartInterface::class;
+                return [CartInterface::class];
             case static::TYPE_QUOTE:
-                return QuoteInterface::class;
+                return [QuoteInterface::class];
             case static::TYPE_PROFORMA:
+                return [QuoteInterface::class, OrderInterface::class];
             case static::TYPE_CONFIRMATION:
-                return OrderInterface::class;
+                return [OrderInterface::class];
             case static::TYPE_VOUCHER:
-                return null;
+                return [];
             default:
                 throw new InvalidArgumentException("Unexpected type '$type'.");
         }

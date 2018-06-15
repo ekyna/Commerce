@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Model\MessageInterface;
 use Ekyna\Component\Resource\Model as RM;
 
 /**
@@ -179,6 +180,20 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
     public function getMessages()
     {
         return $this->messages;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMessageByState($state)
+    {
+        foreach ($this->messages as $message) {
+            if ($message->getState() === $state) {
+                return $message;
+            }
+        }
+
+        return null;
     }
 
     /**

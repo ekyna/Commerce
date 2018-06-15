@@ -43,7 +43,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @var float
      */
-    protected $grossTotal;
+    protected $baseTotal;
 
     /**
      * @var string
@@ -204,17 +204,17 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getGrossTotal()
+    public function getBaseTotal()
     {
-        return $this->grossTotal;
+        return $this->baseTotal;
     }
 
     /**
      * @inheritdoc
      */
-    public function setGrossTotal($total)
+    public function setBaseTotal($total)
     {
-        $this->grossTotal = (float)$total;
+        $this->baseTotal = (float)$total;
 
         return $this;
     }

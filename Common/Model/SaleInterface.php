@@ -20,12 +20,14 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @method Collection|SaleAdjustmentInterface[] getAdjustments($type = null)
+ * @method Collection|SaleNotificationInterface[] getNotifications($type = null)
  */
 interface SaleInterface extends
     ResourceModel\ResourceInterface,
     ResourceModel\TimestampableInterface,
     IdentityInterface,
     AdjustableInterface,
+    NotifiableInterface,
     NumberSubjectInterface,
     KeySubjectInterface,
     StateSubjectInterface,

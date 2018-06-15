@@ -72,13 +72,13 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
         $result = $this->amountCalculator->calculateSaleItems($sale);
 
         $parameters = [
-            'net_mode'  => VatDisplayModes::MODE_NET,
-            'net_gross' => $result->getGross(),
-            'ati_mode'  => VatDisplayModes::MODE_ATI,
-            'ati_gross' => $result->getGross(true),
-            'method'    => $method,
-            'country'   => $context->getDeliveryCountry(),
-            'group'     => $context->getCustomerGroup(),
+            'net_mode' => VatDisplayModes::MODE_NET,
+            'net_base' => $result->getBase(),
+            'ati_mode' => VatDisplayModes::MODE_ATI,
+            'ati_base' => $result->getBase(true),
+            'method'   => $method,
+            'country'  => $context->getDeliveryCountry(),
+            'group'    => $context->getCustomerGroup(),
         ];
 
         return $this
@@ -106,11 +106,11 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
             ->andWhere($e->orX(
                 $e->andX(
                     $e->eq('r.vatMode', ':net_mode'),
-                    $e->lte('r.grossTotal', ':net_gross')
+                    $e->lte('r.baseTotal', ':net_base')
                 ),
                 $e->andX(
                     $e->eq('r.vatMode', ':ati_mode'),
-                    $e->lte('r.grossTotal', ':ati_gross')
+                    $e->lte('r.baseTotal', ':ati_base')
                 )
             ))
             ->andWhere($e->orX(

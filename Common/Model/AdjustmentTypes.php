@@ -50,4 +50,11 @@ final class AdjustmentTypes
 
         return false;
     }
+
+    /**
+     * Disabled Constructor.
+     */
+    private function __construct()
+    {
+    }
 }

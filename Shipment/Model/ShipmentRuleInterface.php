@@ -106,20 +106,20 @@ interface ShipmentRuleInterface extends ResourceInterface
     public function removeCustomerGroup(CustomerGroupInterface $group);
 
     /**
-     * Returns the sale gross total.
+     * Returns the sale base total.
      *
      * @return float
      */
-    public function getGrossTotal();
+    public function getBaseTotal();
 
     /**
-     * Sets the sale gross total.
+     * Sets the sale base total.
      *
      * @param float $total
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function setGrossTotal($total);
+    public function setBaseTotal($total);
 
     /**
      * Returns the vat mode.

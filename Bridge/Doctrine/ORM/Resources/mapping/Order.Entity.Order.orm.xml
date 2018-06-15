@@ -19,6 +19,10 @@
             <unique-constraint columns="secret" name="unique_commerce_order_secret"/>
         </unique-constraints>
 
+        <entity-listeners>
+            <entity-listener class="Ekyna\Component\Commerce\Common\Listener\OrderNotifyListener"/>
+        </entity-listeners>
+
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
@@ -75,6 +79,16 @@
             </cascade>
             <order-by>
                 <order-by-field name="position" direction="ASC"/>
+            </order-by>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderNotification"
+                     field="notifications" mapped-by="order" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+            <order-by>
+                <order-by-field name="sentAt" direction="DESC"/>
             </order-by>
         </one-to-many>
 

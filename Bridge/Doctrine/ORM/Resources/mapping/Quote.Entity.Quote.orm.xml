@@ -71,6 +71,16 @@
             </order-by>
         </one-to-many>
 
+        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuoteNotification"
+                     field="notifications" mapped-by="quote" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+            <order-by>
+                <order-by-field name="sentAt" direction="DESC"/>
+            </order-by>
+        </one-to-many>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuotePayment"
                      field="payments" mapped-by="quote" orphan-removal="true">
             <cascade>

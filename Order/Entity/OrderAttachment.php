@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractAttachment;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderAttachmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
@@ -34,13 +33,7 @@ class OrderAttachment extends AbstractAttachment implements OrderAttachmentInter
      */
     public function setSale(SaleInterface $sale = null)
     {
-        if (null !== $sale && !$sale instanceof OrderInterface) {
-            throw new InvalidArgumentException('Expected instance of OrderInterface');
-        }
-
-        $this->setOrder($sale);
-
-        return $this;
+        return $this->setOrder($sale);
     }
 
     /**

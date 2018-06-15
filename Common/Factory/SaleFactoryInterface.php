@@ -58,6 +58,15 @@ interface SaleFactoryInterface
     public function createAttachmentForSale(Model\SaleInterface $sale);
 
     /**
+     * Creates a notification regarding to the sale type.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return Model\SaleNotificationInterface
+     */
+    public function createNotificationForSale(Model\SaleInterface $sale);
+
+    /**
      * Creates an adjustment regarding to the sale item type.
      *
      * @param Model\SaleItemInterface $item

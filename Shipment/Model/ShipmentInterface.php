@@ -338,4 +338,11 @@ interface ShipmentInterface extends
      * @return bool
      */
     public function isEmpty();
+
+    /**
+     * Returns whether this shipment is a partial one.
+     *
+     * @return bool
+     */
+    public function isPartial();
 }

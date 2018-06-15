@@ -71,6 +71,16 @@
             </order-by>
         </one-to-many>
 
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartNotification"
+                     field="notifications" mapped-by="cart" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+            <order-by>
+                <order-by-field name="sentAt" direction="DESC"/>
+            </order-by>
+        </one-to-many>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartPayment"
                      field="payments" mapped-by="cart" orphan-removal="true">
             <cascade>

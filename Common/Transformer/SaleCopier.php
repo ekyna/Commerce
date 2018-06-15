@@ -64,6 +64,7 @@ class SaleCopier implements SaleCopierInterface
             ->copyData()
             ->copyAddresses()
             ->copyAttachments()
+            ->copyNotifications()
             ->copyItems()
             ->copyAdjustments()
             ->copyPayments();
@@ -77,7 +78,7 @@ class SaleCopier implements SaleCopierInterface
         $fields = [
             'currency', 'customer', 'customerGroup',
             'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
-            'vatDisplayMode', 'autoDiscount', 'taxExempt', 'depositTotal',
+            'vatDisplayMode', 'autoDiscount', 'taxExempt', 'depositTotal', 'grandTotal',
             'paymentTerm', 'outstandingDate', 'outstandingLimit',
             'voucherNumber', 'description', 'comment', 'documentComment', 'acceptedAt',
         ];
@@ -135,6 +136,20 @@ class SaleCopier implements SaleCopierInterface
             $targetAttachment = $this->saleFactory->createAttachmentForSale($this->target);
             $this->target->addAttachment($targetAttachment);
             $this->copyAttachment($sourceAttachment, $targetAttachment);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyNotifications()
+    {
+        foreach ($this->source->getNotifications() as $sourceNotification) {
+            $targetNotification = $this->saleFactory->createNotificationForSale($this->target);
+            $this->target->addNotification($targetNotification);
+            $this->copyNotification($sourceNotification, $targetNotification);
         }
 
         return $this;
@@ -233,6 +248,19 @@ class SaleCopier implements SaleCopierInterface
     {
         $this->copy($source, $target, [
             'path', 'title', 'type', 'size', 'internal', 'createdAt', 'updatedAt',
+        ]);
+    }
+
+    /**
+     * Copies the source notification into the target notification.
+     *
+     * @param Model\SaleNotificationInterface $source
+     * @param Model\SaleNotificationInterface $target
+     */
+    private function copyNotification(Model\SaleNotificationInterface $source, Model\SaleNotificationInterface $target)
+    {
+        $this->copy($source, $target, [
+            'type', 'data', 'sentAt', 'details'
         ]);
     }
 
