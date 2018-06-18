@@ -104,6 +104,11 @@ class Notify
      */
     private $report;
 
+    /**
+     * @var boolean
+     */
+    private $test;
+
 
     /**
      * Constructor.
@@ -122,6 +127,7 @@ class Notify
         $this->attachments = new ArrayCollection();
 
         $this->includeView = static::VIEW_NONE;
+        $this->test = false;
     }
 
     /**
@@ -241,6 +247,18 @@ class Notify
     }
 
     /**
+     * Clears the recipients.
+     *
+     * @return Notify
+     */
+    public function clearRecipients()
+    {
+        $this->recipients = new ArrayCollection();
+
+        return $this;
+    }
+
+    /**
      * Returns the extra recipients.
      *
      * @return ArrayCollection|Recipient[]
@@ -275,9 +293,21 @@ class Notify
      */
     public function removeExtraRecipient(Recipient $recipient)
     {
-        if ($this->recipients->contains($recipient)) {
-            $this->recipients->removeElement($recipient);
+        if ($this->extraRecipients->contains($recipient)) {
+            $this->extraRecipients->removeElement($recipient);
         }
+
+        return $this;
+    }
+
+    /**
+     * Clears the extra recipients.
+     *
+     * @return Notify
+     */
+    public function clearExtraRecipients()
+    {
+        $this->extraRecipients = new ArrayCollection();
 
         return $this;
     }
@@ -325,6 +355,18 @@ class Notify
     }
 
     /**
+     * Clears the copies.
+     *
+     * @return Notify
+     */
+    public function clearCopies()
+    {
+        $this->copies = new ArrayCollection();
+
+        return $this;
+    }
+
+    /**
      * Returns the extra copies.
      *
      * @return ArrayCollection|Recipient
@@ -362,6 +404,18 @@ class Notify
         if ($this->extraCopies->contains($copy)) {
             $this->extraCopies->removeElement($copy);
         }
+
+        return $this;
+    }
+
+    /**
+     * Clears the extra copies.
+     *
+     * @return Notify
+     */
+    public function clearExtraCopies()
+    {
+        $this->extraCopies = new ArrayCollection();
 
         return $this;
     }
@@ -674,6 +728,30 @@ class Notify
     public function setReport($report)
     {
         $this->report = $report;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether this is a test.
+     *
+     * @return bool
+     */
+    public function isTest()
+    {
+        return $this->test;
+    }
+
+    /**
+     * Sets whether this is a test.
+     *
+     * @param bool $test
+     *
+     * @return Notify
+     */
+    public function setTest($test)
+    {
+        $this->test = $test;
 
         return $this;
     }

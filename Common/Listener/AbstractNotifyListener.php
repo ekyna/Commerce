@@ -79,7 +79,7 @@ abstract class AbstractNotifyListener
         $notify = $this->builder->create($type, $resource);
 
         // Build
-        if ($this->builder->build($notify)) {
+        if (!$this->builder->build($notify)) {
             return;
         }
 

@@ -44,7 +44,7 @@ class NotifyEvent extends Event
     }
 
     /**
-     * Returns whether to abort notify.
+     * Returns whether notify has been abort.
      *
      * @return bool
      */
@@ -54,19 +54,15 @@ class NotifyEvent extends Event
     }
 
     /**
-     * Sets whether to abort notify.
-     *
-     * @param bool $abort
+     * Sets the notify as abort.
      *
      * @return NotifyEvent
      */
-    public function setAbort(bool $abort)
+    public function abort()
     {
-        if ($abort) {
-            $this->stopPropagation();
-        }
+        $this->stopPropagation();
 
-        $this->abort = $abort;
+        $this->abort = true;
 
         return $this;
     }

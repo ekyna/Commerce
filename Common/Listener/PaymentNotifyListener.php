@@ -64,15 +64,6 @@ class PaymentNotifyListener extends AbstractNotifyListener
             }
         }
 
-        // Create
-        $notify = $this->builder->create(NotificationTypes::PAYMENT_CAPTURED, $payment);
-
-        // Build
-        if ($this->builder->build($notify)) {
-            return;
-        }
-
-        // Enqueue
-        $this->queue->add($notify);
+        $this->notify(NotificationTypes::PAYMENT_CAPTURED, $payment);
     }
 }

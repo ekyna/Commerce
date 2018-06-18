@@ -53,7 +53,7 @@ class NotifyBuilder
      *
      * @param \Ekyna\Component\Commerce\Common\Model\Notify $notify
      *
-     * @return bool Whether to abort notify
+     * @return bool Whether the notify has been successfully built.
      */
     public function build(Notify $notify)
     {
@@ -61,6 +61,6 @@ class NotifyBuilder
 
         $this->eventDispatcher->dispatch(NotifyEvents::BUILD, $event);
 
-        return $event->isAbort();
+        return !$event->isAbort();
     }
 }
