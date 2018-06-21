@@ -40,6 +40,11 @@ class OrderNotifyListener extends AbstractNotifyListener
      */
     protected function watch(OrderInterface $order)
     {
+        // Abort if sample order
+        if ($order->isSample()) {
+            return;
+        }
+
         // Abort if sale has notification of type 'SALE_ACCEPTED'
         if ($order->hasNotifications(NotificationTypes::ORDER_ACCEPTED)) {
             return;

@@ -41,6 +41,13 @@ class ShipmentNotifyListener extends AbstractNotifyListener
      */
     protected function watch(OrderShipmentInterface $shipment)
     {
+        $order = $shipment->getOrder();
+
+        // Abort if sample order
+        if ($order->isSample()) {
+            return;
+        }
+
         if ($shipment->isReturn()) {
             // If state is 'PENDING'
             if ($shipment->getState() === ShipmentStates::STATE_PENDING) {
@@ -48,8 +55,6 @@ class ShipmentNotifyListener extends AbstractNotifyListener
                 if (!$this->didStateChangeTo($shipment, ShipmentStates::STATE_PENDING)) {
                     return;
                 }
-
-                $order = $shipment->getOrder();
 
                 // Abort if sale has notification of type 'RETURN_PENDING' with same shipment number
                 if ($this->hasNotification($order, NotificationTypes::RETURN_PENDING, $shipment->getNumber())) {
@@ -68,8 +73,6 @@ class ShipmentNotifyListener extends AbstractNotifyListener
                     return;
                 }
 
-                $order = $shipment->getOrder();
-
                 // Abort if sale has notification of type 'RETURN_RECEIVED' with same shipment number
                 if ($this->hasNotification($order, NotificationTypes::RETURN_RECEIVED, $shipment->getNumber())) {
                     return;
@@ -85,8 +88,6 @@ class ShipmentNotifyListener extends AbstractNotifyListener
         if (!$this->didStateChangeTo($shipment, ShipmentStates::STATE_SHIPPED)) {
             return;
         }
-
-        $order = $shipment->getOrder();
 
         // Abort if sale has notification of type 'SHIPMENT_SHIPPED' with same shipment number
         if ($this->hasNotification($order, NotificationTypes::SHIPMENT_SHIPPED, $shipment->getNumber())) {

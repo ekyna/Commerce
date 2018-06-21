@@ -40,6 +40,13 @@ class PaymentNotifyListener extends AbstractNotifyListener
      */
     protected function watch(OrderPaymentInterface $payment)
     {
+        $order = $payment->getOrder();
+
+        // Abort if sample order
+        if ($order->isSample()) {
+            return;
+        }
+
         // Abort if not manual/offline payment
         if (!$payment->getMethod()->isManual()) {
             return;
@@ -49,8 +56,6 @@ class PaymentNotifyListener extends AbstractNotifyListener
         if (!$this->didStateChangeTo($payment, PaymentStates::STATE_CAPTURED)) {
             return;
         }
-
-        $order = $payment->getOrder();
 
         // Abort if sale has notification of type 'PAYMENT_CAPTURED' with same payment number
         /** @var \Ekyna\Component\Commerce\Order\Model\OrderNotificationInterface $n */
