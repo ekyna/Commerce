@@ -11,7 +11,8 @@ use Symfony\Component\Validator\Constraint;
  */
 class Notify extends Constraint
 {
-    public $pick_at_least_one_recipient = 'ekyna_commerce.notification.pick_at_least_one_recipient';
+    public $pick_at_least_one_recipient = 'ekyna_commerce.notify.pick_at_least_one_recipient';
+    public $is_empty                    = 'ekyna_commerce.notify.is_empty';
 
 
     /**

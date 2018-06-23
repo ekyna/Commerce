@@ -17,19 +17,27 @@ class NotifyValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($notification, Constraint $constraint)
+    public function validate($notify, Constraint $constraint)
     {
-        if (!$notification instanceof Model) {
+        if (!$notify instanceof Model) {
             throw new InvalidArgumentException("Expected instance of " . Model::class);
         }
         if (!$constraint instanceof Notify) {
             throw new InvalidArgumentException("Expected instance of " . Notify::class);
         }
 
-        if (0 === $notification->getRecipients()->count() && 0 === $notification->getExtraRecipients()->count()) {
+        if (0 === $notify->getRecipients()->count() && 0 === $notify->getExtraRecipients()->count()) {
             $this
                 ->context
                 ->buildViolation($constraint->pick_at_least_one_recipient)
+                ->addViolation();
+        }
+        
+        if ($notify->isEmpty()) {
+            $this
+                ->context
+                ->buildViolation($constraint->is_empty)
+                ->atPath('customMessage')
                 ->addViolation();
         }
     }
