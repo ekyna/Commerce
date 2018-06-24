@@ -9,6 +9,8 @@ use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance as Outstanding;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\ExpressionLanguage\Expression;
 
 /**
  * Class PayumCompilerPass
@@ -90,6 +92,20 @@ class PayumBuilderPass implements CompilerPassInterface
             $definition->addTag('payum.action', ['factory' => 'atos_sips', 'prepend' => true]);
 
             $container->setDefinition('ekyna_commerce.payum.action.sips.convert_payment', $definition);
+        }
+
+        // PayPal EC NVP convert action
+        if (class_exists('Payum\Paypal\ExpressCheckout\Nvp\PaypalExpressCheckoutGatewayFactory')) {
+            $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpConvertAction');
+            $definition->setArgument(0, new Reference('ekyna_commerce.common.amount_calculator'));
+            if ($container->has('ekyna_setting.manager') && class_exists('Ekyna\Bundle\AdminBundle\Settings\GeneralSettingsSchema')) {
+                $definition->setArgument(1, new Expression(
+                    "service('ekyna_setting.manager').getParameter('general.site_name')"
+                ));
+            }
+            $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
+
+            $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.convert_payment', $definition);
         }
 
         // Global actions

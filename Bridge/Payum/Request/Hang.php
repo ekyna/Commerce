@@ -11,5 +11,4 @@ use Payum\Core\Request\Generic;
  */
 class Hang extends Generic
 {
-
 }

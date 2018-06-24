@@ -6,7 +6,6 @@ use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Core\Request\Cancel;
 use Payum\Core\Request\Refund;
 
 /**
