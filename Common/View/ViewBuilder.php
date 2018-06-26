@@ -278,6 +278,8 @@ class ViewBuilder
             $level
         );
 
+        $view->addClass('level-' . $level);
+
         $result = $item->getResult();
 
         $unit = $gross = $discountRates = $discountAmount = $base = $taxRates = $taxAmount = $total = null;

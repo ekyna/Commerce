@@ -102,8 +102,7 @@
 
 {% block line %}
 {% spaceless %}
-    {% set attr = line.vars.attr %}
-    <tr class="level-{{ line.level }}{{ line.vars.classes }}"{{ block('attributes') }}>
+    <tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
         <td class="sale-detail-number">{{ line.number }}</td>
         <td class="sale-detail-designation" id="{{ line.id }}_designation">
             {% if line.level > 0 -%}
@@ -232,7 +231,7 @@
 {% spaceless %}
     <tbody>
     {% for line in view.discounts %}
-        <tr>
+        <tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
             {{ block('discount') }}
         </tr>
     {% endfor %}
@@ -357,8 +356,8 @@
 
                 {% if view.shipment is not null %}
                     {{ block('spacer') }}
-                    <tbody><tr>
                     {% set line = view.shipment %}
+                    <tbody><tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
                     {{ block('shipment') }}
                     </tr></tbody>
                 {% endif %}

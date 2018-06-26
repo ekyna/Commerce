@@ -13,8 +13,7 @@ abstract class AbstractView
      * @var array
      */
     public $vars = [
-        'classes' => '',
-        'attr'    => [],
+        'attr' => [],
     ];
 
 
@@ -65,7 +64,11 @@ abstract class AbstractView
      */
     private function getClasses()
     {
-        return explode(' ', trim($this->vars['classes']));
+        if (isset($this->vars['attr']['class'])) {
+            return explode(' ', trim($this->vars['attr']['class']));
+        }
+
+        return [];
     }
 
     /**
@@ -76,9 +79,9 @@ abstract class AbstractView
     private function setClasses(array $classes)
     {
         if (!empty($classes)) {
-            $this->vars['classes'] = ' ' . trim(implode(' ', $classes));
+            $this->vars['attr']['class'] = ' ' . trim(implode(' ', $classes));
         } else {
-            $this->vars['classes'] = '';
+            unset($this->vars['attr']['class']);
         }
     }
 }

@@ -175,8 +175,8 @@
 
                 {% if view.shipment is not null %}
                     {{ block('spacer') }}
-                    <tbody><tr>
                     {% set line = view.shipment %}
+                    <tbody><tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
                     {{ block('shipment') }}
                     </tr></tbody>
                 {% endif %}
@@ -195,8 +195,7 @@
             <div class="col-sm-8 sale-detail-buttons">
                 {% if view.vars.buttons is defined %}
                     {% for button in view.vars.buttons %}
-                        {% set attr = button.attributes %}
-                        <a href="{{ button.path }}" {{ block('attributes') }}>
+                        <a href="{{ button.path }}"{% with {attr: button.attributes} %} {{ block('attributes') }}{% endwith %}>
                             <i class="{{ button.icon }}"></i> {{ button.label }}
                         </a>
                     {% endfor %}
