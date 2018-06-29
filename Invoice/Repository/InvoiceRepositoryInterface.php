@@ -31,4 +31,13 @@ interface InvoiceRepositoryInterface
      * @return InvoiceInterface[]
      */
     public function findOneByCustomerAndNumber(CustomerInterface $customer, $number);
+
+    /**
+     * Finds invoices (and credits) by month.
+     *
+     * @param \DateTime $date
+     *
+     * @return InvoiceInterface[]
+     */
+    public function findByMonth(\DateTime $date);
 }

@@ -105,6 +105,18 @@ class TaxResolver implements TaxResolverInterface
     }
 
     /**
+     * Resolves the sale tax rule.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
+     */
+    public function resolveSaleTaxRule(SaleInterface $sale)
+    {
+        return $this->resolveTaxRule($this->resolveTargetCountry($sale), $sale->isBusiness());
+    }
+
+    /**
      * Resolves the target country.
      *
      * @param mixed $target

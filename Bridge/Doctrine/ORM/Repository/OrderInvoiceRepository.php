@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Doctrine\DBAL\Types\Type;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
@@ -56,5 +57,29 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->setParameter('customer', $customer)
             ->setParameter('number', $number)
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findByMonth(\DateTime $date)
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        $start = clone $date;
+        $start->modify('first day of this month');
+        $start->setTime(0,0,0);
+
+        $end = clone $date;
+        $end->modify('last day of this month');
+        $end->setTime(23,59,59);
+
+        return $qb
+            ->andWhere($qb->expr()->between('i.createdAt', ':start', ':end'))
+            ->addOrderBy('i.createdAt', 'ASC')
+            ->getQuery()
+            ->setParameter('start', $start, Type::DATETIME)
+            ->setParameter('end', $end, Type::DATETIME)
+            ->getResult();
     }
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity name="Ekyna\Component\Commerce\Accounting\Entity\Accounting"
+            table="commerce_accounting">
+
+        <indexes>
+            <index columns="number" name="idx_commerce_accounting_number"/>
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="number" name="unique_commerce_accounting_number"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="number" column="number" type="string" length="16"/>
+        <field name="name" column="name" type="string" length="128"/>
+        <field name="type" column="type" type="string" length="16"/>
+        <field name="enabled" column="is_enabled" type="boolean"/>
+        <field name="position" column="position" type="smallint">
+            <gedmo:sortable-position/>
+        </field>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Pricing\Entity\TaxRule" field="taxRule">
+            <join-column name="tax_rule_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Pricing\Entity\Tax" field="tax">
+            <join-column name="tax_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
+    </entity>
+
+</doctrine-mapping>

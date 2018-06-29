@@ -12,6 +12,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 trait NotifiableTrait
 {
     /**
+     * @var bool
+     */
+    protected $notifyEnabled = true;
+
+    /**
      * @var ArrayCollection|NotificationInterface[]
      */
     protected $notifications;
@@ -22,7 +27,32 @@ trait NotifiableTrait
      */
     protected function initializeNotifications()
     {
+        $this->notifyEnabled = true;
         $this->notifications = new ArrayCollection();
+    }
+
+    /**
+     * Returns whether notify is enabled.
+     *
+     * @return bool
+     */
+    public function isNotifyEnabled()
+    {
+        return $this->notifyEnabled;
+    }
+
+    /**
+     * Sets whether notify is enabled.
+     *
+     * @param bool $enabled
+     *
+     * @return $this|NotificationInterface
+     */
+    public function setNotifyEnabled($enabled)
+    {
+        $this->notifyEnabled = $enabled;
+
+        return $this;
     }
 
     /**

@@ -42,8 +42,8 @@ class PaymentNotifyListener extends AbstractNotifyListener
     {
         $order = $payment->getOrder();
 
-        // Abort if sample order
-        if ($order->isSample()) {
+        // Abort if notify disabled or sample order
+        if (!$order->isNotifyEnabled() || $order->isSample()) {
             return;
         }
 

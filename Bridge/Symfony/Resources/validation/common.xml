@@ -5,6 +5,43 @@
         xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
+    <!-- Accounting -->
+
+    <class name="Ekyna\Component\Commerce\Accounting\Entity\Accounting">
+        <property name="number">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">6</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="type">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Accounting\Model\AccountingTypes</value>
+                    <value>getTypes</value>
+                </option>
+            </constraint>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Accounting"/>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">
+                <value>number</value>
+            </option>
+            <option name="message">ekyna_commerce.accounting.duplicate_number</option>
+        </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">
+                <value>type</value>
+                <value>taxRule</value>
+                <value>tax</value>
+            </option>
+            <option name="ignoreNull">false</option>
+            <option name="message">ekyna_commerce.accounting.duplicate_config</option>
+        </constraint>
+    </class>
+
     <!-- Address -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">

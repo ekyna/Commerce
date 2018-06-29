@@ -43,8 +43,8 @@ class ShipmentNotifyListener extends AbstractNotifyListener
     {
         $order = $shipment->getOrder();
 
-        // Abort if sample order
-        if ($order->isSample()) {
+        // Abort if notify disabled
+        if (!$order->isNotifyEnabled()) {
             return;
         }
 
