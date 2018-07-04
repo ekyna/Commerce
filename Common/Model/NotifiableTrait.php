@@ -14,7 +14,7 @@ trait NotifiableTrait
     /**
      * @var bool
      */
-    protected $notifyEnabled = true;
+    protected $autoNotify;
 
     /**
      * @var ArrayCollection|NotificationInterface[]
@@ -27,7 +27,7 @@ trait NotifiableTrait
      */
     protected function initializeNotifications()
     {
-        $this->notifyEnabled = true;
+        $this->autoNotify = true;
         $this->notifications = new ArrayCollection();
     }
 
@@ -36,9 +36,9 @@ trait NotifiableTrait
      *
      * @return bool
      */
-    public function isNotifyEnabled()
+    public function isAutoNotify()
     {
-        return $this->notifyEnabled;
+        return $this->autoNotify;
     }
 
     /**
@@ -48,9 +48,9 @@ trait NotifiableTrait
      *
      * @return $this|NotificationInterface
      */
-    public function setNotifyEnabled($enabled)
+    public function setAutoNotify($enabled)
     {
-        $this->notifyEnabled = $enabled;
+        $this->autoNotify = $enabled;
 
         return $this;
     }

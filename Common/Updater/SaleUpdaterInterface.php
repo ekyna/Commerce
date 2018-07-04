@@ -82,6 +82,15 @@ interface SaleUpdaterInterface
     public function updateShipmentTaxation(Model\SaleInterface $sale, $persistence = false);
 
     /**
+     * Updates the sale shipment method and amount if needed.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return bool
+     */
+    public function updateShipmentMethodAndAmount(Model\SaleInterface $sale);
+
+    /**
      * Updates the payment terms and outstanding date.
      *
      * @param Model\SaleInterface $sale

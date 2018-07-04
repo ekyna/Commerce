@@ -8,7 +8,6 @@ use Ekyna\Component\Commerce\Cart\Model\CartStates;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -19,25 +18,10 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class CartListener extends AbstractSaleListener
 {
     /**
-     * @var ShipmentPriceResolverInterface
-     */
-    protected $shipmentPriceResolver;
-
-    /**
      * @var string
      */
     protected $expirationDelay;
 
-
-    /**
-     * Sets the shipment price resolver.
-     *
-     * @param ShipmentPriceResolverInterface $resolver
-     */
-    public function setShipmentPriceResolver(ShipmentPriceResolverInterface $resolver)
-    {
-        $this->shipmentPriceResolver = $resolver;
-    }
 
     /**
      * Sets the expiration delay.
@@ -70,96 +54,11 @@ class CartListener extends AbstractSaleListener
      */
     protected function handleUpdate(SaleInterface $sale)
     {
-        $changed = false;
-
-        if ($this->persistenceHelper->isChanged($sale, ['shipmentMethod', 'customerGroup'])) {
-            $changed = $this->updateShipmentMethodAndAmount($sale);
-        }
-
-        $changed |= parent::handleUpdate($sale);
+        $changed = parent::handleUpdate($sale);
 
         $changed |= $this->updateExpiresAt($sale);
 
         return $changed;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function handleAddressChange(SaleInterface $sale)
-    {
-        $changed = parent::handleAddressChange($sale);
-
-        if ($this->didDeliveryCountryChanged($sale)) {
-            $changed |= $this->updateShipmentMethodAndAmount($sale);
-        }
-
-        return $changed;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function handleContentChange(SaleInterface $sale)
-    {
-        $changed = $this->updateShipmentMethodAndAmount($sale);
-
-        $changed |= parent::handleContentChange($sale);
-
-        return $changed;
-    }
-
-    /**
-     * Updates the cart's shipment method and amount if needed.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
-     */
-    protected function updateShipmentMethodAndAmount(SaleInterface $sale)
-    {
-        $updated = false;
-        $prices = $this->shipmentPriceResolver->getAvailablePricesBySale($sale);
-
-        // Assert that the sale's shipment method is still available
-        if (null !== $method = $sale->getShipmentMethod()) {
-            $found = false;
-            foreach ($prices as $price) {
-                if ($price->getMethod() === $sale->getShipmentMethod()) {
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                $sale->setShipmentMethod(null);
-                $updated = true;
-            }
-        }
-
-        // If sale does not have a shipment method, set the cheaper one
-        if (null === $method = $sale->getShipmentMethod()) {
-            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface $price */
-            if (false !== $price = reset($prices)) {
-                $sale->setShipmentMethod($method = $price->getMethod());
-                $updated = true;
-            }
-        }
-
-        // Resolve shipping cost
-        $amount = 0;
-        if (null !== $method) {
-            if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
-                $amount = $price->isFree() ? 0 : $price->getNetPrice();
-            }
-        }
-
-        // Update sale's shipping cost if needed
-        if ($amount != $sale->getShipmentAmount()) {
-            $sale->setShipmentAmount($amount);
-            $updated = true;
-        }
-
-        return $updated;
     }
 
     /**

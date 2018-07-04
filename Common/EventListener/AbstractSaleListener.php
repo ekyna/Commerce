@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
+use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -55,6 +56,11 @@ abstract class AbstractSaleListener
      * @var StateResolverInterface
      */
     protected $stateResolver;
+
+    /**
+     * @var ShipmentPriceResolverInterface
+     */
+    protected $shipmentPriceResolver;
 
     /**
      * @var string
@@ -260,6 +266,11 @@ abstract class AbstractSaleListener
             // TODO For each (credit)invoices
         }
 
+        // Update shipment and amount
+        if ($this->persistenceHelper->isChanged($sale, ['shipmentMethod', 'customerGroup'])) {
+            $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+        }
+
         // Update discounts
         if ($this->isDiscountUpdateNeeded($sale)) {
             $changed |= $this->saleUpdater->updateDiscounts($sale, true);
@@ -307,6 +318,11 @@ abstract class AbstractSaleListener
     protected function handleAddressChange(SaleInterface $sale)
     {
         $changed = false;
+
+        // Update shipment method and amount
+        if ($this->didDeliveryCountryChanged($sale)) {
+            $changed |= $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+        }
 
         // Update discounts
         if ($this->isDiscountUpdateNeeded($sale)) {
@@ -359,7 +375,10 @@ abstract class AbstractSaleListener
      */
     protected function handleContentChange(SaleInterface $sale)
     {
-        $changed = false;
+        // Shipment method and amount
+        $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+
+        // Shipment taxation
         if ($this->isShipmentTaxationUpdateNeeded($sale)) {
             $changed = $this->saleUpdater->updateShipmentTaxation($sale, true);
         }

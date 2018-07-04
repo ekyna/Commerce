@@ -78,8 +78,8 @@ class SaleCopier implements SaleCopierInterface
         $fields = [
             'currency', 'customer', 'customerGroup',
             'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
-            'vatDisplayMode', 'autoDiscount', 'taxExempt', 'depositTotal', 'grandTotal',
-            'paymentTerm', 'outstandingDate', 'outstandingLimit',
+            'autoShipping', 'autoDiscount', 'autoNotify', 'sample', 'taxExempt', 'vatDisplayMode',
+            'depositTotal', 'grandTotal', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
             'voucherNumber', 'description', 'comment', 'documentComment', 'acceptedAt',
         ];
 

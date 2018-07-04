@@ -41,7 +41,7 @@ class OrderNotifyListener extends AbstractNotifyListener
     protected function watch(OrderInterface $order)
     {
         // Abort if notify disabled or sample order
-        if (!$order->isNotifyEnabled() || $order->isSample()) {
+        if (!$order->isAutoNotify() || $order->isSample()) {
             return;
         }
 

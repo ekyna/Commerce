@@ -44,7 +44,7 @@ class ShipmentNotifyListener extends AbstractNotifyListener
         $order = $shipment->getOrder();
 
         // Abort if notify disabled
-        if (!$order->isNotifyEnabled()) {
+        if (!$order->isAutoNotify()) {
             return;
         }
 

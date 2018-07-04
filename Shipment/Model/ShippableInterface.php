@@ -58,6 +58,22 @@ interface ShippableInterface
     public function setShipmentAmount($amount);
 
     /**
+     * Returns whether auto shipping is enabled.
+     *
+     * @return bool
+     */
+    public function isAutoShipping();
+
+    /**
+     * Sets whether auto shipping is enabled.
+     *
+     * @param bool $auto
+     *
+     * @return ShippableTrait
+     */
+    public function setAutoShipping($auto);
+
+    /**
      * Returns the relay point.
      *
      * @return RelayPointInterface

@@ -12,20 +12,20 @@ use Doctrine\Common\Collections\Collection;
 interface NotifiableInterface
 {
     /**
-     * Returns whether notify is enabled.
+     * Returns whether auto notify is enabled.
      *
      * @return bool
      */
-    public function isNotifyEnabled();
+    public function isAutoNotify();
 
     /**
-     * Sets whether notify is enabled.
+     * Sets whether auto notify is enabled.
      *
      * @param bool $enabled
      *
      * @return $this|NotificationInterface
      */
-    public function setNotifyEnabled($enabled);
+    public function setAutoNotify($enabled);
 
     /**
      * Returns whether the notifiable has notifications or not, optionally filtered by type.

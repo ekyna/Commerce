@@ -19,6 +19,7 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers;
 use Ekyna\Component\Commerce\Payment\Releaser\ReleaserInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
+use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
 
 /**
  * Class SaleUpdater
@@ -48,6 +49,11 @@ class SaleUpdater implements SaleUpdaterInterface
     protected $weightCalculator;
 
     /**
+     * @var ShipmentPriceResolverInterface
+     */
+    protected $shipmentPriceResolver;
+
+    /**
      * @var PaymentCalculatorInterface
      */
     protected $paymentCalculator;
@@ -71,20 +77,22 @@ class SaleUpdater implements SaleUpdaterInterface
     /**
      * Constructor.
      *
-     * @param AddressBuilderInterface    $addressBuilder
-     * @param AdjustmentBuilderInterface $adjustmentBuilder
-     * @param AmountCalculatorInterface  $amountCalculator
-     * @param WeightCalculatorInterface  $weightCalculator
-     * @param PaymentCalculatorInterface $paymentCalculator
-     * @param InvoiceCalculatorInterface $invoiceCalculator
-     * @param ReleaserInterface          $outstandingReleaser
-     * @param SaleFactoryInterface       $saleFactory
+     * @param AddressBuilderInterface        $addressBuilder
+     * @param AdjustmentBuilderInterface     $adjustmentBuilder
+     * @param AmountCalculatorInterface      $amountCalculator
+     * @param WeightCalculatorInterface      $weightCalculator
+     * @param ShipmentPriceResolverInterface $shipmentPriceResolver
+     * @param PaymentCalculatorInterface     $paymentCalculator
+     * @param InvoiceCalculatorInterface     $invoiceCalculator
+     * @param ReleaserInterface              $outstandingReleaser
+     * @param SaleFactoryInterface           $saleFactory
      */
     public function __construct(
         AddressBuilderInterface $addressBuilder,
         AdjustmentBuilderInterface $adjustmentBuilder,
         AmountCalculatorInterface $amountCalculator,
         WeightCalculatorInterface $weightCalculator,
+        ShipmentPriceResolverInterface $shipmentPriceResolver,
         PaymentCalculatorInterface $paymentCalculator,
         InvoiceCalculatorInterface $invoiceCalculator,
         ReleaserInterface $outstandingReleaser,
@@ -94,6 +102,7 @@ class SaleUpdater implements SaleUpdaterInterface
         $this->adjustmentBuilder = $adjustmentBuilder;
         $this->amountCalculator = $amountCalculator;
         $this->weightCalculator = $weightCalculator;
+        $this->shipmentPriceResolver = $shipmentPriceResolver;
         $this->paymentCalculator = $paymentCalculator;
         $this->invoiceCalculator = $invoiceCalculator;
         $this->outstandingReleaser = $outstandingReleaser;
@@ -188,6 +197,67 @@ class SaleUpdater implements SaleUpdaterInterface
     public function updateShipmentTaxation(SaleInterface $sale, $persistence = false)
     {
         return $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, $persistence);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateShipmentMethodAndAmount(SaleInterface $sale)
+    {
+        // Abort if sale auto shipping is disabled
+        if (!$sale->isAutoShipping()) {
+            return false;
+        }
+
+        // Abort if sale has payment with non deletable state.
+        foreach ($sale->getPayments() as $payment) {
+            if (!PaymentStates::isDeletableState($payment->getState())) {
+                return false;
+            }
+        }
+
+        $updated = false;
+        $prices = $this->shipmentPriceResolver->getAvailablePricesBySale($sale);
+
+        // Assert that the sale's shipment method is still available
+        if (null !== $method = $sale->getShipmentMethod()) {
+            $found = false;
+            foreach ($prices as $price) {
+                if ($price->getMethod() === $sale->getShipmentMethod()) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $sale->setShipmentMethod(null);
+                $updated = true;
+            }
+        }
+
+        // If sale does not have a shipment method, set the cheaper one
+        if (null === $method = $sale->getShipmentMethod()) {
+            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface $price */
+            if (false !== $price = reset($prices)) {
+                $sale->setShipmentMethod($method = $price->getMethod());
+                $updated = true;
+            }
+        }
+
+        // Resolve shipping cost
+        $amount = 0;
+        if (null !== $method) {
+            if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
+                $amount = $price->isFree() ? 0 : $price->getNetPrice();
+            }
+        }
+
+        // Update sale's shipping cost if needed
+        if ($amount != $sale->getShipmentAmount()) {
+            $sale->setShipmentAmount($amount);
+            $updated = true;
+        }
+
+        return $updated;
     }
 
     /**

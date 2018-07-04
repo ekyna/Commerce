@@ -25,6 +25,11 @@ trait ShippableTrait
     protected $shipmentAmount;
 
     /**
+     * @var bool
+     */
+    protected $autoShipping;
+
+    /**
      * @var RelayPointInterface
      */
     protected $relayPoint;
@@ -37,6 +42,7 @@ trait ShippableTrait
     {
         $this->weightTotal = 0;
         $this->shipmentAmount = 0;
+        $this->autoShipping = true;
     }
 
     /**
@@ -107,6 +113,30 @@ trait ShippableTrait
     public function setShipmentAmount($amount)
     {
         $this->shipmentAmount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether auto shipping is enabled.
+     *
+     * @return bool
+     */
+    public function isAutoShipping()
+    {
+        return $this->autoShipping;
+    }
+
+    /**
+     * Sets whether auto shipping is enabled.
+     *
+     * @param bool $auto
+     *
+     * @return ShippableTrait
+     */
+    public function setAutoShipping($auto)
+    {
+        $this->autoShipping = (bool)$auto;
 
         return $this;
     }
