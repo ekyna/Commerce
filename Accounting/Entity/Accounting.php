@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Accounting\Entity;
 
 use Ekyna\Component\Commerce\Accounting\Model\AccountingInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Resource\Model\IsEnabledTrait;
@@ -47,6 +48,11 @@ class Accounting implements AccountingInterface
      * @var TaxInterface
      */
     private $tax;
+
+    /**
+     * @var PaymentMethodInterface
+     */
+    private $paymentMethod;
 
 
     /**
@@ -151,6 +157,24 @@ class Accounting implements AccountingInterface
     public function setTax(TaxInterface $tax = null)
     {
         $this->tax = $tax;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPaymentMethod()
+    {
+        return $this->paymentMethod;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPaymentMethod(PaymentMethodInterface $method = null)
+    {
+        $this->paymentMethod = $method;
 
         return $this;
     }

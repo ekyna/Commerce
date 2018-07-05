@@ -10,11 +10,29 @@ namespace Ekyna\Component\Commerce\Accounting\Export;
 interface AccountingExporterInterface
 {
     /**
-     * Exports accounting for the given date.
+     * Exports invoices and payments for the given date.
+     *
+     * @param \DateTime $month
+     *
+     * @return string The generated zip file path
+     */
+    public function export(\DateTime $month);
+
+    /**
+     * Exports invoices for the given date.
      *
      * @param \DateTime $month
      *
      * @return string The generated file path
      */
-    public function export(\DateTime $month);
+    public function exportInvoices(\DateTime $month);
+
+    /**
+     * Exports payments for the given date.
+     *
+     * @param \DateTime $month
+     *
+     * @return string The generated file path
+     */
+    public function exportPayments(\DateTime $month);
 }

@@ -32,4 +32,14 @@ interface PaymentRepositoryInterface extends ResourceRepositoryInterface
      * @return PaymentInterface[]
      */
     public function findByMethodAndStates(PaymentMethodInterface $method, array $states, \DateTime $fromDate = null);
+
+    /**
+     * Finds payments (and refunds) by month.
+     *
+     * @param \DateTime $date
+     * @param array     $states
+     *
+     * @return PaymentInterface[]
+     */
+    public function findByMonth(\DateTime $date, array $states);
 }

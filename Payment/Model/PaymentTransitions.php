@@ -26,6 +26,8 @@ class PaymentTransitions
      */
     static function getAvailableTransitions(PaymentInterface $payment, $admin = false)
     {
+        // TODO use payum to select gateway's supported requests/actions.
+
         $transitions = [];
 
         $method = $payment->getMethod();

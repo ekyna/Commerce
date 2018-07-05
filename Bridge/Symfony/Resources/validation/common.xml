@@ -28,14 +28,10 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">
                 <value>number</value>
-            </option>
-            <option name="message">ekyna_commerce.accounting.duplicate_number</option>
-        </constraint>
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
-            <option name="fields">
                 <value>type</value>
                 <value>taxRule</value>
                 <value>tax</value>
+                <value>paymentMethod</value>
             </option>
             <option name="ignoreNull">false</option>
             <option name="message">ekyna_commerce.accounting.duplicate_config</option>

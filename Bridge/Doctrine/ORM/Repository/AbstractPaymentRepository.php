@@ -74,4 +74,34 @@ abstract class AbstractPaymentRepository extends ResourceRepository implements P
 
         return $this->byMethodAndStatesFromDateQuery = $query;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function findByMonth(\DateTime $date, array $states)
+    {
+        foreach ($states as $state) {
+            PaymentStates::isValidState($state);
+        }
+
+        $qb = $this->createQueryBuilder('p');
+
+        $start = clone $date;
+        $start->modify('first day of this month');
+        $start->setTime(0,0,0);
+
+        $end = clone $date;
+        $end->modify('last day of this month');
+        $end->setTime(23,59,59);
+
+        return $qb
+            ->andWhere($qb->expr()->between('p.completedAt', ':start', ':end'))
+            ->andWhere($qb->expr()->in('p.state', ':states'))
+            ->addOrderBy('p.completedAt', 'ASC')
+            ->getQuery()
+            ->setParameter('start', $start, Type::DATETIME)
+            ->setParameter('end', $end, Type::DATETIME)
+            ->setParameter('states', $states)
+            ->getResult();
+    }
 }

@@ -27,36 +27,63 @@ class AccountingValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, Accounting::class);
         }
 
-        if ($accounting->getType() === AccountingTypes::TYPE_TAX) {
-            if (!$accounting->getTax()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->tax_is_required)
-                    ->atPath('tax')
-                    ->addViolation();
-            }
-            if ($accounting->getTaxRule()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->rule_must_be_null)
-                    ->atPath('taxRule')
-                    ->addViolation();
-            }
+        $tax = null;
+        $taxRule = false;
+        $paymentMethod = false;
+
+        // Requirements
+        if ($accounting->getType() === AccountingTypes::TYPE_PAYMENT) {
+            $paymentMethod = true;
+            $tax = false;
+        } elseif ($accounting->getType() === AccountingTypes::TYPE_TAX) {
+            $tax = true;
         } else {
-            if ($accounting->getTax()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->tax_must_be_null)
-                    ->atPath('tax')
-                    ->addViolation();
-            }
-            if (!$accounting->getTaxRule()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->rule_is_required)
-                    ->atPath('taxRule')
-                    ->addViolation();
-            }
+            $taxRule = true;
+        }
+
+        // Tax assertion
+        if ($tax && !$accounting->getTax()) {
+            $this
+                ->context
+                ->buildViolation($constraint->tax_is_required)
+                ->atPath('tax')
+                ->addViolation();
+        } elseif ($accounting->getTax() && false === $tax) {
+            $this
+                ->context
+                ->buildViolation($constraint->tax_must_be_null)
+                ->atPath('tax')
+                ->addViolation();
+        }
+
+        // Tax rule assertion
+        if ($taxRule && !$accounting->getTaxRule()) {
+            $this
+                ->context
+                ->buildViolation($constraint->tax_rule_is_required)
+                ->atPath('taxRule')
+                ->addViolation();
+        } elseif (!$taxRule && $accounting->getTaxRule()) {
+            $this
+                ->context
+                ->buildViolation($constraint->tax_rule_must_be_null)
+                ->atPath('taxRule')
+                ->addViolation();
+        }
+
+        // Payment method assertion
+        if ($paymentMethod && !$accounting->getPaymentMethod()) {
+            $this
+                ->context
+                ->buildViolation($constraint->payment_method_is_required)
+                ->atPath('paymentMethod')
+                ->addViolation();
+        } elseif (!$paymentMethod && $accounting->getPaymentMethod()) {
+            $this
+                ->context
+                ->buildViolation($constraint->payment_method_must_be_null)
+                ->atPath('paymentMethod')
+                ->addViolation();
         }
     }
 }

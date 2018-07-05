@@ -15,6 +15,7 @@ final class AccountingTypes
     //const TYPE_SERVICE  = 'service';
     const TYPE_SHIPPING = 'shipping';
     const TYPE_TAX      = 'tax';
+    const TYPE_PAYMENT  = 'payment';
 
 
     /**
@@ -29,6 +30,7 @@ final class AccountingTypes
             //static::TYPE_SERVICE,
             static::TYPE_SHIPPING,
             static::TYPE_TAX,
+            static::TYPE_PAYMENT,
         ];
     }
 

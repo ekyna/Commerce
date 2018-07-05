@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Accounting\Model;
 
+use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Resource\Model\IsEnabledInterface;
@@ -94,4 +95,20 @@ interface AccountingInterface extends SortableInterface, IsEnabledInterface, Res
      * @return $this|AccountingInterface
      */
     public function setTax(TaxInterface $tax = null);
+
+    /**
+     * Returns the payment method.
+     *
+     * @return PaymentMethodInterface
+     */
+    public function getPaymentMethod();
+
+    /**
+     * Sets the payment method.
+     *
+     * @param PaymentMethodInterface $method
+     *
+     * @return $this|AccountingInterface
+     */
+    public function setPaymentMethod(PaymentMethodInterface $method = null);
 }
