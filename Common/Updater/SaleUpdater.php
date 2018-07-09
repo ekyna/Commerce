@@ -246,8 +246,10 @@ class SaleUpdater implements SaleUpdaterInterface
         // Resolve shipping cost
         $amount = 0;
         if (null !== $method) {
-            if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
-                $amount = $price->isFree() ? 0 : $price->getNetPrice();
+            if (!$this->shipmentPriceResolver->hasFreeShipping($sale)) {
+                if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
+                    $amount = $price->isFree() ? 0 : $price->getNetPrice();
+                }
             }
         }
 
