@@ -98,6 +98,11 @@ class SaleTransformer implements SaleTransformerInterface
         $this->source = $source;
         $this->target = $target;
 
+        $event = $this->getOperator($this->target)->initialize($this->target);
+        if ($event->isPropagationStopped()) {
+            return $event;
+        }
+
         $event = new SaleTransformEvent($this->source, $this->target);
 
         $this->eventDispatcher->dispatch(SaleTransformEvents::PRE_COPY, $event);
@@ -111,11 +116,8 @@ class SaleTransformer implements SaleTransformerInterface
             ->copySale();
 
         $this->eventDispatcher->dispatch(SaleTransformEvents::POST_COPY, $event);
-        if ($event->isPropagationStopped()) {
-            return $event;
-        }
 
-        return $this->getOperator($this->target)->initialize($this->target);
+        return $event;
     }
 
     /**

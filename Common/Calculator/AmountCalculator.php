@@ -104,7 +104,7 @@ class AmountCalculator implements AmountCalculatorInterface
                 }
 
                 $unit += $ati
-                    ? $childResult->getUnit()
+                    ? $childResult->getUnit() * $child->getQuantity()
                     : Money::round($childResult->getUnit(), $currency) * $child->getQuantity();
             }
         }

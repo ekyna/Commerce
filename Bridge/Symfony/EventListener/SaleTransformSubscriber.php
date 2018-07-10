@@ -52,6 +52,11 @@ class SaleTransformSubscriber implements EventSubscriberInterface
             $target->setOriginNumber($source->getNumber());
         }
 
+        // Sample
+        if ($source instanceof OrderInterface && $target instanceof OrderInterface) {
+            $target->setSample($source->isSample());
+        }
+
         // Abort if source sale has no customer
         if (null === $customer = $source->getCustomer()) {
             return;
