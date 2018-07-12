@@ -220,10 +220,10 @@ class SaleUpdater implements SaleUpdaterInterface
         $prices = $this->shipmentPriceResolver->getAvailablePricesBySale($sale);
 
         // Assert that the sale's shipment method is still available
-        if (null !== $method = $sale->getShipmentMethod()) {
+        if (null !== $initialMethod = $sale->getShipmentMethod()) {
             $found = false;
             foreach ($prices as $price) {
-                if ($price->getMethod() === $sale->getShipmentMethod()) {
+                if ($price->getMethod() === $initialMethod) {
                     $found = true;
                     break;
                 }
@@ -240,6 +240,10 @@ class SaleUpdater implements SaleUpdaterInterface
             if (false !== $price = reset($prices)) {
                 $sale->setShipmentMethod($method = $price->getMethod());
                 $updated = true;
+            } else {
+                // Revert to initial method
+                $sale->setShipmentMethod($method = $initialMethod);
+                $updated = false;
             }
         }
 

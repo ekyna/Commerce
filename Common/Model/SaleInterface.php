@@ -243,6 +243,22 @@ interface SaleInterface extends
     public function setAdjustmentTotal($total);
 
     /**
+     * Returns the title.
+     *
+     * @return string
+     */
+    public function getTitle();
+
+    /**
+     * Sets the title.
+     *
+     * @param string $title
+     *
+     * @return $this|SaleInterface
+     */
+    public function setTitle($title);
+
+    /**
      * Returns the voucher number.
      *
      * @return string

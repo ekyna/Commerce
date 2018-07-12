@@ -289,6 +289,11 @@
                 </option>
             </constraint>
         </property>
+        <property name="title">
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
         <property name="voucherNumber">
             <constraint name="Length">
                 <option name="max">32</option>

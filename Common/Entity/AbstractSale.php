@@ -103,6 +103,11 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @var string
      */
+    protected $title;
+
+    /**
+     * @var string
+     */
     protected $voucherNumber;
 
     /**
@@ -399,6 +404,24 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setAdjustmentTotal($total)
     {
         $this->adjustmentTotal = $total;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
 
         return $this;
     }
