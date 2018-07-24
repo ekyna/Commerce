@@ -53,10 +53,10 @@ class ShipmentItemValidator extends ConstraintValidator
         $shipment = $item->getShipment();
 
         if ($saleItem->isPrivate()) {
-            // TODO use packaging format
-            $iQty = round(5 * (float)$item->getQuantity());
-            $siQty = round(5 * (float)$saleItem->getQuantity());
-            if (0 !== $iQty % $siQty) {
+            // TODO Rework / Use packaging format
+            $iQty = round(100000 * (float)$item->getQuantity());
+            $siQty = round(100000 * (float)$saleItem->getQuantity());
+            if (0 !== $mod = $iQty % $siQty) {
                 $this
                     ->context
                     ->buildViolation($constraint->parent_quantity_integrity, [
