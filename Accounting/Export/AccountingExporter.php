@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
@@ -46,6 +47,11 @@ class AccountingExporter implements AccountingExporterInterface
      */
     protected $accounts;
 
+    /**
+     * @var array
+     */
+    protected $config;
+
 
     /**
      * Constructor.
@@ -54,17 +60,24 @@ class AccountingExporter implements AccountingExporterInterface
      * @param PaymentRepositoryInterface    $paymentRepository
      * @param AccountingRepositoryInterface $accountingRepository
      * @param TaxResolverInterface          $taxResolver
+     * @param array                         $config
      */
     public function __construct(
         InvoiceRepositoryInterface $invoiceRepository,
         PaymentRepositoryInterface $paymentRepository,
         AccountingRepositoryInterface $accountingRepository,
-        TaxResolverInterface $taxResolver
+        TaxResolverInterface $taxResolver,
+        array $config
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
         $this->accountingRepository = $accountingRepository;
         $this->taxResolver = $taxResolver;
+
+        $this->config = array_replace([
+            'default_customer' => '10000000',
+            'total_as_payment' => false,
+        ], $config);
     }
 
     /**
@@ -99,7 +112,11 @@ class AccountingExporter implements AccountingExporterInterface
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
-        $accounts = $this->accountingRepository->findByTypes([
+        $paymentAccounts = $this->accountingRepository->findByTypes([
+            AccountingTypes::TYPE_PAYMENT,
+        ]);
+
+        $invoiceAccounts = $this->accountingRepository->findByTypes([
             AccountingTypes::TYPE_GOOD,
             AccountingTypes::TYPE_SHIPPING,
             AccountingTypes::TYPE_TAX,
@@ -114,13 +131,52 @@ class AccountingExporter implements AccountingExporterInterface
             $sale = $invoice->getSale();
             $customer = $sale->getCustomer();
 
-            // Grand total row
             if ($customer) {
-                $number = '1'.str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
-                $identity = $customer->getFirstName().' '.$customer->getLastName();
+                $identity = $customer->getFirstName() . ' ' . $customer->getLastName();
             } else {
-                $number = '10000000';
-                $identity = $sale->getFirstName().' '.$sale->getLastName();
+                $identity = $sale->getFirstName() . ' ' . $sale->getLastName();
+            }
+
+            // Grand total row
+            if ($this->config['total_as_payment']) {
+                $payments = $sale->getPayments()->filter(function(PaymentInterface $payment) {
+                    return PaymentStates::isPaidState($payment->getState());
+                })->toArray();
+
+                usort($payments, function(PaymentInterface $a, PaymentInterface $b) {
+                    // TODO Currency conversion
+                    if ($a->getAmount() == $b->getAmount()) {
+                        return 0;
+                    }
+
+                    return $a->getAmount() > $b->getAmount() ? -1 : 1;
+                });
+
+                if (empty($payments)) {
+                    continue; // Next invoice
+                }
+
+                /** @var PaymentInterface $payment */
+                $payment = reset($payments);
+
+                $found = false;
+                /** @var \Ekyna\Component\Commerce\Accounting\Model\AccountingInterface $account */
+                foreach ($paymentAccounts as $account) {
+                    if ($account->getPaymentMethod() === $payment->getMethod()) {
+                        $found = true;
+                        break;
+                    }
+                }
+
+                if (!$found) {
+                    continue; // Next invoice
+                }
+
+                $number = $account->getNumber();
+            } elseif ($customer) {
+                $number = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
+            } else {
+                $number = $this->config['default_customer'];
             }
 
             $credit = $invoice->getType() === InvoiceTypes::TYPE_CREDIT;
@@ -141,7 +197,7 @@ class AccountingExporter implements AccountingExporterInterface
             $taxesDetails = $invoice->getTaxesDetails();
 
             /** @var \Ekyna\Component\Commerce\Accounting\Model\AccountingInterface $account */
-            foreach ($accounts as $account) {
+            foreach ($invoiceAccounts as $account) {
                 if ($account->getType() === AccountingTypes::TYPE_TAX) {
                     foreach ($taxesDetails as $detail) {
                         if (0 === bccomp($detail['rate'], $account->getTax()->getRate(), 5)) {
@@ -267,16 +323,17 @@ class AccountingExporter implements AccountingExporterInterface
             $customer = $sale->getCustomer();
 
             if ($customer) {
-                $number = '1'.str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
-                $identity = $customer->getFirstName().' '.$customer->getLastName();
+                $number = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
+                $identity = $customer->getFirstName() . ' ' . $customer->getLastName();
             } else {
                 $number = '10000000';
-                $identity = $sale->getFirstName().' '.$sale->getLastName();
+                $identity = $sale->getFirstName() . ' ' . $sale->getLastName();
             }
 
             $credit = false; // TODO $payment->getType() === PaymentTypes::TYPE_REFUND;
             $amount = $this->amount($payment->getAmount(), $currency);
 
+            // Payment debit
             fputcsv($handle, [
                 $date,
                 $account->getNumber(),
@@ -286,16 +343,37 @@ class AccountingExporter implements AccountingExporterInterface
                 $number,
                 $payment->getNumber(),
             ], ';', '"');
+            // Customer credit
+            fputcsv($handle, [
+                $date,
+                $number,
+                $identity,
+                $credit ? $amount : null,
+                $credit ? null : $amount,
+                $number,
+                $payment->getNumber(),
+            ], ';', '"');
 
             // TODO Remove when refund payment implemented
             // Temporary : add an extra credit line for refund payments.
             if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
+                // Payment credit
                 fputcsv($handle, [
                     $date,
                     $account->getNumber(),
                     $identity,
                     null,
                     $amount,
+                    $number,
+                    $payment->getNumber(),
+                ], ';', '"');
+                // Customer debit
+                fputcsv($handle, [
+                    $date,
+                    $number,
+                    $identity,
+                    $amount,
+                    null,
                     $number,
                     $payment->getNumber(),
                 ], ';', '"');
