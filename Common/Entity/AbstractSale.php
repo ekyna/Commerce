@@ -136,6 +136,11 @@ abstract class AbstractSale implements Common\SaleInterface
     protected $acceptedAt;
 
     /**
+     * @var string
+     */
+    protected $source;
+
+    /**
      * @var ArrayCollection|Common\SaleAttachmentInterface[]
      */
     protected $attachments;
@@ -543,6 +548,24 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSource($source)
+    {
+        $this->source = $source;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasAttachments()
     {
         return 0 < $this->attachments->count();
@@ -577,6 +600,10 @@ abstract class AbstractSale implements Common\SaleInterface
      */
     public function getDeliveryCountry()
     {
+        /* TODO if (null !== $relayPoint = $this->getRelayPoint()) {
+            return $relayPoint->getCountry();
+        }*/
+
         $address = $this->isSameAddress() ? $this->getInvoiceAddress() : $this->getDeliveryAddress();
 
         return null !== $address ? $address->getCountry() : null;

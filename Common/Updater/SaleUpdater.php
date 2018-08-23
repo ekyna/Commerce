@@ -17,6 +17,7 @@ use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers;
 use Ekyna\Component\Commerce\Payment\Releaser\ReleaserInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\InStore\InStorePlatform;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
@@ -237,7 +238,20 @@ class SaleUpdater implements SaleUpdaterInterface
         // If sale does not have a shipment method, set the cheaper one
         if (null === $method = $sale->getShipmentMethod()) {
             /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface $price */
-            if (false !== $price = reset($prices)) {
+            $price = false;
+            if (!empty($prices)) {
+                // Find the cheapest non 'in store' shipment method
+                foreach ($prices as $price) {
+                    if ($price->getMethod()->getPlatformName() !== InStorePlatform::NAME) {
+                        break;
+                    }
+                }
+                // Not found, pick the first one
+                if (false === $price) {
+                    $price = reset($prices);
+                }
+            }
+            if ($price) {
                 $sale->setShipmentMethod($method = $price->getMethod());
                 $updated = true;
             } else {

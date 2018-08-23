@@ -48,6 +48,7 @@
         <field name="documentComment" column="document_comment" type="text" nullable="true"/>
 
         <field name="acceptedAt" column="accepted_at" type="datetime" nullable="true"/>
+        <field name="source" column="source" type="string" length="16" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

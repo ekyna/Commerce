@@ -46,10 +46,6 @@ class AvailabilityViewType extends AbstractViewType
      */
     public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options)
     {
-        if ($item->isCompound()) {
-            return;
-        }
-
         if (null === $subject = $this->subjectHelper->resolve($item, false)) {
             return;
         }

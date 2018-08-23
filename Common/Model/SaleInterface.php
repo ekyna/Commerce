@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -36,6 +37,8 @@ interface SaleInterface extends
     ShippableInterface,
     VatNumberSubjectInterface
 {
+    const SOURCE_WEB = 'web';
+
     /**
      * Returns the customer.
      *
@@ -353,6 +356,22 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setAcceptedAt(\DateTime $acceptedAt = null);
+
+    /**
+     * Returns the source.
+     *
+     * @return string
+     */
+    public function getSource();
+
+    /**
+     * Sets the source.
+     *
+     * @param string $source
+     *
+     * @return AbstractSale
+     */
+    public function setSource($source);
 
     /**
      * Returns whether the order has attachments or not.

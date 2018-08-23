@@ -80,7 +80,8 @@ class SaleCopier implements SaleCopierInterface
             'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
             'autoShipping', 'autoDiscount', 'autoNotify', 'taxExempt', 'vatDisplayMode',
             'depositTotal', 'grandTotal', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
-            'title', 'voucherNumber', 'description', 'comment', 'documentComment', 'acceptedAt',
+            'title', 'voucherNumber', 'description', 'comment', 'documentComment',
+            'acceptedAt', 'source',
         ];
 
         // Copy information fields only if source has no customer entity

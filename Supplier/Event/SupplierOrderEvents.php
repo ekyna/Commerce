@@ -28,4 +28,7 @@ class SupplierOrderEvents
 
     const PRE_DELETE     = 'ekyna_commerce.supplier_order.pre_delete';
     const POST_DELETE    = 'ekyna_commerce.supplier_order.post_delete';
+
+    const PRE_SUBMIT     = 'ekyna_commerce.supplier_order.pre_submit';
+    const POST_SUBMIT    = 'ekyna_commerce.supplier_order.post_submit';
 }
