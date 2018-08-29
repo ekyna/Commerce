@@ -6,7 +6,7 @@ use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
-use Ekyna\Component\Resource\Event\EventQueueInterface;
+use Ekyna\Component\Resource\Event\QueueEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -338,7 +338,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     public static function getSubscribedEvents()
     {
         return [
-            EventQueueInterface::QUEUE_CLOSE => ['onEventQueueClose', 0],
+            QueueEvents::QUEUE_CLOSE => ['onEventQueueClose', 0],
         ];
     }
 }

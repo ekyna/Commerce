@@ -38,6 +38,22 @@ class CustomerGroupRepository extends TranslatableResourceRepository implements 
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getIdentifiers()
+    {
+        $qb = $this->createQueryBuilder('g');
+
+        $result = $qb
+            ->select('g.id')
+            ->orderBy('g.id')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_map(function ($r) { return $r['id']; }, $result);
+    }
+
+    /**
      * On clear event handler.
      *
      * @param OnClearEventArgs $event

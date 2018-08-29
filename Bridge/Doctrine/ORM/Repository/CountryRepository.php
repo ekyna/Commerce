@@ -28,6 +28,11 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     /**
      * @var array
      */
+    private $cachedCodes;
+
+    /**
+     * @var array
+     */
     private $cache = [];
 
 
@@ -39,6 +44,16 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     public function setDefaultCode($code)
     {
         $this->defaultCode = strtoupper($code);
+    }
+
+    /**
+     * Sets the cached codes.
+     *
+     * @param array $codes
+     */
+    public function setCachedCodes($codes)
+    {
+        $this->cachedCodes = $codes;
     }
 
     /**
@@ -74,6 +89,29 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
             ->getQuery()
             ->setParameter('code', $code)
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIdentifiers($cached = false)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb
+            ->select('c.id')
+            ->orderBy('c.id');
+
+        if ($cached) {
+            $result = $qb
+                ->andWhere($qb->expr()->in('c.code', ':codes'))
+                ->getQuery()
+                ->setParameter('codes', $this->cachedCodes)
+                ->getScalarResult();
+        } else {
+            $result = $qb->getQuery()->getScalarResult();
+        }
+
+        return array_map(function ($r) { return $r['id']; }, $result);
     }
 
     /**

@@ -27,4 +27,13 @@ interface CountryRepositoryInterface extends ResourceRepositoryInterface
      * @return CountryInterface
      */
     public function findOneByCode($code);
+
+    /**
+     * Returns the country identifiers.
+     *
+     * @param bool $cached Whether to return only cached countries identifiers
+     *
+     * @return array
+     */
+    public function getIdentifiers($cached = false);
 }

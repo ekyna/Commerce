@@ -18,4 +18,11 @@ interface CustomerGroupRepositoryInterface extends TranslatableResourceRepositor
      * @return CustomerGroupInterface
      */
     public function findDefault();
+
+    /**
+     * Returns the country identifiers.
+     *
+     * @return array
+     */
+    public function getIdentifiers();
 }
