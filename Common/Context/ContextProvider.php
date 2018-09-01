@@ -153,7 +153,8 @@ class ContextProvider implements ContextProviderInterface
         if (null !== $address = $sale->getInvoiceAddress()) {
             $context->setInvoiceCountry($address->getCountry());
         }
-        if (null !== $address = $sale->getDeliveryAddress()) {
+        $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
+        if (null !== $address) {
             $context->setDeliveryCountry($address->getCountry());
         }
         if (null !== $currency = $sale->getCurrency()) {
