@@ -320,6 +320,9 @@
             <option name="fields">number</option>
         </constraint>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">voucherNumber</option>
+        </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">key</option>
         </constraint>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Sale">

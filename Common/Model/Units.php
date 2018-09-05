@@ -176,6 +176,25 @@ final class Units
     }
 
     /**
+     * Rounds the given value for the given unit.
+     *
+     * @param float  $value
+     * @param string $unit
+     *
+     * @return float|int
+     */
+    static function round($value, $unit = 'piece')
+    {
+        if (0 < $precision = static::getPrecision($unit)) {
+            $divider = pow(10, $precision);
+
+            return round(floor($value * $divider) / $divider, $precision);
+        }
+
+        return floor($value);
+    }
+
+    /**
      * Disabled constructor.
      *
      * @codeCoverageIgnore

@@ -14,6 +14,5 @@ final class PaymentEvents
     const HANG    = 'ekyna_commerce.payment.hang';
     const ACCEPT  = 'ekyna_commerce.payment.accept';
     const REFUND  = 'ekyna_commerce.payment.refund';
-    const NOTIFY  = 'ekyna_commerce.payment.notify';
-    const DONE    = 'ekyna_commerce.payment.done';
+    const STATUS  = 'ekyna_commerce.payment.status';
 }

@@ -39,7 +39,7 @@ class PaymentEvent extends Event
      *
      * @param PaymentInterface $payment
      */
-    public function setPayment(PaymentInterface $payment)
+    public function setPayment(PaymentInterface $payment = null)
     {
         $this->payment = $payment;
     }
@@ -59,7 +59,7 @@ class PaymentEvent extends Event
      *
      * @param Response $response
      */
-    public function setResponse(Response $response)
+    public function setResponse(Response $response = null)
     {
         $this->response = $response;
     }

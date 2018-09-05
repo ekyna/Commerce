@@ -111,6 +111,7 @@ final class PaymentStates
         return [
             static::STATE_NEW,
             static::STATE_CANCELED,
+            static::STATE_FAILED,
         ];
     }
 

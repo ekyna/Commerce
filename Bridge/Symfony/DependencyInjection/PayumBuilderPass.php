@@ -80,22 +80,28 @@ class PayumBuilderPass implements CompilerPassInterface
     {
         // Payzen convert action
         if (class_exists('Ekyna\Component\Payum\Payzen\PayzenGatewayFactory')) {
+            // Convert action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Payzen\Action\ConvertAction');
             $definition->addTag('payum.action', ['factory' => 'payzen', 'prepend' => true]);
-
             $container->setDefinition('ekyna_commerce.payum.action.payzen.convert_payment', $definition);
+
+            // Fraud level action
+            $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Payzen\Action\FraudLevelAction');
+            $definition->addTag('payum.action', ['factory' => 'payzen', 'prepend' => true]);
+            $container->setDefinition('ekyna_commerce.payum.action.payzen.fraud_level', $definition);
         }
 
-        // Sips convert action
+        // Sips
         if (class_exists('Ekyna\Component\Payum\Sips\SipsGatewayFactory')) {
+            // Convert action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Sips\Action\ConvertAction');
             $definition->addTag('payum.action', ['factory' => 'atos_sips', 'prepend' => true]);
-
             $container->setDefinition('ekyna_commerce.payum.action.sips.convert_payment', $definition);
         }
 
-        // PayPal EC NVP convert action
+        // PayPal EC NVP
         if (class_exists('Payum\Paypal\ExpressCheckout\Nvp\PaypalExpressCheckoutGatewayFactory')) {
+            // Convert action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpConvertAction');
             $definition->setArgument(0, new Reference('ekyna_commerce.common.amount_calculator'));
             if ($container->has('ekyna_setting.manager') && class_exists('Ekyna\Bundle\AdminBundle\Settings\GeneralSettingsSchema')) {
@@ -104,7 +110,6 @@ class PayumBuilderPass implements CompilerPassInterface
                 ));
             }
             $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
-
             $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.convert_payment', $definition);
         }
 

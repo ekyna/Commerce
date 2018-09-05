@@ -162,6 +162,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         elseif ($mode !== StockSubjectModes::MODE_MANUAL) {
             $available = 0;
             $ordered = 0;
+
+            // Supplier product availability
             if ($subject instanceof SubjectInterface) {
                 $available = $this->supplierProductRepository->getAvailableQuantitySumBySubject($subject);
                 // TODO $ordered = $this->supplierProductRepository->getOrderedQuantitySumBySubject($subject);
@@ -170,7 +172,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $eda = $this->nullDateIfLowerThanToday($subject->getEstimatedDateOfArrival());
 
             // If suppliers has available stock or is about to get it
-            if ($min <= $available || (0 < $ordered && null !== $eda)) {
+            if ($min <= $available || ($min <= $ordered && null !== $eda)) {
                 $state = StockSubjectStates::STATE_PRE_ORDER;
             }
         }

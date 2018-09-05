@@ -91,6 +91,15 @@
         <property name="parent">
             <constraint name="Valid" />
         </property>
+        <property name="state">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Customer\Model\CustomerStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">email</option>
             <option name="groups">

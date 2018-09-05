@@ -1,6 +1,6 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Payment\Handler;
+namespace Ekyna\Component\Commerce\Payment\EventListener;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartStates;
@@ -9,18 +9,20 @@ use Ekyna\Component\Commerce\Common\Transformer\SaleTransformerInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
+use Ekyna\Component\Commerce\Payment\Event\PaymentEvent;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteStates;
 use Payum\Core\Payum;
 use Payum\Core\Security\TokenInterface;
+use Payum\Core\Storage\IdentityInterface;
 
 /**
- * Class PaymentDoneHandler
- * @package Ekyna\Component\Commerce\Payment\Handler
+ * Class PaymentDoneEventSubscriber
+ * @package Ekyna\Component\Commerce\Payment\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class PaymentDoneHandler
+class PaymentDoneEventSubscriber
 {
     /**
      * @var SaleTransformerInterface
@@ -56,47 +58,55 @@ class PaymentDoneHandler
     }
 
     /**
-     * Returns payum.
+     * Payment status event handler.
      *
-     * @return Payum
+     * Transforms an accepted cart/quote to an order.
+     *
+     * @param PaymentEvent $event
      */
-    public function getPayum()
+    public function onStatus(PaymentEvent $event)
     {
-        return $this->payum;
-    }
+        $payment = $event->getPayment();
 
-    /**
-     * Handle the payment when it's done (status/notify).
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return \Ekyna\Component\Commerce\Common\Model\SaleInterface The resulting sale
-     */
-    public function handle(PaymentInterface $payment)
-    {
         $sale = $payment->getSale();
 
         if ($sale instanceof OrderInterface) {
-            return $sale;
-        } elseif ($sale instanceof CartInterface) {
-            if ($sale->getState() !== CartStates::STATE_ACCEPTED) {
-                return $sale;
-            }
-        } elseif ($sale instanceof QuoteInterface) {
-            if ($sale->getState() !== QuoteStates::STATE_ACCEPTED) {
-                return $sale;
-            }
+            return;
         }
 
+        if ($sale instanceof CartInterface && $sale->getState() !== CartStates::STATE_ACCEPTED) {
+            return;
+        }
+
+        if ($sale instanceof QuoteInterface && $sale->getState() !== QuoteStates::STATE_ACCEPTED) {
+            return;
+        }
+
+        // Store payment tokens
         $tokens = $this->findPaymentTokens($payment);
 
-        if (null !== $order = $this->transform($sale)) {
-            $this->convertTokens($order, $payment, $tokens);
-
-            return $order;
+        // Transform sale to order
+        if (null === $order = $this->transform($sale)) {
+            return;
         }
 
-        return $sale;
+        // Find order's transformed payment
+        $newPayment = null;
+        foreach ($order->getPayments() as $p) {
+            if ($p->getNumber() === $payment->getNumber()) {
+                $newPayment = $p;
+                break;
+            }
+        }
+        if (null === $newPayment) {
+            throw new RuntimeException("Failed to find the transformed payment.");
+        }
+
+        // Convert tokens
+        $this->convertTokens($this->getPaymentIdentity($newPayment), $tokens);
+
+        // Set event new payment
+        $event->setPayment($newPayment);
     }
 
     /**
@@ -119,7 +129,7 @@ class PaymentDoneHandler
     }
 
     /**
-     * Transforms the given cart to an order.
+     * Transforms the given cart or quote to an order.
      *
      * @param SaleInterface $sale
      *
@@ -142,27 +152,13 @@ class PaymentDoneHandler
     }
 
     /**
-     * @param OrderInterface   $order   The transformation result sale
-     * @param PaymentInterface $payment The original payment
-     * @param TokenInterface[] $tokens  The original payment's tokens
+     * @param IdentityInterface $identity New payment's identity
+     * @param TokenInterface[]  $tokens   The original payment's tokens
      */
-    private function convertTokens(OrderInterface $order, PaymentInterface $payment, array $tokens)
+    private function convertTokens(IdentityInterface $identity, array $tokens)
     {
         if (empty($tokens)) {
             return;
-        }
-
-        // Find order's transformed payment
-        $identity = null;
-        foreach ($order->getPayments() as $p) {
-            if ($p->getNumber() === $payment->getNumber()) {
-                $identity = $this->getPaymentIdentity($p);
-                break;
-            }
-        }
-
-        if (null === $identity) {
-            throw new RuntimeException("Failed to convert payment tokens after sale transformation.");
         }
 
         // Update tokens identity

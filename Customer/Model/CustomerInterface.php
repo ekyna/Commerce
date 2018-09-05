@@ -264,6 +264,22 @@ interface CustomerInterface extends
     public function setOutstandingBalance($amount);
 
     /**
+     * Returns the state.
+     *
+     * @return string
+     */
+    public function getState();
+
+    /**
+     * Sets the state.
+     *
+     * @param string $state
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setState($state);
+
+    /**
      * Returns the description.
      *
      * @return string

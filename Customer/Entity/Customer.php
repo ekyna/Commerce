@@ -91,6 +91,11 @@ class Customer implements Model\CustomerInterface
     /**
      * @var string
      */
+    protected $state;
+
+    /**
+     * @var string
+     */
     protected $description;
 
 
@@ -102,6 +107,8 @@ class Customer implements Model\CustomerInterface
         $this->creditBalance = 0;
         $this->outstandingLimit = 0;
         $this->outstandingBalance = 0;
+
+        $this->state = Model\CustomerStates::STATE_NEW;
 
         $this->children = new ArrayCollection();
         $this->addresses = new ArrayCollection();
@@ -430,6 +437,24 @@ class Customer implements Model\CustomerInterface
     public function setOutstandingBalance($amount)
     {
         $this->outstandingBalance = (float)$amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getState()
+    {
+        return $this->state;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setState($state)
+    {
+        $this->state = $state;
 
         return $this;
     }
