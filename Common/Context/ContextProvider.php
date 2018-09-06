@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
@@ -135,9 +136,27 @@ class ContextProvider implements ContextProviderInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setContext($contextOrSale)
+    {
+        if ($contextOrSale instanceof ContextInterface) {
+            $this->context = $this->finalize($contextOrSale);
+        } elseif ($contextOrSale instanceof SaleInterface) {
+            $this->context = $this->createSaleContext($contextOrSale);
+        } else {
+            throw new InvalidArgumentException(
+                "Expected instance of " . ContextInterface::class . " or " . SaleInterface::class
+            );
+        }
+
+        return $this;
+    }
+
+    /**
      * Creates and sets the sale context.
      *
-     * @param SaleInterface $sale     The sale
+     * @param SaleInterface $sale The sale
      *
      * @return ContextInterface
      */

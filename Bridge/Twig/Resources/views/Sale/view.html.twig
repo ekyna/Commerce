@@ -130,7 +130,7 @@
             {%- endif -%}
             </span>
         </td>
-        <td id="{{ line.id }}_reference">{{ line.reference }}</td>
+        <td id="{{ line.id }}_reference" data-clipboard-copy="{{ line.reference }}">{{ line.reference }}</td>
         {% if view.vars.show_availability -%}
         <td class="sale-detail-availability" id="{{ line.id }}_availability">{{ line.availability|raw }}</td>
         {%- endif %}

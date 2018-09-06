@@ -19,4 +19,13 @@ interface ContextProviderInterface
      * @return ContextInterface
      */
     public function getContext(SaleInterface $sale = null);
+
+    /**
+     * Sets the context and fills empty properties with default values.
+     *
+     * @param ContextInterface|SaleInterface $contextOrSale
+     *
+     * @return ContextProviderInterface
+     */
+    public function setContext($contextOrSale);
 }
