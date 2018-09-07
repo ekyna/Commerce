@@ -319,9 +319,9 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
         </constraint>
-        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+        <!-- TODO <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">voucherNumber</option>
-        </constraint>
+        </constraint>-->
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">key</option>
         </constraint>
