@@ -110,14 +110,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         return $qb
             ->select('SUM(o.outstandingExpired)')
-            ->andWhere($qb->expr()->eq('o.state', ':state'))
-            ->andWhere($qb->expr()->eq('o.paymentState', ':payment_state'))
             ->getQuery()
             ->useQueryCache(true)
-            ->setParameters([
-                'state'         => OrderStates::STATE_ACCEPTED,
-                'payment_state' => PaymentStates::STATE_OUTSTANDING,
-            ])
             ->getSingleScalarResult();
     }
 
@@ -130,14 +124,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         return $qb
             ->select('SUM(o.outstandingAccepted)')
-            ->andWhere($qb->expr()->eq('o.state', ':state'))
-            ->andWhere($qb->expr()->eq('o.paymentState', ':payment_state'))
             ->getQuery()
             ->useQueryCache(true)
-            ->setParameters([
-                'state'         => OrderStates::STATE_ACCEPTED,
-                'payment_state' => PaymentStates::STATE_CAPTURED,
-            ])
             ->getSingleScalarResult();
     }
 
