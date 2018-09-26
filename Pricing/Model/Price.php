@@ -136,15 +136,15 @@ class Price
      */
     public function getTotal($discounted = true)
     {
-        $total = $this->base;
+        $base = $this->base;
 
         if ($discounted && $this->hasDiscounts()) {
             foreach ($this->discounts as $discount) {
-                $total -= $this->calculateAdjustment($discount, $this->base);
+                $base -= $this->calculateAdjustment($discount, $base);
             }
         }
 
-        $base = $total;
+        $total = $base;
 
         if (!empty($this->taxes) && $this->mode === VatDisplayModes::MODE_ATI) {
             foreach ($this->taxes as $tax) {

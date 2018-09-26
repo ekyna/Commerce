@@ -133,9 +133,10 @@ class AmountCalculator implements AmountCalculatorInterface
             }
 
             // Discount amount and result adjustments
+            $discountBase = $gross;
             foreach ($discountAdjustments as $data) {
-                $adjustment = $this->createPercentAdjustment($data, $gross, $currency);
-
+                $adjustment = $this->createPercentAdjustment($data, $discountBase, $currency);
+                $discountBase -= $adjustment->getAmount();
                 $discount += $adjustment->getAmount();
                 $discounts[] = $adjustment;
             }
