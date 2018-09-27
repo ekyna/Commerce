@@ -115,9 +115,13 @@ class SaleUpdater implements SaleUpdaterInterface
      */
     public function recalculate(SaleInterface $sale, $force = false)
     {
+        $changed = false;
+
         // TODO Test
         // 1. discounts
-        $changed = $this->updateDiscounts($sale);
+        if (0 == $sale->getPaidTotal()) { // Do not update if paid amount
+            $changed = $this->updateDiscounts($sale);
+        }
         // 2. weight total
         $changed |= $this->updateWeightTotal($sale);
         // 3. shipment amount (based on 2.)

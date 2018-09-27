@@ -2,11 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Doctrine\DBAL\Types\Type;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 
 /**
  * Class OrderRepository
@@ -87,17 +88,26 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     public function findDueOrders()
     {
         $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
 
         return $qb
-            ->andWhere($qb->expr()->eq('o.state', ':state'))
-            ->andWhere($qb->expr()->in('o.paymentState', ':payment_states'))
-            ->addOrderBy('o.outstandingDate', 'DESC')
+            // Shipped
+            ->andWhere($ex->eq('o.shipmentState', ':shipment_state'))
+            // Not paid
+            ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))
+            // Not refunded
+            ->andWhere($ex->neq('o.paymentState', ':payment_state'))
+            // Does not have outstanding date greater than today
+            ->andWhere($ex->not($ex->andX(
+                $ex->isNotNull('o.outstandingDate'),
+                $ex->gt('o.outstandingDate', ':today')
+            )))
+            ->addOrderBy('o.createdAt', 'ASC')
             ->getQuery()
             ->useQueryCache(true)
-            ->setParameters([
-                'state'          => OrderStates::STATE_ACCEPTED,
-                'payment_states' => [PaymentStates::STATE_CAPTURED, PaymentStates::STATE_OUTSTANDING],
-            ])
+            ->setParameter('shipment_state', ShipmentStates::STATE_COMPLETED)
+            ->setParameter('payment_state', PaymentStates::STATE_REFUNDED)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
             ->getResult();
     }
 

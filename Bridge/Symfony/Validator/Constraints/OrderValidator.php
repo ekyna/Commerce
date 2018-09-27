@@ -33,5 +33,15 @@ class OrderValidator extends ConstraintValidator
                 ->atPath('sample')
                 ->addViolation();
         }
+
+        if (null !== $customer = $order->getCustomer()) {
+            if ($customer->hasParent()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->customer_has_parent)
+                    ->atPath('customer')
+                    ->addViolation();
+            }
+        }
     }
 }

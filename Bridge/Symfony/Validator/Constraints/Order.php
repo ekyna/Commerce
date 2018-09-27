@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraint;
 class Order extends Constraint
 {
     public $sample_with_payments_or_invoices = 'ekyna_commerce.order.sample_with_payments_or_invoices';
+    public $customer_has_parent              = 'ekyna_commerce.order.customer_has_parent';
 
     /**
      * @inheritDoc

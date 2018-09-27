@@ -109,7 +109,35 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    public function handleStateChange(SaleInterface $sale)
+    protected function handleUpdate(SaleInterface $sale)
+    {
+        $changed = false;
+
+        if (null !== $customer = $sale->getCustomer()) {
+            if ($customer->hasParent()) {
+                $sale->setCustomer($customer->getParent());
+
+                if (null === $sale->getOriginCustomer()) {
+                    $sale->setOriginCustomer($customer);
+                }
+
+                $changed = true;
+
+                $this->persistenceHelper->persistAndRecompute($sale, false);
+            }
+        }
+
+        $changed |= parent::handleUpdate($sale);
+
+        return $changed;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param OrderInterface $sale
+     */
+    protected function handleStateChange(SaleInterface $sale)
     {
         parent::handleStateChange($sale);
 

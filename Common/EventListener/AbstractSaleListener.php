@@ -501,7 +501,11 @@ abstract class AbstractSaleListener
      */
     protected function isDiscountUpdateNeeded(SaleInterface $sale)
     {
-        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount', 'customerGroup', 'customer'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount'])) {
+            return true;
+        }
+
+        if ((0 == $sale->getPaidTotal()) && $this->persistenceHelper->isChanged($sale, ['customerGroup', 'customer'])) {
             return true;
         }
 
