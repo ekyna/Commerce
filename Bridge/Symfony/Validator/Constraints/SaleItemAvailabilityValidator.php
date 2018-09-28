@@ -106,7 +106,7 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
         }
 
         $quantity = $item->getTotalQuantity();
-        $availability = $this->availabilityHelper->getAvailability($subject);
+        $availability = $this->availabilityHelper->getAvailability($subject, is_null($item->getParent()));
 
         if ($quantity < $availability->getMinimumQuantity()) {
             $message = $availability->getMinimumMessage();

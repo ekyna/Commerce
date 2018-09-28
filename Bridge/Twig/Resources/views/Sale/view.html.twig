@@ -117,9 +117,8 @@
                 {%- endfor %}
             {%- endif %}
             <span>
-            {%- if line.vars.link_path is defined -%}
-                <a href="{{ line.vars.link_path }}"
-                    {% if line.vars.link_title is defined %} title="{{ line.vars.link_title }}"{% endif %}>
+            {%- if line.vars.link is defined -%}
+                <a{% with {attr: {'href': 'javascript:void(0)'}|merge(line.vars.link)} %} {{ block('attributes') }}{% endwith %}>
                     {{ line.designation|raw }}
                 </a>
             {%- else -%}

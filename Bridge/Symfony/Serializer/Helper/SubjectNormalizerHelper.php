@@ -92,9 +92,10 @@ class SubjectNormalizerHelper
             'available'     => $this->formatter->number($subject->getAvailableStock()),
             'virtual'       => $this->formatter->number($subject->getVirtualStock()),
             'floor'         => $this->formatter->number($subject->getStockFloor()),
+            'geocode'       => $subject->getGeocode(),
             'replenishment' => $this->formatter->number($subject->getReplenishmentTime()),
             'eda'           => $eda,
-            'moq'           => $subject->getMinimumOrderQuantity(),
+            'moq'           => $this->formatter->number($subject->getMinimumOrderQuantity()),
             'quote_only'    => $subject->isQuoteOnly()
                 ? $translator->trans('ekyna_core.value.yes')
                 : $translator->trans('ekyna_core.value.no'),

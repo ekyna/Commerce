@@ -55,7 +55,10 @@ class AvailabilityViewType extends AbstractViewType
         }
 
         $quantity = $item->getTotalQuantity();
-        $availability = $this->availabilityHelper->getAvailability($subject, $options['private']);
+
+        $availability = $this
+            ->availabilityHelper
+            ->getAvailability($subject, is_null($item->getParent()), $options['private']);
 
         $messages = $availability->getMessagesForQuantity($quantity);
         $view->setAvailability(

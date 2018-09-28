@@ -40,17 +40,18 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
      * Returns the subject availability for the given quantity.
      *
      * @param StockSubjectInterface $subject
+     * @param bool                  $root
      * @param bool                  $short
      *
      * @return Availability
      */
-    public function getAvailability(StockSubjectInterface $subject, bool $short = false)
+    public function getAvailability(StockSubjectInterface $subject, bool $root = true, bool $short = false)
     {
         $minQty = $aQty = $rQty = 0;
         $maxQty = INF;
         $minMsg = $maxMsg = $aMsg = $rMsg = null;
 
-        if ($subject->isQuoteOnly()) {
+        if ($root && $subject->isQuoteOnly()) {
             $maxQty = 0;
             $oMsg = $maxMsg = $this->translate('quote_only', [], $short);
         } else {
@@ -88,7 +89,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             }
 
             // Overflow message
-            if ($subject->isEndOfLife()) {
+            if ($root && $subject->isEndOfLife()) {
                 $oMsg = $this->translate('end_of_life', [], $short);
             } elseif (
                 $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME &&
@@ -117,13 +118,17 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
     /**
      * @inheritdoc
      */
-    public function getAvailabilityMessage(StockSubjectInterface $subject, $quantity = null, $short = false)
-    {
-        if (0 >= $quantity) {
-            $quantity = 0;
+    public function getAvailabilityMessage(
+        StockSubjectInterface $subject,
+        float $quantity = null,
+        bool $root = true,
+        bool $short = false
+    ) {
+        if (is_null($quantity)) {
+            $quantity = $subject->getMinimumOrderQuantity();
         }
 
-        if ($subject->isQuoteOnly()) {
+        if ($root && $subject->isQuoteOnly()) {
             return $this->translate('quote_only', [], $short);
         }
 
@@ -155,7 +160,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             }
         }
 
-        if ($subject->isEndOfLife()) {
+        if ($root && $subject->isEndOfLife()) {
             return $this->translate('end_of_life', [], $short);
         }
 
