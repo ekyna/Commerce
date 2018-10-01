@@ -17,7 +17,7 @@
         <field name="sameAddress" column="same_address" type="boolean"/>
 
         <field name="weightTotal" column="weight_total" type="decimal" precision="10" scale="3"/>
-        <field name="shipmentAmount" column="shipment_amount" type="decimal" precision="10" scale="5" nullable="true"/>
+        <field name="shipmentAmount" column="shipment_amount" type="decimal" precision="15" scale="5" nullable="true"/>
 
         <field name="autoShipping" column="auto_shipping" type="boolean"/>
         <field name="autoDiscount" column="auto_discount" type="boolean"/>
@@ -26,15 +26,15 @@
         <field name="taxExempt" column="tax_exempt" type="boolean"/>
         <field name="vatDisplayMode" column="vat_display_mode" type="string" length="4"/>
 
-        <field name="netTotal" column="net_total" type="decimal" precision="12" scale="5"/>
-        <field name="adjustmentTotal" column="adjustment_total" type="decimal" precision="10" scale="5"/>
-        <field name="depositTotal" column="deposit_total" type="decimal" precision="12" scale="5"/>
-        <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
-        <field name="paidTotal" column="paid_total" type="decimal" precision="12" scale="5"/>
-        <field name="pendingTotal" column="pending_total" type="decimal" precision="12" scale="5"/>
-        <field name="outstandingAccepted" column="outstanding_accepted" type="decimal" precision="12" scale="5"/>
-        <field name="outstandingExpired" column="outstanding_expired" type="decimal" precision="12" scale="5"/>
-        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="5"/>
+        <field name="netTotal" column="net_total" type="decimal" precision="15" scale="5"/>
+        <field name="adjustmentTotal" column="adjustment_total" type="decimal" precision="15" scale="5"/>
+        <field name="depositTotal" column="deposit_total" type="decimal" precision="15" scale="5"/>
+        <field name="grandTotal" column="grand_total" type="decimal" precision="15" scale="5"/>
+        <field name="paidTotal" column="paid_total" type="decimal" precision="15" scale="5"/>
+        <field name="pendingTotal" column="pending_total" type="decimal" precision="15" scale="5"/>
+        <field name="outstandingAccepted" column="outstanding_accepted" type="decimal" precision="15" scale="5"/>
+        <field name="outstandingExpired" column="outstanding_expired" type="decimal" precision="15" scale="5"/>
+        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="15" scale="5"/>
         <field name="outstandingDate" column="outstanding_date" type="datetime" nullable="true"/>
 
         <field name="state" column="state" type="string" length="16"/>

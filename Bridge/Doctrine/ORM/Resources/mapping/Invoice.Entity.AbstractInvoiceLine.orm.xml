@@ -11,15 +11,15 @@
         <field name="designation" column="designation" type="string" length="255" nullable="true"/>
         <field name="description" column="description" type="string" length="255" nullable="true"/>
         <field name="reference" column="reference" type="string" length="32" nullable="true"/>
-        <field name="unit" column="unit" type="decimal" precision="10" scale="3"/>
+        <field name="unit" column="unit" type="decimal" precision="13" scale="3"/>
         <field name="quantity" column="quantity" type="decimal" precision="10" scale="3"/>
-        <field name="gross" column="gross" type="decimal" precision="10" scale="3"/>
-        <field name="discount" column="discount" type="decimal" precision="10" scale="3"/>
+        <field name="gross" column="gross" type="decimal" precision="13" scale="3"/>
+        <field name="discount" column="discount" type="decimal" precision="13" scale="3"/>
         <field name="discountRates" column="discount_rates" type="json_array"/>
-        <field name="base" column="base" type="decimal" precision="10" scale="3"/>
-        <field name="tax" column="tax" type="decimal" precision="10" scale="3"/>
+        <field name="base" column="base" type="decimal" precision="13" scale="3"/>
+        <field name="tax" column="tax" type="decimal" precision="13" scale="3"/>
         <field name="taxRates" column="tax_rates" type="json_array"/>
-        <field name="total" column="total" type="decimal" precision="10" scale="3"/>
+        <field name="total" column="total" type="decimal" precision="13" scale="3"/>
 
     </mapped-superclass>
 

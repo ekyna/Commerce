@@ -16,7 +16,7 @@
         <field name="reference" column="reference" type="string" length="32" nullable="false"/>
 
         <field name="quantity" column="quantity" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="netPrice" column="net_price" type="decimal" precision="10" scale="5" nullable="true"/>
+        <field name="netPrice" column="net_price" type="decimal" precision="15" scale="5" nullable="true"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit"
                     field="stockUnit" mapped-by="supplierOrderItem"/>

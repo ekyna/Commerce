@@ -24,7 +24,7 @@
         <field name="designation" column="designation" type="string" length="255" nullable="false"/>
         <field name="reference" column="reference" type="string" length="32" nullable="false"/>
 
-        <field name="netPrice" column="net_price" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="netPrice" column="net_price" type="decimal" precision="13" scale="3" nullable="false"/>
         <field name="weight" column="weight" type="decimal" precision="7" scale="3" nullable="true"/>
 
         <field name="availableStock" column="available_stock" type="decimal" precision="10" scale="5" nullable="true"/>

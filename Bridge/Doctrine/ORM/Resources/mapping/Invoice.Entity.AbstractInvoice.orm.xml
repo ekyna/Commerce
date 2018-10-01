@@ -17,12 +17,12 @@
         <field name="deliveryAddress" column="delivery_address" type="json_array" nullable="true"/>
         <field name="relayPoint" column="relay_point" type="json_array" nullable="true"/>
 
-        <field name="goodsBase" column="goods_base" type="decimal" precision="12" scale="5"/>
-        <field name="discountBase" column="discount_base" type="decimal" precision="12" scale="5"/>
-        <field name="shipmentBase" column="shipment_base" type="decimal" precision="12" scale="5"/>
-        <field name="taxesTotal" column="taxes_total" type="decimal" precision="12" scale="5"/>
+        <field name="goodsBase" column="goods_base" type="decimal" precision="15" scale="5"/>
+        <field name="discountBase" column="discount_base" type="decimal" precision="15" scale="5"/>
+        <field name="shipmentBase" column="shipment_base" type="decimal" precision="15" scale="5"/>
+        <field name="taxesTotal" column="taxes_total" type="decimal" precision="15" scale="5"/>
         <field name="taxesDetails" column="taxes_details" type="json_array"/>
-        <field name="grandTotal" column="grand_total" type="decimal" precision="12" scale="5"/>
+        <field name="grandTotal" column="grand_total" type="decimal" precision="15" scale="5"/>
 
         <field name="comment" column="comment" type="text" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>

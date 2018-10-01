@@ -8,7 +8,7 @@
     <mapped-superclass name="Ekyna\Component\Commerce\Shipment\Entity\AbstractShipmentParcel">
 
         <field name="weight" column="weight" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="valorization" column="valorization" type="decimal" precision="10" scale="3" nullable="true"/>
+        <field name="valorization" column="valorization" type="decimal" precision="13" scale="3" nullable="true"/>
         <field name="trackingNumber" column="tracking_number" type="string" length="32" nullable="true"/>
 
     </mapped-superclass>

@@ -13,7 +13,7 @@
         </id>
 
         <field name="weight" column="weight" type="decimal" precision="7" scale="3" nullable="false"/>
-        <field name="netPrice" column="net_price" type="decimal" precision="8" scale="5" nullable="false"/>
+        <field name="netPrice" column="net_price" type="decimal" precision="15" scale="5" nullable="false"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Entity\ShipmentZone"
                      field="zone" inversed-by="prices">

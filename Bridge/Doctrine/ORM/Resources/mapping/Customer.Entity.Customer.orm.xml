@@ -30,9 +30,9 @@
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
 
-        <field name="creditBalance" column="credit_balance" type="decimal" precision="12" scale="3"/>
-        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="12" scale="3"/>
-        <field name="outstandingBalance" column="outstanding_balance" type="decimal" precision="12" scale="3"/>
+        <field name="creditBalance" column="credit_balance" type="decimal" precision="13" scale="3"/>
+        <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="13" scale="3"/>
+        <field name="outstandingBalance" column="outstanding_balance" type="decimal" precision="13" scale="3"/>
 
         <field name="state" column="state" type="string" length="16" nullable="false"/>
         <field name="description" column="description" type="text" nullable="true"/>

@@ -10,7 +10,7 @@
 
         <field name="key" column="secret" type="string" length="32"/>
         <field name="number" column="number" type="string" length="16"/>
-        <field name="amount" column="amount" type="decimal" precision="10" scale="5"/>
+        <field name="amount" column="amount" type="decimal" precision="15" scale="5"/>
         <field name="state" column="state" type="string" length="16"/>
         <field name="details" column="details" type="json_array"/>
         <field name="description" column="description" type="string" length="255" nullable="true"/>
