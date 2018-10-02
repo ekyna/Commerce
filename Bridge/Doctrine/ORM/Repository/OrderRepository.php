@@ -3,11 +3,14 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Type;
+use Doctrine\ORM\Query\Expr;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers as Trigger;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 
 /**
  * Class OrderRepository
@@ -133,10 +136,80 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         $qb = $this->createQueryBuilder('o');
 
         return $qb
+            ->join('o.paymentTerm', 't')
             ->select('SUM(o.outstandingAccepted)')
+            ->where($this->getDueClauses($qb->expr()))
             ->getQuery()
+            ->setParameters($this->getDueParameters())
             ->useQueryCache(true)
+            ->useResultCache(true, 300)
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCustomersPendingDue()
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        return $qb
+            ->join('o.paymentTerm', 't')
+            ->select('SUM(o.outstandingAccepted)')
+            ->where($qb->expr()->not($this->getDueClauses($qb->expr())))
+            ->getQuery()
+            ->setParameters($this->getDueParameters())
+            ->useQueryCache(true)
+            ->useResultCache(true, 300)
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Returns the due clause (payment term triggers VS order states).
+     *
+     * @param Expr $ex
+     *
+     * @return Expr\Orx
+     */
+    private function getDueClauses(Expr $ex)
+    {
+        return $ex->orX(
+            $ex->andX(
+                $ex->eq('t.trigger', ':trigger1'),
+                $ex->in('o.invoiceState', ':state1')
+            ),
+            $ex->andX(
+                $ex->eq('t.trigger', ':trigger2'),
+                $ex->eq('o.invoiceState', ':state2')
+            ),
+            $ex->andX(
+                $ex->eq('t.trigger', ':trigger3'),
+                $ex->in('o.shipmentState', ':state3')
+            ),
+            $ex->andX(
+                $ex->eq('t.trigger', ':trigger4'),
+                $ex->eq('o.shipmentState', ':state4')
+            )
+        );
+    }
+
+    /**
+     * Returns the due clause's parameters.
+     *
+     * @return array
+     */
+    private function getDueParameters()
+    {
+        return [
+            'trigger1' => Trigger::TRIGGER_INVOICED,
+            'state1'   => [InvoiceStates::STATE_PARTIAL, InvoiceStates::STATE_COMPLETED],
+            'trigger2' => Trigger::TRIGGER_FULLY_INVOICED,
+            'state2'   => InvoiceStates::STATE_COMPLETED,
+            'trigger3' => Trigger::TRIGGER_SHIPPED,
+            'state3'   => [ShipmentStates::STATE_PARTIAL, ShipmentStates::STATE_COMPLETED],
+            'trigger4' => Trigger::TRIGGER_FULLY_SHIPPED,
+            'state4'   => ShipmentStates::STATE_COMPLETED,
+        ];
     }
 
     /**

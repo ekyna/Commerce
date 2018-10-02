@@ -53,4 +53,11 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      * @return float
      */
     public function getCustomersFallDue();
+
+    /**
+     * Returns the customers pending due.
+     *
+     * @return float
+     */
+    public function getCustomersPendingDue();
 }
