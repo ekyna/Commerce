@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Type;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers as Trigger;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
@@ -93,123 +93,196 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
 
-        return $qb
-            // Shipped
-            ->andWhere($ex->eq('o.shipmentState', ':shipment_state'))
-            // Not paid
-            ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))
-            // Not refunded
-            ->andWhere($ex->neq('o.paymentState', ':payment_state'))
-            // Does not have outstanding date greater than today
-            ->andWhere($ex->not($ex->andX(
-                $ex->isNotNull('o.outstandingDate'),
-                $ex->gt('o.outstandingDate', ':today')
-            )))
-            ->addOrderBy('o.createdAt', 'ASC')
-            ->getQuery()
-            ->useQueryCache(true)
-            ->setParameter('shipment_state', ShipmentStates::STATE_COMPLETED)
-            ->setParameter('payment_state', PaymentStates::STATE_REFUNDED)
+        $query = $qb
+            ->leftJoin('o.paymentTerm', 't')
+            ->andWhere($ex->eq('o.sample', ':not_sample'))               // Not sample
+            ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))           // Paid total lower than grand total
+            ->andWhere($ex->orX(
+                $ex->andX(                                               // Outstanding
+                    $ex->isNotNull('o.paymentTerm'),                     // - With payment term
+                    $this->getDueClauses(),                              // - Terms triggered
+                    $qb->expr()->lte('o.outstandingDate', ':today')      // - Payment limit date lower than or equal today
+                ),
+                $ex->andX(                                               // Regular
+                    $ex->isNull('o.paymentTerm'),                        // - Without payment term
+                    $ex->eq('o.shipmentState', ':state_fully_shipped')   // - Shipped
+                )
+            ))
+            ->addOrderBy('o.outstandingDate', 'ASC')
+            ->getQuery();
+
+        $this->setDueParameters($query);
+
+        return $query
+            ->setParameter('not_sample', false)
             ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->useQueryCache(true)
             ->getResult();
     }
 
     /**
-     * @inheritDoc
+     * @return array
      */
-    public function getCustomersExpiredDue()
+    public function getRegularDue()
     {
         $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
 
-        return $qb
-            ->select('SUM(o.outstandingExpired)')
-            ->getQuery()
+        $query = $qb
+            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':not_sample'),                 // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),             // Paid total lower than grand total
+                $ex->eq('o.shipmentState', ':state_fully_shipped'), // Shipped
+                $ex->isNull('o.paymentTerm')                        // Without payment term
+            // TODO not refunded ?
+            ))
+            ->getQuery();
+
+
+        return $query
+            ->setParameter('not_sample', false)
+            ->setParameter('state_fully_shipped', ShipmentStates::STATE_COMPLETED)
             ->useQueryCache(true)
+            //->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
     /**
      * @inheritDoc
      */
-    public function getCustomersFallDue()
+    public function getOutstandingExpiredDue()
     {
         $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
 
-        return $qb
+        $query = $qb
             ->join('o.paymentTerm', 't')
-            ->select('SUM(o.outstandingAccepted)')
-            ->where($this->getDueClauses($qb->expr()))
-            ->getQuery()
-            ->setParameters($this->getDueParameters())
+            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            //->select('SUM(o.outstandingExpired)')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':not_sample'),               // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),           // Paid total lower than grand total
+                $qb->expr()->lte('o.outstandingDate', ':today'),  // Payment limit date lower than today
+                $this->getDueClauses()                            // Terms triggered
+            ))
+            ->getQuery();
+
+        $this->setDueParameters($query);
+
+        return $query
+            ->setParameter('not_sample', false)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
             ->useQueryCache(true)
-            ->useResultCache(true, 300)
+            //->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
     /**
      * @inheritDoc
      */
-    public function getCustomersPendingDue()
+    public function getOutstandingToGoDue()
     {
         $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
 
-        return $qb
+        $query = $qb
             ->join('o.paymentTerm', 't')
-            ->select('SUM(o.outstandingAccepted)')
-            ->where($qb->expr()->not($this->getDueClauses($qb->expr())))
-            ->getQuery()
-            ->setParameters($this->getDueParameters())
+            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            //->select('SUM(o.outstandingAccepted)')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':not_sample'),               // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),           // Paid total lower than grand total
+                $qb->expr()->gt('o.outstandingDate', ':today'),   // Payment limit date greater than today
+                $this->getDueClauses()                            // Terms triggered
+            ))
+            ->getQuery();
+
+        $this->setDueParameters($query);
+
+        return $query
+            ->setParameter('not_sample', false)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
             ->useQueryCache(true)
-            ->useResultCache(true, 300)
+            //->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
     /**
-     * Returns the due clause (payment term triggers VS order states).
-     *
-     * @param Expr $ex
-     *
-     * @return Expr\Orx
+     * @inheritDoc
      */
-    private function getDueClauses(Expr $ex)
+    public function getOutstandingPendingDue()
     {
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        $query = $qb
+            ->join('o.paymentTerm', 't')
+            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            //->select('SUM(o.outstandingAccepted)')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':not_sample'),               // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),           // Paid total lower than grand total
+                $ex->not($this->getDueClauses())                  // Terms not triggered
+            ))
+            ->getQuery();
+
+        $this->setDueParameters($query);
+
+        return $query
+            ->setParameter('not_sample', false)
+            ->useQueryCache(true)
+            //->useResultCache(true, 300);
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Returns the due clause:
+     * - payment term triggered
+     * - payment date lower than or equal today
+     *
+     * @return Expr\Base
+     */
+    private function getDueClauses()
+    {
+        $ex = new Expr();
+
         return $ex->orX(
             $ex->andX(
-                $ex->eq('t.trigger', ':trigger1'),
-                $ex->in('o.invoiceState', ':state1')
+                $ex->eq('t.trigger', ':trigger_invoiced'),
+                $ex->in('o.invoiceState', ':state_invoiced')
             ),
             $ex->andX(
-                $ex->eq('t.trigger', ':trigger2'),
-                $ex->eq('o.invoiceState', ':state2')
+                $ex->eq('t.trigger', ':trigger_fully_invoiced'),
+                $ex->eq('o.invoiceState', ':state_fully_invoiced')
             ),
             $ex->andX(
-                $ex->eq('t.trigger', ':trigger3'),
-                $ex->in('o.shipmentState', ':state3')
+                $ex->eq('t.trigger', ':trigger_shipped'),
+                $ex->in('o.shipmentState', ':state_shipped')
             ),
             $ex->andX(
-                $ex->eq('t.trigger', ':trigger4'),
-                $ex->eq('o.shipmentState', ':state4')
+                $ex->eq('t.trigger', ':trigger_fully_shipped'),
+                $ex->eq('o.shipmentState', ':state_fully_shipped')
             )
         );
     }
 
     /**
-     * Returns the due clause's parameters.
+     * Set the due clause's parameters.
      *
-     * @return array
+     * @param Query $query
      */
-    private function getDueParameters()
+    private function setDueParameters(Query $query)
     {
-        return [
-            'trigger1' => Trigger::TRIGGER_INVOICED,
-            'state1'   => [InvoiceStates::STATE_PARTIAL, InvoiceStates::STATE_COMPLETED],
-            'trigger2' => Trigger::TRIGGER_FULLY_INVOICED,
-            'state2'   => InvoiceStates::STATE_COMPLETED,
-            'trigger3' => Trigger::TRIGGER_SHIPPED,
-            'state3'   => [ShipmentStates::STATE_PARTIAL, ShipmentStates::STATE_COMPLETED],
-            'trigger4' => Trigger::TRIGGER_FULLY_SHIPPED,
-            'state4'   => ShipmentStates::STATE_COMPLETED,
-        ];
+        $query
+            ->setParameter('trigger_invoiced', Trigger::TRIGGER_INVOICED)
+            ->setParameter('state_invoiced', [InvoiceStates::STATE_PARTIAL, InvoiceStates::STATE_COMPLETED])
+            ->setParameter('trigger_fully_invoiced', Trigger::TRIGGER_FULLY_INVOICED)
+            ->setParameter('state_fully_invoiced', InvoiceStates::STATE_COMPLETED)
+            ->setParameter('trigger_shipped', Trigger::TRIGGER_SHIPPED)
+            ->setParameter('state_shipped', [ShipmentStates::STATE_PARTIAL, ShipmentStates::STATE_COMPLETED])
+            ->setParameter('trigger_fully_shipped', Trigger::TRIGGER_FULLY_SHIPPED)
+            ->setParameter('state_fully_shipped', ShipmentStates::STATE_COMPLETED);
     }
 
     /**

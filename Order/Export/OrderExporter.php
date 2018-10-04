@@ -56,11 +56,33 @@ class OrderExporter
             fputcsv($handle, $headers, ';', '"');
         }
 
+        $total = 0;
+        $expired = 0;
+
+        // Order rows
         foreach ($orders as $order) {
             if (!empty($row = $this->buildRow($order))) {
                 fputcsv($handle, $row, ';', '"');
+
+                $total += $row['due_amount'];
+                $expired += $row['outstanding_expired'];
             }
         }
+
+        // Total row
+        fputcsv($handle, [
+            'id'                  => '',
+            'number'              => '',
+            'company'             => '',
+            'payment_state'       => '',
+            'shipment_state'      => '',
+            'invoice_state'       => '',
+            'payment_term'       => '',
+            'due_amount'          => $total,
+            'outstanding_expired' => $expired,
+            'outstanding_date'    => '',
+            'created_at'          => '',
+        ], ';', '"');
 
         fclose($handle);
 
@@ -85,11 +107,17 @@ class OrderExporter
     protected function buildHeaders()
     {
         return [
+            'id',
             'number',
             'company',
-            'payment state',
-            'due total',
-            'due date',
+            'payment_state',
+            'shipment_state',
+            'invoice_state',
+            'payment_term',
+            'due_amount',
+            'outstanding_expired',
+            'outstanding_date',
+            'created_at',
         ];
     }
 
@@ -103,17 +131,27 @@ class OrderExporter
     protected function buildRow(OrderInterface $order)
     {
         $date = null;
+        $term = null;
 
         if (null !== $date = $order->getOutstandingDate()) {
             $date = $this->formatter->date($date);
         }
+        if (null !== $term = $order->getPaymentTerm()) {
+            $term = $term->getName();
+        }
 
         return [
-            $order->getNumber(),
-            $order->getCompany(),
-            $order->getPaymentState(),
-            $order->getGrandTotal() - $order->getPaidTotal(),
-            $date,
+            'id'                  => $order->getId(),
+            'number'              => $order->getNumber(),
+            'company'             => $order->getCompany(),
+            'payment_state'       => $order->getPaymentState(),
+            'shipment_state'      => $order->getShipmentState(),
+            'invoice_state'       => $order->getInvoiceState(),
+            'payment_term'        => $term,
+            'due_amount'          => $order->getGrandTotal() - $order->getPaidTotal(),
+            'outstanding_expired' => $order->getOutstandingExpired(),
+            'outstanding_date'    => $date,
+            'created_at'          => $this->formatter->date($order->getCreatedAt()),
         ];
     }
 }

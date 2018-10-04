@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
-use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -106,9 +105,10 @@ class AddressValidator extends ConstraintValidator
         ];
 
         if (null !== $country = $address->getCountry()) {
+            // TODO Use MisdPhoneNumberBundle's constraint when multiple types handled
             $config['phone'] = [
                 new PhoneNumber([
-                    'type'          => 'fixed_line',
+                    'type'          => ['fixed_line', 'voip'],
                     'defaultRegion' => $country->getCode(),
                 ]),
             ];
