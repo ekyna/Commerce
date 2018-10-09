@@ -239,11 +239,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     }
 
     /**
-     * Builds the remaining sale items list.
-     *
-     * @param Shipment\ShipmentInterface $shipment
-     *
-     * @return Shipment\RemainingList
+     * @inheritdoc
      */
     public function buildRemainingList(Shipment\ShipmentInterface $shipment)
     {
@@ -403,9 +399,8 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
      *
      * @return bool
      */
-    private function hasStockableSubject(
-        Common\SaleItemInterface $saleItem
-    ) {
+    private function hasStockableSubject(Common\SaleItemInterface $saleItem)
+    {
         if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
             return false;
         }

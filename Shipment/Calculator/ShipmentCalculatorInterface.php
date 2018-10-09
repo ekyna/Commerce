@@ -87,4 +87,13 @@ interface ShipmentCalculatorInterface
      * @return array
      */
     public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject);
+
+    /**
+     * Builds the remaining sale items list.
+     *
+     * @param Shipment\ShipmentInterface $shipment
+     *
+     * @return Shipment\RemainingList
+     */
+    public function buildRemainingList(Shipment\ShipmentInterface $shipment);
 }
