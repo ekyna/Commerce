@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Cart\Entity;
 
 use Ekyna\Component\Commerce\Cart\Model;
 use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
  * Class CartAddress
@@ -102,5 +103,13 @@ class CartAddress extends AbstractAddress implements Model\CartAddressInterface
         }
 
         return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSale()
+    {
+        return $this->getCart();
     }
 }

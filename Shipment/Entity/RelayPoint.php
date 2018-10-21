@@ -24,7 +24,12 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     /**
      * @var string
      */
-    protected $platform;
+    protected $platformName;
+
+    /**
+     * @var array
+     */
+    protected $platformData = [];
 
     /**
      * @var string
@@ -32,14 +37,18 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     protected $number;
 
     /**
+     * @var OpeningHour[]
+     */
+    protected $openingHours = [];
+
+    // TODO protected $holidays;
+
+    /**
+     * (not persisted)
+     *
      * @var int
      */
     protected $distance;
-
-    /**
-     * @var array
-     */
-    protected $openingHours = [];
 
 
     /**
@@ -53,21 +62,36 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     /**
      * @inheritdoc
      */
-    public function getPlatform()
+    public function getPlatformName()
     {
-        return $this->platform;
+        return $this->platformName;
     }
 
     /**
      * @inheritdoc
      */
-    public function setPlatform($name)
+    public function setPlatformName($name)
     {
-        $this->platform = $name;
+        $this->platformName = $name;
 
         return $this;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getPlatformData()
+    {
+        return $this->platformData;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPlatformData(array $platformData)
+    {
+        $this->platformData = $platformData;
+    }
 
     /**
      * @inheritdoc
@@ -90,24 +114,6 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     /**
      * @inheritdoc
      */
-    public function getDistance()
-    {
-        return $this->distance;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setDistance($distance)
-    {
-        $this->distance = $distance;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getOpeningHours()
     {
         return $this->openingHours;
@@ -119,6 +125,24 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     public function addOpeningHour(OpeningHour $openingHour)
     {
         $this->openingHours[] = $openingHour;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDistance()
+    {
+        return $this->distance;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDistance($distance)
+    {
+        $this->distance = $distance;
 
         return $this;
     }

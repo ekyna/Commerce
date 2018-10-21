@@ -13,13 +13,16 @@ interface ShipmentLabelInterface
     const TYPE_RETURN   = 'return';
     const TYPE_PROOF    = 'proof';
     const TYPE_SUMMARY  = 'summary';
+    const TYPE_CUSTOMS  = 'customs';
 
     const FORMAT_PNG  = 'image/png';
     const FORMAT_GIF  = 'image/gif';
     const FORMAT_JPEG = 'image/jpeg';
+    const FORMAT_PDF  = 'application/pdf';
 
     const SIZE_A6 = 'a6';
     const SIZE_A5 = 'a5';
+    const SIZE_A4 = 'a4';
 
 
     /**

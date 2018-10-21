@@ -22,7 +22,7 @@ class RelayPointRepository extends ResourceRepository implements RelayPointRepos
 
         return $qb
             ->andWhere($qb->expr()->eq($alias . '.number', ':number'))
-            ->andWhere($qb->expr()->eq($alias . '.platform', ':platform'))
+            ->andWhere($qb->expr()->eq($alias . '.platformName', ':platform'))
             ->getQuery()
             ->useQueryCache(true)
             ->setParameters([

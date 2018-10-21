@@ -103,4 +103,12 @@ class OrderAddress extends AbstractAddress implements Model\OrderAddressInterfac
 
         return null;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSale()
+    {
+        return $this->getOrder();
+    }
 }

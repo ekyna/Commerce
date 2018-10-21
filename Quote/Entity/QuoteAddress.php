@@ -104,4 +104,12 @@ class QuoteAddress extends AbstractAddress implements Model\QuoteAddressInterfac
 
         return null;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSale()
+    {
+        return $this->getQuote();
+    }
 }

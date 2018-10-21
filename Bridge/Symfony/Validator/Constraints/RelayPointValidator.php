@@ -85,7 +85,7 @@ class RelayPointValidator extends ConstraintValidator
         }
 
         // Assert that the given relay point belongs to the gateway
-        if ($point->getPlatform() !== $gateway->getPlatform()->getName()) {
+        if ($point->getPlatformName() !== $gateway->getPlatform()->getName()) {
             $this->context
                 ->buildViolation($constraint->gateway_miss_match)
                 ->atPath($constraint->relayPointPath)

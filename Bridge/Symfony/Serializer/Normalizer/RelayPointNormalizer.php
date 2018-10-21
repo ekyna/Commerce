@@ -41,7 +41,7 @@ class RelayPointNormalizer extends AbstractResourceNormalizer
             $data = [
                 'id'          => $relayPoint->getId(),
                 'number'      => $relayPoint->getNumber(),
-                'platform'    => $relayPoint->getPlatform(),
+                'platform'    => $relayPoint->getPlatformName(),
                 'company'     => $relayPoint->getCompany(),
                 //'gender'      => $relayPoint->getGender(),
                 //'first_name'  => $relayPoint->getFirstName(),

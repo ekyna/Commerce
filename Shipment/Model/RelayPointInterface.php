@@ -34,7 +34,7 @@ interface RelayPointInterface extends ResourceInterface, AddressInterface, Times
      *
      * @return string
      */
-    public function getPlatform();
+    public function getPlatformName();
 
     /**
      * Sets the platform name.
@@ -43,23 +43,21 @@ interface RelayPointInterface extends ResourceInterface, AddressInterface, Times
      *
      * @return $this|RelayPointInterface
      */
-    public function setPlatform($name);
+    public function setPlatformName($name);
 
     /**
-     * Returns the distance (meters).
+     * Returns the platform data.
      *
-     * @return int
+     * @return array
      */
-    public function getDistance();
+    public function getPlatformData();
 
     /**
-     * Sets the distance.
+     * Sets the platform data.
      *
-     * @param int $distance
-     *
-     * @return $this|RelayPointInterface
+     * @param array $data
      */
-    public function setDistance($distance);
+    public function setPlatformData(array $data);
 
     /**
      * Returns the opening hours.
@@ -76,4 +74,20 @@ interface RelayPointInterface extends ResourceInterface, AddressInterface, Times
      * @return $this|RelayPointInterface
      */
     public function addOpeningHour(OpeningHour $openingHour);
+
+    /**
+     * Returns the distance (meters).
+     *
+     * @return int
+     */
+    public function getDistance();
+
+    /**
+     * Sets the distance.
+     *
+     * @param int $distance
+     *
+     * @return $this|RelayPointInterface
+     */
+    public function setDistance($distance);
 }

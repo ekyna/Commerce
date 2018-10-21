@@ -10,7 +10,7 @@
             table="commerce_shipment_relay_point">
 
         <unique-constraints>
-            <unique-constraint columns="number,platform" name="unique_commerce_relay_point"/>
+            <unique-constraint columns="number,platform_name" name="unique_commerce_relay_point"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
@@ -18,7 +18,8 @@
         </id>
 
         <field name="number" column="number" type="string" length="32" nullable="false"/>
-        <field name="platform" column="platform" type="string" length="32" nullable="false"/>
+        <field name="platformName" column="platform_name" type="string" length="32" nullable="false"/>
+        <field name="platformData" column="platform_data" type="json_array" nullable="true"/>
         <field name="openingHours" column="opening_hours" type="opening_hours" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">

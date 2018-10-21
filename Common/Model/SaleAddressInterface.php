@@ -11,5 +11,10 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface SaleAddressInterface extends AddressInterface, ResourceInterface
 {
-
+    /**
+     * Returns the sale.
+     *
+     * @return SaleInterface
+     */
+    public function getSale();
 }
