@@ -115,6 +115,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             $quantity = $stockUnit->getAdjustedQuantity() + $quantity;
         }
 
+        if ($quantity + $stockUnit->getReceivedQuantity() < $stockUnit->getShippedQuantity()) {
+            throw new StockLogicException("Unexpected adjusted quantity.");
+        }
+
         $stockUnit->setAdjustedQuantity($quantity);
 
         if ($this->handleOverflow($stockUnit)) {
@@ -236,7 +240,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
             // Move sold overflow to a new stock unit
             if (0 < $overflow) {
-                $newStockUnit = $this->unitResolver->createBySubject($subject);
+                $newStockUnit = $this->unitResolver->createBySubject($subject, $stockUnit);
 
                 // Pre persist stock unit
                 $this->persistenceHelper->persistAndRecompute($newStockUnit, false);

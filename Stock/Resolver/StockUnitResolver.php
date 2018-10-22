@@ -69,11 +69,17 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritdoc
      */
-    public function createBySubject(StockSubjectInterface $subject)
+    public function createBySubject(StockSubjectInterface $subject, StockUnitInterface $exceptStockUnit = null)
     {
         // TODO Cache 'new' stock units created by sales
         if (!empty($stockUnits = $this->unitCache->findNewBySubject($subject))) {
-            return reset($stockUnits);
+            foreach ($stockUnits as $stockUnit) {
+                if ($stockUnit === $exceptStockUnit) {
+                    continue;
+                }
+
+                return $stockUnit;
+            }
         }
 
         /** @var StockUnitInterface $stockUnit */

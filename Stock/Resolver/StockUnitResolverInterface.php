@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
@@ -23,10 +24,11 @@ interface StockUnitResolverInterface
      * Creates a stock unit for the given subject.
      *
      * @param StockSubjectInterface $subject
+     * @param StockUnitInterface    $exceptStockUnit
      *
      * @return \Ekyna\Component\Commerce\Stock\Model\StockUnitInterface
      */
-    public function createBySubject(StockSubjectInterface $subject);
+    public function createBySubject(StockSubjectInterface $subject, StockUnitInterface $exceptStockUnit = null);
 
     /**
      * Creates a stock unit for the given subject relative.
