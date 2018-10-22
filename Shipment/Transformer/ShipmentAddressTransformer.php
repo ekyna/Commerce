@@ -32,8 +32,25 @@ class ShipmentAddressTransformer
      * @var array
      */
     private $fields = [
-        'company', 'gender', 'firstName', 'lastName', 'street', 'supplement',
-        'postalCode', 'city', 'country', 'state', 'phone', 'mobile'
+        'company',
+        'gender',
+        'firstName',
+        'lastName',
+        'street',
+        'supplement',
+        'complement',
+        'extra',
+        'postalCode',
+        'city',
+        'country',
+        'state',
+        'phone',
+        'mobile',
+        'digicode1',
+        'digicode2',
+        'intercom',
+        'latitude',
+        'longitude',
     ];
 
     /**
