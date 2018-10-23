@@ -27,6 +27,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         $qb
             ->join('i.order', 'o')
             ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
             ->addOrderBy('i.createdAt', 'ASC');
 
         if (0 < $limit) {
@@ -36,6 +37,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $qb
             ->getQuery()
             ->setParameter('customer', $customer)
+            ->setParameter('sample', false)
             ->getResult();
     }
 
@@ -51,10 +53,12 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $qb
             ->join('i.order', 'o')
             ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
             ->andWhere($qb->expr()->eq('i.number', ':number'))
             ->addOrderBy('i.createdAt', 'ASC')
             ->getQuery()
             ->setParameter('customer', $customer)
+            ->setParameter('sample', false)
             ->setParameter('number', $number)
             ->getOneOrNullResult();
     }
@@ -75,11 +79,14 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         $end->setTime(23,59,59);
 
         return $qb
+            ->join('i.order', 'o')
             ->andWhere($qb->expr()->between('i.createdAt', ':start', ':end'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
             ->addOrderBy('i.createdAt', 'ASC')
             ->getQuery()
             ->setParameter('start', $start, Type::DATETIME)
             ->setParameter('end', $end, Type::DATETIME)
+            ->setParameter('sample', false)
             ->getResult();
     }
 }

@@ -172,7 +172,7 @@ abstract class AbstractPaymentListener
         if (PaymentStates::isPaidState($state) && null === $completedAt) {
             $payment->setCompletedAt(new \DateTime());
             $changed = true;
-        } elseif (PaymentStates::isPaidState($state) && null !== $completedAt) {
+        } elseif (!PaymentStates::isPaidState($state) && null !== $completedAt) {
             $payment->setCompletedAt(null);
             $changed = true;
         }
