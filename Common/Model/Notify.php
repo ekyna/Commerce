@@ -100,6 +100,12 @@ class Notify
     private $includeView;
 
     /**
+     * (For supplier order)
+     * @var bool
+     */
+    private $includeForm;
+
+    /**
      * @var string
      */
     private $report;
@@ -697,13 +703,37 @@ class Notify
     /**
      * Sets the include view.
      *
-     * @param string $includeView
+     * @param string $include
      *
      * @return Notify
      */
-    public function setIncludeView($includeView)
+    public function setIncludeView($include)
     {
-        $this->includeView = $includeView;
+        $this->includeView = $include;
+
+        return $this;
+    }
+
+    /**
+     * Returns the includeForm.
+     *
+     * @return bool
+     */
+    public function isIncludeForm()
+    {
+        return $this->includeForm;
+    }
+
+    /**
+     * Sets the includeForm.
+     *
+     * @param bool $include
+     *
+     * @return Notify
+     */
+    public function setIncludeForm($include)
+    {
+        $this->includeForm = $include;
 
         return $this;
     }
