@@ -241,7 +241,6 @@ class SaleUpdater implements SaleUpdaterInterface
 
         // If sale does not have a shipment method, set the cheaper one
         if (null === $method = $sale->getShipmentMethod()) {
-            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface $price */
             $price = false;
             if (!empty($prices)) {
                 // Find the cheapest non 'in store' shipment method
@@ -268,10 +267,8 @@ class SaleUpdater implements SaleUpdaterInterface
         // Resolve shipping cost
         $amount = 0;
         if (null !== $method) {
-            if (!$this->shipmentPriceResolver->hasFreeShipping($sale)) {
-                if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
-                    $amount = $price->isFree() ? 0 : $price->getNetPrice();
-                }
+            if (null !== $price = $this->shipmentPriceResolver->getPriceBySale($sale)) {
+                $amount = $price->isFree() ? 0 : $price->getPrice();
             }
         }
 

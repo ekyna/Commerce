@@ -102,6 +102,31 @@ class ShipmentPriceRepository extends ResourceRepository implements ShipmentPric
     }
 
     /**
+     * @inheritdoc
+     */
+    public function findByCountry(CountryInterface $country)
+    {
+        $qb = $this->getCollectionQueryBuilder('o');
+        $qb
+            ->join('o.zone', 'z')
+            ->join('o.method', 'm')
+            ->andWhere($qb->expr()->isMemberOf(':country', 'z.countries'))
+            ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
+            ->addOrderBy('m.position', 'ASC')
+            ->addOrderBy('o.weight', 'DESC');
+
+        $parameters = [
+            'country' => $country,
+            'enabled' => true,
+        ];
+
+        return $qb
+            ->getQuery()
+            ->setParameters($parameters)
+            ->getResult();
+    }
+
+    /**
      * Returns the "find one price by country, method and weight" query.
      *
      * @return \Doctrine\ORM\Query

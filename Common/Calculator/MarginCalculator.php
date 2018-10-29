@@ -216,7 +216,7 @@ class MarginCalculator implements MarginCalculatorInterface
                         ->getPriceByCountryAndMethodAndWeight($country, $method, $weight);
 
                     if (null !== $price) {
-                        $margin->addPurchaseCost($price->getNetPrice());
+                        $margin->addPurchaseCost($price->getPrice());
                     }
                 } else {
                     $margin->setAverage(true);
@@ -236,7 +236,7 @@ class MarginCalculator implements MarginCalculatorInterface
                 ->getPriceByCountryAndMethodAndWeight($country, $method, $weight);
 
             if (null !== $price) {
-                $margin->addPurchaseCost($price->getNetPrice());
+                $margin->addPurchaseCost($price->getPrice());
             }
         } else {
             $margin->setAverage(true);

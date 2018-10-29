@@ -34,13 +34,25 @@ class OrderValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        if (null !== $customer = $order->getCustomer()) {
-            if ($customer->hasParent()) {
+        if (null !== $originCustomer = $order->getOriginCustomer()) {
+            if (!$originCustomer->hasParent()) {
                 $this
                     ->context
-                    ->buildViolation($constraint->customer_has_parent)
-                    ->atPath('customer')
+                    ->buildViolation($constraint->unexpected_origin_customer)
+                    ->atPath('originCustomer')
                     ->addViolation();
+
+                return;
+            }
+
+            if ($originCustomer->getParent() !== $order->getCustomer()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->customers_integrity)
+                    ->atPath('originCustomer')
+                    ->addViolation();
+
+                return;
             }
         }
     }

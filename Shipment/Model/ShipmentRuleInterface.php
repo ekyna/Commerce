@@ -168,4 +168,20 @@ interface ShipmentRuleInterface extends ResourceInterface
      * @return $this|ShipmentRuleInterface
      */
     public function setEndAt(\DateTime $date = null);
+
+    /**
+     * Returns the net price.
+     *
+     * @return float
+     */
+    public function getNetPrice();
+
+    /**
+     * Sets the net price.
+     *
+     * @param float $price
+     *
+     * @return $this|ShipmentRuleInterface
+     */
+    public function setNetPrice($price);
 }

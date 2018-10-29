@@ -131,10 +131,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
             return;
         }
 
-        // Cache the stock unit
-        // TODO Why ?
-        //$this->unitResolver->getStockUnitCache()->add($stockUnit);
-
         // Unlink stock unit by setting supplier order item to null and ordered quantity to zero
         $stockUnit
             ->setSupplierOrderItem(null)

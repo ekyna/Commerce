@@ -109,25 +109,62 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
+    protected function handleInsert(SaleInterface $sale)
+    {
+        $changed = $this->fixCustomers($sale);
+
+        $changed |= parent::handleInsert($sale);
+
+        return $changed;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param OrderInterface $sale
+     */
     protected function handleUpdate(SaleInterface $sale)
+    {
+        $changed = $this->fixCustomers($sale);
+
+        $changed |= parent::handleUpdate($sale);
+
+        return $changed;
+    }
+
+    /**
+     * Changes the customer and origin customer regarding to their hierarchy.
+     *
+     * @param OrderInterface $order
+     *
+     * @return bool
+     */
+    protected function fixCustomers(OrderInterface $order)
     {
         $changed = false;
 
-        if (null !== $customer = $sale->getCustomer()) {
-            if ($customer->hasParent()) {
-                $sale->setCustomer($customer->getParent());
+        $originCustomer = $order->getOriginCustomer();
+        $customer = $order->getCustomer();
 
-                if (null === $sale->getOriginCustomer()) {
-                    $sale->setOriginCustomer($customer);
-                }
+        if (is_null($customer)) {
+            if ($originCustomer && $originCustomer->hasParent()) {
+                $order->setCustomer($originCustomer->getParent());
 
                 $changed = true;
-
-                $this->persistenceHelper->persistAndRecompute($sale, false);
             }
+        } elseif ($customer->hasParent()) {
+            $order->setCustomer($customer->getParent());
+
+            if (null === $order->getOriginCustomer()) {
+                $order->setOriginCustomer($customer);
+            }
+
+            $changed = true;
         }
 
-        $changed |= parent::handleUpdate($sale);
+        if ($changed) {
+            $this->persistenceHelper->persistAndRecompute($order, false);
+        }
 
         return $changed;
     }

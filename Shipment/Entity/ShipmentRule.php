@@ -60,6 +60,11 @@ class ShipmentRule implements ShipmentRuleInterface
      */
     protected $endAt;
 
+    /**
+     * @var float
+     */
+    protected $netPrice;
+
 
     /**
      * Constructor.
@@ -269,6 +274,24 @@ class ShipmentRule implements ShipmentRuleInterface
     public function setEndAt(\DateTime $date = null)
     {
         $this->endAt = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNetPrice()
+    {
+        return $this->netPrice;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNetPrice($price)
+    {
+        $this->netPrice = $price;
 
         return $this;
     }

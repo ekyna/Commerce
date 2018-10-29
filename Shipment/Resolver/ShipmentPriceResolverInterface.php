@@ -24,12 +24,12 @@ interface ShipmentPriceResolverInterface
     public function hasFreeShipping(SaleInterface $sale, ShipmentMethodInterface $method = null);
 
     /**
-     * Returns the available shipment prices by sale.
+     * Returns the resolved shipment prices by sale.
      *
      * @param SaleInterface $sale
      * @param bool          $availableOnly
      *
-     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface[]
+     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice[]
      */
     public function getAvailablePricesBySale(SaleInterface $sale, $availableOnly = true);
 
@@ -38,7 +38,7 @@ interface ShipmentPriceResolverInterface
      *
      * @param SaleInterface $sale
      *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface|null
+     * @return \Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice|null
      */
     public function getPriceBySale(SaleInterface $sale);
 
@@ -49,7 +49,7 @@ interface ShipmentPriceResolverInterface
      * @param ShipmentMethodInterface $method
      * @param float                   $weight The weight in Kg.
      *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface|null
+     * @return \Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice|null
      */
     public function getPriceByCountryAndMethodAndWeight(
         CountryInterface $country,
