@@ -256,7 +256,7 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         foreach ($grid as &$method) {
             // Sort prices DESC
             usort($method['prices'], function ($a, $b) {
-                return $b['weight'] - $a['weight'];
+                return $a['weight'] - $b['weight'];
             });
 
             // Fix max weight

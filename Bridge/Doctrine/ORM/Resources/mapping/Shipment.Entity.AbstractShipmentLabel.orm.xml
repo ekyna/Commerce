@@ -11,7 +11,7 @@
         <field name="type" column="type" type="string" length="16" nullable="false"/>
         <field name="format" column="format" type="string" length="16" nullable="false"/>
         <field name="size" column="size" type="string" length="16" nullable="false"/>
-        <field name="content" column="content" type="blob" nullable="false"/>
+        <field name="content" column="content" type="blob" nullable="true"/>
 
         <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
             <gedmo:timestampable on="update"/>
