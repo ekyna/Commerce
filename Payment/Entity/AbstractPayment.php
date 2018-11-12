@@ -25,6 +25,16 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     protected $id;
 
     /**
+     * @var string
+     *
+     * TODO 'payment' or 'refund'
+     * @see \Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolver
+     * @see \Ekyna\Component\Commerce\Accounting\Export\AccountingExporter
+     * @see and many others...
+     */
+    protected $type;
+
+    /**
      * @var Payment\PaymentMethodInterface
      */
     protected $method;

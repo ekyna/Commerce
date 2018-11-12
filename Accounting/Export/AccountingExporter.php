@@ -15,6 +15,7 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
+use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
@@ -42,6 +43,11 @@ class AccountingExporter implements AccountingExporterInterface
      * @var AccountingRepositoryInterface
      */
     protected $accountingRepository;
+
+    /**
+     * @var InvoicePaymentResolverInterface
+     */
+    protected $invoicePaymentResolver;
 
     /**
      * @var TaxResolverInterface
@@ -82,22 +88,25 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * Constructor.
      *
-     * @param InvoiceRepositoryInterface    $invoiceRepository
-     * @param PaymentRepositoryInterface    $paymentRepository
-     * @param AccountingRepositoryInterface $accountingRepository
-     * @param TaxResolverInterface          $taxResolver
-     * @param array                         $config
+     * @param InvoiceRepositoryInterface      $invoiceRepository
+     * @param PaymentRepositoryInterface      $paymentRepository
+     * @param AccountingRepositoryInterface   $accountingRepository
+     * @param InvoicePaymentResolverInterface $invoicePaymentResolver
+     * @param TaxResolverInterface            $taxResolver
+     * @param array                           $config
      */
     public function __construct(
         InvoiceRepositoryInterface $invoiceRepository,
         PaymentRepositoryInterface $paymentRepository,
         AccountingRepositoryInterface $accountingRepository,
+        InvoicePaymentResolverInterface $invoicePaymentResolver,
         TaxResolverInterface $taxResolver,
         array $config
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
         $this->accountingRepository = $accountingRepository;
+        $this->invoicePaymentResolver = $invoicePaymentResolver;
         $this->taxResolver = $taxResolver;
 
         $this->config = array_replace([
@@ -135,7 +144,9 @@ class AccountingExporter implements AccountingExporterInterface
      */
     public function exportInvoices(\DateTime $month)
     {
-        $this->accounts = $this->accountingRepository->findAll();
+        $this->accounts = $this->accountingRepository->findBy([
+            'enabled' => true,
+        ]);
         if (empty($this->accounts)) {
             throw new LogicException("No account number configured.");
         }
@@ -254,17 +265,11 @@ class AccountingExporter implements AccountingExporterInterface
             // Invoice case
             $unpaid = $this->invoice->getGrandTotal();
 
+            $payments = $this->invoicePaymentResolver->resolve($this->invoice);
+
             // Payments
-            foreach ($sale->getPayments() as $payment) {
-                if ($payment->getMethod()->isOutstanding()) {
-                    continue; // Next payment
-                }
-
-                if (!PaymentStates::isPaidState($payment)) {
-                    continue; // Next payment
-                }
-
-                $account = $this->getPaymentAccountNumber($payment->getMethod());
+            foreach ($payments as $payment) {
+                $account = $this->getPaymentAccountNumber($payment->getPayment()->getMethod());
 
                 $amount = $this->round($payment->getAmount());
 
@@ -344,11 +349,11 @@ class AccountingExporter implements AccountingExporterInterface
                 }
             }
 
-            if (!isset($amounts[(string) $rate])) {
-                $amounts[(string) $rate] = 0;
+            if (!isset($amounts[(string)$rate])) {
+                $amounts[(string)$rate] = 0;
             }
 
-            $amounts[(string) $rate] += $this->round($amount);
+            $amounts[(string)$rate] += $this->round($amount);
         }
 
         $credit = $this->invoice->getType() === InvoiceTypes::TYPE_CREDIT;
@@ -587,11 +592,11 @@ class AccountingExporter implements AccountingExporterInterface
                 continue;
             }
 
-            if (!in_array($group, $account->getCustomerGroups())) {
-                continue;
+            foreach ($account->getCustomerGroups() as $g) {
+                if ($g->getId() === $group->getId()) {
+                    return $account->getNumber();
+                }
             }
-
-            return $account->getNumber();
         }
 
         // Fallback to 'all' (empty) customer groups
@@ -608,7 +613,7 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         throw new LogicException(sprintf(
-            "No shipment account number configured for customer group '%s'.",
+            "No unpaid account number configured for customer group '%s'.",
             $group->getName()
         ));
     }
