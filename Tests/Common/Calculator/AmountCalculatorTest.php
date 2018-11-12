@@ -77,19 +77,19 @@ class AmountCalculatorTest extends AbstractAmountTest
 
         $this->calculator->calculateSale($sale);
 
-        $this->assertResult($item1->getResult(),      32.59,  97.77,  6.84,  90.93, 18.186,   109.12);
-        $this->assertResult($item2->getResult(),       0.00,   0.00,  0.00,   0.00,  0.00,      0.00);
-        $this->assertResult($item21->getResult(),     12.34, 246.80, 12.34, 234.46, 12.8953,  247.36);
-        $this->assertResult($item22->getResult(),     70.94, 567.52, 56.75, 510.77, 28.09235, 538.86);
-        $this->assertResult($item3->getResult(),      19.64, 117.84, 17.68, 100.16,  7.0112,  107.17);
+        $this->assertResult($item1->getResult(),      32.59,  97.77,  6.84,  90.93, 18.19, 109.12);
+        $this->assertResult($item2->getResult(),       0.00,   0.00,  0.00,   0.00,  0.00,   0.00);
+        $this->assertResult($item21->getResult(),     12.34, 246.80, 12.34, 234.46, 12.90, 247.36);
+        $this->assertResult($item22->getResult(),     70.94, 567.52, 56.75, 510.77, 28.09, 538.86);
+        $this->assertResult($item3->getResult(),      19.64, 117.84, 17.68, 100.16,  7.01, 107.17);
 
         $grossResult = $sale->getGrossResult();
 
         $taxes = $grossResult->getTaxAdjustments();
         $this->assertCount(3, $taxes);
-        $this->assertAdjustment($taxes[0], 'VAT 20%',  18.186,   20);
-        $this->assertAdjustment($taxes[1], 'VAT 5.5%', 40.98765,  5.5);
-        $this->assertAdjustment($taxes[2], 'VAT 7%',    7.0112,   7);
+        $this->assertAdjustment($taxes[0], 'VAT 20%',  18.19,   20);
+        $this->assertAdjustment($taxes[1], 'VAT 5.5%', 40.99,  5.5);
+        $this->assertAdjustment($taxes[2], 'VAT 7%',    7.01,   7);
 
         $discounts = $grossResult->getDiscountAdjustments();
         $this->assertCount(4, $discounts);
@@ -129,17 +129,17 @@ class AmountCalculatorTest extends AbstractAmountTest
 
         $this->calculator->calculateSale($sale);
 
-        $this->assertResult($item1->getResult(), 249.99, 749.97, 0, 749.97, 149.994, 899.96);
-        $this->assertResult($item2->getResult(),  59.48, 178.44, 0, 178.44,  35.688, 214.13);
-        $this->assertResult($item3->getResult(),  42.48, 127.44, 0, 127.44,  25.488, 152.93);
-        $this->assertResult($item4->getResult(),  12.74,  38.22, 0,  38.22,   7.644,  45.86);
-        $this->assertResult($item5->getResult(),  15.29,  45.87, 0,  45.87,   9.174,  55.04);
+        $this->assertResult($item1->getResult(), 249.99, 749.97, 0, 749.97, 149.99, 899.96);
+        $this->assertResult($item2->getResult(),  59.48, 178.44, 0, 178.44,  35.69, 214.13);
+        $this->assertResult($item3->getResult(),  42.48, 127.44, 0, 127.44,  25.49, 152.93);
+        $this->assertResult($item4->getResult(),  12.74,  38.22, 0,  38.22,   7.64,  45.86);
+        $this->assertResult($item5->getResult(),  15.29,  45.87, 0,  45.87,   9.17,  55.04);
 
         $grossResult = $sale->getGrossResult();
 
         $taxes = $grossResult->getTaxAdjustments();
         $this->assertCount(1, $taxes);
-        $this->assertAdjustment($taxes[0], 'VAT 20%', 227.988, 20);
+        $this->assertAdjustment($taxes[0], 'VAT 20%', 227.98, 20);
 
         $this->assertCount(0, $grossResult->getDiscountAdjustments());
 
@@ -195,11 +195,11 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->calculator->calculateSaleItem($item);
 
         $result = $item->getResult();
-        $this->assertResult($result, 12.34, 61.70, 0.00, 61.70, 3.3935, 65.09);
+        $this->assertResult($result, 12.34, 61.70, 0.00, 61.70, 3.39, 65.09);
 
         $taxes = $result->getTaxAdjustments();
         $this->assertCount(1, $taxes);
-        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 3.3935, 5.5);
+        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 3.39, 5.5);
     }
 
     /**
@@ -213,12 +213,12 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->calculator->calculateSaleItem($item);
 
         $result = $item->getResult();
-        $this->assertResult($result, 12.34, 61.70, 0.00, 61.70, 7.7125, 69.41);
+        $this->assertResult($result, 12.34, 61.70, 0.00, 61.70, 7.71, 69.41);
 
         $taxes = $result->getTaxAdjustments();
         $this->assertCount(2, $taxes);
-        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 3.3935, 5.5);
-        $this->assertAdjustment($taxes[1], 'VAT 7%', 4.319, 7);
+        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 3.39, 5.5);
+        $this->assertAdjustment($taxes[1], 'VAT 7%', 4.32, 7);
     }
 
     /**
@@ -250,12 +250,12 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->calculator->calculateSaleItem($item);
 
         $result = $item->getResult();
-        $this->assertResult($result, 12.34, 61.70, 12.34, 49.36, 0.00, 49.36);
+        $this->assertResult($result, 12.34, 61.70, 11.87, 49.83, 0.00, 49.83);
 
         $discounts = $result->getDiscountAdjustments();
         $this->assertCount(2, $discounts);
         $this->assertAdjustment($discounts[0], 'Discount 5%', 3.08, 5);
-        $this->assertAdjustment($discounts[1], 'Discount 15%', 9.26, 15);
+        $this->assertAdjustment($discounts[1], 'Discount 15%', 8.79, 15);
     }
 
     /**
@@ -268,7 +268,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
-        $this->assertResult($item->getResult(), 12.34, 61.70, 12.34, 49.36, 6.17, 55.53);
+        $this->assertResult($item->getResult(), 12.34, 61.70, 11.87, 49.83, 6.23, 56.06);
     }
 
     /**
@@ -313,9 +313,9 @@ class AmountCalculatorTest extends AbstractAmountTest
         /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
-        $this->assertResult($item->getResult(), 32.59, 97.77, 6.84, 90.93, 18.186, 109.12);
-        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.6712, 185.51);
-        $this->assertResult($public2->getResult(), 47.99, 1151.76, 115.18, 1036.58, 57.0119, 1093.59);
+        $this->assertResult($item->getResult(), 32.59, 97.77, 6.84, 90.93, 18.19, 109.12);
+        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.67, 185.51);
+        $this->assertResult($public2->getResult(), 47.99, 1151.76, 115.18, 1036.58, 57.01, 1093.59);
     }
 
     /**
@@ -337,8 +337,8 @@ class AmountCalculatorTest extends AbstractAmountTest
         /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
-        $this->assertResult($item->getResult(), 237.72, 713.16, 71.32, 641.84, 35.3012, 677.14);
-        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.6712, 185.51);
+        $this->assertResult($item->getResult(), 237.72, 713.16, 71.32, 641.84, 35.30, 677.14);
+        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.67, 185.51);
     }
 
     /**
@@ -363,7 +363,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
-        $this->assertResult($item->getResult(), 293.6, 880.8, 88.08, 792.72, 43.5996, 836.32);
+        $this->assertResult($item->getResult(), 293.6, 880.8, 88.08, 792.72, 43.60, 836.32);
     }
 
     /**
@@ -385,8 +385,8 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->calculator->calculateSaleItem($item);
 
         $this->assertResult($item->getResult(), 0, 0, 0, 0, 0, 0);
-        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.6712, 185.51);
-        $this->assertResult($public2->getResult(), 47.99, 1151.76, 115.18, 1036.58, 57.0119, 1093.59);
+        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.67, 185.51);
+        $this->assertResult($public2->getResult(), 47.99, 1151.76, 115.18, 1036.58, 57.01, 1093.59);
     }
 
     /**
@@ -408,8 +408,8 @@ class AmountCalculatorTest extends AbstractAmountTest
         /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
-        $this->assertResult($item->getResult(), 440.89, 1322.67, 132.27, 1190.40, 65.472, 1255.87);
-        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.6712, 185.51);
+        $this->assertResult($item->getResult(), 440.89, 1322.67, 132.27, 1190.40, 65.47, 1255.87);
+        $this->assertResult($public1->getResult(), 12.34, 185.1, 9.26, 175.84, 9.67, 185.51);
     }
 
     /**
@@ -428,7 +428,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         /** @noinspection PhpUnhandledExceptionInspection */
         $this->calculator->calculateSaleItem($item);
 
-        $this->assertResult($item->getResult(), 445.62, 1336.86, 200.53, 1136.33, 227.266, 1363.6);
+        $this->assertResult($item->getResult(), 445.62, 1336.86, 200.53, 1136.33, 227.27, 1363.6);
     }
 
     // TODO Sample sale case tests

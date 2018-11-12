@@ -4,13 +4,14 @@ namespace Ekyna\Component\Commerce\Tests\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Calculator\Adjustment;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class AbstractAmountTest
  * @package Ekyna\Component\Commerce\Tests\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAmountTest extends \PHPUnit_Framework_TestCase
+abstract class AbstractAmountTest extends TestCase
 {
     /**
      * Makes assertions on the given result's amounts.

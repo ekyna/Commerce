@@ -33,6 +33,18 @@
             <join-column name="payment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
+        <many-to-many target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface"
+                      field="customerGroups">
+            <join-table name="commerce_accountings_customer_groups">
+                <join-columns>
+                    <join-column name="accounting_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="customer_group_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
     </entity>
 
 </doctrine-mapping>

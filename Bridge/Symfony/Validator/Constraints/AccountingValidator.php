@@ -30,11 +30,14 @@ class AccountingValidator extends ConstraintValidator
         $tax = null;
         $taxRule = false;
         $paymentMethod = false;
+        $customerGroups = false;
 
         // Requirements
         if ($accounting->getType() === AccountingTypes::TYPE_PAYMENT) {
             $paymentMethod = true;
             $tax = false;
+        } elseif ($accounting->getType() === AccountingTypes::TYPE_UNPAID) {
+            $customerGroups = null;
         } elseif ($accounting->getType() === AccountingTypes::TYPE_TAX) {
             $tax = true;
         } else {
@@ -42,7 +45,7 @@ class AccountingValidator extends ConstraintValidator
         }
 
         // Tax assertion
-        if ($tax && !$accounting->getTax()) {
+        if (!$accounting->getTax() && $tax) {
             $this
                 ->context
                 ->buildViolation($constraint->tax_is_required)
@@ -57,13 +60,13 @@ class AccountingValidator extends ConstraintValidator
         }
 
         // Tax rule assertion
-        if ($taxRule && !$accounting->getTaxRule()) {
+        if (!$accounting->getTaxRule() && $taxRule) {
             $this
                 ->context
                 ->buildViolation($constraint->tax_rule_is_required)
                 ->atPath('taxRule')
                 ->addViolation();
-        } elseif (!$taxRule && $accounting->getTaxRule()) {
+        } elseif ($accounting->getTaxRule() && false === $taxRule) {
             $this
                 ->context
                 ->buildViolation($constraint->tax_rule_must_be_null)
@@ -72,17 +75,32 @@ class AccountingValidator extends ConstraintValidator
         }
 
         // Payment method assertion
-        if ($paymentMethod && !$accounting->getPaymentMethod()) {
+        if (!$accounting->getPaymentMethod() && $paymentMethod) {
             $this
                 ->context
                 ->buildViolation($constraint->payment_method_is_required)
                 ->atPath('paymentMethod')
                 ->addViolation();
-        } elseif (!$paymentMethod && $accounting->getPaymentMethod()) {
+        } elseif ($accounting->getPaymentMethod() && false === $paymentMethod) {
             $this
                 ->context
                 ->buildViolation($constraint->payment_method_must_be_null)
                 ->atPath('paymentMethod')
+                ->addViolation();
+        }
+
+        // Customer groups assertion
+        if ((0 === $accounting->getCustomerGroups()->count()) && $customerGroups) {
+            $this
+                ->context
+                ->buildViolation($constraint->customer_groups_is_required)
+                ->atPath('customerGroups')
+                ->addViolation();
+        } elseif ((0 < $accounting->getCustomerGroups()->count()) && false === $customerGroups) {
+            $this
+                ->context
+                ->buildViolation($constraint->customer_groups_must_be_empty)
+                ->atPath('customerGroups')
                 ->addViolation();
         }
     }

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Accounting\Model;
 
+use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
@@ -111,4 +112,29 @@ interface AccountingInterface extends SortableInterface, IsEnabledInterface, Res
      * @return $this|AccountingInterface
      */
     public function setPaymentMethod(PaymentMethodInterface $method = null);
+
+    /**
+     * Returns the customerGroups.
+     *
+     * @return \Doctrine\Common\Collections\ArrayCollection|CustomerGroupInterface[]
+     */
+    public function getCustomerGroups();
+
+    /**
+     * Adds the customer group.
+     *
+     * @param CustomerGroupInterface $group
+     *
+     * @return $this|AccountingInterface
+     */
+    public function addCustomerGroup(CustomerGroupInterface $group);
+
+    /**
+     * Removes the customer group.
+     *
+     * @param CustomerGroupInterface $group
+     *
+     * @return $this|AccountingInterface
+     */
+    public function removeCustomerGroup(CustomerGroupInterface $group);
 }

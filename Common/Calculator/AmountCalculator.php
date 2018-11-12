@@ -162,6 +162,10 @@ class AmountCalculator implements AmountCalculatorInterface
             $result = new Amount($currency, $unit, $gross, $discount, $base, $tax, $total, $discounts, $taxes);
         }
 
+        if ($ati) {
+            $result->round();
+        }
+
         // Store the result
         $item->setResult($result);
 
@@ -246,6 +250,10 @@ class AmountCalculator implements AmountCalculatorInterface
             $final->addTotal(-$a->getAmount());
         }
 
+        if ($sale->isAtiDisplayMode()) {
+            $result->round();
+        }
+
         return $result;
     }
 
@@ -276,11 +284,11 @@ class AmountCalculator implements AmountCalculatorInterface
         if (1 === Money::compare($base, 0, $currency)) {
             // Shipment taxation
             foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION) as $data) {
-                $rate = (float)$data->getAmount();
-                $amount = Money::round($base * $rate / 100, $currency);
-                $result->addTaxAdjustment(new Adjustment($data->getDesignation(), $amount, $rate));
-                $result->addTax($amount);
-                $result->addTotal($amount);
+                $adjustment = $this->createPercentAdjustment($data, $base, $currency);
+
+                $result->addTaxAdjustment($adjustment);
+                $result->addTax($adjustment->getAmount());
+                $result->addTotal($adjustment->getAmount());
             }
 
             // Add to final result
@@ -292,6 +300,10 @@ class AmountCalculator implements AmountCalculatorInterface
                 $final->addTax($a->getAmount());
                 $final->addTotal($a->getAmount());
             }
+        }
+
+        if ($sale->isAtiDisplayMode()) {
+            $result->round();
         }
 
         // Store shipment result
@@ -400,10 +412,9 @@ class AmountCalculator implements AmountCalculatorInterface
         $rate = (float)$data->getAmount();
 
         if ($data->getType() === Model\AdjustmentTypes::TYPE_TAXATION) {
-            // Round taxation adjustment to 5 decimals.
-            $amount = round($base * $rate / 100, 5);
+            // Calculate taxation as ATI - NET
+            $amount = Money::round($base * (1 + $rate / 100), $currency) - Money::round($base, $currency);
         } else {
-            // Round others adjustments regarding to currency
             $amount = Money::round($base * $rate / 100, $currency);
         }
 

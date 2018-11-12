@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Accounting\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
@@ -54,6 +56,19 @@ class Accounting implements AccountingInterface
      */
     private $paymentMethod;
 
+    /**
+     * @var ArrayCollection|CustomerGroupInterface[]
+     */
+    private $customerGroups;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->customerGroups = new ArrayCollection();
+    }
 
     /**
      * @inheritDoc
@@ -175,6 +190,38 @@ class Accounting implements AccountingInterface
     public function setPaymentMethod(PaymentMethodInterface $method = null)
     {
         $this->paymentMethod = $method;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCustomerGroups()
+    {
+        return $this->customerGroups;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addCustomerGroup(CustomerGroupInterface $group)
+    {
+        if (!$this->customerGroups->contains($group)) {
+            $this->customerGroups->add($group);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeCustomerGroup(CustomerGroupInterface $group)
+    {
+        if ($this->customerGroups->contains($group)) {
+            $this->customerGroups->removeElement($group);
+        }
 
         return $this;
     }

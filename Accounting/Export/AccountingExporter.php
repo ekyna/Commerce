@@ -2,17 +2,23 @@
 
 namespace Ekyna\Component\Commerce\Accounting\Export;
 
+use Ekyna\Component\Commerce\Accounting\Model\AccountingInterface;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingTypes;
 use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 
 /**
@@ -45,12 +51,32 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * @var array
      */
+    protected $config;
+
+    /**
+     * @var AccountingInterface[]
+     */
     protected $accounts;
 
     /**
-     * @var array
+     * @var AccountingWriter
      */
-    protected $config;
+    protected $writer;
+
+    /**
+     * @var InvoiceInterface
+     */
+    protected $invoice;
+
+    /**
+     * @var string
+     */
+    protected $currency;
+
+    /**
+     * @var float
+     */
+    protected $balance;
 
 
     /**
@@ -94,7 +120,10 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         $zip->addFile($this->exportInvoices($month), 'invoices.csv');
-        $zip->addFile($this->exportPayments($month), 'payments.csv');
+
+        if (!$this->config['total_as_payment']) {
+            $zip->addFile($this->exportPayments($month), 'payments.csv');
+        }
 
         $zip->close();
 
@@ -106,177 +135,39 @@ class AccountingExporter implements AccountingExporterInterface
      */
     public function exportInvoices(\DateTime $month)
     {
-        $path = tempnam(sys_get_temp_dir(), 'inv');
-
-        if (false === $handle = fopen($path, "w")) {
-            throw new RuntimeException("Failed to open '$path' for writing.");
+        $this->accounts = $this->accountingRepository->findAll();
+        if (empty($this->accounts)) {
+            throw new LogicException("No account number configured.");
         }
 
-        $paymentAccounts = $this->accountingRepository->findByTypes([
-            AccountingTypes::TYPE_PAYMENT,
-        ]);
+        $path = tempnam(sys_get_temp_dir(), 'inv');
 
-        $invoiceAccounts = $this->accountingRepository->findByTypes([
-            AccountingTypes::TYPE_GOOD,
-            AccountingTypes::TYPE_SHIPPING,
-            AccountingTypes::TYPE_TAX,
-        ]);
+        $this->writer = new AccountingWriter();
+        $this->writer->open($path);
+
+        $WRONG_BALANCES = [];
 
         $invoices = $this->invoiceRepository->findByMonth($month);
 
-        foreach ($invoices as $invoice) {
-            $date = $invoice->getCreatedAt()->format('Y-m-d'); // TODO localized ?
-            $currency = $invoice->getCurrency();
+        while (false !== $this->invoice = current($invoices)) {
+            $this->currency = $this->invoice->getCurrency();
+            $this->balance = 0;
 
-            $sale = $invoice->getSale();
-            $customer = $sale->getCustomer();
+            $this->writer->configure($this->invoice);
 
-            if ($customer) {
-                $identity = $customer->getFirstName() . ' ' . $customer->getLastName();
-            } else {
-                $identity = $sale->getFirstName() . ' ' . $sale->getLastName();
+            $this->writeInvoiceGrandTotal();
+            $this->writeInvoiceGoodsLines();
+            $this->writeInvoiceShipmentLine();
+            $this->writeInvoiceTaxesLine();
+
+            if (0 !== $this->compare($this->balance, 0)) {
+                $WRONG_BALANCES[] = $this->invoice->getNumber();
             }
 
-            // Grand total row
-            if ($this->config['total_as_payment']) {
-                $payments = $sale->getPayments()->filter(function(PaymentInterface $payment) {
-                    return PaymentStates::isPaidState($payment->getState());
-                })->toArray();
-
-                usort($payments, function(PaymentInterface $a, PaymentInterface $b) {
-                    // TODO Currency conversion
-                    if ($a->getAmount() == $b->getAmount()) {
-                        return 0;
-                    }
-
-                    return $a->getAmount() > $b->getAmount() ? -1 : 1;
-                });
-
-                if (empty($payments)) {
-                    continue; // Next invoice
-                }
-
-                /** @var PaymentInterface $payment */
-                $payment = reset($payments);
-
-                $found = false;
-                /** @var \Ekyna\Component\Commerce\Accounting\Model\AccountingInterface $account */
-                foreach ($paymentAccounts as $account) {
-                    if ($account->getPaymentMethod() === $payment->getMethod()) {
-                        $found = true;
-                        break;
-                    }
-                }
-
-                if (!$found) {
-                    continue; // Next invoice
-                }
-
-                $number = $account->getNumber();
-            } elseif ($customer) {
-                $number = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
-            } else {
-                $number = $this->config['default_customer'];
-            }
-
-            $credit = $invoice->getType() === InvoiceTypes::TYPE_CREDIT;
-
-            $amount = $this->amount($invoice->getGrandTotal(), $currency);
-
-            fputcsv($handle, [
-                $date,
-                $number,
-                $identity,
-                $credit ? null : $amount,
-                $credit ? $amount : null,
-                $invoice->getNumber(),
-            ], ';', '"');
-
-            // Accounts rows
-            $saleTaxRule = $this->taxResolver->resolveSaleTaxRule($invoice->getSale());
-            $taxesDetails = $invoice->getTaxesDetails();
-
-            /** @var \Ekyna\Component\Commerce\Accounting\Model\AccountingInterface $account */
-            foreach ($invoiceAccounts as $account) {
-                if ($account->getType() === AccountingTypes::TYPE_TAX) {
-                    foreach ($taxesDetails as $detail) {
-                        if (0 === bccomp($detail['rate'], $account->getTax()->getRate(), 5)) {
-                            $amount = $this->amount($detail['amount'], $currency);
-
-                            if (0 === bccomp($amount, 0, 5)) {
-                                continue 2; // next account
-                            }
-
-                            fputcsv($handle, [
-                                $date,
-                                $account->getNumber(),
-                                $identity,
-                                $credit ? $amount : null,
-                                $credit ? null : $amount,
-                                $invoice->getNumber(),
-                            ], ';', '"');
-
-                            continue 2; // next account
-                        }
-                    }
-
-                    continue; // next account
-                }
-
-                $accountRule = $account->getTaxRule();
-                if ($accountRule->getId() !== $saleTaxRule->getId()) {
-                    continue; // next account
-                }
-
-                if ($account->getType() === AccountingTypes::TYPE_GOOD) {
-                    if (null !== $tax = $account->getTax()) {
-                        $amount = 0;
-                        foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
-                            // Skip private lines
-                            if ($line->getSaleItem()->isPrivate()) {
-                                continue;
-                            }
-                            // Tax test
-                            if (!in_array($tax->getRate(), $line->getTaxRates())) {
-                                continue;
-                            }
-                            $amount += $line->getBase();
-                        }
-
-                        // Apply sale's discounts
-                        $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT);
-                        if (!empty($discounts)) {
-                            $base = $amount;
-                            foreach ($sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-                                $amount -= Money::round($base * $adjustment->getAmount() / 100, $currency);
-                            }
-                        }
-                    } else {
-                        $amount = $this->amount($invoice->getGoodsBase() - $invoice->getDiscountBase(), $currency);
-                    }
-                } elseif ($account->getType() === AccountingTypes::TYPE_SHIPPING) {
-                    // TODO Check tax (?)
-                    $amount = $this->amount($invoice->getShipmentBase(), $currency);
-                } else {
-                    throw new RuntimeException("Unexpected account type.");
-                }
-
-                if (0 === bccomp($amount, 0, 5)) {
-                    continue; // next account
-                }
-
-                fputcsv($handle, [
-                    $date,
-                    $account->getNumber(),
-                    $identity,
-                    $credit ? $amount : null,
-                    $credit ? null : $amount,
-                    $invoice->getNumber(),
-                ], ';', '"');
-            }
+            next($invoices);
         }
 
-        fclose($handle);
+        $this->writer->close();
 
         return $path;
     }
@@ -288,13 +179,8 @@ class AccountingExporter implements AccountingExporterInterface
     {
         $path = tempnam(sys_get_temp_dir(), 'acc');
 
-        if (false === $handle = fopen($path, "w")) {
-            throw new RuntimeException("Failed to open '$path' for writing.");
-        }
-
-        $accounts = $this->accountingRepository->findByTypes([
-            AccountingTypes::TYPE_PAYMENT,
-        ]);
+        $this->writer = new AccountingWriter();
+        $this->writer->open($path);
 
         $payments = $this->paymentRepository->findByMonth($month, [
             PaymentStates::STATE_CAPTURED,
@@ -303,100 +189,427 @@ class AccountingExporter implements AccountingExporterInterface
         ]);
 
         foreach ($payments as $payment) {
-            $found = false;
-            /** @var \Ekyna\Component\Commerce\Accounting\Model\AccountingInterface $account */
-            foreach ($accounts as $account) {
-                if ($account->getPaymentMethod() === $payment->getMethod()) {
-                    $found = true;
-                    break;
-                }
-            }
+            $this->writer->configure($payment);
 
-            if (!$found) {
-                continue; // Next payment
-            }
+            $account = $this->getPaymentAccountNumber($payment->getMethod());
 
-            $date = $payment->getCompletedAt()->format('Y-m-d'); // TODO localized ?
-            $currency = $payment->getCurrency()->getCode();
-
-            $sale = $payment->getSale();
-            $customer = $sale->getCustomer();
-
-            if ($customer) {
+            if ($customer = $payment->getSale()->getCustomer()) {
                 $number = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
-                $identity = $customer->getFirstName() . ' ' . $customer->getLastName();
             } else {
                 $number = '10000000';
-                $identity = $sale->getFirstName() . ' ' . $sale->getLastName();
             }
 
             $credit = false; // TODO $payment->getType() === PaymentTypes::TYPE_REFUND;
-            $amount = $this->amount($payment->getAmount(), $currency);
+            $amount = (string)$this->round($payment->getAmount());
 
-            // Payment debit
-            fputcsv($handle, [
-                $date,
-                $account->getNumber(),
-                $identity,
-                $credit ? null : $amount,
-                $credit ? $amount : null,
-                $number,
-                $payment->getNumber(),
-            ], ';', '"');
-            // Customer credit
-            fputcsv($handle, [
-                $date,
-                $number,
-                $identity,
-                $credit ? $amount : null,
-                $credit ? null : $amount,
-                $number,
-                $payment->getNumber(),
-            ], ';', '"');
+            if ($credit) {
+                // Payment debit
+                $this->writer->debit($account, $amount);
+                // Customer credit
+                $this->writer->credit($number, $amount);
+            } else {
+                // Payment credit
+                $this->writer->credit($account, $amount);
+                // Customer debit
+                $this->writer->debit($number, $amount);
+            }
 
             // TODO Remove when refund payment implemented
             // Temporary : add an extra credit line for refund payments.
             if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
-                // Payment credit
-                fputcsv($handle, [
-                    $date,
-                    $account->getNumber(),
-                    $identity,
-                    null,
-                    $amount,
-                    $number,
-                    $payment->getNumber(),
-                ], ';', '"');
-                // Customer debit
-                fputcsv($handle, [
-                    $date,
-                    $number,
-                    $identity,
-                    $amount,
-                    null,
-                    $number,
-                    $payment->getNumber(),
-                ], ';', '"');
+                // Payment debit
+                $this->writer->debit($account, $amount);
+                // Customer credit
+                $this->writer->credit($number, $amount);
             }
         }
 
-        fclose($handle);
+        $this->writer->close();
 
         return $path;
     }
 
     /**
-     * Formats the amount.
+     * Writes the invoice's grand total line(s).
+     */
+    protected function writeInvoiceGrandTotal()
+    {
+        $sale = $this->invoice->getSale();
+
+        // Grand total row
+        if ($this->config['total_as_payment']) {
+
+            // Credit case
+            if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+                $account = $this->getPaymentAccountNumber($this->invoice->getPaymentMethod());
+
+                $amount = $this->round($this->invoice->getGrandTotal());
+
+                $this->writer->debit($account, (string)$amount);
+                $this->balance += $amount;
+
+                return;
+            }
+
+            // Invoice case
+            $unpaid = $this->invoice->getGrandTotal();
+
+            // Payments
+            foreach ($sale->getPayments() as $payment) {
+                if ($payment->getMethod()->isOutstanding()) {
+                    continue; // Next payment
+                }
+
+                if (!PaymentStates::isPaidState($payment)) {
+                    continue; // Next payment
+                }
+
+                $account = $this->getPaymentAccountNumber($payment->getMethod());
+
+                $amount = $this->round($payment->getAmount());
+
+                $this->writer->credit($account, (string)$amount);
+
+                $unpaid -= $amount;
+                $this->balance -= $amount;
+            }
+
+            // Unpaid amount
+            if (1 === $this->compare($unpaid, 0)) {
+                $account = $this->getUnpaidAccountNumber($sale->getCustomerGroup());
+
+                $this->writer->credit($account, (string)$unpaid);
+
+                $this->balance -= $unpaid;
+            }
+
+            return;
+        }
+
+        if ($customer = $sale->getCustomer()) {
+            $account = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
+        } else {
+            $account = $this->config['default_customer'];
+        }
+
+        $amount = $this->round($this->invoice->getGrandTotal());
+
+        if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+            $this->writer->debit($account, (string)$amount);
+            $this->balance += $amount;
+        } else {
+            $this->writer->credit($account, (string)$amount);
+            $this->balance -= $amount;
+        }
+    }
+
+    /**
+     * Writes the invoice's goods line.
+     */
+    protected function writeInvoiceGoodsLines()
+    {
+        $sale = $this->invoice->getSale();
+        $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
+        /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[] $discounts */
+        $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+
+        // Gather amounts by tax rates
+        $amounts = [];
+        foreach ($this->invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
+            // Skip private lines
+            if ($line->getSaleItem()->isPrivate()) {
+                continue;
+            }
+
+            $rates = $line->getTaxRates();
+            if (empty($rates)) {
+                $rate = 0;
+            } elseif (1 === count($rates)) {
+                $rate = current($rates);
+            } else {
+                throw new LogicException("Multiple tax rates on goods lines are not yet supported."); // TODO
+            }
+
+            $amount = $line->getBase();
+
+            // Apply sale's discounts
+            if (!empty($discounts)) {
+                $base = $amount;
+                foreach ($discounts as $adjustment) {
+                    if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
+                    } else {
+                        $amount -= $this->round($base / $this->invoice->getGoodsBase() * $adjustment->getAmount());
+                    }
+                }
+            }
+
+            if (!isset($amounts[(string) $rate])) {
+                $amounts[(string) $rate] = 0;
+            }
+
+            $amounts[(string) $rate] += $this->round($amount);
+        }
+
+        $credit = $this->invoice->getType() === InvoiceTypes::TYPE_CREDIT;
+
+        // Writes each tax rates's amount
+        foreach ($amounts as $rate => $amount) {
+            $amount = $this->round($amount);
+
+            if (0 === $this->compare($amount, 0)) {
+                continue; // next tax rate
+            }
+
+            $account = $this->getGoodAccountNumber($taxRule, (float)$rate);
+
+            if ($credit) {
+                $this->writer->credit($account, (string)$amount);
+                $this->balance -= $amount;
+            } else {
+                $this->writer->debit($account, (string)$amount);
+                $this->balance += $amount;
+            }
+        }
+    }
+
+    /**
+     * Writes the invoice's shipment line.
+     */
+    protected function writeInvoiceShipmentLine()
+    {
+        $amount = $this->invoice->getShipmentBase();
+
+        if (0 === $this->compare($amount, 0)) {
+            return;
+        }
+
+        $amount = $this->round($amount);
+
+        $sale = $this->invoice->getSale();
+        $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
+
+        $account = $this->getShipmentAccountNumber($taxRule);
+
+        if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+            $this->writer->credit($account, (string)$amount);
+            $this->balance -= $amount;
+        } else {
+            $this->writer->debit($account, (string)$amount);
+            $this->balance += $amount;
+        }
+    }
+
+    /**
+     * Writes the invoice's taxes lines.
+     */
+    protected function writeInvoiceTaxesLine()
+    {
+        $credit = $this->invoice->getType() === InvoiceTypes::TYPE_CREDIT;
+
+        foreach ($this->invoice->getTaxesDetails() as $detail) {
+            $amount = $this->round($detail['amount']);
+
+            if (0 === $this->compare($amount, 0)) {
+                continue; // next tax details
+            }
+
+            $account = $this->getTaxAccountNumber($detail['rate']);
+
+            if ($credit) {
+                $this->writer->credit($account, (string)$amount);
+                $this->balance -= $amount;
+            } else {
+                $this->writer->debit($account, (string)$amount);
+                $this->balance += $amount;
+            }
+        }
+    }
+
+    /**
+     * Rounds the amount.
      *
      * @param $amount
-     * @param $currency
      *
      * @return float
      */
-    protected function amount($amount, $currency)
+    protected function round(float $amount)
     {
-        // TODO currency conversion
+        // TODO currency conversion ?
+        return Money::round($amount, $this->currency);
+    }
 
-        return Money::round($amount, $currency);
+    /**
+     * Compare the amounts.
+     *
+     * @param $a
+     * @param $b
+     *
+     * @return float
+     */
+    protected function compare(float $a, float $b)
+    {
+        // TODO currency conversion ?
+        return Money::compare($a, $b, $this->currency);
+    }
+
+    /**
+     * Return the goods account number for the given tax rule and tax rate.
+     *
+     * @param TaxRuleInterface $rule
+     * @param float            $rate
+     *
+     * @return string
+     */
+    protected function getGoodAccountNumber(TaxRuleInterface $rule, float $rate)
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->getType() !== AccountingTypes::TYPE_GOOD) {
+                continue;
+            }
+
+            if ($account->getTaxRule() !== $rule) {
+                continue;
+            }
+
+            if (is_null($account->getTax())) {
+                if ($rate == 0) {
+                    return $account->getNumber();
+                }
+
+                continue;
+            }
+
+            if (0 === bccomp($account->getTax()->getRate(), $rate, 5)) {
+                return $account->getNumber();
+            }
+        }
+
+        throw new LogicException(sprintf(
+            "No goods account number configured for tax rule '%s' and tax rate %s.",
+            $rule->getName(),
+            $rate
+        ));
+    }
+
+    /**
+     * Returns the shipment account number for the given tax rule.
+     *
+     * @param TaxRuleInterface $rule
+     *
+     * @return string
+     */
+    protected function getShipmentAccountNumber(TaxRuleInterface $rule)
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->getType() !== AccountingTypes::TYPE_SHIPPING) {
+                continue;
+            }
+
+            if ($account->getTaxRule() !== $rule) {
+                continue;
+            }
+
+            return $account->getNumber();
+        }
+
+        throw new LogicException(sprintf(
+            "No shipment account number configured for tax rule '%s'.",
+            $rule->getName()
+        ));
+    }
+
+    /**
+     * Returns the tax account number for the given tax rate.
+     *
+     * @param float $rate
+     *
+     * @return string
+     */
+    protected function getTaxAccountNumber(float $rate)
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->getType() !== AccountingTypes::TYPE_TAX) {
+                continue;
+            }
+
+            if (0 !== bccomp($account->getTax()->getRate(), $rate, 5)) {
+                continue;
+            }
+
+            return $account->getNumber();
+        }
+
+        throw new LogicException(sprintf(
+            "No tax account number configured for tax rate '%s'.",
+            $rate
+        ));
+    }
+
+    /**
+     * Returns the payment account number for the given payment method.
+     *
+     * @param PaymentMethodInterface $method
+     *
+     * @return string
+     */
+    protected function getPaymentAccountNumber(PaymentMethodInterface $method)
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->getType() !== AccountingTypes::TYPE_PAYMENT) {
+                continue;
+            }
+
+            if ($account->getPaymentMethod() !== $method) {
+                continue;
+            }
+
+            return $account->getNumber();
+        }
+
+        throw new LogicException(sprintf(
+            "No payment account number configured for payment method '%s'.",
+            $method->getName()
+        ));
+    }
+
+    /**
+     * Returns the unpaid account number for the given customer group.
+     *
+     * @param CustomerGroupInterface $group
+     *
+     * @return string
+     */
+    protected function getUnpaidAccountNumber(CustomerGroupInterface $group)
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->getType() !== AccountingTypes::TYPE_UNPAID) {
+                continue;
+            }
+
+            if (!in_array($group, $account->getCustomerGroups())) {
+                continue;
+            }
+
+            return $account->getNumber();
+        }
+
+        // Fallback to 'all' (empty) customer groups
+        foreach ($this->accounts as $account) {
+            if ($account->getType() !== AccountingTypes::TYPE_UNPAID) {
+                continue;
+            }
+
+            if (0 < $account->getCustomerGroups()->count()) {
+                continue;
+            }
+
+            return $account->getNumber();
+        }
+
+        throw new LogicException(sprintf(
+            "No shipment account number configured for customer group '%s'.",
+            $group->getName()
+        ));
     }
 }
