@@ -491,9 +491,10 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         throw new LogicException(sprintf(
-            "No goods account number configured for tax rule '%s' and tax rate %s.",
+            "No goods account number configured for tax rule '%s' and tax rate %s (%s)",
             $rule->getName(),
-            $rate
+            $rate,
+            $this->invoice->getNumber()
         ));
     }
 
@@ -519,7 +520,7 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         throw new LogicException(sprintf(
-            "No shipment account number configured for tax rule '%s'. (Invoice %s)",
+            "No shipment account number configured for tax rule '%s' (%s)",
             $rule->getName(),
             $this->invoice->getNumber()
         ));
@@ -547,8 +548,9 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         throw new LogicException(sprintf(
-            "No tax account number configured for tax rate '%s'.",
-            $rate
+            "No tax account number configured for tax rate '%s' (%s)",
+            $rate,
+            $this->invoice->getNumber()
         ));
     }
 
@@ -574,8 +576,9 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         throw new LogicException(sprintf(
-            "No payment account number configured for payment method '%s'.",
-            $method->getName()
+            "No payment account number configured for payment method '%s' (%s)",
+            $method->getName(),
+            $this->invoice->getNumber()
         ));
     }
 
@@ -614,8 +617,9 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         throw new LogicException(sprintf(
-            "No unpaid account number configured for customer group '%s'.",
-            $group->getName()
+            "No unpaid account number configured for customer group '%s' (%s)",
+            $group->getName(),
+            $this->invoice->getNumber()
         ));
     }
 }
