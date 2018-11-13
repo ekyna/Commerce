@@ -519,8 +519,9 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         throw new LogicException(sprintf(
-            "No shipment account number configured for tax rule '%s'.",
-            $rule->getName()
+            "No shipment account number configured for tax rule '%s'. (Invoice %s)",
+            $rule->getName(),
+            $this->invoice->getNumber()
         ));
     }
 
