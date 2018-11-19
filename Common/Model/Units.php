@@ -11,29 +11,29 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class Units
 {
-    const PIECE = 'piece';
+    const PIECE       = 'piece';
 
     // Length
-    const METRE      = 'metre';
-    const CENTIMETRE = 'centimetre';
-    const MILLIMETRE = 'millimetre';
-    const INCH       = 'inch';
-    const FOOT       = 'foot';
+    const METER       = 'meter';
+    const CENTIMETER  = 'centimeter';
+    const MILLIMETER  = 'millimeter';
+    const INCH        = 'inch';
+    const FOOT        = 'foot';
 
     // Weight
-    const KILOGRAM = 'kilogram';
-    const GRAM     = 'gram';
+    const KILOGRAM    = 'kilogram';
+    const GRAM        = 'gram';
 
     // Volume
-    const CUBIC_METRE = 'cubic_metre';
-    const LITRE       = 'litre';
-    const MILLILITRE  = 'millilitre';
+    const CUBIC_METER = 'cubic_meter';
+    const LITER       = 'liter';
+    const MILLILITER  = 'milliliter';
 
     // Duration
-    const DAY    = 'day';
-    const HOUR   = 'hour';
-    const MINUTE = 'minute';
-    const SECOND = 'second';
+    const DAY         = 'day';
+    const HOUR        = 'hour';
+    const MINUTE      = 'minute';
+    const SECOND      = 'second';
 
 
     /**
@@ -46,18 +46,18 @@ final class Units
         return [
             static::PIECE,
             // Length
-            static::METRE,
-            static::CENTIMETRE,
-            static::MILLIMETRE,
+            static::METER,
+            static::CENTIMETER,
+            static::MILLIMETER,
             static::INCH,
             static::FOOT,
             // Weight
             static::KILOGRAM,
             static::GRAM,
             // Volume
-            static::CUBIC_METRE,
-            static::LITRE,
-            static::MILLILITRE,
+            static::CUBIC_METER,
+            static::LITER,
+            static::MILLILITER,
             // Duration
             static::DAY,
             static::HOUR,
@@ -101,11 +101,11 @@ final class Units
                 return 'pcs';
 
             // Length
-            case static::METRE:
+            case static::METER:
                 return 'm';
-            case static::CENTIMETRE:
+            case static::CENTIMETER:
                 return 'cm';
-            case static::MILLIMETRE:
+            case static::MILLIMETER:
                 return 'mm';
             case static::INCH:
                 return 'in';
@@ -119,11 +119,11 @@ final class Units
                 return 'g';
 
             // Volume
-            case static::CUBIC_METRE:
+            case static::CUBIC_METER:
                 return 'm³';
-            case static::LITRE:
+            case static::LITER:
                 return 'L';
-            case static::MILLILITRE:
+            case static::MILLILITER:
                 return 'mL';
 
             // Duration
@@ -152,23 +152,23 @@ final class Units
     {
         switch ($unit) {
             case static::PIECE:
-            case static::MILLIMETRE:
+            case static::MILLIMETER:
             case static::GRAM:
-            case static::MILLILITRE:
+            case static::MILLILITER:
             case static::DAY:
             case static::MINUTE:
             case static::SECOND:
                 return 0;
-            case static::CENTIMETRE:
+            case static::CENTIMETER:
                 return 1;
             case static::INCH:
             case static::FOOT:
             case static::HOUR:
                 return 2;
-            case static::METRE:
+            case static::METER:
             case static::KILOGRAM:
-            case static::CUBIC_METRE:
-            case static::LITRE:
+            case static::CUBIC_METER:
+            case static::LITER:
                 return 3;
             default:
                 throw new InvalidArgumentException("Invalid unit '$unit'.");

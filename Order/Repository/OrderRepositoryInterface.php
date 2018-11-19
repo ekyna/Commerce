@@ -59,7 +59,7 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      *
      * @return float
      */
-    public function getOutstandingToGoDue();
+    public function getOutstandingFallDue();
 
     /**
      * Returns the customers pending due.

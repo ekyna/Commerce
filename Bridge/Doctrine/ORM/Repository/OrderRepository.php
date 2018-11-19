@@ -181,7 +181,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     /**
      * @inheritDoc
      */
-    public function getOutstandingToGoDue()
+    public function getOutstandingFallDue()
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
