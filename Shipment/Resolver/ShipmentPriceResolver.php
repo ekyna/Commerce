@@ -203,7 +203,8 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         }
 
         if (0 < $count) {
-            $price = $count * $entry['prices'][0]['price'];
+            $max = end($entry['prices'])['price'];
+            $price = $count * $max;
         }
 
         foreach ($entry['prices'] as $p) {
@@ -260,9 +261,12 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
             });
 
             // Fix max weight
-            if (0 == $method['max_weight'] || $method['max_weight'] > $method['prices'][0]['weight']) {
-                $method['max_weight'] = $method['prices'][0]['weight'];
+            $max = end($method['prices'])['weight'];
+            if (0 == $method['max_weight'] || $method['max_weight'] > $max) {
+                $method['max_weight'] = $max;
             }
+
+            unset($method);
         }
 
         return $this->grids[$country->getId()] = $grid;
