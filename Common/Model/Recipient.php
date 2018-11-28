@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Bundle\AdminBundle\Model\UserInterface;
+
 /**
  * Class Recipient
  * @package Ekyna\Component\Commerce\Common\Model
@@ -9,6 +11,35 @@ namespace Ekyna\Component\Commerce\Common\Model;
  */
 class Recipient
 {
+    const TYPE_WEBSITE       = 'website';
+    const TYPE_USER          = 'user';
+    const TYPE_ADMINISTRATOR = 'administrator';
+    const TYPE_IN_CHARGE     = 'in_charge';
+    const TYPE_CUSTOMER      = 'customer';
+    const TYPE_SALESMAN      = 'salesman';
+    const TYPE_ACCOUNTABLE   = 'accountable';
+    const TYPE_SUPPLIER      = 'supplier';
+
+
+    /**
+     * Returns the valid types.
+     *
+     * @return array
+     */
+    public static function getTypes()
+    {
+        return [
+            self::TYPE_WEBSITE,
+            self::TYPE_USER,
+            self::TYPE_ADMINISTRATOR,
+            self::TYPE_IN_CHARGE,
+            self::TYPE_CUSTOMER,
+            self::TYPE_SALESMAN,
+            self::TYPE_ACCOUNTABLE,
+            self::TYPE_SUPPLIER,
+        ];
+    }
+
     /**
      * @var string
      */
@@ -24,52 +55,59 @@ class Recipient
      */
     private $type;
 
+    /**
+     * @var UserInterface
+     */
+    private $user;
+
 
     /**
      * Constructor.
      *
-     * @param string $email
-     * @param string $name
-     * @param string $type
+     * @param string        $email
+     * @param string        $name
+     * @param string        $type
+     * @param UserInterface $user
      */
-    public function __construct($email = null, $name = null, $type = null)
+    public function __construct($email = null, $name = null, $type = null, UserInterface $user = null)
     {
         $this->email = $email;
         $this->name = $name;
         $this->type = $type;
+        $this->user = $user;
     }
 
-    /**
-     * Returns the string representation.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->getChoiceLabel();
-    }
-
-    /**
-     * Returns the choice label.
-     *
-     * @return string
-     */
-    public function getChoiceLabel()
-    {
-        $label = '';
-
-        if (!empty($this->type)) {
-            $label = '[' . $this->type . '] ';
-        }
-
-        if (!empty($this->name)) {
-            $label .= sprintf('%s &lt;%s&gt;', $this->name, $this->email);
-        } else {
-            $label .= $this->email;
-        }
-
-        return $label;
-    }
+//    /**
+//     * Returns the string representation.
+//     *
+//     * @return string
+//     */
+//    public function __toString()
+//    {
+//        return $this->getChoiceLabel();
+//    }
+//
+//    /**
+//     * Returns the choice label.
+//     *
+//     * @return string
+//     */
+//    public function getChoiceLabel()
+//    {
+//        $label = '';
+//
+//        if (!empty($this->type)) {
+//            $label = '[' . $this->type . '] ';
+//        }
+//
+//        if (!empty($this->name)) {
+//            $label .= sprintf('%s &lt;%s&gt;', $this->name, $this->email);
+//        } else {
+//            $label .= $this->email;
+//        }
+//
+//        return $label;
+//    }
 
     /**
      * Sets the email.
@@ -141,5 +179,29 @@ class Recipient
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Returns the user.
+     *
+     * @return UserInterface
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Sets the user.
+     *
+     * @param UserInterface $user
+     *
+     * @return Recipient
+     */
+    public function setUser($user)
+    {
+        $this->user = $user;
+
+        return $this;
     }
 }
