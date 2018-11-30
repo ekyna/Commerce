@@ -44,9 +44,87 @@ class OrderExporter
      */
     public function exportDueOrders()
     {
-        $orders = $this->repository->findDueOrders();
+        return $this->buildFile($this->repository->findDueOrders(), 'due');
+    }
 
-        $path = tempnam(sys_get_temp_dir(), 'due');
+    /**
+     * Export all the due orders (archive with all CSV files).
+     *
+     * @return string The export file path.
+     */
+    public function exportAllDueOrders()
+    {
+        $path = tempnam(sys_get_temp_dir(), 'acc');
+
+        $zip = new \ZipArchive();
+
+        if (false === $zip->open($path)) {
+            throw new RuntimeException("Failed to open '$path' for writing.");
+        }
+
+        $zip->addFile($this->exportRegularDueOrders(), 'regular-due-orders.csv');
+        $zip->addFile($this->exportOutstandingExpiredDueOrders(), 'outstanding-expired-due-orders.csv');
+        $zip->addFile($this->exportOutstandingFallDueOrders(), 'outstanding-fall-due-orders.csv');
+        $zip->addFile($this->exportOutstandingPendingDueOrders(), 'outstanding-pending-due-orders.csv');
+
+        $zip->close();
+
+        return $path;
+    }
+
+    /**
+     * Export the regular (payment term less) due orders.
+     *
+     * @return string The export file path.
+     */
+    public function exportRegularDueOrders()
+    {
+        return $this->buildFile($this->repository->getRegularDueOrders(), 'regular_due');
+    }
+
+    /**
+     * Export the outstanding expired due orders.
+     *
+     * @return string The export file path.
+     */
+    public function exportOutstandingExpiredDueOrders()
+    {
+        return $this->buildFile($this->repository->getOutstandingExpiredDueOrders(), 'outstanding_expired_due');
+    }
+
+    /**
+     * Export the outstanding fall due orders.
+     *
+     * @return string The export file path.
+     */
+    public function exportOutstandingFallDueOrders()
+    {
+        return $this->buildFile($this->repository->getOutstandingFallDueOrders(), 'outstanding_fall_due');
+    }
+
+    /**
+     * Export the outstanding pending due orders.
+     *
+     * @return string The export file path.
+     */
+    public function exportOutstandingPendingDueOrders()
+    {
+        return $this->buildFile($this->repository->getOutstandingPendingDueOrders(), 'outstanding_pending_due');
+    }
+
+    /**
+     * Builds the orders export CSV file.
+     *
+     * @param OrderInterface[] $orders
+     * @param string           $name
+     *
+     * @return string
+     */
+    protected function buildFile(array $orders, string $name)
+    {
+        if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
+            throw new RuntimeException("Failed to create temporary file.");
+        }
 
         if (false === $handle = fopen($path, "w")) {
             throw new RuntimeException("Failed to open '$path' for writing.");
@@ -77,7 +155,7 @@ class OrderExporter
             'payment_state'       => '',
             'shipment_state'      => '',
             'invoice_state'       => '',
-            'payment_term'       => '',
+            'payment_term'        => '',
             'due_amount'          => $total,
             'outstanding_expired' => $expired,
             'outstanding_date'    => '',
@@ -87,16 +165,6 @@ class OrderExporter
         fclose($handle);
 
         return $path;
-    }
-
-    /**
-     * Returns the due orders.
-     *
-     * @return OrderInterface[]
-     */
-    protected function findDueOrders()
-    {
-        return $this->repository->findDueOrders();
     }
 
     /**

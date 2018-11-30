@@ -41,11 +41,18 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function findDueOrders();
 
     /**
-     * Returns the regular (without payment term) due.
+     * Returns the regular (payment term less) due.
      *
      * @return float
      */
     public function getRegularDue();
+
+    /**
+     * Returns the regular (payment term less) due orders.
+     *
+     * @return OrderInterface[]
+     */
+    public function getRegularDueOrders();
 
     /**
      * Returns the customers expired due.
@@ -55,6 +62,13 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function getOutstandingExpiredDue();
 
     /**
+     * Returns the customers expired due.
+     *
+     * @return OrderInterface[]
+     */
+    public function getOutstandingExpiredDueOrders();
+
+    /**
      * Returns the customers fall due.
      *
      * @return float
@@ -62,9 +76,23 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function getOutstandingFallDue();
 
     /**
+     * Returns the customers fall due.
+     *
+     * @return OrderInterface[]
+     */
+    public function getOutstandingFallDueOrders();
+
+    /**
      * Returns the customers pending due.
      *
      * @return float
      */
     public function getOutstandingPendingDue();
+
+    /**
+     * Returns the customers pending due.
+     *
+     * @return OrderInterface[]
+     */
+    public function getOutstandingPendingDueOrders();
 }

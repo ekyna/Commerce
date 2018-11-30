@@ -59,6 +59,11 @@ class OrderStat
     private $average = 0;
 
     /**
+     * @var array
+     */
+    private $details = [];
+
+    /**
      * @var \DateTime
      */
     private $updatedAt;
@@ -277,6 +282,30 @@ class OrderStat
     }
 
     /**
+     * Returns the details.
+     *
+     * @return array
+     */
+    public function getDetails()
+    {
+        return $this->details;
+    }
+
+    /**
+     * Sets the details.
+     *
+     * @param array $details
+     *
+     * @return OrderStat
+     */
+    public function setDetails(array $details)
+    {
+        $this->details = $details;
+
+        return $this;
+    }
+
+    /**
      * Returns the updated at datetime.
      *
      * @return \DateTime
@@ -325,7 +354,7 @@ class OrderStat
     {
         $changed = false;
 
-        foreach (['revenue', 'shipping', 'margin', 'orders', 'items', 'average'] as $property) {
+        foreach (['revenue', 'shipping', 'margin', 'orders', 'items', 'average', 'details'] as $property) {
             if ($this->{$property} != $result[$property]) {
                 $this->{$property} = $result[$property];
                 $changed = true;

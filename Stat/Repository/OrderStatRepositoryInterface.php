@@ -28,15 +28,6 @@ interface OrderStatRepositoryInterface
     public function findOneByMonth(\DateTime $date);
 
     /**
-     * Finds the day revenues by month.
-     *
-     * @param \DateTime $date
-     *
-     * @return float[]
-     */
-    public function findDayRevenuesByMonth(\DateTime $date);
-
-    /**
      * Finds the order stat by year.
      *
      * @param \DateTime $date
@@ -46,20 +37,32 @@ interface OrderStatRepositoryInterface
     public function findOneByYear(\DateTime $date);
 
     /**
-     * Finds the month revenues by year.
+     * Finds the day revenues by month.
      *
      * @param \DateTime $date
+     * @param bool  $detailed
      *
      * @return float[]
      */
-    public function findMonthRevenuesByYear(\DateTime $date);
+    public function findDayRevenuesByMonth(\DateTime $date, $detailed = false);
+
+    /**
+     * Finds the month revenues by year.
+     *
+     * @param \DateTime $date
+     * @param bool  $detailed
+     *
+     * @return float[]
+     */
+    public function findMonthRevenuesByYear(\DateTime $date, $detailed = false);
 
     /**
      * Finds the year revenues.
      *
      * @param int $limit
+     * @param bool  $detailed
      *
      * @return float[]
      */
-    public function findYearRevenues($limit = 8);
+    public function findYearRevenues($limit = 8, $detailed = false);
 }

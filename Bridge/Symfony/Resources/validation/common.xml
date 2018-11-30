@@ -192,40 +192,6 @@
         </property>
     </class>
 
-    <!-- Notification -->
-
-    <class name="Ekyna\Component\Commerce\Common\Model\Notify">
-        <property name="from">
-            <constraint name="NotNull"/>
-            <constraint name="Valid"/>
-        </property>
-        <property name="recipients">
-            <constraint name="Valid"/>
-        </property>
-        <property name="extraRecipients">
-            <constraint name="Valid"/>
-        </property>
-        <property name="copies">
-            <constraint name="Valid"/>
-        </property>
-        <property name="extraCopies">
-            <constraint name="Valid"/>
-        </property>
-        <property name="subject">
-            <constraint name="NotBlank"/>
-        </property>
-        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Notify"/>
-    </class>
-
-    <!-- Recipient -->
-
-    <class name="Ekyna\Component\Commerce\Common\Model\Recipient">
-        <property name="email">
-            <constraint name="NotBlank"/>
-            <constraint name="Email"/>
-        </property>
-    </class>
-
     <!-- Sale -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractSale">
@@ -315,6 +281,17 @@
         </property>
         <property name="updatedAt">
             <constraint name="DateTime"/>
+        </property>
+        <property name="acceptedAt">
+            <constraint name="DateTime"/>
+        </property>
+        <property name="source">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Common\Model\SaleSources</value>
+                    <value>getSources</value>
+                </option>
+            </constraint>
         </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">number</option>
@@ -490,6 +467,40 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">code</option>
         </constraint>
+    </class>
+
+    <!-- Notification -->
+
+    <class name="Ekyna\Component\Commerce\Common\Model\Notify">
+        <property name="from">
+            <constraint name="NotNull"/>
+            <constraint name="Valid"/>
+        </property>
+        <property name="recipients">
+            <constraint name="Valid"/>
+        </property>
+        <property name="extraRecipients">
+            <constraint name="Valid"/>
+        </property>
+        <property name="copies">
+            <constraint name="Valid"/>
+        </property>
+        <property name="extraCopies">
+            <constraint name="Valid"/>
+        </property>
+        <property name="subject">
+            <constraint name="NotBlank"/>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Notify"/>
+    </class>
+
+    <!-- Recipient -->
+
+    <class name="Ekyna\Component\Commerce\Common\Model\Recipient">
+        <property name="email">
+            <constraint name="NotBlank"/>
+            <constraint name="Email"/>
+        </property>
     </class>
 
     <!-- State -->

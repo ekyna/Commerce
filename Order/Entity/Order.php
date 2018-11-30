@@ -58,6 +58,7 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->initializeInvoiceSubject();
 
         $this->state = Model\OrderStates::STATE_NEW;
+        $this->source = Common\SaleSources::SOURCE_COMMERCIAL;
         $this->sample = false;
 
         $this->marginTotal = 0;

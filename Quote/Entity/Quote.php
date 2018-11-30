@@ -30,6 +30,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         parent::__construct();
 
         $this->state = Model\QuoteStates::STATE_NEW;
+        $this->source = Common\SaleSources::SOURCE_COMMERCIAL;
     }
 
     /**

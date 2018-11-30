@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Ekyna\Component\Commerce\Common\Model\SaleSources;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stat\Entity\OrderStat;
 use Ekyna\Component\Commerce\Stat\Repository\OrderStatRepositoryInterface;
@@ -45,14 +46,6 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
     /**
      * @inheritDoc
      */
-    public function findDayRevenuesByMonth(\DateTime $date)
-    {
-        return $this->findRevenues(OrderStat::TYPE_DAY, $date);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function findOneByYear(\DateTime $date)
     {
         return $this->findOneBy([
@@ -64,21 +57,29 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
     /**
      * @inheritDoc
      */
-    public function findMonthRevenuesByYear(\DateTime $date)
+    public function findDayRevenuesByMonth(\DateTime $date, $detailed = false)
     {
-        return $this->findRevenues(OrderStat::TYPE_MONTH, $date);
+        return $this->findRevenues(OrderStat::TYPE_DAY, $date, null, $detailed);
     }
 
     /**
      * @inheritDoc
      */
-    public function findYearRevenues($limit = 8)
+    public function findMonthRevenuesByYear(\DateTime $date, $detailed = false)
+    {
+        return $this->findRevenues(OrderStat::TYPE_MONTH, $date, null, $detailed);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findYearRevenues($limit = 8, $detailed = false)
     {
         $qb = $this->createQueryBuilder('o');
         $expr = $qb->expr();
 
         $result = $qb
-            ->select(['o.date', 'o.revenue'])
+            ->select(['o.date', 'o.revenue', 'o.details'])
             ->andWhere($expr->eq('o.type', ':type'))
             ->addOrderBy('o.date')
             ->getQuery()
@@ -86,12 +87,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
             ->setMaxResults($limit = 8)
             ->getScalarResult();
 
-        $data = [];
-        foreach ($result as $r) {
-            $data[$r['date']] = $r['revenue'];
-        }
-
-        return $data;
+        return $this->buildRevenueData($result, $detailed);
     }
 
     /**
@@ -100,10 +96,11 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
      * @param int            $type
      * @param \DateTime      $from
      * @param \DateTime|null $to
+     * @param bool           $detailed
      *
      * @return array
      */
-    private function findRevenues($type, \DateTime $from, \DateTime $to = null)
+    private function findRevenues($type, \DateTime $from, \DateTime $to = null, $detailed = false)
     {
         if ($type === OrderStat::TYPE_DAY) {
             if (null === $to) {
@@ -132,21 +129,44 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
             ])
             ->getScalarResult();
 
-        $data = [];
-        foreach ($result as $r) {
-            $data[$r['date']] = $r['revenue'];
-        }
+        $data = $this->buildRevenueData($result, $detailed);
 
         $period = new \DatePeriod($from, $interval, $to);
+
+        $defaults = $detailed ? [] : 0;
+        if ($detailed) {
+            foreach (SaleSources::getSources() as $source) {
+                $defaults[$source] = 0;
+            }
+        }
 
         /** @var \DateTime $d */
         foreach ($period as $d) {
             $index = $d->format($format);
             if (!isset($data[$index])) {
-                $data[$index] = 0;
+                $data[$index] = $defaults;
             };
         }
         ksort($data);
+
+        return $data;
+    }
+
+    /**
+     * Builds the revenue data.
+     *
+     * @param array $result
+     * @param bool  $detailed
+     *
+     * @return array
+     */
+    private function buildRevenueData(array $result, $detailed = false)
+    {
+        $data = [];
+
+        foreach ($result as $r) {
+            $data[$r['date']] = $detailed ? json_decode($r['details'], true) : $r['revenue'];
+        }
 
         return $data;
     }
@@ -166,7 +186,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         $expr = $qb->expr();
 
         return $this->revenueQuery = $qb
-            ->select(['o.date', 'o.revenue'])
+            ->select(['o.date', 'o.revenue', 'o.details'])
             ->andWhere($expr->eq('o.type', ':type'))
             ->andWhere($expr->gte('o.date', ':from'))
             ->andWhere($expr->lte('o.date', ':to'))

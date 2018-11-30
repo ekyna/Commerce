@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Query\Expr;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -86,7 +87,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function findDueOrders()
     {
@@ -121,61 +122,57 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     }
 
     /**
-     * @return array
+     * @inheritdoc
      */
     public function getRegularDue()
     {
-        $qb = $this->createQueryBuilder('o');
-        $ex = $qb->expr();
-
-        $query = $qb
+        return $this
+            ->getRegularDueQueryBuilder()
             ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),                 // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),             // Paid total lower than grand total
-                $ex->eq('o.shipmentState', ':state_fully_shipped'), // Shipped
-                $ex->isNull('o.paymentTerm')                        // Without payment term
-            // TODO not refunded ?
-            ))
-            ->getQuery();
-
-
-        return $query
-            ->setParameter('not_sample', false)
-            ->setParameter('state_fully_shipped', ShipmentStates::STATE_COMPLETED)
+            ->getQuery()
             ->useQueryCache(true)
             //->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
+     */
+    public function getRegularDueOrders()
+    {
+        return $this
+            ->getRegularDueQueryBuilder()
+            ->getQuery()
+            ->useQueryCache(true)
+            //->useResultCache(true, 300)
+            ->getResult();
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getOutstandingExpiredDue()
     {
-        $qb = $this->createQueryBuilder('o');
-        $ex = $qb->expr();
-
-        $query = $qb
-            ->join('o.paymentTerm', 't')
+        return $this
+            ->getOutstandingExpiredDueQueryBuilder()
             ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
-            //->select('SUM(o.outstandingExpired)')
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),               // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),           // Paid total lower than grand total
-                $qb->expr()->lte('o.outstandingDate', ':today'),  // Payment limit date lower than today
-                $this->getDueClauses()                            // Terms triggered
-            ))
-            ->getQuery();
-
-        $this->setDueParameters($query);
-
-        return $query
-            ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->getQuery()
             ->useQueryCache(true)
             //->useResultCache(true, 300)
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutstandingExpiredDueOrders()
+    {
+        return $this
+            ->getOutstandingExpiredDueQueryBuilder()
+            ->getQuery()
+            ->useQueryCache(true)
+            //->useResultCache(true, 300)
+            ->getResult();
     }
 
     /**
@@ -183,26 +180,10 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
      */
     public function getOutstandingFallDue()
     {
-        $qb = $this->createQueryBuilder('o');
-        $ex = $qb->expr();
-
-        $query = $qb
-            ->join('o.paymentTerm', 't')
+        return $this
+            ->getOutstandingFallDueQueryBuilder()
             ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
-            //->select('SUM(o.outstandingAccepted)')
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),               // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),           // Paid total lower than grand total
-                $qb->expr()->gt('o.outstandingDate', ':today'),   // Payment limit date greater than today
-                $this->getDueClauses()                            // Terms triggered
-            ))
-            ->getQuery();
-
-        $this->setDueParameters($query);
-
-        return $query
-            ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->getQuery()
             ->useQueryCache(true)
             //->useResultCache(true, 300)
             ->getSingleScalarResult();
@@ -211,29 +192,144 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     /**
      * @inheritDoc
      */
+    public function getOutstandingFallDueOrders()
+    {
+        return $this
+            ->getOutstandingFallDueQueryBuilder()
+            ->getQuery()
+            ->useQueryCache(true)
+            //->useResultCache(true, 300)
+            ->getResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOutstandingPendingDue()
+    {
+        return $this
+            ->getOutstandingPendingDueQueryBuilder()
+            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            ->getQuery()
+            ->useQueryCache(true)
+            //->useResultCache(true, 300);
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutstandingPendingDueOrders()
+    {
+        return $this
+            ->getOutstandingPendingDueQueryBuilder()
+            ->getQuery()
+            ->useQueryCache(true)
+            //->useResultCache(true, 300);
+            ->getResult();
+    }
+
+    /**
+     * Returns the regular due query.
+     *
+     * @return QueryBuilder
+     */
+    private function getRegularDueQueryBuilder()
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
 
-        $query = $qb
-            ->join('o.paymentTerm', 't')
-            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
-            //->select('SUM(o.outstandingAccepted)')
+        return $qb
             ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),               // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),           // Paid total lower than grand total
-                $ex->not($this->getDueClauses())                  // Terms not triggered
+                $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                $ex->eq('o.shipmentState', ':shipped'),                // Shipped
+                $ex->isNull('o.paymentTerm')                           // Without payment term
             ))
-            ->getQuery();
-
-        $this->setDueParameters($query);
-
-        return $query
             ->setParameter('not_sample', false)
-            ->useQueryCache(true)
-            //->useResultCache(true, 300);
-            ->getSingleScalarResult();
+            ->setParameter('shipped', ShipmentStates::STATE_COMPLETED)
+            ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
+    }
+
+    /**
+     * Returns the outstanding expired due query builder.
+     *
+     * @return QueryBuilder
+     */
+    private function getOutstandingExpiredDueQueryBuilder()
+    {
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        $qb
+            ->join('o.paymentTerm', 't')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                $qb->expr()->lte('o.outstandingDate', ':today'),       // Payment limit date lower than today
+                $this->getDueClauses()                                 // Terms triggered
+            ))
+            ->setParameter('not_sample', false)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
+
+        $this->setDueParameters($qb);
+
+        return $qb;
+    }
+
+    /**
+     * Returns the outstanding fall due query builder.
+     *
+     * @return QueryBuilder
+     */
+    private function getOutstandingFallDueQueryBuilder()
+    {
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        $qb
+            ->join('o.paymentTerm', 't')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                $qb->expr()->gt('o.outstandingDate', ':today'),        // Payment limit date greater than today
+                $this->getDueClauses()                                 // Terms triggered
+            ))
+            ->setParameter('not_sample', false)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
+
+        $this->setDueParameters($qb);
+
+        return $qb;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    private function getOutstandingPendingDueQueryBuilder()
+    {
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        $qb
+            ->join('o.paymentTerm', 't')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                $ex->not($this->getDueClauses())                       // Terms not triggered
+            ))
+            ->setParameter('not_sample', false)
+            ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
+
+        $this->setDueParameters($qb);
+
+        return $qb;
     }
 
     /**
@@ -270,9 +366,9 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     /**
      * Set the due clause's parameters.
      *
-     * @param Query $query
+     * @param Query|QueryBuilder $query
      */
-    private function setDueParameters(Query $query)
+    private function setDueParameters($query)
     {
         $query
             ->setParameter('trigger_invoiced', Trigger::TRIGGER_INVOICED)

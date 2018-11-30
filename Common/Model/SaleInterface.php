@@ -37,8 +37,6 @@ interface SaleInterface extends
     ShippableInterface,
     VatNumberSubjectInterface
 {
-    const SOURCE_WEB = 'web';
-
     /**
      * Returns the customer.
      *
