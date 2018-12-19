@@ -315,6 +315,13 @@ interface SaleItemInterface extends
     public function unsetData($key);
 
     /**
+     * Returns the item level in the sale hierarchy.
+     *
+     * @return float
+     */
+    public function getLevel();
+
+    /**
      * Returns the parents total quantity.
      *
      * @return float

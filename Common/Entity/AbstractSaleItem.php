@@ -545,6 +545,21 @@ abstract class AbstractSaleItem implements SaleItemInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getLevel()
+    {
+        $level = 0;
+
+        $parent = $this;
+        while (null !== $parent = $parent->getParent()) {
+            $level++;
+        }
+
+        return $level;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getParentsQuantity()
