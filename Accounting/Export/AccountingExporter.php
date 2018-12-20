@@ -200,9 +200,14 @@ class AccountingExporter implements AccountingExporterInterface
         ]);
 
         foreach ($payments as $payment) {
+            $method = $payment->getMethod();
+            if ($method->isOutstanding()) {
+                continue;
+            }
+
             $this->writer->configure($payment);
 
-            $account = $this->getPaymentAccountNumber($payment->getMethod());
+            $account = $this->getPaymentAccountNumber($method, $payment->getNumber());
 
             if ($customer = $payment->getSale()->getCustomer()) {
                 $number = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
@@ -252,7 +257,10 @@ class AccountingExporter implements AccountingExporterInterface
 
             // Credit case
             if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
-                $account = $this->getPaymentAccountNumber($this->invoice->getPaymentMethod());
+                $account = $this->getPaymentAccountNumber(
+                    $this->invoice->getPaymentMethod(),
+                    $this->invoice->getNumber()
+                );
 
                 $amount = $this->round($this->invoice->getGrandTotal());
 
@@ -269,7 +277,10 @@ class AccountingExporter implements AccountingExporterInterface
 
             // Payments
             foreach ($payments as $payment) {
-                $account = $this->getPaymentAccountNumber($payment->getPayment()->getMethod());
+                $account = $this->getPaymentAccountNumber(
+                    $payment->getPayment()->getMethod(),
+                    $payment->getPayment()->getNumber()
+                );
 
                 $amount = $this->round($payment->getAmount());
 
@@ -281,7 +292,7 @@ class AccountingExporter implements AccountingExporterInterface
 
             // Unpaid amount
             if (1 === $this->compare($unpaid, 0)) {
-                $account = $this->getUnpaidAccountNumber($sale->getCustomerGroup());
+                $account = $this->getUnpaidAccountNumber($sale->getCustomerGroup(), $this->invoice->getNumber());
 
                 $this->writer->credit($account, (string)$unpaid);
 
@@ -366,7 +377,7 @@ class AccountingExporter implements AccountingExporterInterface
                 continue; // next tax rate
             }
 
-            $account = $this->getGoodAccountNumber($taxRule, (float)$rate);
+            $account = $this->getGoodAccountNumber($taxRule, (float)$rate, $this->invoice->getNumber());
 
             if ($credit) {
                 $this->writer->credit($account, (string)$amount);
@@ -394,7 +405,7 @@ class AccountingExporter implements AccountingExporterInterface
         $sale = $this->invoice->getSale();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
 
-        $account = $this->getShipmentAccountNumber($taxRule);
+        $account = $this->getShipmentAccountNumber($taxRule, $this->invoice->getNumber());
 
         if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
             $this->writer->credit($account, (string)$amount);
@@ -419,7 +430,7 @@ class AccountingExporter implements AccountingExporterInterface
                 continue; // next tax details
             }
 
-            $account = $this->getTaxAccountNumber($detail['rate']);
+            $account = $this->getTaxAccountNumber($detail['rate'], $this->invoice->getNumber());
 
             if ($credit) {
                 $this->writer->credit($account, (string)$amount);
@@ -463,10 +474,11 @@ class AccountingExporter implements AccountingExporterInterface
      *
      * @param TaxRuleInterface $rule
      * @param float            $rate
+     * @param string           $origin
      *
      * @return string
      */
-    protected function getGoodAccountNumber(TaxRuleInterface $rule, float $rate)
+    protected function getGoodAccountNumber(TaxRuleInterface $rule, float $rate, string $origin)
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_GOOD) {
@@ -494,7 +506,7 @@ class AccountingExporter implements AccountingExporterInterface
             "No goods account number configured for tax rule '%s' and tax rate %s (%s)",
             $rule->getName(),
             $rate,
-            $this->invoice->getNumber()
+            $origin
         ));
     }
 
@@ -502,10 +514,11 @@ class AccountingExporter implements AccountingExporterInterface
      * Returns the shipment account number for the given tax rule.
      *
      * @param TaxRuleInterface $rule
+     * @param string           $origin
      *
      * @return string
      */
-    protected function getShipmentAccountNumber(TaxRuleInterface $rule)
+    protected function getShipmentAccountNumber(TaxRuleInterface $rule, string $origin)
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_SHIPPING) {
@@ -522,18 +535,19 @@ class AccountingExporter implements AccountingExporterInterface
         throw new LogicException(sprintf(
             "No shipment account number configured for tax rule '%s' (%s)",
             $rule->getName(),
-            $this->invoice->getNumber()
+            $origin
         ));
     }
 
     /**
      * Returns the tax account number for the given tax rate.
      *
-     * @param float $rate
+     * @param float  $rate
+     * @param string $origin
      *
      * @return string
      */
-    protected function getTaxAccountNumber(float $rate)
+    protected function getTaxAccountNumber(float $rate, string $origin)
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_TAX) {
@@ -550,7 +564,7 @@ class AccountingExporter implements AccountingExporterInterface
         throw new LogicException(sprintf(
             "No tax account number configured for tax rate '%s' (%s)",
             $rate,
-            $this->invoice->getNumber()
+            $origin
         ));
     }
 
@@ -558,10 +572,11 @@ class AccountingExporter implements AccountingExporterInterface
      * Returns the payment account number for the given payment method.
      *
      * @param PaymentMethodInterface $method
+     * @param string                 $origin
      *
      * @return string
      */
-    protected function getPaymentAccountNumber(PaymentMethodInterface $method)
+    protected function getPaymentAccountNumber(PaymentMethodInterface $method, string $origin)
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_PAYMENT) {
@@ -578,7 +593,7 @@ class AccountingExporter implements AccountingExporterInterface
         throw new LogicException(sprintf(
             "No payment account number configured for payment method '%s' (%s)",
             $method->getName(),
-            $this->invoice->getNumber()
+            $origin
         ));
     }
 
@@ -586,10 +601,11 @@ class AccountingExporter implements AccountingExporterInterface
      * Returns the unpaid account number for the given customer group.
      *
      * @param CustomerGroupInterface $group
+     * @param string                 $origin
      *
      * @return string
      */
-    protected function getUnpaidAccountNumber(CustomerGroupInterface $group)
+    protected function getUnpaidAccountNumber(CustomerGroupInterface $group, string $origin)
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_UNPAID) {
@@ -619,7 +635,7 @@ class AccountingExporter implements AccountingExporterInterface
         throw new LogicException(sprintf(
             "No unpaid account number configured for customer group '%s' (%s)",
             $group->getName(),
-            $this->invoice->getNumber()
+            $origin
         ));
     }
 }
