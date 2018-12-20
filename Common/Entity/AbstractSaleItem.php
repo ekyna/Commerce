@@ -680,20 +680,6 @@ abstract class AbstractSaleItem implements SaleItemInterface
     }
 
     /**
-     * @inheritDoc
-     *
-     * @see https://github.com/Atlantic18/DoctrineExtensions/issues/1726
-     */
-    public function compareTo($other)
-    {
-        if ($other instanceof SaleItemInterface) {
-            return $this->position - $other->getPosition();
-        }
-
-        return 0;
-    }
-
-    /**
      * Asserts that the given sale is an instance of the expected class.
      *
      * @param SaleInterface $sale
