@@ -20,7 +20,7 @@ use Ekyna\Component\Commerce\Supplier;
 class DoctrineBundleMapping
 {
     /**
-     * Returns the doctrine ORM mapping config for the doctrine bundle (doctrine.orm.mappings)
+     * Returns the doctrine ORM mapping config for the doctrine bundle (doctrine.dbal.types)
      *
      * @return array
      */
@@ -42,11 +42,13 @@ class DoctrineBundleMapping
     static function buildMappingConfiguration()
     {
         return [
-            'type'      => 'xml',
-            'dir'       => realpath(__DIR__ . '/../ORM/Resources/mapping'),
-            'is_bundle' => false,
-            'prefix'    => 'Ekyna\Component\Commerce',
-            'alias'     => 'EkynaCommerce',
+            'EkynaCommerce' => [
+                'type'      => 'xml',
+                'dir'       => realpath(__DIR__ . '/../ORM/Resources/mapping'),
+                'is_bundle' => false,
+                'prefix'    => 'Ekyna\Component\Commerce',
+                'alias'     => 'EkynaCommerce',
+            ],
         ];
     }
 

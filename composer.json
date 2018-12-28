@@ -38,7 +38,8 @@
     },
     "suggest": {
         "florianv/swap": "For currency exchange rates",
-        "barbieswimcrew/zip-code-validator": "For zip code validation"
+        "barbieswimcrew/zip-code-validator": "For zip code validation",
+        "misd/phone-number-bundle": "For phone number formatting"
     },
     "autoload": {
         "psr-4": {
