@@ -34,6 +34,7 @@
         <field name="creditTotal" column="credit_total" type="decimal" precision="15" scale="5"/>
         <field name="invoiceState" column="invoice_state" type="string" length="16"/>
         <field name="sample" column="is_sample" type="boolean"/>
+        <field name="first" column="is_first" type="boolean"/>
         <field name="completedAt" column="completed_at" type="datetime" nullable="true"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"

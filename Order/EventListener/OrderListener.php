@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
+use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
@@ -31,25 +32,40 @@ class OrderListener extends AbstractSaleListener
      */
     protected $marginCalculator;
 
+    /**
+     * @var OrderRepositoryInterface
+     */
+    protected $orderRepository;
+
 
     /**
      * Sets the stock assigner.
      *
-     * @param StockUnitAssignerInterface $stockAssigner
+     * @param StockUnitAssignerInterface $assigner
      */
-    public function setStockAssigner(StockUnitAssignerInterface $stockAssigner)
+    public function setStockAssigner(StockUnitAssignerInterface $assigner)
     {
-        $this->stockAssigner = $stockAssigner;
+        $this->stockAssigner = $assigner;
     }
 
     /**
      * Sets the margin calculator.
      *
-     * @param MarginCalculatorInterface $marginCalculator
+     * @param MarginCalculatorInterface $calculator
      */
-    public function setMarginCalculator($marginCalculator)
+    public function setMarginCalculator(MarginCalculatorInterface $calculator)
     {
-        $this->marginCalculator = $marginCalculator;
+        $this->marginCalculator = $calculator;
+    }
+
+    /**
+     * Sets the order repository.
+     *
+     * @param OrderRepositoryInterface $repository
+     */
+    public function setOrderRepository(OrderRepositoryInterface $repository)
+    {
+        $this->orderRepository = $repository;
     }
 
     /**
@@ -69,6 +85,27 @@ class OrderListener extends AbstractSaleListener
                 "Order is not ready for shipment preparation"
             );
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function onPreCreate(ResourceEventInterface $event)
+    {
+        parent::onPreCreate($event);
+
+        /** @var OrderInterface $order */
+        $order = $this->getSaleFromEvent($event);
+
+        if (null === $customer = $order->getCustomer()) {
+            return;
+        }
+
+        if ($customer->hasParent()) {
+            $customer->getParent();
+        }
+
+        $order->setFirst(!$this->orderRepository->existsForCustomer($customer));
     }
 
     /**

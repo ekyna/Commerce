@@ -4,14 +4,14 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Query;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Query\Expr;
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers as Trigger;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 
 /**
  * Class OrderRepository
@@ -23,6 +23,26 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
  */
 class OrderRepository extends AbstractSaleRepository implements OrderRepositoryInterface
 {
+    /**
+     * @inheritdoc
+     */
+    public function existsForCustomer(CustomerInterface $customer)
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        $id = $qb
+            ->select('o.id')
+            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->getQuery()
+            ->setMaxResults(1)
+            ->setParameters([
+                'customer' => $customer,
+            ])
+            ->getOneOrNullResult(Query::HYDRATE_SINGLE_SCALAR);
+
+        return null !== $id;
+    }
+
     /**
      * @inheritdoc
      */
@@ -96,13 +116,14 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $query = $qb
             ->leftJoin('o.paymentTerm', 't')
-            ->andWhere($ex->eq('o.sample', ':not_sample'))               // Not sample
-            ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))           // Paid total lower than grand total
+            ->andWhere($ex->eq('o.sample', ':not_sample'))// Not sample
+            ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))// Paid total lower than grand total
             ->andWhere($ex->orX(
                 $ex->andX(                                               // Outstanding
                     $ex->isNotNull('o.paymentTerm'),                     // - With payment term
                     $this->getDueClauses(),                              // - Terms triggered
-                    $qb->expr()->lte('o.outstandingDate', ':today')      // - Payment limit date lower than or equal today
+                    $qb->expr()->lte('o.outstandingDate',
+                        ':today')      // - Payment limit date lower than or equal today
                 ),
                 $ex->andX(                                               // Regular
                     $ex->isNull('o.paymentTerm'),                        // - Without payment term

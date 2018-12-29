@@ -24,6 +24,15 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function createNew();
 
     /**
+     * Returns whether an order exists for the given customer.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return bool
+     */
+    public function existsForCustomer(CustomerInterface $customer);
+
+    /**
      * Finds the sales by origin customer, optionally filtered by states.
      *
      * @param CustomerInterface $customer

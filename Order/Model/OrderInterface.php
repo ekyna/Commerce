@@ -24,6 +24,22 @@ interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface,
     public function setSample($sample);
 
     /**
+     * Returns whether the order is the customer's first.
+     *
+     * @return bool
+     */
+    public function isFirst();
+
+    /**
+     * Sets whether the order is the customer's first.
+     *
+     * @param bool $first
+     *
+     * @return $this|OrderInterface
+     */
+    public function setFirst($first);
+
+    /**
      * Returns the origin customer.
      *
      * @return CustomerInterface

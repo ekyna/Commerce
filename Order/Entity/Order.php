@@ -27,6 +27,11 @@ class Order extends AbstractSale implements Model\OrderInterface
     protected $sample;
 
     /**
+     * @var bool
+     */
+    protected $first;
+
+    /**
      * @var CustomerInterface
      */
     protected $originCustomer;
@@ -79,6 +84,30 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function setSample($sample)
     {
         $this->sample = (bool)$sample;
+
+        return $this;
+    }
+
+    /**
+     * Returns the first.
+     *
+     * @return bool
+     */
+    public function isFirst()
+    {
+        return $this->first;
+    }
+
+    /**
+     * Sets the first.
+     *
+     * @param bool $first
+     *
+     * @return Order
+     */
+    public function setFirst($first)
+    {
+        $this->first = (bool)$first;
 
         return $this;
     }
