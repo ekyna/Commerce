@@ -268,6 +268,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 $ex->eq('o.shipmentState', ':shipped'),                // Shipped
                 $ex->isNull('o.paymentTerm')                           // Without payment term
             ))
+            ->addOrderBy('o.createdAt', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('shipped', ShipmentStates::STATE_COMPLETED)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
@@ -292,6 +293,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 $qb->expr()->lte('o.outstandingDate', ':today'),       // Payment limit date lower than today
                 $this->getDueClauses()                                 // Terms triggered
             ))
+            ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
@@ -320,6 +322,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 $qb->expr()->gt('o.outstandingDate', ':today'),        // Payment limit date greater than today
                 $this->getDueClauses()                                 // Terms triggered
             ))
+            ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
@@ -345,6 +348,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
                 $ex->not($this->getDueClauses())                       // Terms not triggered
             ))
+            ->addOrderBy('o.createdAt', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
 
