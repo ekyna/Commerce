@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Support\Entity\Ticket"
+            table="commerce_ticket">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="number" column="number" type="string" precision="16" nullable="false"/>
+        <field name="subject" column="subject" type="string" length="255" nullable="false"/>
+        <field name="state" column="state" type="string" length="16" nullable="false"/>
+
+        <field name="createdAt" type="datetime" column="created_at">
+            <gedmo:timestampable on="create"/>
+        </field>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Support\Model\TicketMessageInterface"
+                     mapped-by="ticket" field="messages">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+            <order-by>
+                <order-by-field name="createdAt" direction="ASC"/>
+            </order-by>
+        </one-to-many>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="customer">
+            <join-column name="customer_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
+        </many-to-one>
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface" field="orders">
+            <join-table name="commerce_tickets_orders">
+                <join-columns>
+                    <join-column name="ticket_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="order_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+        
+        <many-to-many target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface" field="quotes">
+            <join-table name="commerce_tickets_quotes">
+                <join-columns>
+                    <join-column name="ticket_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="quote_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+        
+    </mapped-superclass>
+
+</doctrine-mapping>

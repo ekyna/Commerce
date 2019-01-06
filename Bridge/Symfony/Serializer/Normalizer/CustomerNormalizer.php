@@ -19,9 +19,7 @@ class CustomerNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($customer, $format = null, array $context = [])
     {
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if ($format === 'csv' && in_array('TableExport', $groups)) {
+        if ($format === 'csv' && $this->contextHasGroup('TableExport', $context)) {
             return (string)$customer;
         }
 
@@ -29,8 +27,7 @@ class CustomerNormalizer extends AbstractResourceNormalizer
 
         $parent = $customer->getParent();
 
-        if (0 < count(array_intersect(['Default', 'Search', 'Summary'], $groups))) {
-            //if (in_array('Default', $groups) || in_array('Search', $groups)) {
+        if ($this->contextHasGroup(['Default', 'Customer', 'Search', 'Summary'], $context)) {
             $data = array_replace($data, [
                 'number'     => $customer->getNumber(),
                 'company'    => $customer->getCompany(),
@@ -43,7 +40,7 @@ class CustomerNormalizer extends AbstractResourceNormalizer
             ]);
         }
 
-        if (in_array('Summary', $groups)) {
+        if ($this->contextHasGroup('Summary', $context)) {
             $payment = $parent ? $parent : $customer;
 
             $data = array_replace($data, [

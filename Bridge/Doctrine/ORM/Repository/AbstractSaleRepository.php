@@ -64,6 +64,23 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
+    public function findOneByNumber($number)
+    {
+        $qb = $this->getOneQueryBuilder('o');
+
+        $sale = $qb
+            ->andWhere($qb->expr()->eq('o.number', ':number'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameter('number', $number)
+            ->getOneOrNullResult();
+
+        return $sale;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function findByCustomer(CustomerInterface $customer, array $states = [], $withChildren = false)
     {
         $qb = $this->createQueryBuilder('o');

@@ -21,9 +21,7 @@ class ShipmentNormalizer extends AbstractResourceNormalizer
     {
         $data = parent::normalize($shipment, $format, $context);
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Default', $groups) || in_array('Search', $groups)) {
+        if ($this->contextHasGroup(['Default', 'OrderShipment'], $context)) {
             $sale = $shipment->getSale();
 
             $data = array_replace($data, [
@@ -37,7 +35,7 @@ class ShipmentNormalizer extends AbstractResourceNormalizer
                 'tracking_number' => $shipment->getTrackingNumber(),
                 'description'     => $shipment->getDescription(),
             ]);
-        } elseif (in_array('Summary', $groups)) {
+        } elseif ($this->contextHasGroup('Summary', $context)) {
             $items = [];
             $parcels = [];
 

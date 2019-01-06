@@ -38,9 +38,7 @@ class SupplierOrderItemNormalizer extends AbstractResourceNormalizer
     {
         $data = parent::normalize($item, $format, $context);
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Summary', $groups)) {
+        if ($this->contextHasGroup('Summary', $context)) {
             $order = $item->getOrder();
 
             $received = 0;

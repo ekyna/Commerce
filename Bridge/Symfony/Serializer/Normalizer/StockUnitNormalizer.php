@@ -36,12 +36,9 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($unit, $format = null, array $context = [])
     {
-        //$data = parent::normalize($unit, $format, $context);
         $data = [];
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('StockView', $groups) || in_array('StockAssignment', $groups)) {
+        if ($this->contextHasGroup(['StockView', 'StockAssignment'], $context)) {
             if (null !== $eda = $unit->getEstimatedDateOfArrival()) {
                 $eda = $this->formatter->date($eda);
             }
@@ -49,7 +46,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
             $adjustments = [];
             $assignments = [];
 
-            if (in_array('StockView', $groups)) {
+            if ($this->contextHasGroup('StockView', $context)) {
                 foreach ($unit->getStockAdjustments() as $adjustment) {
                     $adjustments[] = $this->normalizeObject($adjustment, $format, $context);
                 }

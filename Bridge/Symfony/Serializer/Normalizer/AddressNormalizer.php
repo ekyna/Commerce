@@ -15,15 +15,25 @@ class AddressNormalizer extends AbstractResourceNormalizer
 {
     /**
      * @inheritdoc
+     *
+     * @param AddressInterface $address
      */
     public function normalize($address, $format = null, array $context = [])
     {
         $data = parent::normalize($address, $format, $context);
 
-        /** @var AddressInterface $address */
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
+        $groups = [
+            'Address',
+            'CartAddress',
+            'CustomerAddress',
+            'Default',
+            'OrderAddress',
+            'QuoteAddress',
+            'ShipmentAddress',
+            'SupplierAddress',
+        ];
 
-        if (in_array('Default', $groups)) {
+        if ($this->contextHasGroup($groups, $context)) {
             $data = array_replace($data, [
                 'company'      => $address->getCompany(),
                 'gender'       => $address->getGender(),

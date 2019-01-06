@@ -19,12 +19,9 @@ class ShipmentParcelNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($parcel, $format = null, array $context = [])
     {
-        //$data = parent::normalize($parcel, $format, $context);
         $data = [];
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Summary', $groups)) {
+        if ($this->contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
                 'weight'         => $parcel->getWeight(),
                 'valorization'   => $parcel->getValorization(),

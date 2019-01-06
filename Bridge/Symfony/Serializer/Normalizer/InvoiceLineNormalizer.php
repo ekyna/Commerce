@@ -19,12 +19,9 @@ class InvoiceLineNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($line, $format = null, array $context = [])
     {
-        //$data = parent::normalize($line, $format, $context);
         $data = [];
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Summary', $groups)) {
+        if ($this->contextHasGroup('Summary', $context)) {
             $saleItem = $line->getSaleItem();
 
             $data = array_replace($data, [

@@ -19,7 +19,7 @@ ekyna_commerce:
         repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CountryRepository
     currency:
         entity: Ekyna\Component\Commerce\Common\Entity\Currency
-        entity: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CurrencyRepository
+        repository: Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository\CurrencyRepository
 
     customer:
         entity: Ekyna\Component\Commerce\Customer\Entity\Customer

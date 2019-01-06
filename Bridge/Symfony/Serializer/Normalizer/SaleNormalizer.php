@@ -21,15 +21,13 @@ class SaleNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($sale, $format = null, array $context = [])
     {
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if ($format === 'csv' && in_array('TableExport', $groups)) {
+        if ($format === 'csv' && $this->contextHasGroup('TableExport', $context)) {
             return (string)$sale;
         }
 
         $data = parent::normalize($sale, $format, $context);
 
-        if (in_array('Default', $groups) || in_array('Search', $groups)) {
+        if ($this->contextHasGroup(['Default', 'Cart', 'Order', 'Quote', 'Search'], $context)) {
             $data = array_replace($data, [
                 'number'     => $sale->getNumber(),
                 'company'    => $sale->getCompany(),
@@ -37,7 +35,7 @@ class SaleNormalizer extends AbstractResourceNormalizer
                 'first_name' => $sale->getFirstName(),
                 'last_name'  => $sale->getLastName(),
             ]);
-        } elseif (in_array('Summary', $groups)) {
+        } elseif ($this->contextHasGroup('Summary', $context)) {
             $items = [];
 
             foreach ($sale->getItems() as $item) {

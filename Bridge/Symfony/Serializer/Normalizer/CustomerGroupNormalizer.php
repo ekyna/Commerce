@@ -19,9 +19,7 @@ class CustomerGroupNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($group, $format = null, array $context = [])
     {
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if ($format === 'csv' && in_array('TableExport', $groups)) {
+        if ($format === 'csv' && $this->contextHasGroup('TableExport', $context)) {
             return (string)$group;
         }
 

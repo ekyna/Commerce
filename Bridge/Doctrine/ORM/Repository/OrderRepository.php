@@ -20,6 +20,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
  *
  * @method OrderInterface|null findOneById($id)
  * @method OrderInterface|null findOneByKey($key)
+ * @method OrderInterface|null findOneByNumber($number)
  */
 class OrderRepository extends AbstractSaleRepository implements OrderRepositoryInterface
 {

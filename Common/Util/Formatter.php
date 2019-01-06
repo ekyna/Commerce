@@ -29,6 +29,11 @@ class Formatter
     private $dateFormatter;
 
     /**
+     * @var IntlDateFormatter
+     */
+    private $dateTimeFormatter;
+
+    /**
      * @var NumberFormatter
      */
     private $numberFormatter;
@@ -49,17 +54,6 @@ class Formatter
     {
         $this->locale = $locale;
         $this->currency = $currency;
-
-        $this->dateFormatter = IntlDateFormatter::create(
-            $locale,
-            IntlDateFormatter::SHORT,
-            IntlDateFormatter::NONE,
-            ini_get('date.timezone'),
-            //PHP_VERSION_ID >= 50500 ? $date->getTimezone() : $date->getTimezone()->getName(),
-            IntlDateFormatter::GREGORIAN
-        );
-        $this->numberFormatter = NumberFormatter::create($locale, NumberFormatter::DECIMAL);
-        $this->currencyFormatter = NumberFormatter::create($locale, NumberFormatter::CURRENCY);
     }
 
     /**
@@ -83,7 +77,7 @@ class Formatter
     }
 
     /**
-     * Formats the given date time for display.
+     * Formats the given date for display.
      *
      * @param \DateTime $date
      *
@@ -94,7 +88,22 @@ class Formatter
         //$this->dateFormatter->getTimeZone()
         //if ($this->dateFormatter->getTimeZone() === $date->getTimezone();
 
-        return $this->dateFormatter->format($date->getTimestamp());
+        return $this->getDateFormatter()->format($date->getTimestamp());
+    }
+
+    /**
+     * Formats the given date time for display.
+     *
+     * @param \DateTime $date
+     *
+     * @return string
+     */
+    public function dateTime(\DateTime $date): string
+    {
+        //$this->dateFormatter->getTimeZone()
+        //if ($this->dateFormatter->getTimeZone() === $date->getTimezone();
+
+        return $this->getDateTimeFormatter()->format($date->getTimestamp());
     }
 
     /**
@@ -106,7 +115,7 @@ class Formatter
      */
     public function number(float $number): string
     {
-        return $this->numberFormatter->format($number, NumberFormatter::TYPE_DEFAULT);
+        return $this->getNumberFormatter()->format($number, NumberFormatter::TYPE_DEFAULT);
     }
 
     /**
@@ -119,7 +128,7 @@ class Formatter
      */
     public function currency(float $number, string $currency = null): string
     {
-        return $this->currencyFormatter->formatCurrency($number, $currency ? $currency : $this->currency);
+        return $this->getCurrencyFormatter()->formatCurrency($number, $currency ? $currency : $this->currency);
     }
 
     /**
@@ -131,13 +140,13 @@ class Formatter
      */
     public function percent(float $number): string
     {
-        return $this->numberFormatter->format($number, NumberFormatter::TYPE_DEFAULT) . '%';
+        return $this->getNumberFormatter()->format($number, NumberFormatter::TYPE_DEFAULT) . '%';
     }
 
     /**
      * Formats the given adjustments rates for display.
      *
-     * @param Adjustment[] ...$adjustments
+     * @param Adjustment[] $adjustments
      *
      * @return string
      */
@@ -146,5 +155,75 @@ class Formatter
         return implode(', ', array_map(function (Adjustment $adjustment) {
             return $this->percent($adjustment->getRate());
         }, $adjustments));
+    }
+
+    /**
+     * Returns the date formatter.
+     *
+     * @return IntlDateFormatter
+     */
+    private function getDateFormatter()
+    {
+        if ($this->dateFormatter) {
+            return $this->dateFormatter;
+        }
+
+        return $this->dateFormatter = IntlDateFormatter::create(
+            $this->locale,
+            IntlDateFormatter::SHORT,
+            IntlDateFormatter::NONE,
+            ini_get('date.timezone'),
+            //PHP_VERSION_ID >= 50500 ? $date->getTimezone() : $date->getTimezone()->getName(),
+            IntlDateFormatter::GREGORIAN
+        );
+    }
+
+    /**
+     * Returns the date time formatter.
+     *
+     * @return IntlDateFormatter
+     */
+    private function getDateTimeFormatter()
+    {
+        if ($this->dateTimeFormatter) {
+            return $this->dateTimeFormatter;
+        }
+
+        return $this->dateTimeFormatter = IntlDateFormatter::create(
+            $this->locale,
+            IntlDateFormatter::SHORT,
+            IntlDateFormatter::SHORT,
+            ini_get('date.timezone'),
+            //PHP_VERSION_ID >= 50500 ? $date->getTimezone() : $date->getTimezone()->getName(),
+            IntlDateFormatter::GREGORIAN
+        );
+    }
+
+    /**
+     * Returns the number formatter.
+     *
+     * @return NumberFormatter
+     */
+    private function getNumberFormatter()
+    {
+        if ($this->numberFormatter) {
+            return $this->numberFormatter;
+        }
+
+        return $this->numberFormatter = NumberFormatter::create($this->locale, NumberFormatter::DECIMAL);
+    }
+
+    /**
+     * Returns the currency formatter.
+     *
+     * @return NumberFormatter
+     */
+    private function getCurrencyFormatter()
+    {
+        if ($this->currencyFormatter) {
+            return $this->currencyFormatter;
+        }
+
+        return $this->currencyFormatter = NumberFormatter::create($this->locale, NumberFormatter::CURRENCY);
     }
 }

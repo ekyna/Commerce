@@ -13,6 +13,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
  *
  * @method OrderInterface|null findOneById($id)
  * @method OrderInterface|null findOneByKey($key)
+ * @method OrderInterface|null findOneByNumber($number)
  */
 interface OrderRepositoryInterface extends SaleRepositoryInterface
 {

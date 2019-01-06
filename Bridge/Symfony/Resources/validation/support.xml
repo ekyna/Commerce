@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Support\Entity\Ticket">
+        <property name="customer">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="state">
+            <constraint name="NotNull"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Support\Model\TicketStates</value>
+                    <value>getStates</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="subject">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="messages">
+            <constraint name="Valid"/>
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Support\Entity\TicketMessage">
+        <property name="ticket">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="content">
+            <constraint name="NotBlank"/>
+        </property>
+        <property name="attachments">
+            <constraint name="Valid"/>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Support\Entity\TicketAttachment">
+        <property name="message">
+            <constraint name="NotNull"/>
+        </property>
+    </class>
+
+</constraint-mapping>

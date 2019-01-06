@@ -21,9 +21,7 @@ class SupplierProductNormalizer extends AbstractResourceNormalizer
     {
         $data = parent::normalize($product, $format, $context);
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Default', $groups) || in_array('Search', $groups)) {
+        if ($this->contextHasGroup(['Default', 'SupplierProduct', 'Search'], $context)) {
             $data = array_replace($data, [
                 'designation' => $product->getDesignation(),
                 'reference'   => $product->getReference(),

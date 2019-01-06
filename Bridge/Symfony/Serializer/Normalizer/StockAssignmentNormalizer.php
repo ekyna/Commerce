@@ -36,22 +36,19 @@ class StockAssignmentNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($assignment, $format = null, array $context = [])
     {
-        //$data = parent::normalize($stockAssignment, $format, $context);
         $data = [];
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('StockView', $groups) || in_array('StockAssignment', $groups)) {
+        if ($this->contextHasGroup(['StockView', 'StockAssignment'], $context)) {
             $data = array_replace($data, [
                 'sold'    => $this->formatter->number($assignment->getSoldQuantity()),
                 'shipped' => $this->formatter->number($assignment->getShippedQuantity()),
             ]);
 
-            if (in_array('StockView', $groups)) {
+            if ($this->contextHasGroup('StockView', $context)) {
                 $data['order_id'] = $assignment->getSaleItem()->getSale()->getId();
             }
 
-            if (in_array('StockAssignment', $groups)) {
+            if ($this->contextHasGroup('StockAssignment', $context)) {
                 $data['unit'] = $this->normalizeObject($assignment->getStockUnit(), $format, $context);
             }
         }

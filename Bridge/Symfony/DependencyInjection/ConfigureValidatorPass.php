@@ -37,6 +37,7 @@ class ConfigureValidatorPass implements CompilerPassInterface
             'stock',
             'subject',
             'supplier',
+            'support',
         ];
 
         $paths = [];

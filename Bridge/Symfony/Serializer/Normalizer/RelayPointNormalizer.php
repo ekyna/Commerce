@@ -31,13 +31,12 @@ class RelayPointNormalizer extends AbstractResourceNormalizer
 
     /**
      * @inheritDoc
+     *
+     * @param RelayPointInterface $relayPoint
      */
     public function normalize($relayPoint, $format = null, array $context = [])
     {
-        /** @var RelayPointInterface $relayPoint */
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Default', $groups)) {
+        if ($this->contextHasGroup(['Default', 'RelayPoint'], $context)) {
             $data = [
                 'id'          => $relayPoint->getId(),
                 'number'      => $relayPoint->getNumber(),
@@ -102,14 +101,14 @@ class RelayPointNormalizer extends AbstractResourceNormalizer
         }
 
         return [
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-            7 => 'Sunday',
-        ][$dayOfWeek];
+                   1 => 'Monday',
+                   2 => 'Tuesday',
+                   3 => 'Wednesday',
+                   4 => 'Thursday',
+                   5 => 'Friday',
+                   6 => 'Saturday',
+                   7 => 'Sunday',
+               ][$dayOfWeek];
     }
 
     /**

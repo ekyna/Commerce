@@ -36,12 +36,9 @@ class StockAdjustmentNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($adjustment, $format = null, array $context = [])
     {
-        //$data = parent::normalize($adjustment, $format, $context);
         $data = [];
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('StockView', $groups)) {
+        if ($this->contextHasGroup('StockView', $context)) {
             $data = array_replace($data, [
                 'quantity' => $this->formatter->number($adjustment->getQuantity()),
                 'reason'   => $adjustment->getReason(),

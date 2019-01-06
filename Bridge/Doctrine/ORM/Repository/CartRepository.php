@@ -13,6 +13,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  *
  * @method CartInterface|null findOneById($id)
  * @method CartInterface|null findOneByKey($key)
+ * @method CartInterface|null findOneByNumber($number)
  */
 class CartRepository extends AbstractSaleRepository implements CartRepositoryInterface
 {

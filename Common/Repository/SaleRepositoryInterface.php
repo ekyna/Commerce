@@ -33,6 +33,15 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
     public function findOneByKey($key);
 
     /**
+     * Finds the sale by its number.
+     *
+     * @param string $number
+     *
+     * @return SaleInterface|null
+     */
+    public function findOneByNumber($number);
+
+    /**
      * Finds the sales by customer, optionally filtered by states.
      *
      * @param CustomerInterface $customer

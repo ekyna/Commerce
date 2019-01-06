@@ -21,9 +21,7 @@ class InvoiceNormalizer extends AbstractResourceNormalizer
     {
         $data = parent::normalize($invoice, $format, $context);
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Default', $groups) || in_array('Search', $groups)) {
+        if ($this->contextHasGroup(['Default', 'OrderInvoice', 'Search'], $context)) {
             $sale = $invoice->getSale();
 
             $data = array_replace($data, [
@@ -37,7 +35,7 @@ class InvoiceNormalizer extends AbstractResourceNormalizer
                 'description' => $invoice->getDescription(),
                 'comment'     => $invoice->getComment(),
             ]);
-        } elseif (in_array('Summary', $groups)) {
+        } elseif ($this->contextHasGroup(['Summary'], $context)) {
             $items = [];
 
             foreach ($invoice->getLines() as $item) {

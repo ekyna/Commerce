@@ -19,12 +19,9 @@ class ShipmentItemNormalizer extends AbstractResourceNormalizer
      */
     public function normalize($item, $format = null, array $context = [])
     {
-        //$data = parent::normalize($item, $format, $context);
         $data = [];
 
-        $groups = isset($context['groups']) ? (array)$context['groups'] : [];
-
-        if (in_array('Summary', $groups)) {
+        if ($this->contextHasGroup('Summary', $context)) {
             $saleItem = $item->getSaleItem();
 
             $data = array_replace($data, [

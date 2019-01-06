@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
  *
  * @method QuoteInterface|null findOneById($id)
  * @method QuoteInterface|null findOneByKey($key)
+ * @method QuoteInterface|null findOneByNumber($number)
  */
 interface QuoteRepositoryInterface extends SaleRepositoryInterface
 {
