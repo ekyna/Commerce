@@ -46,6 +46,12 @@ class AvailabilityViewType extends AbstractViewType
      */
     public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options)
     {
+        // Not for compound items with only public children
+        if ($item->isCompound() && !$item->hasPrivateChildren()) {
+            // TODO Resolve by merging children availabilities ?
+            return;
+        }
+
         if (null === $subject = $this->subjectHelper->resolve($item, false)) {
             return;
         }
