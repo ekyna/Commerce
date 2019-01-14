@@ -88,27 +88,6 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
-     * @inheritDoc
-     */
-    public function onPreCreate(ResourceEventInterface $event)
-    {
-        parent::onPreCreate($event);
-
-        /** @var OrderInterface $order */
-        $order = $this->getSaleFromEvent($event);
-
-        if (null === $customer = $order->getCustomer()) {
-            return;
-        }
-
-        if ($customer->hasParent()) {
-            $customer->getParent();
-        }
-
-        $order->setFirst(!$this->orderRepository->existsForCustomer($customer));
-    }
-
-    /**
      * @inheritdoc
      */
     public function onPreDelete(ResourceEventInterface $event)
@@ -150,6 +129,8 @@ class OrderListener extends AbstractSaleListener
     {
         $changed = $this->fixCustomers($sale);
 
+        $changed |= $this->setIsFirst($sale);
+
         $changed |= parent::handleInsert($sale);
 
         return $changed;
@@ -167,6 +148,33 @@ class OrderListener extends AbstractSaleListener
         $changed |= parent::handleUpdate($sale);
 
         return $changed;
+    }
+
+    /**
+     * Sets whether this order is the customer's first one.
+     *
+     * @param OrderInterface $order
+     *
+     * @return bool Whether the order has been changed.
+     */
+    protected function setIsFirst(OrderInterface $order)
+    {
+        if (null !== $customer = $order->getCustomer()) {
+            if ($customer->hasParent()) {
+                $customer = $customer->getParent();
+            }
+            $first = !$this->orderRepository->existsForCustomer($customer);
+        } else {
+            $first = !$this->orderRepository->existsForEmail($order->getEmail());
+        }
+
+        if ($first != $order->isFirst()) {
+            $order->setFirst($first);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

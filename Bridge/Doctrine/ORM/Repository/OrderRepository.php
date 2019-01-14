@@ -47,6 +47,26 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     /**
      * @inheritdoc
      */
+    public function existsForEmail(string $email)
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        $id = $qb
+            ->select('o.id')
+            ->andWhere($qb->expr()->eq('o.email', ':email'))
+            ->getQuery()
+            ->setMaxResults(1)
+            ->setParameters([
+                'email' => $email,
+            ])
+            ->getOneOrNullResult(Query::HYDRATE_SINGLE_SCALAR);
+
+        return null !== $id;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function findOneByCustomerAndNumber(CustomerInterface $customer, $number)
     {
         $qb = $this->createQueryBuilder('o');

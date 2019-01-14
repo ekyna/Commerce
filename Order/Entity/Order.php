@@ -65,6 +65,7 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->state = Model\OrderStates::STATE_NEW;
         $this->source = Common\SaleSources::SOURCE_COMMERCIAL;
         $this->sample = false;
+        $this->first = false;
 
         $this->marginTotal = 0;
         $this->itemsCount = 0;

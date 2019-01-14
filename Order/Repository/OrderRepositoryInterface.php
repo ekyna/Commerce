@@ -34,6 +34,15 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function existsForCustomer(CustomerInterface $customer);
 
     /**
+     * Returns whether an order exists for the given email.
+     *
+     * @param string $email
+     *
+     * @return bool
+     */
+    public function existsForEmail(string $email);
+
+    /**
      * Finds the sales by origin customer, optionally filtered by states.
      *
      * @param CustomerInterface $customer
