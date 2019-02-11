@@ -48,8 +48,8 @@ class AccountingWriter
     /**
      * Constructor.
      *
-     * @param string   $delimiter
-     * @param string   $enclosure
+     * @param string $delimiter
+     * @param string $enclosure
      */
     public function __construct(string $delimiter = ';', string $enclosure = '"')
     {
@@ -112,10 +112,11 @@ class AccountingWriter
     /**
      * Writes the debit line.
      *
-     * @param string $account
-     * @param string $amount
+     * @param string    $account
+     * @param string    $amount
+     * @param \DateTime $date
      */
-    public function debit($account, $amount)
+    public function debit($account, $amount, \DateTime $date)
     {
         $data = [
             $this->date,
@@ -123,7 +124,8 @@ class AccountingWriter
             $this->identity,
             null,
             $amount,
-            $this->number
+            $this->number,
+            $date->format('Y-m-d'),
         ];
 
         if (false === fputcsv($this->handle, $data, ';', '"')) {
@@ -136,8 +138,9 @@ class AccountingWriter
      *
      * @param string $account
      * @param string $amount
+     * @param \DateTime $date
      */
-    public function credit($account, $amount)
+    public function credit($account, $amount, \DateTime $date)
     {
         $data = [
             $this->date,
@@ -145,7 +148,8 @@ class AccountingWriter
             $this->identity,
             $amount,
             null,
-            $this->number
+            $this->number,
+            $date->format('Y-m-d'),
         ];
 
         if (false === fputcsv($this->handle, $data, ';', '"')) {

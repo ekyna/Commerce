@@ -217,26 +217,27 @@ class AccountingExporter implements AccountingExporterInterface
 
             $credit = false; // TODO $payment->getType() === PaymentTypes::TYPE_REFUND;
             $amount = (string)$this->round($payment->getAmount());
+            $date = $payment->getSale()->getCreatedAt();
 
             if ($credit) {
                 // Payment debit
-                $this->writer->debit($account, $amount);
+                $this->writer->debit($account, $amount, $date);
                 // Customer credit
-                $this->writer->credit($number, $amount);
+                $this->writer->credit($number, $amount, $date);
             } else {
                 // Payment credit
-                $this->writer->credit($account, $amount);
+                $this->writer->credit($account, $amount, $date);
                 // Customer debit
-                $this->writer->debit($number, $amount);
+                $this->writer->debit($number, $amount, $date);
             }
 
             // TODO Remove when refund payment implemented
             // Temporary : add an extra credit line for refund payments.
             if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
                 // Payment debit
-                $this->writer->debit($account, $amount);
+                $this->writer->debit($account, $amount, $date);
                 // Customer credit
-                $this->writer->credit($number, $amount);
+                $this->writer->credit($number, $amount, $date);
             }
         }
 
@@ -251,6 +252,7 @@ class AccountingExporter implements AccountingExporterInterface
     protected function writeInvoiceGrandTotal()
     {
         $sale = $this->invoice->getSale();
+        $date = $sale->getCreatedAt();
 
         // Grand total row
         if ($this->config['total_as_payment']) {
@@ -264,7 +266,7 @@ class AccountingExporter implements AccountingExporterInterface
 
                 $amount = $this->round($this->invoice->getGrandTotal());
 
-                $this->writer->debit($account, (string)$amount);
+                $this->writer->debit($account, (string)$amount, $date);
                 $this->balance += $amount;
 
                 return;
@@ -284,7 +286,7 @@ class AccountingExporter implements AccountingExporterInterface
 
                 $amount = $this->round($payment->getAmount());
 
-                $this->writer->credit($account, (string)$amount);
+                $this->writer->credit($account, (string)$amount, $date);
 
                 $unpaid -= $amount;
                 $this->balance -= $amount;
@@ -294,7 +296,7 @@ class AccountingExporter implements AccountingExporterInterface
             if (1 === $this->compare($unpaid, 0)) {
                 $account = $this->getUnpaidAccountNumber($sale->getCustomerGroup(), $this->invoice->getNumber());
 
-                $this->writer->credit($account, (string)$unpaid);
+                $this->writer->credit($account, (string)$unpaid, $date);
 
                 $this->balance -= $unpaid;
             }
@@ -311,10 +313,10 @@ class AccountingExporter implements AccountingExporterInterface
         $amount = $this->round($this->invoice->getGrandTotal());
 
         if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
-            $this->writer->debit($account, (string)$amount);
+            $this->writer->debit($account, (string)$amount, $date);
             $this->balance += $amount;
         } else {
-            $this->writer->credit($account, (string)$amount);
+            $this->writer->credit($account, (string)$amount, $date);
             $this->balance -= $amount;
         }
     }
@@ -325,6 +327,7 @@ class AccountingExporter implements AccountingExporterInterface
     protected function writeInvoiceGoodsLines()
     {
         $sale = $this->invoice->getSale();
+        $date = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
         /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[] $discounts */
         $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
@@ -380,10 +383,10 @@ class AccountingExporter implements AccountingExporterInterface
             $account = $this->getGoodAccountNumber($taxRule, (float)$rate, $this->invoice->getNumber());
 
             if ($credit) {
-                $this->writer->credit($account, (string)$amount);
+                $this->writer->credit($account, (string)$amount, $date);
                 $this->balance -= $amount;
             } else {
-                $this->writer->debit($account, (string)$amount);
+                $this->writer->debit($account, (string)$amount, $date);
                 $this->balance += $amount;
             }
         }
@@ -403,15 +406,16 @@ class AccountingExporter implements AccountingExporterInterface
         $amount = $this->round($amount);
 
         $sale = $this->invoice->getSale();
+        $date = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
 
         $account = $this->getShipmentAccountNumber($taxRule, $this->invoice->getNumber());
 
         if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
-            $this->writer->credit($account, (string)$amount);
+            $this->writer->credit($account, (string)$amount, $date);
             $this->balance -= $amount;
         } else {
-            $this->writer->debit($account, (string)$amount);
+            $this->writer->debit($account, (string)$amount, $date);
             $this->balance += $amount;
         }
     }
@@ -421,6 +425,9 @@ class AccountingExporter implements AccountingExporterInterface
      */
     protected function writeInvoiceTaxesLine()
     {
+        $sale = $this->invoice->getSale();
+        $date = $sale->getCreatedAt();
+
         $credit = $this->invoice->getType() === InvoiceTypes::TYPE_CREDIT;
 
         foreach ($this->invoice->getTaxesDetails() as $detail) {
@@ -433,10 +440,10 @@ class AccountingExporter implements AccountingExporterInterface
             $account = $this->getTaxAccountNumber($detail['rate'], $this->invoice->getNumber());
 
             if ($credit) {
-                $this->writer->credit($account, (string)$amount);
+                $this->writer->credit($account, (string)$amount, $date);
                 $this->balance -= $amount;
             } else {
-                $this->writer->debit($account, (string)$amount);
+                $this->writer->debit($account, (string)$amount, $date);
                 $this->balance += $amount;
             }
         }
