@@ -29,6 +29,11 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @var bool
      */
+    protected $released;
+
+    /**
+     * @var bool
+     */
     protected $first;
 
     /**
@@ -65,6 +70,7 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->state = Model\OrderStates::STATE_NEW;
         $this->source = Common\SaleSources::SOURCE_COMMERCIAL;
         $this->sample = false;
+        $this->released = false;
         $this->first = false;
 
         $this->marginTotal = 0;
@@ -85,6 +91,24 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function setSample($sample)
     {
         $this->sample = (bool)$sample;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isReleased()
+    {
+        return $this->released;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setReleased($released)
+    {
+        $this->released = (bool)$released;
 
         return $this;
     }
@@ -575,5 +599,28 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->itemsCount = (int)$count;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canBeReleased()
+    {
+        if (!$this->isSample()) {
+            return false;
+        }
+
+        if ($this->isReleased()) {
+            return false;
+        }
+
+        // A sample order needs at least and received return to be release ready.
+        foreach ($this->getShipments() as $shipment) {
+            if ($shipment->isReturn() && Shipment\ShipmentStates::isStockableState($shipment->getState())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

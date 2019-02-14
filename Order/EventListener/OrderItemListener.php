@@ -61,8 +61,13 @@ class OrderItemListener extends AbstractSaleItemListener
 
         $item = $this->getSaleItemFromEvent($event);
 
-        $doApply = true;
+        if (!$this->persistenceHelper->isChanged($item, ['quantity', 'subjectIdentity.identifier'])) {
+            return;
+        }
+
         $sale = $item->getSale();
+
+        // If sale state has changed
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
 
@@ -71,16 +76,20 @@ class OrderItemListener extends AbstractSaleItemListener
                 OrderStates::hasChangedToStockable($stateCs) ||
                 OrderStates::hasChangedFromStockable($stateCs)
             ) {
-                // Prevent assignments update (handled by the order listener)
-                $doApply = false;
+                // Prevent assignments update (done by the order listener)
+                return;
             }
         }
 
+        // If sale released flag has changed
+        if ($sale->isSample() && $this->persistenceHelper->isChanged($sale, 'released')) {
+            // Prevent assignments update (done by the order listener)
+            return;
+        }
+
         // If order is in stockable state and order item quantity has changed
-        if ($doApply && OrderStates::isStockableState($sale->getState())) {
-            if ($this->persistenceHelper->isChanged($item, ['quantity', 'subjectIdentity.identifier'])) {
-                $this->applySaleItemRecursively($item);
-            }
+        if (OrderStates::isStockableState($sale->getState())) {
+            $this->applySaleItemRecursively($item);
         }
     }
 
@@ -153,6 +162,8 @@ class OrderItemListener extends AbstractSaleItemListener
 
     /**
      * @inheritdoc
+     *
+     * @return OrderItemInterface
      */
     protected function getSaleItemFromEvent(ResourceEventInterface $event)
     {

@@ -24,6 +24,15 @@ interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface,
     public function setSample($sample);
 
     /**
+     * Sets whether the sample order is released.
+     *
+     * @param bool $released
+     *
+     * @return $this|OrderInterface
+     */
+    public function setReleased($released);
+
+    /**
      * Returns whether the order is the customer's first.
      *
      * @return bool

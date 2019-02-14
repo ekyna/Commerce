@@ -27,13 +27,13 @@ class UnitCandidate
         $map = [];
         foreach ($unit->getStockAssignments() as $a) {
             // Ignore assignments from the same sale (Should be impossible)
-            if ($sale === $a->getSaleItem()->getSale()) {
+            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface $s */
+            if ($sale === $s = $a->getSaleItem()->getSale()) {
                 continue;
             }
 
             // Ignore assignments from preparation sales
-            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface $sale */
-            if ($sale->getShipmentState() === ShipmentStates::STATE_PREPARATION) {
+            if ($s->getShipmentState() === ShipmentStates::STATE_PREPARATION) {
                 continue;
             }
 

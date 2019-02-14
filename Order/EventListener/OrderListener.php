@@ -77,10 +77,9 @@ class OrderListener extends AbstractSaleListener
      */
     public function onPrepare(ResourceEventInterface $event)
     {
-        /** @var OrderInterface $order */
         $order = $this->getSaleFromEvent($event);
 
-        if (OrderStates::isStockableState($order->getState())) {
+        if (!OrderStates::isStockableState($order->getState())) {
             throw new IllegalOperationException(
                 "Order is not ready for shipment preparation"
             );
@@ -94,7 +93,6 @@ class OrderListener extends AbstractSaleListener
     {
         parent::onPreDelete($event);
 
-        /** @var OrderInterface $order */
         $order = $this->getSaleFromEvent($event);
 
         // Stop if order has invoices or shipments
@@ -110,7 +108,6 @@ class OrderListener extends AbstractSaleListener
      */
     public function onPreUpdate(ResourceEventInterface $event)
     {
-        /** @var OrderInterface $sale */
         $sale = $this->getSaleFromEvent($event);
 
         if ($sale->isSample() && ($sale->hasPayments() || $sale->hasInvoices())) {
@@ -147,7 +144,45 @@ class OrderListener extends AbstractSaleListener
 
         $changed |= parent::handleUpdate($sale);
 
+        $changed |= $this->handleReleasedChange($sale);
+
         return $changed;
+    }
+
+    /**
+     * Handles the released flag change.
+     *
+     * @param OrderInterface $order
+     *
+     * @return bool
+     */
+    public function handleReleasedChange(OrderInterface $order)
+    {
+        if ($this->persistenceHelper->isChanged($order , 'sample')) {
+            if ($order->isReleased() && !$order->isSample()) {
+                throw new IllegalOperationException("Can't turn 'sample' into false if order is released.");
+            }
+        }
+
+        if (!$this->persistenceHelper->isChanged($order , 'released')) {
+            return false;
+        }
+
+        // Orders that are not samples can't be released.
+        if (!$order->isSample() && $order->isReleased()) {
+            $order->setReleased(false);
+            return true;
+        }
+
+        if (!OrderStates::isStockableState($order->getState())) {
+            return false;
+        }
+
+        foreach ($order->getItems() as $item) {
+            $this->applySaleItemRecursively($item);
+        }
+
+        return false;
     }
 
     /**
@@ -366,6 +401,20 @@ class OrderListener extends AbstractSaleListener
     }
 
     /**
+     * Applies the sale item to stock units recursively.
+     *
+     * @param SaleItemInterface $item
+     */
+    protected function applySaleItemRecursively(SaleItemInterface $item)
+    {
+        $this->stockAssigner->applySaleItem($item);
+
+        foreach ($item->getChildren() as $child) {
+            $this->applySaleItemRecursively($child);
+        }
+    }
+
+    /**
      * Detaches the sale item from stock units recursively.
      *
      * @param SaleItemInterface $item
@@ -381,6 +430,8 @@ class OrderListener extends AbstractSaleListener
 
     /**
      * @inheritdoc
+     *
+     * @return OrderInterface
      */
     protected function getSaleFromEvent(ResourceEventInterface $event)
     {

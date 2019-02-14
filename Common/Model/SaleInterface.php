@@ -212,6 +212,13 @@ interface SaleInterface extends
     public function isSample();
 
     /**
+     * Returns whether the sale is released.
+     *
+     * @return bool
+     */
+    public function isReleased();
+
+    /**
      * Returns the net total.
      *
      * @return float
@@ -306,6 +313,22 @@ interface SaleInterface extends
      * @return $this|SaleInterface
      */
     public function setDescription($description);
+
+    /**
+     * Returns the preparation note.
+     *
+     * @return string
+     */
+    public function getPreparationNote();
+
+    /**
+     * Sets the preparation note.
+     *
+     * @param string $note
+     *
+     * @return $this|SaleInterface
+     */
+    public function setPreparationNote($note);
 
     /**
      * Returns the comment.
@@ -556,4 +579,11 @@ interface SaleInterface extends
      * @return ContextInterface
      */
     public function getContext();
+
+    /**
+     * Returns whether the sale can be released.
+     *
+     * @return bool
+     */
+    public function canBeReleased();
 }

@@ -40,6 +40,8 @@ class QuoteItem extends AbstractSaleItem implements Model\QuoteItemInterface
 
     /**
      * @inheritdoc
+     *
+     * @param Model\QuoteInterface $sale
      */
     public function setSale(Common\SaleInterface $sale = null)
     {

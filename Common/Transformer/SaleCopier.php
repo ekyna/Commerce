@@ -80,7 +80,7 @@ class SaleCopier implements SaleCopierInterface
             'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
             'autoShipping', 'autoDiscount', 'autoNotify', 'taxExempt', 'vatDisplayMode',
             'depositTotal', 'grandTotal', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
-            'title', 'voucherNumber', 'description', 'comment', 'documentComment',
+            'title', 'voucherNumber', 'description', 'preparationNote', 'comment', 'documentComment',
             'acceptedAt', 'source',
         ];
 

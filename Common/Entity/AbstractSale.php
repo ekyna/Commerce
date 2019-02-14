@@ -123,6 +123,11 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @var string
      */
+    protected $preparationNote;
+
+    /**
+     * @var string
+     */
     protected $comment;
 
     /**
@@ -378,6 +383,14 @@ abstract class AbstractSale implements Common\SaleInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isReleased()
+    {
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getNetTotal()
@@ -481,6 +494,24 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setDescription($description)
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreparationNote()
+    {
+        return $this->preparationNote;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPreparationNote($note)
+    {
+        $this->preparationNote = $note;
 
         return $this;
     }
@@ -715,5 +746,13 @@ abstract class AbstractSale implements Common\SaleInterface
     public function getContext()
     {
         return $this->context;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canBeReleased()
+    {
+        return false;
     }
 }

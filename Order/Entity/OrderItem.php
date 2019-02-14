@@ -57,6 +57,8 @@ class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
 
     /**
      * @inheritdoc
+     *
+     * @param Model\OrderInterface $sale
      */
     public function setSale(Common\SaleInterface $sale = null)
     {

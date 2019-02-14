@@ -98,6 +98,8 @@ class CartListener extends AbstractSaleListener
 
     /**
      * @inheritdoc
+     *
+     * @return CartInterface
      */
     protected function getSaleFromEvent(ResourceEventInterface $event)
     {

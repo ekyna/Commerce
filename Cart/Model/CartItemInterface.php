@@ -8,6 +8,8 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
  * Interface CartItemInterface
  * @package Ekyna\Component\Commerce\Cart\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method CartInterface getSale()
  */
 interface CartItemInterface extends SaleItemInterface
 {

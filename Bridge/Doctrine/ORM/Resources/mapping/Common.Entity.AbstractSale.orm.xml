@@ -44,6 +44,7 @@
         <field name="voucherNumber" column="voucher_number" type="string" length="32" nullable="true"/>
         <field name="originNumber" column="origin_number" type="string" length="16" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
+        <field name="preparationNote" column="preparation_note" type="text" nullable="true"/>
         <field name="comment" column="comment" type="text" nullable="true"/>
         <field name="documentComment" column="document_comment" type="text" nullable="true"/>
 

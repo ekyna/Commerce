@@ -97,7 +97,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Don't assign twice
         if (!empty($this->getAssignments($item))) {
-            throw new StockLogicException('Item is already assigned.');
+            throw new StockLogicException(sprintf(
+                'Item "%s" is already assigned.',
+                $item->getDesignation()
+            ));
         }
 
         // Create assignments
@@ -138,9 +141,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining debit
         if (0 > $quantity) {
-            throw new StockLogicException(
-                'Failed to dispatch sale item changed quantity debit over assigned stock units.'
-            );
+            throw new StockLogicException(sprintf(
+                'Failed to dispatch sale item "%s" changed quantity debit over assigned stock units.',
+                $item->getDesignation()
+            ));
         }
 
         // Remaining credit
@@ -193,7 +197,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new StockLogicException('Failed to assign shipment item.');
+            throw new StockLogicException(sprintf(
+                'Failed to assign shipment item "%s".',
+                $item->getSaleItem()->getDesignation()
+            ));
         }
     }
 
@@ -236,7 +243,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new StockLogicException('Failed to apply shipment item.');
+            throw new StockLogicException(sprintf(
+                'Failed to apply shipment item "%s".',
+                $item->getSaleItem()->getDesignation()
+            ));
         }
     }
 
@@ -278,7 +288,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new StockLogicException('Failed to detach shipment item.');
+            throw new StockLogicException(sprintf(
+                'Failed to detach shipment item "%s".',
+                $item->getSaleItem()->getDesignation()
+            ));
         }
     }
 
@@ -308,7 +321,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new StockLogicException('Failed to assign invoice line.');
+            throw new StockLogicException(sprintf(
+                'Failed to assign invoice line "%s".',
+                $line->getDesignation()
+            ));
         }
     }
 
@@ -350,7 +366,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new StockLogicException('Failed to apply invoice line.');
+            throw new StockLogicException(sprintf(
+                'Failed to apply invoice line "%s".',
+                $line->getDesignation()
+            ));
         }
     }
 
@@ -389,7 +408,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remaining quantity
         if (0 != $quantity) {
-            throw new StockLogicException('Failed to detach invoice line.');
+            throw new StockLogicException(sprintf(
+                'Failed to detach invoice line "%s".',
+                $line->getDesignation()
+            ));
         }
     }
 
@@ -506,7 +528,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         if (0 < $quantity) {
-            throw new StockLogicException('Failed to create assignments.');
+            throw new StockLogicException(sprintf(
+                'Failed to create assignments for item "%s".',
+                $item->getDesignation()
+            ));
         }
     }
 
@@ -521,10 +546,12 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     {
         $old = $new = $item->getQuantity();
 
+        // Own item quantity changes
         if ($this->persistenceHelper->isChanged($item, 'quantity')) {
             list($old, $new) = $this->persistenceHelper->getChangeSet($item, 'quantity');
         }
 
+        // Parent items quantity changes
         $parent = $item;
         while (null !== $parent = $parent->getParent()) {
             if ($this->persistenceHelper->isChanged($parent, 'quantity')) {
@@ -534,6 +561,39 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             }
             $old *= $parentOld;
             $new *= $parentNew;
+        }
+
+        // Sale released change
+        $sale = $item->getSale();
+        $shippedOld = $shippedNew = 0;
+        $f = $t = false;
+        if ($this->persistenceHelper->isChanged($sale, 'released')) {
+            list($f, $t) = $this->persistenceHelper->getChangeSet($sale, 'released');
+        } elseif ($item->getSale()->isReleased()) {
+            $f = $t = true;
+        }
+        if ($f || $t) {
+            /** @var StockAssignmentsInterface $item */
+            foreach ($item->getStockAssignments() as $assignment) {
+                if ($this->persistenceHelper->isChanged($assignment, 'shippedQuantity')) {
+                    list($o, $n) = $this->persistenceHelper->getChangeSet($assignment, 'shippedQuantity');
+                } else {
+                    $o = $n = $assignment->getShippedQuantity();
+                }
+                if ($f) {
+                    $shippedOld += $o;
+                }
+                if ($t) {
+                    $shippedNew += $n;
+                }
+            }
+
+            if ($f) {
+                $old = min($old, $shippedOld);
+            }
+            if ($t) {
+                $new = min($new, $shippedNew);
+            }
         }
 
         return $new - $old;

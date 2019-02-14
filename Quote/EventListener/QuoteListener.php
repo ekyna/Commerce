@@ -40,7 +40,6 @@ class QuoteListener extends AbstractSaleListener
     {
         parent::onInitialize($event);
 
-        /** @var \Ekyna\Bundle\CommerceBundle\Entity\Quote $quote */
         $quote = $this->getSaleFromEvent($event);
 
         // Set the default 'expires at' date time
@@ -70,6 +69,8 @@ class QuoteListener extends AbstractSaleListener
 
     /**
      * @inheritdoc
+     *
+     * @return QuoteInterface
      */
     protected function getSaleFromEvent(ResourceEventInterface $event)
     {

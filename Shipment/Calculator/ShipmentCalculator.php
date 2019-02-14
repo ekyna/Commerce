@@ -245,10 +245,13 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     {
         $sale = $shipment->getSale();
 
+        $id = $shipment->getId();
+        $date = $shipment->getShippedAt() ?? $shipment->getCreatedAt();
+
         $shipments = $sale
             ->getShipments()
-            ->filter(function (Shipment\ShipmentInterface $s) use ($shipment) {
-                if ($s->getId() == $shipment->getId()) {
+            ->filter(function (Shipment\ShipmentInterface $s) use ($id, $date) {
+                if ($s->getId() == $id) {
                     return false;
                 }
 
@@ -256,7 +259,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
                     return false;
                 }
 
-                if ($s->getShippedAt() > $shipment->getShippedAt()) {
+                if ($s->getShippedAt() > $date) {
                     return false;
                 }
 

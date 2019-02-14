@@ -40,6 +40,8 @@ class CartItem extends AbstractSaleItem implements Model\CartItemInterface
 
     /**
      * @inheritdoc
+     *
+     * @param Model\CartInterface $sale
      */
     public function setSale(Common\SaleInterface $sale = null)
     {

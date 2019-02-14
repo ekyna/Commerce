@@ -9,6 +9,8 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
  * Interface OrderItemInterface
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method OrderInterface getSale()
  */
 interface OrderItemInterface extends SaleItemInterface, StockAssignmentsInterface
 {
