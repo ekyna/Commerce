@@ -106,6 +106,10 @@ class ViewBuilder
      */
     public function buildSaleView(Model\SaleInterface $sale, array $options = [])
     {
+        if ($sale->isReleased()) {
+            $options['editable'] = false;
+        }
+
         $this->initialize($sale, $options);
 
         $this->view = new SaleView($this->options['template'], $sale->isAtiDisplayMode());
