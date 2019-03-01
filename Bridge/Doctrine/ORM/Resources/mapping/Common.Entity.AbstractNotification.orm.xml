@@ -10,7 +10,7 @@
         <field name="type" column="type" type="string" length="64"/>
         <field name="data" column="data" type="json_array"/>
         <field name="sentAt" column="sent_at" type="datetime"/>
-        <field name="details" column="details" type="text" length="16"/>
+        <field name="details" column="details" type="text"/>
 
     </mapped-superclass>
 
