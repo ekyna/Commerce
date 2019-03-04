@@ -49,7 +49,7 @@ class SaleNormalizer extends AbstractResourceNormalizer
                 'comment'          => $sale->getComment(),
                 'payment_term'     => null,
                 'outstanding_date' => null,
-                'created_at'       => $sale->getCreatedAt()->format('Y-m-d'),
+                'created_at'       => $sale->getCreatedAt()->format('Y-m-d H:i:s'),
                 'shipped_at'       => null,
                 'invoiced_at'      => null,
             ]);
@@ -57,20 +57,20 @@ class SaleNormalizer extends AbstractResourceNormalizer
                 $data['payment_term'] = $term->getName();
             }
             if (null !== $date = $sale->getOutstandingDate()) {
-                $data['outstanding_date'] = $date->format('Y-m-d');
+                $data['outstanding_date'] = $date->format('Y-m-d H:i:s');
             }
             if ($sale instanceof ShipmentSubjectInterface && null !== $date = $sale->getShippedAt()) {
-                $data['shipped_at'] = $date->format('Y-m-d');
+                $data['shipped_at'] = $date->format('Y-m-d H:i:s');
             }
             if ($sale instanceof InvoiceSubjectInterface && null !== $date = $sale->getInvoicedAt()) {
-                $data['invoiced_at'] = $date->format('Y-m-d');
+                $data['invoiced_at'] = $date->format('Y-m-d H:i:s');
 
                 $data['invoices'] = [];
                 foreach ($sale->getInvoices(true) as $invoice) {
                     $data['invoices'][] = [
                         'number'      => $invoice->getNumber(),
                         'grand_total' => $invoice->getGrandTotal(),
-                        'created_at'  => $invoice->getCreatedAt()->format('Y-m-d'),
+                        'created_at'  => $invoice->getCreatedAt()->format('Y-m-d H:i:s'),
                     ];
                 }
             }

@@ -35,9 +35,9 @@ final class TransformationTargets
             if ($sale->getState() !== OrderStates::STATE_NEW) {
                 return [];
             }
-            return [static::TARGET_QUOTE/*, static::TARGET_CART*/];
+            return [static::TARGET_QUOTE];
         } elseif ($sale instanceof QuoteInterface) {
-            return [static::TARGET_ORDER/*, static::TARGET_CART*/];
+            return [static::TARGET_ORDER];
         }
 
         throw new InvalidArgumentException("Unexpected sale type.");
