@@ -88,14 +88,14 @@ interface PaymentInterface extends
     public function setDescription($description);
 
     /**
-     * Returns the completedAt.
+     * Returns the "completed at" datetime.
      *
      * @return \DateTime
      */
     public function getCompletedAt();
 
     /**
-     * Sets the completedAt.
+     * Sets the "completed at" datetime.
      *
      * @param \DateTime $completedAt
      *

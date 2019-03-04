@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Repository;
 
-use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
+use Ekyna\Component\Commerce\Supplier\Model;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
@@ -16,44 +15,72 @@ interface SupplierOrderRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Creates a new supplier order instance.
      *
-     * @return SupplierOrderInterface
+     * @return Model\SupplierOrderInterface
      */
     public function createNew();
 
     /**
      * Finds the supplier orders with state 'new' by supplier.
      *
-     * @param SupplierInterface $supplier
+     * @param Model\SupplierInterface $supplier
      *
-     * @return SupplierOrderInterface[]
+     * @return Model\SupplierOrderInterface[]
      */
-    public function findNewBySupplier(SupplierInterface $supplier);
+    public function findNewBySupplier(Model\SupplierInterface $supplier);
 
     /**
-     * Returns the suppliers expired due.
+     * Returns the suppliers expired due orders.
+     *
+     * @return Model\SupplierOrderInterface[]
+     */
+    public function findSuppliersExpiredDue();
+
+    /**
+     * Returns the suppliers fall due orders.
+     *
+     * @return Model\SupplierOrderInterface[]
+     */
+    public function findSuppliersFallDue();
+
+    /**
+     * Returns the forwarders expired due orders.
+     *
+     * @return Model\SupplierOrderInterface[]
+     */
+    public function findForwardersExpiredDue();
+
+    /**
+     * Returns the forwarders fall due orders.
+     *
+     * @return Model\SupplierOrderInterface[]
+     */
+    public function findForwardersFallDue();
+
+    /**
+     * Returns the suppliers expired due total.
      *
      * @return float
      */
     public function getSuppliersExpiredDue();
 
     /**
-     * Returns the suppliers fall due.
+     * Returns the suppliers fall due total.
      *
      * @return float
      */
     public function getSuppliersFallDue();
 
     /**
-     * Returns the carriers expired due.
+     * Returns the forwarders expired due total.
      *
      * @return float
      */
-    public function getCarriersExpiredDue();
+    public function getForwardersExpiredDue();
 
     /**
-     * Returns the carriers fall due.
+     * Returns the forwarders fall due total.
      *
      * @return float
      */
-    public function getCarriersFallDue();
+    public function getForwardersFallDue();
 }

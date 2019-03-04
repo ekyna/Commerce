@@ -13,7 +13,7 @@
         <field name="amount" column="amount" type="decimal" precision="15" scale="5"/>
         <field name="state" column="state" type="string" length="16"/>
         <field name="details" column="details" type="json_array"/>
-        <field name="description" column="description" type="string" length="255" nullable="true"/>
+        <field name="description" column="description" type="text" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
