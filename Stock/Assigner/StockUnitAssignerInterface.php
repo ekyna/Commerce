@@ -81,4 +81,13 @@ interface StockUnitAssignerInterface
      * @param InvoiceLineInterface $line
      */
     public function detachInvoiceLine(InvoiceLineInterface $line);
+
+    /**
+     * Returns whether or not the given item supports assignments.
+     *
+     * @param SaleItemInterface $item
+     *
+     * @return bool
+     */
+    public function supportsAssignment(SaleItemInterface $item);
 }

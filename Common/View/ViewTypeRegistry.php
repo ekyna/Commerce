@@ -51,6 +51,10 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
             }
         }
 
+        usort($types, function(ViewTypeInterface $a, ViewTypeInterface $b) {
+            return $a->getPriority() - $b->getPriority();
+        });
+
         return $types;
     }
 }

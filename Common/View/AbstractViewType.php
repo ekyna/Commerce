@@ -57,4 +57,12 @@ abstract class AbstractViewType implements ViewTypeInterface
     {
 
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPriority()
+    {
+        return 0;
+    }
 }

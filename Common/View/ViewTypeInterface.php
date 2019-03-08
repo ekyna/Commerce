@@ -72,4 +72,10 @@ interface ViewTypeInterface
      */
     public function getName();
 
+    /**
+     * Returns the priority.
+     *
+     * @return int
+     */
+    public function getPriority();
 }

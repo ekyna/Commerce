@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
@@ -22,6 +23,11 @@ class StockPrioritizer implements StockPrioritizerInterface
      * @var StockUnitResolverInterface
      */
     protected $unitResolver;
+
+    /**
+     * @var StockUnitAssignerInterface
+     */
+    protected $unitAssigner;
 
     /**
      * @var SaleFactoryInterface
@@ -43,17 +49,20 @@ class StockPrioritizer implements StockPrioritizerInterface
      * Constructor.
      *
      * @param StockUnitResolverInterface $unitResolver
+     * @param StockUnitAssignerInterface $unitAssigner
      * @param SaleFactoryInterface       $saleFactory
      * @param EntityManagerInterface     $manager
      * @param StockLoggerInterface $logger
      */
     public function __construct(
         StockUnitResolverInterface $unitResolver,
+        StockUnitAssignerInterface $unitAssigner,
         SaleFactoryInterface $saleFactory,
         EntityManagerInterface $manager,
         StockLoggerInterface $logger
     ) {
         $this->unitResolver = $unitResolver;
+        $this->unitAssigner = $unitAssigner;
         $this->saleFactory = $saleFactory;
         $this->manager = $manager;
         $this->logger = $logger;
@@ -92,7 +101,13 @@ class StockPrioritizer implements StockPrioritizerInterface
             return false;
         }
 
-        foreach ($item->getStockAssignments() as $assignment) {
+        $assignments = $item->getStockAssignments();
+
+        if (0 === $assignments->count()) {
+            return $this->unitAssigner->supportsAssignment($item);
+        }
+
+        foreach ($assignments as $assignment) {
             if (!$assignment->isFullyShipped() && !$assignment->isFullyShippable()) {
                 return true;
             }
@@ -128,6 +143,18 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         if (!$item instanceof Stock\StockAssignmentsInterface) {
+            return $changed;
+        }
+
+        $assignments = $item->getStockAssignments();
+
+        if (0 === $assignments->count()) {
+            if ($this->unitAssigner->supportsAssignment($item)) {
+                $this->unitAssigner->assignSaleItem($item);
+
+                $changed = true;
+            }
+
             return $changed;
         }
 

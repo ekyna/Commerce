@@ -416,13 +416,9 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     }
 
     /**
-     * Returns whether or not the given item supports assignments.
-     *
-     * @param mixed $item
-     *
-     * @return bool
+     * @inheritdoc
      */
-    protected function supportsAssignment($item)
+    public function supportsAssignment(SaleItemInterface $item)
     {
         if (!$item instanceof StockAssignmentsInterface) {
             return false;
