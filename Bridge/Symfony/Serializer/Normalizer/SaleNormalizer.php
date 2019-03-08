@@ -47,6 +47,7 @@ class SaleNormalizer extends AbstractResourceNormalizer
                 'total'            => $sale->getGrandTotal(),
                 'description'      => $sale->getDescription(),
                 'comment'          => $sale->getComment(),
+                'preparation_note' => $sale->getPreparationNote(),
                 'payment_term'     => null,
                 'outstanding_date' => null,
                 'created_at'       => $sale->getCreatedAt()->format('Y-m-d H:i:s'),
