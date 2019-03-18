@@ -661,7 +661,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
             $data['d'] = $this->data;
         }
 
-        if (null === $this->parent) {
+        if (null !== $this->parent) {
             $data['q'] = floatval($this->quantity); // TODO Packaging format
         }
 
