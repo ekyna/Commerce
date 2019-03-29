@@ -37,6 +37,8 @@ class CustomerNormalizer extends AbstractResourceNormalizer
                 'phone'      => $this->normalizeObject($customer->getPhone(), $format, $context),
                 'mobile'     => $this->normalizeObject($customer->getMobile(), $format, $context),
                 'parent'     => $parent ? $parent->getId() : null,
+                'currency'   => $customer->getCurrency()->getCode(),
+                'locale'     => $customer->getLocale(),
             ]);
         }
 

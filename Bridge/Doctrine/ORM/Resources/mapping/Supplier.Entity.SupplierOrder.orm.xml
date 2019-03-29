@@ -42,6 +42,7 @@
         <field name="trackingUrls" column="tracking_urls" type="array" nullable="true"/>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="date" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
+        <field name="exchangeRate" column="exchange_rate" type="decimal" precision="10" scale="5" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

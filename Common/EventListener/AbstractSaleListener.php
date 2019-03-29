@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
@@ -11,8 +12,8 @@ use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
-use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -58,9 +59,14 @@ abstract class AbstractSaleListener
     protected $stateResolver;
 
     /**
-     * @var ShipmentPriceResolverInterface
+     * @var CurrencyConverterInterface
      */
-    protected $shipmentPriceResolver;
+    protected $currencyConverter;
+
+    /**
+     * @var LocaleProviderInterface
+     */
+    protected $localeProvider;
 
     /**
      * @var string
@@ -136,6 +142,26 @@ abstract class AbstractSaleListener
     public function setStateResolver(StateResolverInterface $resolver)
     {
         $this->stateResolver = $resolver;
+    }
+
+    /**
+     * Sets the currency converter.
+     *
+     * @param CurrencyConverterInterface $converter
+     */
+    public function setCurrencyConverter(CurrencyConverterInterface $converter)
+    {
+        $this->currencyConverter = $converter;
+    }
+
+    /**
+     * Sets the locale provider.
+     *
+     * @param LocaleProviderInterface $provider
+     */
+    public function setLocaleProvider(LocaleProviderInterface $provider)
+    {
+        $this->localeProvider = $provider;
     }
 
     /**
@@ -221,7 +247,7 @@ abstract class AbstractSaleListener
         }
 
         // Schedule content change
-        if ($this->persistenceHelper->isChanged($sale, ['vatDisplayMode', 'paymentTerm', 'shipmentAmount'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['currency', 'vatDisplayMode', 'paymentTerm', 'shipmentAmount'])) {
             $this->scheduleContentChangeEvent($sale);
         }
 
@@ -420,6 +446,9 @@ abstract class AbstractSaleListener
      */
     protected function handleStateChange(SaleInterface $sale)
     {
+        if ($this->configureAcceptedSale($sale)) {
+            $this->persistenceHelper->persistAndRecompute($sale, false);
+        }
     }
 
     /**
@@ -802,6 +831,42 @@ abstract class AbstractSaleListener
         }
 
         return false;
+    }
+
+    /**
+     * Updates the sale exchange rate.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed.
+     */
+    protected function configureAcceptedSale(SaleInterface $sale)
+    {
+        if (null === $date = $sale->getAcceptedAt()) {
+            return false;
+        }
+
+        $changed = false;
+
+        if (null === $sale->getExchangeRate()) {
+            $rate = $this->currencyConverter->getRate(
+                $this->currencyConverter->getDefaultCurrency(),
+                $sale->getCurrency()->getCode(),
+                $date
+            );
+
+            $sale->setExchangeRate($rate);
+
+            $changed = true;
+        }
+
+        if (null === $sale->getLocale()) {
+            $sale->setLocale($this->localeProvider->getCurrentLocale());
+
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     /**

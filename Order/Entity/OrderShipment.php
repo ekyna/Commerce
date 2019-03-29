@@ -169,4 +169,16 @@ class OrderShipment extends AbstractShipment implements OrderShipmentInterface
 
         return parent::removeLabel($label);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLocale(): ?string
+    {
+        if ($this->order) {
+            return $this->order->getLocale();
+        }
+
+        return null;
+    }
 }

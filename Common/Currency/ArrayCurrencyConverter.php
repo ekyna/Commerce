@@ -1,8 +1,7 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Common\Converter;
+namespace Ekyna\Component\Commerce\Common\Currency;
 
-use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 /**
@@ -10,17 +9,12 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  * @package Ekyna\Component\Commerce\Common\Converter
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ArrayCurrencyConverter implements CurrencyConverterInterface
+class ArrayCurrencyConverter extends AbstractCurrencyConverter
 {
     /**
      * @var array
      */
     private $rates;
-
-    /**
-     * @var string
-     */
-    private $defaultCurrency;
 
 
     /**
@@ -31,9 +25,9 @@ class ArrayCurrencyConverter implements CurrencyConverterInterface
      */
     public function __construct(array $rates, $defaultCurrency = 'USD')
     {
-        $this->rates = [];
-        $this->defaultCurrency = $defaultCurrency;
+        parent::__construct($defaultCurrency);
 
+        $this->rates = [];
         foreach ($rates as $pair => $rate) {
             $this->addRate($pair, $rate);
         }
@@ -63,30 +57,22 @@ class ArrayCurrencyConverter implements CurrencyConverterInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function convert($amount, $base, $quote = null, \DateTime $date = null)
-    {
-        $quote = $quote ?: $this->defaultCurrency;
-
-        if ($base === $quote) {
-            $rate = 1.0;
-        } else {
-            $pair = "$base/$quote";
-            if (!isset($this->rates[$pair])) {
-                throw new InvalidArgumentException("Undefined conversion pair '$pair'.");
-            }
-            $rate = $this->rates[$pair];
-        }
-
-        return Money::round($amount / $rate, $quote);
-    }
-
-    /**
      * @inheritdoc
      */
-    public function getDefaultCurrency()
+    public function getRate($base, $quote = null, \DateTime $date = null)
     {
-        return $this->defaultCurrency;
+        $base = strtoupper($base);
+        $quote = strtoupper($quote ? $quote : $this->defaultCurrency);
+
+        if ($base === $quote) {
+            return 1.0;
+        }
+
+        $pair = "$base/$quote";
+        if (!isset($this->rates[$pair])) {
+            throw new InvalidArgumentException("Undefined conversion pair '$pair'.");
+        }
+
+        return $this->rates[$pair];
     }
 }

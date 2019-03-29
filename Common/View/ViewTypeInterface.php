@@ -20,11 +20,19 @@ interface ViewTypeInterface
     public function setFormatter(Formatter $formatter);
 
     /**
+     * Configures the builder options.
+     *
+     * @param Model\SaleInterface $sale
+     * @param SaleView            $view
+     * @param array               $options
+     */
+    public function configureOptions(Model\SaleInterface $sale, SaleView $view, array &$options);
+
+    /**
      * Builds the sale view.
      *
      * @param Model\SaleInterface $sale
      * @param SaleView            $view
-     * @param Model\SaleInterface $sale
      * @param array               $options
      */
     public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options);

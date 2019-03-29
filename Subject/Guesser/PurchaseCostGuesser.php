@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Subject\Guesser;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
@@ -104,6 +104,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
         $item = $this->supplierOrderItemRepository->findLatestOrderedBySubject($subject);
         if (null !== $item && 0 < $netPrice = $item->getNetPrice()) {
             $c = $item->getOrder()->getCurrency()->getCode();
+
             return $this->currencyConverter->convert($netPrice, $c, $quoteCurrency);
         }
 

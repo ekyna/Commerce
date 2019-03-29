@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraint;
  */
 class SaleShipmentStep extends Constraint
 {
+    public $cart_is_locked               = 'ekyna_commerce.sale.cart_is_locked';
     public $identity_must_be_set         = 'ekyna_commerce.sale.identity_must_be_set';
     public $invoice_address_must_be_set  = 'ekyna_commerce.sale.invoice_address_must_be_set';
     public $delivery_address_must_be_set = 'ekyna_commerce.sale.delivery_address_must_be_set';

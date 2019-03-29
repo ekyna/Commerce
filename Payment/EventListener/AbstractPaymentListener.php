@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Payment\EventListener;
 
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -42,6 +43,11 @@ abstract class AbstractPaymentListener
      * @var CustomerUpdaterInterface
      */
     protected $customerUpdater;
+
+    /**
+     * @var CurrencyConverterInterface
+     */
+    protected $currencyConverter;
 
 
     /**
@@ -85,6 +91,16 @@ abstract class AbstractPaymentListener
     }
 
     /**
+     * Sets the currency converter.
+     *
+     * @param CurrencyConverterInterface $converter
+     */
+    public function setCurrencyConverter(CurrencyConverterInterface $converter)
+    {
+        $this->currencyConverter = $converter;
+    }
+
+    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -96,6 +112,9 @@ abstract class AbstractPaymentListener
         // Generate number and key
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
+
+        // Exchange rate
+        $changed |= $this->updateExchangeRate($payment);
 
         // Completed state
         $changed |= $this->handleCompletedState($payment);
@@ -246,6 +265,30 @@ abstract class AbstractPaymentListener
     {
         if (0 == strlen($payment->getKey())) {
             $this->keyGenerator->generate($payment);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Updates the payment exchange rate.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool Whether the payment has been changed or not.
+     */
+    protected function updateExchangeRate(PaymentInterface $payment)
+    {
+        $rate = $this->currencyConverter->getRate(
+            $this->currencyConverter->getDefaultCurrency(),
+            $payment->getCurrency()->getCode(),
+            $payment->getCreatedAt()
+        );
+
+        if (0 !== \bccomp($payment->getExchangeRate(), $rate, 5)) {
+            $payment->setExchangeRate($rate);
 
             return true;
         }

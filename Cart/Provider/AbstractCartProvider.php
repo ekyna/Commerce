@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Cart\Provider;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -37,49 +38,37 @@ abstract class AbstractCartProvider implements CartProviderInterface
     protected $customerProvider;
 
     /**
+     * @var CurrencyProviderInterface
+     */
+    protected $currencyProvider;
+
+    /**
      * @var CartInterface
      */
     protected $cart;
 
 
     /**
-     * Sets the cart repository.
+     * Constructor.
      *
-     * @param CartRepositoryInterface $repository
-     */
-    public function setCartRepository(CartRepositoryInterface $repository)
-    {
-        $this->cartRepository = $repository;
-    }
-
-    /**
-     * Sets the cart operator.
-     *
-     * @param ResourceOperatorInterface $operator
-     */
-    public function setCartOperator(ResourceOperatorInterface $operator)
-    {
-        $this->cartOperator = $operator;
-    }
-
-    /**
-     * Sets the sale factory.
-     *
+     * @param CartRepositoryInterface $cartRepository
+     * @param ResourceOperatorInterface $cartOperator
      * @param SaleFactoryInterface $saleFactory
+     * @param CustomerProviderInterface $customerProvider
+     * @param CurrencyProviderInterface $currencyProvider
      */
-    public function setSaleFactory(SaleFactoryInterface $saleFactory)
-    {
+    public function __construct(
+        CartRepositoryInterface $cartRepository,
+        ResourceOperatorInterface $cartOperator,
+        SaleFactoryInterface $saleFactory,
+        CustomerProviderInterface $customerProvider,
+        CurrencyProviderInterface $currencyProvider
+    ) {
+        $this->cartRepository = $cartRepository;
+        $this->cartOperator = $cartOperator;
         $this->saleFactory = $saleFactory;
-    }
-
-    /**
-     * Sets the customer provider.
-     *
-     * @param CustomerProviderInterface $provider
-     */
-    public function setCustomerProvider(CustomerProviderInterface $provider)
-    {
-        $this->customerProvider = $provider;
+        $this->customerProvider = $customerProvider;
+        $this->currencyProvider = $currencyProvider;
     }
 
     /**
@@ -172,8 +161,6 @@ abstract class AbstractCartProvider implements CartProviderInterface
             if ($this->cart->getCustomerGroup() !== $customer->getCustomerGroup()) {
                 $this->cart->setCustomerGroup($customer->getCustomerGroup());
             }
-
-            // TODO Currency
         }
 
         // Sets the default customer group
@@ -183,7 +170,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
 
         // Sets the currency
         if (null === $this->cart->getCurrency()) {
-            $this->cart->setCurrency($this->saleFactory->getDefaultCurrency());
+            $this->cart->setCurrency($this->currencyProvider->getCurrency());
         }
 
         return $this;

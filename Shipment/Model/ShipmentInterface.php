@@ -16,6 +16,7 @@ use Ekyna\Component\Resource\Model as Resource;
 interface ShipmentInterface extends
     Resource\ResourceInterface,
     Resource\TimestampableInterface,
+    Resource\LocalizedInterface,
     Common\NumberSubjectInterface,
     Common\StateSubjectInterface,
     ShipmentDataInterface

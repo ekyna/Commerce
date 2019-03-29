@@ -14,6 +14,7 @@
         <field name="state" column="state" type="string" length="16"/>
         <field name="details" column="details" type="json_array"/>
         <field name="description" column="description" type="text" nullable="true"/>
+        <field name="exchangeRate" column="exchange_rate" type="decimal" precision="10" scale="5" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

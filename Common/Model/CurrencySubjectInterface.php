@@ -12,7 +12,7 @@ interface CurrencySubjectInterface
     /**
      * Returns the currency.
      *
-     * @return CurrencyInterface
+     * @return CurrencyInterface|null
      */
     public function getCurrency();
 
@@ -24,4 +24,20 @@ interface CurrencySubjectInterface
      * @return $this|CurrencySubjectInterface
      */
     public function setCurrency(CurrencyInterface $currency);
+
+    /**
+     * Returns the exchange rate.
+     *
+     * @return float|null
+     */
+    public function getExchangeRate();
+
+    /**
+     * Sets the exchange rate.
+     *
+     * @param float $rate
+     *
+     * @return $this|CurrencySubjectInterface
+     */
+    public function setExchangeRate($rate);
 }

@@ -81,7 +81,7 @@ class SaleCopier implements SaleCopierInterface
             'autoShipping', 'autoDiscount', 'autoNotify', 'taxExempt', 'vatDisplayMode',
             'depositTotal', 'grandTotal', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
             'title', 'voucherNumber', 'description', 'preparationNote', 'comment', 'documentComment',
-            'acceptedAt', 'source',
+            'exchangeRate', 'locale', 'acceptedAt', 'source'
         ];
 
         // Copy information fields only if source has no customer entity
@@ -308,7 +308,7 @@ class SaleCopier implements SaleCopierInterface
     {
         $this->copy($source, $target, [
             'currency', 'method', 'key', 'number', 'amount', 'state', 'details',
-            'description', 'createdAt', 'updatedAt', 'completedAt',
+            'description', 'createdAt', 'updatedAt', 'completedAt', 'exchangeRate'
         ]);
     }
 

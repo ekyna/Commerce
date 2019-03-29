@@ -6,7 +6,6 @@ use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Calculator\Amount;
 use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
-use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -26,6 +25,7 @@ use Ekyna\Component\Resource\Model as ResourceModel;
 interface SaleInterface extends
     ResourceModel\ResourceInterface,
     ResourceModel\TimestampableInterface,
+    ResourceModel\LocalizedInterface,
     IdentityInterface,
     AdjustableInterface,
     NotifiableInterface,
@@ -235,22 +235,6 @@ interface SaleInterface extends
     public function setNetTotal($total);
 
     /**
-     * Returns the adjustment total.
-     *
-     * @return float
-     */
-    public function getAdjustmentTotal();
-
-    /**
-     * Sets the adjustment total.
-     *
-     * @param float $total
-     *
-     * @return $this|SaleInterface
-     */
-    public function setAdjustmentTotal($total);
-
-    /**
      * Returns the title.
      *
      * @return string
@@ -390,9 +374,18 @@ interface SaleInterface extends
      *
      * @param string $source
      *
-     * @return AbstractSale
+     * @return $this|SaleInterface
      */
     public function setSource($source);
+
+    /**
+     * Sets the locale.
+     *
+     * @param string $locale
+     *
+     * @return $this|SaleInterface
+     */
+    public function setLocale(?string $locale);
 
     /**
      * Returns whether the order has attachments or not.
@@ -579,6 +572,13 @@ interface SaleInterface extends
      * @return ContextInterface
      */
     public function getContext();
+
+    /**
+     * Returns whether the sale is locked.
+     *
+     * @return bool
+     */
+    public function isLocked();
 
     /**
      * Returns whether the sale can be released.

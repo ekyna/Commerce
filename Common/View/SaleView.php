@@ -57,6 +57,11 @@ class SaleView extends AbstractView
     /**
      * @var string[]
      */
+    private $alerts;
+
+    /**
+     * @var string[]
+     */
     private $messages;
 
     /**
@@ -67,19 +72,15 @@ class SaleView extends AbstractView
 
     /**
      * Constructor.
-     *
-     * @param string $template
-     * @param bool   $ati
      */
-    public function __construct($template, $ati = true)
+    public function __construct()
     {
-        $this->template = $template;
-        $this->ati = $ati;
-
+        $this->ati = true;
         $this->items = [];
         $this->discounts = [];
         $this->taxes = [];
         $this->messages = [];
+        $this->alerts = [];
 
         $this->translations = $this->getDefaultTranslations();
 
@@ -93,13 +94,17 @@ class SaleView extends AbstractView
     }
 
     /**
-     * Adds the button.
+     * Sets the template.
      *
-     * @param Button $button
+     * @param string $template
+     *
+     * @return SaleView
      */
-    public function addButton(Button $button)
+    public function setTemplate(string $template)
     {
-        $this->vars['buttons'][] = $button;
+        $this->template = $template;
+
+        return $this;
     }
 
     /**
@@ -110,6 +115,20 @@ class SaleView extends AbstractView
     public function getTemplate()
     {
         return $this->template;
+    }
+
+    /**
+     * Sets the ati.
+     *
+     * @param bool $ati
+     *
+     * @return SaleView
+     */
+    public function setAti(bool $ati)
+    {
+        $this->ati = $ati;
+
+        return $this;
     }
 
     /**
@@ -287,13 +306,47 @@ class SaleView extends AbstractView
     }
 
     /**
+     * Adds the button.
+     *
+     * @param Button $button
+     */
+    public function addButton(Button $button)
+    {
+        $this->vars['buttons'][] = $button;
+    }
+
+    /**
+     * Adds the alert.
+     *
+     * @param string $alert
+     *
+     * @return SaleView
+     */
+    public function addAlert(string $alert)
+    {
+        $this->alerts[] = $alert;
+
+        return $this;
+    }
+
+    /**
+     * Returns the alerts.
+     *
+     * @return string[]
+     */
+    public function getAlerts()
+    {
+        return $this->alerts;
+    }
+
+    /**
      * Adds the message.
      *
      * @param string $message
      *
      * @return SaleView
      */
-    public function addMessage($message)
+    public function addMessage(string $message)
     {
         $this->messages[] = $message;
 
@@ -351,19 +404,19 @@ class SaleView extends AbstractView
             'unit_ati_price' => 'Unit Price',
             'quantity'       => 'Quantity',
 
-            'net_gross'    => 'Gross',
-            'ati_gross'    => 'Gross',
-            'discount' => 'Discount',
+            'net_gross'      => 'Gross',
+            'ati_gross'      => 'Gross',
+            'discount'       => 'Discount',
 
-            'tax_rate'   => 'Tax rate',
-            'tax_name'   => 'Tax',
-            'tax_amount' => 'Amount',
+            'tax_rate'       => 'Tax rate',
+            'tax_name'       => 'Tax',
+            'tax_amount'     => 'Amount',
 
-            'gross_totals' => 'Gross totals',
-            'net_total'    => 'Net total',
-            'tax_total'    => 'Tax total',
-            'grand_total'  => 'Grand total',
-            'margin'       => 'Margin',
+            'gross_totals'   => 'Gross totals',
+            'net_total'      => 'Net total',
+            'tax_total'      => 'Tax total',
+            'grand_total'    => 'Grand total',
+            'margin'         => 'Margin',
         ];
     }
 }

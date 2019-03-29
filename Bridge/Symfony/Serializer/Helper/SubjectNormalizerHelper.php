@@ -5,7 +5,8 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Helper;
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Bundle\AdminBundle\Helper\ResourceHelper;
 use Ekyna\Bundle\CommerceBundle\Service\ConstantsHelper;
-use Ekyna\Component\Commerce\Common\Util\Formatter;
+use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
+use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
@@ -19,12 +20,8 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
  */
 class SubjectNormalizerHelper
 {
-    use NormalizerAwareTrait;
-
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
+    use NormalizerAwareTrait,
+        FormatterAwareTrait;
 
     /**
      * @var ConstantsHelper
@@ -45,18 +42,18 @@ class SubjectNormalizerHelper
     /**
      * Constructor.
      *
-     * @param Formatter              $formatter
+     * @param FormatterFactory       $formatterFactory
      * @param ConstantsHelper        $constantHelper
      * @param ResourceHelper         $resourceHelper
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(
-        Formatter $formatter,
+        FormatterFactory $formatterFactory,
         ConstantsHelper $constantHelper,
         ResourceHelper $resourceHelper,
         EntityManagerInterface $entityManager
     ) {
-        $this->formatter = $formatter;
+        $this->formatterFactory = $formatterFactory;
         $this->constantHelper = $constantHelper;
         $this->resourceHelper = $resourceHelper;
         $this->entityManager = $entityManager;
@@ -74,9 +71,10 @@ class SubjectNormalizerHelper
     public function normalizeStock(StockSubjectInterface $subject, $format = null, array $context = [])
     {
         $translator = $this->constantHelper->getTranslator();
+        $formatter = $this->getFormatter();
 
         if (null !== $eda = $subject->getEstimatedDateOfArrival()) {
-            $eda = $this->formatter->date($eda);
+            $eda = $formatter->date($eda);
         } else {
             $eda = $translator->trans('ekyna_core.value.undefined');
         }
@@ -88,14 +86,14 @@ class SubjectNormalizerHelper
             'mode_badge'    => $this->constantHelper->renderStockSubjectModeBadge($subject),
             'state_label'   => $this->constantHelper->renderStockSubjectStateLabel($subject),
             'state_badge'   => $this->constantHelper->renderStockSubjectStateBadge($subject),
-            'in'            => $this->formatter->number($subject->getInStock()),
-            'available'     => $this->formatter->number($subject->getAvailableStock()),
-            'virtual'       => $this->formatter->number($subject->getVirtualStock()),
-            'floor'         => $this->formatter->number($subject->getStockFloor()),
+            'in'            => $formatter->number($subject->getInStock()),
+            'available'     => $formatter->number($subject->getAvailableStock()),
+            'virtual'       => $formatter->number($subject->getVirtualStock()),
+            'floor'         => $formatter->number($subject->getStockFloor()),
             'geocode'       => $subject->getGeocode(),
-            'replenishment' => $this->formatter->number($subject->getReplenishmentTime()),
+            'replenishment' => $formatter->number($subject->getReplenishmentTime()),
             'eda'           => $eda,
-            'moq'           => $this->formatter->number($subject->getMinimumOrderQuantity()),
+            'moq'           => $formatter->number($subject->getMinimumOrderQuantity()),
             'quote_only'    => $subject->isQuoteOnly()
                 ? $translator->trans('ekyna_core.value.yes')
                 : $translator->trans('ekyna_core.value.no'),
@@ -125,7 +123,7 @@ class SubjectNormalizerHelper
         );
 
         // Sort by "created/closed at" date desc
-        usort($stockUnits, function(StockUnitInterface $a, StockUnitInterface $b) {
+        usort($stockUnits, function (StockUnitInterface $a, StockUnitInterface $b) {
             if ($a->getState() === StockUnitStates::STATE_CLOSED && $b->getState() !== StockUnitStates::STATE_CLOSED) {
                 return 1;
             }

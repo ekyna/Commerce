@@ -54,4 +54,16 @@ class CartPayment extends AbstractPayment implements Model\CartPaymentInterface
 
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLocale(): ?string
+    {
+        if ($this->cart) {
+            return $this->cart->getLocale();
+        }
+
+        return null;
+    }
 }

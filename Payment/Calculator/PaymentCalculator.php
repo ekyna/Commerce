@@ -2,7 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Payment\Calculator;
 
-use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -35,6 +36,19 @@ class PaymentCalculator implements PaymentCalculatorInterface
      */
     public function convertPaymentAmount(PaymentInterface $payment, $currency)
     {
+        $paymentCurrency = $payment->getCurrency()->getCode();
+
+        if ($paymentCurrency === $currency) {
+            return Money::round($payment->getAmount(), $currency);
+        }
+
+        if (
+            !is_null($rate = $payment->getExchangeRate()) &&
+            $currency === $this->currencyConverter->getDefaultCurrency()
+        ) {
+            return $this->currencyConverter->convertWithRate($payment->getAmount(), 1 / $rate, $currency);
+        }
+
         return $this->currencyConverter->convert(
             $payment->getAmount(),
             $payment->getCurrency()->getCode(),

@@ -63,7 +63,7 @@
         {{- line.discountRates -}}
     </td>
     <td class="text-right" id="{{ line.id }}_discountAmount">
-        {%- if 0 < line.discountAmount %}-{{- line.discountAmount -}}{% endif -%}
+        {%- if line.discountAmount is not empty %}-{{- line.discountAmount -}}{% endif -%}
     </td>
 {% endspaceless %}
 {% endblock line_discounts %}
@@ -340,6 +340,18 @@
 {% endblock spacer %}
 
 
+{% block alerts %}
+{% spaceless %}
+    {%- for alert in view.alerts -%}
+    <div class="alert alert-danger">
+        <p>{{ alert|raw }}</p>
+    </div>
+    {%- endfor -%}
+{% endspaceless %}
+{% endblock alerts %}
+
+
+
 {% block sale %}
 {% spaceless %}
     <div class="sale-view">
@@ -370,6 +382,8 @@
         {% if view.taxes is not empty %}
             {{ block('taxes') }}
         {% endif %}
+
+        {{ block('alerts') }}
     </div>
 {% endspaceless %}
 {% endblock sale %}

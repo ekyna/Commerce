@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Payment\Repository;
 
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepositoryInterface;
 
 /**
@@ -21,14 +22,18 @@ interface PaymentMethodRepositoryInterface extends TranslatableResourceRepositor
     /**
      * Finds the available and enabled payment methods.
      *
+     * @param CurrencyInterface $currency Filter authorized currency.
+     *
      * @return \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface[]
      */
-    public function findAvailable();
+    public function findAvailable(CurrencyInterface $currency = null);
 
     /**
      * Finds the enabled payment methods.
      *
+     * @param CurrencyInterface $currency Filter authorized currency.
+     *
      * @return \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface[]
      */
-    public function findEnabled();
+    public function findEnabled(CurrencyInterface $currency = null);
 }

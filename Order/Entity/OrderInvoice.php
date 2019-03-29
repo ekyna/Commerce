@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice;
 use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
@@ -41,6 +42,10 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
      */
     public function setSale(SaleInterface $sale = null)
     {
+        if (!$sale instanceof Model\OrderInterface) {
+            throw new UnexpectedValueException("Expected instance of " . Model\OrderInterface::class);
+        }
+
         return $this->setOrder($sale);
     }
 

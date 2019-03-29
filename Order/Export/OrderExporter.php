@@ -2,7 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Order\Export;
 
-use Ekyna\Component\Commerce\Common\Util\Formatter;
+use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
+use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
@@ -14,27 +15,24 @@ use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
  */
 class OrderExporter
 {
+    use FormatterAwareTrait;
+
     /**
      * @var OrderRepositoryInterface
      */
     protected $repository;
-
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
 
 
     /**
      * Constructor.
      *
      * @param OrderRepositoryInterface $repository
-     * @param Formatter                $formatter
+     * @param FormatterFactory         $formatterFactory
      */
-    public function __construct(OrderRepositoryInterface $repository, Formatter $formatter)
+    public function __construct(OrderRepositoryInterface $repository, FormatterFactory $formatterFactory)
     {
         $this->repository = $repository;
-        $this->formatter = $formatter;
+        $this->formatterFactory = $formatterFactory;
     }
 
     /**
@@ -201,8 +199,10 @@ class OrderExporter
         $date = null;
         $term = null;
 
+        $formatter = $this->getFormatter();
+
         if (null !== $date = $order->getOutstandingDate()) {
-            $date = $this->formatter->date($date);
+            $date = $formatter->date($date);
         }
         if (null !== $term = $order->getPaymentTerm()) {
             $term = $term->getName();
@@ -219,7 +219,7 @@ class OrderExporter
             'due_amount'          => $order->getGrandTotal() - $order->getPaidTotal(),
             'outstanding_expired' => $order->getOutstandingExpired(),
             'outstanding_date'    => $date,
-            'created_at'          => $this->formatter->date($order->getCreatedAt()),
+            'created_at'          => $formatter->date($order->getCreatedAt()),
         ];
     }
 }

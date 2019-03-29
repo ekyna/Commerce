@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Payment\Entity\PaymentMessage;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentMethodRepositoryInterface;
@@ -33,32 +34,60 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
     /**
      * @inheritDoc
      */
-    public function findAvailable()
+    public function findAvailable(CurrencyInterface $currency = null)
     {
         $qb = $this->createQueryBuilder('m');
+        $ex = $qb->expr();
+
+        $parameters = [
+            'enabled'   => true,
+            'available' => true,
+        ];
+
+        $qb
+            ->andWhere($ex->eq('m.enabled', ':enabled'))
+            ->andWhere($ex->eq('m.available', ':available'))
+            ->orderBy('m.position', 'ASC');
+
+        if ($currency) {
+            $parameters['currency'] = $currency;
+            $qb->andWhere($ex->orX(
+                $qb->expr()->isMemberOf(':currency', 'm.currencies'),
+                'm.currencies IS EMPTY'
+            ));
+        }
 
         return $qb
-            ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
-            ->andWhere($qb->expr()->eq('m.available', ':available'))
-            ->orderBy('m.position', 'ASC')
             ->getQuery()
-            ->setParameters([
-                'enabled'   => true,
-                'available' => true,
-            ])
+            ->setParameters($parameters)
             ->getResult();
     }
 
     /**
      * @inheritDoc
      */
-    public function findEnabled()
+    public function findEnabled(CurrencyInterface $currency = null)
     {
         $qb = $this->createQueryBuilder('m');
+        $ex = $qb->expr();
+
+        $parameters = [
+            'enabled'   => true,
+        ];
+
+        $qb
+            ->andWhere($ex->eq('m.enabled', ':enabled'))
+            ->orderBy('m.position', 'ASC');
+
+        if ($currency) {
+            $parameters['currency'] = $currency;
+            $qb->andWhere($ex->orX(
+                $qb->expr()->isMemberOf(':currency', 'm.currencies'),
+                'm.currencies IS EMPTY'
+            ));
+        }
 
         return $qb
-            ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
-            ->orderBy('m.position', 'ASC')
             ->getQuery()
             ->setParameters([
                 'enabled' => true,

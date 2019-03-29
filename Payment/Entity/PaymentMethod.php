@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethod;
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\MessageInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
@@ -14,6 +16,70 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
  */
 class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
 {
+    /**
+     * @var ArrayCollection|CurrencyInterface[]
+     */
+    protected $currencies;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->currencies = new ArrayCollection();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasCurrencies()
+    {
+        return 0 < $this->currencies->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasCurrency(CurrencyInterface $currency)
+    {
+        return $this->currencies->contains($currency);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addCurrency(CurrencyInterface $currency)
+    {
+        if (!$this->hasCurrency($currency)) {
+            $this->currencies->add($currency);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeCurrency(CurrencyInterface $currency)
+    {
+        if ($this->hasCurrency($currency)) {
+            $this->currencies->removeElement($currency);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCurrencies()
+    {
+        return $this->currencies;
+    }
+
     /**
      * @inheritdoc
      */

@@ -54,6 +54,9 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      */
     protected $description;
 
+
+    protected $exchangeRate;
+
     /**
      * @var \DateTime
      */

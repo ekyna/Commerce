@@ -83,7 +83,7 @@ class DocumentBuilder implements DocumentBuilderInterface
         }
 
         // Invoice address
-        $data = $this->buildAddressData($sale->getInvoiceAddress());
+        $data = $this->buildAddressData($sale->getInvoiceAddress(), $sale->getLocale());
         if ($document->getInvoiceAddress() !== $data) {
             $document->setInvoiceAddress($data);
             $changed = true;
@@ -91,7 +91,7 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // Delivery address
         $data = $sale->getDeliveryAddress()
-            ? $this->buildAddressData($sale->getDeliveryAddress())
+            ? $this->buildAddressData($sale->getDeliveryAddress(), $sale->getLocale())
             : null;
         if ($document->getDeliveryAddress() !== $data) {
             $document->setDeliveryAddress($data);
@@ -100,7 +100,7 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // RelayPoint
         if (null !== $data = $sale->getRelayPoint()) {
-            $data = $this->buildAddressData($data);
+            $data = $this->buildAddressData($data, $sale->getLocale());
         }
         if ($document->getRelayPoint() !== $data) {
             $document->setRelayPoint($data);
@@ -248,13 +248,14 @@ class DocumentBuilder implements DocumentBuilderInterface
      * Builds the document's address data.
      *
      * @param Common\AddressInterface $address
+     * @param string                  $locale
      *
      * @return array
      */
-    protected function buildAddressData(Common\AddressInterface $address)
+    protected function buildAddressData(Common\AddressInterface $address, string $locale)
     {
         // TODO localize
-        $country = Intl::getRegionBundle()->getCountryName($address->getCountry()->getCode());
+        $country = Intl::getRegionBundle()->getCountryName($address->getCountry()->getCode(), $locale);
 
         $fullName = trim($address->getFirstName() . ' ' . $address->getLastName());
 

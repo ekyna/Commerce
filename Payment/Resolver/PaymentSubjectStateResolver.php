@@ -63,10 +63,14 @@ class PaymentSubjectStateResolver implements StateResolverInterface
         $currency = $subject->getCurrency()->getCode();
 
         // COMPLETED paid total equals grand total and no accepted/expired outstanding
-        if (
-            0 === Money::compare($subject->getPaidTotal(), $grandTotal, $currency) &&
-            0 == $subject->getOutstandingAccepted() && 0 == $subject->getOutstandingExpired()
-        ) {
+        if ($this->hasDifferentCurrencies($subject)) {
+            $diff = Money::round($subject->getPaidTotal() - $grandTotal, $currency);
+            $delta = pow(0.1, Money::getPrecision($currency));
+            $fullyPaid = (-$delta <= $diff) && ($diff <= $delta);
+        } else {
+            $fullyPaid = 0 === Money::compare($subject->getPaidTotal(), $grandTotal, $currency);
+        }
+        if ($fullyPaid && (0 == $subject->getOutstandingAccepted()) && (0 == $subject->getOutstandingExpired())) {
             return $this->setState($subject, PaymentStates::STATE_COMPLETED);
         }
 
@@ -120,6 +124,26 @@ class PaymentSubjectStateResolver implements StateResolverInterface
 
         // NEW by default
         return $this->setState($subject, PaymentStates::STATE_NEW);
+    }
+
+    /**
+     * Returns whether the subject has payment with different currency than its.
+     *
+     * @param PaymentSubjectInterface $subject
+     *
+     * @return bool
+     */
+    protected function hasDifferentCurrencies(PaymentSubjectInterface $subject)
+    {
+        $currency = $subject->getCurrency()->getCode();
+
+        foreach ($subject->getPayments() as $payment) {
+            if ($payment->getCurrency()->getCode() !== $currency) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

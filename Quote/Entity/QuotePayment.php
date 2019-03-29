@@ -54,4 +54,16 @@ class QuotePayment extends AbstractPayment implements Model\QuotePaymentInterfac
 
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLocale(): ?string
+    {
+        if ($this->quote) {
+            return $this->quote->getLocale();
+        }
+
+        return null;
+    }
 }

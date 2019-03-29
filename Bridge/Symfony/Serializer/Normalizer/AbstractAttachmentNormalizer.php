@@ -25,6 +25,8 @@ abstract class AbstractAttachmentNormalizer extends AbstractResourceNormalizer
      */
     protected function normalizeAttachment(AttachmentInterface $attachment)
     {
+        $formatter = $this->getFormatter();
+
         return [
             'id'           => $attachment->getId(),
             'title'        => $attachment->getTitle(),
@@ -33,9 +35,9 @@ abstract class AbstractAttachmentNormalizer extends AbstractResourceNormalizer
             'internal'     => $attachment->isInternal(),
             'file'         => pathinfo($attachment->getPath(), PATHINFO_BASENAME),
             'created_at'   => ($date = $attachment->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-            'f_created_at' => ($date = $attachment->getCreatedAt()) ? $this->formatter->dateTime($date) : null,
+            'f_created_at' => ($date = $attachment->getCreatedAt()) ? $formatter->dateTime($date) : null,
             'updated_at'   => ($date = $attachment->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-            'f_updated_at' => ($date = $attachment->getUpdatedAt()) ? $this->formatter->dateTime($date) : null,
+            'f_updated_at' => ($date = $attachment->getUpdatedAt()) ? $formatter->dateTime($date) : null,
         ];
     }
 }

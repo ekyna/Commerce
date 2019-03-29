@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -28,6 +29,14 @@ class SaleShipmentStepValidator extends ConstraintValidator
         }
         if (!$constraint instanceof SaleShipmentStep) {
             throw new UnexpectedTypeException($constraint, SaleShipmentStep::class);
+        }
+
+        if ($sale instanceof CartInterface && $sale->isLocked()) {
+            $this->context
+                ->buildViolation($constraint->cart_is_locked)
+                ->addViolation();
+
+            return;
         }
 
         if (!$this->isIdentityValid($sale)) {

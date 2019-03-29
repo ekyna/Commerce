@@ -2,7 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
-use Ekyna\Component\Commerce\Common\Util\Formatter;
+use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
+use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
@@ -13,20 +14,17 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
  */
 class SupplierOrderItemNormalizer extends AbstractResourceNormalizer
 {
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
+    use FormatterAwareTrait;
 
 
     /**
      * Constructor.
      *
-     * @param Formatter $formatter
+     * @param FormatterFactory $formatterFactory
      */
-    public function __construct(Formatter $formatter)
+    public function __construct(FormatterFactory $formatterFactory)
     {
-        $this->formatter = $formatter;
+        $this->formatterFactory = $formatterFactory;
     }
 
     /**
@@ -50,11 +48,13 @@ class SupplierOrderItemNormalizer extends AbstractResourceNormalizer
                 }
             }
 
+            $formatter = $this->getFormatter();
+
             $data = array_replace($data, [
                 'designation' => $item->getDesignation(),
-                'net_price'   => $this->formatter->currency($item->getNetPrice(), $order->getCurrency()->getCode()),
-                'ordered'     => $this->formatter->number($item->getQuantity()),
-                'received'    => $this->formatter->number($received),
+                'net_price'   => $formatter->currency($item->getNetPrice(), $order->getCurrency()->getCode()),
+                'ordered'     => $formatter->number($item->getQuantity()),
+                'received'    => $formatter->number($received),
             ]);
         }
 

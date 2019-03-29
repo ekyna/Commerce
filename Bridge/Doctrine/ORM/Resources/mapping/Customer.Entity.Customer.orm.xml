@@ -36,6 +36,7 @@
 
         <field name="state" column="state" type="string" length="16" nullable="false"/>
         <field name="description" column="description" type="text" nullable="true"/>
+        <field name="locale" column="locale" type="string" length="6" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
@@ -66,6 +67,10 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface" field="customerGroup">
             <join-column name="customer_group_id" referenced-column-name="id" on-delete="RESTRICT"/>
+        </many-to-one>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
+            <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
     </mapped-superclass>

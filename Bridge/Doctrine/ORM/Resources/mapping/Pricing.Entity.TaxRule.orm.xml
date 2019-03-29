@@ -37,7 +37,7 @@
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country"
                       field="countries">
-            <join-table name="commerce_tax_rule_country">
+            <join-table name="commerce_tax_rule_country"><!-- TODO plural -->
                 <join-columns>
                     <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>
@@ -49,7 +49,7 @@
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\Tax"
                       field="taxes">
-            <join-table name="commerce_tax_rule_tax">
+            <join-table name="commerce_tax_rule_tax"><!-- TODO plural -->
                 <join-columns>
                     <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>

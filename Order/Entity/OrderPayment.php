@@ -54,4 +54,16 @@ class OrderPayment extends AbstractPayment implements Model\OrderPaymentInterfac
 
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLocale(): ?string
+    {
+        if ($this->order) {
+            return $this->order->getLocale();
+        }
+
+        return null;
+    }
 }

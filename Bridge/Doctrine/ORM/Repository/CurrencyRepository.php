@@ -21,6 +21,11 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
     private $defaultCode;
 
     /**
+     * @var string[]
+     */
+    private $enabledCodes;
+
+    /**
      * @var CurrencyInterface
      */
     private $defaultCurrency;
@@ -74,6 +79,28 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
             ->getQuery()
             ->setParameter('code', strtoupper($code))
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findEnabledCodes()
+    {
+        if (null !== $this->enabledCodes) {
+            return $this->enabledCodes;
+        }
+
+        // TODO Caching
+
+        $result = $this
+            ->getQueryBuilder('c')
+            ->select('c.code')
+            ->andWhere('c.enabled = :enabled')
+            ->setParameter('enabled', true)
+            ->getQuery()
+            ->getScalarResult();
+
+        return $this->enabledCodes = array_column($result, 'code');
     }
 
     /**

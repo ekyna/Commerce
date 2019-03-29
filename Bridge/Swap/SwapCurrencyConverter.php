@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Swap;
 
-use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Common\Currency\AbstractCurrencyConverter;
 use Swap\Swap;
 
 /**
@@ -11,17 +10,12 @@ use Swap\Swap;
  * @package Ekyna\Component\Commerce\Bridge\Swap
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SwapCurrencyConverter implements CurrencyConverterInterface
+class SwapCurrencyConverter extends AbstractCurrencyConverter
 {
     /**
      * @var Swap
      */
     private $swap;
-
-    /**
-     * @var string
-     */
-    private $defaultCurrency;
 
 
     /**
@@ -32,20 +26,21 @@ class SwapCurrencyConverter implements CurrencyConverterInterface
      */
     public function __construct(Swap $swap, $defaultCurrency = 'USD')
     {
+        parent::__construct($defaultCurrency);
+
         $this->swap = $swap;
-        $this->defaultCurrency = strtoupper($defaultCurrency);
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function convert($amount, $base, $quote = null, \DateTime $date = null)
+    public function getRate($base, $quote = null, \DateTime $date = null)
     {
         $base = strtoupper($base);
         $quote = strtoupper($quote ? $quote : $this->defaultCurrency);
 
         if ($base === $quote) {
-            return $amount;
+            return 1;
         }
 
         if ($base !== $this->defaultCurrency) {
@@ -56,20 +51,12 @@ class SwapCurrencyConverter implements CurrencyConverterInterface
             $pair = "$base/$quote";
         }
 
-        if (null !== $date && $date <= new \DateTime()) {
+        if (null !== $date && 60 < $date->diff(new \DateTime())->s) {
             $rate = $this->swap->historical($pair, $date)->getValue();
         } else {
             $rate = $this->swap->latest($pair)->getValue();
         }
 
-        return Money::round($invert ? $amount / $rate : $amount * $rate, $quote);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultCurrency()
-    {
-        return $this->defaultCurrency;
+        return (float) $invert ?  1 / $rate : $rate;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
-use Ekyna\Component\Commerce\Common\Util\Formatter;
+use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
@@ -13,21 +15,7 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
  */
 class StockAssignmentNormalizer extends AbstractResourceNormalizer
 {
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Formatter $formatter
-     */
-    public function __construct(Formatter $formatter)
-    {
-        $this->formatter = $formatter;
-    }
+    use FormatterAwareTrait;
 
     /**
      * @inheritdoc
@@ -39,13 +27,19 @@ class StockAssignmentNormalizer extends AbstractResourceNormalizer
         $data = [];
 
         if ($this->contextHasGroup(['StockView', 'StockAssignment'], $context)) {
+            $formatter = $this->getFormatter();
+
             $data = array_replace($data, [
-                'sold'    => $this->formatter->number($assignment->getSoldQuantity()),
-                'shipped' => $this->formatter->number($assignment->getShippedQuantity()),
+                'sold'    => $formatter->number($assignment->getSoldQuantity()),
+                'shipped' => $formatter->number($assignment->getShippedQuantity()),
             ]);
 
             if ($this->contextHasGroup('StockView', $context)) {
-                $data['order_id'] = $assignment->getSaleItem()->getSale()->getId();
+                $sale = $assignment->getSaleItem()->getSale();
+                $data['order_id'] = $sale->getId();
+                $data['preparation'] =
+                    $sale instanceof ShipmentSubjectInterface &&
+                    $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION;
             }
 
             if ($this->contextHasGroup('StockAssignment', $context)) {

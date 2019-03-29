@@ -24,17 +24,19 @@ class TicketMessageNormalizer extends AbstractResourceNormalizer
     public function normalize($message, $format = null, array $context = [])
     {
         if ($this->contextHasGroup(['Default', 'Ticket'], $context)) {
+            $formatter = $this->getFormatter();
+
             $data = [
                 'id'            => $message->getId(),
                 'ticket'        => $message->getTicket()->getId(),
                 'content'       => $message->getContent(),
                 'author'        => $message->getAuthor(),
                 'notified_at'   => ($date = $message->getNotifiedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_notified_at' => ($date = $message->getNotifiedAt()) ? $this->formatter->dateTime($date) : null,
+                'f_notified_at' => ($date = $message->getNotifiedAt()) ? $formatter->dateTime($date) : null,
                 'created_at'    => ($date = $message->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_created_at'  => ($date = $message->getCreatedAt()) ? $this->formatter->dateTime($date) : null,
+                'f_created_at'  => ($date = $message->getCreatedAt()) ? $formatter->dateTime($date) : null,
                 'updated_at'    => ($date = $message->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_updated_at'  => ($date = $message->getUpdatedAt()) ? $this->formatter->dateTime($date) : null,
+                'f_updated_at'  => ($date = $message->getUpdatedAt()) ? $formatter->dateTime($date) : null,
                 'attachments'   => [],
             ];
 

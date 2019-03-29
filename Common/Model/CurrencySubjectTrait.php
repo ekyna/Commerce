@@ -14,11 +14,16 @@ trait CurrencySubjectTrait
      */
     protected $currency;
 
+    /**
+     * @var float
+     */
+    protected $exchangeRate;
+
 
     /**
      * Returns the currency.
      *
-     * @return CurrencyInterface
+     * @return CurrencyInterface|null
      */
     public function getCurrency()
     {
@@ -35,6 +40,30 @@ trait CurrencySubjectTrait
     public function setCurrency(CurrencyInterface $currency)
     {
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    /**
+     * Returns the exchange rate.
+     *
+     * @return float|null
+     */
+    public function getExchangeRate()
+    {
+        return $this->exchangeRate;
+    }
+
+    /**
+     * Sets the exchange rate.
+     *
+     * @param float $rate
+     *
+     * @return $this|CurrencySubjectInterface
+     */
+    public function setExchangeRate($rate)
+    {
+        $this->exchangeRate = $rate;
 
         return $this;
     }

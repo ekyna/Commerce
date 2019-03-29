@@ -4,13 +4,14 @@ namespace Ekyna\Component\Commerce\Document\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Resource\Model\LocalizedInterface;
 
 /**
  * Interface DocumentInterface
  * @package Ekyna\Component\Commerce\Document\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface DocumentInterface
+interface DocumentInterface extends LocalizedInterface
 {
     /**
      * Returns the sale.

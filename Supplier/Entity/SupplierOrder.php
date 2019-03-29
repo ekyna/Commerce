@@ -674,4 +674,16 @@ class SupplierOrder implements Model\SupplierOrderInterface
     {
         return $this->attachments;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLocale(): ?string
+    {
+        if ($this->supplier) {
+            return $this->supplier->getLocale();
+        }
+
+        return null;
+    }
 }

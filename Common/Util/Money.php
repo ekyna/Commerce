@@ -77,7 +77,7 @@ abstract class Money
      *
      * @return int|null
      */
-    static private function getPrecision($currency)
+    static public function getPrecision($currency)
     {
         if (isset(static::$precisions[$currency])) {
             return static::$precisions[$currency];
@@ -93,7 +93,7 @@ abstract class Money
      *
      * @return float|int|null
      */
-    static private function getRoundingIncrement($currency)
+    static public function getRoundingIncrement($currency)
     {
         if (isset(static::$increments[$currency])) {
             return static::$increments[$currency];

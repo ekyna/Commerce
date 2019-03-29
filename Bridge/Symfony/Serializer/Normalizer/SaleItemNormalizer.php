@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
@@ -20,11 +19,6 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
  */
 class SaleItemNormalizer extends AbstractResourceNormalizer
 {
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
-
     /**
      * @var ShipmentCalculatorInterface
      */
@@ -44,18 +38,15 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
     /**
      * Constructor.
      *
-     * @param Formatter                   $formatter
      * @param ShipmentCalculatorInterface $shipmentCalculator
      * @param InvoiceCalculatorInterface  $invoiceCalculator
      * @param SubjectHelperInterface      $subjectHelper
      */
     public function __construct(
-        Formatter $formatter,
         ShipmentCalculatorInterface $shipmentCalculator,
         InvoiceCalculatorInterface $invoiceCalculator,
         SubjectHelperInterface $subjectHelper
     ) {
-        $this->formatter = $formatter;
         $this->shipmentCalculator = $shipmentCalculator;
         $this->invoiceCalculator = $invoiceCalculator;
         $this->subjectHelper = $subjectHelper;
@@ -114,14 +105,14 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
             }
 
             $data = array_replace($data, [
-                'designation'      => $item->getDesignation(),
-                'reference'        => $item->getReference(),
-                'quantity'         => $item->getQuantity(),
-                'total_quantity'   => $item->getTotalQuantity(),
-                'private'          => $item->isPrivate(),
+                'designation'    => $item->getDesignation(),
+                'reference'      => $item->getReference(),
+                'quantity'       => $item->getQuantity(),
+                'total_quantity' => $item->getTotalQuantity(),
+                'private'        => $item->isPrivate(),
                 //'compound'         => $item->isCompound(),
                 //'private_children' => $item->hasPrivateChildren(),
-                'children'         => $children,
+                'children'       => $children,
             ], $shipmentData, $invoiceData);
         }
 

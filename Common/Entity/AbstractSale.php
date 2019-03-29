@@ -13,7 +13,7 @@ use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
-use Ekyna\Component\Resource\Model\TimestampableTrait;
+use Ekyna\Component\Resource\Model as RM;
 
 /**
  * Class AbstractSale
@@ -32,7 +32,8 @@ abstract class AbstractSale implements Common\SaleInterface
         Payment\PaymentTermSubjectTrait,
         Shipment\ShippableTrait,
         VatNumberSubjectTrait,
-        TimestampableTrait;
+        RM\TimestampableTrait,
+        RM\LocalizedTrait;
 
 
     /**
@@ -94,11 +95,6 @@ abstract class AbstractSale implements Common\SaleInterface
      * @var float
      */
     protected $netTotal;
-
-    /**
-     * @var float
-     */
-    protected $adjustmentTotal;
 
     /**
      * @var string
@@ -191,7 +187,6 @@ abstract class AbstractSale implements Common\SaleInterface
         $this->taxExempt = false;
 
         $this->netTotal = 0;
-        $this->adjustmentTotal = 0;
 
         $this->createdAt = new \DateTime();
 
@@ -404,24 +399,6 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setNetTotal($total)
     {
         $this->netTotal = $total;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdjustmentTotal()
-    {
-        return $this->adjustmentTotal;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setAdjustmentTotal($total)
-    {
-        $this->adjustmentTotal = $total;
 
         return $this;
     }
@@ -746,6 +723,17 @@ abstract class AbstractSale implements Common\SaleInterface
     public function getContext()
     {
         return $this->context;
+    }
+
+    public function isLocked()
+    {
+        foreach ($this->payments as $payment) {
+            if ($payment->getState() === Payment\PaymentStates::STATE_NEW) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -29,6 +29,14 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
+    public function configureOptions(Model\SaleInterface $sale, SaleView $view, array &$options)
+    {
+
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options)
     {
 

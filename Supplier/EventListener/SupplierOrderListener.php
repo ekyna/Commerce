@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -33,6 +34,11 @@ class SupplierOrderListener extends AbstractListener
      */
     protected $stateResolver;
 
+    /**
+     * @var CurrencyConverterInterface
+     */
+    protected $currencyConverter;
+
 
     /**
      * Constructor.
@@ -40,15 +46,18 @@ class SupplierOrderListener extends AbstractListener
      * @param NumberGeneratorInterface         $numberGenerator
      * @param SupplierOrderCalculatorInterface $calculator
      * @param StateResolverInterface           $stateResolver
+     * @param CurrencyConverterInterface       $currencyConverter
      */
     public function __construct(
         NumberGeneratorInterface $numberGenerator,
         SupplierOrderCalculatorInterface $calculator,
-        StateResolverInterface $stateResolver
+        StateResolverInterface $stateResolver,
+        CurrencyConverterInterface $currencyConverter
     ) {
         $this->numberGenerator = $numberGenerator;
         $this->calculator = $calculator;
         $this->stateResolver = $stateResolver;
+        $this->currencyConverter = $currencyConverter;
     }
 
     /**
@@ -65,6 +74,8 @@ class SupplierOrderListener extends AbstractListener
         $changed |= $this->updateState($order);
 
         $changed |= $this->updateTotals($order);
+
+        $changed |= $this->updateExchangeRate($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
@@ -85,6 +96,8 @@ class SupplierOrderListener extends AbstractListener
         $changed |= $this->updateState($order);
 
         $changed |= $this->updateTotals($order);
+
+        $changed |= $this->updateExchangeRate($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
@@ -267,17 +280,47 @@ class SupplierOrderListener extends AbstractListener
                 $order->setForwarderTotal(0);
                 $changed = true;
             }
-            if (null !==  $order->getForwarderDate()) {
+            if (null !== $order->getForwarderDate()) {
                 $order->setForwarderDate(null);
                 $changed = true;
             }
-            if (null !==  $order->getForwarderDueDate()) {
+            if (null !== $order->getForwarderDueDate()) {
                 $order->setForwarderDueDate(null);
                 $changed = true;
             }
         }
 
         return $changed;
+    }
+
+    /**
+     * Updates the order exchange rate.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return bool Whether the payment has been changed or not.
+     */
+    protected function updateExchangeRate(SupplierOrderInterface $order)
+    {
+        // TODO Remove when supplier order payments will be implemented.
+
+        if (!SupplierOrderStates::isStockableState($order->getState())) {
+            return false;
+        }
+
+        $rate = $this->currencyConverter->getRate(
+            $this->currencyConverter->getDefaultCurrency(),
+            $order->getCurrency()->getCode(),
+            $order->getCreatedAt()
+        );
+
+        if (0 !== \bccomp($order->getExchangeRate(), $rate, 5)) {
+            $order->setExchangeRate($rate);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

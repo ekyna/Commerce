@@ -528,4 +528,16 @@ class Document implements DocumentInterface
     {
         return $this->getSale()->isAtiDisplayMode();
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLocale(): ?string
+    {
+        if ($sale = $this->getSale()) {
+            return $sale->getLocale();
+        }
+
+        return null;
+    }
 }

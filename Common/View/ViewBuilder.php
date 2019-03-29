@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
+use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -31,6 +32,11 @@ class ViewBuilder
      * @var MarginCalculatorInterface
      */
     private $marginCalculator;
+
+    /**
+     * @var FormatterFactory
+     */
+    private $formatterFactory;
 
     /**
      * @var string
@@ -79,6 +85,7 @@ class ViewBuilder
      * @param ViewTypeRegistryInterface $registry
      * @param AmountCalculatorInterface $amountCalculator
      * @param MarginCalculatorInterface $marginCalculator
+     * @param FormatterFactory          $formatterFactory
      * @param string                    $defaultTemplate
      * @param string                    $editableTemplate
      */
@@ -86,12 +93,14 @@ class ViewBuilder
         ViewTypeRegistryInterface $registry,
         AmountCalculatorInterface $amountCalculator,
         MarginCalculatorInterface $marginCalculator,
+        FormatterFactory $formatterFactory,
         $defaultTemplate = '@Commerce/Sale/view.html.twig',
         $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
         $this->registry = $registry;
         $this->amountCalculator = $amountCalculator;
         $this->marginCalculator = $marginCalculator;
+        $this->formatterFactory = $formatterFactory;
         $this->defaultTemplate = $defaultTemplate;
         $this->editableTemplate = $editableTemplate;
     }
@@ -106,13 +115,7 @@ class ViewBuilder
      */
     public function buildSaleView(Model\SaleInterface $sale, array $options = [])
     {
-        if ($sale->isReleased()) {
-            $options['editable'] = false;
-        }
-
         $this->initialize($sale, $options);
-
-        $this->view = new SaleView($this->options['template'], $sale->isAtiDisplayMode());
 
         $this->amountCalculator->calculateSale($sale);
 
@@ -184,21 +187,23 @@ class ViewBuilder
      */
     private function initialize(Model\SaleInterface $sale, array $options = [])
     {
-        $this->options = $this->getOptionsResolver()->resolve($options);
         $this->lineNumber = 1;
-
-        $currency = $sale->getCurrency()->getCode();
-        $locale = $this->options['locale'];
-
-        if (!(
-            null !== $this->formatter &&
-            $this->formatter->getLocale() === $locale &&
-            $this->formatter->getCurrency() !== $currency
-        )) {
-            $this->formatter = new Formatter($locale, $currency);
-        }
+        $this->view = new SaleView();
 
         $this->types = $this->registry->getTypesForSale($sale);
+
+        foreach ($this->types as $type) {
+            $type->configureOptions($sale, $this->view, $options);
+        }
+
+        $this->options = $this->getOptionsResolver()->resolve($options);
+
+        $this
+            ->view
+            ->setTemplate($this->options['template'])
+            ->setAti($this->options['ati']);
+
+        $this->formatter = $this->formatterFactory->create($this->options['locale'], $sale->getCurrency()->getCode());
 
         foreach ($this->types as $type) {
             $type->setFormatter($this->formatter);
@@ -470,6 +475,7 @@ class ViewBuilder
                 'private'    => false,
                 'editable'   => false,
                 'taxes_view' => true,
+                'ati'        => true,
                 'locale'     => \Locale::getDefault(),
                 'template'   => function (Options $options) {
                     if (true === $options['editable']) {
@@ -482,6 +488,7 @@ class ViewBuilder
             ->setAllowedTypes('private', 'bool')
             ->setAllowedTypes('editable', 'bool')
             ->setAllowedTypes('taxes_view', 'bool')
+            ->setAllowedTypes('ati', 'bool')
             ->setAllowedTypes('locale', 'string')
             ->setAllowedTypes('template', ['null', 'string']);
 

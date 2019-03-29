@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
-use Ekyna\Component\Commerce\Common\Util\Formatter;
+use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
@@ -13,21 +13,7 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
  */
 class StockUnitNormalizer extends AbstractResourceNormalizer
 {
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Formatter $formatter
-     */
-    public function __construct(Formatter $formatter)
-    {
-        $this->formatter = $formatter;
-    }
+    use FormatterAwareTrait;
 
     /**
      * @inheritdoc
@@ -39,8 +25,10 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
         $data = [];
 
         if ($this->contextHasGroup(['StockView', 'StockAssignment'], $context)) {
+            $formatter = $this->getFormatter();
+
             if (null !== $eda = $unit->getEstimatedDateOfArrival()) {
-                $eda = $this->formatter->date($eda);
+                $eda = $formatter->date($eda);
             }
 
             $adjustments = [];
@@ -57,13 +45,13 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
 
             $data = array_replace($data, [
                 'geocodes'    => implode(',', $unit->getGeocodes()),
-                'ordered'     => $this->formatter->number($unit->getOrderedQuantity()),
-                'received'    => $this->formatter->number($unit->getReceivedQuantity()),
-                'adjusted'    => $this->formatter->number($unit->getAdjustedQuantity()),
-                'sold'        => $this->formatter->number($unit->getSoldQuantity()),
-                'shipped'     => $this->formatter->number($unit->getShippedQuantity()),
+                'ordered'     => $formatter->number($unit->getOrderedQuantity()),
+                'received'    => $formatter->number($unit->getReceivedQuantity()),
+                'adjusted'    => $formatter->number($unit->getAdjustedQuantity()),
+                'sold'        => $formatter->number($unit->getSoldQuantity()),
+                'shipped'     => $formatter->number($unit->getShippedQuantity()),
                 'eda'         => $eda,
-                'net_price'   => $this->formatter->currency($unit->getNetPrice()),
+                'net_price'   => $formatter->currency($unit->getNetPrice()),
                 'adjustments' => $adjustments,
                 'assignments' => $assignments,
             ]);

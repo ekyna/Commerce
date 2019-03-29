@@ -27,7 +27,7 @@
         </one-to-many>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="countries">
-            <join-table name="commerce_shipment_zone_country">
+            <join-table name="commerce_shipment_zone_country"><!-- TODO plural -->
                 <join-columns>
                     <join-column name="shipment_zone_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>

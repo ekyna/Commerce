@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
-use Ekyna\Component\Resource\Model as ResourceModel;
+use Ekyna\Component\Resource\Model as RM;
 
 /**
  * Interface CustomerInterface
@@ -14,10 +14,12 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 interface CustomerInterface extends
-    ResourceModel\ResourceInterface,
-    ResourceModel\TimestampableInterface,
+    RM\ResourceInterface,
+    RM\LocalizedInterface,
+    RM\TimestampableInterface,
     Common\IdentityInterface,
     Common\NumberSubjectInterface,
+    Common\CurrencySubjectInterface,
     PaymentTermSubjectInterface,
     VatNumberSubjectInterface
 {
@@ -294,6 +296,15 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function setDescription($description);
+
+    /**
+     * Sets the locale
+     *
+     * @param string|null $locale
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setLocale(?string $locale);
 
     /**
      * Returns the default invoice address.

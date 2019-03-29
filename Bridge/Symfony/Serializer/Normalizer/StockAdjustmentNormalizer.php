@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
-use Ekyna\Component\Commerce\Common\Util\Formatter;
+use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
@@ -13,21 +13,7 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
  */
 class StockAdjustmentNormalizer extends AbstractResourceNormalizer
 {
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Formatter $formatter
-     */
-    public function __construct(Formatter $formatter)
-    {
-        $this->formatter = $formatter;
-    }
+    use FormatterAwareTrait;
 
     /**
      * @inheritdoc
@@ -40,7 +26,7 @@ class StockAdjustmentNormalizer extends AbstractResourceNormalizer
 
         if ($this->contextHasGroup('StockView', $context)) {
             $data = array_replace($data, [
-                'quantity' => $this->formatter->number($adjustment->getQuantity()),
+                'quantity' => $this->getFormatter()->number($adjustment->getQuantity()),
                 'reason'   => $adjustment->getReason(),
                 'note'     => $adjustment->getNote(),
             ]);

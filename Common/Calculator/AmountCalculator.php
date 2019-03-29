@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception;
@@ -14,10 +16,32 @@ use Ekyna\Component\Commerce\Exception;
 class AmountCalculator implements AmountCalculatorInterface
 {
     /**
+     * @var ContextProviderInterface
+     */
+    private $contextProvider;
+
+    /**
+     * @var CurrencyConverterInterface
+     */
+    private $converter;
+
+    /**
      * @var bool
      */
     private $cache = true;
 
+
+    /**
+     * Constructor.
+     *
+     * @param ContextProviderInterface   $contextProvider
+     * @param CurrencyConverterInterface $converter
+     */
+    public function __construct(ContextProviderInterface $contextProvider, CurrencyConverterInterface $converter)
+    {
+        $this->contextProvider = $contextProvider;
+        $this->converter = $converter;
+    }
 
     /**
      * @inheritdoc
@@ -89,11 +113,12 @@ class AmountCalculator implements AmountCalculatorInterface
         $taxGroup = $item->getTaxGroup();
 
         // Round unit price only for 'net' calculation
-        $unit = $ati ? (float)$item->getNetPrice() : Money::round($item->getNetPrice(), $currency);
+        $unit = $this->convert($sale, (float)$item->getNetPrice(), $currency, !$ati);
 
         // Add private items unit prices
         foreach ($item->getChildren() as $child) {
-            $childResult = $this->calculateSaleItem($child, null !== $quantity ? $quantity * $child->getQuantity() : null);
+            $childResult = $this->calculateSaleItem($child,
+                null !== $quantity ? $quantity * $child->getQuantity() : null);
 
             if ($child->isPrivate()) {
                 if ($taxGroup !== $child->getTaxGroup()) {
@@ -112,7 +137,7 @@ class AmountCalculator implements AmountCalculatorInterface
         if ($item->isPrivate()) {
             // Private case : we just need unit amount
             $gross = $unit * $item->getTotalQuantity();
-            $result = new Amount($currency, $unit, $gross, 0 , $gross);
+            $result = new Amount($currency, $unit, $gross, 0, $gross);
         } elseif ($item->getSale()->isSample()) {
             // Sample sale case : zero amounts
             $result = new Amount($currency);
@@ -175,8 +200,11 @@ class AmountCalculator implements AmountCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSaleDiscount(Model\SaleAdjustmentInterface $adjustment, Amount $gross, Amount $final): Amount
-    {
+    public function calculateSaleDiscount(
+        Model\SaleAdjustmentInterface $adjustment,
+        Amount $gross,
+        Amount $final
+    ): Amount {
         // Don't calculate twice
         if ($this->cache && null !== $result = $adjustment->getResult()) {
             return $result;
@@ -212,10 +240,11 @@ class AmountCalculator implements AmountCalculatorInterface
             }
         } elseif (Model\AdjustmentModes::MODE_FLAT === $mode) {
             $realBase = $this->getRealGrossBase($sale);
+            $amount = $this->convert($sale, (float)$adjustment->getAmount(), $currency, false);
             if (1 === Money::compare($realBase, $base, $currency)) {
-                $unit = Money::round((float)$adjustment->getAmount() * $base / $realBase, $currency);
+                $unit = Money::round($amount * $base / $realBase, $currency);
             } else {
-                $unit = Money::round((float)$adjustment->getAmount(), $currency);
+                $unit = $amount;
             }
             $result->addUnit($unit);
 
@@ -278,7 +307,7 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Abort if shipment cost is lower than or equals zero
-        $base = (float)$sale->getShipmentAmount();
+        $base = $this->convert($sale, (float)$sale->getShipmentAmount(), $currency, false);
         $result = new Amount($currency, $base, $base, 0, $base, 0, $base);
 
         if (1 === Money::compare($base, 0, $currency)) {
@@ -405,8 +434,11 @@ class AmountCalculator implements AmountCalculatorInterface
      *
      * @return Adjustment
      */
-    protected function createPercentAdjustment(Model\AdjustmentInterface $data, float $base, string $currency): Adjustment
-    {
+    protected function createPercentAdjustment(
+        Model\AdjustmentInterface $data,
+        float $base,
+        string $currency
+    ): Adjustment {
         $this->assertAdjustmentMode($data, Model\AdjustmentModes::MODE_PERCENT);
 
         $rate = (float)$data->getAmount();
@@ -445,5 +477,35 @@ class AmountCalculator implements AmountCalculatorInterface
         if ($expected !== $mode = $adjustment->getMode()) {
             throw new Exception\InvalidArgumentException("Unexpected adjustment mode '$mode'.");
         }
+    }
+
+    /**
+     * Converts the given amount.
+     *
+     * @param Model\SaleInterface $sale
+     * @param float               $amount
+     * @param string              $currency
+     * @param bool                $round
+     *
+     * @return float
+     * @throws \Exception
+     */
+    protected function convert(Model\SaleInterface $sale, float $amount, string $currency, bool $round)
+    {
+        if ($currency === $this->converter->getDefaultCurrency()) {
+            return $round ? Money::round($amount, $currency) : $amount;
+        }
+
+        if (null !== $rate = $sale->getExchangeRate()) {
+            return $this
+                ->converter
+                ->convertWithRate($amount, $rate, $currency, $round);
+        }
+
+        $date = $this->contextProvider->getContext($sale)->getDate();
+
+        return $this
+            ->converter
+            ->convert($amount, $this->converter->getDefaultCurrency(), $currency, $date, $round);
     }
 }

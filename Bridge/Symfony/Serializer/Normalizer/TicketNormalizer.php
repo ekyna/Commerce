@@ -23,6 +23,7 @@ class TicketNormalizer extends AbstractResourceNormalizer
     public function normalize($ticket, $format = null, array $context = [])
     {
         if ($this->contextHasGroup(['Default', 'Ticket'], $context)) {
+            $formatter = $this->getFormatter();
             $customer = $ticket->getCustomer();
 
             $data = [
@@ -32,9 +33,9 @@ class TicketNormalizer extends AbstractResourceNormalizer
                 'subject'      => $ticket->getSubject(),
                 // TODO customer, order, quote ?
                 'created_at'   => ($date = $ticket->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_created_at' => ($date = $ticket->getCreatedAt()) ? $this->formatter->dateTime($date) : null,
+                'f_created_at' => ($date = $ticket->getCreatedAt()) ? $formatter->dateTime($date) : null,
                 'updated_at'   => ($date = $ticket->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
-                'f_updated_at' => ($date = $ticket->getUpdatedAt()) ? $this->formatter->dateTime($date) : null,
+                'f_updated_at' => ($date = $ticket->getUpdatedAt()) ? $formatter->dateTime($date) : null,
                 'customer' => [
                     'id' => $customer->getId(),
                     'first_name' => $customer->getFirstName(),

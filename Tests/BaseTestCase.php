@@ -2,8 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Tests;
 
-use Ekyna\Component\Commerce\Common\Converter\ArrayCurrencyConverter;
-use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactory;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;

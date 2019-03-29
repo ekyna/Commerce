@@ -8,7 +8,7 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model as Model;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectTrait;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
-use Ekyna\Component\Resource\Model\TimestampableTrait;
+use Ekyna\Component\Resource\Model as RM;
 
 /**
  * Class Customer
@@ -19,9 +19,11 @@ class Customer implements Model\CustomerInterface
 {
     use Common\IdentityTrait,
         Common\NumberSubjectTrait,
+        Common\CurrencySubjectTrait,
         PaymentTermSubjectTrait,
         VatNumberSubjectTrait,
-        TimestampableTrait;
+        RM\LocalizedTrait,
+        RM\TimestampableTrait;
 
     /**
      * @var int

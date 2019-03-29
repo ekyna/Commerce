@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierAddressInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierCarrierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
+use Ekyna\Component\Resource\Model\LocalizedTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -18,7 +19,8 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
 class Supplier implements SupplierInterface
 {
     use IdentityTrait,
-        TimestampableTrait;
+        TimestampableTrait,
+        LocalizedTrait;
 
     /**
      * @var int

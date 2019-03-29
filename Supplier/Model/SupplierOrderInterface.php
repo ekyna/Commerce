@@ -17,7 +17,8 @@ interface SupplierOrderInterface extends
     Common\NumberSubjectInterface,
     Common\CurrencySubjectInterface,
     Common\StateSubjectInterface,
-    ResourceModel\TimestampableInterface
+    ResourceModel\TimestampableInterface,
+    ResourceModel\LocalizedInterface
 {
     /**
      * Returns the supplier.

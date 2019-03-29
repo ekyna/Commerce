@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Linker;
 
-use Ekyna\Component\Commerce\Common\Converter\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;

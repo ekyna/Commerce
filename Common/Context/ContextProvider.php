@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Context;
 
 use Ekyna\Component\Commerce\Cart\Provider\CartProviderInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Event\ContextEvent;
 use Ekyna\Component\Commerce\Common\Event\ContextEvents;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -45,6 +46,11 @@ class ContextProvider implements ContextProviderInterface
     protected $localProvider;
 
     /**
+     * @var CurrencyProviderInterface
+     */
+    protected $currencyProvider;
+
+    /**
      * @var CustomerGroupRepositoryInterface
      */
     protected $customerGroupRepository;
@@ -82,6 +88,7 @@ class ContextProvider implements ContextProviderInterface
      * @param CartProviderInterface            $cartProvider
      * @param CustomerProviderInterface        $customerProvider
      * @param LocaleProviderInterface          $localProvider
+     * @param CurrencyProviderInterface        $currencyProvider
      * @param CustomerGroupRepositoryInterface $customerGroupRepository
      * @param CountryRepositoryInterface       $countryRepository
      * @param CurrencyRepositoryInterface      $currencyRepository
@@ -93,6 +100,7 @@ class ContextProvider implements ContextProviderInterface
         CartProviderInterface $cartProvider,
         CustomerProviderInterface $customerProvider,
         LocaleProviderInterface $localProvider,
+        CurrencyProviderInterface $currencyProvider,
         CustomerGroupRepositoryInterface $customerGroupRepository,
         CountryRepositoryInterface $countryRepository,
         CurrencyRepositoryInterface $currencyRepository,
@@ -103,6 +111,7 @@ class ContextProvider implements ContextProviderInterface
         $this->customerProvider = $customerProvider;
         $this->cartProvider = $cartProvider;
         $this->localProvider = $localProvider;
+        $this->currencyProvider = $currencyProvider;
         $this->customerGroupRepository = $customerGroupRepository;
         $this->countryRepository = $countryRepository;
         $this->currencyRepository = $currencyRepository;
@@ -265,7 +274,7 @@ class ContextProvider implements ContextProviderInterface
             $context->setDeliveryCountry($this->countryRepository->findDefault());
         }
         if (null === $context->getCurrency()) {
-            $context->setCurrency($this->currencyRepository->findDefault());
+            $context->setCurrency($this->currencyProvider->getCurrency());
         }
         if (null === $context->getLocale()) {
             $context->setLocale($this->localProvider->getCurrentLocale());

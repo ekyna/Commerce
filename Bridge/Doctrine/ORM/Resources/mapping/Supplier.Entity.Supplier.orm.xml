@@ -26,6 +26,7 @@
         <field name="email" column="email" type="string" length="255" nullable="true"/>
         <field name="customerCode" column="customer_code" type="string" length="32" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
+        <field name="locale" column="locale" type="string" length="6" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

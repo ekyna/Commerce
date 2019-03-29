@@ -14,6 +14,7 @@ use Payum\Core\Model as Payum;
 interface PaymentInterface extends
     ResourceModel\ResourceInterface,
     ResourceModel\TimestampableInterface,
+    ResourceModel\LocalizedInterface,
     Common\NumberSubjectInterface,
     Common\KeySubjectInterface,
     Common\CurrencySubjectInterface,

@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Util;
 
+use Ekyna\Component\Commerce\Exception\RuntimeException;
+
 /**
  * Trait FormatterAwareTrait
  * @package Ekyna\Component\Commerce\Common\Util
@@ -10,17 +12,41 @@ namespace Ekyna\Component\Commerce\Common\Util;
 trait FormatterAwareTrait
 {
     /**
-     * @var Formatter
+     * @var FormatterFactory
      */
-    protected $formatter;
+    protected $formatterFactory;
 
     /**
-     * Sets the formatter.
-     *
-     * @param Formatter $formatter
+     * @var Formatter
      */
-    public function setFormatter(Formatter $formatter)
+    private $formatter;
+
+
+    /**
+     * Sets the formatter factory.
+     *
+     * @param FormatterFactory $formatterFactory
+     */
+    public function setFormatterFactory(FormatterFactory $formatterFactory)
     {
-        $this->formatter = $formatter;
+        $this->formatterFactory = $formatterFactory;
+    }
+
+    /**
+     * Returns the formatter.
+     *
+     * @return Formatter
+     */
+    protected function getFormatter()
+    {
+        if ($this->formatter) {
+            return $this->formatter;
+        }
+
+        if (!$this->formatterFactory) {
+            throw new RuntimeException("Please call setFormatterFactory() first.");
+        }
+
+        return $this->formatter = $this->formatterFactory->create();
     }
 }

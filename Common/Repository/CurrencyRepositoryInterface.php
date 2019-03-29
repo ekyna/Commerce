@@ -27,4 +27,11 @@ interface CurrencyRepositoryInterface extends ResourceRepositoryInterface
      * @return CurrencyInterface
      */
     public function findOneByCode($code);
+
+    /**
+     * Finds the codes of the enabled currencies.
+     *
+     * @return array|string[]
+     */
+    public function findEnabledCodes();
 }
