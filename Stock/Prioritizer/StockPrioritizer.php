@@ -194,7 +194,9 @@ class StockPrioritizer implements StockPrioritizerInterface
 
         $sourceUnit = $assignment->getStockUnit();
 
-        while (null !== $candidate = $helper->getUnitCandidate($assignment, $quantity)) {
+        $candidates = $helper->getUnitCandidates($assignment, $quantity);
+
+        foreach ($candidates as $candidate) {
             $targetUnit = $candidate->unit;
 
             // If not enough reservable quantity

@@ -35,9 +35,9 @@ class PrioritizeHelper
      * @param StockAssignmentInterface $assignment
      * @param float                    $quantity
      *
-     * @return UnitCandidate|null
+     * @return UnitCandidate[]
      */
-    public function getUnitCandidate(StockAssignmentInterface $assignment, $quantity)
+    public function getUnitCandidates(StockAssignmentInterface $assignment, $quantity)
     {
         $subject = $assignment->getStockUnit()->getSubject();
 
@@ -62,7 +62,7 @@ class PrioritizeHelper
 
             if (0 >= $diff = $quantity - $candidate->reservable) {
                 // Unit has enough reservable quantity
-                return $candidate;
+                return [$candidate];
             }
 
             if (null !== $candidate->getCombination(min($diff, $candidate->releasable))) {
@@ -71,7 +71,7 @@ class PrioritizeHelper
         }
 
         if (empty($candidates)) {
-            return null;
+            return [];
         }
 
         // Sort candidates
@@ -106,7 +106,7 @@ class PrioritizeHelper
             return intval(0 < $b->combination->sum ? 1 : $b->combination->sum - $a->combination->sum);
         });
 
-        return reset($candidates);
+        return $candidates;
     }
 
     /**

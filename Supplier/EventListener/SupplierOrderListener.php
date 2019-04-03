@@ -311,7 +311,7 @@ class SupplierOrderListener extends AbstractListener
         $rate = $this->currencyConverter->getRate(
             $this->currencyConverter->getDefaultCurrency(),
             $order->getCurrency()->getCode(),
-            $order->getCreatedAt()
+            $order->getOrderedAt()
         );
 
         if (0 !== \bccomp($order->getExchangeRate(), $rate, 5)) {
