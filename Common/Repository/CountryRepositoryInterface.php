@@ -29,6 +29,13 @@ interface CountryRepositoryInterface extends ResourceRepositoryInterface
     public function findOneByCode($code);
 
     /**
+     * Finds the codes of the enabled currencies.
+     *
+     * @return array|string[]
+     */
+    public function findEnabledCodes();
+
+    /**
      * Returns the country identifiers.
      *
      * @param bool $cached Whether to return only cached countries identifiers

@@ -48,13 +48,9 @@ class SessionCurrencyProvider extends CurrencyProvider
     }
 
     /**
-     * Sets the current currency.
-     *
-     * @param string $currency
-     *
-     * @return CurrencyProviderInterface
+     * @inheritDoc
      */
-    public function setCurrentCurrency(string $currency)
+    public function setCurrentCurrency(string $currency): CurrencyProviderInterface
     {
         parent::setCurrentCurrency($currency);
 
@@ -64,9 +60,9 @@ class SessionCurrencyProvider extends CurrencyProvider
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getCurrentCurrency()
+    public function getCurrentCurrency(): string
     {
         if ($this->currentCurrency) {
             return $this->currentCurrency;
@@ -76,6 +72,6 @@ class SessionCurrencyProvider extends CurrencyProvider
             return $this->currentCurrency = $this->session->get($this->key);
         }
 
-        return $this->currentCurrency = $this->getFallbackCurrency();
+        return $this->currentCurrency = parent::getCurrentCurrency();
     }
 }

@@ -455,7 +455,9 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         if ($item instanceof ShipmentItemInterface) {
             $item = $item->getSaleItem();
         } elseif ($item instanceof InvoiceLineInterface) {
-            $item = $item->getSaleItem();
+            if (!$item = $item->getSaleItem()) {
+                return null;
+            }
         }
 
         if (!$this->supportsAssignment($item)) {

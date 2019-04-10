@@ -21,6 +21,11 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     private $defaultCode;
 
     /**
+     * @var string[]
+     */
+    private $enabledCodes;
+
+    /**
      * @var CountryInterface
      */
     private $defaultCountry;
@@ -92,6 +97,28 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     }
 
     /**
+     * @inheritdoc
+     */
+    public function findEnabledCodes()
+    {
+        if (null !== $this->enabledCodes) {
+            return $this->enabledCodes;
+        }
+
+        // TODO Caching
+
+        $result = $this
+            ->getQueryBuilder('c')
+            ->select('c.code')
+            ->andWhere('c.enabled = :enabled')
+            ->setParameter('enabled', true)
+            ->getQuery()
+            ->getScalarResult();
+
+        return $this->enabledCodes = array_column($result, 'code');
+    }
+
+    /**
      * @inheritDoc
      */
     public function getIdentifiers($cached = false)
@@ -102,16 +129,12 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
             ->orderBy('c.id');
 
         if ($cached) {
-            $result = $qb
+            $qb
                 ->andWhere($qb->expr()->in('c.code', ':codes'))
-                ->getQuery()
-                ->setParameter('codes', $this->cachedCodes)
-                ->getScalarResult();
-        } else {
-            $result = $qb->getQuery()->getScalarResult();
+                ->setParameter('codes', $this->cachedCodes);
         }
 
-        return array_map(function ($r) { return $r['id']; }, $result);
+        return array_column($qb->getQuery()->getScalarResult(), 'id');
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Currency;
 
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 
@@ -46,28 +47,32 @@ class CurrencyProvider implements CurrencyProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getAvailableCurrencies()
+    public function getAvailableCurrencies(): array
     {
         return $this->currencyRepository->findEnabledCodes();
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getFallbackCurrency()
+    public function getFallbackCurrency(): string
     {
         return $this->fallbackCurrency;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getCurrentCurrency()
+    public function getCurrentCurrency(): string
     {
         if ($this->currentCurrency) {
             return $this->currentCurrency;
+        }
+
+        if (null !== $currency = $this->guessCurrency()) {
+            $this->currentCurrency = $currency;
         }
 
         return $this->currentCurrency = $this->getFallbackCurrency();
@@ -76,7 +81,7 @@ class CurrencyProvider implements CurrencyProviderInterface
     /**
      * @inheritDoc
      */
-    public function setCurrentCurrency(string $currency)
+    public function setCurrentCurrency(string $currency): CurrencyProviderInterface
     {
         if (!in_array($currency, $this->getAvailableCurrencies(), true)) {
             throw new UnexpectedValueException("Currency $currency is not available.");
@@ -88,10 +93,20 @@ class CurrencyProvider implements CurrencyProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getCurrency(string $code = null)
+    public function getCurrency(string $code = null): CurrencyInterface
     {
         return $this->currencyRepository->findOneByCode($code ?? $this->getCurrentCurrency());
+    }
+
+    /**
+     * Guesses the user currency.
+     *
+     * @return string|null
+     */
+    protected function guessCurrency(): ?string
+    {
+        return null;
     }
 }

@@ -3,16 +3,18 @@
 namespace Ekyna\Component\Commerce\Common\Context;
 
 use Ekyna\Component\Commerce\Cart\Provider\CartProviderInterface;
+use Ekyna\Component\Commerce\Common\Country\CountryProviderInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Event\ContextEvent;
 use Ekyna\Component\Commerce\Common\Event\ContextEvents;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
-use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
@@ -51,19 +53,14 @@ class ContextProvider implements ContextProviderInterface
     protected $currencyProvider;
 
     /**
+     * @var CountryProviderInterface
+     */
+    protected $countryProvider;
+
+    /**
      * @var CustomerGroupRepositoryInterface
      */
     protected $customerGroupRepository;
-
-    /**
-     * @var CountryRepositoryInterface
-     */
-    protected $countryRepository;
-
-    /**
-     * @var CurrencyRepositoryInterface
-     */
-    protected $currencyRepository;
 
     /**
      * @var string
@@ -89,9 +86,8 @@ class ContextProvider implements ContextProviderInterface
      * @param CustomerProviderInterface        $customerProvider
      * @param LocaleProviderInterface          $localProvider
      * @param CurrencyProviderInterface        $currencyProvider
+     * @param CountryProviderInterface         $countryProvider
      * @param CustomerGroupRepositoryInterface $customerGroupRepository
-     * @param CountryRepositoryInterface       $countryRepository
-     * @param CurrencyRepositoryInterface      $currencyRepository
      * @param string                           $defaultVatDisplayMode
      * @param string                           $contextClass
      */
@@ -101,9 +97,8 @@ class ContextProvider implements ContextProviderInterface
         CustomerProviderInterface $customerProvider,
         LocaleProviderInterface $localProvider,
         CurrencyProviderInterface $currencyProvider,
+        CountryProviderInterface $countryProvider,
         CustomerGroupRepositoryInterface $customerGroupRepository,
-        CountryRepositoryInterface $countryRepository,
-        CurrencyRepositoryInterface $currencyRepository,
         $defaultVatDisplayMode = VatDisplayModes::MODE_ATI,
         $contextClass = Context::class
     ) {
@@ -112,17 +107,56 @@ class ContextProvider implements ContextProviderInterface
         $this->cartProvider = $cartProvider;
         $this->localProvider = $localProvider;
         $this->currencyProvider = $currencyProvider;
+        $this->countryProvider = $countryProvider;
         $this->customerGroupRepository = $customerGroupRepository;
-        $this->countryRepository = $countryRepository;
-        $this->currencyRepository = $currencyRepository;
         $this->defaultVatDisplayMode = $defaultVatDisplayMode;
         $this->contextClass = $contextClass;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getContext(SaleInterface $sale = null)
+    public function getCustomerProvider(): CustomerProviderInterface
+    {
+        return $this->customerProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCartProvider(): CartProviderInterface
+    {
+        return $this->cartProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLocalProvider(): LocaleProviderInterface
+    {
+        return $this->localProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCurrencyProvider(): CurrencyProviderInterface
+    {
+        return $this->currencyProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCountryProvider(): CountryProviderInterface
+    {
+        return $this->countryProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getContext(SaleInterface $sale = null): ContextInterface
     {
         if ($sale) {
             // TODO Check if up to date
@@ -145,9 +179,9 @@ class ContextProvider implements ContextProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function setContext($contextOrSale)
+    public function setContext($contextOrSale): ContextProviderInterface
     {
         if ($contextOrSale instanceof ContextInterface) {
             $this->context = $this->finalize($contextOrSale);
@@ -163,13 +197,71 @@ class ContextProvider implements ContextProviderInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function clearContext(): ContextProviderInterface
+    {
+        $this->context = null;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function changeCurrency($currency): ContextProviderInterface
+    {
+        $this->clearContext();
+
+        if (is_string($currency)) {
+            $currency = $this->currencyProvider->getCurrency($currency);
+        }
+
+        if (!$currency instanceof CurrencyInterface) {
+            throw new UnexpectedValueException("Expected string or instance of " . CurrencyInterface::class);
+        }
+
+        $this->currencyProvider->setCurrentCurrency($currency->getCode());
+
+        // TODO Dispatch and use event
+
+        // Update cart currency
+        if ($this->cartProvider->hasCart()) {
+            $cart = $this->cartProvider->getCart();
+
+            if (!$cart->isLocked()) {
+                if ($cart->getCurrency() !== $currency) {
+                    $cart->setCurrency($currency);
+                    $this->cartProvider->saveCart();
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function changeCountry($country): ContextProviderInterface
+    {
+        $this->clearContext();
+
+        $country = $country instanceof CountryInterface ? $country->getCode() : $country;
+
+        $this->countryProvider->setCurrentCountry($country);
+
+        return $this;
+    }
+
+    /**
      * Creates and sets the sale context.
      *
      * @param SaleInterface $sale The sale
      *
      * @return ContextInterface
      */
-    protected function createSaleContext(SaleInterface $sale)
+    protected function createSaleContext(SaleInterface $sale): ContextInterface
     {
         $context = $this->createContext();
 
@@ -215,7 +307,7 @@ class ContextProvider implements ContextProviderInterface
      *
      * @return ContextInterface
      */
-    protected function createDefaultContext()
+    protected function createDefaultContext(): ContextInterface
     {
         $context = $this->createContext();
 
@@ -234,7 +326,7 @@ class ContextProvider implements ContextProviderInterface
      * @param ContextInterface  $context
      * @param CustomerInterface $customer
      */
-    protected function fillFromCustomer(ContextInterface $context, CustomerInterface $customer)
+    protected function fillFromCustomer(ContextInterface $context, CustomerInterface $customer): void
     {
         if (null === $context->getCustomerGroup()) {
             $context->setCustomerGroup($customer->getCustomerGroup());
@@ -249,11 +341,11 @@ class ContextProvider implements ContextProviderInterface
                 $context->setDeliveryCountry($address->getCountry());
             }
         }
-        /* TODO (?) if (null === $context->getCurrency()) {
-            $context->setCurrency($customer->getDefaultCurrency());
+        /*if (null === $context->getCurrency()) {
+            $context->setCurrency($customer->getCurrency());
         }
         if (null === $context->getLocale()) {
-            $context->setLocale($customer->getDefaultLocale());
+            $context->setLocale($customer->getLocale());
         }*/
     }
 
@@ -261,17 +353,19 @@ class ContextProvider implements ContextProviderInterface
      * Fills the context's empty properties with default values.
      *
      * @param ContextInterface $context
+     *
+     * @return ContextInterface
      */
-    protected function finalize(ContextInterface $context)
+    protected function finalize(ContextInterface $context): ContextInterface
     {
         if (null === $context->getCustomerGroup()) {
             $context->setCustomerGroup($this->customerGroupRepository->findDefault());
         }
         if (null === $context->getInvoiceCountry()) {
-            $context->setInvoiceCountry($this->countryRepository->findDefault());
+            $context->setInvoiceCountry($this->countryProvider->getCountry());
         }
         if (null === $context->getDeliveryCountry()) {
-            $context->setDeliveryCountry($this->countryRepository->findDefault());
+            $context->setDeliveryCountry($this->countryProvider->getCountry());
         }
         if (null === $context->getCurrency()) {
             $context->setCurrency($this->currencyProvider->getCurrency());
@@ -288,6 +382,8 @@ class ContextProvider implements ContextProviderInterface
         }
 
         $this->eventDispatcher->dispatch(ContextEvents::BUILD, new ContextEvent($context));
+
+        return $context;
     }
 
     /**
@@ -295,7 +391,7 @@ class ContextProvider implements ContextProviderInterface
      *
      * @return ContextInterface
      */
-    protected function createContext()
+    protected function createContext(): ContextInterface
     {
         return new $this->contextClass;
     }

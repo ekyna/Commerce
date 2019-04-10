@@ -43,7 +43,7 @@ class PrioritizeHelper
 
         // Find the subject's ready stock units
         if (empty($units = $this->unitResolver->findReady($subject))) {
-            return null;
+            return [];
         };
 
         $sale = $assignment->getSaleItem()->getSale();

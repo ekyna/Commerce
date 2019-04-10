@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Currency;
 
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+
 /**
  * Interface CurrencyProviderInterface
  * @package Ekyna\Component\Commerce\Common\Currency
@@ -14,21 +16,21 @@ interface CurrencyProviderInterface
      *
      * @return array
      */
-    public function getAvailableCurrencies();
+    public function getAvailableCurrencies(): array;
 
     /**
      * Returns the fallback currency.
      *
      * @return string
      */
-    public function getFallbackCurrency();
+    public function getFallbackCurrency(): string;
 
     /**
      * Returns the current currency.
      *
      * @return string
      */
-    public function getCurrentCurrency();
+    public function getCurrentCurrency(): string;
 
     /**
      * Sets the current currency.
@@ -37,14 +39,14 @@ interface CurrencyProviderInterface
      *
      * @return CurrencyProviderInterface
      */
-    public function setCurrentCurrency(string $currency);
+    public function setCurrentCurrency(string $currency): CurrencyProviderInterface;
 
     /**
      * Returns the currency (entity) by its code, or the current one if no code is provided.
      *
      * @param string $code
      *
-     * @return \Ekyna\Component\Commerce\Common\Model\CurrencyInterface
+     * @return CurrencyInterface
      */
-    public function getCurrency(string $code = null);
+    public function getCurrency(string $code = null): CurrencyInterface;
 }
