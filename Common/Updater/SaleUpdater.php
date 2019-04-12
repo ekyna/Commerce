@@ -125,7 +125,7 @@ class SaleUpdater implements SaleUpdaterInterface
         // 2. weight total
         $changed |= $this->updateWeightTotal($sale);
         // 3. shipment amount (based on 2.)
-        //TODO$changed |= $this->updateTotalWeight($sale);
+        $changed |= $this->updateShipmentMethodAndAmount($sale);
         // 4. taxation (items and shipment)
         $changed |= $this->updateTaxation($sale);
         // 5. net and grand totals

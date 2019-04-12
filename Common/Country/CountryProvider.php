@@ -81,8 +81,14 @@ class CountryProvider implements CountryProviderInterface
     /**
      * @inheritDoc
      */
-    public function setCurrentCountry(string $country): CountryProviderInterface
+    public function setCountry($country): CountryProviderInterface
     {
+        $country = $country instanceof CountryInterface ? $country->getCode() : $country;
+
+        if (!is_string($country)) {
+            throw new UnexpectedValueException("Expected string or instance of " . CountryInterface::class);
+        }
+
         if (!in_array($country, $this->getAvailableCountries(), true)) {
             throw new UnexpectedValueException("Country $country is not available.");
         }

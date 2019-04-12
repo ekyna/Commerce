@@ -77,20 +77,12 @@ interface ContextProviderInterface
     public function clearContext(): ContextProviderInterface;
 
     /**
-     * Changes the current currency.
+     * Change the currency and the country.
      *
-     * @param \Ekyna\Component\Commerce\Common\Model\CurrencyInterface $currency
-     *
-     * @return ContextProviderInterface
-     */
-    public function changeCurrency($currency): ContextProviderInterface;
-
-    /**
-     * Change the current country.
-     *
-     * @param \Ekyna\Component\Commerce\Common\Model\CountryInterface|string $country
+     * @param \Ekyna\Component\Commerce\Common\Model\CurrencyInterface|string|null $currency
+     * @param \Ekyna\Component\Commerce\Common\Model\CountryInterface|string|null  $country
      *
      * @return ContextProviderInterface
      */
-    public function changeCountry($country): ContextProviderInterface;
+    public function changeCurrencyAndCountry($currency = null, $country = null): ContextProviderInterface;
 }

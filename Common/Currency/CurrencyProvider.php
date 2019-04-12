@@ -81,8 +81,14 @@ class CurrencyProvider implements CurrencyProviderInterface
     /**
      * @inheritDoc
      */
-    public function setCurrentCurrency(string $currency): CurrencyProviderInterface
+    public function setCurrency($currency): CurrencyProviderInterface
     {
+        $currency = $currency instanceof CurrencyInterface ? $currency->getCode() : $currency;
+
+        if (!is_string($currency)) {
+            throw new UnexpectedValueException("Expected string or instance of " . CurrencyInterface::class);
+        }
+
         if (!in_array($currency, $this->getAvailableCurrencies(), true)) {
             throw new UnexpectedValueException("Currency $currency is not available.");
         }

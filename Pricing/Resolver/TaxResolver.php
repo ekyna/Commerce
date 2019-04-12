@@ -2,12 +2,13 @@
 
 namespace Ekyna\Component\Commerce\Pricing\Resolver;
 
+use Ekyna\Component\Commerce\Common\Country\CountryProviderInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 
@@ -19,9 +20,9 @@ use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 class TaxResolver implements TaxResolverInterface
 {
     /**
-     * @var CountryRepositoryInterface
+     * @var CountryProviderInterface
      */
-    protected $countryRepository;
+    protected $countryProvider;
 
     /**
      * @var TaxRuleRepositoryInterface
@@ -37,14 +38,14 @@ class TaxResolver implements TaxResolverInterface
     /**
      * Constructor.
      *
-     * @param CountryRepositoryInterface $countryRepository
+     * @param CountryProviderInterface   $countryProvider
      * @param TaxRuleRepositoryInterface $taxRuleRepository
      */
     public function __construct(
-        CountryRepositoryInterface $countryRepository,
+        CountryProviderInterface $countryProvider,
         TaxRuleRepositoryInterface $taxRuleRepository
     ) {
-        $this->countryRepository = $countryRepository;
+        $this->countryProvider = $countryProvider;
         $this->taxRuleRepository = $taxRuleRepository;
 
         $this->cache = new ResolvedTaxesCache();
@@ -55,7 +56,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @see https://ec.europa.eu/taxation_customs/business/vat/eu-vat-rules-topic/where-tax_fr
      */
-    public function resolveTaxes(TaxableInterface $taxable, $target = null)
+    public function resolveTaxes(TaxableInterface $taxable, $target = null): array
     {
         // TODO @param ContextInterface $context (instead of $target)
 
@@ -109,9 +110,9 @@ class TaxResolver implements TaxResolverInterface
      *
      * @param SaleInterface $sale
      *
-     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
+     * @return TaxRuleInterface|null
      */
-    public function resolveSaleTaxRule(SaleInterface $sale)
+    public function resolveSaleTaxRule(SaleInterface $sale): ?TaxRuleInterface
     {
         return $this->resolveTaxRule($this->resolveTargetCountry($sale), $sale->isBusiness());
     }
@@ -123,10 +124,10 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface
      */
-    protected function resolveTargetCountry($target)
+    protected function resolveTargetCountry($target): CountryInterface
     {
         if (null === $target) {
-            return $this->countryRepository->findDefault();
+            return $this->countryProvider->getCountry();
         }
 
         if ($target instanceof CountryInterface) {
@@ -143,7 +144,7 @@ class TaxResolver implements TaxResolverInterface
             throw new InvalidArgumentException("Unexpected taxation target.");
         }
 
-        return $country ?: $this->countryRepository->findDefault();
+        return $country ?: $this->countryProvider->getCountry();
     }
 
     /**
@@ -152,9 +153,9 @@ class TaxResolver implements TaxResolverInterface
      * @param CountryInterface $country
      * @param bool             $business
      *
-     * @return \Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface|null
+     * @return TaxRuleInterface|null
      */
-    protected function resolveTaxRule(CountryInterface $country, $business = false)
+    protected function resolveTaxRule(CountryInterface $country, $business = false): ?TaxRuleInterface
     {
         if ($business) {
             return $this->taxRuleRepository->findOneByCountryForBusiness($country);
@@ -170,7 +171,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface|null
      */
-    protected function resolveSaleTargetCountry(SaleInterface $sale)
+    protected function resolveSaleTargetCountry(SaleInterface $sale): ?CountryInterface
     {
         // Get the country from the sale's delivery address
         if (null !== $country = $sale->getDeliveryCountry()) {
@@ -192,7 +193,7 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface|null
      */
-    protected function resolveCustomerTargetCountry(CustomerInterface $customer)
+    protected function resolveCustomerTargetCountry(CustomerInterface $customer): ?CountryInterface
     {
         if (null !== $address = $customer->getDefaultDeliveryAddress()) {
             return $address->getCountry();
@@ -208,8 +209,8 @@ class TaxResolver implements TaxResolverInterface
      *
      * @return CountryInterface|null
      */
-    protected function getCountryByCode($code)
+    protected function getCountryByCode(string $code): ?CountryInterface
     {
-        return $this->countryRepository->findOneByCode($code);
+        return $this->countryProvider->getCountry($code);
     }
 }

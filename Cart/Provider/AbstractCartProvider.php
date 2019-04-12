@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Cart\Provider;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
@@ -28,11 +27,6 @@ abstract class AbstractCartProvider implements CartProviderInterface
     protected $cartOperator;
 
     /**
-     * @var SaleFactoryInterface
-     */
-    protected $saleFactory;
-
-    /**
      * @var CustomerProviderInterface
      */
     protected $customerProvider;
@@ -53,20 +47,17 @@ abstract class AbstractCartProvider implements CartProviderInterface
      *
      * @param CartRepositoryInterface $cartRepository
      * @param ResourceOperatorInterface $cartOperator
-     * @param SaleFactoryInterface $saleFactory
      * @param CustomerProviderInterface $customerProvider
      * @param CurrencyProviderInterface $currencyProvider
      */
     public function __construct(
         CartRepositoryInterface $cartRepository,
         ResourceOperatorInterface $cartOperator,
-        SaleFactoryInterface $saleFactory,
         CustomerProviderInterface $customerProvider,
         CurrencyProviderInterface $currencyProvider
     ) {
         $this->cartRepository = $cartRepository;
         $this->cartOperator = $cartOperator;
-        $this->saleFactory = $saleFactory;
         $this->customerProvider = $customerProvider;
         $this->currencyProvider = $currencyProvider;
     }
@@ -110,7 +101,11 @@ abstract class AbstractCartProvider implements CartProviderInterface
      */
     public function clearCart()
     {
-        if ($this->hasCart() && null !== $this->cart->getId()) {
+        if (!$this->hasCart() || $this->cart->isLocked()) {
+            return $this;
+        }
+
+        if (null !== $this->cart->getId()) {
             $this->cartOperator->delete($this->cart, true);
         }
 
@@ -124,23 +119,23 @@ abstract class AbstractCartProvider implements CartProviderInterface
      */
     public function clearInformation()
     {
-        // TODO Prevent clearing if there is a processing payment
-        if ($this->hasCart()) {
-            $this->cart
-                ->setCustomer(null)
-                ->setCustomerGroup(null)
-                // ->setCurrency(null) TODO Can't be set to null
-                ->setEmail(null)
-                ->setCompany(null)
-                ->setGender(null)
-                ->setFirstName(null)
-                ->setLastName(null)
-                ->setInvoiceAddress(null)
-                ->setDeliveryAddress(null)
-                ->setSameAddress(true);
-
-            $this->updateCustomerGroupAndCurrency();
+        if (!$this->hasCart() || $this->cart->isLocked()) {
+            return $this;
         }
+
+        $this->cart
+            ->setCustomer(null)
+            ->setCustomerGroup(null)
+            ->setEmail(null)
+            ->setCompany(null)
+            ->setGender(null)
+            ->setFirstName(null)
+            ->setLastName(null)
+            ->setInvoiceAddress(null)
+            ->setDeliveryAddress(null)
+            ->setSameAddress(true);
+
+        $this->updateCustomerGroupAndCurrency();
 
         return $this;
     }
@@ -152,7 +147,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
      */
     public function updateCustomerGroupAndCurrency()
     {
-        if (!$this->hasCart()) {
+        if (!$this->hasCart() || $this->cart->isLocked()) {
             return $this;
         }
 
@@ -165,7 +160,7 @@ abstract class AbstractCartProvider implements CartProviderInterface
 
         // Sets the default customer group
         if (null === $this->cart->getCustomerGroup()) {
-            $this->cart->setCustomerGroup($this->saleFactory->getDefaultCustomerGroup());
+            $this->cart->setCustomerGroup($this->customerProvider->getCustomerGroup());
         }
 
         // Sets the currency

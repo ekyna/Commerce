@@ -4,10 +4,8 @@ namespace Ekyna\Component\Commerce\Common\Factory;
 
 use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\AddressUtil;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
-use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Quote;
@@ -21,16 +19,6 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 class SaleFactory implements SaleFactoryInterface
 {
     /**
-     * @var CustomerGroupRepositoryInterface
-     */
-    private $customerGroupRepository;
-
-    /**
-     * @var CurrencyRepositoryInterface
-     */
-    private $currencyRepository;
-
-    /**
      * @var array
      */
     private $classes;
@@ -39,37 +27,13 @@ class SaleFactory implements SaleFactoryInterface
     /**
      * Constructor.
      *
-     * @param CustomerGroupRepositoryInterface $customerGroupRepository
-     * @param CurrencyRepositoryInterface      $currencyRepository
-     * @param array                            $classes
+     * @param array $classes
      */
-    public function __construct(
-        CustomerGroupRepositoryInterface $customerGroupRepository,
-        CurrencyRepositoryInterface $currencyRepository,
-        array $classes = []
-    ) {
-        $this->customerGroupRepository = $customerGroupRepository;
-        $this->currencyRepository = $currencyRepository;
-
+    public function __construct(array $classes = [])
+    {
         $this->classes = array_replace_recursive($this->getDefaultClasses(), $classes);
 
         // TODO validate classes
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultCustomerGroup()
-    {
-        return $this->customerGroupRepository->findDefault();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultCurrency()
-    {
-        return $this->currencyRepository->findDefault();
     }
 
     /**

@@ -46,9 +46,19 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
      *
      * @param string $code
      */
-    public function setDefaultCode($code)
+    public function setDefaultCode(string $code)
     {
         $this->defaultCode = strtoupper($code);
+    }
+
+    /**
+     * Returns the defaultCode.
+     *
+     * @return string
+     */
+    public function getDefaultCode(): string
+    {
+        return $this->defaultCode;
     }
 
     /**

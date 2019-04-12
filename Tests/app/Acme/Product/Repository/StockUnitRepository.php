@@ -38,6 +38,16 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
+    public function findReadyBySubject(StockSubjectInterface $subject)
+    {
+        return $this->findBySubjectAndStates($subject, [
+            StockUnitStates::STATE_READY,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function findPendingOrReadyBySubject(StockSubjectInterface $subject)
     {
         return $this->findBySubjectAndStates($subject, [
@@ -163,6 +173,35 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
             ->andWhere($qb->expr()->gt('su.receivedQuantity', 0))
             ->andWhere($qb->expr()->gt('su.receivedQuantity', 'su.shippedQuantity'))
             ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findLatestClosedBySubject(StockSubjectInterface $subject, $limit = 3)
+    {
+        if (!$subject instanceof Product) {
+            throw new \InvalidArgumentException('Expected instance of ' . Product::class);
+        }
+
+        if (!$subject->getId()) {
+            return [];
+        }
+
+        $alias = $this->getAlias();
+        $qb = $this->getQueryBuilder();
+
+        return $qb
+            ->andWhere($qb->expr()->eq($alias . '.product', ':product'))
+            ->andWhere($qb->expr()->eq($alias . '.state', ':state'))
+            ->addOrderBy($alias . '.closedAt', 'DESC')
+            ->setParameters([
+                'product' => $subject,
+                'state'   => StockUnitStates::STATE_CLOSED,
+            ])
+            ->getQuery()
+            ->setMaxResults($limit)
             ->getResult();
     }
 

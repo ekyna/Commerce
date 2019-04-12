@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\Context;
 use Ekyna\Component\Commerce\Cart\Provider\CartProviderInterface;
 use Ekyna\Component\Commerce\Common\Country\CountryProviderInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
+use Ekyna\Component\Commerce\Common\Event\ContextChangeEvent;
 use Ekyna\Component\Commerce\Common\Event\ContextEvent;
 use Ekyna\Component\Commerce\Common\Event\ContextEvents;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
@@ -209,47 +210,42 @@ class ContextProvider implements ContextProviderInterface
     /**
      * @inheritDoc
      */
-    public function changeCurrency($currency): ContextProviderInterface
+    public function changeCurrencyAndCountry($currency = null, $country = null): ContextProviderInterface
     {
-        $this->clearContext();
-
-        if (is_string($currency)) {
-            $currency = $this->currencyProvider->getCurrency($currency);
-        }
-
-        if (!$currency instanceof CurrencyInterface) {
-            throw new UnexpectedValueException("Expected string or instance of " . CurrencyInterface::class);
-        }
-
-        $this->currencyProvider->setCurrentCurrency($currency->getCode());
-
-        // TODO Dispatch and use event
-
-        // Update cart currency
-        if ($this->cartProvider->hasCart()) {
-            $cart = $this->cartProvider->getCart();
-
-            if (!$cart->isLocked()) {
-                if ($cart->getCurrency() !== $currency) {
-                    $cart->setCurrency($currency);
-                    $this->cartProvider->saveCart();
-                }
+        if (!is_null($currency)) {
+            if (is_string($currency)) {
+                $currency = $this->currencyProvider->getCurrency($currency);
+            }
+            if (!$currency instanceof CurrencyInterface) {
+                throw new UnexpectedValueException("Expected string or instance of " . CurrencyInterface::class);
+            }
+            if ($currency === $this->currencyProvider->getCurrency()) {
+                $currency = null;
             }
         }
 
-        return $this;
-    }
+        if (!is_null($country)) {
+            if (is_string($country)) {
+                $country = $this->countryProvider->getCountry($country);
+            }
+            if (!$country instanceof CountryInterface) {
+                throw new UnexpectedValueException("Expected string or instance of " . CountryInterface::class);
+            }
+            if ($country === $this->countryProvider->getCountry()) {
+                $country = null;
+            }
+        }
 
-    /**
-     * @inheritDoc
-     */
-    public function changeCountry($country): ContextProviderInterface
-    {
-        $this->clearContext();
+        if ($currency || $country) {
+            if ($currency) {
+                $this->currencyProvider->setCurrency($currency);
+            }
+            if ($country) {
+                $this->countryProvider->setCountry($country);
+            }
 
-        $country = $country instanceof CountryInterface ? $country->getCode() : $country;
-
-        $this->countryProvider->setCurrentCountry($country);
+            $this->eventDispatcher->dispatch(ContextEvents::CHANGE, new ContextChangeEvent($currency, $country));
+        }
 
         return $this;
     }

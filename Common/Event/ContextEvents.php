@@ -9,7 +9,8 @@ namespace Ekyna\Component\Commerce\Common\Event;
  */
 final class ContextEvents
 {
-    const BUILD = 'ekyna_commerce.context.build';
+    const BUILD  = 'ekyna_commerce.context.build';
+    const CHANGE = 'ekyna_commerce.context.change';
 
 
     /**

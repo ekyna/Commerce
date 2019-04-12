@@ -50,9 +50,9 @@ class SessionCurrencyProvider extends CurrencyProvider
     /**
      * @inheritDoc
      */
-    public function setCurrentCurrency(string $currency): CurrencyProviderInterface
+    public function setCurrency($currency): CurrencyProviderInterface
     {
-        parent::setCurrentCurrency($currency);
+        parent::setCurrency($currency);
 
         $this->session->set($this->key, $this->currentCurrency);
 

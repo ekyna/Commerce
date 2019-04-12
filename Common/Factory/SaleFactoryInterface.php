@@ -16,20 +16,6 @@ use Ekyna\Component\Commerce\Stock\Model as Stock;
 interface SaleFactoryInterface
 {
     /**
-     * Returns the default customer group.
-     *
-     * @return \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface
-     */
-    public function getDefaultCustomerGroup();
-
-    /**
-     * Returns the default currency.
-     *
-     * @return Model\CurrencyInterface
-     */
-    public function getDefaultCurrency();
-
-    /**
      * Creates an address regarding to the sale type.
      *
      * @param Model\SaleInterface    $sale

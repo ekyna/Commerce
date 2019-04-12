@@ -50,9 +50,9 @@ class SessionCountryProvider extends CountryProvider
     /**
      * @inheritDoc
      */
-    public function setCurrentCountry(string $country): CountryProviderInterface
+    public function setCountry($country): CountryProviderInterface
     {
-        parent::setCurrentCountry($country);
+        parent::setCountry($country);
 
         $this->session->set($this->key, $this->currentCountry);
 

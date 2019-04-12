@@ -35,11 +35,11 @@ interface CurrencyProviderInterface
     /**
      * Sets the current currency.
      *
-     * @param string $currency
+     * @param string|CurrencyInterface $currency
      *
      * @return CurrencyProviderInterface
      */
-    public function setCurrentCurrency(string $currency): CurrencyProviderInterface;
+    public function setCurrency($currency): CurrencyProviderInterface;
 
     /**
      * Returns the currency (entity) by its code, or the current one if no code is provided.

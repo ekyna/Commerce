@@ -35,11 +35,11 @@ interface CountryProviderInterface
     /**
      * Sets the current country.
      *
-     * @param string $country
+     * @param string|CountryInterface $country
      *
      * @return CountryProviderInterface
      */
-    public function setCurrentCountry(string $country): self;
+    public function setCountry($country): self;
 
     /**
      * Returns the country (entity) by its code, or the current one if no code is provided.
