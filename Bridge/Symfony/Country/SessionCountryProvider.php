@@ -54,7 +54,7 @@ class SessionCountryProvider extends CountryProvider
     {
         parent::setCountry($country);
 
-        $this->session->set($this->key, $this->currentCountry);
+        $this->save();
 
         return $this;
     }
@@ -72,6 +72,18 @@ class SessionCountryProvider extends CountryProvider
             return $this->currentCountry = $this->session->get($this->key);
         }
 
-        return $this->currentCountry = parent::getCurrentCountry();
+        $this->currentCountry = parent::getCurrentCountry();
+
+        $this->save();
+
+        return $this->currentCountry;
+    }
+
+    /**
+     * Saves the current country into the session.
+     */
+    private function save()
+    {
+        $this->session->set($this->key, $this->currentCountry);
     }
 }

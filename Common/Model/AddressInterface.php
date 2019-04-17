@@ -84,6 +84,8 @@ interface AddressInterface extends IdentityInterface
      * Sets the extra.
      *
      * @param string $extra
+     *
+     * @return $this|AddressInterface
      */
     public function setExtra($extra);
 
@@ -194,6 +196,8 @@ interface AddressInterface extends IdentityInterface
      * Sets the digicode 1.
      *
      * @param string $digicode1
+     *
+     * @return $this|AddressInterface
      */
     public function setDigicode1($digicode1);
 
@@ -208,6 +212,8 @@ interface AddressInterface extends IdentityInterface
      * Sets the digicode 2.
      *
      * @param string $digicode2
+     *
+     * @return $this|AddressInterface
      */
     public function setDigicode2($digicode2);
 
@@ -222,6 +228,8 @@ interface AddressInterface extends IdentityInterface
      * Sets the intercom.
      *
      * @param string $intercom
+     *
+     * @return $this|AddressInterface
      */
     public function setIntercom($intercom);
 
@@ -256,4 +264,11 @@ interface AddressInterface extends IdentityInterface
      * @return $this|AddressInterface
      */
     public function setLatitude($latitude);
+
+    /**
+     * Returns whether this address can be considered as empty.
+     *
+     * @return bool
+     */
+    public function isEmpty();
 }

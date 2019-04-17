@@ -34,4 +34,11 @@ interface CurrencyRepositoryInterface extends ResourceRepositoryInterface
      * @return array|string[]
      */
     public function findEnabledCodes();
+
+    /**
+     * Finds all the currencies codes.
+     *
+     * @return array|string[]
+     */
+    public function findAllCodes();
 }

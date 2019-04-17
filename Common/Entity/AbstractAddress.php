@@ -105,7 +105,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCompany()
     {
@@ -113,7 +113,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setCompany($company)
     {
@@ -123,7 +123,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getStreet()
     {
@@ -131,7 +131,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setStreet($street)
     {
@@ -141,7 +141,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getComplement()
     {
@@ -149,7 +149,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setComplement($complement)
     {
@@ -159,7 +159,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getSupplement()
     {
@@ -167,7 +167,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setSupplement($supplement)
     {
@@ -177,7 +177,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getExtra()
     {
@@ -185,15 +185,17 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setExtra($extra)
     {
         $this->extra = $extra;
+
+        return $this;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getPostalCode()
     {
@@ -201,7 +203,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setPostalCode($postalCode)
     {
@@ -211,7 +213,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCity()
     {
@@ -219,7 +221,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setCity($city)
     {
@@ -229,7 +231,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCountry()
     {
@@ -237,7 +239,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setCountry(Model\CountryInterface $country = null)
     {
@@ -247,7 +249,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getState()
     {
@@ -255,7 +257,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setState(Model\StateInterface $state = null)
     {
@@ -265,7 +267,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDigicode1()
     {
@@ -273,15 +275,17 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDigicode1($digicode1)
     {
         $this->digicode1 = $digicode1;
+
+        return $this;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getDigicode2()
     {
@@ -289,15 +293,17 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setDigicode2($digicode2)
     {
         $this->digicode2 = $digicode2;
+
+        return $this;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getIntercom()
     {
@@ -305,15 +311,17 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setIntercom($intercom)
     {
         $this->intercom = $intercom;
+
+        return $this;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getPhone()
     {
@@ -321,7 +329,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setPhone($phone)
     {
@@ -331,7 +339,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getMobile()
     {
@@ -339,7 +347,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setMobile($mobile)
     {
@@ -349,7 +357,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getLongitude()
     {
@@ -357,7 +365,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setLongitude($longitude)
     {
@@ -367,7 +375,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getLatitude()
     {
@@ -375,12 +383,20 @@ abstract class AbstractAddress implements Model\AddressInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setLatitude($latitude)
     {
         $this->latitude = $latitude;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEmpty()
+    {
+        return empty($this->street) && empty($this->postalCode) && empty($this->city) && is_null($this->country);
     }
 }

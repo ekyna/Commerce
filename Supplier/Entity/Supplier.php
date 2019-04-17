@@ -151,7 +151,13 @@ class Supplier implements SupplierInterface
      */
     public function setAddress(SupplierAddressInterface $address = null)
     {
-        $address->setSupplier($this);
+        if ((null !== $this->address) && ($this->address !== $address)) {
+            $this->address->setSupplier(null);
+        }
+
+        if ($address) {
+            $address->setSupplier($this);
+        }
 
         $this->address = $address;
 

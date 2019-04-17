@@ -47,7 +47,7 @@ class CountryProvider implements CountryProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getAvailableCountries(): array
     {
@@ -55,7 +55,7 @@ class CountryProvider implements CountryProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getFallbackCountry(): string
     {
@@ -63,7 +63,7 @@ class CountryProvider implements CountryProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCurrentCountry(): string
     {
@@ -99,11 +99,19 @@ class CountryProvider implements CountryProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCountry(string $code = null): CountryInterface
     {
         return $this->countryRepository->findOneByCode($code ?? $this->getCurrentCountry());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCountryRepository(): CountryRepositoryInterface
+    {
+        return $this->countryRepository;
     }
 
     /**

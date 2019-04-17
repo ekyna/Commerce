@@ -29,11 +29,18 @@ interface CountryRepositoryInterface extends ResourceRepositoryInterface
     public function findOneByCode($code);
 
     /**
-     * Finds the codes of the enabled currencies.
+     * Finds the codes of the enabled countries.
      *
      * @return array|string[]
      */
     public function findEnabledCodes();
+
+    /**
+     * Finds all the country codes.
+     *
+     * @return array|string[]
+     */
+    public function findAllCodes();
 
     /**
      * Returns the country identifiers.

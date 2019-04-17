@@ -107,6 +107,14 @@ class CurrencyProvider implements CurrencyProviderInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getCurrencyRepository(): CurrencyRepositoryInterface
+    {
+        return $this->currencyRepository;
+    }
+
+    /**
      * Guesses the user currency.
      *
      * @return string|null

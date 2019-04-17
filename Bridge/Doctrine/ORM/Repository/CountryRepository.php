@@ -26,6 +26,11 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     private $enabledCodes;
 
     /**
+     * @var string[]
+     */
+    private $allCodes;
+
+    /**
      * @var CountryInterface
      */
     private $defaultCountry;
@@ -40,6 +45,15 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
      */
     private $cache = [];
 
+    /**
+     * Returns the defaultCode.
+     *
+     * @return string
+     */
+    public function getDefaultCode(): string
+    {
+        return $this->defaultCode;
+    }
 
     /**
      * Sets the default code.
@@ -49,16 +63,6 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     public function setDefaultCode(string $code)
     {
         $this->defaultCode = strtoupper($code);
-    }
-
-    /**
-     * Returns the defaultCode.
-     *
-     * @return string
-     */
-    public function getDefaultCode(): string
-    {
-        return $this->defaultCode;
     }
 
     /**
@@ -72,7 +76,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findDefault()
     {
@@ -88,7 +92,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findOneByCode($code)
     {
@@ -107,7 +111,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function findEnabledCodes()
     {
@@ -126,6 +130,26 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
             ->getScalarResult();
 
         return $this->enabledCodes = array_column($result, 'code');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findAllCodes()
+    {
+        if (null !== $this->allCodes) {
+            return $this->allCodes;
+        }
+
+        // TODO Caching
+
+        $result = $this
+            ->getQueryBuilder('c')
+            ->select('c.code')
+            ->getQuery()
+            ->getScalarResult();
+
+        return $this->allCodes = array_column($result, 'code');
     }
 
     /**

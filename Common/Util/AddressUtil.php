@@ -28,8 +28,12 @@ final class AddressUtil
             && $source->getStreet() === $target->getStreet()
             && $source->getComplement() === $target->getComplement()
             && $source->getSupplement() === $target->getSupplement()
+            && $source->getExtra() === $target->getExtra()
             && $source->getCity() === $target->getCity()
-            && $source->getPostalCode() === $target->getPostalCode())) {
+            && $source->getPostalCode() === $target->getPostalCode()
+            && $source->getDigicode1() === $target->getDigicode1()
+            && $source->getDigicode2() === $target->getDigicode2()
+            && $source->getIntercom() === $target->getIntercom())) {
             return false;
         }
 
@@ -76,10 +80,14 @@ final class AddressUtil
             ->setStreet($source->getStreet())
             ->setComplement($source->getComplement())
             ->setSupplement($source->getSupplement())
+            ->setExtra($source->getExtra())
             ->setCity($source->getCity())
             ->setPostalCode($source->getPostalCode())
             ->setCountry($source->getCountry())
             ->setState($source->getState())
+            ->setDigicode1($source->getDigicode1())
+            ->setDigicode2($source->getDigicode2())
+            ->setIntercom($source->getIntercom())
             ->setLatitude($source->getLatitude())
             ->setLongitude($source->getLongitude());
 

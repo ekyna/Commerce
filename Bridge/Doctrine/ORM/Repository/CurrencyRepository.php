@@ -26,6 +26,11 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
     private $enabledCodes;
 
     /**
+     * @var string[]
+     */
+    private $allCodes;
+
+    /**
      * @var CurrencyInterface
      */
     private $defaultCurrency;
@@ -101,6 +106,26 @@ class CurrencyRepository extends ResourceRepository implements CurrencyRepositor
             ->getScalarResult();
 
         return $this->enabledCodes = array_column($result, 'code');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findAllCodes()
+    {
+        if (null !== $this->allCodes) {
+            return $this->allCodes;
+        }
+
+        // TODO Caching
+
+        $result = $this
+            ->getQueryBuilder('c')
+            ->select('c.code')
+            ->getQuery()
+            ->getScalarResult();
+
+        return $this->allCodes = array_column($result, 'code');
     }
 
     /**

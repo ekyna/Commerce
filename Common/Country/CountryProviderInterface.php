@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Country;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 
 /**
  * Interface CountryProviderInterface
@@ -49,4 +50,11 @@ interface CountryProviderInterface
      * @return CountryInterface
      */
     public function getCountry(string $code = null): CountryInterface;
+
+    /**
+     * Returns the country repository.
+     *
+     * @return CountryRepositoryInterface
+     */
+    public function getCountryRepository(): CountryRepositoryInterface;
 }

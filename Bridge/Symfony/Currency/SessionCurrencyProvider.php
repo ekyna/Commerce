@@ -54,7 +54,7 @@ class SessionCurrencyProvider extends CurrencyProvider
     {
         parent::setCurrency($currency);
 
-        $this->session->set($this->key, $this->currentCurrency);
+        $this->save();
 
         return $this;
     }
@@ -72,6 +72,18 @@ class SessionCurrencyProvider extends CurrencyProvider
             return $this->currentCurrency = $this->session->get($this->key);
         }
 
-        return $this->currentCurrency = parent::getCurrentCurrency();
+        $this->currentCurrency = parent::getCurrentCurrency();
+
+        $this->save();
+
+        return $this->currentCurrency;
+    }
+
+    /**
+     * Saves the current currency into the session.
+     */
+    private function save(): void
+    {
+        $this->session->set($this->key, $this->currentCurrency);
     }
 }

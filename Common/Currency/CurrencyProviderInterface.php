@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Currency;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 
 /**
  * Interface CurrencyProviderInterface
@@ -49,4 +50,11 @@ interface CurrencyProviderInterface
      * @return CurrencyInterface
      */
     public function getCurrency(string $code = null): CurrencyInterface;
+
+    /**
+     * Returns the currency repository.
+     *
+     * @return CurrencyRepositoryInterface
+     */
+    public function getCurrencyRepository(): CurrencyRepositoryInterface;
 }
