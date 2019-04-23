@@ -130,6 +130,10 @@ class OrderListener extends AbstractSaleListener
 
         $changed |= parent::handleInsert($sale);
 
+        $changed |= $this->updateExchangeRate($sale);
+
+        $changed |= $this->updateLocale($sale);
+
         return $changed;
     }
 

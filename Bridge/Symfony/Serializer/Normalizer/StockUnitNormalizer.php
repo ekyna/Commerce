@@ -51,7 +51,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
                 'sold'        => $formatter->number($unit->getSoldQuantity()),
                 'shipped'     => $formatter->number($unit->getShippedQuantity()),
                 'eda'         => $eda,
-                'net_price'   => $formatter->currency($unit->getNetPrice()),
+                'net_price'   => $formatter->currency($unit->getNetPrice(), $unit->getCurrency()),
                 'adjustments' => $adjustments,
                 'assignments' => $assignments,
             ]);

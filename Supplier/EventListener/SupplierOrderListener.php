@@ -303,24 +303,27 @@ class SupplierOrderListener extends AbstractListener
     protected function updateExchangeRate(SupplierOrderInterface $order)
     {
         // TODO Remove when supplier order payments will be implemented.
+        if (null !== $order->getExchangeRate()) {
+            return false;
+        }
 
         if (!SupplierOrderStates::isStockableState($order->getState())) {
             return false;
         }
 
+        $date = new \DateTime();
+
         $rate = $this->currencyConverter->getRate(
             $this->currencyConverter->getDefaultCurrency(),
             $order->getCurrency()->getCode(),
-            $order->getOrderedAt()
+            $date
         );
 
-        if (0 !== \bccomp($order->getExchangeRate(), $rate, 5)) {
-            $order->setExchangeRate($rate);
+        $order
+            ->setExchangeRate($rate)
+            ->setExchangeDate($date);
 
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**

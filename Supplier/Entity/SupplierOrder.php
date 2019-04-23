@@ -17,7 +17,7 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
 class SupplierOrder implements Model\SupplierOrderInterface
 {
     use Common\NumberSubjectTrait,
-        Common\CurrencySubjectTrait,
+        Common\ExchangeSubjectTrait,
         Common\StateSubjectTrait,
         TimestampableTrait;
 

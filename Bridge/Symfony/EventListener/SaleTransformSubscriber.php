@@ -63,6 +63,11 @@ class SaleTransformSubscriber implements EventSubscriberInterface
         if ($target instanceof OrderInterface && $customer->hasParent()) {
             // Sets the parent as customer
             $target->setCustomer($customer->getParent());
+
+            // Sets the origin customer
+            if (null === $target->getOriginCustomer()) {
+                $target->setOriginCustomer($customer);
+            }
         }
     }
 

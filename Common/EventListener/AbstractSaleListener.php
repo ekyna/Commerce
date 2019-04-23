@@ -846,27 +846,57 @@ abstract class AbstractSaleListener
             return false;
         }
 
-        $changed = false;
+        $changed = $this->updateExchangeRate($sale);
 
-        if (null === $sale->getExchangeRate()) {
-            $rate = $this->currencyConverter->getRate(
-                $this->currencyConverter->getDefaultCurrency(),
-                $sale->getCurrency()->getCode(),
-                $date
-            );
-
-            $sale->setExchangeRate($rate);
-
-            $changed = true;
-        }
-
-        if (null === $sale->getLocale()) {
-            $sale->setLocale($this->localeProvider->getCurrentLocale());
-
-            $changed = true;
-        }
+        $changed |= $this->updateLocale($sale);
 
         return $changed;
+    }
+
+    /**
+     * Sets the sale's exchange rate.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function updateExchangeRate(SaleInterface $sale)
+    {
+        if (null !== $sale->getExchangeRate()) {
+            return false;
+        }
+
+        $date = new \DateTime();
+
+        $rate = $this->currencyConverter->getRate(
+            $this->currencyConverter->getDefaultCurrency(),
+            $sale->getCurrency()->getCode(),
+            $date
+        );
+
+        $sale
+            ->setExchangeRate($rate)
+            ->setExchangeDate($date);
+
+        return true;
+    }
+
+    /**
+     * Sets the sale's locale.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function updateLocale(SaleInterface $sale)
+    {
+        if (null !== $sale->getLocale()) {
+            return false;
+        }
+
+        $sale->setLocale($this->localeProvider->getCurrentLocale());
+
+        return true;
     }
 
     /**

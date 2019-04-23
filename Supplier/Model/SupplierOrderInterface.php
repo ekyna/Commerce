@@ -15,7 +15,7 @@ use Ekyna\Component\Resource\Model as ResourceModel;
 interface SupplierOrderInterface extends
     ResourceModel\ResourceInterface,
     Common\NumberSubjectInterface,
-    Common\CurrencySubjectInterface,
+    Common\ExchangeSubjectInterface,
     Common\StateSubjectInterface,
     ResourceModel\TimestampableInterface,
     ResourceModel\LocalizedInterface

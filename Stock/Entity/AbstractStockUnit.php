@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Stock\Model;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
 /**
@@ -121,7 +122,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         if (!empty($this->getGeocodes())) {
             return implode('-', $this->getGeocodes());
         } elseif (null !== $this->getId()) {
-            return '#'.$this->getId();
+            return '#' . $this->getId();
         }
 
         return 'Unknown';
@@ -507,5 +508,41 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         $result = $this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity;
 
         return max($result, 0);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSupplierOrder(): ?SupplierOrderInterface
+    {
+        if ($this->supplierOrderItem) {
+            return $this->supplierOrderItem->getOrder();
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCurrency(): ?string
+    {
+        if ($this->supplierOrderItem) {
+            return $this->supplierOrderItem->getOrder()->getCurrency()->getCode();
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExchangeRate(): ?float
+    {
+        if ($this->supplierOrderItem) {
+            return $this->supplierOrderItem->getOrder()->getExchangeRate();
+        }
+
+        return null;
     }
 }

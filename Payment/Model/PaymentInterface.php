@@ -17,7 +17,7 @@ interface PaymentInterface extends
     ResourceModel\LocalizedInterface,
     Common\NumberSubjectInterface,
     Common\KeySubjectInterface,
-    Common\CurrencySubjectInterface,
+    Common\ExchangeSubjectInterface,
     Common\StateSubjectInterface,
     Payum\DetailsAggregateInterface,
     Payum\DetailsAwareInterface,

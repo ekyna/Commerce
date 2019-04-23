@@ -15,7 +15,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
 {
     use Common\KeySubjectTrait,
         Common\NumberSubjectTrait,
-        Common\CurrencySubjectTrait,
+        Common\ExchangeSubjectTrait,
         Common\StateSubjectTrait,
         TimestampableTrait;
 

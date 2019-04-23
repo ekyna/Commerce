@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
-use Ekyna\Component\Commerce\Common\Model\CurrencySubjectInterface;
+use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 
 /**
  * Interface PaymentSubjectInterface
  * @package Ekyna\Component\Commerce\Payment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface PaymentSubjectInterface extends CurrencySubjectInterface
+interface PaymentSubjectInterface extends ExchangeSubjectInterface
 {
     /**
      * Returns the deposit total.

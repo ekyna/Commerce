@@ -198,10 +198,13 @@ class ViewBuilder
 
         $this->options = $this->getOptionsResolver()->resolve($options);
 
-        $this
-            ->view
-            ->setTemplate($this->options['template'])
-            ->setAti($this->options['ati']);
+        $this->view->setTemplate($this->options['template']);
+
+        if (!is_null($this->options['ati'])) {
+            $this->view->setAti($this->options['ati']);
+        } else {
+            $this->view->setAti($sale->isAtiDisplayMode());
+        }
 
         $this->formatter = $this->formatterFactory->create($this->options['locale'], $sale->getCurrency()->getCode());
 
@@ -475,7 +478,7 @@ class ViewBuilder
                 'private'    => false,
                 'editable'   => false,
                 'taxes_view' => true,
-                'ati'        => true,
+                'ati'        => null,
                 'locale'     => \Locale::getDefault(),
                 'template'   => function (Options $options) {
                     if (true === $options['editable']) {
@@ -488,7 +491,7 @@ class ViewBuilder
             ->setAllowedTypes('private', 'bool')
             ->setAllowedTypes('editable', 'bool')
             ->setAllowedTypes('taxes_view', 'bool')
-            ->setAllowedTypes('ati', 'bool')
+            ->setAllowedTypes('ati', ['null', 'bool'])
             ->setAllowedTypes('locale', 'string')
             ->setAllowedTypes('template', ['null', 'string']);
 

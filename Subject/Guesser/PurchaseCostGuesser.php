@@ -37,11 +37,6 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
      */
     protected $currencyConverter;
 
-    /**
-     * @var string
-     */
-    protected $defaultCurrency;
-
 
     /**
      * Constructor.
@@ -50,20 +45,17 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
      * @param SupplierOrderItemRepositoryInterface $supplierOrderItemRepository
      * @param SupplierProductRepositoryInterface   $supplierProductRepository
      * @param CurrencyConverterInterface           $currencyConverter
-     * @param string                               $defaultCurrency
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         SupplierOrderItemRepositoryInterface $supplierOrderItemRepository,
         SupplierProductRepositoryInterface $supplierProductRepository,
-        CurrencyConverterInterface $currencyConverter,
-        string $defaultCurrency
+        CurrencyConverterInterface $currencyConverter
     ) {
         $this->entityManager = $entityManager;
         $this->supplierOrderItemRepository = $supplierOrderItemRepository;
         $this->supplierProductRepository = $supplierProductRepository;
         $this->currencyConverter = $currencyConverter;
-        $this->defaultCurrency = $defaultCurrency;
     }
 
     /**
@@ -78,6 +70,11 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             /** @var StockUnitRepositoryInterface $repository */
             $repository = $this->entityManager->getRepository($class);
 
+            $defaultCurrency = $this->currencyConverter->getDefaultCurrency();
+            if (is_null($quoteCurrency)) {
+                $quoteCurrency = $defaultCurrency;
+            }
+
             $units = $repository->findAssignableBySubject($subject);
 
             if (!empty($units)) {
@@ -85,7 +82,12 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
 
                 foreach ($units as $unit) {
                     if (0 < $netPrice = $unit->getNetPrice()) {
-                        $cost += $netPrice;
+                        if (!is_null($rate = $unit->getExchangeRate()) && $quoteCurrency === $defaultCurrency) {
+                            $cost += $this->currencyConverter->convertWithRate($netPrice, 1 / $rate);
+                        } else {
+                            $c = $unit->getCurrency() ?? $defaultCurrency;
+                            $cost += $this->currencyConverter->convert($netPrice, $c, $quoteCurrency); // TODO date
+                        }
                         $count++;
                     }
                 }
@@ -95,7 +97,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
                 }
 
                 if (0 < $cost) {
-                    return $this->currencyConverter->convert($cost, $this->defaultCurrency, $quoteCurrency);
+                    return $cost;
                 }
             }
         }

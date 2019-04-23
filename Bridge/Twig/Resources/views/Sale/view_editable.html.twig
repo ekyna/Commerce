@@ -77,7 +77,9 @@
 
 {% block line_information %}
 {% spaceless %}
-    {{ parent() }}
+    <td class="sale-detail-information" colspan="{{ view.vars.columns_count - 2 }}">
+        {{ line.vars.information|raw }}
+    </td>
     <td class="sale-detail-actions">&nbsp;</td>
 {% endspaceless %}
 {% endblock line_information %}

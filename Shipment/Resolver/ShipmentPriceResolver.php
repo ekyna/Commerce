@@ -208,7 +208,8 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         }
 
         foreach ($entry['prices'] as $p) {
-            if ($weight < $p['weight']) {
+            // If sale weight is lower than price weight
+            if (1 === bccomp($p['weight'], $weight, 3)) {
                 $price += $p['price'];
                 break;
             }
@@ -255,9 +256,13 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         }
 
         foreach ($grid as &$method) {
-            // Sort prices DESC
+            // Sort prices by weight ASC
             usort($method['prices'], function ($a, $b) {
-                return $a['weight'] - $b['weight'];
+                if (0 === bccomp($a['weight'], $b['weight'], 3)) {
+                    return 0;
+                }
+
+                return $a['weight'] > $b['weight'] ? 1 : -1;
             });
 
             // Fix max weight

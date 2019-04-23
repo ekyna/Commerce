@@ -281,19 +281,23 @@ abstract class AbstractPaymentListener
      */
     protected function updateExchangeRate(PaymentInterface $payment)
     {
+        if (null !== $payment->getExchangeRate()) {
+            return false;
+        }
+
+        $date = new \DateTime();
+
         $rate = $this->currencyConverter->getRate(
             $this->currencyConverter->getDefaultCurrency(),
             $payment->getCurrency()->getCode(),
-            $payment->getCreatedAt()
+            $date
         );
 
-        if (0 !== \bccomp($payment->getExchangeRate(), $rate, 5)) {
-            $payment->setExchangeRate($rate);
+        $payment
+            ->setExchangeRate($rate)
+            ->setExchangeDate($date);
 
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**

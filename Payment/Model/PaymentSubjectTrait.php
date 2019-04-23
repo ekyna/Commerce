@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Payment\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Model\CurrencySubjectTrait;
+use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectTrait;
 use Ekyna\Component\Commerce\Common\Util\Money;
 
 /**
@@ -13,7 +13,7 @@ use Ekyna\Component\Commerce\Common\Util\Money;
  */
 trait PaymentSubjectTrait
 {
-    use CurrencySubjectTrait;
+    use ExchangeSubjectTrait;
 
     /**
      * @var float

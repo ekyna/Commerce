@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -327,4 +328,25 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return float
      */
     public function getShippableQuantity();
+
+    /**
+     * Returns the supplier order.
+     *
+     * @return SupplierOrderInterface|null
+     */
+    public function getSupplierOrder(): ?SupplierOrderInterface;
+
+    /**
+     * Returns the currency code.
+     *
+     * @return string|null
+     */
+    public function getCurrency(): ?string;
+
+    /**
+     * Returns the exchange rate.
+     *
+     * @return float|null
+     */
+    public function getExchangeRate(): ?float;
 }

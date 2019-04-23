@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
@@ -44,6 +45,11 @@ class MarginCalculator implements MarginCalculatorInterface
     private $subjectHelper;
 
     /**
+     * @var CurrencyConverterInterface
+     */
+    private $currencyConverter;
+
+    /**
      * @var PurchaseCostGuesserInterface
      */
     private $purchaseCostGuesser;
@@ -57,6 +63,7 @@ class MarginCalculator implements MarginCalculatorInterface
      * @param ShipmentPriceResolverInterface   $shipmentPriceResolver
      * @param ShipmentAddressResolverInterface $shipmentAddressResolver
      * @param SubjectHelperInterface           $subjectHelper
+     * @param CurrencyConverterInterface       $currencyConverter
      * @param PurchaseCostGuesserInterface     $purchaseCostGuesser
      */
     public function __construct(
@@ -65,6 +72,7 @@ class MarginCalculator implements MarginCalculatorInterface
         ShipmentPriceResolverInterface $shipmentPriceResolver,
         ShipmentAddressResolverInterface $shipmentAddressResolver,
         SubjectHelperInterface $subjectHelper,
+        CurrencyConverterInterface $currencyConverter,
         PurchaseCostGuesserInterface $purchaseCostGuesser
     ) {
         $this->amountCalculator = $amountCalculator;
@@ -72,6 +80,7 @@ class MarginCalculator implements MarginCalculatorInterface
         $this->shipmentPriceResolver = $shipmentPriceResolver;
         $this->shipmentAddressResolver = $shipmentAddressResolver;
         $this->subjectHelper = $subjectHelper;
+        $this->currencyConverter = $currencyConverter;
         $this->purchaseCostGuesser = $purchaseCostGuesser;
     }
 
@@ -127,6 +136,7 @@ class MarginCalculator implements MarginCalculatorInterface
         $margin = new Margin();
 
         $result = $this->amountCalculator->calculateSaleItem($item);
+        $currency = $item->getSale()->getCurrency()->getCode();
 
         $margin->addSellingPrice($result->getBase());
 
@@ -134,7 +144,9 @@ class MarginCalculator implements MarginCalculatorInterface
             if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
                 foreach ($item->getStockAssignments() as $assignment) {
                     if (0 < $netPrice = $assignment->getStockUnit()->getNetPrice()) {
-                        $margin->addPurchaseCost($assignment->getSoldQuantity() * $netPrice);
+                        $c = $assignment->getStockUnit()->getCurrency();
+                        $cost = $this->currencyConverter->convert($netPrice, $c, $currency);
+                        $margin->addPurchaseCost($assignment->getSoldQuantity() * $cost);
                     } elseif (null !== $cost = $this->getPurchaseCost($item)) {
                         $margin
                             ->addPurchaseCost($cost * $assignment->getSoldQuantity())
@@ -201,9 +213,18 @@ class MarginCalculator implements MarginCalculatorInterface
      */
     public function calculateSaleShipment(Model\SaleInterface $sale): Margin
     {
-        $margin = new Margin(0, (float)$sale->getShipmentAmount());
+        $baseC = $this->currencyConverter->getDefaultCurrency();
+        $quoteC = $sale->getCurrency()->getCode();
 
-        if ($sale instanceof ShipmentSubjectInterface) {
+        if (($baseC != $quoteC) && (!is_null($rate = $sale->getExchangeRate()))) {
+            $sellPrice = $this->currencyConverter->convertWithRate($sale->getShipmentAmount(), $rate, $quoteC);
+        } else {
+            $sellPrice = $this->currencyConverter->convert($sale->getShipmentAmount(), $baseC, $quoteC);
+        }
+
+        $margin = new Margin(0, $sellPrice);
+
+        if ($sale instanceof ShipmentSubjectInterface && 0 < $sale->getShipments()->count()) {
             foreach ($sale->getShipments() as $shipment) {
                 $deliveryAddress = $this->shipmentAddressResolver->resolveReceiverAddress($shipment, true);
                 $country = $deliveryAddress->getCountry();
@@ -216,11 +237,16 @@ class MarginCalculator implements MarginCalculatorInterface
                         ->getPriceByCountryAndMethodAndWeight($country, $method, $weight);
 
                     if (null !== $price) {
-                        $margin->addPurchaseCost($price->getPrice());
+                        $margin->addPurchaseCost(
+                            $this->currencyConverter->convert(
+                                $price->getPrice(), $baseC, $quoteC, $shipment->getShippedAt()
+                            )
+                        );
+                        continue;
                     }
-                } else {
-                    $margin->setAverage(true);
                 }
+
+                $margin->setAverage(true);
             }
 
             return $margin;
@@ -236,7 +262,11 @@ class MarginCalculator implements MarginCalculatorInterface
                 ->getPriceByCountryAndMethodAndWeight($country, $method, $weight);
 
             if (null !== $price) {
-                $margin->addPurchaseCost($price->getPrice());
+                $margin->addPurchaseCost(
+                    $this->currencyConverter->convert($price->getPrice(), $baseC, $quoteC)
+                );
+            } else {
+                $margin->setAverage(true);
             }
         } else {
             $margin->setAverage(true);

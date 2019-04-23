@@ -37,13 +37,13 @@ class SwapCurrencyConverter extends AbstractCurrencyConverter
     public function getRate($base, $quote = null, \DateTime $date = null)
     {
         $base = strtoupper($base);
-        $quote = strtoupper($quote ? $quote : $this->defaultCurrency);
+        $quote = strtoupper($quote ?? $this->defaultCurrency);
 
         if ($base === $quote) {
             return 1;
         }
 
-        if ($base !== $this->defaultCurrency) {
+        if ($quote === $this->defaultCurrency) {
             $invert = true;
             $pair = "$quote/$base";
         } else {
@@ -51,7 +51,7 @@ class SwapCurrencyConverter extends AbstractCurrencyConverter
             $pair = "$base/$quote";
         }
 
-        if (null !== $date && 60 < $date->diff(new \DateTime())->s) {
+        if (null !== $date && 1 <= $date->diff(new \DateTime())->h) {
             $rate = $this->swap->historical($pair, $date)->getValue();
         } else {
             $rate = $this->swap->latest($pair)->getValue();
