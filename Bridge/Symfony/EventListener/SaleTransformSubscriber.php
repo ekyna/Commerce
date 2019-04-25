@@ -61,6 +61,9 @@ class SaleTransformSubscriber implements EventSubscriberInterface
 
         // If target sale is order and source customer has parent
         if ($target instanceof OrderInterface && $customer->hasParent()) {
+            // TODO Duplicate code
+            /** @see \Ekyna\Component\Commerce\Order\EventListener\OrderListener::fixCustomers() */
+
             // Sets the parent as customer
             $target->setCustomer($customer->getParent());
 

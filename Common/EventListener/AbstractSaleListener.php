@@ -247,7 +247,10 @@ abstract class AbstractSaleListener
         }
 
         // Schedule content change
-        if ($this->persistenceHelper->isChanged($sale, ['currency', 'vatDisplayMode', 'paymentTerm', 'shipmentAmount'])) {
+        if ($this->persistenceHelper->isChanged($sale, 'currency')) {
+            $sale->setExchangeRate(null); // Clear exchange rate
+            $this->scheduleContentChangeEvent($sale);
+        } elseif ($this->persistenceHelper->isChanged($sale, ['vatDisplayMode', 'paymentTerm', 'shipmentAmount'])) {
             $this->scheduleContentChangeEvent($sale);
         }
 
@@ -866,7 +869,7 @@ abstract class AbstractSaleListener
             return false;
         }
 
-        $date = new \DateTime();
+        $date = $sale->getExchangeDate() ?? new \DateTime();
 
         $rate = $this->currencyConverter->getRate(
             $this->currencyConverter->getDefaultCurrency(),
