@@ -89,9 +89,7 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
 
         return $qb
             ->getQuery()
-            ->setParameters([
-                'enabled' => true,
-            ])
+            ->setParameters($parameters)
             ->getResult();
     }
 }
