@@ -82,8 +82,8 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                     $p['amount'] = 0; unset($payments[$y]);
                 } else { // payment > invoice
                     $r->setAmount($i['total']);
-                    $i['total'] = 0;
                     $p['amount'] -= $i['total'];
+                    $i['total'] = 0;
                 }
 
                 $this->cache[$oid][] = $r;
@@ -143,6 +143,8 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
         usort($payments, function (PM\PaymentInterface $a, PM\PaymentInterface $b) {
             return $a->getCompletedAt()->getTimestamp() - $b->getCompletedAt()->getTimestamp();
         });
+
+        // TODO Currency conversion
 
         return array_map(function (PM\PaymentInterface $payment) {
             return [

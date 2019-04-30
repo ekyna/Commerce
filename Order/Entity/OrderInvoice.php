@@ -42,7 +42,7 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
      */
     public function setSale(SaleInterface $sale = null)
     {
-        if (!$sale instanceof Model\OrderInterface) {
+        if ($sale && !$sale instanceof Model\OrderInterface) {
             throw new UnexpectedValueException("Expected instance of " . Model\OrderInterface::class);
         }
 
