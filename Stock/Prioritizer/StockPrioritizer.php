@@ -200,9 +200,8 @@ class StockPrioritizer implements StockPrioritizerInterface
             $targetUnit = $candidate->unit;
 
             // If not enough reservable quantity
-            if (0 < $quantity - $targetUnit->getReservableQuantity()) {
+            if ((0 < $quantity - $targetUnit->getReservableQuantity()) && ($combination = $candidate->combination)) {
                 // Use combination to release quantity
-                $combination = $candidate->combination;
                 foreach ($combination->map as $id => $qty) {
                     if (null === $a = $candidate->getAssignmentById($id)) {
                         throw new StockLogicException("Assignment not found.");

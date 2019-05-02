@@ -60,12 +60,23 @@ class PrioritizeHelper
                 continue;
             }
 
-            if (0 >= $diff = $quantity - $candidate->reservable) {
+            $add = false;
+            $diff = 0;
+
+            if (0 < $candidate->reservable) {
                 // Unit has enough reservable quantity
-                return [$candidate];
+                if (empty($candidates) && 0 >= $diff = $quantity - $candidate->reservable) {
+                    return [$candidate];
+                }
+
+                $add = true;
             }
 
-            if (null !== $candidate->getCombination(min($diff, $candidate->releasable))) {
+            if (null !== $candidate->getCombination(max($diff, $candidate->releasable))) {
+                $add = true;
+            }
+
+            if ($add) {
                 $candidates[] = $candidate;
             }
         }
@@ -76,6 +87,8 @@ class PrioritizeHelper
 
         // Sort candidates
         usort($candidates, function (UnitCandidate $a, UnitCandidate $b) use ($quantity) {
+            // TODO sort by (reservable + releasable) DESC
+
             // TODO Simplify. Prefer:
             // - 'shippable' enough
             // - 'reservable' eq/positive/closest
@@ -93,6 +106,14 @@ class PrioritizeHelper
                     return $r;
                 }
             }
+
+            // TODO (temporary)
+            foreach (['shippable', 'reservable', 'releasable'] as $property) {
+                if ($a->{$property} != $b->{$property}) {
+                    return $b->{$property} - $a->{$property};
+                }
+            }
+            return 0;
 
             // Prefer units with assignments combination's releasable quantity (sum) that
             // equals or is greater than (prefer closest) aimed quantity.
