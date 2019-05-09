@@ -57,7 +57,7 @@ class LoadMetadataListener implements EventSubscriber
     /**
      * @var array
      */
-    private $relativeClassCache = [];
+    private $subjectRelativeClassCache = [];
 
     /**
      * @var array
@@ -273,7 +273,7 @@ class LoadMetadataListener implements EventSubscriber
         }
 
         // Don't add twice
-        if (in_array($class, $this->relativeClassCache)) {
+        if (in_array($class, $this->subjectRelativeClassCache)) {
             return;
         }
 
@@ -283,7 +283,7 @@ class LoadMetadataListener implements EventSubscriber
             ->processClassMetadata($metadata, 'subjectIdentity', 'subject_');
 
         // Cache class
-        $this->relativeClassCache[] = $class;
+        $this->subjectRelativeClassCache[] = $class;
     }
 
     /**

@@ -95,4 +95,24 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\StockAdjustment"/>
     </class>
 
+    <class name="Ekyna\Component\Commerce\Stock\Entity\Warehouse">
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="countries">
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+        <property name="priority">
+            <constraint name="GreaterThanOrEqual">0</constraint>
+        </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">name</option>
+        </constraint>
+    </class>
+
 </constraint-mapping>

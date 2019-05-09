@@ -69,10 +69,14 @@ class SessionCountryProvider extends CountryProvider
         }
 
         if ($this->session->has($this->key)) {
-            return $this->currentCountry = $this->session->get($this->key);
+            if (null !== $country = $this->session->get($this->key)) {
+                parent::setCountry($country);
+
+                return $this->currentCountry;
+            }
         }
 
-        $this->currentCountry = parent::getCurrentCountry();
+        parent::getCurrentCountry();
 
         $this->save();
 

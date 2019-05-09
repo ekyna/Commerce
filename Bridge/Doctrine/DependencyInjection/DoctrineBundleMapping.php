@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Quote;
 use Ekyna\Component\Commerce\Shipment;
 use Ekyna\Component\Commerce\Supplier;
 use Ekyna\Component\Commerce\Support;
+use Ekyna\Component\Commerce\Stock;
 
 /**
  * Class DoctrineBundleMapping
@@ -87,6 +88,8 @@ class DoctrineBundleMapping
 
             Support\Model\TicketInterface::class            => Support\Entity\Ticket::class,
             Support\Model\TicketMessageInterface::class     => Support\Entity\TicketMessage::class,
+
+            Stock\Model\WarehouseInterface::class           => Stock\Entity\Warehouse::class,
         ];
     }
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Stock\Entity\Warehouse"
+            table="commerce_warehouse">
+
+        <indexes>
+            <index columns="name" name="idx_commerce_warehouse_name"/>
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="name" name="unique_commerce_warehouse_name"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="name" column="name" type="string" length="64" nullable="false"/>
+        <field name="office" column="is_office" type="boolean" nullable="false"/>
+        <field name="default" column="is_default" type="boolean" nullable="false"/>
+        <field name="priority" column="priority" type="integer" nullable="false"/>
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="countries">
+            <join-table name="commerce_warehouses_countries">
+                <join-columns>
+                    <join-column name="warehouse_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
+    </mapped-superclass>
+
+</doctrine-mapping>
