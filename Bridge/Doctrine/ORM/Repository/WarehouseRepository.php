@@ -24,7 +24,7 @@ class WarehouseRepository extends ResourceRepository implements WarehouseReposit
     /**
      * @inheritDoc
      */
-    public function findDefault(): WarehouseInterface
+    public function findDefault(bool $throwException = true): ?WarehouseInterface
     {
         if ($this->defaultWarehouse) {
             return $this->defaultWarehouse;
@@ -38,8 +38,12 @@ class WarehouseRepository extends ResourceRepository implements WarehouseReposit
             ->getQuery()
             ->getOneOrNullResult();
 
-        if (null == $warehouse) {
-            throw new RuntimeException('Default warehouse not found.');
+        if (!$warehouse) {
+            if ($throwException) {
+                throw new RuntimeException('Default warehouse not found.');
+            }
+
+            return null;
         }
 
         return $this->defaultWarehouse = $warehouse;

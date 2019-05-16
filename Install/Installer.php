@@ -4,14 +4,16 @@ namespace Ekyna\Component\Commerce\Install;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use Ekyna\Component\Commerce\Common\Entity\Country;
-use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Entity\Tax;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxRule;
+use Ekyna\Component\Commerce\Stock\Entity\Warehouse;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Yaml\Yaml;
 
@@ -28,9 +30,14 @@ class Installer
     private $manager;
 
     /**
-     * @var string
+     * @var CustomerGroupRepositoryInterface
      */
     private $customerGroupRepository;
+
+    /**
+     * @var CountryRepositoryInterface
+     */
+    private $countryRepository;
 
     /**
      * @var callable
@@ -42,13 +49,19 @@ class Installer
      * Constructor.
      *
      * @param ObjectManager                    $manager
-     * @param CustomerGroupRepositoryInterface $repository
+     * @param CustomerGroupRepositoryInterface $customerRepository
+     * @param CountryRepositoryInterface       $countryRepository
      * @param mixed                            $logger
      */
-    public function __construct(ObjectManager $manager, CustomerGroupRepositoryInterface $repository, $logger = null)
-    {
+    public function __construct(
+        ObjectManager $manager,
+        CustomerGroupRepositoryInterface $customerRepository,
+        CountryRepositoryInterface $countryRepository,
+        $logger = null
+    ) {
         $this->manager = $manager;
-        $this->customerGroupRepository = $repository;
+        $this->customerGroupRepository = $customerRepository;
+        $this->countryRepository = $countryRepository;
 
         if (in_array('Symfony\Component\Console\Output\OutputInterface', class_implements($logger))) {
             $this->log = function ($name, $result) use ($logger) {
@@ -151,6 +164,7 @@ class Installer
                 continue;
             }
 
+            /** @var CountryInterface $country */
             $country = $this
                 ->manager
                 ->getRepository(Country::class)
@@ -314,9 +328,10 @@ class Installer
      */
     public function installCustomerGroups()
     {
-        $groups = (array) $this->customerGroupRepository->findBy([], [], 1)->getIterator();
+        $groups = (array)$this->customerGroupRepository->findBy([], [], 1)->getIterator();
         if (!empty($groups)) {
             call_user_func($this->log, 'All', 'skipped');
+
             return;
         }
 
@@ -355,6 +370,40 @@ class Installer
         }
 
         $this->manager->flush();
+    }
+
+    /**
+     * Creates the default warehouse (if not exists).
+     */
+    public function installDefaultWarehouse()
+    {
+        /** @var \Ekyna\Component\Commerce\Stock\Repository\WarehouseRepositoryInterface $warehouseRepository */
+        $warehouseRepository = $this->manager->getRepository(Warehouse::class);
+
+        if ($warehouse = $warehouseRepository->findDefault(false)) {
+            call_user_func($this->log, 'Default', 'already exists');
+
+            return;
+        }
+
+        $country = $this->countryRepository->findDefault();
+
+        /** @var \Ekyna\Component\Commerce\Stock\Model\WarehouseInterface $warehouse */
+        $warehouse = $warehouseRepository->createNew();
+        $warehouse
+            ->setName('Default warehouse')
+            ->setOffice(true)
+            ->setDefault(true)
+            ->setCompany('My Company')
+            ->setStreet('street')
+            ->setCity('city')
+            ->setPostalCode('12345')
+            ->setCountry($country);
+
+        $this->manager->persist($warehouse);
+        $this->manager->flush();
+
+        call_user_func($this->log, 'Default', 'done');
     }
 
     /**

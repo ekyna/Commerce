@@ -16,9 +16,11 @@ interface WarehouseRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Returns the default warehouse.
      *
+     * @param bool $throwException Whether to throw exception if not found.
+     *
      * @return WarehouseInterface
      */
-    public function findDefault(): WarehouseInterface;
+    public function findDefault(bool $throwException = true): ?WarehouseInterface;
 
     /**
      * Returns the warehouse for the given country.

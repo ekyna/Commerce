@@ -194,13 +194,13 @@ class StockPrioritizer implements StockPrioritizerInterface
 
         $sourceUnit = $assignment->getStockUnit();
 
-        $candidates = $helper->getUnitCandidates($assignment, $quantity);
-
-        foreach ($candidates as $candidate) {
+        while ($candidate = $helper->getUnitCandidate($assignment, $quantity)) {
             $targetUnit = $candidate->unit;
 
-            // If not enough reservable quantity
-            if ((0 < $quantity - $targetUnit->getReservableQuantity()) && ($combination = $candidate->combination)) {
+            $diff = $quantity - $targetUnit->getReservableQuantity();
+
+            // If not enough reservable quantity, release as much as needed/possible
+            if (0 < $diff && $combination = $candidate->getCombination($diff)) {
                 // Use combination to release quantity
                 foreach ($combination->map as $id => $qty) {
                     if (null === $a = $candidate->getAssignmentById($id)) {
@@ -208,18 +208,21 @@ class StockPrioritizer implements StockPrioritizerInterface
                     }
 
                     // Move assignment to the source unit
-                    $this->moveAssignment($a, $sourceUnit, min($qty, $quantity));
+                    $diff -= $this->moveAssignment($a, $sourceUnit, min($qty, $diff));
+
+                    if (0 >= $diff) {
+                        break;
+                    }
                 }
             }
 
-            // Move assignment to the target unit.
+            // Move assignment to the target unit using reservable quantity first.
             $delta = min($quantity, $targetUnit->getReservableQuantity());
             $quantity -= $this->moveAssignment($assignment, $targetUnit, $delta);
 
             // TODO Validate units ?
 
             $changed = true;
-
             if (0 >= $quantity) {
                 break;
             }

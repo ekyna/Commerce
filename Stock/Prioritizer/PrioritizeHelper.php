@@ -16,7 +16,7 @@ class PrioritizeHelper
     /**
      * @var StockUnitResolverInterface
      */
-    private $unitResolver;
+    protected $unitResolver;
 
 
     /**
@@ -35,15 +35,15 @@ class PrioritizeHelper
      * @param StockAssignmentInterface $assignment
      * @param float                    $quantity
      *
-     * @return UnitCandidate[]
+     * @return UnitCandidate|null
      */
-    public function getUnitCandidates(StockAssignmentInterface $assignment, $quantity)
+    public function getUnitCandidate(StockAssignmentInterface $assignment, $quantity): ?UnitCandidate
     {
         $subject = $assignment->getStockUnit()->getSubject();
 
         // Find the subject's ready stock units
         if (empty($units = $this->unitResolver->findReady($subject))) {
-            return [];
+            return null;
         };
 
         $sale = $assignment->getSaleItem()->getSale();
@@ -61,19 +61,24 @@ class PrioritizeHelper
             }
 
             $add = false;
-            $diff = 0;
-
+            $diff = $quantity - $candidate->reservable;
             if (0 < $candidate->reservable) {
                 // Unit has enough reservable quantity
-                if (empty($candidates) && 0 >= $diff = $quantity - $candidate->reservable) {
-                    return [$candidate];
+                if (empty($candidates) && 0 >= $diff) {
+                    return $candidate;
                 }
 
                 $add = true;
             }
 
-            if (null !== $candidate->getCombination(max($diff, $candidate->releasable))) {
-                $add = true;
+            if (0 < $release = min($diff, $candidate->releasable)) {
+                if (null !== $combination = $candidate->getCombination($release)) {
+                    // Unit has enough reservable + releasable quantity
+                    if (empty($candidates) && $combination->sum == $diff) {
+                        return $candidate;
+                    }
+                    $add = true;
+                }
             }
 
             if ($add) {
@@ -81,8 +86,11 @@ class PrioritizeHelper
             }
         }
 
-        if (empty($candidates)) {
-            return [];
+        if (1 === count($candidates)) {
+            return reset($candidates);
+        }
+        if (0 === count($candidates)) {
+            return null;
         }
 
         // Sort candidates
@@ -127,7 +135,7 @@ class PrioritizeHelper
             return intval(0 < $b->combination->sum ? 1 : $b->combination->sum - $a->combination->sum);
         });
 
-        return $candidates;
+        return reset($candidates);
     }
 
     /**
@@ -142,7 +150,7 @@ class PrioritizeHelper
      *
      * @return bool|int
      */
-    private function ceilComparison(UnitCandidate $a, UnitCandidate $b, $property, $quantity)
+    protected function ceilComparison(UnitCandidate $a, UnitCandidate $b, $property, $quantity)
     {
         if ($a->{$property} >= $quantity && $b->{$property} < $quantity) {
             return -1;
@@ -166,7 +174,7 @@ class PrioritizeHelper
      *
      * @return bool|int
      */
-    private function equalComparison(UnitCandidate $a, UnitCandidate $b, $property, $quantity)
+    protected function equalComparison(UnitCandidate $a, UnitCandidate $b, $property, $quantity)
     {
         if ($a->{$property} == $quantity && $b->{$property} != $quantity) {
             return -1;
