@@ -39,7 +39,8 @@ class PrioritizeHelper
      */
     public function getUnitCandidate(StockAssignmentInterface $assignment, $quantity): ?UnitCandidate
     {
-        $subject = $assignment->getStockUnit()->getSubject();
+        $stockUnit = $assignment->getStockUnit();
+        $subject = $stockUnit->getSubject();
 
         // Find the subject's ready stock units
         if (empty($units = $this->unitResolver->findReady($subject))) {
@@ -51,6 +52,10 @@ class PrioritizeHelper
         $candidates = [];
 
         foreach ($units as $unit) {
+            if ($stockUnit->getId() === $unit->getId()) {
+                continue;
+            }
+
             $this->unitResolver->getStockUnitCache()->add($unit);
 
             $candidate = UnitCandidate::build($unit, $sale);
