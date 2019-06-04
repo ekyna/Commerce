@@ -13,6 +13,8 @@ use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -20,15 +22,15 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @package Ekyna\Component\Commerce\Tests
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
+abstract class BaseTestCase extends TestCase
 {
     /**
-     * @var CustomerGroupRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var CustomerGroupRepositoryInterface|MockObject
      */
     private $customerGroupRepositoryMock;
 
     /**
-     * @var CurrencyRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var CurrencyRepositoryInterface|MockObject
      */
     private $currencyRepositoryMock;
 
@@ -53,26 +55,26 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     private $saleFactory;
 
     /**
-     * @var PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var PersistenceHelperInterface|MockObject
      */
     private $persistenceHelper;
 
     /**
-     * @var EventDispatcherInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var EventDispatcherInterface|MockObject
      */
     private $eventDispatcher;
 
     /**
-     * @var SubjectHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var SubjectHelperInterface|MockObject
      */
     private $subjectHelper;
 
     /**
      * Returns a customer group repository mock.
      *
-     * @return CustomerGroupRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @return CustomerGroupRepositoryInterface|MockObject
      */
-    protected function getCustomerGroupRepositoryMock()
+    protected function getCustomerGroupRepositoryMock(): CustomerGroupRepositoryInterface
     {
         if (null !== $this->customerGroupRepositoryMock) {
             return $this->customerGroupRepositoryMock;
@@ -88,9 +90,9 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     /**
      * Returns a currency repository mock.
      *
-     * @return CurrencyRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @return CurrencyRepositoryInterface|MockObject
      */
-    protected function getCurrencyRepositoryMock()
+    protected function getCurrencyRepositoryMock(): CurrencyRepositoryInterface
     {
         if (null !== $this->currencyRepositoryMock) {
             return $this->currencyRepositoryMock;
@@ -110,7 +112,7 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
      *
      * @return CurrencyConverterInterface
      */
-    protected function getCurrencyConverter()
+    protected function getCurrencyConverter(): CurrencyConverterInterface
     {
         if (null !== $this->currencyConverter) {
             return $this->currencyConverter;
@@ -125,9 +127,9 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     /**
      * Returns the tax resolver mock.
      *
-     * @return TaxResolverInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @return TaxResolverInterface|MockObject
      */
-    protected function getTaxResolverMock()
+    protected function getTaxResolverMock(): TaxResolverInterface
     {
         if (null !== $this->taxResolver) {
             return $this->taxResolver;
@@ -139,9 +141,9 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     /**
      * Returns the discount resolver mock.
      *
-     * @return DiscountResolverInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @return DiscountResolverInterface|MockObject
      */
-    protected function getDiscountResolverMock()
+    protected function getDiscountResolverMock(): DiscountResolverInterface
     {
         if (null !== $this->discountResolver) {
             return $this->discountResolver;
@@ -155,24 +157,21 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
      *
      * @return SaleFactoryInterface
      */
-    protected function getSaleFactory()
+    protected function getSaleFactory(): SaleFactoryInterface
     {
         if (null !== $this->saleFactory) {
             return $this->saleFactory;
         }
 
-        return $this->saleFactory = new SaleFactory(
-            $this->getCustomerGroupRepositoryMock(),
-            $this->getCurrencyRepositoryMock()
-        );
+        return $this->saleFactory = new SaleFactory();
     }
 
     /**
      * Returns the persistence helper mock.
      *
-     * @return PersistenceHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @return PersistenceHelperInterface|MockObject
      */
-    protected function getPersistenceHelperMock()
+    protected function getPersistenceHelperMock(): PersistenceHelperInterface
     {
         if (null !== $this->persistenceHelper) {
             return $this->persistenceHelper;
@@ -184,9 +183,9 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     /**
      * Returns the event dispatcher mock.
      *
-     * @return EventDispatcherInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @return EventDispatcherInterface|MockObject
      */
-    protected function getEventDispatcherMock()
+    protected function getEventDispatcherMock(): EventDispatcherInterface
     {
         if (null !== $this->eventDispatcher) {
             return $this->eventDispatcher;
@@ -198,9 +197,9 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
     /**
      * Returns the subject helper mock.
      *
-     * @return SubjectHelperInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @return SubjectHelperInterface|MockObject
      */
-    protected function getSubjectHelperMock()
+    protected function getSubjectHelperMock(): SubjectHelperInterface
     {
         if (null !== $this->subjectHelper) {
             return $this->subjectHelper;

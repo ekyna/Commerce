@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  */
 class SupplierDeliveryTest extends TestCase
 {
-    public function test_setOrder_withOrder()
+    public function test_setOrder_withOrder(): void
     {
         $delivery = new SupplierDelivery();
         $order = new SupplierOrder();
@@ -25,7 +25,7 @@ class SupplierDeliveryTest extends TestCase
         $this->assertTrue($order->hasDelivery($delivery));
     }
 
-    public function test_setOrder_withNull()
+    public function test_setOrder_withNull(): void
     {
         $delivery = new SupplierDelivery();
         $order = new SupplierOrder();
@@ -37,7 +37,7 @@ class SupplierDeliveryTest extends TestCase
         $this->assertFalse($order->hasDelivery($delivery));
     }
 
-    public function test_setOrder_withAnotherOrder()
+    public function test_setOrder_withAnotherOrder(): void
     {
         $delivery = new SupplierDelivery();
         $orderA = new SupplierOrder();
@@ -51,7 +51,7 @@ class SupplierDeliveryTest extends TestCase
         $this->assertFalse($orderA->hasDelivery($delivery));
     }
 
-    public function test_addItem()
+    public function test_addItem(): void
     {
         $delivery = new SupplierDelivery();
         $item = new SupplierDeliveryItem();
@@ -62,7 +62,7 @@ class SupplierDeliveryTest extends TestCase
         $this->assertTrue($delivery->hasItem($item));
     }
 
-    public function test_removeItem()
+    public function test_removeItem(): void
     {
         $delivery = new SupplierDelivery();
         $item = new SupplierDeliveryItem();

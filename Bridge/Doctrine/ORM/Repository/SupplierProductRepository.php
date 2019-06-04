@@ -91,7 +91,7 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
     /**
      * @inheritDoc
      */
-    public function findBySubjectAndSupplier(
+    public function findOneBySubjectAndSupplier(
         SubjectInterface $subject,
         SupplierInterface $supplier,
         SupplierProductInterface $exclude = null

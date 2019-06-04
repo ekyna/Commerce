@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  */
 class SupplierOrderItemTest extends TestCase
 {
-    public function test_setOrder_withOrder()
+    public function test_setOrder_withOrder(): void
     {
         $item = new SupplierOrderItem();
         $order = new SupplierOrder();
@@ -25,7 +25,7 @@ class SupplierOrderItemTest extends TestCase
         $this->assertTrue($order->hasItem($item));
     }
 
-    public function test_setOrder_withNull()
+    public function test_setOrder_withNull(): void
     {
         $item = new SupplierOrderItem();
         $order = new SupplierOrder();
@@ -37,7 +37,7 @@ class SupplierOrderItemTest extends TestCase
         $this->assertFalse($order->hasItem($item));
     }
 
-    public function test_setOrder_withAnotherOrder()
+    public function test_setOrder_withAnotherOrder(): void
     {
         $item = new SupplierOrderItem();
         $orderA = new SupplierOrder();
@@ -51,7 +51,7 @@ class SupplierOrderItemTest extends TestCase
         $this->assertFalse($orderA->hasItem($item));
     }
     
-    public function test_setStockUnit_withUnit()
+    public function test_setStockUnit_withUnit(): void
     {
         $item = new SupplierOrderItem();
         $unit = new StockUnit();
@@ -62,7 +62,7 @@ class SupplierOrderItemTest extends TestCase
         $this->assertEquals($item, $unit->getSupplierOrderItem());
     }
 
-    public function test_setStockUnit_withNull()
+    public function test_setStockUnit_withNull(): void
     {
         $item = new SupplierOrderItem();
         $unit = new StockUnit();
@@ -74,7 +74,7 @@ class SupplierOrderItemTest extends TestCase
         $this->assertNull($unit->getSupplierOrderItem());
     }
 
-    public function test_setStockUnit_withAnotherUnit()
+    public function test_setStockUnit_withAnotherUnit(): void
     {
         $item = new SupplierOrderItem();
         $unitA = new StockUnit();

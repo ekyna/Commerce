@@ -79,7 +79,7 @@ abstract class AbstractView
     private function setClasses(array $classes)
     {
         if (!empty($classes)) {
-            $this->vars['attr']['class'] = ' ' . trim(implode(' ', $classes));
+            $this->vars['attr']['class'] = trim(implode(' ', $classes));
         } else {
             unset($this->vars['attr']['class']);
         }

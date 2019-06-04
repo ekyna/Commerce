@@ -52,6 +52,22 @@ trait SubjectRelativeTrait
     }
 
     /**
+     * Sets the subject identity.
+     *
+     * @param SubjectIdentity $identity
+     *
+     * @return $this|SubjectRelativeInterface
+     *
+     * @internal
+     */
+    public function setSubjectIdentity(SubjectIdentity $identity)
+    {
+        $this->subjectIdentity = $identity;
+
+        return $this;
+    }
+
+    /**
      * Clears the subject identity.
      *
      * @return $this|SubjectRelativeInterface

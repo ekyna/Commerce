@@ -17,7 +17,7 @@ class StockUnitStateResolverTest extends BaseStockTestCase
     /**
      * @covers StockUnitStateResolver::resolve()
      */
-    public function test_resolve_newState()
+    public function test_resolve_newState(): void
     {
         $unit = Fixtures::createStockUnit();
 
@@ -28,7 +28,7 @@ class StockUnitStateResolverTest extends BaseStockTestCase
     /**
      * @covers StockUnitStateResolver::resolve()
      */
-    public function test_resolve_pendingState_withoutReceivedQuantity()
+    public function test_resolve_pendingState_withoutReceivedQuantity(): void
     {
         $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10);
 
@@ -39,7 +39,7 @@ class StockUnitStateResolverTest extends BaseStockTestCase
     /**
      * @covers StockUnitStateResolver::resolve()
      */
-    public function test_resolve_pendingState_withReceivedQuantity()
+    public function test_resolve_pendingState_withReceivedQuantity(): void
     {
         $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 5, 5, 5);
 
@@ -50,7 +50,7 @@ class StockUnitStateResolverTest extends BaseStockTestCase
     /**
      * @covers StockUnitStateResolver::resolve()
      */
-    public function test_resolve_readyState()
+    public function test_resolve_readyState(): void
     {
         $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
 
@@ -61,7 +61,7 @@ class StockUnitStateResolverTest extends BaseStockTestCase
     /**
      * @covers StockUnitStateResolver::resolve()
      */
-    public function test_resolve_closedState()
+    public function test_resolve_closedState(): void
     {
         $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10, 10, 10);
 

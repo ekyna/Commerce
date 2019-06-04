@@ -62,7 +62,7 @@ class SupplierProductValidator extends ConstraintValidator
         /** @var \Ekyna\Component\Commerce\Subject\Model\SubjectInterface $subject */
         $subject = $this->subjectHelper->resolve($value);
 
-        $duplicate = $this->repository->findBySubjectAndSupplier(
+        $duplicate = $this->repository->findOneBySubjectAndSupplier(
             $subject,
             $value->getSupplier(),
             null !== $value->getId() ? $value : null

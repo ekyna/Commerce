@@ -11,6 +11,8 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
  * Interface SupplierProductRepositoryInterface
  * @package Ekyna\Component\Commerce\Supplier\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method SupplierProductInterface createNew()
  */
 interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
 {
@@ -59,7 +61,7 @@ interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return SupplierProductInterface
      */
-    public function findBySubjectAndSupplier(
+    public function findOneBySubjectAndSupplier(
         SubjectInterface $subject,
         SupplierInterface $supplier,
         SupplierProductInterface $exclude = null

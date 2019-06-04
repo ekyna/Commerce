@@ -46,7 +46,7 @@ final class SupplierUtil
     static public function calculateDeliveryRemainingQuantity($item)
     {
         if ($item instanceof SupplierOrderItemInterface) {
-            return $item->getQuantity() - static::calculateReceivedQuantity($item);
+            return $item->getQuantity() - self::calculateReceivedQuantity($item);
         }
 
         if (!$item instanceof SupplierDeliveryItemInterface) {
@@ -59,7 +59,7 @@ final class SupplierUtil
 
         $orderItem = $item->getOrderItem();
 
-        $result = $orderItem->getQuantity() - static::calculateReceivedQuantity($orderItem);
+        $result = $orderItem->getQuantity() - self::calculateReceivedQuantity($orderItem);
 
         if (0 < $item->getQuantity()) {
             $result += $item->getQuantity();

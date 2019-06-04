@@ -5,8 +5,8 @@ namespace Ekyna\Component\Commerce\Tests\Stock\Linker;
 use Acme\Product\Entity\StockUnit;
 use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
 use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinker;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
-use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
 
@@ -14,8 +14,6 @@ use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
  * Class StockUnitLinkerTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Linker
  * @author  Etienne Dauvergne <contact@ekyna.com>
- *
- * TODO Rename test methods
  */
 class StockUnitLinkerTest extends BaseStockTestCase
 {
@@ -28,15 +26,12 @@ class StockUnitLinkerTest extends BaseStockTestCase
     /**
      * @inheritDoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
-        parent::setUp();
-
         $this->linker = new StockUnitLinker(
             $this->getPersistenceHelperMock(),
+            $this->getStockUnitUpdaterMock(),
             $this->getStockUnitResolverMock(),
-            new StockUnitStateResolver(),
-            $this->getSaleFactory(),
             $this->getCurrencyConverter()
         );
     }
@@ -46,33 +41,47 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     protected function tearDown()
     {
-        parent::tearDown();
-
-        unset($this->linker);
+        $this->linker = null;
     }
 
     /**
-     * @covers StockUnitLinker::linkItem()
+     * Supplier order item      New stock unit
+     *  |----------------|    |----------------|
+     *  |                |    | Ordered     20 |
+     *  |       20       |--->| Sold         0 |
+     *  |                |    |                |
+     *  |----------------|    |----------------|
      */
-    public function test_link_item()
+    public function test_linkItem(): void
     {
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 20, 12)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
 
-        // Given the stock unit resolver will not find an available stock unit
+        // Given the stock unit resolver will not find a linkable stock unit
         $this->getStockUnitResolverMock()
+            ->expects($this->once())
             ->method('findLinkable')
             ->with($supplierItem)
             ->willReturn(null);
 
-        // Given the stock unit resolver will return a new stock unit
+        // Given the stock unit resolver will create a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
+            ->expects($this->once())
             ->method('createBySubjectRelative')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
+
+        // Then the stock unit updated should be called
+        $this->getStockUnitUpdaterMock()
+            ->expects($this->once())
+            ->method('updateOrdered')
+            ->willReturnCallback(function(StockUnitInterface $unit) {
+                $unit->setOrderedQuantity(20);
+                Fixtures::resolveStockUnitState($unit);
+            })
+            ->with($newStockUnit, 20, false);
 
         // Test
         $this->linker->linkItem($supplierItem);
@@ -94,14 +103,22 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::linkItem()
+     * Supplier order item    Existing stock unit
+     *  |----------------|    |----------------|
+     *  |                |    | Ordered     20 |
+     *  |                |    | Sold        10 |
+     *  |                |    |                |
+     *  |       20       |--->| Assignments    |
+     *  |                |    | |------------| |
+     *  |                |    | |     10     | |
+     *  |                |    | |------------| |
+     *  |----------------|    |----------------|
      */
-    public function test_link_item_while_no_overflow()
+    public function test_linkItem_whileNoOverflow(): void
     {
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 20, 12)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
 
         // Given the subject has been sold for 10 quantity
         $orderItem = Fixtures::createOrderItem(10);
@@ -114,11 +131,15 @@ class StockUnitLinkerTest extends BaseStockTestCase
             ->with($supplierItem)
             ->willReturn($stockUnit);
 
-        // Given the stock unit resolver will return a new stock unit
-//        $this->getUnitResolver()
-//            ->method('createBySubjectRelative')
-//            ->with($supplierItem)
-//            ->willReturn(new StockUnit());
+        // Then the stock unit updated should be called
+        $this->getStockUnitUpdaterMock()
+            ->expects($this->once())
+            ->method('updateOrdered')
+            ->willReturnCallback(function(StockUnitInterface $unit) {
+                $unit->setOrderedQuantity(20);
+                Fixtures::resolveStockUnitState($unit);
+            })
+            ->with($stockUnit, 20, false);
 
         // Test
         $this->linker->linkItem($supplierItem);
@@ -147,14 +168,26 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::linkItem()
+     * Supplier order item    Existing stock unit     New stock unit
+     *  |----------------|    |----------------|    |----------------|
+     *  |                |    | Ordered (0) 20 |    | Ordered      0 |
+     *  |                |    | Sold   (30) 20 |    | Sold    (0) 10 |
+     *  |                |    |                |    |                |
+     *  |                |    | Assignments    |    | Assignments    |
+     *  |                |    | |------------| |    |                |
+     *  |       20       |--->| |     20     | |    |                |
+     *  |                |    | |------------| |    |                |
+     *  |                |    |                |    |                |
+     *  |                |    | .............. |    | |------------| |
+     *  |                |    | .     10     .------->|     10     | |
+     *  |                |    | .............. |    | |------------| |
+     *  |----------------|    |----------------|    |----------------|
      */
-    public function test_link_item_by_moving_assignment()
+    public function test_linkItem_byMovingAssignment(): void
     {
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 20, 12)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
 
         // Given the subject has been sold for 20 quantity and 10 quantity
         $orderItemA = Fixtures::createOrderItem(20)->setOrder(
@@ -180,6 +213,16 @@ class StockUnitLinkerTest extends BaseStockTestCase
             ->method('createBySubjectRelative')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
+
+        // Then the stock unit updated should be called with
+        $this->getStockUnitUpdaterMock()
+            ->expects($this->once())
+            ->method('updateOrdered')
+            ->willReturnCallback(function(StockUnitInterface $unit) {
+                $unit->setOrderedQuantity(20);
+                Fixtures::resolveStockUnitState($unit);
+            })
+            ->with($linkableStockUnit, 20, false);
 
         // Test
         $this->linker->linkItem($supplierItem);
@@ -228,14 +271,26 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::linkItem()
+     * Supplier order item    Existing stock unit     New stock unit
+     *  |----------------|    |----------------|    |----------------|
+     *  |                |    | Ordered (0) 20 |    | Ordered      0 |
+     *  |                |    | Sold   (30) 20 |    | Sold    (0) 10 |
+     *  |                |    |                |    |                |
+     *  |                |    | Assignments    |    | Assignments    |
+     *  |                |    | |------------| |    |                |
+     *  |       20       |--->| |     15     | |    |                |
+     *  |                |    | |------------| |    |                |
+     *  |                |    |                |    |                |
+     *  |                |    | |------------| |    | |------------| |
+     *  |                |    | |   (15) 5   |------->|     10     | |
+     *  |                |    | |------------| |    | |------------| |
+     *  |----------------|    |----------------|    |----------------|
      */
-    public function test_link_item_by_splitting_assignment()
+    public function test_linkItem_bySplittingAssignment(): void
     {
         // Given the subject is ordered for 20 quantity with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(20, 12)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 20, 12)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
 
         // Given the subject has been sold for 15 quantity and 15 quantity
         $orderItemA = Fixtures::createOrderItem(15)->setOrder(
@@ -312,12 +367,21 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::applyItem()
+     *  Supplier order item     Linked stock unit
+     *  |-----------------|    |-----------------|
+     *  |                 |    | Ordered (20) 25 |
+     *  |                 |    | Sold         20 |
+     *  |                 |    |                 |
+     *  |     (20) 25     |----| Assignments     |
+     *  |                 |    | |-------------| |
+     *  |                 |    | |     20      | |
+     *  |                 |    | |-------------| |
+     *  |-----------------|    |-----------------|
      */
-    public function test_apply_item_with_positive_change()
+    public function test_applyItem_withPositiveChange(): void
     {
         // Given the subject is ordered for 25 quantity (20 before update) with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(25, 12);
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 25, 12);
 
         // Given the subject has been ordered for 20 quantity
         $linkedStockUnit = Fixtures::createStockUnit()
@@ -364,12 +428,25 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::applyItem()
+     *  Supplier order item     Linked stock unit       New stock unit
+     *  |-----------------|    |-----------------|    ...................
+     *  |                 |    | Ordered (20) 30 |    . Ordered       0 .
+     *  |                 |    | Sold    (20) 30 |    . Sold     (10) 0 .
+     *  |                 |    |                 |    .                 .
+     *  |                 |    | Assignments     |    . Assignments     .
+     *  |                 |    | |-------------| |    .                 .
+     *  |    (20) 30      |----| |     20      | |    .                 .
+     *  |                 |    | |-------------| |    .                 .
+     *  |                 |    |                 |    .                 .
+     *  |                 |    | |-------------| |    . ............... .
+     *  |                 |    | |     10      |<-------.     10      . .
+     *  |                 |    | |-------------| |    . ............... .
+     *  |-----------------|    |-----------------|    ...................
      */
-    public function test_apply_item_with_positive_change_by_moving_assignment()
+    public function test_applyItem_withPositiveChange_byMovingAssignment(): void
     {
         // Given the subject is ordered for 30 quantity (20 before change) with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(30, 12);
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 30, 12);
 
         // Given the subject has been sold for 30 quantity
         $orderItemA = Fixtures::createOrderItem(20)->setOrder(
@@ -457,12 +534,25 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::applyItem()
+     *  Supplier order item     Linked stock unit       New stock unit
+     *  |-----------------|    |-----------------|    |----------------|
+     *  |                 |    | Ordered (20) 30 |    | Ordered      0 |
+     *  |                 |    | Sold    (20) 30 |    | Sold   (20) 10 |
+     *  |                 |    |                 |    |                |
+     *  |                 |    | Assignments     |    | Assignments    |
+     *  |                 |    | |-------------| |    |                |
+     *  |     (20) 30     |----| |     15      | |    |                |
+     *  |                 |    | |-------------| |    |                |
+     *  |                 |    |                 |    |                |
+     *  |                 |    | |-------------| |    | |------------| |
+     *  |                 |    | |   (5) 15    |<-------|  (20) 10   | |
+     *  |                 |    | |-------------| |    | |------------| |
+     *  |-----------------|    |-----------------|    |----------------|
      */
-    public function test_apply_item_with_positive_change_by_splitting_assignment()
+    public function test_applyItem_withPositiveChange_bySplittingAssignment(): void
     {
         // Given the subject is ordered for 30 quantity (20 before change) with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(30, 12);
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 30, 12);
 
         // Given the subject has been sold for 40 quantity
         $orderItemA = Fixtures::createOrderItem(15)->setOrder(
@@ -551,12 +641,21 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::applyItem()
+     *  Supplier order item     Linked stock unit
+     *  |-----------------|    |-----------------|
+     *  |                 |    | Ordered (25) 20 |
+     *  |                 |    | Sold         20 |
+     *  |                 |    |                 |
+     *  |     (25) 20     |----| Assignments     |
+     *  |                 |    | |-------------| |
+     *  |                 |    | |     20      | |
+     *  |                 |    | |-------------| |
+     *  |-----------------|    |-----------------|
      */
-    public function test_apply_item_with_negative_change()
+    public function test_applyItem_withNegativeChange(): void
     {
         // Given the subject is ordered for 20 quantity (25 before update) with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(20, 12);
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 20, 12);
 
         // Given the subject has been ordered for 20 quantity
         $orderItemA = Fixtures::createOrderItem(20)->setOrder(
@@ -608,9 +707,22 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::applyItem()
+     *  Supplier order item     Linked stock unit       New stock unit
+     *  |-----------------|    |-----------------|    |----------------|
+     *  |                 |    | Ordered (30) 20 |    | Ordered      0 |
+     *  |                 |    | Sold    (30) 20 |    | Sold    (0) 10 |
+     *  |                 |    |                 |    |                |
+     *  |                 |    | Assignments     |    | Assignments    |
+     *  |                 |    | |-------------| |    |                |
+     *  |     (30) 20     |----| |     20      | |    |                |
+     *  |                 |    | |-------------| |    |                |
+     *  |                 |    |                 |    |                |
+     *  |                 |    | ............... |    | |------------| |
+     *  |                 |    | .     10      .------->|     10     | |
+     *  |                 |    | ............... |    | |------------| |
+     *  |-----------------|    |-----------------|    |----------------|
      */
-    public function test_apply_item_with_negative_change_by_moving_assignment()
+    public function test_applyItem_withNegativeChange_byMovingAssignment(): void
     {
         // Given the subject is ordered for 20 quantity (30 before change) with a cost of 12 euros
         $supplierItem = Fixtures::createSupplierOrderItem(20, 12);
@@ -698,9 +810,22 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::applyItem()
+     *  Supplier order item     Linked stock unit       New stock unit
+     *  |-----------------|    |-----------------|    |----------------|
+     *  |                 |    | Ordered (30) 20 |    | Ordered      0 |
+     *  |                 |    | Sold    (30) 20 |    | Sold    (0) 10 |
+     *  |                 |    |                 |    |                |
+     *  |                 |    | Assignments     |    | Assignments    |
+     *  |                 |    | |-------------| |    |                |
+     *  |     (30) 20     |----| |     15      | |    |                |
+     *  |                 |    | |-------------| |    |                |
+     *  |                 |    |                 |    |                |
+     *  |                 |    | |-------------| |    | |------------| |
+     *  |                 |    | |   (15) 5    |------->|     10     | |
+     *  |                 |    | |-------------| |    | |------------| |
+     *  |-----------------|    |-----------------|    |----------------|
      */
-    public function test_apply_item_with_negative_change_by_splitting_assignment()
+    public function test_applyItem_withNegativeChange_bySplittingAssignment(): void
     {
         // Given the subject is ordered for 20 quantity (30 before change) with a cost of 12 euros
         $supplierItem = Fixtures::createSupplierOrderItem(20, 12);
@@ -791,12 +916,36 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::applyItem()
+     *  Supplier order item     Linked stock unit       New stock unit
+     *  |-----------------|    |-----------------|     |----------------|
+     *  |                 |    | Ordered (30) 20 |     | Ordered      0 |
+     *  |                 |    | Sold    (30) 20 |     | Sold     (0) 5 |
+     *  |                 |    |                 |     |                |
+     *  |                 |    | Assignments     |     | Assignments    |
+     *  |                 |    | |-------------| |     |                |
+     *  |     (30) 20     |----| |   15 [A]    | |     |                |
+     *  |                 |    | |-------------| |     |                |
+     *  |                 |    |                 |     |                |
+     *  |                 |    | |-------------| |     | |------------| |
+     *  |                 |    | | (15) 5 [B]  |-------->|     5      | |
+     *  |                 |    | |-------------| |  |  | |------------| |
+     *  |-----------------|    |-----------------|  |  |----------------|
+     *                                              |
+     *                         Pending stock unit   |
+     *                         |----------------|   |
+     *                         | Ordered     15 |   |
+     *                         | Sold   (10) 15 |   |
+     *                         |                |   |
+     *                         | Assignments    |   |
+     *                         | |------------| |   |
+     *                         | |   10 (15)  |<----|
+     *                         | |------------| |
+     *                         |----------------|
      */
-    public function test_apply_item_with_negative_change_by_moving_and_splitting_assignment()
+    public function test_applyItem_withNegativeChange_byMovingAndSplittingAssignment(): void
     {
         // Given the subject is ordered for 20 quantity (30 before change) with a cost of 12 euros
-        $supplierItemA = Fixtures::createSupplierOrderItem(20, 12);
+        $supplierItemA = Fixtures::createSupplierOrderItem(null, 20, 12);
 
         // Given the subject has been sold for 30
         $orderItemA = Fixtures::createOrderItem(15)->setOrder(
@@ -824,9 +973,8 @@ class StockUnitLinkerTest extends BaseStockTestCase
             ->willReturn([30, 20]);
 
         // Given the stock unit resolver will return a pending stock unit
-        $supplierItemB = Fixtures::createSupplierOrderItem(15, 14)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItemB = Fixtures::createSupplierOrderItem(null, 15, 14)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
         $pendingStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(15)
             ->setSoldQuantity(10)
@@ -917,12 +1065,21 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::unlinkItem()
+     *  Supplier order item     Linked stock unit
+     *  ...................    |-----------------|
+     *  .                 .    | Ordered  (25) 0 |
+     *  .                 .    | Sold         20 |
+     *  .                 .    |                 |
+     *  .     (25) 0      .....| Assignments     |
+     *  .                 .    | |-------------| |
+     *  .                 .    | |     20      | |
+     *  .                 .    | |-------------| |
+     *  ...................    |-----------------|
      */
-    public function test_unlink_item()
+    public function test_unlinkItem(): void
     {
         // Given the subject is ordered for 25 quantity with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(25, 12);
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 25, 12);
 
         // Given the subject has been sold for 20 quantity
         $orderItem = Fixtures::createOrderItem(20)->setOrder(
@@ -975,14 +1132,22 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::unlinkItem()
+     *  Supplier order item     Linked stock unit       New stock unit
+     *  ...................    ...................    |----------------|
+     *  .                 .    . Ordered (25)  0 .    | Ordered      0 |
+     *  .                 .    . Sold    (20)  0 .    | Sold   (10) 30 |
+     *  .                 .    .                 .    |                |
+     *  .     (25) 0      ...... Assignments     .    | Assignments    |
+     *  .                 .    . ............... .    | |------------| |
+     *  .                 .    . .     20      .------->|   (10) 30  | |
+     *  .                 .    . ............... .    | |------------| |
+     *  ...................    ...................    |----------------|
      */
-    public function test_unlink_item_by_moving_assignment()
+    public function test_unlinkItem_byMovingAssignment(): void
     {
         // Given the subject is ordered for 25 quantity with a cost of 12 euros
-        $supplierItem = Fixtures::createSupplierOrderItem(25, 12)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItem = Fixtures::createSupplierOrderItem(null, 25, 12)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
 
         // Given the subject has been sold for 20 quantity
         $orderItem = Fixtures::createOrderItem(20)->setOrder(
@@ -1057,14 +1222,22 @@ class StockUnitLinkerTest extends BaseStockTestCase
     }
 
     /**
-     * @covers StockUnitLinker::unlinkItem()
+     *  Supplier order item     Linked stock unit      Pending stock unit
+     *  ...................    |-----------------|    |-----------------|
+     *  .                 .    | Ordered (25)  0 |    | Ordered      20 |
+     *  .                 .    | Sold    (20) 10 |    | Sold    (10) 20 |
+     *  .                 .    |                 |    |                 |
+     *  .     (25) 0      .....| Assignments     |    | Assignments     |
+     *  .                 .    | |-------------| |    | |-------------| |
+     *  .                 .    | |   (20) 10   |-|----->|   (10) 20   | |
+     *  .                 .    | |-------------| |    | |-------------| |
+     *  ...................    |-----------------|    |-----------------|
      */
-    public function test_unlink_item_by_splitting_assignment()
+    public function test_unlinkItem_bySplittingAssignment(): void
     {
         // Given the subject is ordered for 25 quantity with a cost of 12 euros
-        $supplierItemA = Fixtures::createSupplierOrderItem(25, 12)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItemA = Fixtures::createSupplierOrderItem(null, 25, 12)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
 
         // Given the subject has been sold for 20 quantity
         $orderItemA = Fixtures::createOrderItem(20)->setOrder(
@@ -1078,9 +1251,8 @@ class StockUnitLinkerTest extends BaseStockTestCase
         Fixtures::createStockAssignment($stockUnit, $orderItemA, 20);
 
         // Given the stock unit resolver will return a pending stock unit
-        $supplierItemB = Fixtures::createSupplierOrderItem(20, 14)->setOrder(
-            Fixtures::createSupplierOrder()->setOrderedAt(new \DateTime())
-        );
+        $supplierItemB = Fixtures::createSupplierOrderItem(null, 20, 14)
+            ->setOrder(Fixtures::createSupplierOrder(null, null, 'now'));
         $pendingStockUnit = Fixtures::createStockUnit()
             ->setOrderedQuantity(20)
             ->setSoldQuantity(10)
@@ -1141,5 +1313,37 @@ class StockUnitLinkerTest extends BaseStockTestCase
         $this->assertEquals($orderItemA, $assignments[0]->getOrderItem());
         // Then the assignment's sold quantity should equal 20
         $this->assertEquals(20, $assignments[0]->getSoldQuantity());
+    }
+
+    /**
+     *  Supplier order item     Linked stock unit       New stock unit
+     *  ...................    ...................     |----------------|
+     *  .                 .    . Ordered (30)  0 .     | Ordered      0 |
+     *  .                 .    . Sold    (30)  0 .     | Sold    (0) 25 |
+     *  .                 .    .                 .     |                |
+     *  .                 .    . Assignments     .     | Assignments    |
+     *  .                 .    . ............... .     | |------------| |
+     *  .     (30) 0      ...... .  (15) 0 [A] .-------->|     15     | |
+     *  .                 .    . ............... .     | |------------| |
+     *  .                 .    .                 .     |                |
+     *  .                 .    . ............... .     | |------------| |
+     *  .                 .    . . (15) 0 [B]  .-------->|     10     | |
+     *  .                 .    . ............... .  |  | |------------| |
+     *  ...................    ...................  |  |----------------|
+     *                                              |
+     *                         Pending stock unit   |
+     *                         |----------------|   |
+     *                         | Ordered     15 |   |
+     *                         | Sold   (10) 15 |   |
+     *                         |                |   |
+     *                         | Assignments    |   |
+     *                         | |------------| |   |
+     *                         | |   10 (15)  |<----|
+     *                         | |------------| |
+     *                         |----------------|
+     */
+    public function test_unlinkItem_byMovingAndSplittingAssignment(): void
+    {
+        $this->markTestIncomplete(); // TODO
     }
 }

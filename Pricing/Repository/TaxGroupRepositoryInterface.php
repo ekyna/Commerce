@@ -17,5 +17,5 @@ interface TaxGroupRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return TaxGroupInterface
      */
-    public function findDefault();
+    public function findDefault(): TaxGroupInterface;
 }

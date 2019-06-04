@@ -323,10 +323,13 @@ class ViewBuilder
             $quantity = $this->formatter->number($item->getTotalQuantity());
         }
 
+        if (!($item->isConfigurable() && $item->isCompound() && !$item->hasPrivateChildren())) {
+            $view->setReference($item->getReference());
+        }
+
         $view
             ->setDesignation($item->getDesignation())
             ->setDescription($item->getDescription())
-            ->setReference($item->getReference())
             ->setUnit($unit)
             ->setQuantity($quantity)
             ->setGross($gross)

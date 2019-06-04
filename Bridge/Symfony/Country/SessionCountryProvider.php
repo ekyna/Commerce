@@ -64,12 +64,12 @@ class SessionCountryProvider extends CountryProvider
      */
     public function getCurrentCountry(): string
     {
-        if ($this->currentCountry) {
+        if (!empty($this->currentCountry)) {
             return $this->currentCountry;
         }
 
         if ($this->session->has($this->key)) {
-            if (null !== $country = $this->session->get($this->key)) {
+            if (!empty($country = $this->session->get($this->key))) {
                 parent::setCountry($country);
 
                 return $this->currentCountry;

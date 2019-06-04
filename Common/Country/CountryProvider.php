@@ -67,11 +67,11 @@ class CountryProvider implements CountryProviderInterface
      */
     public function getCurrentCountry(): string
     {
-        if ($this->currentCountry) {
+        if (!empty($this->currentCountry)) {
             return $this->currentCountry;
         }
 
-        if (null !== $country = $this->guessCountry()) {
+        if (!empty($country = $this->guessCountry())) {
             return $this->currentCountry = $country;
         }
 

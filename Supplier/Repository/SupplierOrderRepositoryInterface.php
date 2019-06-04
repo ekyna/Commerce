@@ -9,16 +9,11 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
  * Interface SupplierOrderRepositoryInterface
  * @package Ekyna\Component\Commerce\Supplier\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method Model\SupplierOrderInterface createNew()
  */
 interface SupplierOrderRepositoryInterface extends ResourceRepositoryInterface
 {
-    /**
-     * Creates a new supplier order instance.
-     *
-     * @return Model\SupplierOrderInterface
-     */
-    public function createNew();
-
     /**
      * Finds the supplier orders with state 'new' by supplier.
      *

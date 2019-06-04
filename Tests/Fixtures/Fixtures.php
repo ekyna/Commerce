@@ -62,7 +62,7 @@ class Fixtures
      *
      * @param StockM\StockUnitInterface $stockUnit
      */
-    private static function resolveStockUnitState(StockM\StockUnitInterface $stockUnit)
+    public static function resolveStockUnitState(StockM\StockUnitInterface $stockUnit)
     {
         if (null === static::$stockUnitStateResolver) {
             static::$stockUnitStateResolver = new StockUnitStateResolver();
@@ -325,7 +325,7 @@ class Fixtures
     {
         $unit = new Acme\StockUnit();
 
-        if (null === $subject) {
+        if (null === $subject && $item && null === $subject = $item->getSubjectIdentity()->getSubject()) {
             $subject = static::createSubject();
         }
 
@@ -403,17 +403,17 @@ class Fixtures
      * Creates a new supplier order.
      *
      * @param string $currency
-     * @param string $createAt
+     * @param string $createdAt
      * @param string $orderedAt
      *
      * @return SupplierE\SupplierOrder
      */
-    public static function createSupplierOrder($currency = 'EUR', $createAt = 'now', $orderedAt = null)
+    public static function createSupplierOrder($currency = null, $createdAt = null, $orderedAt = null)
     {
         $order = new SupplierE\SupplierOrder();
         $order
-            ->setCurrency(static::getCurrencyByCode($currency))
-            ->setCreatedAt(new \DateTime($createAt));
+            ->setCurrency(static::getCurrencyByCode($currency ?? 'EUR'))
+            ->setCreatedAt(new \DateTime($createdAt ?? 'now'));
 
         if ($orderedAt) {
             $order->setOrderedAt(new \DateTime($orderedAt));

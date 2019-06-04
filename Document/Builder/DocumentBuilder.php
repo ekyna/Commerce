@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
+use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -20,6 +21,11 @@ use Symfony\Component\Intl\Intl;
 class DocumentBuilder implements DocumentBuilderInterface
 {
     /**
+     * @var LocaleProviderInterface
+     */
+    protected $localeProvider;
+
+    /**
      * @var PhoneNumberUtil
      */
     private $phoneNumberUtil;
@@ -28,10 +34,12 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * Constructor.
      *
-     * @param PhoneNumberUtil $phoneNumberUtil
+     * @param LocaleProviderInterface $localeProvider
+     * @param PhoneNumberUtil         $phoneNumberUtil
      */
-    public function __construct(PhoneNumberUtil $phoneNumberUtil = null)
+    public function __construct(LocaleProviderInterface $localeProvider, PhoneNumberUtil $phoneNumberUtil = null)
     {
+        $this->localeProvider = $localeProvider;
         $this->phoneNumberUtil = $phoneNumberUtil ?: PhoneNumberUtil::getInstance();
     }
 
@@ -63,6 +71,10 @@ class DocumentBuilder implements DocumentBuilderInterface
     {
         if (null === $sale = $document->getSale()) {
             throw new LogicException("Invoice's sale must be set at this point.");
+        }
+
+        if (!$sale->getLocale()) {
+            $sale->setLocale($this->localeProvider->getCurrentLocale());
         }
 
         $changed = false;

@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
  */
 class SupplierOrderAttachmentTest extends TestCase
 {
-    public function test_setOrder_withOrder()
+    public function test_setOrder_withOrder(): void
     {
         $attachment = new SupplierOrderAttachment();
         $order = new SupplierOrder();
@@ -24,7 +24,7 @@ class SupplierOrderAttachmentTest extends TestCase
         $this->assertTrue($order->hasAttachment($attachment));
     }
 
-    public function test_setOrder_withNull()
+    public function test_setOrder_withNull(): void
     {
         $attachment = new SupplierOrderAttachment();
         $order = new SupplierOrder();
@@ -36,7 +36,7 @@ class SupplierOrderAttachmentTest extends TestCase
         $this->assertFalse($order->hasAttachment($attachment));
     }
 
-    public function test_setOrder_withAnotherOrder()
+    public function test_setOrder_withAnotherOrder(): void
     {
         $attachment = new SupplierOrderAttachment();
         $orderA = new SupplierOrder();

@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
  */
 class SupplierOrderTest extends TestCase
 {
-    public function test_addItem()
+    public function test_addItem(): void
     {
         $order = new SupplierOrder();
         $item = new SupplierOrderItem();
@@ -26,7 +26,7 @@ class SupplierOrderTest extends TestCase
         $this->assertTrue($order->hasItem($item));
     }
 
-    public function test_removeItem()
+    public function test_removeItem(): void
     {
         $order = new SupplierOrder();
         $item = new SupplierOrderItem();
@@ -38,7 +38,7 @@ class SupplierOrderTest extends TestCase
         $this->assertFalse($order->hasItem($item));
     }
     
-    public function test_addDelivery()
+    public function test_addDelivery(): void
     {
         $order = new SupplierOrder();
         $delivery = new SupplierDelivery();
@@ -49,7 +49,7 @@ class SupplierOrderTest extends TestCase
         $this->assertTrue($order->hasDelivery($delivery));
     }
 
-    public function test_removeDelivery()
+    public function test_removeDelivery(): void
     {
         $order = new SupplierOrder();
         $delivery = new SupplierDelivery();
@@ -61,7 +61,7 @@ class SupplierOrderTest extends TestCase
         $this->assertFalse($order->hasDelivery($delivery));
     }
     
-    public function test_addAttachment()
+    public function test_addAttachment(): void
     {
         $order = new SupplierOrder();
         $attachment = new SupplierOrderAttachment();
@@ -72,7 +72,7 @@ class SupplierOrderTest extends TestCase
         $this->assertTrue($order->hasAttachment($attachment));
     }
 
-    public function test_removeAttachment()
+    public function test_removeAttachment(): void
     {
         $order = new SupplierOrder();
         $attachment = new SupplierOrderAttachment();

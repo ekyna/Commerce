@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumberUtil;
 
 /**
@@ -41,15 +42,17 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      * @param SaleFactoryInterface        $factory
      * @param InvoiceCalculatorInterface  $invoiceCalculator
      * @param ShipmentCalculatorInterface $shipmentCalculator
+     * @param LocaleProviderInterface     $localeProvider
      * @param PhoneNumberUtil             $phoneNumberUtil
      */
     public function __construct(
         SaleFactoryInterface $factory,
         InvoiceCalculatorInterface $invoiceCalculator,
         ShipmentCalculatorInterface $shipmentCalculator,
+        LocaleProviderInterface $localeProvider,
         PhoneNumberUtil $phoneNumberUtil = null
     ) {
-        parent::__construct($phoneNumberUtil);
+        parent::__construct($localeProvider, $phoneNumberUtil);
 
         $this->saleFactory = $factory;
         $this->invoiceCalculator = $invoiceCalculator;
