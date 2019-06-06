@@ -195,7 +195,7 @@ final class ShipmentStates
     }
 
     /**
-     * Returns the debit stock states.
+     * Returns the stockable states.
      *
      * @return array
      */
@@ -211,7 +211,7 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether the given state is a stock state.
+     * Returns whether the given state is a stockable state.
      *
      * @param string $state
      *

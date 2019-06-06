@@ -11,9 +11,9 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
  * @package Ekyna\Component\Commerce\Order\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderInterface|null findOneById($id)
- * @method OrderInterface|null findOneByKey($key)
- * @method OrderInterface|null findOneByNumber($number)
+ * @method OrderInterface|null findOneById(int $id)
+ * @method OrderInterface|null findOneByKey(string $key)
+ * @method OrderInterface|null findOneByNumber(string $number)
  */
 interface OrderRepositoryInterface extends SaleRepositoryInterface
 {

@@ -18,5 +18,14 @@ interface InvoicePaymentResolverInterface
      *
      * @return Model\InvoicePayment[]
      */
-    public function resolve(Model\InvoiceInterface $invoice);
+    public function resolve(Model\InvoiceInterface $invoice): array;
+
+    /**
+     * Returns the invoice's paid total.
+     *
+     * @param Model\InvoiceInterface $invoice
+     *
+     * @return float
+     */
+    public function getPaidTotal(Model\InvoiceInterface $invoice): float;
 }

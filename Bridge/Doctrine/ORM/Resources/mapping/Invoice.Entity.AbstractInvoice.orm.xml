@@ -27,6 +27,7 @@
         <field name="comment" column="comment" type="text" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
 
+        <field name="dueDate" type="datetime" column="due_date" nullable="true"/>
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
         </field>

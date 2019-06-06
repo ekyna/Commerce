@@ -88,11 +88,11 @@ abstract class AbstractPaymentRepository extends ResourceRepository implements P
 
         $start = clone $date;
         $start->modify('first day of this month');
-        $start->setTime(0,0,0);
+        $start->setTime(0, 0, 0, 0);
 
         $end = clone $date;
         $end->modify('last day of this month');
-        $end->setTime(23,59,59);
+        $end->setTime(23, 59, 59, 999999);
 
         return $qb
             ->andWhere($qb->expr()->between('p.completedAt', ':start', ':end'))

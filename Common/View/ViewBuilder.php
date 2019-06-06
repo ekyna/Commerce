@@ -323,7 +323,10 @@ class ViewBuilder
             $quantity = $this->formatter->number($item->getTotalQuantity());
         }
 
-        if (!($item->isConfigurable() && $item->isCompound() && !$item->hasPrivateChildren())) {
+        if (
+            $this->options['private'] ||
+            !($item->isConfigurable() && $item->isCompound() && !$item->hasPrivateChildren())
+        ) {
             $view->setReference($item->getReference());
         }
 

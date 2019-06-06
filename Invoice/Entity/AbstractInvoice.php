@@ -24,6 +24,11 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     protected $id;
 
     /**
+     * @var \DateTime
+     */
+    protected $dueDate;
+
+    /**
      * @var PaymentMethodInterface
      */
     protected $paymentMethod;
@@ -36,6 +41,7 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     {
         parent::__construct();
 
+        $this->createdAt = new \DateTime();
         $this->type = Invoice\InvoiceTypes::TYPE_INVOICE;
     }
 
@@ -58,7 +64,25 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     /**
      * @inheritdoc
      */
-    public function setPaymentMethod($method = null)
+    public function getDueDate()
+    {
+        return $this->dueDate;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDueDate(\DateTime $dueDate = null)
+    {
+        $this->dueDate = $dueDate;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPaymentMethod(PaymentMethodInterface $method = null)
     {
         $this->paymentMethod = $method;
 

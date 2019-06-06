@@ -59,6 +59,11 @@ class Line
      */
     private $dueDate;
 
+    /**
+     * @var bool;
+     */
+    private $done = false;
+
 
     /**
      * Constructor.
@@ -183,5 +188,29 @@ class Line
     public function getDueDate(): ?\DateTime
     {
         return $this->dueDate;
+    }
+
+    /**
+     * Returns the done.
+     *
+     * @return bool
+     */
+    public function isDone(): bool
+    {
+        return $this->done;
+    }
+
+    /**
+     * Sets the done.
+     *
+     * @param bool $done
+     *
+     * @return Line
+     */
+    public function setDone(bool $done): self
+    {
+        $this->done = $done;
+
+        return $this;
     }
 }

@@ -39,7 +39,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     /**
      * @inheritdoc
      */
-    public function resolve(IM\InvoiceInterface $invoice)
+    public function resolve(IM\InvoiceInterface $invoice): array
     {
         $id = spl_object_id($invoice);
 
@@ -51,11 +51,30 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     }
 
     /**
+     * Returns the invoice's paid total.
+     *
+     * @param IM\InvoiceInterface $invoice
+     *
+     * @return float
+     */
+    public function getPaidTotal(IM\InvoiceInterface $invoice): float
+    {
+        $payments = $this->resolve($invoice);
+
+        $total = 0;
+        foreach ($payments as $payment) {
+            $total += $payment->getAmount();
+        }
+
+        return $total;
+    }
+
+    /**
      * Builds invoice payments for the given sale.
      *
      * @param SaleInterface $sale
      */
-    protected function buildInvoicePayments(SaleInterface $sale)
+    protected function buildInvoicePayments(SaleInterface $sale): void
     {
         $currency = $sale->getCurrency()->getCode(); // TODO Deal with currency conversions.
         $payments = $this->buildPaymentList($sale);
@@ -75,11 +94,13 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 if (0 === $c) { // Equal
                     $r->setAmount($p['amount']);
                     $i['total'] = 0;
-                    $p['amount'] = 0; unset($payments[$y]);
+                    $p['amount'] = 0;
+                    unset($payments[$y]);
                 } elseif (1 === $c) { // invoice > payment
                     $r->setAmount($p['amount']);
                     $i['total'] -= $p['amount'];
-                    $p['amount'] = 0; unset($payments[$y]);
+                    $p['amount'] = 0;
+                    unset($payments[$y]);
                 } else { // payment > invoice
                     $r->setAmount($i['total']);
                     $p['amount'] -= $i['total'];
@@ -102,7 +123,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      *
      * @return array
      */
-    protected function buildInvoiceList(IM\InvoiceSubjectInterface $subject)
+    protected function buildInvoiceList(IM\InvoiceSubjectInterface $subject): array
     {
         $invoices = $subject->getInvoices(true)->toArray();
 
@@ -125,7 +146,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      *
      * @return array
      */
-    protected function buildPaymentList(PM\PaymentSubjectInterface $subject)
+    protected function buildPaymentList(PM\PaymentSubjectInterface $subject): array
     {
         // TODO Deal with refund when implemented
         $payments = array_filter($subject->getPayments()->toArray(), function (PM\PaymentInterface $p) {

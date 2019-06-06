@@ -208,7 +208,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         $today = new \DateTime();
-        $today->setTime(0, 0, 0);
+        $today->setTime(0, 0, 0, 0);
 
         if ($eda < $today) {
             return null;

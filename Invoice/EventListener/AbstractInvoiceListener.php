@@ -86,31 +86,31 @@ abstract class AbstractInvoiceListener
     /**
      * Sets the invoice updater.
      *
-     * @param DocumentBuilderInterface $invoiceBuilder
+     * @param DocumentBuilderInterface $builder
      */
-    public function setInvoiceBuilder(DocumentBuilderInterface $invoiceBuilder)
+    public function setInvoiceBuilder(DocumentBuilderInterface $builder)
     {
-        $this->invoiceBuilder = $invoiceBuilder;
+        $this->invoiceBuilder = $builder;
     }
 
     /**
      * Sets the invoice calculator.
      *
-     * @param DocumentCalculatorInterface $invoiceCalculator
+     * @param DocumentCalculatorInterface $calculator
      */
-    public function setInvoiceCalculator(DocumentCalculatorInterface $invoiceCalculator)
+    public function setInvoiceCalculator(DocumentCalculatorInterface $calculator)
     {
-        $this->invoiceCalculator = $invoiceCalculator;
+        $this->invoiceCalculator = $calculator;
     }
 
     /**
-     * Sets the customerUpdater.
+     * Sets the customer updater.
      *
-     * @param CustomerUpdaterInterface $customerUpdater
+     * @param CustomerUpdaterInterface $updater
      */
-    public function setCustomerUpdater(CustomerUpdaterInterface $customerUpdater)
+    public function setCustomerUpdater(CustomerUpdaterInterface $updater)
     {
-        $this->customerUpdater = $customerUpdater;
+        $this->customerUpdater = $updater;
     }
 
     /**

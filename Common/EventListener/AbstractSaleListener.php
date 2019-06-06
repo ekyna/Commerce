@@ -9,8 +9,11 @@ use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
+use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Resolver\DueDateResolverInterface;
 use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
@@ -52,6 +55,11 @@ abstract class AbstractSaleListener
      * @var SaleUpdaterInterface
      */
     protected $saleUpdater;
+
+    /**
+     * @var DueDateResolverInterface
+     */
+    protected $dueDateResolver;
 
     /**
      * @var StateResolverInterface
@@ -105,7 +113,7 @@ abstract class AbstractSaleListener
     }
 
     /**
-     * Sets the pricingUpdater.
+     * Sets the pricing updater.
      *
      * @param PricingUpdaterInterface $updater
      */
@@ -115,13 +123,23 @@ abstract class AbstractSaleListener
     }
 
     /**
+     * Sets the due date resolver.
+     *
+     * @param DueDateResolverInterface $resolver
+     */
+    public function setDueDateResolver(DueDateResolverInterface $resolver)
+    {
+        $this->dueDateResolver = $resolver;
+    }
+
+    /**
      * Sets the sale factory.
      *
-     * @param SaleFactoryInterface $saleFactory
+     * @param SaleFactoryInterface $factory
      */
-    public function setSaleFactory(SaleFactoryInterface $saleFactory)
+    public function setSaleFactory(SaleFactoryInterface $factory)
     {
-        $this->saleFactory = $saleFactory;
+        $this->saleFactory = $factory;
     }
 
     /**
@@ -287,6 +305,9 @@ abstract class AbstractSaleListener
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
             $changed |= $this->saleUpdater->updatePaymentTerm($sale);
 
+            // TODO For now customer change is prevented
+            /** @see preventForbiddenChange() */
+
             // TODO Update customer's balances
 
             // TODO For each payments
@@ -419,7 +440,7 @@ abstract class AbstractSaleListener
         $changed |= $this->updateState($sale);
 
         // Update outstanding date
-        $changed |= $this->saleUpdater->updateOutstandingDate($sale);
+        $changed |= $this->updateDueDates($sale);
 
         return $changed;
     }
@@ -829,6 +850,40 @@ abstract class AbstractSaleListener
     {
         if ($this->stateResolver->resolve($sale)) {
             $this->scheduleStateChangeEvent($sale);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Updates the due dates.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether or not the sale has been updated.
+     */
+    protected function updateDueDates(SaleInterface $sale)
+    {
+        if ($sale instanceof InvoiceSubjectInterface) {
+            foreach ($sale->getInvoices() as $invoice) {
+                $resolved = $this->dueDateResolver->resolveInvoiceDueDate($invoice);
+
+                if (DateUtil::equals($resolved, $invoice->getDueDate())) {
+                    continue;
+                }
+
+                $invoice->setDueDate($resolved);
+
+                $this->persistenceHelper->persistAndRecompute($invoice, false);
+            }
+        }
+
+        $date = $this->dueDateResolver->resolveSaleDueDate($sale);
+
+        if (!DateUtil::equals($date, $sale->getOutstandingDate())) {
+            $sale->setOutstandingDate($date);
 
             return true;
         }

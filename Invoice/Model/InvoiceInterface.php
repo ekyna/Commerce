@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
+use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Resource\Model as Resource;
@@ -38,13 +39,29 @@ interface InvoiceInterface extends
     public function getShipment();
 
     /**
+     * Returns the due date.
+     *
+     * @return \DateTime
+     */
+    public function getDueDate();
+
+    /**
+     * Sets the due date.
+     *
+     * @param \DateTime $dueDate
+     *
+     * @return AbstractInvoice
+     */
+    public function setDueDate(\DateTime $dueDate = null);
+
+    /**
      * Sets the payment method.
      *
      * @param PaymentMethodInterface $method
      *
      * @return $this|InvoiceInterface
      */
-    public function setPaymentMethod($method = null);
+    public function setPaymentMethod(PaymentMethodInterface $method = null);
 
     /**
      * Returns the payment method.

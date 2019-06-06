@@ -11,15 +11,11 @@ use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers;
 use Ekyna\Component\Commerce\Payment\Releaser\ReleaserInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\InStore\InStorePlatform;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
 
 /**
@@ -311,22 +307,6 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function updateOutstandingDate(SaleInterface $sale)
-    {
-        $date = $this->resolveOutstandingDate($sale);
-
-        if ($date !== $sale->getOutstandingDate()) {
-            $sale->setOutstandingDate($date);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Updates the total weight.
      *
      * @param SaleInterface $sale
@@ -456,90 +436,5 @@ class SaleUpdater implements SaleUpdaterInterface
         }
 
         return $changed;
-    }
-
-    /**
-     * Resolves the outstanding date.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return \DateTime|null
-     */
-    protected function resolveOutstandingDate(SaleInterface $sale)
-    {
-        if (!$sale instanceof InvoiceSubjectInterface) {
-            return null;
-        }
-        if (!$sale instanceof ShipmentSubjectInterface) {
-            return null;
-        }
-
-        if (null === $term = $sale->getPaymentTerm()) {
-            return null;
-        }
-
-        if (!$this->saleHasOutstandingPayments($sale)) {
-            return null;
-        }
-
-        $from = null;
-        switch ($term->getTrigger()) {
-            case PaymentTermTriggers::TRIGGER_SHIPPED:
-                $from = $sale->getShippedAt();
-                break;
-
-            case PaymentTermTriggers::TRIGGER_FULLY_SHIPPED:
-                if ($sale->getShipmentState() === ShipmentStates::STATE_COMPLETED) {
-                    $from = $sale->getShippedAt(true);
-                }
-                break;
-
-            case PaymentTermTriggers::TRIGGER_INVOICED:
-                $from = $sale->getInvoicedAt();
-                break;
-
-            case PaymentTermTriggers::TRIGGER_FULLY_INVOICED:
-                if ($sale->getInvoiceState() === InvoiceStates::STATE_COMPLETED) {
-                    $from = $sale->getInvoicedAt(true);
-                }
-                break;
-        }
-
-        if (null === $from) {
-            return null;
-        }
-
-        // Calculate outstanding date
-        $date = clone $from;
-        $date->setTime(23, 59, 59);
-        $date->modify(sprintf('+%s days', $term->getDays()));
-        if ($term->getEndOfMonth()) {
-            $date->modify('last day of this month');
-        }
-
-        return $date;
-    }
-
-    /**
-     * Returns whether the sale has (accepted/expired) outstanding payments.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
-     */
-    protected function saleHasOutstandingPayments(SaleInterface $sale)
-    {
-        $allowedStates = [
-            PaymentStates::STATE_CAPTURED,
-            PaymentStates::STATE_AUTHORIZED,
-            PaymentStates::STATE_EXPIRED,
-        ];
-        foreach ($sale->getPayments() as $payment) {
-            if ($payment->getMethod()->isOutstanding() && in_array($payment->getState(), $allowedStates, true)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

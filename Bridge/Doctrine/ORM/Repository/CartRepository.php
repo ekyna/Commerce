@@ -11,9 +11,9 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method CartInterface|null findOneById($id)
- * @method CartInterface|null findOneByKey($key)
- * @method CartInterface|null findOneByNumber($number)
+ * @method CartInterface|null findOneById(int $id)
+ * @method CartInterface|null findOneByKey(string $key)
+ * @method CartInterface|null findOneByNumber(string $number)
  */
 class CartRepository extends AbstractSaleRepository implements CartRepositoryInterface
 {
@@ -41,7 +41,7 @@ class CartRepository extends AbstractSaleRepository implements CartRepositoryInt
         $qb = $this->createQueryBuilder('c');
 
         $today = new \DateTime();
-        $today->setTime(0, 0, 0);
+        $today->setTime(0, 0, 0, 0);
 
         return $qb
             ->andWhere($qb->expr()->lt('c.expiresAt', ':today'))

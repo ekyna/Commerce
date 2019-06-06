@@ -100,15 +100,6 @@ interface SaleUpdaterInterface
     public function updatePaymentTerm(Model\SaleInterface $sale);
 
     /**
-     * Updates the outstanding limit date.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return bool Whether or not the sale has been updated.
-     */
-    public function updateOutstandingDate(Model\SaleInterface $sale);
-
-    /**
      * Updates the totals (weights and amounts).
      *
      * @param Model\SaleInterface $sale

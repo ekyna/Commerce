@@ -6,8 +6,8 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Quote\Model;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Commerce\Quote\Model;
 
 /**
  * Class Quote
@@ -360,7 +360,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
             return false;
         }
 
-        $diff = $this->expiresAt->diff((new \DateTime())->setTime(0,0,0));
+        $diff = $this->expiresAt->diff((new \DateTime())->setTime(0, 0, 0, 0));
 
         return 0 < $diff->days && !$diff->invert;
     }

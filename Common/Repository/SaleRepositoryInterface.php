@@ -21,7 +21,7 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return SaleInterface|null
      */
-    public function findOneById($id);
+    public function findOneById(int $id);
 
     /**
      * Finds the sale by its key.
@@ -30,7 +30,7 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return SaleInterface|null
      */
-    public function findOneByKey($key);
+    public function findOneByKey(string $key);
 
     /**
      * Finds the sale by its number.
@@ -39,7 +39,7 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return SaleInterface|null
      */
-    public function findOneByNumber($number);
+    public function findOneByNumber(string $number);
 
     /**
      * Finds the sales by customer, optionally filtered by states.
@@ -60,7 +60,7 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return SaleInterface|null
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number);
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number);
 
     /**
      * Finds the sales by subject, optionally filtered by states.

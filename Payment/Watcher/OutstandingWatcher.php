@@ -52,7 +52,7 @@ abstract class OutstandingWatcher implements WatcherInterface
         }
 
         $today = new \DateTime();
-        $today->setTime(0, 0, 0);
+        $today->setTime(0, 0, 0, 0);
 
         $fromDate = clone $today;
         $fromDate->modify('-1 year');

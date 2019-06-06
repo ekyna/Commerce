@@ -18,9 +18,9 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderInterface|null findOneById($id)
- * @method OrderInterface|null findOneByKey($key)
- * @method OrderInterface|null findOneByNumber($number)
+ * @method OrderInterface|null findOneById(int $id)
+ * @method OrderInterface|null findOneByKey(string $key)
+ * @method OrderInterface|null findOneByNumber(string $number)
  */
 class OrderRepository extends AbstractSaleRepository implements OrderRepositoryInterface
 {
@@ -67,7 +67,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     /**
      * @inheritdoc
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number)
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number)
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -158,7 +158,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         return $query
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Type::DATETIME)
             ->useQueryCache(true)
             ->getResult();
     }
@@ -316,7 +316,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ))
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Type::DATETIME)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
 
         $this->setDueParameters($qb);
@@ -345,7 +345,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ))
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Type::DATETIME)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
 
         $this->setDueParameters($qb);

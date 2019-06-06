@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Export;
 
-use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
-use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
+use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
@@ -15,8 +14,6 @@ use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
  */
 class OrderExporter
 {
-    use FormatterAwareTrait;
-
     /**
      * @var OrderRepositoryInterface
      */
@@ -27,12 +24,10 @@ class OrderExporter
      * Constructor.
      *
      * @param OrderRepositoryInterface $repository
-     * @param FormatterFactory         $formatterFactory
      */
-    public function __construct(OrderRepositoryInterface $repository, FormatterFactory $formatterFactory)
+    public function __construct(OrderRepositoryInterface $repository)
     {
         $this->repository = $repository;
-        $this->formatterFactory = $formatterFactory;
     }
 
     /**
@@ -199,10 +194,8 @@ class OrderExporter
         $date = null;
         $term = null;
 
-        $formatter = $this->getFormatter();
-
         if (null !== $date = $order->getOutstandingDate()) {
-            $date = $formatter->date($date);
+            $date = $date->format(DateUtil::DATE_FORMAT);
         }
         if (null !== $term = $order->getPaymentTerm()) {
             $term = $term->getName();
@@ -219,7 +212,7 @@ class OrderExporter
             'due_amount'          => $order->getGrandTotal() - $order->getPaidTotal(),
             'outstanding_expired' => $order->getOutstandingExpired(),
             'outstanding_date'    => $date,
-            'created_at'          => $formatter->date($order->getCreatedAt()),
+            'created_at'          => $order->getCreatedAt()->format(DateUtil::DATE_FORMAT),
         ];
     }
 }

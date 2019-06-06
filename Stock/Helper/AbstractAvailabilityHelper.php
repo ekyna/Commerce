@@ -79,7 +79,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             // Resupply quantity/message
             if ((0 < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
                 $today = new \DateTime();
-                $today->setTime(23, 59, 59);
+                $today->setTime(23, 59, 59, 999999);
                 if ($today < $eda && 0 < $rQty = $qty - $aQty) {
                     $rMsg = $this->translate('pre_order', [
                         '%eda%' => $formatter->date($eda),
@@ -154,7 +154,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
         // TODO Only if stock mode === JUST_IN_TIME (?)
         if (($quantity < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
             $today = new \DateTime();
-            $today->setTime(23, 59, 59);
+            $today->setTime(23, 59, 59, 999999);
             if ($today < $eda) {
                 return $this->translate('pre_order', [
                     '%eda%' => $formatter->date($eda),

@@ -34,6 +34,11 @@ class Balance
     /**
      * @var bool
      */
+    private $notDone;
+
+    /**
+     * @var bool
+     */
     private $public;
 
     /**
@@ -51,6 +56,7 @@ class Balance
      */
     private $debit;
 
+
     /**
      * Constructor.
      *
@@ -58,6 +64,7 @@ class Balance
      * @param \DateTime         $from
      * @param \DateTime         $to
      * @param bool              $byOrder
+     * @param bool              $notDone
      * @param bool              $public
      */
     public function __construct(
@@ -65,12 +72,14 @@ class Balance
         \DateTime $from = null,
         \DateTime $to = null,
         bool $byOrder = false,
+        bool $notDone = false,
         bool $public = true
     ) {
         $this->customer = $customer;
         $this->from = $from;
         $this->to = $to;
         $this->byOrder = $byOrder;
+        $this->notDone = $notDone;
         $this->public = $public;
     }
 
@@ -104,7 +113,7 @@ class Balance
     public function setFrom(\DateTime $from = null): self
     {
         if ($from) {
-            $from->setTime(0, 0, 0);
+            $from->setTime(0, 0, 0, 0);
         }
 
         $this->from = $from;
@@ -132,7 +141,7 @@ class Balance
     public function setTo(\DateTime $to = null): self
     {
         if ($to) {
-            $to->setTime(23, 59, 59);
+            $to->setTime(23, 59, 59, 999999);
         }
 
         $this->to = $to;
@@ -160,6 +169,30 @@ class Balance
     public function setByOrder(bool $byOrder): self
     {
         $this->byOrder = $byOrder;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether to display only the "not done" lines.
+     *
+     * @return bool
+     */
+    public function isNotDone(): bool
+    {
+        return $this->notDone;
+    }
+
+    /**
+     * Sets whether to display only the "not done" lines.
+     *
+     * @param bool $notDone
+     *
+     * @return Balance
+     */
+    public function setNotDone(bool $notDone): self
+    {
+        $this->notDone = $notDone;
 
         return $this;
     }

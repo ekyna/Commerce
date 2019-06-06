@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Export;
 
-use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
-use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
+use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterface;
@@ -15,8 +14,6 @@ use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterfac
  */
 class SupplierOrderExporter
 {
-    use FormatterAwareTrait;
-
     /**
      * @var SupplierOrderRepositoryInterface
      */
@@ -27,12 +24,10 @@ class SupplierOrderExporter
      * Constructor.
      *
      * @param SupplierOrderRepositoryInterface $repository
-     * @param FormatterFactory                 $formatterFactory
      */
-    public function __construct(SupplierOrderRepositoryInterface $repository, FormatterFactory $formatterFactory)
+    public function __construct(SupplierOrderRepositoryInterface $repository)
     {
         $this->repository = $repository;
-        $this->formatterFactory = $formatterFactory;
     }
 
     /**
@@ -168,28 +163,26 @@ class SupplierOrderExporter
         $date = null;
         $term = null;
 
-        $formatter = $this->getFormatter();
-
         if (null !== $orderedAt = $order->getOrderedAt()) {
-            $orderedAt = $formatter->date($orderedAt);
+            $orderedAt = $orderedAt->format(DateUtil::DATE_FORMAT);
         }
         if (null !== $completedAt = $order->getCompletedAt()) {
-            $completedAt = $formatter->date($completedAt);
+            $completedAt = $completedAt->format(DateUtil::DATE_FORMAT);
         }
         if (null !== $paymentDate = $order->getPaymentDate()) {
-            $paymentDate = $formatter->date($paymentDate);
+            $paymentDate = $paymentDate->format(DateUtil::DATE_FORMAT);
         }
         if (null !== $paymentDueDate = $order->getPaymentDueDate()) {
-            $paymentDueDate = $formatter->date($paymentDueDate);
+            $paymentDueDate = $paymentDueDate->format(DateUtil::DATE_FORMAT);
         }
         if (null !== $carrier = $order->getCarrier()) {
             $carrier = $carrier->getName();
         }
         if (null !== $forwarderDate = $order->getForwarderDate()) {
-            $forwarderDate = $formatter->date($forwarderDate);
+            $forwarderDate = $forwarderDate->format(DateUtil::DATE_FORMAT);
         }
         if (null !== $forwarderDueDate = $order->getForwarderDueDate()) {
-            $forwarderDueDate = $formatter->date($forwarderDueDate);
+            $forwarderDueDate = $forwarderDueDate->format(DateUtil::DATE_FORMAT);
         }
 
         return [

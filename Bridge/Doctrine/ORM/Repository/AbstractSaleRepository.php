@@ -18,7 +18,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
-    public function findOneById($id)
+    public function findOneById(int $id)
     {
         $qb = $this->getOneQueryBuilder('o');
 
@@ -41,7 +41,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
-    public function findOneByKey($key)
+    public function findOneByKey(string $key)
     {
         $qb = $this->getOneQueryBuilder('o');
 
@@ -64,7 +64,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
-    public function findOneByNumber($number)
+    public function findOneByNumber(string $number)
     {
         $qb = $this->getOneQueryBuilder('o');
 
@@ -110,7 +110,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number)
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number)
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -140,7 +140,7 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritdoc
      */
-    public function findBySubject(SubjectInterface  $subject, array $states = [])
+    public function findBySubject(SubjectInterface $subject, array $states = [])
     {
         $qb = $this->createQueryBuilder('o');
         $qb

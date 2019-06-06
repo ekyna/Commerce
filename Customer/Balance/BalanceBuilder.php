@@ -25,6 +25,11 @@ class BalanceBuilder
      */
     protected $paymentRepository;
 
+    /**
+     * @var array
+     */
+    protected $orders;
+
 
     /**
      * Constructor.
@@ -47,6 +52,8 @@ class BalanceBuilder
      */
     public function build(Balance $balance): void
     {
+        $this->orders = [];
+
         $invoices = $this
             ->invoiceRepository
             ->findByCustomerAndDateRange($balance->getCustomer(), $balance->getFrom(), $balance->getTo(), true);
@@ -59,7 +66,26 @@ class BalanceBuilder
 
         $this->buildPayments($balance, $payments);
 
+        $this->setDoneLines($balance);
+
         $balance->sortLines();
+    }
+
+    /**
+     * Adds the order balance.
+     *
+     * @param int   $orderId
+     * @param float $balance
+     */
+    private function addOrderBalance(int $orderId, float $balance): void
+    {
+        if (isset($this->orders[$orderId])) {
+            $this->orders[$orderId] += $balance;
+
+            return;
+        }
+
+        $this->orders[$orderId] = $balance;
     }
 
     /**
@@ -99,6 +125,8 @@ class BalanceBuilder
 
             $balance->addLine($line);
 
+            $this->addOrderBalance($data['orderId'], $credit - $debit);
+
             // TODO Remove whe payment refund (type) will be implemented
             if ($data['type'] === InvoiceTypes::TYPE_CREDIT && $data['factoryName'] === CreditBalance::FACTORY_NAME) {
                 $line = new Line(
@@ -113,6 +141,8 @@ class BalanceBuilder
                 );
 
                 $balance->addLine($line);
+
+                $this->addOrderBalance($data['orderId'], $data['grandTotal']);
             }
         }
     }
@@ -148,6 +178,26 @@ class BalanceBuilder
             );
 
             $balance->addLine($line);
+
+            $this->addOrderBalance($data['orderId'], $credit - $debit);
+        }
+    }
+
+    /**
+     * Marks lines as done if they are.
+     *
+     * @param Balance $balance
+     */
+    private function setDoneLines(Balance $balance): void
+    {
+        foreach ($balance->getLines() as $line) {
+            if (!isset($this->orders[$line->getOrderId()])) {
+                continue;
+            }
+
+            if (0 === bccomp($this->orders[$line->getOrderId()], 0, 2)) {
+                $line->setDone(true);
+            }
         }
     }
 }
