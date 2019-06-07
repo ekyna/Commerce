@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Invoice\Repository;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 
 /**
  * Interface InvoiceRepositoryInterface
@@ -28,9 +29,9 @@ interface InvoiceRepositoryInterface
      * @param CustomerInterface $customer
      * @param string            $number
      *
-     * @return InvoiceInterface[]
+     * @return InvoiceInterface|null
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): array;
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): ?OrderInvoiceInterface;
 
     /**
      * Finds invoices (and credits) by month.

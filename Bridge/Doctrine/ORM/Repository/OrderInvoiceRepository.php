@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants as CreditBalan
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
@@ -132,7 +133,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
      *
      * @return OrderInvoiceInterface
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): array
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): ?OrderInvoiceInterface
     {
         $qb = $this->createQueryBuilder('i');
 
@@ -193,12 +194,14 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->andWhere($qb->expr()->eq('i.type', ':type'))
             ->andWhere($qb->expr()->isNotNull('i.dueDate'))
             ->andWhere($qb->expr()->lte('i.dueDate', ':today'))
+            ->andWhere($qb->expr()->in('o.state', ':states'))
             ->andWhere($qb->expr()->eq('o.sample', ':sample'))
             ->andWhere($qb->expr()->lt('o.paidTotal', 'o.grandTotal'))
             ->addOrderBy('i.dueDate', 'ASC')
             ->getQuery()
             ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
             ->setParameter('today', $today, Type::DATETIME)
+            ->setParameter('states', [OrderStates::STATE_ACCEPTED, OrderStates::STATE_COMPLETED])
             ->setParameter('sample', false)
             ->getResult();
     }
@@ -218,12 +221,14 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->andWhere($qb->expr()->eq('i.type', ':type'))
             ->andWhere($qb->expr()->isNotNull('i.dueDate'))
             ->andWhere($qb->expr()->gt('i.dueDate', ':today'))
+            ->andWhere($qb->expr()->in('o.state', ':states'))
             ->andWhere($qb->expr()->eq('o.sample', ':sample'))
             ->andWhere($qb->expr()->lt('o.paidTotal', 'o.grandTotal'))
             ->addOrderBy('i.dueDate', 'ASC')
             ->getQuery()
             ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
             ->setParameter('today', $today, Type::DATETIME)
+            ->setParameter('states', [OrderStates::STATE_ACCEPTED, OrderStates::STATE_COMPLETED])
             ->setParameter('sample', false)
             ->getResult();
     }

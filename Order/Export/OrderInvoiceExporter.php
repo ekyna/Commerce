@@ -97,20 +97,17 @@ class OrderInvoiceExporter
 
         // Total row
         fputcsv($handle, [
-            'id'             => '',
+            'date'           => '',
             'number'         => '',
-            'currency'       => '',
+            'order_date'     => '',
+            'order_number'   => '',
+            'voucher_number' => '',
+            'company'        => '',
             'grand_total'    => $grandTotal,
             'paid_total'     => $paidTotal,
+            'currency'       => '',
             'due_date'       => '',
-            'order_id'       => '',
-            'order_number'   => '',
-            'company'        => '',
-            'payment_state'  => '',
-            'shipment_state' => '',
-            'invoice_state'  => '',
             'payment_term'   => '',
-            'order_date'     => '',
         ], ';', '"');
 
         fclose($handle);
@@ -126,20 +123,17 @@ class OrderInvoiceExporter
     protected function buildHeaders(): array
     {
         return [
-            'id',
+            'date',
             'number',
-            'currency',
+            'order_date',
+            'order_number',
+            'voucher_number',
+            'company',
             'grand_total',
             'paid_total',
+            'currency',
             'due_date',
-            'order_id',
-            'order_number',
-            'company',
-            'payment_state',
-            'shipment_state',
-            'invoice_state',
             'payment_term',
-            'order_date',
         ];
     }
 
@@ -170,20 +164,17 @@ class OrderInvoiceExporter
         }
 
         return [
-            'id'             => $order->getId(),
+            'date'           => $invoice->getCreatedAt()->format(DateUtil::DATE_FORMAT),
             'number'         => $invoice->getNumber(),
-            'currency'       => $invoice->getCurrency(),
+            'order_date'     => $order->getCreatedAt()->format(DateUtil::DATE_FORMAT),
+            'order_number'   => $order->getNumber(),
+            'voucher_number' => $order->getVoucherNumber(),
+            'company'        => $order->getCompany(),
             'grand_total'    => $grandTotal,
             'paid_total'     => $paidTotal,
+            'currency'       => $invoice->getCurrency(),
             'due_date'       => $dueDate,
-            'order_id'       => $order->getId(),
-            'order_number'   => $order->getNumber(),
-            'company'        => $order->getCompany(),
-            'payment_state'  => $order->getPaymentState(),
-            'shipment_state' => $order->getShipmentState(),
-            'invoice_state'  => $order->getInvoiceState(),
             'payment_term'   => $term,
-            'order_date'     => $order->getCreatedAt()->format(DateUtil::DATE_FORMAT),
         ];
     }
 }
