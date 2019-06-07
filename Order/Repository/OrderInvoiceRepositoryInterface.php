@@ -38,6 +38,20 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
     ): array;
 
     /**
+     * Finds invoices of unpaid orders with due date lower than today.
+     *
+     * @return OrderInvoiceInterface[]
+     */
+    public function findDueInvoices(): array;
+
+    /**
+     * Finds invoices of unpaid orders with due date greater than today.
+     *
+     * @return OrderInvoiceInterface[]
+     */
+    public function findFallInvoices(): array;
+
+    /**
      * Returns the customer invoices amounts sum.
      *
      * @param CustomerInterface $customer

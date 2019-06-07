@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Invoice\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model as IM;
 use Ekyna\Component\Commerce\Payment\Model as PM;
 
@@ -41,6 +42,10 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      */
     public function resolve(IM\InvoiceInterface $invoice): array
     {
+        if ($invoice->getType() !== IM\InvoiceTypes::TYPE_INVOICE) {
+            throw new RuntimeException(sprintf("Expected invoice of type '%s'.", IM\InvoiceTypes::TYPE_INVOICE));
+        }
+
         $id = spl_object_id($invoice);
 
         if (!isset($this->cache[$id])) {

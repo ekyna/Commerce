@@ -11,6 +11,10 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  */
 class Balance
 {
+    public const FILTER_ALL             = 'all';
+    public const FILTER_DUE_INVOICES    = 'due_invoices';
+    public const FILTER_BEFALL_INVOICES = 'befall_invoices';
+
     /**
      * @var CustomerInterface
      */
@@ -27,14 +31,9 @@ class Balance
     private $to;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $byOrder;
-
-    /**
-     * @var bool
-     */
-    private $notDone;
+    private $filter;
 
     /**
      * @var bool
@@ -63,23 +62,20 @@ class Balance
      * @param CustomerInterface $customer
      * @param \DateTime         $from
      * @param \DateTime         $to
-     * @param bool              $byOrder
-     * @param bool              $notDone
+     * @param string            $filter
      * @param bool              $public
      */
     public function __construct(
         CustomerInterface $customer,
         \DateTime $from = null,
         \DateTime $to = null,
-        bool $byOrder = false,
-        bool $notDone = false,
+        string $filter = self::FILTER_ALL,
         bool $public = true
     ) {
         $this->customer = $customer;
         $this->from = $from;
         $this->to = $to;
-        $this->byOrder = $byOrder;
-        $this->notDone = $notDone;
+        $this->filter = $filter;
         $this->public = $public;
     }
 
@@ -150,49 +146,25 @@ class Balance
     }
 
     /**
-     * Returns the byOrder.
+     * Returns the filter.
      *
-     * @return bool
+     * @return string
      */
-    public function isByOrder(): bool
+    public function getFilter(): string
     {
-        return $this->byOrder;
+        return $this->filter;
     }
 
     /**
-     * Sets the byOrder.
+     * Sets the filter.
      *
-     * @param bool $byOrder
+     * @param string $filter
      *
      * @return Balance
      */
-    public function setByOrder(bool $byOrder): self
+    public function setFilter(string $filter): self
     {
-        $this->byOrder = $byOrder;
-
-        return $this;
-    }
-
-    /**
-     * Returns whether to display only the "not done" lines.
-     *
-     * @return bool
-     */
-    public function isNotDone(): bool
-    {
-        return $this->notDone;
-    }
-
-    /**
-     * Sets whether to display only the "not done" lines.
-     *
-     * @param bool $notDone
-     *
-     * @return Balance
-     */
-    public function setNotDone(bool $notDone): self
-    {
-        $this->notDone = $notDone;
+        $this->filter = $filter;
 
         return $this;
     }
@@ -300,24 +272,6 @@ class Balance
      */
     public function sortLines(): self
     {
-        if ($this->byOrder) {
-            usort($this->lines, function (Line $a, Line $b) {
-                if ($a->getOrderDate()->getTimestamp() === $b->getOrderDate()->getTimestamp()) {
-                    if ($a->getDate()->getTimestamp() === $b->getDate()->getTimestamp()) {
-                        return 0;
-                    }
-
-                    return $a->getDate()->getTimestamp() > $b->getDate()->getTimestamp()
-                        ? 1 : -1;
-                }
-
-                return $a->getOrderDate()->getTimestamp() > $b->getOrderDate()->getTimestamp()
-                    ? 1 : -1;
-            });
-
-            return $this;
-        }
-
         usort($this->lines, function (Line $a, Line $b) {
             if ($a->getDate()->getTimestamp() === $b->getDate()->getTimestamp()) {
                 return 0;

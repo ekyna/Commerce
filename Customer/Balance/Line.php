@@ -50,6 +50,11 @@ class Line
     private $orderNumber;
 
     /**
+     * @var string
+     */
+    private $voucherNumber;
+
+    /**
      * @var \DateTime
      */
     private $orderDate;
@@ -62,7 +67,7 @@ class Line
     /**
      * @var bool;
      */
-    private $done = false;
+    private $due = false;
 
 
     /**
@@ -75,6 +80,7 @@ class Line
      * @param float     $credit
      * @param int       $orderId
      * @param string    $orderNumber
+     * @param string    $voucherNumber
      * @param \DateTime $orderDate
      * @param \DateTime $dueDate
      */
@@ -86,6 +92,7 @@ class Line
         float $credit,
         int $orderId,
         string $orderNumber,
+        string $voucherNumber,
         \DateTime $orderDate,
         \DateTime $dueDate = null
     ) {
@@ -96,6 +103,7 @@ class Line
         $this->credit = $credit;
         $this->orderId = $orderId;
         $this->orderNumber = $orderNumber;
+        $this->voucherNumber = $voucherNumber;
         $this->orderDate = $orderDate;
         $this->dueDate = $dueDate;
     }
@@ -171,6 +179,16 @@ class Line
     }
 
     /**
+     * Returns the voucher number.
+     *
+     * @return string
+     */
+    public function getVoucherNumber(): string
+    {
+        return $this->voucherNumber;
+    }
+
+    /**
      * Returns the order date.
      *
      * @return \DateTime
@@ -195,21 +213,21 @@ class Line
      *
      * @return bool
      */
-    public function isDone(): bool
+    public function isDue(): bool
     {
-        return $this->done;
+        return $this->due;
     }
 
     /**
      * Sets the done.
      *
-     * @param bool $done
+     * @param bool $due
      *
      * @return Line
      */
-    public function setDone(bool $done): self
+    public function setDue(bool $due): self
     {
-        $this->done = $done;
+        $this->due = $due;
 
         return $this;
     }

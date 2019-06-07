@@ -60,6 +60,7 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
                 'p.completedAt',
                 'o.id as orderId',
                 'o.number as orderNumber',
+                'o.voucherNumber',
                 'o.createdAt as orderDate',
             ]);
         }

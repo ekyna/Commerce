@@ -3,7 +3,11 @@
 namespace Ekyna\Component\Commerce\Customer\Balance;
 
 use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants as CreditBalance;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
+use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderPaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
@@ -26,9 +30,9 @@ class BalanceBuilder
     protected $paymentRepository;
 
     /**
-     * @var array
+     * @var InvoicePaymentResolverInterface
      */
-    protected $orders;
+    protected $invoicePaymentResolver;
 
 
     /**
@@ -36,13 +40,16 @@ class BalanceBuilder
      *
      * @param OrderInvoiceRepositoryInterface $invoiceRepository
      * @param OrderPaymentRepositoryInterface $paymentRepository
+     * @param InvoicePaymentResolverInterface $invoicePaymentResolver
      */
     public function __construct(
         OrderInvoiceRepositoryInterface $invoiceRepository,
-        OrderPaymentRepositoryInterface $paymentRepository
+        OrderPaymentRepositoryInterface $paymentRepository,
+        InvoicePaymentResolverInterface $invoicePaymentResolver
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
+        $this->invoicePaymentResolver = $invoicePaymentResolver;
     }
 
     /**
@@ -52,97 +59,88 @@ class BalanceBuilder
      */
     public function build(Balance $balance): void
     {
-        $this->orders = [];
-
         $invoices = $this
             ->invoiceRepository
-            ->findByCustomerAndDateRange($balance->getCustomer(), $balance->getFrom(), $balance->getTo(), true);
-
-        $this->buildInvoices($balance, $invoices);
+            ->findByCustomerAndDateRange($balance->getCustomer(), $balance->getFrom(), $balance->getTo());
 
         $payments = $this
             ->paymentRepository
-            ->findByCustomerAndDateRange($balance->getCustomer(), $balance->getFrom(), $balance->getTo(), true);
+            ->findByCustomerAndDateRange($balance->getCustomer(), $balance->getFrom(), $balance->getTo());
 
+        $this->buildInvoices($balance, $invoices);
         $this->buildPayments($balance, $payments);
-
-        $this->setDoneLines($balance);
 
         $balance->sortLines();
     }
 
     /**
-     * Adds the order balance.
-     *
-     * @param int   $orderId
-     * @param float $balance
-     */
-    private function addOrderBalance(int $orderId, float $balance): void
-    {
-        if (isset($this->orders[$orderId])) {
-            $this->orders[$orderId] += $balance;
-
-            return;
-        }
-
-        $this->orders[$orderId] = $balance;
-    }
-
-    /**
      * Builds the invoices lines.
      *
-     * @param Balance $balance
-     * @param array   $invoices
+     * @param Balance                 $balance
+     * @param OrderInvoiceInterface[] $invoices
      */
     private function buildInvoices(Balance $balance, array $invoices): void
     {
-        foreach ($invoices as $data) {
+        foreach ($invoices as $invoice) {
             $debit = $credit = 0;
             $dueDate = null;
 
-            if ($data['type'] === InvoiceTypes::TYPE_CREDIT) {
+            if ($invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
                 $type = Line::TYPE_CREDIT;
-                $credit = $data['grandTotal'];
+                $credit = $invoice->getGrandTotal();
             } else {
                 $type = Line::TYPE_INVOICE;
-                $debit = $data['grandTotal'];
-                if ($data['limitDate']) {
-                    $dueDate = new \DateTime($data['limitDate']);
-                }
+                $debit = $invoice->getGrandTotal();
+                $dueDate = $invoice->getDueDate();
             }
 
+            $order = $invoice->getOrder();
+
             $line = new Line(
-                new \DateTime($data['createdAt']),
+                $invoice->getCreatedAt(),
                 $type,
-                $data['number'],
+                $invoice->getNumber(),
                 $debit,
                 $credit,
-                $data['orderId'],
-                $data['orderNumber'],
-                new \DateTime($data['orderDate']),
+                $order->getId(),
+                $order->getNumber(),
+                $order->getVoucherNumber(),
+                $order->getCreatedAt(),
                 $dueDate
             );
 
+            if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
+                $paidTotal = $this->invoicePaymentResolver->getPaidTotal($invoice);
+
+                $line->setDue(1 === Money::compare($invoice->getGrandTotal(), $paidTotal, $invoice->getCurrency()));
+            }
+
             $balance->addLine($line);
 
-            $this->addOrderBalance($data['orderId'], $credit - $debit);
-
             // TODO Remove whe payment refund (type) will be implemented
-            if ($data['type'] === InvoiceTypes::TYPE_CREDIT && $data['factoryName'] === CreditBalance::FACTORY_NAME) {
+            if ($invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+                // TODO Break dependency with bundle
+                /** @var \Ekyna\Bundle\CommerceBundle\Model\PaymentMethodInterface $method */
+                if (!$method = $invoice->getPaymentMethod()) {
+                    continue;
+                }
+                if ($method->getFactoryName() !== CreditBalance::FACTORY_NAME) {
+                    continue;
+                }
+
                 $line = new Line(
-                    new \DateTime($data['createdAt']),
+                    $invoice->getCreatedAt(),
                     Line::TYPE_REFUND,
-                    $data['number'],
-                    $data['grandTotal'],
+                    $invoice->getNumber(),
+                    $invoice->getGrandTotal(),
                     0,
-                    $data['orderId'],
-                    $data['orderNumber'],
-                    new \DateTime($data['orderDate'])
+                    $order->getId(),
+                    $order->getNumber(),
+                    $order->getVoucherNumber(),
+                    $order->getCreatedAt()
                 );
 
                 $balance->addLine($line);
-
-                $this->addOrderBalance($data['orderId'], $data['grandTotal']);
             }
         }
     }
@@ -150,54 +148,37 @@ class BalanceBuilder
     /**
      * Builds the payments lines.
      *
-     * @param Balance $balance
-     * @param array   $payments
+     * @param Balance                 $balance
+     * @param OrderPaymentInterface[] $payments
      */
     private function buildPayments(Balance $balance, array $payments): void
     {
-        foreach ($payments as $data) {
+        foreach ($payments as $payment) {
             $debit = $credit = 0;
 
-            if ($data['state'] === PaymentStates::STATE_REFUNDED) {
+            if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
                 $type = Line::TYPE_REFUND;
-                $debit = $data['amount'];
+                $debit = $payment->getAmount();
             } else {
                 $type = Line::TYPE_PAYMENT;
-                $credit = $data['amount'];
+                $credit = $payment->getAmount();
             }
 
+            $order = $payment->getOrder();
+
             $line = new Line(
-                new \DateTime($data['completedAt']),
+                $payment->getCreatedAt(),
                 $type,
-                $data['number'],
+                $payment->getNumber(),
                 $debit,
                 $credit,
-                $data['orderId'],
-                $data['orderNumber'],
-                new \DateTime($data['orderDate'])
+                $order->getId(),
+                $order->getNumber(),
+                $order->getVoucherNumber(),
+                $order->getCreatedAt()
             );
 
             $balance->addLine($line);
-
-            $this->addOrderBalance($data['orderId'], $credit - $debit);
-        }
-    }
-
-    /**
-     * Marks lines as done if they are.
-     *
-     * @param Balance $balance
-     */
-    private function setDoneLines(Balance $balance): void
-    {
-        foreach ($balance->getLines() as $line) {
-            if (!isset($this->orders[$line->getOrderId()])) {
-                continue;
-            }
-
-            if (0 === bccomp($this->orders[$line->getOrderId()], 0, 2)) {
-                $line->setDone(true);
-            }
         }
     }
 }

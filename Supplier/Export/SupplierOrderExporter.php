@@ -35,7 +35,7 @@ class SupplierOrderExporter
      *
      * @return string The export file path.
      */
-    public function exportSuppliersExpiredDueOrders()
+    public function exportSuppliersExpiredDueOrders(): string
     {
         return $this->buildFile($this->repository->findSuppliersExpiredDue(), 'suppliers_expired');
     }
@@ -45,7 +45,7 @@ class SupplierOrderExporter
      *
      * @return string The export file path.
      */
-    public function exportSuppliersFallDueOrders()
+    public function exportSuppliersFallDueOrders(): string
     {
         return $this->buildFile($this->repository->findSuppliersFallDue(), 'suppliers_fall');
     }
@@ -55,7 +55,7 @@ class SupplierOrderExporter
      *
      * @return string The export file path.
      */
-    public function exportForwardersExpiredDueOrders()
+    public function exportForwardersExpiredDueOrders(): string
     {
         return $this->buildFile($this->repository->findForwardersExpiredDue(), 'suppliers_expired');
     }
@@ -65,7 +65,7 @@ class SupplierOrderExporter
      *
      * @return string The export file path.
      */
-    public function exportForwardersFallDueOrders()
+    public function exportForwardersFallDueOrders(): string
     {
         return $this->buildFile($this->repository->findForwardersFallDue(), 'suppliers_fall');
     }
@@ -78,7 +78,7 @@ class SupplierOrderExporter
      *
      * @return string
      */
-    protected function buildFile(array $orders, string $name)
+    protected function buildFile(array $orders, string $name): string
     {
         if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
             throw new RuntimeException("Failed to create temporary file.");
@@ -132,7 +132,7 @@ class SupplierOrderExporter
      *
      * @return array
      */
-    protected function buildHeaders()
+    protected function buildHeaders(): array
     {
         return [
             'id',
@@ -158,11 +158,8 @@ class SupplierOrderExporter
      *
      * @return array
      */
-    protected function buildRow(SupplierOrderInterface $order)
+    protected function buildRow(SupplierOrderInterface $order): array
     {
-        $date = null;
-        $term = null;
-
         if (null !== $orderedAt = $order->getOrderedAt()) {
             $orderedAt = $orderedAt->format(DateUtil::DATE_FORMAT);
         }

@@ -84,12 +84,13 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
                 'i.number',
                 'i.grandTotal',
                 'i.type',
+                'i.dueDate',
                 'i.createdAt',
                 'm.factoryName',
                 'o.id as orderId',
                 'o.number as orderNumber',
+                'o.voucherNumber',
                 'o.createdAt as orderDate',
-                'o.outstandingDate as limitDate',
             ]);
         }
 
@@ -131,7 +132,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
      *
      * @return OrderInvoiceInterface
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number)
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): array
     {
         $qb = $this->createQueryBuilder('i');
 
@@ -153,7 +154,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * @inheritDoc
      */
-    public function findByMonth(\DateTime $date)
+    public function findByMonth(\DateTime $date): array
     {
         $qb = $this->createQueryBuilder('i');
 
@@ -173,6 +174,56 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getQuery()
             ->setParameter('start', $start, Type::DATETIME)
             ->setParameter('end', $end, Type::DATETIME)
+            ->setParameter('sample', false)
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findDueInvoices(): array
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        $today = new \DateTime();
+        $today->setTime(23, 59, 59, 999999);
+
+        return $qb
+            ->join('i.order', 'o')
+            ->andWhere($qb->expr()->eq('i.type', ':type'))
+            ->andWhere($qb->expr()->isNotNull('i.dueDate'))
+            ->andWhere($qb->expr()->lte('i.dueDate', ':today'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
+            ->andWhere($qb->expr()->lt('o.paidTotal', 'o.grandTotal'))
+            ->addOrderBy('i.dueDate', 'ASC')
+            ->getQuery()
+            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
+            ->setParameter('today', $today, Type::DATETIME)
+            ->setParameter('sample', false)
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findFallInvoices(): array
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        $today = new \DateTime();
+        $today->setTime(23, 59, 59, 999999);
+
+        return $qb
+            ->join('i.order', 'o')
+            ->andWhere($qb->expr()->eq('i.type', ':type'))
+            ->andWhere($qb->expr()->isNotNull('i.dueDate'))
+            ->andWhere($qb->expr()->gt('i.dueDate', ':today'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
+            ->andWhere($qb->expr()->lt('o.paidTotal', 'o.grandTotal'))
+            ->addOrderBy('i.dueDate', 'ASC')
+            ->getQuery()
+            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
+            ->setParameter('today', $today, Type::DATETIME)
             ->setParameter('sample', false)
             ->getResult();
     }

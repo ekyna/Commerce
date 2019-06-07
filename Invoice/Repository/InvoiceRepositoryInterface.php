@@ -20,7 +20,7 @@ interface InvoiceRepositoryInterface
      *
      * @return InvoiceInterface[]
      */
-    public function findByCustomer(CustomerInterface $customer, $limit = null);
+    public function findByCustomer(CustomerInterface $customer, $limit = null): array;
 
     /**
      * Finds invoices by customer.
@@ -30,7 +30,7 @@ interface InvoiceRepositoryInterface
      *
      * @return InvoiceInterface[]
      */
-    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number);
+    public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): array;
 
     /**
      * Finds invoices (and credits) by month.
@@ -39,5 +39,5 @@ interface InvoiceRepositoryInterface
      *
      * @return InvoiceInterface[]
      */
-    public function findByMonth(\DateTime $date);
+    public function findByMonth(\DateTime $date): array;
 }

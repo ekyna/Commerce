@@ -35,7 +35,7 @@ class OrderExporter
      *
      * @return string The export file path.
      */
-    public function exportDueOrders()
+    public function exportDueOrders(): string
     {
         return $this->buildFile($this->repository->findDueOrders(), 'due');
     }
@@ -45,7 +45,7 @@ class OrderExporter
      *
      * @return string The export file path.
      */
-    public function exportAllDueOrders()
+    public function exportAllDueOrders(): string
     {
         $path = tempnam(sys_get_temp_dir(), 'acc');
 
@@ -70,7 +70,7 @@ class OrderExporter
      *
      * @return string The export file path.
      */
-    public function exportRegularDueOrders()
+    public function exportRegularDueOrders(): string
     {
         return $this->buildFile($this->repository->getRegularDueOrders(), 'regular_due');
     }
@@ -80,7 +80,7 @@ class OrderExporter
      *
      * @return string The export file path.
      */
-    public function exportOutstandingExpiredDueOrders()
+    public function exportOutstandingExpiredDueOrders(): string
     {
         return $this->buildFile($this->repository->getOutstandingExpiredDueOrders(), 'outstanding_expired_due');
     }
@@ -90,7 +90,7 @@ class OrderExporter
      *
      * @return string The export file path.
      */
-    public function exportOutstandingFallDueOrders()
+    public function exportOutstandingFallDueOrders(): string
     {
         return $this->buildFile($this->repository->getOutstandingFallDueOrders(), 'outstanding_fall_due');
     }
@@ -100,7 +100,7 @@ class OrderExporter
      *
      * @return string The export file path.
      */
-    public function exportOutstandingPendingDueOrders()
+    public function exportOutstandingPendingDueOrders(): string
     {
         return $this->buildFile($this->repository->getOutstandingPendingDueOrders(), 'outstanding_pending_due');
     }
@@ -113,7 +113,7 @@ class OrderExporter
      *
      * @return string
      */
-    protected function buildFile(array $orders, string $name)
+    protected function buildFile(array $orders, string $name): string
     {
         if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
             throw new RuntimeException("Failed to create temporary file.");
@@ -165,7 +165,7 @@ class OrderExporter
      *
      * @return array
      */
-    protected function buildHeaders()
+    protected function buildHeaders(): array
     {
         return [
             'id',
@@ -189,7 +189,7 @@ class OrderExporter
      *
      * @return array
      */
-    protected function buildRow(OrderInterface $order)
+    protected function buildRow(OrderInterface $order): array
     {
         $date = null;
         $term = null;
