@@ -38,18 +38,40 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
     ): array;
 
     /**
+     * Returns total of invoices from unpaid orders with due date lower than today.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return float
+     */
+    public function getDueTotal(CustomerInterface $customer = null): float;
+
+    /**
      * Finds invoices of unpaid orders with due date lower than today.
+     *
+     * @param CustomerInterface $customer
      *
      * @return OrderInvoiceInterface[]
      */
-    public function findDueInvoices(): array;
+    public function findDueInvoices(CustomerInterface $customer = null): array;
+
+    /**
+     * Returns total of invoices from unpaid orders with due date greater than today.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return float
+     */
+    public function getFallTotal(CustomerInterface $customer = null): float;
 
     /**
      * Finds invoices of unpaid orders with due date greater than today.
      *
+     * @param CustomerInterface $customer
+     *
      * @return OrderInvoiceInterface[]
      */
-    public function findFallInvoices(): array;
+    public function findFallInvoices(CustomerInterface $customer = null): array;
 
     /**
      * Returns the customer invoices amounts sum.

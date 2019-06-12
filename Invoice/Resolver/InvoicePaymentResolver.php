@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Resolver;
 
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Util\Combination;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model as IM;
@@ -16,16 +18,47 @@ use Ekyna\Component\Commerce\Payment\Model as PM;
 class InvoicePaymentResolver implements InvoicePaymentResolverInterface
 {
     /**
+     * @var CurrencyConverterInterface
+     */
+    protected $currencyConverter;
+
+    /**
+     * @var string
+     */
+    protected $defaultCurrency;
+
+    /**
      * @var array
      */
     protected $cache;
 
+    /**
+     * @var string
+     */
+    private $currency;
+
+    /**
+     * @var array
+     */
+    private $payments;
+
+    /**
+     * @var array
+     */
+    private $invoices;
+
 
     /**
      * Constructor.
+     *
+     * @param CurrencyConverterInterface $currencyConverter
+     * @param string                     $defaultCurrency
      */
-    public function __construct()
+    public function __construct(CurrencyConverterInterface $currencyConverter, string $defaultCurrency)
     {
+        $this->currencyConverter = $currencyConverter;
+        $this->defaultCurrency = $defaultCurrency;
+
         $this->clear();
     }
 
@@ -79,45 +112,95 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      *
      * @param SaleInterface $sale
      */
-    protected function buildInvoicePayments(SaleInterface $sale): void
+    private function buildInvoicePayments(SaleInterface $sale): void
     {
-        $currency = $sale->getCurrency()->getCode(); // TODO Deal with currency conversions.
-        $payments = $this->buildPaymentList($sale);
+        $this->currency = $sale->getCurrency()->getCode(); // TODO Deal with currency conversions.
+
+        $this->buildPaymentList($sale);
         /** @var IM\InvoiceSubjectInterface $sale */
-        $invoices = $this->buildInvoiceList($sale);
+        $this->buildInvoiceList($sale);
 
-        foreach ($invoices as $x => &$i) {
-            $oid = spl_object_id($i['invoice']);
-            $this->cache[$oid] = [];
+        // Creates cache entries for each invoices
+        foreach ($this->invoices as $invoice) {
+            $this->cache[spl_object_id($invoice['invoice'])] = [];
+        }
 
-            foreach ($payments as $y => &$p) {
-                $r = new IM\InvoicePayment();
-                $r->setPayment($p['payment']);
+        // First pass: payment <-> invoices combination exact match lookup
+        foreach ($this->payments as $p => &$payment) {
+            foreach (Combination::generateAssoc($this->invoices) as $combination) {
+                $sum = array_sum(array_map(function ($i) {
+                    return $i['total'];
+                }, $combination));
 
-                $c = Money::compare($i['total'], $p['amount'], $currency);
-
-                if (0 === $c) { // Equal
-                    $r->setAmount($p['amount']);
-                    $i['total'] = 0;
-                    $p['amount'] = 0;
-                    unset($payments[$y]);
-                } elseif (1 === $c) { // invoice > payment
-                    $r->setAmount($p['amount']);
-                    $i['total'] -= $p['amount'];
-                    $p['amount'] = 0;
-                    unset($payments[$y]);
-                } else { // payment > invoice
-                    $r->setAmount($i['total']);
-                    $p['amount'] -= $i['total'];
-                    $i['total'] = 0;
+                if (0 !== Money::compare($sum, $payment['amount'], $this->defaultCurrency)) {
+                    continue;
                 }
 
-                $this->cache[$oid][] = $r;
+                $this->buildInvoicePayment(array_keys($combination), [$p]);
 
-                unset($p);
+                continue 2;
+            }
+        }
+
+        if (empty($this->payments)) {
+            return;
+        }
+
+        // Second pass: fills invoices with payments by creation date
+        foreach ($this->invoices as $i => &$invoice) {
+            foreach ($this->payments as $p => &$payment) {
+                $this->buildInvoicePayment([$i], [$p]);
+
+                unset($payment);
+
+                if (!isset($this->invoices[$i])) {
+                    break;
+                }
             }
 
-            unset($i);
+            unset($invoice);
+
+            if (empty($this->payments)) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * @param array $is The invoices keys
+     * @param array $ps The payments keys
+     */
+    private function buildInvoicePayment(array $is, array $ps)
+    {
+        foreach ($is as $i) {
+            $oid = spl_object_id($this->invoices[$i]['invoice']);
+
+            foreach ($ps as $p) {
+                $result = new IM\InvoicePayment();
+                $result->setPayment($this->payments[$p]['payment']);
+
+                $c = Money::compare($this->invoices[$i]['total'], $this->payments[$p]['amount'], $this->currency);
+
+                if (0 === $c) { // Equal
+                    $result->setAmount($this->payments[$p]['amount']);
+                    $this->invoices[$i]['total'] = 0;
+                    $this->payments[$p]['amount'] = 0;
+                    unset($this->invoices[$i]);
+                    unset($this->payments[$p]);
+                } elseif (1 === $c) { // invoice > payment
+                    $result->setAmount($this->payments[$p]['amount']);
+                    $this->invoices[$i]['total'] -= $this->payments[$p]['amount'];
+                    $this->payments[$p]['amount'] = 0;
+                    unset($this->payments[$p]);
+                } else { // payment > invoice
+                    $result->setAmount($this->invoices[$i]['total']);
+                    $this->payments[$p]['amount'] -= $this->invoices[$i]['total'];
+                    $this->invoices[$i]['total'] = 0;
+                    unset($this->invoices[$i]);
+                }
+
+                $this->cache[$oid][] = $result;
+            }
         }
     }
 
@@ -125,10 +208,8 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      * Builds the sale invoices list.
      *
      * @param IM\InvoiceSubjectInterface $subject
-     *
-     * @return array
      */
-    protected function buildInvoiceList(IM\InvoiceSubjectInterface $subject): array
+    private function buildInvoiceList(IM\InvoiceSubjectInterface $subject): void
     {
         $invoices = $subject->getInvoices(true)->toArray();
 
@@ -136,7 +217,9 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             return $a->getCreatedAt()->getTimestamp() - $b->getCreatedAt()->getTimestamp();
         });
 
-        return array_map(function (IM\InvoiceInterface $invoice) {
+        // TODO Currency conversion (?)
+
+        $this->invoices = array_map(function (IM\InvoiceInterface $invoice) {
             return [
                 'invoice' => $invoice,
                 'total'   => $invoice->getGrandTotal(),
@@ -148,10 +231,8 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      * Builds the sale payments list.
      *
      * @param PM\PaymentSubjectInterface $subject
-     *
-     * @return array
      */
-    protected function buildPaymentList(PM\PaymentSubjectInterface $subject): array
+    private function buildPaymentList(PM\PaymentSubjectInterface $subject): void
     {
         // TODO Deal with refund when implemented
         $payments = array_filter($subject->getPayments()->toArray(), function (PM\PaymentInterface $p) {
@@ -172,7 +253,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
 
         // TODO Currency conversion
 
-        return array_map(function (PM\PaymentInterface $payment) {
+        $this->payments = array_map(function (PM\PaymentInterface $payment) {
             return [
                 'payment' => $payment,
                 'amount'  => $payment->getAmount(),

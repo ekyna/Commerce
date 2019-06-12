@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
-use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Resource\Model as Resource;
@@ -39,6 +38,22 @@ interface InvoiceInterface extends
     public function getShipment();
 
     /**
+     * Returns the paid total.
+     *
+     * @return float
+     */
+    public function getPaidTotal();
+
+    /**
+     * Sets the paid total.
+     *
+     * @param float $amount
+     *
+     * @return $this|InvoiceInterface
+     */
+    public function setPaidTotal(float $amount);
+
+    /**
      * Returns the due date.
      *
      * @return \DateTime
@@ -50,7 +65,7 @@ interface InvoiceInterface extends
      *
      * @param \DateTime $dueDate
      *
-     * @return AbstractInvoice
+     * @return $this|InvoiceInterface
      */
     public function setDueDate(\DateTime $dueDate = null);
 

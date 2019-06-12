@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Util\Combination;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
@@ -171,7 +172,7 @@ class UnitCandidate
 
         // Size 1 < size < max
         for ($length = 2; $length < count($this->map); $length++) {
-            foreach (self::combineAssoc($this->map, $length) as $map) {
+            foreach (Combination::generateAssoc($this->map, $length) as $map) {
                 $combination = new AssignmentCombination($map, $diff = array_sum($map) - $quantity);
 
                 // Perfect combination
@@ -209,50 +210,5 @@ class UnitCandidate
         });
 
         return reset($combinations);
-    }
-
-    /**
-     * Returns the unique combinations of the given values.
-     *
-     * @param array $values
-     * @param int   $length
-     *
-     * @return \Generator
-     */
-    static private function combine(array $values, $length)
-    {
-        $original = count($values);
-        $remaining = $original - $length + 1;
-        for ($i = 0; $i < $remaining; ++$i) {
-            $current = $values[$i];
-            if (1 === $length) {
-                yield [$current];
-            } else {
-                $subSet = array_slice($values, $i + 1);
-                foreach (self::combine($subSet, $length - 1) as $combination) {
-                    array_unshift($combination, $current);
-                    yield $combination;
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the unique combinations of the given values, preserving keys.
-     *
-     * @param array $values
-     * @param int   $length
-     *
-     * @return \Generator
-     */
-    static private function combineAssoc(array $values, $length)
-    {
-        foreach (self::combine(array_keys($values), $length) as $combination) {
-            $result = [];
-            foreach ($combination as $key) {
-                $result[$key] = $values[$key];
-            }
-            yield $result;
-        }
     }
 }

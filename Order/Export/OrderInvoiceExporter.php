@@ -5,10 +5,8 @@ namespace Ekyna\Component\Commerce\Order\Export;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 
 /**
  * Class InvoiceExporter
@@ -22,22 +20,15 @@ class OrderInvoiceExporter
      */
     protected $repository;
 
-    /**
-     * @var InvoicePaymentResolverInterface
-     */
-    protected $resolver;
-
 
     /**
      * Constructor.
      *
      * @param OrderInvoiceRepositoryInterface $repository
-     * @param InvoicePaymentResolverInterface $resolver
      */
-    public function __construct(OrderInvoiceRepositoryInterface $repository, InvoicePaymentResolverInterface $resolver)
+    public function __construct(OrderInvoiceRepositoryInterface $repository)
     {
         $this->repository = $repository;
-        $this->resolver = $resolver;
     }
 
     /**
@@ -63,12 +54,12 @@ class OrderInvoiceExporter
     /**
      * Builds the orders export CSV file.
      *
-     * @param SupplierOrderInterface[] $orders
-     * @param string                   $name
+     * @param OrderInvoiceInterface[] $invoices
+     * @param string                  $name
      *
      * @return string
      */
-    protected function buildFile(array $orders, string $name): string
+    protected function buildFile(array $invoices, string $name): string
     {
         if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
             throw new RuntimeException("Failed to create temporary file.");
@@ -86,8 +77,8 @@ class OrderInvoiceExporter
         $paidTotal = 0;
 
         // Order rows
-        foreach ($orders as $order) {
-            if (!empty($row = $this->buildRow($order))) {
+        foreach ($invoices as $invoice) {
+            if (!empty($row = $this->buildRow($invoice))) {
                 fputcsv($handle, $row, ';', '"');
 
                 $grandTotal += $row['grand_total'];
@@ -147,10 +138,8 @@ class OrderInvoiceExporter
     protected function buildRow(OrderInvoiceInterface $invoice): ?array
     {
         $currency = $invoice->getCurrency();
-        $grandTotal = $invoice->getGrandTotal();
-        $paidTotal = $this->resolver->getPaidTotal($invoice);
 
-        if (1 !== Money::compare($grandTotal, $paidTotal, $currency)) {
+        if (1 !== Money::compare($invoice->getGrandTotal(), $invoice->getPaidTotal(), $currency)) {
             return null;
         }
 
@@ -170,8 +159,8 @@ class OrderInvoiceExporter
             'order_number'   => $order->getNumber(),
             'voucher_number' => $order->getVoucherNumber(),
             'company'        => $order->getCompany(),
-            'grand_total'    => $grandTotal,
-            'paid_total'     => $paidTotal,
+            'grand_total'    => $invoice->getGrandTotal(),
+            'paid_total'     => $invoice->getPaidTotal(),
             'currency'       => $invoice->getCurrency(),
             'due_date'       => $dueDate,
             'payment_term'   => $term,

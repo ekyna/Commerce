@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Customer\Balance;
 use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants as CreditBalance;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
-use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
@@ -29,27 +28,19 @@ class BalanceBuilder
      */
     protected $paymentRepository;
 
-    /**
-     * @var InvoicePaymentResolverInterface
-     */
-    protected $invoicePaymentResolver;
-
 
     /**
      * Constructor.
      *
      * @param OrderInvoiceRepositoryInterface $invoiceRepository
      * @param OrderPaymentRepositoryInterface $paymentRepository
-     * @param InvoicePaymentResolverInterface $invoicePaymentResolver
      */
     public function __construct(
         OrderInvoiceRepositoryInterface $invoiceRepository,
-        OrderPaymentRepositoryInterface $paymentRepository,
-        InvoicePaymentResolverInterface $invoicePaymentResolver
+        OrderPaymentRepositoryInterface $paymentRepository
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
-        $this->invoicePaymentResolver = $invoicePaymentResolver;
     }
 
     /**
@@ -59,13 +50,18 @@ class BalanceBuilder
      */
     public function build(Balance $balance): void
     {
-        $invoices = $this
-            ->invoiceRepository
-            ->findByCustomerAndDateRange($balance->getCustomer(), $balance->getFrom(), $balance->getTo());
+        $payments = [];
 
-        $payments = $this
-            ->paymentRepository
-            ->findByCustomerAndDateRange($balance->getCustomer(), $balance->getFrom(), $balance->getTo());
+        if ($balance->getFilter() === Balance::FILTER_DUE_INVOICES) {
+            $invoices = $this->invoiceRepository->findDueInvoices($balance->getCustomer());
+        } elseif ($balance->getFilter() === Balance::FILTER_BEFALL_INVOICES) {
+            $invoices = $this->invoiceRepository->findFallInvoices($balance->getCustomer());
+        } else {
+            $invoices = $this->invoiceRepository->findByCustomerAndDateRange($balance->getCustomer());
+            $payments = $this->paymentRepository->findByCustomerAndDateRange($balance->getCustomer());
+        }
+
+        // $balance->getFrom(), $balance->getTo()
 
         $this->buildInvoices($balance, $invoices);
         $this->buildPayments($balance, $payments);
@@ -92,30 +88,39 @@ class BalanceBuilder
                 $type = Line::TYPE_INVOICE;
                 $debit = $invoice->getGrandTotal();
                 $dueDate = $invoice->getDueDate();
+
+                if ($balance->getFilter() !== Balance::FILTER_ALL) {
+                    $credit = $invoice->getPaidTotal();
+                }
             }
 
-            $order = $invoice->getOrder();
+            if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $invoice->getCreatedAt()->getTimestamp()) {
+                $balance->addCreditForward($credit);
+                $balance->addDebitForward($debit);
+            } else {
+                $order = $invoice->getOrder();
 
-            $line = new Line(
-                $invoice->getCreatedAt(),
-                $type,
-                $invoice->getNumber(),
-                $debit,
-                $credit,
-                $order->getId(),
-                $order->getNumber(),
-                $order->getVoucherNumber(),
-                $order->getCreatedAt(),
-                $dueDate
-            );
+                $line = new Line(
+                    $invoice->getCreatedAt(),
+                    $type,
+                    $invoice->getNumber(),
+                    $debit,
+                    $credit,
+                    $order->getId(),
+                    $order->getNumber(),
+                    $order->getVoucherNumber(),
+                    $order->getCreatedAt(),
+                    $dueDate
+                );
 
-            if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
-                $paidTotal = $this->invoicePaymentResolver->getPaidTotal($invoice);
+                if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
+                    $line->setDue(
+                        1 === Money::compare($invoice->getGrandTotal(), $invoice->getPaidTotal(), $invoice->getCurrency())
+                    );
+                }
 
-                $line->setDue(1 === Money::compare($invoice->getGrandTotal(), $paidTotal, $invoice->getCurrency()));
+                $balance->addLine($line);
             }
-
-            $balance->addLine($line);
 
             // TODO Remove whe payment refund (type) will be implemented
             if ($invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
@@ -128,19 +133,29 @@ class BalanceBuilder
                     continue;
                 }
 
-                $line = new Line(
-                    $invoice->getCreatedAt(),
-                    Line::TYPE_REFUND,
-                    $invoice->getNumber(),
-                    $invoice->getGrandTotal(),
-                    0,
-                    $order->getId(),
-                    $order->getNumber(),
-                    $order->getVoucherNumber(),
-                    $order->getCreatedAt()
-                );
+                $debit = $invoice->getGrandTotal();
+                $credit = 0;
 
-                $balance->addLine($line);
+                if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $invoice->getCreatedAt()->getTimestamp()) {
+                    $balance->addCreditForward($credit);
+                    $balance->addDebitForward($debit);
+                } else {
+                    $order = $invoice->getOrder();
+
+                    $line = new Line(
+                        $invoice->getCreatedAt(),
+                        Line::TYPE_REFUND,
+                        $invoice->getNumber(),
+                        $debit,
+                        $credit,
+                        $order->getId(),
+                        $order->getNumber(),
+                        $order->getVoucherNumber(),
+                        $order->getCreatedAt()
+                    );
+
+                    $balance->addLine($line);
+                }
             }
         }
     }
@@ -162,6 +177,13 @@ class BalanceBuilder
             } else {
                 $type = Line::TYPE_PAYMENT;
                 $credit = $payment->getAmount();
+            }
+
+            if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $payment->getCreatedAt()->getTimestamp()) {
+                $balance->addCreditForward($credit);
+                $balance->addDebitForward($debit);
+
+                continue;
             }
 
             $order = $payment->getOrder();

@@ -81,7 +81,7 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function getOutstandingExpiredDue();
 
     /**
-     * Returns the customers expired due.
+     * Returns the customers expired due orders.
      *
      * @return OrderInterface[]
      */
@@ -95,7 +95,7 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function getOutstandingFallDue();
 
     /**
-     * Returns the customers fall due.
+     * Returns the customers fall due orders.
      *
      * @return OrderInterface[]
      */
@@ -109,9 +109,23 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function getOutstandingPendingDue();
 
     /**
-     * Returns the customers pending due.
+     * Returns the customers pending due orders.
      *
      * @return OrderInterface[]
      */
     public function getOutstandingPendingDueOrders();
+
+    /**
+     * Returns the remaining (that needs to be invoiced) total.
+     *
+     * @return float
+     */
+    public function getRemainingTotal();
+
+    /**
+     * Returns the remaining (that needs to be invoiced) orders.
+     *
+     * @return OrderInterface[]
+     */
+    public function getRemainingOrders();
 }

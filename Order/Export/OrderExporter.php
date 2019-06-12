@@ -106,6 +106,16 @@ class OrderExporter
     }
 
     /**
+     * Export the remaining orders (that needs to be invoiced).
+     *
+     * @return string The export file path.
+     */
+    public function exportRemainingOrders(): string
+    {
+        return $this->buildFile($this->repository->getRemainingOrders(), 'remaining');
+    }
+
+    /**
      * Builds the orders export CSV file.
      *
      * @param OrderInterface[] $orders

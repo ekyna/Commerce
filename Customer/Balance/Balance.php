@@ -48,6 +48,16 @@ class Balance
     /**
      * @var float
      */
+    private $creditForward = 0;
+
+    /**
+     * @var float
+     */
+    private $debitForward = 0;
+
+    /**
+     * @var float
+     */
     private $credit;
 
     /**
@@ -218,6 +228,54 @@ class Balance
     }
 
     /**
+     * Returns the creditForward.
+     *
+     * @return float
+     */
+    public function getCreditForward(): float
+    {
+        return $this->creditForward;
+    }
+
+    /**
+     * Sets the amount to credit forward.
+     *
+     * @param float $amount
+     *
+     * @return Balance
+     */
+    public function addCreditForward(float $amount): self
+    {
+        $this->creditForward += $amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the debitForward.
+     *
+     * @return float
+     */
+    public function getDebitForward(): float
+    {
+        return $this->debitForward;
+    }
+
+    /**
+     * Adds the amount to debit forward.
+     *
+     * @param float $amount
+     *
+     * @return Balance
+     */
+    public function addDebitForward(float $amount): self
+    {
+        $this->debitForward += $amount;
+
+        return $this;
+    }
+
+    /**
      * Returns the credit.
      *
      * @return float
@@ -228,7 +286,8 @@ class Balance
             return $this->credit;
         }
 
-        $total = 0;
+        $total = $this->creditForward;
+
         foreach ($this->lines as $line) {
             $total += $line->getCredit();
         }
@@ -247,7 +306,8 @@ class Balance
             return $this->debit;
         }
 
-        $total = 0;
+        $total = $this->debitForward;
+
         foreach ($this->lines as $line) {
             $total += $line->getDebit();
         }

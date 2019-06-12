@@ -9,6 +9,7 @@ namespace Ekyna\Component\Commerce\Customer\Balance;
  */
 class Line
 {
+    const TYPE_FORWARD = 'forward';
     const TYPE_INVOICE = 'invoice';
     const TYPE_CREDIT  = 'credit';
     const TYPE_PAYMENT = 'payment';
@@ -139,6 +140,16 @@ class Line
     }
 
     /**
+     * Adds the debit.
+     *
+     * @param float $debit
+     */
+    public function addDebit(float $debit): void
+    {
+        $this->debit += $debit;
+    }
+
+    /**
      * Returns the debit.
      *
      * @return float
@@ -146,6 +157,16 @@ class Line
     public function getDebit(): float
     {
         return $this->debit;
+    }
+
+    /**
+     * Adds the credit.
+     *
+     * @param float $credit
+     */
+    public function addCredit(float $credit): void
+    {
+        $this->credit += $credit;
     }
 
     /**

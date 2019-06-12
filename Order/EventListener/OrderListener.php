@@ -6,8 +6,11 @@ use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Util\DateUtil;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
@@ -36,6 +39,11 @@ class OrderListener extends AbstractSaleListener
      * @var OrderRepositoryInterface
      */
     protected $orderRepository;
+
+    /**
+     * @var InvoicePaymentResolverInterface
+     */
+    protected $invoicePaymentResolver;
 
 
     /**
@@ -66,6 +74,16 @@ class OrderListener extends AbstractSaleListener
     public function setOrderRepository(OrderRepositoryInterface $repository)
     {
         $this->orderRepository = $repository;
+    }
+
+    /**
+     * Sets the invoice payment resolver.
+     *
+     * @param InvoicePaymentResolverInterface $resolver
+     */
+    public function setInvoicePaymentResolver(InvoicePaymentResolverInterface $resolver)
+    {
+        $this->invoicePaymentResolver = $resolver;
     }
 
     /**
@@ -288,6 +306,8 @@ class OrderListener extends AbstractSaleListener
      */
     protected function handleContentChange(SaleInterface $sale)
     {
+        $this->updateInvoicePaidTotal($sale);
+
         $changed = parent::handleContentChange($sale);
 
         if (null !== $margin = $this->marginCalculator->calculateSale($sale)) {
@@ -307,6 +327,51 @@ class OrderListener extends AbstractSaleListener
         }
 
         return $changed;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param OrderInterface $sale
+     */
+    protected function updateDueDates(SaleInterface $sale): bool
+    {
+        /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface $invoice */
+        foreach ($sale->getInvoices() as $invoice) {
+            $resolved = $this->dueDateResolver->resolveInvoiceDueDate($invoice);
+
+            if (DateUtil::equals($resolved, $invoice->getDueDate())) {
+                continue;
+            }
+
+            $invoice->setDueDate($resolved);
+
+            $this->persistenceHelper->persistAndRecompute($invoice, false);
+        }
+
+        return parent::updateDueDates($sale);
+    }
+
+    /**
+     * Updates the invoices paid amounts.
+     *
+     * @param OrderInterface $sale
+     */
+    protected function updateInvoicePaidTotal(OrderInterface $sale): void
+    {
+        // TODO Updates credit paid total too, when refund payment will be implemented
+        /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface $invoice */
+        foreach ($sale->getInvoices(true)->toArray() as $invoice) {
+            $total = $this->invoicePaymentResolver->getPaidTotal($invoice);
+
+            if (0 === Money::compare($total, $invoice->getPaidTotal(), $invoice->getCurrency())) {
+                continue;
+            }
+
+            $invoice->setPaidTotal($total);
+
+            $this->persistenceHelper->persistAndRecompute($invoice, false);
+        }
     }
 
     /**
@@ -389,6 +454,8 @@ class OrderListener extends AbstractSaleListener
 
         return false;
     }
+
+
 
     /**
      * Assigns the sale item to stock units recursively.

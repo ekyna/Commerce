@@ -23,7 +23,7 @@ class ArrayCurrencyConverter extends AbstractCurrencyConverter
      * @param array  $rates
      * @param string $defaultCurrency
      */
-    public function __construct(array $rates, $defaultCurrency = 'USD')
+    public function __construct(array $rates, string $defaultCurrency = 'USD')
     {
         parent::__construct($defaultCurrency);
 
@@ -41,7 +41,7 @@ class ArrayCurrencyConverter extends AbstractCurrencyConverter
      *
      * @return ArrayCurrencyConverter
      */
-    private function addRate($pair, $rate)
+    private function addRate($pair, $rate): self
     {
         if (!preg_match('~^[A-Z]{3}/[A-Z]{3}$~', $pair)) {
             throw new InvalidArgumentException("Unexpected currency pair '$pair'.");
@@ -68,11 +68,14 @@ class ArrayCurrencyConverter extends AbstractCurrencyConverter
             return 1.0;
         }
 
-        $pair = "$base/$quote";
-        if (!isset($this->rates[$pair])) {
-            throw new InvalidArgumentException("Undefined conversion pair '$pair'.");
+        if (isset($this->rates["$base/$quote"])) {
+            return $this->rates["$base/$quote"];
         }
 
-        return $this->rates[$pair];
+        if (isset($this->rates["$quote/$base"])) {
+            return 1 / $this->rates["$quote/$base"];
+        }
+
+        throw new InvalidArgumentException("Neither '$base/$quote' or '$quote/$base' conversion pair are defined.");
     }
 }

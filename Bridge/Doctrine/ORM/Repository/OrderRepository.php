@@ -9,6 +9,7 @@ use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers as Trigger;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
@@ -269,6 +270,56 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->useQueryCache(true)
             //->useResultCache(true, 300);
             ->getResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRemainingTotal()
+    {
+        return $this
+            ->getRemainingQueryBuilder()
+            ->select('SUM(o.grandTotal - o.invoiceTotal)')
+            ->getQuery()
+            ->useQueryCache(true)
+            //->useResultCache(true, 300);
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRemainingOrders()
+    {
+        return $this
+            ->getRemainingQueryBuilder()
+            ->getQuery()
+            ->useQueryCache(true)
+            //->useResultCache(true, 300);
+            ->getResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    private function getRemainingQueryBuilder()
+    {
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        $qb
+            ->select('o')
+            ->join('o.invoices', 'i')
+            ->where($ex->andX(
+                $ex->eq('o.sample', ':sample'),           // Not sample
+                $ex->eq('o.state', ':state'),             // Accepted
+                $ex->lt('o.invoiceTotal', 'o.grandTotal') // invoice total lower than grand total
+            ))
+            ->addOrderBy('o.createdAt', 'ASC')
+            ->setParameter('sample', false)
+            ->setParameter('state', OrderStates::STATE_ACCEPTED);
+
+        return $qb;
     }
 
     /**

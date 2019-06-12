@@ -24,6 +24,11 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     protected $id;
 
     /**
+     * @var float
+     */
+    protected $paidTotal;
+
+    /**
      * @var \DateTime
      */
     protected $dueDate;
@@ -43,6 +48,7 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
 
         $this->createdAt = new \DateTime();
         $this->type = Invoice\InvoiceTypes::TYPE_INVOICE;
+        $this->paidTotal = 0;
     }
 
     /**
@@ -59,6 +65,24 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPaidTotal()
+    {
+        return $this->paidTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPaidTotal(float $amount)
+    {
+        $this->paidTotal = $amount;
+
+        return $this;
     }
 
     /**

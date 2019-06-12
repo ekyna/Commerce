@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants as CreditBalance;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
@@ -182,55 +183,49 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * @inheritDoc
      */
-    public function findDueInvoices(): array
+    public function findDueInvoices(CustomerInterface $customer = null): array
     {
-        $qb = $this->createQueryBuilder('i');
-
-        $today = new \DateTime();
-        $today->setTime(23, 59, 59, 999999);
-
-        return $qb
-            ->join('i.order', 'o')
-            ->andWhere($qb->expr()->eq('i.type', ':type'))
-            ->andWhere($qb->expr()->isNotNull('i.dueDate'))
-            ->andWhere($qb->expr()->lte('i.dueDate', ':today'))
-            ->andWhere($qb->expr()->in('o.state', ':states'))
-            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
-            ->andWhere($qb->expr()->lt('o.paidTotal', 'o.grandTotal'))
+        return $this
+            ->getDueInvoicesQueryBuilder($customer)
             ->addOrderBy('i.dueDate', 'ASC')
             ->getQuery()
-            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
-            ->setParameter('today', $today, Type::DATETIME)
-            ->setParameter('states', [OrderStates::STATE_ACCEPTED, OrderStates::STATE_COMPLETED])
-            ->setParameter('sample', false)
             ->getResult();
     }
 
     /**
      * @inheritDoc
      */
-    public function findFallInvoices(): array
+    public function getDueTotal(CustomerInterface $customer = null): float
     {
-        $qb = $this->createQueryBuilder('i');
+        return (float)$this
+            ->getDueInvoicesQueryBuilder($customer)
+            ->select('SUM(i.grandTotal - i.paidTotal)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
-        $today = new \DateTime();
-        $today->setTime(23, 59, 59, 999999);
-
-        return $qb
-            ->join('i.order', 'o')
-            ->andWhere($qb->expr()->eq('i.type', ':type'))
-            ->andWhere($qb->expr()->isNotNull('i.dueDate'))
-            ->andWhere($qb->expr()->gt('i.dueDate', ':today'))
-            ->andWhere($qb->expr()->in('o.state', ':states'))
-            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
-            ->andWhere($qb->expr()->lt('o.paidTotal', 'o.grandTotal'))
+    /**
+     * @inheritDoc
+     */
+    public function findFallInvoices(CustomerInterface $customer = null): array
+    {
+        return $this
+            ->getFallInvoicesQueryBuilder($customer)
             ->addOrderBy('i.dueDate', 'ASC')
             ->getQuery()
-            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
-            ->setParameter('today', $today, Type::DATETIME)
-            ->setParameter('states', [OrderStates::STATE_ACCEPTED, OrderStates::STATE_COMPLETED])
-            ->setParameter('sample', false)
             ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFallTotal(CustomerInterface $customer = null): float
+    {
+        return (float)$this
+            ->getFallInvoicesQueryBuilder($customer)
+            ->select('SUM(i.grandTotal - i.paidTotal)')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**
@@ -298,6 +293,82 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->setParameter('from', $from, Type::DATETIME)
             ->setParameter('to', $to, Type::DATETIME)
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Returns the due invoices query builder.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return QueryBuilder
+     */
+    protected function getDueInvoicesQueryBuilder(CustomerInterface $customer = null): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        $qb
+            ->join('i.order', 'o')
+            ->andWhere($qb->expr()->eq('i.type', ':type'))
+            ->andWhere($qb->expr()->lt('i.paidTotal', 'i.grandTotal'))
+            ->andWhere($qb->expr()->isNotNull('i.dueDate'))
+            ->andWhere($qb->expr()->lte('i.dueDate', ':today'))
+            ->andWhere($qb->expr()->notIn('o.state', ':states'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'));
+
+        $today = new \DateTime();
+        $today->setTime(23, 59, 59, 999999);
+
+        $qb
+            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
+            ->setParameter('today', $today, Type::DATETIME)
+            ->setParameter('states', [OrderStates::STATE_CANCELED, OrderStates::STATE_REFUNDED])
+            ->setParameter('sample', false);
+
+        if ($customer) {
+            $qb
+                ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+                ->setParameter('customer', $customer);
+        }
+
+        return $qb;
+    }
+
+    /**
+     * Returns the fall invoices query builder.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return QueryBuilder
+     */
+    protected function getFallInvoicesQueryBuilder(CustomerInterface $customer = null): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        $qb
+            ->join('i.order', 'o')
+            ->andWhere($qb->expr()->eq('i.type', ':type'))
+            ->andWhere($qb->expr()->lt('i.paidTotal', 'i.grandTotal'))
+            ->andWhere($qb->expr()->isNotNull('i.dueDate'))
+            ->andWhere($qb->expr()->gt('i.dueDate', ':today'))
+            ->andWhere($qb->expr()->notIn('o.state', ':states'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'));
+
+        $today = new \DateTime();
+        $today->setTime(23, 59, 59, 999999);
+
+        $qb
+            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
+            ->setParameter('today', $today, Type::DATETIME)
+            ->setParameter('states', [OrderStates::STATE_CANCELED, OrderStates::STATE_REFUNDED])
+            ->setParameter('sample', false);
+
+        if ($customer) {
+            $qb
+                ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+                ->setParameter('customer', $customer);
+        }
+
+        return $qb;
     }
 
     /**

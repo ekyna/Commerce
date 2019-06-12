@@ -11,7 +11,6 @@ use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Resolver\DueDateResolverInterface;
 use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
@@ -439,7 +438,7 @@ abstract class AbstractSaleListener
         // Update state
         $changed |= $this->updateState($sale);
 
-        // Update outstanding date
+        // Update due dates
         $changed |= $this->updateDueDates($sale);
 
         return $changed;
@@ -864,22 +863,8 @@ abstract class AbstractSaleListener
      *
      * @return bool Whether or not the sale has been updated.
      */
-    protected function updateDueDates(SaleInterface $sale)
+    protected function updateDueDates(SaleInterface $sale): bool
     {
-        if ($sale instanceof InvoiceSubjectInterface) {
-            foreach ($sale->getInvoices() as $invoice) {
-                $resolved = $this->dueDateResolver->resolveInvoiceDueDate($invoice);
-
-                if (DateUtil::equals($resolved, $invoice->getDueDate())) {
-                    continue;
-                }
-
-                $invoice->setDueDate($resolved);
-
-                $this->persistenceHelper->persistAndRecompute($invoice, false);
-            }
-        }
-
         $date = $this->dueDateResolver->resolveSaleDueDate($sale);
 
         if (!DateUtil::equals($date, $sale->getOutstandingDate())) {
