@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Export;
 
+use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -12,7 +13,7 @@ use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
  * @package Ekyna\Component\Commerce\Order\Export
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderExporter
+class OrderExporter extends AbstractExporter
 {
     /**
      * @var OrderRepositoryInterface
@@ -27,6 +28,8 @@ class OrderExporter
      */
     public function __construct(OrderRepositoryInterface $repository)
     {
+        parent::__construct();
+
         $this->repository = $repository;
     }
 
@@ -37,7 +40,11 @@ class OrderExporter
      */
     public function exportDueOrders(): string
     {
-        return $this->buildFile($this->repository->findDueOrders(), 'due');
+        return $this->buildFile(
+            $this->repository->findDueOrders(),
+            'due',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -72,7 +79,11 @@ class OrderExporter
      */
     public function exportRegularDueOrders(): string
     {
-        return $this->buildFile($this->repository->getRegularDueOrders(), 'regular_due');
+        return $this->buildFile(
+            $this->repository->getRegularDueOrders(),
+            'regular_due',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -82,7 +93,11 @@ class OrderExporter
      */
     public function exportOutstandingExpiredDueOrders(): string
     {
-        return $this->buildFile($this->repository->getOutstandingExpiredDueOrders(), 'outstanding_expired_due');
+        return $this->buildFile(
+            $this->repository->getOutstandingExpiredDueOrders(),
+            'outstanding_expired_due',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -92,7 +107,11 @@ class OrderExporter
      */
     public function exportOutstandingFallDueOrders(): string
     {
-        return $this->buildFile($this->repository->getOutstandingFallDueOrders(), 'outstanding_fall_due');
+        return $this->buildFile(
+            $this->repository->getOutstandingFallDueOrders(),
+            'outstanding_fall_due',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -102,7 +121,11 @@ class OrderExporter
      */
     public function exportOutstandingPendingDueOrders(): string
     {
-        return $this->buildFile($this->repository->getOutstandingPendingDueOrders(), 'outstanding_pending_due');
+        return $this->buildFile(
+            $this->repository->getOutstandingPendingDueOrders(),
+            'outstanding_pending_due',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -112,117 +135,82 @@ class OrderExporter
      */
     public function exportRemainingOrders(): string
     {
-        return $this->buildFile($this->repository->getRemainingOrders(), 'remaining');
+        return $this->buildFile(
+            $this->repository->getRemainingOrders(),
+            'remaining',
+            $this->getRemainingMap()
+        );
     }
 
     /**
-     * Builds the orders export CSV file.
-     *
-     * @param OrderInterface[] $orders
-     * @param string           $name
-     *
-     * @return string
-     */
-    protected function buildFile(array $orders, string $name): string
-    {
-        if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
-            throw new RuntimeException("Failed to create temporary file.");
-        }
-
-        if (false === $handle = fopen($path, "w")) {
-            throw new RuntimeException("Failed to open '$path' for writing.");
-        }
-
-        if (!empty($headers = $this->buildHeaders())) {
-            fputcsv($handle, $headers, ';', '"');
-        }
-
-        $total = 0;
-        $expired = 0;
-
-        // Order rows
-        foreach ($orders as $order) {
-            if (!empty($row = $this->buildRow($order))) {
-                fputcsv($handle, $row, ';', '"');
-
-                $total += $row['due_amount'];
-                $expired += $row['outstanding_expired'];
-            }
-        }
-
-        // Total row
-        fputcsv($handle, [
-            'id'                  => '',
-            'number'              => '',
-            'company'             => '',
-            'payment_state'       => '',
-            'shipment_state'      => '',
-            'invoice_state'       => '',
-            'payment_term'        => '',
-            'due_amount'          => $total,
-            'outstanding_expired' => $expired,
-            'outstanding_date'    => '',
-            'created_at'          => '',
-        ], ';', '"');
-
-        fclose($handle);
-
-        return $path;
-    }
-
-    /**
-     * Returns the headers.
+     * Returns the default fields map.
      *
      * @return array
      */
-    protected function buildHeaders(): array
+    private function getDefaultMap(): array
     {
         return [
-            'id',
-            'number',
-            'company',
-            'payment_state',
-            'shipment_state',
-            'invoice_state',
-            'payment_term',
-            'due_amount',
-            'outstanding_expired',
-            'outstanding_date',
-            'created_at',
+            //'id'                  => 'id',
+            'number'              => 'number',
+            'company'             => 'company',
+            'payment_state'       => 'paymentState',
+            'shipment_state'      => 'shipmentState',
+            'invoice_state'       => 'invoiceState',
+            'payment_term'        => function (OrderInterface $order) {
+                if (null !== $term = $order->getPaymentTerm()) {
+                    return $term->getName();
+                }
+
+                return null;
+            },
+            'due_amount'          => function (OrderInterface $order): string {
+                return (string)($order->getGrandTotal() - $order->getPaidTotal());
+            },
+            'outstanding_expired' => 'outstandingExpired',
+            'outstanding_date'    => function (OrderInterface $order): ?string {
+                if (null !== $date = $order->getOutstandingDate()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
+
+                return null;
+            },
+            'created_at'          => function (OrderInterface $order): string {
+                return $order->getCreatedAt()->format(DateUtil::DATE_FORMAT);
+            },
         ];
     }
 
     /**
-     * Builds the order row.
-     *
-     * @param OrderInterface $order
+     * Returns the default fields map.
      *
      * @return array
      */
-    protected function buildRow(OrderInterface $order): array
+    private function getRemainingMap(): array
     {
-        $date = null;
-        $term = null;
-
-        if (null !== $date = $order->getOutstandingDate()) {
-            $date = $date->format(DateUtil::DATE_FORMAT);
-        }
-        if (null !== $term = $order->getPaymentTerm()) {
-            $term = $term->getName();
-        }
-
         return [
-            'id'                  => $order->getId(),
-            'number'              => $order->getNumber(),
-            'company'             => $order->getCompany(),
-            'payment_state'       => $order->getPaymentState(),
-            'shipment_state'      => $order->getShipmentState(),
-            'invoice_state'       => $order->getInvoiceState(),
-            'payment_term'        => $term,
-            'due_amount'          => $order->getGrandTotal() - $order->getPaidTotal(),
-            'outstanding_expired' => $order->getOutstandingExpired(),
-            'outstanding_date'    => $date,
-            'created_at'          => $order->getCreatedAt()->format(DateUtil::DATE_FORMAT),
+            'date'           => function (OrderInterface $order): string {
+                return $order->getCreatedAt()->format(DateUtil::DATE_FORMAT);
+            },
+            'number'         => 'number',
+            'voucher_number' => 'voucherNumber',
+            'company'        => 'company',
+            'grand_total'    => 'grandTotal',
+            'paid_total'     => 'paidTotal',
+            'invoice_total'  => 'invoiceTotal',
+            'due_date'       => function (OrderInterface $order): ?string {
+                if (null !== $date = $order->getOutstandingDate()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
+
+                return null;
+            },
+            'payment_term'   => function (OrderInterface $order) {
+                if (null !== $term = $order->getPaymentTerm()) {
+                    return $term->getName();
+                }
+
+                return null;
+            },
         ];
     }
 }

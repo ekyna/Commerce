@@ -138,18 +138,17 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $query = $qb
             ->leftJoin('o.paymentTerm', 't')
-            ->andWhere($ex->eq('o.sample', ':not_sample'))// Not sample
-            ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))// Paid total lower than grand total
+            ->andWhere($ex->eq('o.sample', ':not_sample'))             // Not sample
+            ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))         // Paid total lower than grand total
             ->andWhere($ex->orX(
-                $ex->andX(                                               // Outstanding
-                    $ex->isNotNull('o.paymentTerm'),                     // - With payment term
-                    $this->getDueClauses(),                              // - Terms triggered
-                    $qb->expr()->lte('o.outstandingDate',
-                        ':today')      // - Payment limit date lower than or equal today
+                $ex->andX(                                             // Outstanding
+                    $ex->isNotNull('o.paymentTerm'),                   // - With payment term
+                    $this->getDueClauses(),                            // - Terms triggered
+                    $qb->expr()->lte('o.outstandingDate', ':today')    // - Payment limit date lower than or equal today
                 ),
-                $ex->andX(                                               // Regular
-                    $ex->isNull('o.paymentTerm'),                        // - Without payment term
-                    $ex->eq('o.shipmentState', ':state_fully_shipped')   // - Shipped
+                $ex->andX(                                             // Regular
+                    $ex->isNull('o.paymentTerm'),                      // - Without payment term
+                    $ex->eq('o.shipmentState', ':state_fully_shipped') // - Shipped
                 )
             ))
             ->addOrderBy('o.outstandingDate', 'ASC')
@@ -171,10 +170,10 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     {
         return $this
             ->getRegularDueQueryBuilder()
-            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300)
+            ->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
@@ -187,7 +186,6 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getRegularDueQueryBuilder()
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300)
             ->getResult();
     }
 
@@ -198,10 +196,10 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     {
         return $this
             ->getOutstandingExpiredDueQueryBuilder()
-            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300)
+            ->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
@@ -214,7 +212,6 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getOutstandingExpiredDueQueryBuilder()
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300)
             ->getResult();
     }
 
@@ -225,10 +222,10 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     {
         return $this
             ->getOutstandingFallDueQueryBuilder()
-            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300)
+            ->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
@@ -241,7 +238,6 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getOutstandingFallDueQueryBuilder()
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300)
             ->getResult();
     }
 
@@ -252,10 +248,10 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     {
         return $this
             ->getOutstandingPendingDueQueryBuilder()
-            ->select('SUM(o.grandTotal)-SUM(o.paidTotal)')
+            ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300);
+            ->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
@@ -268,7 +264,6 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getOutstandingPendingDueQueryBuilder()
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300);
             ->getResult();
     }
 
@@ -282,7 +277,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->select('SUM(o.grandTotal - o.invoiceTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300);
+            ->useResultCache(true, 300)
             ->getSingleScalarResult();
     }
 
@@ -295,12 +290,13 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getRemainingQueryBuilder()
             ->getQuery()
             ->useQueryCache(true)
-            //->useResultCache(true, 300);
             ->getResult();
     }
 
     /**
-     * @inheritdoc
+     * Returns the remaining query builder.
+     *
+     * @return QueryBuilder
      */
     private function getRemainingQueryBuilder()
     {
@@ -309,7 +305,6 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $qb
             ->select('o')
-            ->join('o.invoices', 'i')
             ->where($ex->andX(
                 $ex->eq('o.sample', ':sample'),           // Not sample
                 $ex->eq('o.state', ':state'),             // Accepted
@@ -323,7 +318,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     }
 
     /**
-     * Returns the regular due query.
+     * Returns the regular due query builder.
      *
      * @return QueryBuilder
      */

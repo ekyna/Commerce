@@ -2,8 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Export;
 
+use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterface;
 
@@ -12,7 +12,7 @@ use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterfac
  * @package Ekyna\Component\Commerce\Supplier\Export
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierOrderExporter
+class SupplierOrderExporter extends AbstractExporter
 {
     /**
      * @var SupplierOrderRepositoryInterface
@@ -27,6 +27,8 @@ class SupplierOrderExporter
      */
     public function __construct(SupplierOrderRepositoryInterface $repository)
     {
+        parent::__construct();
+
         $this->repository = $repository;
     }
 
@@ -37,7 +39,11 @@ class SupplierOrderExporter
      */
     public function exportSuppliersExpiredDueOrders(): string
     {
-        return $this->buildFile($this->repository->findSuppliersExpiredDue(), 'suppliers_expired');
+        return $this->buildFile(
+            $this->repository->findSuppliersExpiredDue(),
+            'suppliers_expired',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -47,7 +53,11 @@ class SupplierOrderExporter
      */
     public function exportSuppliersFallDueOrders(): string
     {
-        return $this->buildFile($this->repository->findSuppliersFallDue(), 'suppliers_fall');
+        return $this->buildFile(
+            $this->repository->findSuppliersFallDue(),
+            'suppliers_fall',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -57,7 +67,11 @@ class SupplierOrderExporter
      */
     public function exportForwardersExpiredDueOrders(): string
     {
-        return $this->buildFile($this->repository->findForwardersExpiredDue(), 'suppliers_expired');
+        return $this->buildFile(
+            $this->repository->findForwardersExpiredDue(),
+            'suppliers_expired',
+            $this->getDefaultMap()
+        );
     }
 
     /**
@@ -67,135 +81,75 @@ class SupplierOrderExporter
      */
     public function exportForwardersFallDueOrders(): string
     {
-        return $this->buildFile($this->repository->findForwardersFallDue(), 'suppliers_fall');
+        return $this->buildFile(
+            $this->repository->findForwardersFallDue(),
+            'suppliers_fall',
+            $this->getDefaultMap()
+        );
     }
 
     /**
-     * Builds the orders export CSV file.
-     *
-     * @param SupplierOrderInterface[] $orders
-     * @param string                   $name
-     *
-     * @return string
-     */
-    protected function buildFile(array $orders, string $name): string
-    {
-        if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
-            throw new RuntimeException("Failed to create temporary file.");
-        }
-
-        if (false === $handle = fopen($path, "w")) {
-            throw new RuntimeException("Failed to open '$path' for writing.");
-        }
-
-        if (!empty($headers = $this->buildHeaders())) {
-            fputcsv($handle, $headers, ';', '"');
-        }
-
-        $supplierTotal = 0;
-        $forwarderTotal = 0;
-
-        // Order rows
-        foreach ($orders as $order) {
-            if (!empty($row = $this->buildRow($order))) {
-                fputcsv($handle, $row, ';', '"');
-
-                $supplierTotal += $row['payment_total'];
-                $forwarderTotal += $row['forwarder_total'];
-            }
-        }
-
-        // Total row
-        fputcsv($handle, [
-            'id'                 => '',
-            'number'             => '',
-            'state'              => '',
-            'ordered_at'         => '',
-            'completed_at'       => '',
-            'supplier'           => '',
-            'payment_total'      => $supplierTotal,
-            'payment_date'       => '',
-            'payment_due_date'   => '',
-            'carrier'            => '',
-            'forwarder_total'    => $forwarderTotal,
-            'forwarder_date'     => '',
-            'forwarder_due_date' => '',
-        ], ';', '"');
-
-        fclose($handle);
-
-        return $path;
-    }
-
-    /**
-     * Returns the headers.
+     * Returns the default map.
      *
      * @return array
      */
-    protected function buildHeaders(): array
+    public function getDefaultMap(): array
     {
         return [
-            'id',
-            'number',
-            'state',
-            'ordered_at',
-            'completed_at',
-            'supplier',
-            'payment_total',
-            'payment_date',
-            'payment_due_date',
-            'carrier',
-            'forwarder_total',
-            'forwarder_date',
-            'forwarder_due_date',
-        ];
-    }
+            'number'             => 'number',
+            'state'              => 'state',
+            'ordered_at'         => function (SupplierOrderInterface $order): ?string {
+                if (null !== $date = $order->getOrderedAt()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
 
-    /**
-     * Builds the order row.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return array
-     */
-    protected function buildRow(SupplierOrderInterface $order): array
-    {
-        if (null !== $orderedAt = $order->getOrderedAt()) {
-            $orderedAt = $orderedAt->format(DateUtil::DATE_FORMAT);
-        }
-        if (null !== $completedAt = $order->getCompletedAt()) {
-            $completedAt = $completedAt->format(DateUtil::DATE_FORMAT);
-        }
-        if (null !== $paymentDate = $order->getPaymentDate()) {
-            $paymentDate = $paymentDate->format(DateUtil::DATE_FORMAT);
-        }
-        if (null !== $paymentDueDate = $order->getPaymentDueDate()) {
-            $paymentDueDate = $paymentDueDate->format(DateUtil::DATE_FORMAT);
-        }
-        if (null !== $carrier = $order->getCarrier()) {
-            $carrier = $carrier->getName();
-        }
-        if (null !== $forwarderDate = $order->getForwarderDate()) {
-            $forwarderDate = $forwarderDate->format(DateUtil::DATE_FORMAT);
-        }
-        if (null !== $forwarderDueDate = $order->getForwarderDueDate()) {
-            $forwarderDueDate = $forwarderDueDate->format(DateUtil::DATE_FORMAT);
-        }
+                return null;
+            },
+            'completed_at'       => function (SupplierOrderInterface $order): ?string {
+                if (null !== $date = $order->getCompletedAt()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
 
-        return [
-            'id'                 => $order->getId(),
-            'number'             => $order->getNumber(),
-            'state'              => $order->getState(),
-            'ordered_at'         => $orderedAt,
-            'completed_at'       => $completedAt,
-            'supplier'           => $order->getSupplier()->getName(),
-            'payment_total'      => $order->getPaymentTotal(),
-            'payment_date'       => $paymentDate,
-            'payment_due_date'   => $paymentDueDate,
-            'carrier'            => $carrier,
-            'forwarder_total'    => $order->getForwarderTotal(),
-            'forwarder_date'     => $forwarderDate,
-            'forwarder_due_date' => $forwarderDueDate,
+                return null;
+            },
+            'supplier'           => 'supplier.name',
+            'payment_total'      => 'paymentTotal',
+            'payment_date'       => function (SupplierOrderInterface $order): ?string {
+                if (null !== $date = $order->getPaymentDate()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
+
+                return null;
+            },
+            'payment_due_date'   => function (SupplierOrderInterface $order): ?string {
+                if (null !== $date = $order->getPaymentDueDate()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
+
+                return null;
+            },
+            'carrier'            => function (SupplierOrderInterface $order): ?string {
+                if (null !== $carrier = $order->getCarrier()) {
+                    return $carrier->getName();
+                }
+
+                return null;
+            },
+            'forwarder_total'    => 'forwarderTotal',
+            'forwarder_date'     => function (SupplierOrderInterface $order): ?string {
+                if (null !== $date = $order->getForwarderDate()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
+
+                return null;
+            },
+            'forwarder_due_date' => function (SupplierOrderInterface $order): ?string {
+                if (null !== $date = $order->getForwarderDueDate()) {
+                    return $date->format(DateUtil::DATE_FORMAT);
+                }
+
+                return null;
+            },
         ];
     }
 }
