@@ -261,7 +261,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             // TODO Validate units ?
 
             $changed = true;
-            if (0 >= $quantity) {
+            if (0 >= $quantity || $assignment->isFullyShippable()) {
                 break;
             }
         }

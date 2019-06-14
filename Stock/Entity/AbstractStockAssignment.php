@@ -123,7 +123,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
      */
     public function isFullyShipped()
     {
-        return $this->soldQuantity === $this->shippedQuantity;
+        return 0 === bccomp($this->soldQuantity, $this->shippedQuantity, 5);
     }
 
     /**
@@ -131,6 +131,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
      */
     public function isFullyShippable()
     {
-        return $this->getShippableQuantity() >= $this->soldQuantity - $this->shippedQuantity;
+        //return $this->getShippableQuantity() >= $this->soldQuantity - $this->shippedQuantity;
+        return 0 <= bccomp($this->getShippableQuantity(), $this->soldQuantity - $this->shippedQuantity, 5);
     }
 }
