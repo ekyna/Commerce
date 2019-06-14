@@ -95,8 +95,10 @@ class BalanceBuilder
             }
 
             if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $invoice->getCreatedAt()->getTimestamp()) {
-                $balance->addCreditForward($credit);
-                $balance->addDebitForward($debit);
+                if ($balance->getFilter() === Balance::FILTER_ALL) {
+                    $balance->addCreditForward($credit);
+                    $balance->addDebitForward($debit);
+                }
             } else {
                 $order = $invoice->getOrder();
 
@@ -108,7 +110,7 @@ class BalanceBuilder
                     $credit,
                     $order->getId(),
                     $order->getNumber(),
-                    $order->getVoucherNumber(),
+                    (string)$order->getVoucherNumber(),
                     $order->getCreatedAt(),
                     $dueDate
                 );
@@ -137,8 +139,10 @@ class BalanceBuilder
                 $credit = 0;
 
                 if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $invoice->getCreatedAt()->getTimestamp()) {
-                    $balance->addCreditForward($credit);
-                    $balance->addDebitForward($debit);
+                    if ($balance->getFilter() === Balance::FILTER_ALL) {
+                        $balance->addCreditForward($credit);
+                        $balance->addDebitForward($debit);
+                    }
                 } else {
                     $order = $invoice->getOrder();
 
@@ -180,8 +184,10 @@ class BalanceBuilder
             }
 
             if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $payment->getCreatedAt()->getTimestamp()) {
-                $balance->addCreditForward($credit);
-                $balance->addDebitForward($debit);
+                if ($balance->getFilter() === Balance::FILTER_ALL) {
+                    $balance->addCreditForward($credit);
+                    $balance->addDebitForward($debit);
+                }
 
                 continue;
             }

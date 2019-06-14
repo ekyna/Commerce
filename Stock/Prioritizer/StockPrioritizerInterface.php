@@ -24,10 +24,11 @@ interface StockPrioritizerInterface
      * Returns whether or not the sale item can be prioritized.
      *
      * @param Common\SaleItemInterface $item
+     * @param bool                     $checkSale Whether to check if sale can be prioritized.
      *
      * @return bool
      */
-    public function canPrioritizeSaleItem(Common\SaleItemInterface $item);
+    public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true);
 
     /**
      * Prioritizes a sale by trying to move stock assignments
@@ -45,8 +46,9 @@ interface StockPrioritizerInterface
      * to make the item and its children shippable.
      *
      * @param Common\SaleItemInterface $item
+     * @param bool                     $checkSale Whether to check if sale can be prioritized.
      *
      * @return bool Whether or not the sale item has been prioritized.
      */
-    public function prioritizeSaleItem(Common\SaleItemInterface $item);
+    public function prioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true);
 }

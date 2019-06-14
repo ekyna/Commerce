@@ -267,7 +267,13 @@ abstract class AbstractSaleListener
         if ($this->persistenceHelper->isChanged($sale, 'currency')) {
             $sale->setExchangeRate(null); // Clear exchange rate
             $this->scheduleContentChangeEvent($sale);
-        } elseif ($this->persistenceHelper->isChanged($sale, ['vatDisplayMode', 'paymentTerm', 'shipmentAmount'])) {
+        } elseif ($this->persistenceHelper->isChanged($sale, [
+            'sample',
+            'released',
+            'vatDisplayMode',
+            'paymentTerm',
+            'shipmentAmount',
+        ])) {
             $this->scheduleContentChangeEvent($sale);
         }
 
@@ -765,8 +771,10 @@ abstract class AbstractSaleListener
                         $this->persistenceHelper->remove($address, true);
                     }
                 }
-            } else if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
-                $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address, $persistence);
+            } else {
+                if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
+                    $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address, $persistence);
+                }
             }
         }
 

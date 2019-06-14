@@ -6,6 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
+use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
@@ -73,12 +75,12 @@ class StockPrioritizer implements StockPrioritizerInterface
      */
     public function canPrioritizeSale(Common\SaleInterface $sale)
     {
-        if ($sale->getState() === ShipmentStates::STATE_COMPLETED) {
+        if (!$this->checkSale($sale)) {
             return false;
         }
 
         foreach ($sale->getItems() as $item) {
-            if ($this->canPrioritizeSaleItem($item)) {
+            if ($this->canPrioritizeSaleItem($item, false)) {
                 return true;
             }
         }
@@ -89,10 +91,14 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * @inheritdoc
      */
-    public function canPrioritizeSaleItem(Common\SaleItemInterface $item)
+    public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true)
     {
+        if ($checkSale && !$this->checkSale($item->getSale())) {
+            return false;
+        }
+
         foreach ($item->getChildren() as $child) {
-            if ($this->canPrioritizeSaleItem($child)) {
+            if ($this->canPrioritizeSaleItem($child, false)) {
                 return true;
             }
         }
@@ -116,30 +122,38 @@ class StockPrioritizer implements StockPrioritizerInterface
         return false;
     }
 
-
     /**
      * @inheritdoc
      */
     public function prioritizeSale(Common\SaleInterface $sale)
     {
+        if (!$this->checkSale($sale)) {
+            return false;
+        }
+
         $changed = false;
 
         foreach ($sale->getItems() as $item) {
-            $changed |= $this->prioritizeSaleItem($item);
+            $changed |= $this->prioritizeSaleItem($item, false);
         }
 
         return $changed;
     }
 
+
     /**
      * @inheritdoc
      */
-    public function prioritizeSaleItem(Common\SaleItemInterface $item)
+    public function prioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true)
     {
+        if ($checkSale && !$this->checkSale($item->getSale())) {
+            return false;
+        }
+
         $changed = false;
 
         foreach ($item->getChildren() as $child) {
-            $changed |= $this->prioritizeSaleItem($child);
+            $changed |= $this->prioritizeSaleItem($child, false);
         }
 
         if (!$item instanceof Stock\StockAssignmentsInterface) {
@@ -163,6 +177,30 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         return $changed;
+    }
+
+    /**
+     * Checks whether the sale can be prioritized.
+     *
+     * @param Common\SaleInterface $sale
+     *
+     * @return bool
+     */
+    protected function checkSale(Common\SaleInterface $sale)
+    {
+        if (!$sale instanceof OrderInterface) {
+            return false;
+        }
+
+        if (!OrderStates::isStockableState($sale->getState())) {
+            return false;
+        }
+
+        if ($sale->getShipmentState() === ShipmentStates::STATE_COMPLETED) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
