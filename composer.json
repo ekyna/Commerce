@@ -34,7 +34,7 @@
         "doctrine/orm": "~2.5",
         "doctrine/data-fixtures": "~1.0",
         "symfony/property-access": "~3.0",
-        "misd/phone-number-bundle": "~1.3"
+        "misd/phone-number-bundle": "2.0.x-dev"
     },
     "suggest": {
         "florianv/swap": "For currency exchange rates",
