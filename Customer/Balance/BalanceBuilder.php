@@ -116,6 +116,7 @@ class BalanceBuilder
                 );
 
                 if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
+                    // TODO Not due if there is a equivalent credit invoice :s
                     $line->setDue(
                         1 === Money::compare($invoice->getGrandTotal(), $invoice->getPaidTotal(), $invoice->getCurrency())
                     );
@@ -154,7 +155,7 @@ class BalanceBuilder
                         $credit,
                         $order->getId(),
                         $order->getNumber(),
-                        $order->getVoucherNumber(),
+                        (string)$order->getVoucherNumber(),
                         $order->getCreatedAt()
                     );
 
@@ -187,12 +188,36 @@ class BalanceBuilder
                 if ($balance->getFilter() === Balance::FILTER_ALL) {
                     $balance->addCreditForward($credit);
                     $balance->addDebitForward($debit);
+
+                    // TODO Remove whe payment refund (type) will be implemented
+                    if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
+                        $balance->addCreditForward($debit);
+                        $balance->addDebitForward($credit);
+                    }
                 }
 
                 continue;
             }
 
             $order = $payment->getOrder();
+
+            // TODO Remove whe payment refund (type) will be implemented
+            // Add refund as payment first
+            if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
+                $line = new Line(
+                    $payment->getCreatedAt(),
+                    Line::TYPE_PAYMENT,
+                    $payment->getNumber(),
+                    $credit,
+                    $debit,
+                    $order->getId(),
+                    $order->getNumber(),
+                    (string)$order->getVoucherNumber(),
+                    $order->getCreatedAt()
+                );
+
+                $balance->addLine($line);
+            }
 
             $line = new Line(
                 $payment->getCreatedAt(),
@@ -202,7 +227,7 @@ class BalanceBuilder
                 $credit,
                 $order->getId(),
                 $order->getNumber(),
-                $order->getVoucherNumber(),
+                (string)$order->getVoucherNumber(),
                 $order->getCreatedAt()
             );
 

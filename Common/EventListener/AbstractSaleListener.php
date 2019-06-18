@@ -771,10 +771,8 @@ abstract class AbstractSaleListener
                         $this->persistenceHelper->remove($address, true);
                     }
                 }
-            } else {
-                if (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
-                    $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address, $persistence);
-                }
+            } elseif (null === $sale->getDeliveryAddress() && null !== $address = $customer->getDefaultDeliveryAddress()) {
+                $changed |= $this->saleUpdater->updateDeliveryAddressFromAddress($sale, $address, $persistence);
             }
         }
 

@@ -51,7 +51,7 @@ class NotifyBuilder
     /**
      * Builds the notify.
      *
-     * @param \Ekyna\Component\Commerce\Common\Model\Notify $notify
+     * @param Notify $notify
      *
      * @return bool Whether the notify has been successfully built.
      */
