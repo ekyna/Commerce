@@ -111,6 +111,16 @@ class PayumBuilderPass implements CompilerPassInterface
             }
             $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
             $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.convert_payment', $definition);
+
+            // Cancel action
+            $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpCancelAction');
+            $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
+            $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.cancel_payment', $definition);
+
+            // Refund action
+            $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpRefundAction');
+            $definition->addTag('payum.action', ['factory' => 'paypal_express_checkout', 'prepend' => true]);
+            $container->setDefinition('ekyna_commerce.payum.action.paypal_ec_nvp.refund_payment', $definition);
         }
 
         // Global actions
