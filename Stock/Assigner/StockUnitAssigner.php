@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
+use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
@@ -49,6 +50,11 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     protected $unitUpdater;
 
     /**
+     * @var StockAssignmentManagerInterface
+     */
+    protected $assignmentManager;
+
+    /**
      * @var StockAssignmentUpdaterInterface
      */
     protected $assignmentUpdater;
@@ -66,6 +72,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      * @param SubjectHelperInterface          $subjectHelper
      * @param StockUnitResolverInterface      $unitResolver
      * @param StockUnitUpdaterInterface       $unitUpdater
+     * @param StockAssignmentManagerInterface $assignmentManager
      * @param StockAssignmentUpdaterInterface $assignmentUpdater
      * @param SaleFactoryInterface            $saleFactory
      */
@@ -74,6 +81,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         SubjectHelperInterface $subjectHelper,
         StockUnitResolverInterface $unitResolver,
         StockUnitUpdaterInterface $unitUpdater,
+        StockAssignmentManagerInterface $assignmentManager,
         StockAssignmentUpdaterInterface $assignmentUpdater,
         SaleFactoryInterface $saleFactory
     ) {
@@ -81,6 +89,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         $this->subjectHelper = $subjectHelper;
         $this->unitResolver = $unitResolver;
         $this->unitUpdater = $unitUpdater;
+        $this->assignmentManager = $assignmentManager;
         $this->assignmentUpdater = $assignmentUpdater;
         $this->saleFactory = $saleFactory;
     }
@@ -420,6 +429,8 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function supportsAssignment(SaleItemInterface $item)
     {
+        // TODO Check if sale is in stockable state
+
         if (!$item instanceof StockAssignmentsInterface) {
             return false;
         }
@@ -476,11 +487,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     {
         $this->unitUpdater->updateSold($assignment->getStockUnit(), -$assignment->getSoldQuantity(), true);
 
-        $assignment
-            ->setSaleItem(null)
-            ->setStockUnit(null);
-
-        $this->persistenceHelper->remove($assignment);
+        $this->assignmentManager->remove($assignment);
     }
 
     /**
@@ -501,10 +508,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         $stockUnits = $this->sortStockUnits($this->unitResolver->findAssignable($item));
 
         foreach ($stockUnits as $stockUnit) {
-            $assignment = $this->saleFactory->createStockAssignmentForItem($item);
-            $assignment
-                ->setSaleItem($item)
-                ->setStockUnit($stockUnit);
+            $assignment = $this->assignmentManager->create($item, $stockUnit);
 
             $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
 

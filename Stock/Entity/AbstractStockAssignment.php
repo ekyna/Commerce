@@ -134,4 +134,13 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
         //return $this->getShippableQuantity() >= $this->soldQuantity - $this->shippedQuantity;
         return 0 <= bccomp($this->getShippableQuantity(), $this->soldQuantity - $this->shippedQuantity, 5);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isEmpty(): bool
+    {
+        return 0 == $this->soldQuantity
+            && 0 == $this->shippedQuantity;
+    }
 }

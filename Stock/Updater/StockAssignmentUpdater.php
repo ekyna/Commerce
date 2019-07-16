@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -24,17 +25,27 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
      */
     protected $stockUnitUpdater;
 
+    /**
+     * @var StockAssignmentManagerInterface
+     */
+    protected $assignmentManager;
+
 
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockUnitUpdaterInterface  $stockUnitUpdater
+     * @param PersistenceHelperInterface      $persistenceHelper
+     * @param StockUnitUpdaterInterface       $stockUnitUpdater
+     * @param StockAssignmentManagerInterface $assignmentManager
      */
-    public function __construct(PersistenceHelperInterface $persistenceHelper, StockUnitUpdaterInterface $stockUnitUpdater)
-    {
+    public function __construct(
+        PersistenceHelperInterface $persistenceHelper,
+        StockUnitUpdaterInterface $stockUnitUpdater,
+        StockAssignmentManagerInterface $assignmentManager
+    ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->stockUnitUpdater = $stockUnitUpdater;
+        $this->assignmentManager = $assignmentManager;
     }
 
     /**
@@ -56,8 +67,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             if ($quantity > $limit = $stockUnit->getReservableQuantity()) {
                 $quantity = $limit;
             }
-        }
-        // Negative update
+        } // Negative update
         elseif (0 > $quantity) {
             // Sold quantity can't be lower than shipped quantity or zero
             $limit = max(
@@ -90,18 +100,15 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             }
 
             if (!$prevent) {
-                $assignment
-                    ->setSaleItem(null)
-                    ->setStockUnit(null);
-
-                $this->persistenceHelper->remove($assignment, false);
+                $this->assignmentManager->remove($assignment);
 
                 return $quantity;
             }
         }
 
         $assignment->setSoldQuantity($result);
-        $this->persistenceHelper->persistAndRecompute($assignment, false);
+
+        $this->assignmentManager->persist($assignment);
 
         return $quantity;
     }
@@ -125,8 +132,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             if ($quantity > $limit = $assignment->getShippableQuantity()) {
                 $quantity = $limit;
             }
-        }
-        // Negative update
+        } // Negative update
         elseif (0 > $quantity) {
             // Shipped quantity can't be lower than zero
             if ($quantity < $limit = max(-$assignment->getShippedQuantity(), -$stockUnit->getShippedQuantity())) {

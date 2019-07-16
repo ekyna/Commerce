@@ -96,4 +96,11 @@ interface StockAssignmentInterface extends ResourceInterface
      * @return bool
      */
     public function isFullyShippable();
+
+    /**
+     * REturns whether the assignment is empty.
+     *
+     * @return bool
+     */
+    public function isEmpty(): bool;
 }

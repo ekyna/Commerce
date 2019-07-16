@@ -2,8 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -11,6 +9,8 @@ use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
+use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
+use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 
@@ -32,14 +32,14 @@ class StockPrioritizer implements StockPrioritizerInterface
     protected $unitAssigner;
 
     /**
-     * @var SaleFactoryInterface
+     * @var StockUnitManagerInterface
      */
-    protected $saleFactory;
+    protected $unitManager;
 
     /**
-     * @var EntityManagerInterface
+     * @var StockAssignmentManagerInterface
      */
-    protected $manager;
+    protected $assignmentManager;
 
     /**
      * @var StockLoggerInterface
@@ -50,23 +50,23 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * Constructor.
      *
-     * @param StockUnitResolverInterface $unitResolver
-     * @param StockUnitAssignerInterface $unitAssigner
-     * @param SaleFactoryInterface       $saleFactory
-     * @param EntityManagerInterface     $manager
-     * @param StockLoggerInterface $logger
+     * @param StockUnitResolverInterface      $unitResolver
+     * @param StockUnitAssignerInterface      $unitAssigner
+     * @param StockUnitManagerInterface       $unitManager
+     * @param StockAssignmentManagerInterface $assignmentManager
+     * @param StockLoggerInterface            $logger
      */
     public function __construct(
         StockUnitResolverInterface $unitResolver,
         StockUnitAssignerInterface $unitAssigner,
-        SaleFactoryInterface $saleFactory,
-        EntityManagerInterface $manager,
+        StockUnitManagerInterface $unitManager,
+        StockAssignmentManagerInterface $assignmentManager,
         StockLoggerInterface $logger
     ) {
         $this->unitResolver = $unitResolver;
         $this->unitAssigner = $unitAssigner;
-        $this->saleFactory = $saleFactory;
-        $this->manager = $manager;
+        $this->unitManager = $unitManager;
+        $this->assignmentManager = $assignmentManager;
         $this->logger = $logger;
     }
 
@@ -139,7 +139,6 @@ class StockPrioritizer implements StockPrioritizerInterface
 
         return $changed;
     }
-
 
     /**
      * @inheritdoc
@@ -300,12 +299,12 @@ class StockPrioritizer implements StockPrioritizerInterface
         // Debit source unit's sold quantity
         $this->logger->unitSold($sourceUnit, -$quantity);
         $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $quantity);
-        $this->manager->persist($sourceUnit);
+        $this->unitManager->persistOrRemove($sourceUnit); // TODO Without event scheduling ?
 
         // Credit target unit
         $this->logger->unitSold($targetUnit, $quantity);
         $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $quantity);
-        $this->manager->persist($targetUnit);
+        $this->unitManager->persistOrRemove($targetUnit); // TODO Without event scheduling ?
 
         // Merge assignment lookup
         $merge = null;
@@ -321,42 +320,39 @@ class StockPrioritizer implements StockPrioritizerInterface
                 // Credit quantity to mergeable assignment
                 $this->logger->assignmentSold($merge, $quantity);
                 $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
-                $this->manager->persist($merge);
+                $this->assignmentManager->persist($merge);
 
                 // Debit quantity from source assignment
                 $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
-                $assignment
-                    ->setSoldQuantity(0)
-                    ->setSaleItem(null)
-                    ->setStockUnit(null);
-                $this->manager->remove($assignment);
+                $assignment->setSoldQuantity(0);
+                $this->assignmentManager->remove($assignment);
             } else {
                 // Move source assignment to target unit
                 $this->logger->assignmentUnit($assignment, $targetUnit);
                 $assignment->setStockUnit($targetUnit);
-                $this->manager->persist($assignment);
+                $this->assignmentManager->persist($assignment);
             }
         } else {
             // Debit quantity from source assignment
             $this->logger->assignmentSold($assignment, -$quantity);
             $assignment->setSoldQuantity($assignment->getSoldQuantity() - $quantity);
-            $this->manager->persist($assignment);
+            $this->assignmentManager->persist($assignment);
 
             if (null !== $merge) {
                 // Credit quantity to mergeable assignment
                 $this->logger->assignmentSold($merge, $quantity);
                 $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
-                $this->manager->persist($merge);
+                $this->assignmentManager->persist($merge);
             } else {
                 // Credit quantity to new assignment
-                $create = $this->saleFactory->createStockAssignmentForItem($saleItem);
+                $create = $this->assignmentManager->create($saleItem, $targetUnit);
                 $this->logger->assignmentSold($create, $quantity, false);
                 $create
                     ->setSoldQuantity($quantity)
                     ->setSaleItem($saleItem)
                     ->setStockUnit($targetUnit);
 
-                $this->manager->persist($create);
+                $this->assignmentManager->persist($create);
             }
         }
 

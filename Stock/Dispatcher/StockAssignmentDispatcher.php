@@ -2,15 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Stock\Dispatcher;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
+use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
-use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class StockAssignmentDispatcher
@@ -20,14 +19,9 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
 {
     /**
-     * @var PersistenceHelperInterface
+     * @var StockAssignmentManagerInterface
      */
-    protected $persistenceHelper;
-
-    /**
-     * @var SaleFactoryInterface
-     */
-    protected $saleFactory;
+    protected $assignmentManager;
 
     /**
      * @var StockUnitManagerInterface
@@ -43,19 +37,16 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param SaleFactoryInterface       $saleFactory
-     * @param StockUnitManagerInterface  $unitManager
-     * @param StockLoggerInterface       $logger
+     * @param StockAssignmentManagerInterface $assignmentManager
+     * @param StockUnitManagerInterface       $unitManager
+     * @param StockLoggerInterface            $logger
      */
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
-        SaleFactoryInterface $saleFactory,
+        StockAssignmentManagerInterface $assignmentManager,
         StockUnitManagerInterface $unitManager,
         StockLoggerInterface $logger
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->saleFactory = $saleFactory;
+        $this->assignmentManager = $assignmentManager;
         $this->unitManager = $unitManager;
         $this->logger = $logger;
     }
@@ -139,39 +130,35 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
                     // Credit quantity to mergeable assignment
                     $this->logger->assignmentSold($merge, $delta);
                     $merge->setSoldQuantity($merge->getSoldQuantity() + $delta);
-                    $this->persistAssignment($merge);
+                    $this->assignmentManager->persist($merge);
 
                     // Debit quantity from source assignment
                     $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
                     $assignment->setSoldQuantity(0);
-                    $this->persistAssignment($assignment); // Remove
+                    $this->assignmentManager->remove($assignment);
                 } else {
                     // Move source assignment to target unit
                     $this->logger->assignmentUnit($assignment, $targetUnit);
                     $assignment->setStockUnit($targetUnit);
-                    $this->persistAssignment($assignment);
+                    $this->assignmentManager->persist($assignment);
                 }
             } else {
                 // Debit quantity from source assignment
                 $this->logger->assignmentSold($assignment, -$delta);
                 $assignment->setSoldQuantity($assignment->getSoldQuantity() - $delta);
-                $this->persistAssignment($assignment);
+                $this->assignmentManager->persist($assignment);
 
                 if (null !== $merge) {
                     // Credit quantity to mergeable assignment
                     $this->logger->assignmentSold($merge, $delta);
                     $merge->setSoldQuantity($merge->getSoldQuantity() + $delta);
-                    $this->persistAssignment($merge);
+                    $this->assignmentManager->persist($merge);
                 } else {
                     // Credit quantity to new assignment
-                    $create = $this->saleFactory->createStockAssignmentForItem($saleItem);
+                    $create = $this->assignmentManager->create($saleItem, $targetUnit);
                     $this->logger->assignmentSold($create, $delta, false);
-                    $create
-                        ->setSoldQuantity($delta)
-                        ->setSaleItem($saleItem)
-                        ->setStockUnit($targetUnit);
-
-                    $this->persistAssignment($create);
+                    $create->setSoldQuantity($delta);
+                    $this->assignmentManager->persist($create);
                 }
             }
 
@@ -186,28 +173,6 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
         $this->unitManager->persistOrRemove($sourceUnit);
 
         return $moved;
-    }
-
-    /**
-     * Persists (or removes) the stock assignment.
-     *
-     * @param StockAssignmentInterface $assignment
-     */
-    private function persistAssignment(StockAssignmentInterface $assignment)
-    {
-        // Remove if empty
-        if (0 == $assignment->getSoldQuantity()) {
-            $assignment
-                ->setSaleItem(null)
-                ->setStockUnit(null);
-
-            $this->persistenceHelper->remove($assignment, true);
-
-            return;
-        }
-
-        // Persist without scheduling event
-        $this->persistenceHelper->persistAndRecompute($assignment, true);
     }
 
     /**
