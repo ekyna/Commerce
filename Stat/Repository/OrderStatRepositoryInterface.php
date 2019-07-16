@@ -37,6 +37,16 @@ interface OrderStatRepositoryInterface
     public function findOneByYear(\DateTime $date);
 
     /**
+     * Returns the daily stats sums of the given year (between the january, 1st and the given date).
+     *
+     * @param \DateTime $date
+     *
+     * @return \Ekyna\Component\Commerce\Stat\Entity\OrderStat
+     * @throws \Exception
+     */
+    public function findSumByYear(\DateTime $date);
+
+    /**
      * Finds the day revenues by month.
      *
      * @param \DateTime $date

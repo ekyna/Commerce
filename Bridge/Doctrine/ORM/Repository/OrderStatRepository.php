@@ -57,6 +57,41 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
     /**
      * @inheritDoc
      */
+    public function findSumByYear(\DateTime $date)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+        $data = $qb
+            ->select([
+                'SUM(o.revenue - o.shipping) as revenue',
+                'SUM(o.shipping) as shipping',
+                'SUM(o.margin) as margin',
+                'SUM(o.orders) as orders',
+                'SUM(o.items) as items',
+                'AVG(o.average) as average',
+            ])
+            ->andWhere($ex->eq('o.type', ':type'))
+            ->andWhere($ex->between('o.date', ':from', ':to'))
+            ->setParameters([
+                'type' => OrderStat::TYPE_DAY,
+                'from' => $from = new \DateTime('first day of january ' . $date->format('Y')),
+                'to'   => $date,
+            ])
+            ->getQuery()
+            ->getScalarResult();
+
+        $result = new OrderStat();
+        $result
+            ->setDate($date->format('Y'))
+            ->setType(OrderStat::TYPE_YEAR)
+            ->loadResult(current($data));
+
+        return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findDayRevenuesByMonth(\DateTime $date, $detailed = false)
     {
         return $this->findRevenues(OrderStat::TYPE_DAY, $date, null, $detailed);

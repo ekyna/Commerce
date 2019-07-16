@@ -227,10 +227,14 @@ class OrderStat
      * Sets the orders count.
      *
      * @param int $orders
+     *
+     * @return OrderStat
      */
     public function setOrders($orders)
     {
         $this->orders = (int)$orders;
+
+        return $this;
     }
 
     /**
@@ -355,6 +359,10 @@ class OrderStat
         $changed = false;
 
         foreach (['revenue', 'shipping', 'margin', 'orders', 'items', 'average', 'details'] as $property) {
+            if (!isset($result[$property])) {
+                continue;
+            }
+
             if ($this->{$property} != $result[$property]) {
                 $this->{$property} = $result[$property];
                 $changed = true;
