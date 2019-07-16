@@ -73,7 +73,7 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * @inheritdoc
      */
-    public function canPrioritizeSale(Common\SaleInterface $sale)
+    public function canPrioritizeSale(Common\SaleInterface $sale): bool
     {
         if (!$this->checkSale($sale)) {
             return false;
@@ -91,7 +91,7 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * @inheritdoc
      */
-    public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true)
+    public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true): bool
     {
         if ($checkSale && !$this->checkSale($item->getSale())) {
             return false;
@@ -125,7 +125,7 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * @inheritdoc
      */
-    public function prioritizeSale(Common\SaleInterface $sale)
+    public function prioritizeSale(Common\SaleInterface $sale): bool
     {
         if (!$this->checkSale($sale)) {
             return false;
@@ -134,7 +134,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         $changed = false;
 
         foreach ($sale->getItems() as $item) {
-            $changed |= $this->prioritizeSaleItem($item, false);
+            $changed |= $this->prioritizeSaleItem($item, null, false);
         }
 
         return $changed;
@@ -143,8 +143,11 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * @inheritdoc
      */
-    public function prioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true)
-    {
+    public function prioritizeSaleItem(
+        Common\SaleItemInterface $item,
+        float $quantity = null,
+        bool $checkSale = true
+    ): bool {
         if ($checkSale && !$this->checkSale($item->getSale())) {
             return false;
         }
@@ -152,7 +155,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         $changed = false;
 
         foreach ($item->getChildren() as $child) {
-            $changed |= $this->prioritizeSaleItem($child, false);
+            $changed |= $this->prioritizeSaleItem($child, $quantity ? $quantity * $child->getQuantity() : null, false);
         }
 
         if (!$item instanceof Stock\StockAssignmentsInterface) {
@@ -172,7 +175,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         foreach ($item->getStockAssignments() as $assignment) {
-            $changed |= $this->prioritizeAssignment($assignment);
+            $changed |= $this->prioritizeAssignment($assignment, $quantity);
         }
 
         return $changed;
@@ -206,17 +209,22 @@ class StockPrioritizer implements StockPrioritizerInterface
      * Prioritize the stock assignment.
      *
      * @param Stock\StockAssignmentInterface $assignment
+     * @param float                          $quantity
      *
      * @return bool Whether the assignment has been prioritized.
      */
-    protected function prioritizeAssignment(Stock\StockAssignmentInterface $assignment)
+    protected function prioritizeAssignment(Stock\StockAssignmentInterface $assignment, float $quantity = null)
     {
         if ($assignment->isFullyShipped() || $assignment->isFullyShippable()) {
             return false;
         }
 
-        // Get the non shippable quantity
-        if (0 >= $quantity = $assignment->getSoldQuantity() - $assignment->getShippableQuantity()) {
+        if (is_null($quantity)) {
+            // Get the non shippable quantity
+            $quantity = $assignment->getSoldQuantity() - $assignment->getShippableQuantity();
+        }
+
+        if (0 >= $quantity) {
             return false;
         }
 
