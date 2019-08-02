@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+
 /**
  * Class StockSubjectStates
  * @package Ekyna\Component\Commerce\Stock\Model
@@ -17,14 +19,14 @@ final class StockSubjectStates
     /**
      * Returns all the states.
      *
-     * @return array
+     * @return string[]
      */
-    static public function getStates()
+    static public function getStates(): array
     {
         return [
-            static::STATE_IN_STOCK,
-            static::STATE_PRE_ORDER,
-            static::STATE_OUT_OF_STOCK,
+            self::STATE_IN_STOCK,
+            self::STATE_PRE_ORDER,
+            self::STATE_OUT_OF_STOCK,
         ];
     }
 
@@ -32,32 +34,40 @@ final class StockSubjectStates
      * Returns whether the given state is valid or not.
      *
      * @param string $state
+     * @param bool   $throwException
      *
      * @return bool
      */
-    static public function isValidState($state)
+    static public function isValidState(string $state, bool $throwException = false): bool
     {
-        return in_array($state, static::getStates(), true);
+        if (in_array($state, self::getStates(), true)) {
+            return true;
+        }
+
+        if ($throwException) {
+            throw new UnexpectedValueException("Unknown state '$state'.");
+        }
+
+        return false;
     }
 
     /**
-     * Returns whether the state A is better than the state B.
+     * Returns whether the state A has a better availability than the state B.
      *
      * @param string $stateA
      * @param string $stateB
      *
      * @return bool
      */
-    static public function isBetterState($stateA, $stateB)
+    static public function isBetterState(string $stateA, string $stateB): bool
     {
-        // TODO Find something more explicit than 'better' (availability ?)
+        self::isValidState($stateA, true);
+        self::isValidState($stateB, true);
 
-        // TODO assert valid states ?
-
-        if ($stateA === static::STATE_IN_STOCK) {
-            return $stateB !== static::STATE_IN_STOCK;
-        } elseif ($stateA === static::STATE_PRE_ORDER) {
-            return $stateB === static::STATE_OUT_OF_STOCK;
+        if ($stateA === self::STATE_IN_STOCK) {
+            return $stateB !== self::STATE_IN_STOCK;
+        } elseif ($stateA === self::STATE_PRE_ORDER) {
+            return $stateB === self::STATE_OUT_OF_STOCK;
         }
 
         return false;

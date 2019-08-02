@@ -68,9 +68,9 @@ class ProductEventSubscriber
 
         $changed = false;
 
-        $properties = ['inStock', 'availableStock', 'virtualStock', 'estimatedDateOfArrival'];
+        $properties = ['stockMode', 'inStock', 'availableStock', 'virtualStock', 'estimatedDateOfArrival'];
         if ($this->persistenceHelper->isChanged($product, $properties)) {
-            $changed = $this->stockUpdater->updateStockState($product);
+            $changed = $this->stockUpdater->update($product);
         }
 
         if ($changed) {

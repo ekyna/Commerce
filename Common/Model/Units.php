@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 
 /**
  * Class Unit
@@ -41,28 +41,28 @@ final class Units
      *
      * @return string[]
      */
-    static function getUnits()
+    static function getUnits(): array
     {
         return [
-            static::PIECE,
+            self::PIECE,
             // Length
-            static::METER,
-            static::CENTIMETER,
-            static::MILLIMETER,
-            static::INCH,
-            static::FOOT,
+            self::METER,
+            self::CENTIMETER,
+            self::MILLIMETER,
+            self::INCH,
+            self::FOOT,
             // Weight
-            static::KILOGRAM,
-            static::GRAM,
+            self::KILOGRAM,
+            self::GRAM,
             // Volume
-            static::CUBIC_METER,
-            static::LITER,
-            static::MILLILITER,
+            self::CUBIC_METER,
+            self::LITER,
+            self::MILLILITER,
             // Duration
-            static::DAY,
-            static::HOUR,
-            static::MINUTE,
-            static::SECOND,
+            self::DAY,
+            self::HOUR,
+            self::MINUTE,
+            self::SECOND,
         ];
     }
 
@@ -70,18 +70,18 @@ final class Units
      * Returns whether the given unit is valid.
      *
      * @param string $unit
-     * @param bool   $throw
+     * @param bool   $throwException
      *
      * @return bool
      */
-    static function isValid($unit, $throw = false)
+    static function isValid(string $unit, bool $throwException = false): bool
     {
-        if (in_array($unit, static::getUnits(), true)) {
+        if (in_array($unit, self::getUnits(), true)) {
             return true;
         }
 
-        if ($throw) {
-            throw new InvalidArgumentException("Invalid unit '$unit'.");
+        if ($throwException) {
+            throw new UnexpectedValueException("Unknown unit '$unit'.");
         }
 
         return false;
@@ -92,52 +92,52 @@ final class Units
      *
      * @param string $unit
      *
-     * @return int
+     * @return string
      */
-    static function getSymbol($unit)
+    static function getSymbol(string $unit): string
     {
         switch ($unit) {
-            case static::PIECE:
+            case self::PIECE:
                 return 'pcs';
 
             // Length
-            case static::METER:
+            case self::METER:
                 return 'm';
-            case static::CENTIMETER:
+            case self::CENTIMETER:
                 return 'cm';
-            case static::MILLIMETER:
+            case self::MILLIMETER:
                 return 'mm';
-            case static::INCH:
+            case self::INCH:
                 return 'in';
-            case static::FOOT:
+            case self::FOOT:
                 return 'ft';
 
             // Weight
-            case static::KILOGRAM:
+            case self::KILOGRAM:
                 return 'kg';
-            case static::GRAM:
+            case self::GRAM:
                 return 'g';
 
             // Volume
-            case static::CUBIC_METER:
+            case self::CUBIC_METER:
                 return 'm³';
-            case static::LITER:
+            case self::LITER:
                 return 'L';
-            case static::MILLILITER:
+            case self::MILLILITER:
                 return 'mL';
 
             // Duration
-            case static::DAY:
+            case self::DAY:
                 return 'days';
-            case static::HOUR:
+            case self::HOUR:
                 return 'hours';
-            case static::MINUTE:
+            case self::MINUTE:
                 return 'minutes';
-            case static::SECOND:
+            case self::SECOND:
                 return 's';
 
             default:
-                throw new InvalidArgumentException("Invalid unit '$unit'.");
+                throw new UnexpectedValueException("Unknown unit '$unit'.");
         }
     }
 
@@ -148,30 +148,30 @@ final class Units
      *
      * @return int
      */
-    static function getPrecision($unit)
+    static function getPrecision(string $unit): int
     {
         switch ($unit) {
-            case static::PIECE:
-            case static::MILLIMETER:
-            case static::GRAM:
-            case static::MILLILITER:
-            case static::DAY:
-            case static::MINUTE:
-            case static::SECOND:
+            case self::PIECE:
+            case self::MILLIMETER:
+            case self::GRAM:
+            case self::MILLILITER:
+            case self::DAY:
+            case self::MINUTE:
+            case self::SECOND:
                 return 0;
-            case static::CENTIMETER:
+            case self::CENTIMETER:
                 return 1;
-            case static::INCH:
-            case static::FOOT:
-            case static::HOUR:
+            case self::INCH:
+            case self::FOOT:
+            case self::HOUR:
                 return 2;
-            case static::METER:
-            case static::KILOGRAM:
-            case static::CUBIC_METER:
-            case static::LITER:
+            case self::METER:
+            case self::KILOGRAM:
+            case self::CUBIC_METER:
+            case self::LITER:
                 return 3;
             default:
-                throw new InvalidArgumentException("Invalid unit '$unit'.");
+                throw new UnexpectedValueException("Unknown unit '$unit'.");
         }
     }
 
@@ -181,11 +181,11 @@ final class Units
      * @param float  $value
      * @param string $unit
      *
-     * @return float|int
+     * @return float
      */
-    static function round($value, $unit = 'piece')
+    static function round(float $value, string $unit = self::PIECE): float
     {
-        if (0 < $precision = static::getPrecision($unit)) {
+        if (0 < $precision = self::getPrecision($unit)) {
             $divider = pow(10, $precision);
 
             return round(floor($value * $divider) / $divider, $precision);

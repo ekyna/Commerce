@@ -6,14 +6,13 @@ use Acme\Product\Provider\ProductProvider;
 use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Pricing\Model as Pricing;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
-use Ekyna\Component\Commerce\Subject\Model as Subject;
 
 /**
  * Class Product
  * @package Acme\Product\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Product implements Pricing\TaxableInterface, Stock\StockSubjectInterface, Subject\SubjectInterface
+class Product implements Pricing\TaxableInterface, Stock\StockSubjectInterface
 {
     use Pricing\TaxableTrait,
         Stock\StockSubjectTrait;
@@ -42,6 +41,16 @@ class Product implements Pricing\TaxableInterface, Stock\StockSubjectInterface, 
      * @var float
      */
     private $weight;
+
+    /**
+     * @var bool
+     */
+    private $stockCompound = false;
+
+    /**
+     * @var Stock\StockComponent[]
+     */
+    private $stockComposition = [];
 
 
     /**
@@ -217,9 +226,57 @@ class Product implements Pricing\TaxableInterface, Stock\StockSubjectInterface, 
     }
 
     /**
+     * Returns the stock composition.
+     *
+     * @return Stock\StockComponent[]
+     */
+    public function getStockComposition(): array
+    {
+        return $this->stockComposition;
+    }
+
+    /**
+     * Sets the stock composition.
+     *
+     * @param Stock\StockComponent[] $components
+     *
+     * @return Product
+     */
+    public function setStockComposition(array $components): Product
+    {
+        $this->stockComposition = $components;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether the stock is compound.
+     *
+     * @return bool
+     */
+    public function isStockCompound(): bool
+    {
+        return $this->stockCompound;
+    }
+
+    /**
+     * Sets whether the stock is compound.
+     *
+     * @param bool $compound
+     *
+     * @return Product
+     */
+    public function setStockCompound(bool $compound): Product
+    {
+        $this->stockCompound = $compound;
+
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
-    public static function getStockUnitClass()
+    public static function getStockUnitClass(): string
     {
         return StockUnit::class;
     }

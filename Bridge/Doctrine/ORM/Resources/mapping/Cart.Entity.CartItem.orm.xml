@@ -26,14 +26,14 @@
         </field>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItem"
-                     field="children" mapped-by="parent" orphan-removal="true">
+                     field="children" mapped-by="parent" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>
         </one-to-many>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartItemAdjustment"
-                     field="adjustments" mapped-by="item" orphan-removal="true">
+                     field="adjustments" mapped-by="item" orphan-removal="true" index-by="id">
             <cascade>
                 <cascade-all/>
             </cascade>

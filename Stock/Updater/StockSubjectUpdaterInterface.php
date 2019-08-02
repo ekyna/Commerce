@@ -19,13 +19,4 @@ interface StockSubjectUpdaterInterface
      * @return bool Whether or not the subject has been updated.
      */
     public function update(StockSubjectInterface $subject);
-
-    /**
-     * Updates the subject's stock state.
-     *
-     * @param StockSubjectInterface $subject
-     *
-     * @return bool Whether or not the subject has been updated.
-     */
-    public function updateStockState(StockSubjectInterface $subject);
 }

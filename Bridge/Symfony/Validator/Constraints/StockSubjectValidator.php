@@ -71,7 +71,6 @@ class StockSubjectValidator extends ConstraintValidator
             ],
             'virtualStock'           => [
                 new Assert\NotNull(),
-                new Assert\NotNull(),
             ],
             'replenishmentTime'      => [
                 new Assert\NotNull(),

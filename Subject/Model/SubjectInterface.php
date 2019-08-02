@@ -79,7 +79,7 @@ interface SubjectInterface extends ResourceInterface
      *
      * @return string
      */
-    public function getUnit();
+    public function getUnit(); // TODO Move to StockSubjectInterface (?)
 
     /**
      * Returns whether all the dimensions are set.

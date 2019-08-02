@@ -92,7 +92,7 @@ trait StockSubjectTrait
      *
      * @return string
      */
-    public function getStockMode()
+    public function getStockMode(): string
     {
         return $this->stockMode;
     }
@@ -104,7 +104,7 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setStockMode($mode)
+    public function setStockMode(string $mode): StockSubjectInterface
     {
         $this->stockMode = $mode;
 
@@ -116,7 +116,7 @@ trait StockSubjectTrait
      *
      * @return string
      */
-    public function getStockState()
+    public function getStockState(): string
     {
         return $this->stockState;
     }
@@ -128,7 +128,7 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setStockState($state)
+    public function setStockState(string $state): StockSubjectInterface
     {
         $this->stockState = $state;
 
@@ -140,7 +140,7 @@ trait StockSubjectTrait
      *
      * @return float
      */
-    public function getStockFloor()
+    public function getStockFloor(): float
     {
         return $this->stockFloor;
     }
@@ -152,7 +152,7 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setStockFloor($floor)
+    public function setStockFloor(float $floor): StockSubjectInterface
     {
         $this->stockFloor = $floor;
 
@@ -164,7 +164,7 @@ trait StockSubjectTrait
      *
      * @return float
      */
-    public function getInStock()
+    public function getInStock(): float
     {
         return $this->inStock;
     }
@@ -176,9 +176,9 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setInStock($quantity)
+    public function setInStock(float $quantity): StockSubjectInterface
     {
-        $this->inStock = (float)$quantity;
+        $this->inStock = $quantity;
 
         return $this;
     }
@@ -188,7 +188,7 @@ trait StockSubjectTrait
      *
      * @return float
      */
-    public function getAvailableStock()
+    public function getAvailableStock(): float
     {
         return $this->availableStock;
     }
@@ -200,9 +200,9 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setAvailableStock($quantity)
+    public function setAvailableStock(float $quantity): StockSubjectInterface
     {
-        $this->availableStock = (float)$quantity;
+        $this->availableStock = $quantity;
 
         return $this;
     }
@@ -212,7 +212,7 @@ trait StockSubjectTrait
      *
      * @return float
      */
-    public function getVirtualStock()
+    public function getVirtualStock(): float
     {
         return $this->virtualStock;
     }
@@ -224,7 +224,7 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setVirtualStock($quantity)
+    public function setVirtualStock(float $quantity): StockSubjectInterface
     {
         $this->virtualStock = (float)$quantity;
 
@@ -236,7 +236,7 @@ trait StockSubjectTrait
      *
      * @return \DateTime
      */
-    public function getEstimatedDateOfArrival()
+    public function getEstimatedDateOfArrival(): ?\DateTime
     {
         return $this->estimatedDateOfArrival;
     }
@@ -248,7 +248,7 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setEstimatedDateOfArrival(\DateTime $date = null)
+    public function setEstimatedDateOfArrival(\DateTime $date = null): StockSubjectInterface
     {
         $this->estimatedDateOfArrival = $date;
 
@@ -260,7 +260,7 @@ trait StockSubjectTrait
      *
      * @return int
      */
-    public function getReplenishmentTime()
+    public function getReplenishmentTime(): int
     {
         return $this->replenishmentTime;
     }
@@ -272,9 +272,9 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setReplenishmentTime($days)
+    public function setReplenishmentTime(int $days): StockSubjectInterface
     {
-        $this->replenishmentTime = (int)$days;
+        $this->replenishmentTime = $days;
 
         return $this;
     }
@@ -284,7 +284,7 @@ trait StockSubjectTrait
      *
      * @return string
      */
-    public function getGeocode()
+    public function getGeocode(): ?string
     {
         return $this->geocode;
     }
@@ -296,7 +296,7 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setGeocode($code)
+    public function setGeocode(string $code = null): StockSubjectInterface
     {
         $this->geocode = $code;
 
@@ -308,7 +308,7 @@ trait StockSubjectTrait
      *
      * @return float
      */
-    public function getMinimumOrderQuantity()
+    public function getMinimumOrderQuantity(): float
     {
         return $this->minimumOrderQuantity;
     }
@@ -320,7 +320,7 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setMinimumOrderQuantity($quantity)
+    public function setMinimumOrderQuantity(float $quantity): StockSubjectInterface
     {
         $this->minimumOrderQuantity = $quantity;
 
@@ -332,7 +332,7 @@ trait StockSubjectTrait
      *
      * @return bool
      */
-    public function isQuoteOnly()
+    public function isQuoteOnly(): bool
     {
         return $this->quoteOnly;
     }
@@ -344,9 +344,9 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setQuoteOnly($quoteOnly)
+    public function setQuoteOnly(bool $quoteOnly): StockSubjectInterface
     {
-        $this->quoteOnly = (bool)$quoteOnly;
+        $this->quoteOnly = $quoteOnly;
 
         return $this;
     }
@@ -356,7 +356,7 @@ trait StockSubjectTrait
      *
      * @return bool
      */
-    public function isEndOfLife()
+    public function isEndOfLife(): bool
     {
         return $this->endOfLife;
     }
@@ -368,9 +368,9 @@ trait StockSubjectTrait
      *
      * @return $this|StockSubjectInterface
      */
-    public function setEndOfLife($endOfLife)
+    public function setEndOfLife(bool $endOfLife): StockSubjectInterface
     {
-        $this->endOfLife = (bool)$endOfLife;
+        $this->endOfLife = $endOfLife;
 
         return $this;
     }
@@ -380,8 +380,19 @@ trait StockSubjectTrait
      *
      * @return bool
      */
-    public function isStockCompound()
+    public function isStockCompound(): bool
     {
         return false;
+    }
+
+    /**
+     * Returns the stock composition.
+     *
+     * @return StockComponent[]
+     */
+    public function getStockComposition(): array
+    {
+        /** @noinspection PhpParamsInspection */
+        return [new StockComponent($this, 1)];
     }
 }

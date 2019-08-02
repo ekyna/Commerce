@@ -2,12 +2,13 @@
 
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
+use Ekyna\Component\Commerce\Common\Model\Units;
+use Ekyna\Component\Commerce\Stock\Model\StockComponent;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterface;
 
 /**
@@ -49,14 +50,14 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     {
         // If subject stock is compound, do nothing.
         if ($subject->isStockCompound()) {
-            // TODO stock inheritance system
-            return false;
+            return $this->updateCompound($subject);
         }
 
         // If subject stock mode is "disabled", reset to zero and set state to "In stock".
         if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
             $changed = $this->setSubjectData($subject);
             $changed |= $this->setSubjectState($subject, StockSubjectStates::STATE_IN_STOCK);
+
             return $changed;
         }
 
@@ -65,7 +66,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         // Loop over the 'not closed' stock units.
         // We don't use a dql query to get sums, because database may not reflect
-        // real/current data of theses stock units (during a flush event).
+        // real/current data of these stock units (during a flush event).
         // The stock unit resolver uses the stock unit cache.
         $stockUnits = $this->stockUnitResolver->findNotClosed($subject);
         foreach ($stockUnits as $stockUnit) {
@@ -73,34 +74,40 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $shipped += $stockUnit->getShippedQuantity();
             $adjusted += $stockUnit->getAdjustedQuantity();
 
-            if ($stockUnit->getState() !== StockUnitStates::STATE_NEW) {
-                $ordered += $o = $stockUnit->getOrderedQuantity();
-                $received += $r = $stockUnit->getReceivedQuantity();
+            if ($stockUnit->getState() === StockUnitStates::STATE_NEW) {
+                continue;
+            }
 
-                // Ignore EDA if stock unit his fully received
-                if (0 < $o && 0 < $r && $r >= $o) {
-                    continue;
-                }
+            $ordered += $o = $stockUnit->getOrderedQuantity();
+            $received += $r = $stockUnit->getReceivedQuantity();
 
-                // Skip null EDA
-                if (null === $date = $stockUnit->getEstimatedDateOfArrival()) {
-                    continue;
-                }
+            // Ignore EDA if stock unit his fully received
+            if (0 < $o && 0 < $r && $r >= $o) {
+                continue;
+            }
 
-                // Keep lowest EDA
-                if (null === $eda || $eda > $date) {
-                    $eda = $date;
-                }
+            // Skip null EDA
+            if (null === $date = $stockUnit->getEstimatedDateOfArrival()) {
+                continue;
+            }
+
+            // Keep lowest EDA
+            if (null === $eda || $eda > $date) {
+                $eda = $date;
             }
         }
 
         // In stock
         $inStock = $received + $adjusted - $shipped;
-        if (0 > $inStock) $inStock = 0;
+        if (0 > $inStock) {
+            $inStock = 0;
+        }
 
         // Available stock
         $availableStock = $received + $adjusted - $sold;
-        if (0 > $availableStock) $availableStock = 0;
+        if (0 > $availableStock) {
+            $availableStock = 0;
+        }
 
         // Virtual stock
         $virtualStock = $ordered + $adjusted - $sold;
@@ -112,11 +119,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         // Supplier product min eda for "auto" and "just in time" subjects
-        if (
-            null === $eda &&
-            $subject->getStockMode() !== StockSubjectModes::MODE_MANUAL &&
-            $subject instanceof SubjectInterface
-        ) {
+        if (null === $eda && $subject->getStockMode() !== StockSubjectModes::MODE_MANUAL) {
             $eda = $this->supplierProductRepository->getMinEstimatedDateOfArrivalBySubject($subject);
         }
 
@@ -124,22 +127,206 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         $changed = $this->setSubjectData($subject, $inStock, $availableStock, $virtualStock, $eda);
 
+        // TODO Resolve components
+
         $changed |= $this->updateStockState($subject);
 
         return $changed;
     }
 
     /**
-     * @inheritdoc
+     * Updates the subject is stock data from its composition.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return bool
      */
-    public function updateStockState(StockSubjectInterface $subject)
+    protected function updateCompound(StockSubjectInterface $subject)
     {
-        // If subject stock is compound, do nothing.
-        if ($subject->isStockCompound()) {
-            // TODO stock inheritance system
-            return false;
+        $unit = $subject->getUnit();
+        $justInTime = $disabled = $supplierPreOrder = true;
+        $inStock = $virtualStock = $availableStock = $eda = null;
+
+        foreach ($subject->getStockComposition() as $component) {
+            // Array represents user choices -> Select best component.
+            if (is_array($component)) {
+                if (null === $component = $this->pickBestComponent($component)) {
+                    continue;
+                }
+            }
+
+            $child = $component->getSubject();
+            $quantity = $component->getQuantity();
+
+            // Mode
+            if ($child->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+                continue;
+            }
+
+            // State
+            $disabled = false;
+            if ($child->getStockMode() !== StockSubjectModes::MODE_JUST_IN_TIME) {
+                $justInTime = false;
+            }
+
+            // In stock
+            $childInStock = Units::round($child->getInStock() / $quantity, $unit);
+            if (null === $inStock || $childInStock < $inStock) {
+                $inStock = $childInStock;
+            }
+
+            // Available stock
+            $childAvailableStock = Units::round($child->getAvailableStock() / $quantity, $unit);
+            if (null === $availableStock || $childAvailableStock < $availableStock) {
+                $availableStock = $childAvailableStock;
+            }
+
+            // Virtual stock
+            if (0 < $childVirtualStock = Units::round($child->getVirtualStock() / $quantity, $unit)) {
+                if (null === $virtualStock || $childVirtualStock <= $virtualStock) {
+                    $virtualStock = $childVirtualStock;
+
+                    // Estimated date of arrival
+                    if (null !== $slotEda = $child->getEstimatedDateOfArrival()) {
+                        if (null === $eda || $slotEda > $eda) {
+                            $eda = $slotEda;
+                        }
+                    }
+                }
+            } else {
+                $virtualStock = 0;
+            }
+
+            // Supplier pre order
+            if (
+                0 >= $childAvailableStock &&
+                0 >= $childVirtualStock &&
+                $child->getStockState() === StockSubjectStates::STATE_OUT_OF_STOCK
+            ) {
+                $supplierPreOrder = false;
+            }
         }
 
+        if (null === $inStock) {
+            $inStock = 0;
+        }
+        if (null === $availableStock) {
+            $availableStock = 0;
+        }
+        if (null === $virtualStock) {
+            $virtualStock = 0;
+        }
+
+        if ($disabled) {
+            $mode = StockSubjectModes::MODE_DISABLED;
+            $state = StockSubjectStates::STATE_IN_STOCK;
+        } else {
+            $mode = $justInTime ? StockSubjectModes::MODE_JUST_IN_TIME : StockSubjectModes::MODE_AUTO;
+
+            $state = StockSubjectStates::STATE_OUT_OF_STOCK;
+            if (0 < $availableStock) {
+                $state = StockSubjectStates::STATE_IN_STOCK;
+            } elseif ((0 < $virtualStock && null !== $eda) || $supplierPreOrder) {
+                $state = StockSubjectStates::STATE_PRE_ORDER;
+            }
+
+            // If "Just in time" mode
+            if ($mode === StockSubjectModes::MODE_JUST_IN_TIME) {
+                // If "out of stock" state
+                if ($state === StockSubjectStates::STATE_OUT_OF_STOCK) {
+                    // Fallback to "Pre order" state
+                    $state = StockSubjectStates::STATE_PRE_ORDER;
+                } // Else if "pre order" state
+                elseif ($state === StockSubjectStates::STATE_PRE_ORDER) {
+                    // Fallback to "In stock" state
+                    $state = StockSubjectStates::STATE_IN_STOCK;
+                }
+            }
+        }
+
+        $changed = $this->setSubjectData($subject, $inStock, $availableStock, $virtualStock, $eda);
+        $changed |= $this->setSubjectMode($subject, $mode);
+        $changed |= $this->setSubjectState($subject, $state);
+
+        return $changed;
+    }
+
+    /**
+     * Returns the best component.
+     *
+     * @param array $components
+     *
+     * @return StockComponent|null
+     */
+    private function pickBestComponent(array $components): ?StockComponent
+    {
+        $best = null;
+
+        foreach ($components as $component) {
+            if (!$best || $this->isBetterComponent($component, $best)) {
+                $best = $component;
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * Returns true if the A choice is better than the B choice.
+     *
+     * @param StockComponent $a
+     * @param StockComponent $b
+     *
+     * @return bool
+     */
+    private function isBetterComponent(StockComponent $a, StockComponent $b): bool
+    {
+        // TODO Packaging format
+
+        $subjectA = $a->getSubject();
+        $subjectB = $b->getSubject();
+
+        if (StockSubjectModes::isBetterMode($subjectA->getStockMode(), $subjectB->getStockMode())) {
+            return true;
+        }
+
+        if (StockSubjectStates::isBetterState($subjectA->getStockState(), $subjectB->getStockState())) {
+            return true;
+        }
+
+        // Available stock
+        if (0 < $aAvailable = $subjectA->getAvailableStock() / $a->getQuantity()) {
+            $bAvailable = $subjectB->getAvailableStock() / $b->getQuantity();
+            if ($bAvailable < $aAvailable) {
+                return true;
+            }
+        }
+
+        // Virtual stock
+        if (0 < $aVirtual = $subjectA->getVirtualStock() / $a->getQuantity()) {
+            $aEda = $subjectA->getEstimatedDateOfArrival();
+            $bEda = $subjectB->getEstimatedDateOfArrival();
+
+            if (is_null($bEda) && is_null($aEda)) {
+                $bVirtual = $subjectB->getVirtualStock() / $b->getQuantity();
+                if ($bVirtual < $aVirtual) {
+                    return true;
+                }
+            }
+
+            if ($aEda && (is_null($bEda) || ($bEda > $aEda))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function updateStockState(StockSubjectInterface $subject)
+    {
         $mode = $subject->getStockMode();
 
         // If subject stock mode is "disabled" -> "In stock" state.
@@ -159,16 +346,11 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $state = StockSubjectStates::STATE_PRE_ORDER;
         }
         // Else if stock mode is "Auto" or "Just in time"
-        elseif ($mode !== StockSubjectModes::MODE_MANUAL) {
-            $available = 0;
-            $ordered = 0;
-
+        elseif (!$subject->isStockCompound() && $mode !== StockSubjectModes::MODE_MANUAL) {
             // Supplier product availability
-            if ($subject instanceof SubjectInterface) {
-                $available = $this->supplierProductRepository->getAvailableQuantitySumBySubject($subject);
-                // TODO $ordered = $this->supplierProductRepository->getOrderedQuantitySumBySubject($subject);
-            }
-
+            $available = $this->supplierProductRepository->getAvailableQuantitySumBySubject($subject);
+            $ordered = 0;
+            // TODO $ordered = $this->supplierProductRepository->getOrderedQuantitySumBySubject($subject);
             $eda = $this->nullDateIfLowerThanToday($subject->getEstimatedDateOfArrival());
 
             // If suppliers has available stock or is about to get it
@@ -183,9 +365,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             if ($state === StockSubjectStates::STATE_OUT_OF_STOCK) {
                 // Fallback to "Pre order" state
                 $state = StockSubjectStates::STATE_PRE_ORDER;
-            }
-            // Else if "pre order" state
-            elseif($state === StockSubjectStates::STATE_PRE_ORDER) {
+            } // Else if "pre order" state
+            elseif ($state === StockSubjectStates::STATE_PRE_ORDER) {
                 // Fallback to "In stock" state
                 $state = StockSubjectStates::STATE_IN_STOCK;
             }
@@ -201,7 +382,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      *
      * @return \DateTime|null
      */
-    private function nullDateIfLowerThanToday(\DateTime $eda = null)
+    private function nullDateIfLowerThanToday(\DateTime $eda = null): ?\DateTime
     {
         if (null === $eda) {
             return null;
@@ -234,7 +415,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $availableStock = .0,
         $virtualStock = .0,
         \DateTime $eda = null
-    ) {
+    ): bool {
         $changed = false;
 
         if ($inStock != $subject->getInStock()) { // TODO use packaging format (bccomp for float)
@@ -261,6 +442,25 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
+     * Sets the subject's stock mode.
+     *
+     * @param StockSubjectInterface $subject
+     * @param string                $mode
+     *
+     * @return bool Whether the mode has been changed.
+     */
+    private function setSubjectMode(StockSubjectInterface $subject, string $mode): bool
+    {
+        if ($subject->getStockMode() != $mode) {
+            $subject->setStockMode($mode);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Sets the subject's stock state.
      *
      * @param StockSubjectInterface $subject
@@ -268,7 +468,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      *
      * @return bool Whether the state has been changed.
      */
-    private function setSubjectState(StockSubjectInterface $subject, $state)
+    private function setSubjectState(StockSubjectInterface $subject, string $state): bool
     {
         if ($subject->getStockState() != $state) {
             $subject->setStockState($state);
