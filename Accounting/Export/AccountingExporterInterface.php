@@ -16,7 +16,7 @@ interface AccountingExporterInterface
      *
      * @return string The generated zip file path
      */
-    public function export(\DateTime $month);
+    public function export(\DateTime $month): string;
 
     /**
      * Exports invoices for the given date.
@@ -25,7 +25,7 @@ interface AccountingExporterInterface
      *
      * @return string The generated file path
      */
-    public function exportInvoices(\DateTime $month);
+    public function exportInvoices(\DateTime $month): string;
 
     /**
      * Exports payments for the given date.
@@ -34,5 +34,5 @@ interface AccountingExporterInterface
      *
      * @return string The generated file path
      */
-    public function exportPayments(\DateTime $month);
+    public function exportPayments(\DateTime $month): string;
 }

@@ -7,6 +7,9 @@ use Ekyna\Component\Commerce\Common\Entity as CommonE;
 use Ekyna\Component\Commerce\Common\Model as CommonM;
 use Ekyna\Component\Commerce\Customer\Entity as CustomerE;
 use Ekyna\Component\Commerce\Customer\Model as CustomerM;
+use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Invoice\Model as InvoiceM;
 use Ekyna\Component\Commerce\Order\Entity as OrderE;
 use Ekyna\Component\Commerce\Order\Model as OrderM;
 use Ekyna\Component\Commerce\Pricing\Entity as PricingE;
@@ -321,16 +324,26 @@ class Fixtures
      *
      * @return Acme\StockUnit
      */
-    public static function createStockUnit($subject = null, $item = null, $ordered = .0, $received = .0, $sold = .0, $shipped = .0)
-    {
+    public static function createStockUnit(
+        $subject = null,
+        $item = null,
+        $ordered = .0,
+        $received = .0,
+        $sold = .0,
+        $shipped = .0
+    ) {
         $unit = new Acme\StockUnit();
 
         if (null === $subject && $item && null === $subject = $item->getSubjectIdentity()->getSubject()) {
             $subject = static::createSubject();
         }
 
-        if ($subject) $unit->setSubject($subject);
-        if ($item) $unit->setSupplierOrderItem($item);
+        if ($subject) {
+            $unit->setSubject($subject);
+        }
+        if ($item) {
+            $unit->setSupplierOrderItem($item);
+        }
 
         $unit
             ->setOrderedQuantity($ordered)
@@ -381,10 +394,18 @@ class Fixtures
     {
         $subject = new Acme\Product();
 
-        if (empty($designation)) $designation = 'Apple iPhone';
-        if (empty($reference)) $reference = 'APPL-IPHO';
-        if (empty($price)) $price = 249.0;
-        if (empty($weight)) $weight = 0.8;
+        if (empty($designation)) {
+            $designation = 'Apple iPhone';
+        }
+        if (empty($reference)) {
+            $reference = 'APPL-IPHO';
+        }
+        if (empty($price)) {
+            $price = 249.0;
+        }
+        if (empty($weight)) {
+            $weight = 0.8;
+        }
 
         $rc = new \ReflectionProperty(Acme\Product::class, 'id');
         $rc->setAccessible(true);
@@ -540,7 +561,7 @@ class Fixtures
     }
 
     /**
-     * Creates a new order taxation adjustment.
+     * Creates a new order taxation adjustment (for shipment).
      *
      * @param float $amount
      *
@@ -601,13 +622,85 @@ class Fixtures
      *
      * @return OrderE\OrderShipmentItem
      */
-    public static function createShipmentItem(ShipmentM\ShipmentInterface $shipment, OrderM\OrderItemInterface $orderItem)
-    {
+    public static function createShipmentItem(
+        ShipmentM\ShipmentInterface $shipment,
+        OrderM\OrderItemInterface $orderItem
+    ) {
         $item = new OrderE\OrderShipmentItem();
         $item
             ->setShipment($shipment)
             ->setOrderItem($orderItem);
 
         return $item;
+    }
+
+    /**
+     * Creates a new invoice.
+     *
+     * @param OrderM\OrderInterface $order
+     * @param bool                  $credit
+     *
+     * @return OrderE\OrderInvoice
+     */
+    public static function createInvoice(OrderM\OrderInterface $order, bool $credit = false)
+    {
+        $invoice = new OrderE\OrderInvoice();
+        $invoice->setOrder($order);
+
+        if ($credit) {
+            $invoice->setType(InvoiceM\InvoiceTypes::TYPE_CREDIT);
+        }
+
+        return $invoice;
+    }
+
+    /**
+     * Creates a new invoice item.
+     *
+     * @param InvoiceM\InvoiceInterface $invoice
+     * @param object                    $target
+     *
+     * @return OrderE\OrderInvoiceLine
+     */
+    public static function createInvoiceLine(InvoiceM\InvoiceInterface $invoice, object $target)
+    {
+        $line = new OrderE\OrderInvoiceLine();
+        $line->setInvoice($invoice);
+
+        if ($target instanceof OrderM\OrderItemInterface) {
+            $line
+                ->setOrderItem($target)
+                ->setType(DocumentLineTypes::TYPE_GOOD);
+        } elseif ($target instanceof OrderM\OrderAdjustmentInterface) {
+            $line
+                ->setOrderAdjustment($target)
+                ->setType(DocumentLineTypes::TYPE_DISCOUNT);
+        } elseif ($target instanceof OrderM\OrderInterface) {
+            $line->setType(DocumentLineTypes::TYPE_SHIPMENT);
+        } else {
+            throw new UnexpectedTypeException($target, [
+                OrderM\OrderItemInterface::class,
+                OrderM\OrderAdjustmentInterface::class,
+            ]);
+        }
+
+        return $line;
+    }
+
+    /**
+     * Sets the object id.
+     *
+     * @param object $object
+     * @param int    $id
+     *
+     * @throws \ReflectionException
+     */
+    public static function setId(object $object, int $id)
+    {
+        $r = new \ReflectionClass(get_class($object));
+        $p = $r->getProperty('id');
+        $p->setAccessible(true);
+        $p->setValue($object, $id);
+        $p->setAccessible(false);
     }
 }

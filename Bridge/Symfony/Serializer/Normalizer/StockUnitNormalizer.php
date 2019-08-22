@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
+use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
@@ -14,6 +16,26 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 class StockUnitNormalizer extends AbstractResourceNormalizer
 {
     use FormatterAwareTrait;
+
+    /**
+     * @var CurrencyConverterInterface
+     */
+    protected $currencyConverter;
+
+
+    /**
+     * Constructor.
+     *
+     * @param FormatterFactory           $formatterFactory
+     * @param CurrencyConverterInterface $currencyConverter
+     */
+    public function __construct(
+        FormatterFactory $formatterFactory,
+        CurrencyConverterInterface $currencyConverter
+    ) {
+        $this->formatterFactory = $formatterFactory;
+        $this->currencyConverter = $currencyConverter;
+    }
 
     /**
      * @inheritdoc
@@ -43,6 +65,16 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
                 }
             }
 
+            $currency = $unit->getCurrency();
+            $price = $formatter->currency($unit->getNetPrice(), $currency);
+            if ($currency !== $default = $this->currencyConverter->getDefaultCurrency()) {
+                $real = $this
+                    ->currencyConverter
+                    ->convert($unit->getNetPrice(), $currency, $default, $unit->getExchangeDate());
+
+                $price = sprintf('%s&nbsp;(%s)', $price, $formatter->currency($real, $default));
+            }
+
             $data = array_replace($data, [
                 'geocodes'    => implode(',', $unit->getGeocodes()),
                 'ordered'     => $formatter->number($unit->getOrderedQuantity()),
@@ -51,7 +83,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
                 'sold'        => $formatter->number($unit->getSoldQuantity()),
                 'shipped'     => $formatter->number($unit->getShippedQuantity()),
                 'eda'         => $eda,
-                'net_price'   => $formatter->currency($unit->getNetPrice(), $unit->getCurrency()),
+                'net_price'   => $price,
                 'adjustments' => $adjustments,
                 'assignments' => $assignments,
             ]);

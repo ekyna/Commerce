@@ -3,8 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
-use Ekyna\Component\Commerce\Common\Calculator\Amount;
-use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -51,7 +49,7 @@ interface SaleInterface extends
      *
      * @return $this|SaleInterface
      */
-    public function setCustomer(CustomerInterface $customer);
+    public function setCustomer(CustomerInterface $customer = null);
 
     /**
      * Returns the customer group.
@@ -67,7 +65,7 @@ interface SaleInterface extends
      *
      * @return $this|SaleInterface
      */
-    public function setCustomerGroup(CustomerGroupInterface $customerGroup);
+    public function setCustomerGroup(CustomerGroupInterface $customerGroup = null);
 
     /**
      * Returns the company.
@@ -483,7 +481,7 @@ interface SaleInterface extends
      *
      * @internal Usage reserved to calculator.
      */
-    public function clearResults();
+    public function clearResults(): SaleInterface;
 
     /**
      * Sets the gross result.
@@ -494,16 +492,18 @@ interface SaleInterface extends
      *
      * @internal Usage reserved to calculator.
      */
-    public function setGrossResult(Amount $result);
+    public function setGrossResult(Amount $result): SaleInterface;
 
     /**
-     * Returns the gross result.
+     * Returns the gross result for the given currency.
      *
-     * @return Amount
+     * @param string $currency
+     *
+     * @return Amount|null
      *
      * @internal Usage reserved to view builder.
      */
-    public function getGrossResult();
+    public function getGrossResult(string $currency): ?Amount;
 
     /**
      * Sets the shipment result.
@@ -514,16 +514,18 @@ interface SaleInterface extends
      *
      * @internal Usage reserved to calculator.
      */
-    public function setShipmentResult(Amount $result);
+    public function setShipmentResult(Amount $result): SaleInterface;
 
     /**
-     * Returns the shipment result.
+     * Returns the shipment result for the given currency.
+     *
+     * @param string $currency
      *
      * @return Amount|null
      *
      * @internal Usage reserved to view builder.
      */
-    public function getShipmentResult();
+    public function getShipmentResult(string $currency): ?Amount;
 
     /**
      * Sets the final result.
@@ -534,56 +536,64 @@ interface SaleInterface extends
      *
      * @internal Usage reserved to calculator.
      */
-    public function setFinalResult(Amount $result);
+    public function setFinalResult(Amount $result): SaleInterface;
 
     /**
-     * Returns the final result.
+     * Returns the final result for the given currency.
      *
-     * @return Amount
+     * @param string $currency
+     *
+     * @return Amount|null
      *
      * @internal Usage reserved to view builder.
      */
-    public function getFinalResult();
+    public function getFinalResult(string $currency): ?Amount;
 
     /**
      * Sets the margin.
      *
      * @param Margin $margin
+     *
+     * @return $this|SaleInterface
      */
-    public function setMargin(Margin $margin);
+    public function setMargin(Margin $margin): SaleInterface;
 
     /**
-     * Returns the margin.
+     * Returns the margin for the given currency.
+     *
+     * @param string $currency
      *
      * @return Margin
      */
-    public function getMargin();
+    public function getMargin(string $currency): ?Margin;
 
     /**
      * Sets the context.
      *
      * @param ContextInterface $context
+     *
+     * @return $this|SaleInterface
      */
-    public function setContext(ContextInterface $context);
+    public function setContext(ContextInterface $context): SaleInterface;
 
     /**
      * Returns the context.
      *
-     * @return ContextInterface
+     * @return ContextInterface|null
      */
-    public function getContext();
+    public function getContext(): ?ContextInterface;
 
     /**
      * Returns whether the sale is locked.
      *
      * @return bool
      */
-    public function isLocked();
+    public function isLocked(): bool;
 
     /**
      * Returns whether the sale can be released.
      *
      * @return bool
      */
-    public function canBeReleased();
+    public function canBeReleased(): bool;
 }

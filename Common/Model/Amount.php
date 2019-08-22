@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Ekyna\Component\Commerce\Common\Calculator;
+namespace Ekyna\Component\Commerce\Common\Model;
 
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;

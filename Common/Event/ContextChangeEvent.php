@@ -23,17 +23,27 @@ final class ContextChangeEvent extends Event
      */
     private $country;
 
+    /**
+     * @var string
+     */
+    private $locale;
+
 
     /**
      * Constructor.
      *
      * @param CurrencyInterface $currency
      * @param CountryInterface  $country
+     * @param string $locale
      */
-    public function __construct(CurrencyInterface $currency = null, CountryInterface $country = null)
-    {
+    public function __construct(
+        CurrencyInterface $currency = null,
+        CountryInterface $country = null,
+        string $locale = null
+    ) {
         $this->currency = $currency;
         $this->country = $country;
+        $this->locale = $locale;
     }
 
     /**
@@ -54,5 +64,15 @@ final class ContextChangeEvent extends Event
     public function getCountry(): ?CountryInterface
     {
         return $this->country;
+    }
+
+    /**
+     * Returns the locale.
+     *
+     * @return string
+     */
+    public function getLocale(): ?string
+    {
+        return $this->locale;
     }
 }

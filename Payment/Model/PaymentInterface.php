@@ -48,20 +48,44 @@ interface PaymentInterface extends
     public function setMethod(PaymentMethodInterface $method);
 
     /**
-     * Returns the amount.
+     * Returns the amount (payment currency).
      *
      * @return float
      */
-    public function getAmount();
+    public function getAmount(): ?float;
 
     /**
-     * Sets the amount.
+     * Sets the amount (payment currency).
      *
      * @param float $amount
      *
      * @return $this|PaymentInterface
+     *
+     * @internal Use payment updater
+     *
+     * @see \Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface::updateAmount()
      */
-    public function setAmount($amount);
+    public function setAmount(float $amount);
+
+    /**
+     * Returns the real amount (default currency).
+     *
+     * @return float
+     */
+    public function getRealAmount(): ?float;
+
+    /**
+     * Sets the real amount (default currency).
+     *
+     * @param float $amount
+     *
+     * @return $this|PaymentInterface
+     *
+     * @internal Use payment updater
+     *
+     * @see \Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface::updateRealAmount()
+     */
+    public function setRealAmount(float $amount);
 
     /**
      * Sets the details.

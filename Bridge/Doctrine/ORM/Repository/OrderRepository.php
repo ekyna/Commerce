@@ -294,6 +294,23 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getCustomerCurrencies(CustomerInterface $customer): array
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb
+            ->select(['c.code', 'COUNT(c.id) as num'])
+            ->join('o.currency', 'c')
+            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
+            ->groupBy('o.currency')
+            ->addOrderBy('num', 'DESC')
+            ->setParameter('customer', $customer);
+
+        return array_column($qb->getQuery()->getScalarResult(), 'code');
+    }
+
+    /**
      * Returns the remaining query builder.
      *
      * @return QueryBuilder

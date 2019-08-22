@@ -2,8 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Payment\Calculator;
 
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -16,141 +19,219 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 class PaymentCalculator implements PaymentCalculatorInterface
 {
     /**
+     * @var AmountCalculatorInterface
+     */
+    protected $amountCalculator;
+
+    /**
      * @var CurrencyConverterInterface
      */
-    private $currencyConverter;
+    protected $currencyConverter;
+
+    /**
+     * @var string
+     */
+    protected $currency;
 
 
     /**
      * Constructor.
      *
+     * @param AmountCalculatorInterface  $amountCalculator
      * @param CurrencyConverterInterface $currencyConverter
      */
-    public function __construct(CurrencyConverterInterface $currencyConverter)
-    {
+    public function __construct(
+        AmountCalculatorInterface $amountCalculator,
+        CurrencyConverterInterface $currencyConverter
+    ) {
+        $this->amountCalculator = $amountCalculator;
         $this->currencyConverter = $currencyConverter;
+        $this->currency = $currencyConverter->getDefaultCurrency();
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function convertPaymentAmount(PaymentInterface $payment, $currency)
+    public function calculatePaidTotal(PaymentSubjectInterface $subject, string $currency = null): float
     {
-        $paymentCurrency = $payment->getCurrency()->getCode();
-
-        if ($paymentCurrency === $currency) {
-            return Money::round($payment->getAmount(), $currency);
-        }
-
-        if (
-            !is_null($rate = $payment->getExchangeRate()) &&
-            $currency === $this->currencyConverter->getDefaultCurrency()
-        ) {
-            return $this->currencyConverter->convertWithRate($payment->getAmount(), 1 / $rate, $currency);
-        }
-
-        return $this->currencyConverter->convert(
-            $payment->getAmount(),
-            $payment->getCurrency()->getCode(),
-            $currency,
-            $payment->getCreatedAt()
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function calculatePaidTotal(PaymentSubjectInterface $subject)
-    {
-        $currency = $subject->getCurrency()->getCode();
+        $currency = $currency ?? $this->currency;
 
         $total = 0;
 
         foreach ($subject->getPayments() as $payment) {
-            if (!$payment->getMethod()->isOutstanding() && PaymentStates::isPaidState($payment->getState())) {
-                $total += $this->convertPaymentAmount($payment, $currency);
+            if ($payment->getMethod()->isOutstanding()) {
+                continue;
             }
+
+            if (!PaymentStates::isPaidState($payment->getState())) {
+                continue;
+            }
+
+            $total += $this->getAmount($payment, $currency);
         }
 
         return $total;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject)
+    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, string $currency = null): float
     {
-        $currency = $subject->getCurrency()->getCode();
+        $currency = $currency ?? $this->currency;
 
         $total = 0;
 
         foreach ($subject->getPayments() as $payment) {
-            if ($payment->getMethod()->isOutstanding() && PaymentStates::isPaidState($payment->getState())) {
-                $total += $this->convertPaymentAmount($payment, $currency);
+            if (!$payment->getMethod()->isOutstanding()) {
+                continue;
             }
+
+            if (!PaymentStates::isPaidState($payment->getState())) {
+                continue;
+            }
+
+            $total += $this->getAmount($payment, $currency);
         }
 
         return $total;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject)
+    public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, string $currency = null): float
     {
-        $currency = $subject->getCurrency()->getCode();
+        $currency = $currency ?? $this->currency;
 
         $total = 0;
 
         foreach ($subject->getPayments() as $payment) {
-            if ($payment->getMethod()->isOutstanding() && $payment->getState() === PaymentStates::STATE_EXPIRED) {
-                $total += $this->convertPaymentAmount($payment, $currency);
+            if (!$payment->getMethod()->isOutstanding()) {
+                continue;
             }
+
+            if ($payment->getState() !== PaymentStates::STATE_EXPIRED) {
+                continue;
+            }
+
+            $total += $this->getAmount($payment, $currency);
         }
 
         return $total;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateRefundedTotal(PaymentSubjectInterface $subject)
+    public function calculateRefundedTotal(PaymentSubjectInterface $subject, string $currency = null): float
     {
-        return $this->calculateTotalByState($subject, PaymentStates::STATE_REFUNDED);
+        $currency = $currency ?? $this->currency;
+
+        return $this->calculateTotalByState($subject, PaymentStates::STATE_REFUNDED, $currency);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateFailedTotal(PaymentSubjectInterface $subject)
+    public function calculateFailedTotal(PaymentSubjectInterface $subject, string $currency = null): float
     {
-        return $this->calculateTotalByState($subject, PaymentStates::STATE_FAILED);
+        $currency = $currency ?? $this->currency;
+
+        return $this->calculateTotalByState($subject, PaymentStates::STATE_FAILED, $currency);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateCanceledTotal(PaymentSubjectInterface $subject)
+    public function calculateCanceledTotal(PaymentSubjectInterface $subject, string $currency = null): float
     {
-        return $this->calculateTotalByState($subject, PaymentStates::STATE_CANCELED);
+        $currency = $currency ?? $this->currency;
+
+        return $this->calculateTotalByState($subject, PaymentStates::STATE_CANCELED, $currency);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject)
+    public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject, string $currency = null): float
     {
-        $currency = $subject->getCurrency()->getCode();
+        $currency = $currency ?? $this->currency;
 
         $total = 0;
 
         foreach ($subject->getPayments() as $payment) {
-            if ($payment->getState() === PaymentStates::STATE_PENDING && $payment->getMethod()->isManual()) {
-                $total += $this->convertPaymentAmount($payment, $currency);
+            if (!$payment->getMethod()->isManual()) {
+                continue;
             }
+
+            if ($payment->getState() !== PaymentStates::STATE_PENDING) {
+                continue;
+            }
+
+            $total += $this->getAmount($payment, $currency);
         }
 
         return $total;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function calculateRemainingTotal(PaymentSubjectInterface $subject, string $currency = null): float
+    {
+        $currency = $currency ?? $subject->getCurrency()->getCode();
+
+        if ($currency === $this->currency) {
+            $total = $subject->getGrandTotal();
+            $deposit = $subject->getDepositTotal();
+            $paid = $subject->getPaidTotal();
+            $pending = $subject->getPendingTotal();
+            $outstanding = $subject->getOutstandingAccepted();
+        } elseif ($subject instanceof SaleInterface) {
+            $total = $this->amountCalculator->calculateSale($subject, $currency)->getTotal();
+            $deposit = $this->currencyConverter->convertWithSubject($subject->getDepositTotal(), $subject, $currency);
+
+            $paid = $this->calculatePaidTotal($subject, $currency);
+            $pending = $this->calculateOfflinePendingTotal($subject, $currency);
+            $outstanding = $this->calculateOutstandingAcceptedTotal($subject, $currency);
+        } else {
+            throw new UnexpectedValueException();
+        }
+
+        // If subject has deposit
+        if (1 === Money::compare($deposit, 0, $currency)) {
+            // If paid greater than or equal deposit
+            if (0 <= Money::compare($paid, $deposit, $currency)) {
+                $total -= $deposit;
+                $paid -= $deposit;
+            } // If pending greater than or equal deposit
+            elseif (0 <= Money::compare($pending, $deposit, $currency)) {
+                $total -= $deposit;
+                $pending -= $deposit;
+            } // Else pay deposit
+            else {
+                $total = $deposit;
+            }
+        }
+
+        $amount = 0;
+        $p = Money::compare($total, $paid + $pending + $outstanding, $currency);
+
+        // If (paid total + pending total + accepted outstanding) is lower than total
+        if (1 === $p) {
+            // Pay difference
+            $amount = $total - $paid - $pending - $outstanding;
+        } elseif (0 === $p && 0 < $outstanding) {
+            // Pay outstanding
+            $amount = $outstanding;
+        }
+
+        if (0 < $amount) {
+            return Money::round($amount, $currency);
+        }
+
+        return 0;
     }
 
     /**
@@ -158,24 +239,53 @@ class PaymentCalculator implements PaymentCalculatorInterface
      *
      * @param PaymentSubjectInterface $subject
      * @param string                  $state
+     * @param string                  $currency
      *
      * @return float
      */
-    protected function calculateTotalByState(PaymentSubjectInterface $subject, $state)
+    protected function calculateTotalByState(PaymentSubjectInterface $subject, string $state, string $currency): float
     {
         PaymentStates::isValidState($state, true);
-
-        $currency = $subject->getCurrency()->getCode();
 
         $total = 0;
 
         foreach ($subject->getPayments() as $payment) {
+            // Skip outstanding payments
+            if ($payment->getMethod()->isOutstanding()) {
+                continue;
+            }
+
+            // If payment has the expected state
             if ($payment->getState() === $state) {
-                $total += $this->convertPaymentAmount($payment, $currency);
+                $total += $this->getAmount($payment, $currency);
             }
         }
 
         return $total;
     }
 
+    /**
+     * Returns the payment amount in the given currency.
+     *
+     * @param PaymentInterface $payment
+     * @param string           $currency
+     *
+     * @return float
+     */
+    protected function getAmount(PaymentInterface $payment, string $currency): float
+    {
+        $pc = $payment->getCurrency()->getCode();
+
+        if ($currency === $pc) {
+            return Money::round($payment->getAmount(), $currency);
+        }
+
+        $rate = $this
+            ->currencyConverter
+            ->getSubjectExchangeRate($payment->getSale(), $pc, $currency);
+
+        return $this
+            ->currencyConverter
+            ->convertWithRate($payment->getAmount(), $rate, $pc, false);
+    }
 }

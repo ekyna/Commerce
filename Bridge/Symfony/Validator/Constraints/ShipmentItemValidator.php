@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Symfony\Component\Validator\Constraint;
@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class ShipmentItemValidator extends ConstraintValidator
 {
     /**
-     * @var ShipmentCalculatorInterface
+     * @var ShipmentSubjectCalculatorInterface
      */
     private $shipmentCalculator;
 
@@ -25,9 +25,9 @@ class ShipmentItemValidator extends ConstraintValidator
     /**
      * Constructor.
      *
-     * @param ShipmentCalculatorInterface $calculator
+     * @param ShipmentSubjectCalculatorInterface $calculator
      */
-    public function __construct(ShipmentCalculatorInterface $calculator)
+    public function __construct(ShipmentSubjectCalculatorInterface $calculator)
     {
         $this->shipmentCalculator = $calculator;
     }

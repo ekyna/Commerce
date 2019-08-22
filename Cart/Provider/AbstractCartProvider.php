@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Cart\Repository\CartRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use Ekyna\Component\Resource\Operator\ResourceOperatorInterface;
 
 /**
@@ -37,6 +38,11 @@ abstract class AbstractCartProvider implements CartProviderInterface
     protected $currencyProvider;
 
     /**
+     * @var LocaleProviderInterface
+     */
+    protected $localeProvider;
+
+    /**
      * @var CartInterface
      */
     protected $cart;
@@ -45,21 +51,24 @@ abstract class AbstractCartProvider implements CartProviderInterface
     /**
      * Constructor.
      *
-     * @param CartRepositoryInterface $cartRepository
+     * @param CartRepositoryInterface   $cartRepository
      * @param ResourceOperatorInterface $cartOperator
      * @param CustomerProviderInterface $customerProvider
      * @param CurrencyProviderInterface $currencyProvider
+     * @param LocaleProviderInterface   $localeProvider
      */
     public function __construct(
         CartRepositoryInterface $cartRepository,
         ResourceOperatorInterface $cartOperator,
         CustomerProviderInterface $customerProvider,
-        CurrencyProviderInterface $currencyProvider
+        CurrencyProviderInterface $currencyProvider,
+        LocaleProviderInterface $localeProvider
     ) {
         $this->cartRepository = $cartRepository;
         $this->cartOperator = $cartOperator;
         $this->customerProvider = $customerProvider;
         $this->currencyProvider = $currencyProvider;
+        $this->localeProvider = $localeProvider;
     }
 
     /**
@@ -90,6 +99,8 @@ abstract class AbstractCartProvider implements CartProviderInterface
         if (!$this->hasCart()) {
             throw new RuntimeException('Cart has not been initialized yet.');
         }
+
+        $this->updateCustomerGroupAndCurrency();
 
         $this->cartOperator->persist($this->cart);
 
@@ -135,8 +146,6 @@ abstract class AbstractCartProvider implements CartProviderInterface
             ->setDeliveryAddress(null)
             ->setSameAddress(true);
 
-        $this->updateCustomerGroupAndCurrency();
-
         return $this;
     }
 
@@ -152,10 +161,10 @@ abstract class AbstractCartProvider implements CartProviderInterface
         }
 
         // Customer group
-        if (null !== $customer = $this->cart->getCustomer()) {
-            if ($this->cart->getCustomerGroup() !== $customer->getCustomerGroup()) {
-                $this->cart->setCustomerGroup($customer->getCustomerGroup());
-            }
+        if (null === $customer = $this->cart->getCustomer()) {
+            $this->cart->setCustomerGroup(null);
+        } elseif ($this->cart->getCustomerGroup() !== $customer->getCustomerGroup()) {
+            $this->cart->setCustomerGroup($customer->getCustomerGroup());
         }
 
         // Sets the default customer group
@@ -166,6 +175,11 @@ abstract class AbstractCartProvider implements CartProviderInterface
         // Sets the currency
         if (null === $this->cart->getCurrency()) {
             $this->cart->setCurrency($this->currencyProvider->getCurrency());
+        }
+
+        // Sets the locale
+        if (null === $this->cart->getLocale()) {
+            $this->cart->setLocale($this->localeProvider->getCurrentLocale());
         }
 
         return $this;

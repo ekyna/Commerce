@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Util;
 
-use Ekyna\Component\Commerce\Common\Calculator\Adjustment;
+use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use IntlDateFormatter;
 use NumberFormatter;
 
@@ -110,12 +110,20 @@ class Formatter
      * Formats the given number for display.
      *
      * @param float $number
+     * @param int   $scale
      *
      * @return string
      */
-    public function number(float $number): string
+    public function number(float $number, int $scale = null): string
     {
-        return $this->getNumberFormatter()->format($number, NumberFormatter::TYPE_DEFAULT);
+        $formatter = $this->getNumberFormatter();
+
+        if ($scale) {
+            $formatter = clone $formatter;
+            $formatter->setAttribute(NumberFormatter::FRACTION_DIGITS, $scale);
+        }
+
+        return $formatter->format($number, NumberFormatter::TYPE_DEFAULT);
     }
 
     /**
@@ -128,7 +136,7 @@ class Formatter
      */
     public function currency(float $number, string $currency = null): string
     {
-        return $this->getCurrencyFormatter()->formatCurrency($number, $currency ? $currency : $this->currency);
+        return $this->getCurrencyFormatter()->formatCurrency($number, $currency ?? $this->currency);
     }
 
     /**

@@ -25,11 +25,6 @@ class AmountCalculator implements AmountCalculatorInterface
      */
     private $converter;
 
-    /**
-     * @var bool
-     */
-    private $cache = true;
-
 
     /**
      * Constructor.
@@ -44,81 +39,138 @@ class AmountCalculator implements AmountCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the currency converter.
+     *
+     * @return CurrencyConverterInterface
      */
-    public function setCache(bool $cache): void
+    public function getCurrencyConverter(): CurrencyConverterInterface
     {
-        $this->cache = $cache;
+        return $this->converter;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateSale(Model\SaleInterface $sale): Amount
+    public function getDefaultCurrency(): string
     {
-        $this->setCache(true);
+        return $this->converter->getDefaultCurrency();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function calculateSale(Model\SaleInterface $sale, string $currency = null, bool $cache = true): Model\Amount
+    {
+        $currency = $currency ?? $this->converter->getDefaultCurrency();
 
         // Don't calculate twice
-        if (null !== $result = $sale->getFinalResult()) {
+        if ($cache && ($result = $sale->getFinalResult($currency))) {
             return $result;
         }
 
         // Items / Gross result
-        $gross = $this->calculateSaleItems($sale);
+        $gross = $this->calculateSaleItems($sale, $currency, $cache);
 
         // Final result
-        $final = Amount::createFinalFromGross($gross);
+        $final = Model\Amount::createFinalFromGross($gross);
 
         // Discounts
         if ($sale->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
             foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-                $this->calculateSaleDiscount($adjustment, $gross, $final);
+                $this->calculateSaleDiscount($adjustment, $gross, $final, $currency, $cache);
             }
         }
 
         // Shipment
-        $this->calculateSaleShipment($sale, $final);
+        $this->calculateSaleShipment($sale, $final, $currency, $cache);
 
         // Round/finalize results.
         $gross->round();
         $final->finalize();
 
         // Store the results
-        $sale->setGrossResult($gross);
-        $sale->setFinalResult($final);
+        if ($cache) {
+            $sale->setGrossResult($gross);
+            $sale->setFinalResult($final);
+        }
 
         return $final;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item, float $quantity = null): Amount
-    {
-        // TODO use packaging format on quantities
+    public function calculateSaleItems(
+        Model\SaleInterface $sale,
+        string $currency = null,
+        bool $cache = true
+    ): Model\Amount {
+        $currency = $currency ?? $this->converter->getDefaultCurrency();
 
-        if (null !== $quantity && 0 == $quantity) {
-            throw new Exception\InvalidArgumentException("Custom quantity must be greater than zero.");
+        if ($cache && ($result = $sale->getGrossResult($currency))) {
+            return $result;
         }
 
+        $result = new Model\Amount($currency);
+
+        // Sum public
+        foreach ($sale->getItems() as $item) {
+            if ($item->isPrivate()) {
+                throw new Exception\LogicException("Root sale items can't be private.");
+            }
+
+            // Skip compound with only public children
+            if (!($item->isCompound() && !$item->hasPrivateChildren())) {
+                $result->merge($this->calculateSaleItem($item, null, $currency, $cache));
+            }
+
+            $this->mergeItemsResults($item, $result, $cache);
+        }
+
+        // Set unit = gross
+        $result->copyGrossToUnit();
+
+        return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function calculateSaleItem(
+        Model\SaleItemInterface $item,
+        float $quantity = null,
+        string $currency = null,
+        bool $cache = true
+    ): Model\Amount {
+        // TODO use packaging format on quantities
+
+        if (null !== $quantity) {
+            if (0 >= $quantity) {
+                throw new Exception\InvalidArgumentException("Specific quantity must be greater than zero.");
+            }
+
+            $cache = false; // Never use cache with specific quantity
+        }
+
+        $currency = $currency ?? $this->converter->getDefaultCurrency();
+
         // Don't calculate twice
-        if ($this->cache && null !== $result = $item->getResult()) {
+        if ($cache && ($result = $item->getResult($currency))) {
             return $result;
         }
 
         $sale = $item->getSale();
-        $currency = $sale->getCurrency()->getCode();
         $ati = $sale->isAtiDisplayMode();
 
         $taxGroup = $item->getTaxGroup();
 
         // Round unit price only for 'net' calculation
-        $unit = $this->convert($sale, (float)$item->getNetPrice(), $currency, !$ati);
+        $unit = $this->converter->convertWithSubject((float)$item->getNetPrice(), $sale, $currency, !$ati);
 
         // Add private items unit prices
         foreach ($item->getChildren() as $child) {
-            $childResult = $this->calculateSaleItem($child,
-                null !== $quantity ? $quantity * $child->getQuantity() : null);
+            $q = $quantity ? $quantity * $child->getQuantity() : null;
+            $childResult = $this->calculateSaleItem($child, $q, $currency, $cache);
 
             if ($child->isPrivate()) {
                 if ($taxGroup !== $child->getTaxGroup()) {
@@ -134,13 +186,13 @@ class AmountCalculator implements AmountCalculatorInterface
             }
         }
 
-        if ($item->isPrivate()) {
+        if ($item->getSale()->isSample()) {
+            // Sample sale case : zero amounts
+            $result = new Model\Amount($currency);
+        } elseif ($item->isPrivate()) {
             // Private case : we just need unit amount
             $gross = $unit * $item->getTotalQuantity();
-            $result = new Amount($currency, $unit, $gross, 0, $gross);
-        } elseif ($item->getSale()->isSample()) {
-            // Sample sale case : zero amounts
-            $result = new Amount($currency);
+            $result = new Model\Amount($currency, $unit, $gross, 0, $gross);
         } else {
             // Regular case
             $discounts = $taxes = [];
@@ -184,7 +236,7 @@ class AmountCalculator implements AmountCalculatorInterface
             $total = Money::round($base + $tax, $currency);
 
             // Result
-            $result = new Amount($currency, $unit, $gross, $discount, $base, $tax, $total, $discounts, $taxes);
+            $result = new Model\Amount($currency, $unit, $gross, $discount, $base, $tax, $total, $discounts, $taxes);
         }
 
         if ($ati) {
@@ -192,21 +244,27 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Store the result
-        $item->setResult($result);
+        if ($cache) {
+            $item->setResult($result);
+        }
 
         return $result;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function calculateSaleDiscount(
         Model\SaleAdjustmentInterface $adjustment,
-        Amount $gross,
-        Amount $final
-    ): Amount {
+        Model\Amount $gross,
+        Model\Amount $final,
+        string $currency = null,
+        bool $cache = true
+    ): Model\Amount {
+        $currency = $currency ?? $this->converter->getDefaultCurrency();
+
         // Don't calculate twice
-        if ($this->cache && null !== $result = $adjustment->getResult()) {
+        if ($cache && ($result = $adjustment->getResult($currency))) {
             return $result;
         }
 
@@ -214,18 +272,20 @@ class AmountCalculator implements AmountCalculatorInterface
 
         /** @var Model\SaleInterface $sale */
         $sale = $adjustment->getAdjustable();
-        $currency = $sale->getCurrency()->getCode();
 
         // Sample sale case
         if ($sale->isSample()) {
-            $result = new Amount($currency);
-            $adjustment->setResult($result);
+            $result = new Model\Amount($currency);
+
+            if ($cache) {
+                $adjustment->setResult($result);
+            }
 
             return $result;
         }
         $base = $gross->getBase();
 
-        $result = new Amount($currency);
+        $result = new Model\Amount($currency);
 
         $mode = $adjustment->getMode();
         if (Model\AdjustmentModes::MODE_PERCENT === $mode) {
@@ -235,12 +295,14 @@ class AmountCalculator implements AmountCalculatorInterface
 
             foreach ($gross->getTaxAdjustments() as $tax) {
                 $amount = Money::round($tax->getAmount() * $rate / 100, $currency);
-                $result->addTaxAdjustment(new Adjustment($tax->getName(), $amount, $tax->getRate()));
+                $result->addTaxAdjustment(new Model\Adjustment($tax->getName(), $amount, $tax->getRate()));
                 $result->addTax($amount);
             }
         } elseif (Model\AdjustmentModes::MODE_FLAT === $mode) {
-            $realBase = $this->getRealGrossBase($sale);
-            $amount = $this->convert($sale, (float)$adjustment->getAmount(), $currency, false);
+            $realBase = $this->getRealGrossBase($sale, $currency);
+
+            $amount = $this->converter->convertWithSubject((float)$adjustment->getAmount(), $sale, $currency, false);
+
             if (1 === Money::compare($realBase, $base, $currency)) {
                 $unit = Money::round($amount * $base / $realBase, $currency);
             } else {
@@ -250,7 +312,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
             foreach ($gross->getTaxAdjustments() as $tax) {
                 $amount = Money::round($unit * $tax->getAmount() / $base, $currency);
-                $result->addTaxAdjustment(new Adjustment($tax->getName(), $amount, $tax->getRate()));
+                $result->addTaxAdjustment(new Model\Adjustment($tax->getName(), $amount, $tax->getRate()));
                 $result->addTax($amount);
             }
         } else {
@@ -261,20 +323,22 @@ class AmountCalculator implements AmountCalculatorInterface
         $result->addBase($result->getUnit());
         $result->addTotal($result->getUnit() + $result->getTax());
 
-        $adjustment->setResult($result);
+        if ($cache) {
+            $adjustment->setResult($result);
+        }
 
         // Add to final result
         $final->addDiscount($result->getBase());
         $final->addBase(-$result->getBase());
         $final->addTotal(-$result->getBase());
-        $final->addDiscountAdjustment(new Adjustment(
+        $final->addDiscountAdjustment(new Model\Adjustment(
             (string)$adjustment->getDesignation(),
             $result->getBase(),
             $adjustment->getMode() === Model\AdjustmentModes::MODE_PERCENT ? (float)$adjustment->getAmount() : 0
         ));
 
         foreach ($result->getTaxAdjustments() as $a) {
-            $final->addTaxAdjustment(new Adjustment($a->getName(), -$a->getAmount(), $a->getRate()));
+            $final->addTaxAdjustment(new Model\Adjustment($a->getName(), -$a->getAmount(), $a->getRate()));
             $final->addTax(-$a->getAmount());
             $final->addTotal(-$a->getAmount());
         }
@@ -287,28 +351,35 @@ class AmountCalculator implements AmountCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function calculateSaleShipment(Model\SaleInterface $sale, Amount $final): ?Amount
-    {
+    public function calculateSaleShipment(
+        Model\SaleInterface $sale,
+        Model\Amount $final,
+        string $currency = null,
+        bool $cache = true
+    ): ?Model\Amount {
+        $currency = $currency ?? $this->converter->getDefaultCurrency();
+
         // Don't calculate twice
-        if ($this->cache && null !== $result = $sale->getShipmentResult()) {
+        if ($cache && ($result = $sale->getShipmentResult($currency))) {
             return $result;
         }
 
-        $currency = $sale->getCurrency()->getCode();
-
         // Sample sale case
         if ($sale->isSample()) {
-            $result = new Amount($currency);
-            $sale->setShipmentResult($result);
+            $result = new Model\Amount($currency);
+
+            if ($cache) {
+                $sale->setShipmentResult($result);
+            }
 
             return $result;
         }
 
         // Abort if shipment cost is lower than or equals zero
-        $base = $this->convert($sale, (float)$sale->getShipmentAmount(), $currency, false);
-        $result = new Amount($currency, $base, $base, 0, $base, 0, $base);
+        $base = $this->converter->convertWithSubject((float)$sale->getShipmentAmount(), $sale, $currency, false);
+        $result = new Model\Amount($currency, $base, $base, 0, $base, 0, $base);
 
         if (1 === Money::compare($base, 0, $currency)) {
             // Shipment taxation
@@ -336,93 +407,11 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Store shipment result
-        $sale->setShipmentResult($result);
+        if ($cache) {
+            $sale->setShipmentResult($result);
+        }
 
         return $result;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function calculateSaleItems(Model\SaleInterface $sale): Amount
-    {
-        if ($this->cache && null !== $result = $sale->getGrossResult()) {
-            return $result;
-        }
-
-        $result = new Amount($sale->getCurrency()->getCode());
-
-        // Sum public
-        foreach ($sale->getItems() as $item) {
-            if ($item->isPrivate()) {
-                throw new Exception\LogicException("Sale's root items can't be private.");
-            }
-
-            $this->calculateSaleItem($item);
-
-            // Skip compound with only public children
-            if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-                $result->merge($item->getResult());
-            }
-
-            $this->mergeItemsResults($item, $result);
-        }
-
-        // Set unit = gross
-        $result->copyGrossToUnit();
-
-        return $result;
-    }
-
-    /**
-     * Merges the public children results recursively into the given result.
-     *
-     * @param Model\SaleItemInterface $item
-     * @param Amount                  $result
-     */
-    protected function mergeItemsResults(Model\SaleItemInterface $item, Amount $result): void
-    {
-        // At this points items result are calculated and set.
-        foreach ($item->getChildren() as $child) {
-            if ($child->isPrivate()) {
-                continue;
-            }
-
-            // Skip compound with only public children
-            if (!($child->isCompound() && !$child->hasPrivateChildren())) {
-                $result->merge($child->getResult());
-            }
-
-            if ($child->hasChildren()) {
-                $this->mergeItemsResults($child, $result);
-            }
-        }
-    }
-
-    /**
-     * Calculates the real sale gross base amount.
-     *
-     * @param Model\SaleInterface $sale
-     *
-     * @return float
-     *
-     * @throws Exception\LogicException
-     */
-    protected function getRealGrossBase(Model\SaleInterface $sale): float
-    {
-        // Store previous cache mode
-        $cache = $this->cache;
-
-        // Disable cache
-        $this->cache = false;
-
-        // Calculate real gross base
-        $base = $this->calculateSaleItems($sale)->getBase();
-
-        // Restore cache mode
-        $this->cache = $cache;
-
-        return $base;
     }
 
     /**
@@ -432,13 +421,13 @@ class AmountCalculator implements AmountCalculatorInterface
      * @param float                     $base
      * @param string                    $currency
      *
-     * @return Adjustment
+     * @return Model\Adjustment
      */
     protected function createPercentAdjustment(
         Model\AdjustmentInterface $data,
         float $base,
         string $currency
-    ): Adjustment {
+    ): Model\Adjustment {
         $this->assertAdjustmentMode($data, Model\AdjustmentModes::MODE_PERCENT);
 
         $rate = (float)$data->getAmount();
@@ -450,20 +439,7 @@ class AmountCalculator implements AmountCalculatorInterface
             $amount = Money::round($base * $rate / 100, $currency);
         }
 
-        return new Adjustment((string)$data->getDesignation(), $amount, $rate);
-    }
-
-    /**
-     * Asserts that the adjustment type is as expected.
-     *
-     * @param Model\AdjustmentInterface $adjustment
-     * @param string                    $expected
-     */
-    protected function assertAdjustmentType(Model\AdjustmentInterface $adjustment, string $expected): void
-    {
-        if ($expected !== $type = $adjustment->getType()) {
-            throw new Exception\InvalidArgumentException("Unexpected adjustment type '$type'.");
-        }
+        return new Model\Adjustment((string)$data->getDesignation(), $amount, $rate);
     }
 
     /**
@@ -480,32 +456,57 @@ class AmountCalculator implements AmountCalculatorInterface
     }
 
     /**
-     * Converts the given amount.
+     * Merges the public children results recursively into the given result.
+     *
+     * @param Model\SaleItemInterface $item
+     * @param Model\Amount            $result
+     * @param bool                    $cache
+     */
+    protected function mergeItemsResults(Model\SaleItemInterface $item, Model\Amount $result, bool $cache): void
+    {
+        // At this points items result are calculated and set.
+        foreach ($item->getChildren() as $child) {
+            if ($child->isPrivate()) {
+                continue;
+            }
+
+            // Skip compound with only public children
+            if (!($child->isCompound() && !$child->hasPrivateChildren())) {
+                $result->merge($this->calculateSaleItem($child, null, $result->getCurrency(), $cache));
+            }
+
+            if ($child->hasChildren()) {
+                $this->mergeItemsResults($child, $result, $cache);
+            }
+        }
+    }
+
+    /**
+     * Asserts that the adjustment type is as expected.
+     *
+     * @param Model\AdjustmentInterface $adjustment
+     * @param string                    $expected
+     */
+    protected function assertAdjustmentType(Model\AdjustmentInterface $adjustment, string $expected): void
+    {
+        if ($expected !== $type = $adjustment->getType()) {
+            throw new Exception\InvalidArgumentException("Unexpected adjustment type '$type'.");
+        }
+    }
+
+    /**
+     * Calculates the real sale gross base amount.
      *
      * @param Model\SaleInterface $sale
-     * @param float               $amount
      * @param string              $currency
-     * @param bool                $round
      *
      * @return float
-     * @throws \Exception
+     *
+     * @throws Exception\LogicException
      */
-    protected function convert(Model\SaleInterface $sale, float $amount, string $currency, bool $round)
+    protected function getRealGrossBase(Model\SaleInterface $sale, string $currency): float
     {
-        if ($currency === $this->converter->getDefaultCurrency()) {
-            return $round ? Money::round($amount, $currency) : $amount;
-        }
-
-        if (null !== $rate = $sale->getExchangeRate()) {
-            return $this
-                ->converter
-                ->convertWithRate($amount, $rate, $currency, $round);
-        }
-
-        $date = $this->contextProvider->getContext($sale)->getDate();
-
-        return $this
-            ->converter
-            ->convert($amount, $this->converter->getDefaultCurrency(), $currency, $date, $round);
+        // Calculate real gross base
+        return $this->calculateSaleItems($sale, $currency, false)->getBase();
     }
 }

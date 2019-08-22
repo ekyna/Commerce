@@ -2,8 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
-use Ekyna\Component\Commerce\Common\Calculator\Amount;
-
 /**
  * Interface SaleAdjustmentInterface
  * @package Ekyna\Component\Commerce\Common\Model
@@ -19,29 +17,33 @@ interface SaleAdjustmentInterface extends AdjustmentInterface
     public function getSale();
 
     /**
-     * Clears the result.
+     * Clears the results.
      *
      * @return $this|SaleAdjustmentInterface
      *
      * @internal Usage reserved to calculator.
      */
-    public function clearResult();
+    public function clearResults(): SaleAdjustmentInterface;
 
     /**
      * Sets the result.
      *
      * @param Amount $result
      *
+     * @return $this|SaleAdjustmentInterface
+     *
      * @internal Usage reserved to calculator.
      */
-    public function setResult(Amount $result);
+    public function setResult(Amount $result): SaleAdjustmentInterface;
 
     /**
-     * Returns the result.
+     * Returns the result for the given currency.
+     *
+     * @param string $currency
      *
      * @return Amount
      *
      * @internal Usage reserved to view builder.
      */
-    public function getResult();
+    public function getResult(string $currency): ?Amount;
 }

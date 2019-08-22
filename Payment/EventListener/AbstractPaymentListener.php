@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Payment\EventListener;
 
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -14,6 +13,7 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
+use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -40,14 +40,14 @@ abstract class AbstractPaymentListener
     protected $keyGenerator;
 
     /**
+     * @var PaymentUpdaterInterface
+     */
+    protected $paymentUpdater;
+
+    /**
      * @var CustomerUpdaterInterface
      */
     protected $customerUpdater;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
 
 
     /**
@@ -63,41 +63,41 @@ abstract class AbstractPaymentListener
     /**
      * Sets the number generator.
      *
-     * @param NumberGeneratorInterface $numberGenerator
+     * @param NumberGeneratorInterface $generator
      */
-    public function setNumberGenerator(NumberGeneratorInterface $numberGenerator)
+    public function setNumberGenerator(NumberGeneratorInterface $generator)
     {
-        $this->numberGenerator = $numberGenerator;
+        $this->numberGenerator = $generator;
     }
 
     /**
      * Sets the key generator.
      *
-     * @param KeyGeneratorInterface $keyGenerator
+     * @param KeyGeneratorInterface $generator
      */
-    public function setKeyGenerator(KeyGeneratorInterface $keyGenerator)
+    public function setKeyGenerator(KeyGeneratorInterface $generator)
     {
-        $this->keyGenerator = $keyGenerator;
+        $this->keyGenerator = $generator;
+    }
+
+    /**
+     * Sets the payment updater.
+     *
+     * @param PaymentUpdaterInterface $updater
+     */
+    public function setPaymentUpdater(PaymentUpdaterInterface $updater)
+    {
+        $this->paymentUpdater = $updater;
     }
 
     /**
      * Sets the customer updater.
      *
-     * @param CustomerUpdaterInterface $customerUpdater
+     * @param CustomerUpdaterInterface $updater
      */
-    public function setCustomerUpdater(CustomerUpdaterInterface $customerUpdater)
+    public function setCustomerUpdater(CustomerUpdaterInterface $updater)
     {
-        $this->customerUpdater = $customerUpdater;
-    }
-
-    /**
-     * Sets the currency converter.
-     *
-     * @param CurrencyConverterInterface $converter
-     */
-    public function setCurrencyConverter(CurrencyConverterInterface $converter)
-    {
-        $this->currencyConverter = $converter;
+        $this->customerUpdater = $updater;
     }
 
     /**
@@ -113,8 +113,8 @@ abstract class AbstractPaymentListener
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
 
-        // Exchange rate
-        $changed |= $this->updateExchangeRate($payment);
+        // Fix real amount
+        $changed |= $this->paymentUpdater->fixRealAmount($payment);
 
         // Completed state
         $changed |= $this->handleCompletedState($payment);
@@ -145,6 +145,16 @@ abstract class AbstractPaymentListener
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
 
+        if ($this->persistenceHelper->isChanged($payment, 'currency')) {
+            throw new LogicException("Payment method can't be changed.");
+        }
+
+        if ($this->persistenceHelper->isChanged($payment, 'amount')) {
+            $changed |= $this->paymentUpdater->fixRealAmount($payment);
+        } elseif ($this->persistenceHelper->isChanged($payment, 'realAmount')) {
+            $changed |= $this->paymentUpdater->fixAmount($payment);
+        }
+
         if ($this->persistenceHelper->isChanged($payment, 'state')) {
             $changed |= $this->handleCompletedState($payment);
         }
@@ -167,7 +177,7 @@ abstract class AbstractPaymentListener
             }
         }
 
-        if ($this->persistenceHelper->isChanged($payment, ['amount', 'state'])) {
+        if ($this->persistenceHelper->isChanged($payment, ['realAmount', 'state'])) {
             $this->scheduleSaleContentChangeEvent($this->getSaleFromPayment($payment));
 
             $this->customerUpdater->handlePaymentUpdate($payment);
@@ -245,7 +255,7 @@ abstract class AbstractPaymentListener
      */
     protected function generateNumber(PaymentInterface $payment)
     {
-        if (0 == strlen($payment->getNumber())) {
+        if (0 === strlen($payment->getNumber())) {
             $this->numberGenerator->generate($payment);
 
             return true;
@@ -263,41 +273,13 @@ abstract class AbstractPaymentListener
      */
     protected function generateKey(PaymentInterface $payment)
     {
-        if (0 == strlen($payment->getKey())) {
+        if (0 === strlen($payment->getKey())) {
             $this->keyGenerator->generate($payment);
 
             return true;
         }
 
         return false;
-    }
-
-    /**
-     * Updates the payment exchange rate.
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return bool Whether the payment has been changed or not.
-     */
-    protected function updateExchangeRate(PaymentInterface $payment)
-    {
-        if (null !== $payment->getExchangeRate()) {
-            return false;
-        }
-
-        $date = new \DateTime();
-
-        $rate = $this->currencyConverter->getRate(
-            $this->currencyConverter->getDefaultCurrency(),
-            $payment->getCurrency()->getCode(),
-            $date
-        );
-
-        $payment
-            ->setExchangeRate($rate)
-            ->setExchangeDate($date);
-
-        return true;
     }
 
     /**

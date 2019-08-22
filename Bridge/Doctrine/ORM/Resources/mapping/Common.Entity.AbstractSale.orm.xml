@@ -18,6 +18,8 @@
 
         <field name="weightTotal" column="weight_total" type="decimal" precision="10" scale="3"/>
         <field name="shipmentAmount" column="shipment_amount" type="decimal" precision="15" scale="5" nullable="true"/>
+        <field name="shipmentWeight" column="shipment_weight" type="decimal" precision="10" scale="3" nullable="true"/>
+        <field name="shipmentLabel" column="shipment_label" type="string" length="64" nullable="true"/>
 
         <field name="autoShipping" column="auto_shipping" type="boolean"/>
         <field name="autoDiscount" column="auto_discount" type="boolean"/>

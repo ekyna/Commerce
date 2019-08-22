@@ -65,15 +65,16 @@ class PaymentTransitions
                 if ($state === PaymentStates::STATE_CAPTURED) {
                     $transitions[] = static::TRANSITION_REFUND;
                 }
-                if ($state === PaymentStates::STATE_PENDING) {
-                    $diff = $payment->getUpdatedAt()->diff(new \DateTime());
-                    if (0 < $diff->days && !$diff->invert) {
+                if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
+                    //$diff = $payment->getUpdatedAt()->diff(new \DateTime());
+                    //if (0 < $diff->days && !$diff->invert) {
                         $transitions[] = static::TRANSITION_CANCEL;
-                    }
+                    //}
                 }
             }
         } else {
-            if ($method->isManual() && $state === PaymentStates::STATE_PENDING) {
+            //if ($method->isManual() && $state === PaymentStates::STATE_PENDING) {
+            if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
                 $transitions[] = static::TRANSITION_CANCEL;
             }
         }

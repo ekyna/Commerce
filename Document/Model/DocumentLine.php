@@ -100,9 +100,13 @@ class DocumentLine implements DocumentLineInterface
     {
         $this->unit = 0;
         $this->quantity = 0;
+        $this->gross = 0;
         $this->discount = 0;
+        $this->discountRates = [];
         $this->base = 0;
+        $this->tax = 0;
         $this->taxRates = [];
+        $this->total = 0;
     }
 
     /**

@@ -28,4 +28,13 @@ interface InvoicePaymentResolverInterface
      * @return float
      */
     public function getPaidTotal(Model\InvoiceInterface $invoice): float;
+
+    /**
+     * Returns the invoice's real paid total (default currency).
+     *
+     * @param Model\InvoiceInterface $invoice
+     *
+     * @return float
+     */
+    public function getRealPaidTotal(Model\InvoiceInterface $invoice): float;
 }

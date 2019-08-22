@@ -49,20 +49,6 @@ class QuoteListener extends AbstractSaleListener
     }
 
     /**
-     * @inheritDoc
-     */
-    protected function handleInsert(SaleInterface $sale)
-    {
-        $changed = parent::handleInsert($sale);
-
-        $changed |= $this->updateExchangeRate($sale);
-
-        $changed |= $this->updateLocale($sale);
-
-        return $changed;
-    }
-
-    /**
      * @inheritdoc
      */
     protected function updateState(SaleInterface $sale)

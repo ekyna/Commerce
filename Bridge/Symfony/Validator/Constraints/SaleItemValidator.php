@@ -4,9 +4,9 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\ValidationFailedException;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -20,12 +20,12 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class SaleItemValidator extends ConstraintValidator
 {
     /**
-     * @var InvoiceCalculatorInterface
+     * @var InvoiceSubjectCalculatorInterface
      */
     protected $invoiceCalculator;
 
     /**
-     * @var ShipmentCalculatorInterface
+     * @var ShipmentSubjectCalculatorInterface
      */
     protected $shipmentCalculator;
 
@@ -33,12 +33,12 @@ class SaleItemValidator extends ConstraintValidator
     /**
      * Constructor.
      *
-     * @param InvoiceCalculatorInterface  $invoiceCalculator
-     * @param ShipmentCalculatorInterface $shipmentCalculator
+     * @param InvoiceSubjectCalculatorInterface  $invoiceCalculator
+     * @param ShipmentSubjectCalculatorInterface $shipmentCalculator
      */
     public function __construct(
-        InvoiceCalculatorInterface $invoiceCalculator,
-        ShipmentCalculatorInterface $shipmentCalculator
+        InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        ShipmentSubjectCalculatorInterface $shipmentCalculator
     ) {
         $this->invoiceCalculator = $invoiceCalculator;
         $this->shipmentCalculator = $shipmentCalculator;

@@ -42,7 +42,7 @@ abstract class Money
         $precision = static::getPrecision($currency);
         $roundingIncrement = static::getRoundingIncrement($currency);
 
-        $amount = round($amount, $precision, \PHP_ROUND_HALF_EVEN);
+        $amount = round($amount, $precision, \PHP_ROUND_HALF_DOWN);
 
         if (0 < $roundingIncrement && 0 < $precision) {
             $roundingFactor = $roundingIncrement / pow(10, $precision);
@@ -67,7 +67,9 @@ abstract class Money
      */
     static public function compare($a, $b, $currency)
     {
-        return bccomp($a, $b, static::getPrecision($currency));
+        $p = static::getPrecision($currency);
+
+        return bccomp(self::round($a, $p), self::round($b, $p), $p);
     }
 
     /**

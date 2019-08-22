@@ -5,13 +5,14 @@ namespace Ekyna\Component\Commerce\Invoice\Repository;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
  * Interface InvoiceRepositoryInterface
  * @package Ekyna\Component\Commerce\Invoice\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface InvoiceRepositoryInterface
+interface InvoiceRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds invoices by customer.

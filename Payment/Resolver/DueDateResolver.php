@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Payment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -14,6 +15,29 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
  */
 class DueDateResolver implements DueDateResolverInterface
 {
+    /**
+     * @inheritDoc
+     */
+    public function isInvoiceDue(Invoice\InvoiceInterface $invoice): bool
+    {
+        $paid = $invoice->getPaidTotal();
+
+        if (1 !== Money::compare($invoice->getGrandTotal(), $paid, $invoice->getCurrency())) {
+            return false;
+        }
+
+        if (null === $date = $invoice->getDueDate()) {
+            return false;
+        }
+
+        $diff = $date->diff((new \DateTime())->setTime(0, 0, 0, 0));
+        if (0 < $diff->days && !$diff->invert) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @inheritDoc
      */

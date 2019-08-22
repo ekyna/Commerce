@@ -38,7 +38,7 @@ class Button
      * @param string $icon
      * @param array  $attributes
      */
-    public function __construct($path, $label, $icon, array $attributes)
+    public function __construct(string $path, string $label, string $icon, array $attributes)
     {
         $this->path = $path;
         $this->label = $label;
@@ -51,7 +51,7 @@ class Button
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -61,7 +61,7 @@ class Button
      *
      * @return string
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->label;
     }
@@ -71,7 +71,7 @@ class Button
      *
      * @return string
      */
-    public function getIcon()
+    public function getIcon(): string
     {
         return $this->icon;
     }
@@ -81,7 +81,7 @@ class Button
      *
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         return $this->attributes;
     }

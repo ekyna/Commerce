@@ -210,8 +210,11 @@ class ContextProvider implements ContextProviderInterface
     /**
      * @inheritDoc
      */
-    public function changeCurrencyAndCountry($currency = null, $country = null): ContextProviderInterface
-    {
+    public function changeCurrencyAndCountry(
+        $currency = null,
+        $country = null,
+        string $locale = null
+    ): ContextProviderInterface {
         if (!is_null($currency)) {
             if (is_string($currency)) {
                 $currency = $this->currencyProvider->getCurrency($currency);
@@ -236,7 +239,16 @@ class ContextProvider implements ContextProviderInterface
             }
         }
 
-        if ($currency || $country) {
+        if (!is_null($locale)) {
+            if (!in_array($locale, $this->localProvider->getAvailableLocales(), true)) {
+                throw new UnexpectedValueException("Unexpected locale '$locale'.");
+            }
+            if ($locale === $this->localProvider->getCurrentLocale()) {
+                $locale = null;
+            }
+        }
+
+        if ($currency || $country || $locale) {
             if ($currency) {
                 $this->currencyProvider->setCurrency($currency);
             }
@@ -244,7 +256,10 @@ class ContextProvider implements ContextProviderInterface
                 $this->countryProvider->setCountry($country);
             }
 
-            $this->eventDispatcher->dispatch(ContextEvents::CHANGE, new ContextChangeEvent($currency, $country));
+            $this->eventDispatcher->dispatch(
+                ContextEvents::CHANGE,
+                new ContextChangeEvent($currency, $country, $locale)
+            );
         }
 
         return $this;

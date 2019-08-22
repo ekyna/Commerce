@@ -28,21 +28,21 @@ interface InvoiceInterface extends
      *
      * @return $this|InvoiceInterface
      */
-    public function setShipment(ShipmentInterface $shipment = null);
+    public function setShipment(ShipmentInterface $shipment = null): InvoiceInterface;
 
     /**
      * Returns the shipment.
      *
      * @return ShipmentInterface
      */
-    public function getShipment();
+    public function getShipment(): ?ShipmentInterface;
 
     /**
      * Returns the paid total.
      *
      * @return float
      */
-    public function getPaidTotal();
+    public function getPaidTotal(): float;
 
     /**
      * Sets the paid total.
@@ -51,14 +51,30 @@ interface InvoiceInterface extends
      *
      * @return $this|InvoiceInterface
      */
-    public function setPaidTotal(float $amount);
+    public function setPaidTotal(float $amount): InvoiceInterface;
+
+    /**
+     * Returns the real paid total.
+     *
+     * @return float
+     */
+    public function getRealPaidTotal(): float;
+
+    /**
+     * Sets the real paid total.
+     *
+     * @param float $amount
+     *
+     * @return $this|InvoiceInterface
+     */
+    public function setRealPaidTotal(float $amount): InvoiceInterface;
 
     /**
      * Returns the due date.
      *
      * @return \DateTime
      */
-    public function getDueDate();
+    public function getDueDate(): ?\DateTime;
 
     /**
      * Sets the due date.
@@ -67,7 +83,14 @@ interface InvoiceInterface extends
      *
      * @return $this|InvoiceInterface
      */
-    public function setDueDate(\DateTime $dueDate = null);
+    public function setDueDate(\DateTime $dueDate = null): InvoiceInterface;
+
+    /**
+     * Returns the payment method.
+     *
+     * @return PaymentMethodInterface
+     */
+    public function getPaymentMethod(): ?PaymentMethodInterface;
 
     /**
      * Sets the payment method.
@@ -76,12 +99,5 @@ interface InvoiceInterface extends
      *
      * @return $this|InvoiceInterface
      */
-    public function setPaymentMethod(PaymentMethodInterface $method = null);
-
-    /**
-     * Returns the payment method.
-     *
-     * @return PaymentMethodInterface
-     */
-    public function getPaymentMethod();
+    public function setPaymentMethod(PaymentMethodInterface $method = null): InvoiceInterface;
 }

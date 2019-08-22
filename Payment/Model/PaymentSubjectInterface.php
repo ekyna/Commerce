@@ -202,11 +202,4 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      * @return bool
      */
     public function isPaid();
-
-    /**
-     * Returns the payment remaining amount.
-     *
-     * @return float
-     */
-    public function getRemainingAmount();
 }

@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Shipment\Builder;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\GatewayInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\RegistryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
@@ -29,7 +29,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     private $registry;
 
     /**
-     * @var ShipmentCalculatorInterface
+     * @var ShipmentSubjectCalculatorInterface
      */
     private $calculator;
 
@@ -37,14 +37,14 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     /**
      * Constructor.
      *
-     * @param SaleFactoryInterface        $factory
-     * @param RegistryInterface           $registry
-     * @param ShipmentCalculatorInterface $calculator
+     * @param SaleFactoryInterface               $factory
+     * @param RegistryInterface                  $registry
+     * @param ShipmentSubjectCalculatorInterface $calculator
      */
     public function __construct(
         SaleFactoryInterface $factory,
         RegistryInterface $registry,
-        ShipmentCalculatorInterface $calculator
+        ShipmentSubjectCalculatorInterface $calculator
 
     ) {
         $this->factory = $factory;

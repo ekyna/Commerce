@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Payment\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethod;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\MessageInterface;
@@ -21,6 +22,11 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
      */
     protected $currencies;
 
+    /**
+     * @var bool
+     */
+    protected $defaultCurrency;
+
 
     /**
      * Constructor.
@@ -30,12 +36,13 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
         parent::__construct();
 
         $this->currencies = new ArrayCollection();
+        $this->defaultCurrency = true;
     }
 
     /**
      * @inheritdoc
      */
-    public function hasCurrencies()
+    public function hasCurrencies(): bool
     {
         return 0 < $this->currencies->count();
     }
@@ -43,7 +50,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    public function hasCurrency(CurrencyInterface $currency)
+    public function hasCurrency(CurrencyInterface $currency): bool
     {
         return $this->currencies->contains($currency);
     }
@@ -51,7 +58,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    public function addCurrency(CurrencyInterface $currency)
+    public function addCurrency(CurrencyInterface $currency): PaymentMethodInterface
     {
         if (!$this->hasCurrency($currency)) {
             $this->currencies->add($currency);
@@ -63,7 +70,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    public function removeCurrency(CurrencyInterface $currency)
+    public function removeCurrency(CurrencyInterface $currency): PaymentMethodInterface
     {
         if ($this->hasCurrency($currency)) {
             $this->currencies->removeElement($currency);
@@ -75,15 +82,39 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    public function getCurrencies()
+    public function getCurrencies(): Collection
     {
         return $this->currencies;
     }
 
     /**
+     * Returns whether to use the default currency.
+     *
+     * @return bool
+     */
+    public function isDefaultCurrency(): bool
+    {
+        return $this->defaultCurrency;
+    }
+
+    /**
+     * Sets whether to use the default currency.
+     *
+     * @param bool $default
+     *
+     * @return PaymentMethod
+     */
+    public function setDefaultCurrency(bool $default): PaymentMethodInterface
+    {
+        $this->defaultCurrency = $default;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
-    public function isManual()
+    public function isManual(): bool
     {
         return false;
     }
@@ -91,7 +122,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    public function isCredit()
+    public function isCredit(): bool
     {
         return false;
     }
@@ -99,7 +130,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    public function isOutstanding()
+    public function isOutstanding(): bool
     {
         return false;
     }
@@ -107,7 +138,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    protected function validateMessageClass(MessageInterface $message)
+    protected function validateMessageClass(MessageInterface $message): void
     {
         if (!$message instanceof PaymentMessage) {
             throw new InvalidArgumentException("Expected instance of PaymentMessage.");

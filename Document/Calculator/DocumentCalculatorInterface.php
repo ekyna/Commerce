@@ -18,5 +18,5 @@ interface DocumentCalculatorInterface
      *
      * @return bool Whether or not the document has been updated.
      */
-    public function calculate(DocumentInterface $document);
+    public function calculate(DocumentInterface $document): bool;
 }

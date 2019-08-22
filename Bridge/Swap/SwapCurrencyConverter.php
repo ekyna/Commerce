@@ -24,7 +24,7 @@ class SwapCurrencyConverter extends AbstractCurrencyConverter
      * @param Swap   $swap
      * @param string $defaultCurrency
      */
-    public function __construct(Swap $swap, $defaultCurrency = 'USD')
+    public function __construct(Swap $swap, string $defaultCurrency = 'USD')
     {
         parent::__construct($defaultCurrency);
 
@@ -34,13 +34,13 @@ class SwapCurrencyConverter extends AbstractCurrencyConverter
     /**
      * @inheritdoc
      */
-    public function getRate($base, $quote = null, \DateTime $date = null)
+    public function getRate(string $base, string $quote = null, \DateTime $date = null): float
     {
         $base = strtoupper($base);
         $quote = strtoupper($quote ?? $this->defaultCurrency);
 
         if ($base === $quote) {
-            return 1;
+            return 1.0;
         }
 
         if ($quote === $this->defaultCurrency) {

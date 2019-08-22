@@ -41,7 +41,7 @@ class ArrayCurrencyConverter extends AbstractCurrencyConverter
      *
      * @return ArrayCurrencyConverter
      */
-    private function addRate($pair, $rate): self
+    private function addRate(string $pair, float $rate): self
     {
         if (!preg_match('~^[A-Z]{3}/[A-Z]{3}$~', $pair)) {
             throw new InvalidArgumentException("Unexpected currency pair '$pair'.");
@@ -59,10 +59,10 @@ class ArrayCurrencyConverter extends AbstractCurrencyConverter
     /**
      * @inheritdoc
      */
-    public function getRate($base, $quote = null, \DateTime $date = null)
+    public function getRate(string $base, string $quote = null, \DateTime $date = null): float
     {
         $base = strtoupper($base);
-        $quote = strtoupper($quote ? $quote : $this->defaultCurrency);
+        $quote = strtoupper($quote ?? $this->defaultCurrency);
 
         if ($base === $quote) {
             return 1.0;

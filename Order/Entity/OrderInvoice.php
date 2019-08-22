@@ -3,9 +3,11 @@
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
@@ -32,7 +34,7 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
      *
      * @return Model\OrderInterface
      */
-    public function getSale()
+    public function getSale(): ?SaleInterface
     {
         return $this->getOrder();
     }
@@ -40,7 +42,7 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
     /**
      * @inheritdoc
      */
-    public function setSale(SaleInterface $sale = null)
+    public function setSale(SaleInterface $sale = null): DocumentInterface
     {
         if ($sale && !$sale instanceof Model\OrderInterface) {
             throw new UnexpectedValueException("Expected instance of " . Model\OrderInterface::class);
@@ -52,7 +54,7 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
     /**
      * @inheritdoc
      */
-    public function getOrder()
+    public function getOrder(): ?Model\OrderInterface
     {
         return $this->order;
     }
@@ -60,7 +62,7 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
     /**
      * @inheritdoc
      */
-    public function setOrder(Model\OrderInterface $order = null)
+    public function setOrder(Model\OrderInterface $order = null): Model\OrderInvoiceInterface
     {
         if ($order !== $this->order) {
             if ($previous = $this->order) {
@@ -81,7 +83,7 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
      *
      * @return Model\OrderShipmentInterface
      */
-    public function getShipment()
+    public function getShipment(): ?ShipmentInterface
     {
         return $this->shipment;
     }
@@ -89,7 +91,7 @@ class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterfac
     /**
      * @inheritdoc
      */
-    public function setShipment(ShipmentInterface $shipment = null)
+    public function setShipment(ShipmentInterface $shipment = null): InvoiceInterface
     {
         if ($shipment && !$shipment instanceof Model\OrderShipmentInterface) {
             throw new InvalidArgumentException("Expected instance of " . Model\OrderShipmentInterface::class);

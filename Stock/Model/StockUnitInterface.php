@@ -349,4 +349,11 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return float|null
      */
     public function getExchangeRate(): ?float;
+
+    /**
+     * Returns the exchange date.
+     *
+     * @return \DateTime|null
+     */
+    public function getExchangeDate(): ?\DateTime;
 }

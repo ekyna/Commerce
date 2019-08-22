@@ -70,7 +70,7 @@ class SaleNormalizer extends AbstractResourceNormalizer
                 foreach ($sale->getInvoices(true) as $invoice) {
                     $data['invoices'][] = [
                         'number'      => $invoice->getNumber(),
-                        'grand_total' => $invoice->getGrandTotal(),
+                        'grand_total' => $invoice->getRealGrandTotal(),
                         'created_at'  => $invoice->getCreatedAt()->format('Y-m-d H:i:s'),
                     ];
                 }

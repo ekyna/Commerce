@@ -39,7 +39,7 @@ class StockUnitLinkerTest extends BaseStockTestCase
     /**
      * @inheritDoc
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->linker = null;
     }

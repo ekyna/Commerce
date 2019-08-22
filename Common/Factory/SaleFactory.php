@@ -134,14 +134,7 @@ class SaleFactory implements SaleFactoryInterface
      */
     public function createPaymentForSale(Model\SaleInterface $sale)
     {
-        /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentInterface $payment */
-        $payment = $this->resolveClassAndCreateObject('payment', $sale);
-
-        $payment
-            ->setCurrency($sale->getCurrency())
-            ->setAmount($sale->getRemainingAmount());
-
-        return $payment;
+        return $this->resolveClassAndCreateObject('payment', $sale);
     }
 
     /**

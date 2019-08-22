@@ -27,6 +27,7 @@ interface OrderPaymentRepositoryInterface extends PaymentRepositoryInterface
      *
      * @param CustomerInterface $customer
      * @param \DateTime         $from
+     * @param string            $currency
      * @param \DateTime         $to
      * @param bool              $scalar
      *
@@ -34,6 +35,7 @@ interface OrderPaymentRepositoryInterface extends PaymentRepositoryInterface
      */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
+        string $currency = null,
         \DateTime $from = null,
         \DateTime $to = null,
         bool $scalar = false

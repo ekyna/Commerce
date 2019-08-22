@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Order\Entity\OrderAdjustment;
 use Ekyna\Component\Commerce\Order\Entity\OrderAttachment;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class OrderItem
@@ -16,7 +17,7 @@ use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
  *
  * @coversDefaultClass \Ekyna\Component\Commerce\Order\Entity\Order
  */
-class OrderTest extends \PHPUnit_Framework_TestCase
+class OrderTest extends TestCase
 {
     /**
      * @var Order
@@ -28,7 +29,7 @@ class OrderTest extends \PHPUnit_Framework_TestCase
      */
     private $taxGroup;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->taxGroup = new TaxGroup();
 
@@ -39,7 +40,7 @@ class OrderTest extends \PHPUnit_Framework_TestCase
             ->addAttachment($this->getTestAttachmentOne());
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->order = null;
         $this->taxGroup = null;

@@ -74,6 +74,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
      */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
+        string $currency = null,
         \DateTime $from = null,
         \DateTime $to = null,
         bool $scalar = false
@@ -84,6 +85,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             $qb->select([
                 'i.id',
                 'i.number',
+                'o.currency.code as currency',
                 'i.grandTotal',
                 'i.type',
                 'i.dueDate',
@@ -104,6 +106,12 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->andWhere($ex->eq('o.sample', ':sample'))
             ->addOrderBy('i.createdAt', 'ASC');
 
+        if ($currency) {
+            $qb
+                ->join('o.currency', 'c')
+                ->andWhere($ex->eq('c.code', ':currency'));
+        }
+
         if ($from && $to) {
             $qb->andWhere($ex->between('i.createdAt', ':from', ':to'));
         } elseif ($from) {
@@ -119,6 +127,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
                 'sample'   => false,
             ]);
 
+        if ($currency) {
+            $query->setParameter('currency', $currency);
+        }
         if ($from) {
             $query->setParameter('from', $from, Type::DATETIME);
         }
@@ -183,10 +194,10 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * @inheritDoc
      */
-    public function findDueInvoices(CustomerInterface $customer = null): array
+    public function findDueInvoices(CustomerInterface $customer = null, string $currency = null): array
     {
         return $this
-            ->getDueInvoicesQueryBuilder($customer)
+            ->getDueInvoicesQueryBuilder($customer, $currency)
             ->addOrderBy('i.dueDate', 'ASC')
             ->getQuery()
             ->getResult();
@@ -207,10 +218,10 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * @inheritDoc
      */
-    public function findFallInvoices(CustomerInterface $customer = null): array
+    public function findFallInvoices(CustomerInterface $customer = null, string $currency = null): array
     {
         return $this
-            ->getFallInvoicesQueryBuilder($customer)
+            ->getFallInvoicesQueryBuilder($customer, $currency)
             ->addOrderBy('i.dueDate', 'ASC')
             ->getQuery()
             ->getResult();
@@ -299,11 +310,14 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
      * Returns the due invoices query builder.
      *
      * @param CustomerInterface $customer
+     * @param string            $currency
      *
      * @return QueryBuilder
      */
-    protected function getDueInvoicesQueryBuilder(CustomerInterface $customer = null): QueryBuilder
-    {
+    protected function getDueInvoicesQueryBuilder(
+        CustomerInterface $customer = null,
+        string $currency = null
+    ): QueryBuilder {
         $qb = $this->createQueryBuilder('i');
 
         $qb
@@ -315,20 +329,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->andWhere($qb->expr()->notIn('o.state', ':states'))
             ->andWhere($qb->expr()->eq('o.sample', ':sample'));
 
-        $today = new \DateTime();
-        $today->setTime(23, 59, 59, 999999);
-
-        $qb
-            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
-            ->setParameter('today', $today, Type::DATETIME)
-            ->setParameter('states', [OrderStates::STATE_CANCELED, OrderStates::STATE_REFUNDED])
-            ->setParameter('sample', false);
-
-        if ($customer) {
-            $qb
-                ->andWhere($qb->expr()->eq('o.customer', ':customer'))
-                ->setParameter('customer', $customer);
-        }
+        $this->addInvoicesQBParameters($qb, $customer, $currency);
 
         return $qb;
     }
@@ -337,11 +338,14 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
      * Returns the fall invoices query builder.
      *
      * @param CustomerInterface $customer
+     * @param string            $currency
      *
      * @return QueryBuilder
      */
-    protected function getFallInvoicesQueryBuilder(CustomerInterface $customer = null): QueryBuilder
-    {
+    protected function getFallInvoicesQueryBuilder(
+        CustomerInterface $customer = null,
+        string $currency = null
+    ): QueryBuilder {
         $qb = $this->createQueryBuilder('i');
 
         $qb
@@ -353,6 +357,25 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->andWhere($qb->expr()->notIn('o.state', ':states'))
             ->andWhere($qb->expr()->eq('o.sample', ':sample'));
 
+        $this->addInvoicesQBParameters($qb, $customer, $currency);
+
+        return $qb;
+    }
+
+    /**
+     * Adds the due/fall invoices query builder parameters.
+     *
+     * @param QueryBuilder           $qb
+     * @param CustomerInterface|null $customer
+     * @param string|null            $currency
+     *
+     * @throws \Exception
+     */
+    protected function addInvoicesQBParameters(
+        QueryBuilder $qb,
+        CustomerInterface $customer = null,
+        string $currency = null
+    ): void {
         $today = new \DateTime();
         $today->setTime(23, 59, 59, 999999);
 
@@ -368,7 +391,12 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
                 ->setParameter('customer', $customer);
         }
 
-        return $qb;
+        if ($currency) {
+            $qb
+                ->join('o.currency', 'c')
+                ->andWhere($qb->expr()->eq('c.code', ':currency'))
+                ->setParameter('currency', $currency);
+        }
     }
 
     /**

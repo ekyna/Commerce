@@ -71,6 +71,8 @@ class SalePreparer implements SalePreparerInterface
             return null;
         }
 
+        // TODO Abort if not stockable
+
         if (!$this->dispatchPrepareEvent($sale)) {
             return null;
         }
@@ -150,6 +152,7 @@ class SalePreparer implements SalePreparerInterface
         $event = $this->eventDispatcher->createResourceEvent($sale);
 
         try {
+            /** @noinspection PhpParamsInspection */
             $this->eventDispatcher->dispatch(OrderEvents::PREPARE, $event);
         } catch (IllegalOperationException $e) {
             return false;

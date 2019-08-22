@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -90,6 +91,12 @@ class SaleCopier implements SaleCopierInterface
         }
 
         $this->copy($this->source, $this->target, $fields);
+
+        if ($this->source instanceof OrderInterface) {
+            if ($this->target instanceof OrderInterface) {
+                $this->target->setOriginCustomer($this->source->getOriginCustomer());
+            }
+        }
 
         return $this;
     }
@@ -307,7 +314,7 @@ class SaleCopier implements SaleCopierInterface
     private function copyPayment(PaymentInterface $source, PaymentInterface $target)
     {
         $this->copy($source, $target, [
-            'currency', 'method', 'key', 'number', 'amount', 'state', 'details', 'description',
+            'currency', 'method', 'key', 'number', 'amount', 'realAmount', 'state', 'details', 'description',
             'createdAt', 'updatedAt', 'completedAt', 'exchangeRate', 'exchangeDate'
         ]);
     }

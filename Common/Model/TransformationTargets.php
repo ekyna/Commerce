@@ -24,20 +24,44 @@ final class TransformationTargets
      * Returns the available targets for the given sale.
      *
      * @param SaleInterface $sale
+     * @param bool          $duplicate
      *
      * @return array
      */
-    static public function getTargetsForSale(SaleInterface $sale)
+    static public function getTargetsForSale(SaleInterface $sale, bool $duplicate): array
     {
         if ($sale instanceof CartInterface) {
-            return [static::TARGET_ORDER, static::TARGET_QUOTE];
-        } elseif ($sale instanceof OrderInterface) {
-            if ($sale->getState() !== OrderStates::STATE_NEW) {
-                return [];
+            $targets = [static::TARGET_ORDER, static::TARGET_QUOTE];
+
+            if ($duplicate) {
+                $targets[] = static::TARGET_CART;
             }
-            return [static::TARGET_QUOTE];
-        } elseif ($sale instanceof QuoteInterface) {
-            return [static::TARGET_ORDER];
+
+            return $targets;
+        }
+
+        if ($sale instanceof OrderInterface) {
+            if ($sale->getState() === OrderStates::STATE_NEW) {
+                $targets = [static::TARGET_QUOTE];
+            } else {
+                $targets = [];
+            }
+
+            if ($duplicate) {
+                $targets[] = static::TARGET_ORDER;
+            }
+
+            return $targets;
+        }
+
+        if ($sale instanceof QuoteInterface) {
+            $targets = [static::TARGET_ORDER];
+
+            if ($duplicate) {
+                $targets[] = static::TARGET_QUOTE;
+            }
+
+            return $targets;
         }
 
         throw new InvalidArgumentException("Unexpected sale type.");
@@ -48,12 +72,13 @@ final class TransformationTargets
      *
      * @param string        $target
      * @param SaleInterface $sale
+     * @param bool          $duplicate
      *
      * @return bool
      */
-    static public function isValidTargetForSale($target, SaleInterface $sale)
+    static public function isValidTargetForSale(string $target, SaleInterface $sale, bool $duplicate): bool
     {
-        return in_array($target, static::getTargetsForSale($sale), true);
+        return in_array($target, static::getTargetsForSale($sale, $duplicate), true);
     }
 
     /**

@@ -40,9 +40,18 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     protected $method;
 
     /**
+     * The amount in payment currency
+     *
      * @var float
      */
     protected $amount;
+
+    /**
+     * The amount in default currency
+     *
+     * @var float
+     */
+    protected $realAmount;
 
     /**
      * @var array
@@ -53,9 +62,6 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      * @var string
      */
     protected $description;
-
-
-    protected $exchangeRate;
 
     /**
      * @var \DateTime
@@ -69,8 +75,9 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     public function __construct()
     {
         $this->amount = 0;
-        $this->state = Payment\PaymentStates::STATE_NEW;
-        $this->details = [];
+        $this->realAmount = 0;
+
+        $this->clear();
     }
 
     /**
@@ -81,6 +88,32 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     public function __toString()
     {
         return $this->getNumber();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __clone()
+    {
+        if ($this->id) {
+            $this->clear();
+        }
+    }
+
+    /**
+     * Clears the payment data.
+     */
+    protected function clear()
+    {
+        $this->id = null;
+        $this->state = Payment\PaymentStates::STATE_NEW;
+        $this->details = [];
+        $this->key = null;
+        $this->number = null;
+        $this->description = null;
+        $this->completedAt = null;
+        $this->createdAt = null;
+        $this->updatedAt = null;
     }
 
     /**
@@ -112,7 +145,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     /**
      * @inheritdoc
      */
-    public function getAmount()
+    public function getAmount(): ?float
     {
         return $this->amount;
     }
@@ -120,9 +153,27 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     /**
      * @inheritdoc
      */
-    public function setAmount($amount)
+    public function setAmount(float $amount)
     {
-        $this->amount = (float)$amount;
+        $this->amount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRealAmount(): ?float
+    {
+        return $this->realAmount;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRealAmount(float $amount)
+    {
+        $this->realAmount = $amount;
 
         return $this;
     }

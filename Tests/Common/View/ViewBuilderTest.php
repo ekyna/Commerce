@@ -3,13 +3,14 @@
 namespace Ekyna\Component\Commerce\Tests\Common\View;
 
 use Ekyna\Component\Commerce\Common\View\ViewBuilder;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class BuilderTest
  * @package Ekyna\Component\Commerce\Tests\Common\View
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ViewBuilderTest extends \PHPUnit_Framework_TestCase
+class ViewBuilderTest extends TestCase
 {
     /**
      * @covers ViewBuilder::buildSaleView()

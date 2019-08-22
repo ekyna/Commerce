@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Invoice\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Document\Model as Document;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model;
 
 /**
@@ -49,7 +50,6 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
         $this->clearChildren();
     }
 
-
     /**
      * @inheritdoc
      */
@@ -73,6 +73,10 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
      */
     public function setDocument(Document\DocumentInterface $document = null)
     {
+        if (!$document instanceof Model\InvoiceInterface) {
+            throw new UnexpectedTypeException($document, Model\InvoiceInterface::class);
+        }
+
         return $this->setInvoice($document);
     }
 

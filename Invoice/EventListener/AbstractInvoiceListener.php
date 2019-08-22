@@ -289,14 +289,16 @@ abstract class AbstractInvoiceListener
             return;
         }
 
+        // TODO Use refund payments when implemented
+
         $methodCs = $this->persistenceHelper->getChangeSet($invoice, 'paymentMethod');
-        $amountCs = $this->persistenceHelper->getChangeSet($invoice, 'grandTotal');
+        $amountCs = $this->persistenceHelper->getChangeSet($invoice, 'realGrandTotal');
 
         // Debit grand total if invoice is removed
         // TODO Multiple call will credit too much !
         if ($this->persistenceHelper->isScheduledForRemove($invoice)) {
             $method = empty($methodCs) ? $invoice->getPaymentMethod() : $methodCs[0];
-            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[0];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[0];
 
             if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
                 $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
@@ -313,7 +315,7 @@ abstract class AbstractInvoiceListener
         // Debit old method customer balance
         /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
         if (!empty($methodCs) && null !== $method = $methodCs[0]) {
-            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[0];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[0];
 
             if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
                 $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
@@ -323,11 +325,11 @@ abstract class AbstractInvoiceListener
         // Credit new method customer balance
         if (empty($methodCs)) {
             $method = $invoice->getPaymentMethod();
-            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[1] - $amountCs[0];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[1] - $amountCs[0];
         } else {
             /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
             $method = $methodCs[1];
-            $amount = empty($amountCs) ? $invoice->getGrandTotal(): $amountCs[1];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[1];
         }
         if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
             $this->customerUpdater->updateCreditBalance($customer, $amount, true);

@@ -57,7 +57,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             $oMsg = $maxMsg = $this->translate('quote_only', [], $short);
         } else {
             // Minimum quantity/message
-            if (0 < $minQty = $subject->getMinimumOrderQuantity()) {
+            if ($root && (0 < $minQty = $subject->getMinimumOrderQuantity())) {
                 $minMsg = $this->translate('min_quantity', [
                     '%min%' => $formatter->number($minQty),
                 ], $short);
@@ -128,7 +128,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
         $formatter = $this->formatterFactory->create();
 
         if (is_null($quantity)) {
-            $quantity = $subject->getMinimumOrderQuantity();
+            $quantity = $root ? $subject->getMinimumOrderQuantity() : 0;
         }
 
         if ($root && $subject->isQuoteOnly()) {

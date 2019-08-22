@@ -37,7 +37,7 @@ class MarginView
      *
      * @return string
      */
-    public function getAmount()
+    public function getAmount(): string
     {
         return $this->amount;
     }
@@ -47,7 +47,7 @@ class MarginView
      *
      * @return string
      */
-    public function getPercent()
+    public function getPercent(): string
     {
         return $this->percent;
     }

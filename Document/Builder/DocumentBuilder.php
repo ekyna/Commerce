@@ -79,12 +79,18 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         $changed = false;
 
-        // Currency
-        $code = $sale->getCurrency()->getCode();
-        if ($document->getCurrency() !== $code) {
-            $document->setCurrency($code);
+        // Locale
+        $data = $sale->getLocale();
+        if ($document->getLocale() !== $data) {
+            $document->setLocale($data);
             $changed = true;
-            // TODO Convert prices / Recalculate ?
+        }
+
+        // Currency
+        $data = $sale->getCurrency()->getCode();
+        if ($document->getCurrency() !== $data) {
+            $document->setCurrency($data);
+            $changed = true;
         }
 
         // Customer
@@ -95,7 +101,7 @@ class DocumentBuilder implements DocumentBuilderInterface
         }
 
         // Invoice address
-        $data = $this->buildAddressData($sale->getInvoiceAddress(), $sale->getLocale());
+        $data = $this->buildAddressData($sale->getInvoiceAddress(), $document->getLocale());
         if ($document->getInvoiceAddress() !== $data) {
             $document->setInvoiceAddress($data);
             $changed = true;
@@ -103,7 +109,7 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // Delivery address
         $data = $sale->getDeliveryAddress()
-            ? $this->buildAddressData($sale->getDeliveryAddress(), $sale->getLocale())
+            ? $this->buildAddressData($sale->getDeliveryAddress(), $document->getLocale())
             : null;
         if ($document->getDeliveryAddress() !== $data) {
             $document->setDeliveryAddress($data);
@@ -112,7 +118,7 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // RelayPoint
         if (null !== $data = $sale->getRelayPoint()) {
-            $data = $this->buildAddressData($data, $sale->getLocale());
+            $data = $this->buildAddressData($data, $document->getLocale());
         }
         if ($document->getRelayPoint() !== $data) {
             $document->setRelayPoint($data);
@@ -266,12 +272,9 @@ class DocumentBuilder implements DocumentBuilderInterface
      */
     protected function buildAddressData(Common\AddressInterface $address, string $locale)
     {
-        // TODO localize
         $country = Intl::getRegionBundle()->getCountryName($address->getCountry()->getCode(), $locale);
 
         $fullName = trim($address->getFirstName() . ' ' . $address->getLastName());
-
-        // TODO if empty full customer name
 
         $data = [
             'company'     => $address->getCompany(),
@@ -350,8 +353,10 @@ class DocumentBuilder implements DocumentBuilderInterface
      *
      * @return Document\DocumentLineInterface
      */
-    protected function createLine(Document\DocumentInterface $document)
-    {
+    protected function createLine(
+        /** @noinspection PhpUnusedParameterInspection */
+        Document\DocumentInterface $document
+    ) {
         return new Document\DocumentLine();
     }
 }

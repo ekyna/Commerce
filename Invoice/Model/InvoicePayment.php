@@ -21,13 +21,18 @@ class InvoicePayment
      */
     private $amount;
 
+    /**
+     * @var float
+     */
+    private $realAmount;
+
 
     /**
      * Returns the payment.
      *
      * @return PaymentInterface
      */
-    public function getPayment()
+    public function getPayment(): PaymentInterface
     {
         return $this->payment;
     }
@@ -39,7 +44,7 @@ class InvoicePayment
      *
      * @return InvoicePayment
      */
-    public function setPayment(PaymentInterface $payment)
+    public function setPayment(PaymentInterface $payment): InvoicePayment
     {
         $this->payment = $payment;
 
@@ -51,7 +56,7 @@ class InvoicePayment
      *
      * @return float
      */
-    public function getAmount()
+    public function getAmount(): float
     {
         return $this->amount;
     }
@@ -63,9 +68,33 @@ class InvoicePayment
      *
      * @return InvoicePayment
      */
-    public function setAmount(float $amount)
+    public function setAmount(float $amount): InvoicePayment
     {
         $this->amount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the realAmount.
+     *
+     * @return float
+     */
+    public function getRealAmount(): float
+    {
+        return $this->realAmount;
+    }
+
+    /**
+     * Sets the realAmount.
+     *
+     * @param float $amount
+     *
+     * @return InvoicePayment
+     */
+    public function setRealAmount(float $amount): InvoicePayment
+    {
+        $this->realAmount = $amount;
 
         return $this;
     }

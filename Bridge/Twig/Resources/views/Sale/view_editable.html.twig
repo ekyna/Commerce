@@ -20,11 +20,11 @@
         {% if 2 < line.vars.actions|length -%}
             <div>
         {%- endif %}
-            {% for action in line.vars.actions -%}
-            <a href="{{ action.path }}"{% with {attr: action.attributes} %} {{ block('attributes') }}{% endwith %}>
-                <i class="{{ action.icon }}"></i>
-            </a>
-            {%- endfor %}
+        {% for action in line.vars.actions -%}
+        <a href="{{ action.path }}"{% with {attr: action.attributes} %} {{ block('attributes') }}{% endwith %}>
+            <i class="{{ action.icon }}"></i>
+        </a>
+        {%- endfor %}
         {% if 2 < line.vars.actions|length -%}
             <a href="javascript: void(0)" class="text-muted">
                 <i class="fa fa-ellipsis-h"></i>
@@ -40,7 +40,21 @@
 {% block lines_headers %}
 {% spaceless %}
     {{ parent() }}
-    <th class="sale-detail-actions"></th>
+    <th class="sale-detail-actions">
+        {% if view.vars.private -%}
+        <a data-sale-toggle-all-children
+           href="javascript: void(0)"
+           title="Afficher les détails">{# TODO Translate #}
+            <i class="fa fa-info-circle"></i>
+        </a>
+        {#<a class="text-muted"
+           data-dale-toggle-all-details
+           href="javascript: void(0)"
+           title="Afficher les information">#}{# TODO Translate #}{#
+            <i class="fa fa-tasks"></i>
+        </a>#}
+        {%- endif %}
+    </th>
 {% endspaceless %}
 {% endblock lines_headers %}
 
@@ -137,7 +151,7 @@
             {{ form_widget(view.vars.form.submit) -}}
         </td>
         <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total : view.final.base }}</td>
+        <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total|raw : view.final.base|raw }}</td>
         <th{% if view.vars.show_margin %} colspan="2" rowspan="4"{% else %} rowspan="3"{% endif %}>&nbsp;</th>
     </tr>
     <tr>
@@ -147,7 +161,7 @@
     {% if not view.ati -%}
     <tr>
         <th>{{ view.translations.ati_total|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_total">{{ view.final.total }}</td>
+        <td class="text-right sale-detail-total" id="final_total">{{ view.final.total|raw }}</td>
     </tr>
     {%- endif %}
     {% if view.vars.show_margin -%}

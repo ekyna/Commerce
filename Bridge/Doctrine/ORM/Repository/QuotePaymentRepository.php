@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface;
 use Ekyna\Component\Commerce\Quote\Repository\QuotePaymentRepositoryInterface;
 
@@ -14,5 +15,11 @@ use Ekyna\Component\Commerce\Quote\Repository\QuotePaymentRepositoryInterface;
  */
 class QuotePaymentRepository extends AbstractPaymentRepository implements QuotePaymentRepositoryInterface
 {
-
+    /**
+     * @return void
+     */
+    public function createNew()
+    {
+        throw new RuntimeException("Disabled: use payment factory.");
+    }
 }

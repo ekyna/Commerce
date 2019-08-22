@@ -3,9 +3,9 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
@@ -20,12 +20,12 @@ use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 class SaleItemNormalizer extends AbstractResourceNormalizer
 {
     /**
-     * @var ShipmentCalculatorInterface
+     * @var ShipmentSubjectCalculatorInterface
      */
     protected $shipmentCalculator;
 
     /**
-     * @var InvoiceCalculatorInterface
+     * @var InvoiceSubjectCalculatorInterface
      */
     protected $invoiceCalculator;
 
@@ -38,13 +38,13 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
     /**
      * Constructor.
      *
-     * @param ShipmentCalculatorInterface $shipmentCalculator
-     * @param InvoiceCalculatorInterface  $invoiceCalculator
-     * @param SubjectHelperInterface      $subjectHelper
+     * @param ShipmentSubjectCalculatorInterface $shipmentCalculator
+     * @param InvoiceSubjectCalculatorInterface  $invoiceCalculator
+     * @param SubjectHelperInterface             $subjectHelper
      */
     public function __construct(
-        ShipmentCalculatorInterface $shipmentCalculator,
-        InvoiceCalculatorInterface $invoiceCalculator,
+        ShipmentSubjectCalculatorInterface $shipmentCalculator,
+        InvoiceSubjectCalculatorInterface $invoiceCalculator,
         SubjectHelperInterface $subjectHelper
     ) {
         $this->shipmentCalculator = $shipmentCalculator;

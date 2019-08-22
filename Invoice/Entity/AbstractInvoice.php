@@ -24,9 +24,18 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     protected $id;
 
     /**
+     * The paid total (document currency).
+     *
      * @var float
      */
     protected $paidTotal;
+
+    /**
+     * The paid total (default currency).
+     *
+     * @var float
+     */
+    protected $realPaidTotal;
 
     /**
      * @var \DateTime
@@ -49,12 +58,23 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
         $this->createdAt = new \DateTime();
         $this->type = Invoice\InvoiceTypes::TYPE_INVOICE;
         $this->paidTotal = 0;
+        $this->realPaidTotal = 0;
     }
 
     /**
      * @inheritDoc
      */
-    public function __toString()
+    public function __clone()
+    {
+        if ($this->id) {
+            $this->id = null;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
     {
         return $this->getNumber();
     }
@@ -70,7 +90,7 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     /**
      * @inheritdoc
      */
-    public function getPaidTotal()
+    public function getPaidTotal(): float
     {
         return $this->paidTotal;
     }
@@ -78,7 +98,7 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     /**
      * @inheritdoc
      */
-    public function setPaidTotal(float $amount)
+    public function setPaidTotal(float $amount): Invoice\InvoiceInterface
     {
         $this->paidTotal = $amount;
 
@@ -86,9 +106,27 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getRealPaidTotal(): float
+    {
+        return $this->realPaidTotal;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRealPaidTotal(float $amount): Invoice\InvoiceInterface
+    {
+        $this->realPaidTotal = $amount;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
-    public function getDueDate()
+    public function getDueDate(): ?\DateTime
     {
         return $this->dueDate;
     }
@@ -96,7 +134,7 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     /**
      * @inheritdoc
      */
-    public function setDueDate(\DateTime $dueDate = null)
+    public function setDueDate(\DateTime $dueDate = null): Invoice\InvoiceInterface
     {
         $this->dueDate = $dueDate;
 
@@ -106,7 +144,7 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     /**
      * @inheritdoc
      */
-    public function setPaymentMethod(PaymentMethodInterface $method = null)
+    public function setPaymentMethod(PaymentMethodInterface $method = null): Invoice\InvoiceInterface
     {
         $this->paymentMethod = $method;
 
@@ -116,7 +154,7 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     /**
      * @inheritdoc
      */
-    public function getPaymentMethod()
+    public function getPaymentMethod(): ?PaymentMethodInterface
     {
         return $this->paymentMethod;
     }

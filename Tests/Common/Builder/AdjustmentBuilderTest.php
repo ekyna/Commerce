@@ -27,7 +27,7 @@ class AdjustmentBuilderTest extends BaseTestCase
     /**
      * @inheritDoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->builder = new AdjustmentBuilder(
             $this->getSaleFactory(),
@@ -40,7 +40,7 @@ class AdjustmentBuilderTest extends BaseTestCase
     /**
      * @inheritDoc
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->builder = null;
     }

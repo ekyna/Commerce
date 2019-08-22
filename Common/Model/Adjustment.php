@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Ekyna\Component\Commerce\Common\Calculator;
+namespace Ekyna\Component\Commerce\Common\Model;
 
 /**
  * Class Discount

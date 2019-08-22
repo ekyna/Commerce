@@ -109,6 +109,8 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
         $grid = $this->getGridForCountry($country);
 
+        $weight = $sale->getShipmentWeight() ?? $sale->getWeightTotal();
+
         foreach ($grid as $entry) {
             /** @var ShipmentMethodInterface $method */
             $method = $entry['method'];
@@ -116,12 +118,12 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
                 continue;
             }
 
-            $resolvedPrice = new ResolvedShipmentPrice($method, $sale->getWeightTotal());
+            $resolvedPrice = new ResolvedShipmentPrice($method, $weight);
 
             if ($rule = $this->ruleRepository->findOneBySale($sale, $method)) {
                 $price = $rule->getNetPrice();
             } else {
-                $price = $this->resolvePrice($entry, $sale->getWeightTotal());
+                $price = $this->resolvePrice($entry, $weight);
             }
 
             $resolvedPrice
@@ -151,12 +153,14 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
             return null;
         }
 
-        $resolvedPrice = new ResolvedShipmentPrice($method, $sale->getWeightTotal());
+        $weight = $sale->getShipmentWeight() ?? $sale->getWeightTotal();
+
+        $resolvedPrice = new ResolvedShipmentPrice($method, $weight);
 
         if ($rule = $this->ruleRepository->findOneBySale($sale, $method)) {
             $price = $rule->getNetPrice();
         } else {
-            $price = $this->resolvePrice($grid[$method->getId()], $sale->getWeightTotal());
+            $price = $this->resolvePrice($grid[$method->getId()], $weight);
         }
 
         return $resolvedPrice

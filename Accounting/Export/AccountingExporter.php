@@ -5,10 +5,13 @@ namespace Ekyna\Component\Commerce\Accounting\Export;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingInterface;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingTypes;
 use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -16,6 +19,7 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
@@ -43,6 +47,21 @@ class AccountingExporter implements AccountingExporterInterface
      * @var AccountingRepositoryInterface
      */
     protected $accountingRepository;
+
+    /**
+     * @var CurrencyConverterInterface
+     */
+    protected $currencyConverter;
+
+    /**
+     * @var AmountCalculatorInterface
+     */
+    protected $amountCalculator;
+
+    /**
+     * @var DocumentCalculatorInterface
+     */
+    protected $invoiceCalculator;
 
     /**
      * @var InvoicePaymentResolverInterface
@@ -91,6 +110,9 @@ class AccountingExporter implements AccountingExporterInterface
      * @param InvoiceRepositoryInterface      $invoiceRepository
      * @param PaymentRepositoryInterface      $paymentRepository
      * @param AccountingRepositoryInterface   $accountingRepository
+     * @param CurrencyConverterInterface      $currencyConverter
+     * @param AmountCalculatorInterface       $amountCalculator
+     * @param DocumentCalculatorInterface     $invoiceCalculator
      * @param InvoicePaymentResolverInterface $invoicePaymentResolver
      * @param TaxResolverInterface            $taxResolver
      * @param array                           $config
@@ -99,6 +121,9 @@ class AccountingExporter implements AccountingExporterInterface
         InvoiceRepositoryInterface $invoiceRepository,
         PaymentRepositoryInterface $paymentRepository,
         AccountingRepositoryInterface $accountingRepository,
+        CurrencyConverterInterface $currencyConverter,
+        AmountCalculatorInterface $amountCalculator,
+        DocumentCalculatorInterface $invoiceCalculator,
         InvoicePaymentResolverInterface $invoicePaymentResolver,
         TaxResolverInterface $taxResolver,
         array $config
@@ -106,8 +131,13 @@ class AccountingExporter implements AccountingExporterInterface
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
         $this->accountingRepository = $accountingRepository;
+        $this->currencyConverter = $currencyConverter;
+        $this->amountCalculator = $amountCalculator;
+        $this->invoiceCalculator = $invoiceCalculator;
         $this->invoicePaymentResolver = $invoicePaymentResolver;
         $this->taxResolver = $taxResolver;
+
+        $this->currency = $this->currencyConverter->getDefaultCurrency();
 
         $this->config = array_replace([
             'default_customer' => '10000000',
@@ -118,7 +148,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * @inheritDoc
      */
-    public function export(\DateTime $month)
+    public function export(\DateTime $month): string
     {
         $path = tempnam(sys_get_temp_dir(), 'acc');
 
@@ -142,7 +172,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * @inheritDoc
      */
-    public function exportInvoices(\DateTime $month)
+    public function exportInvoices(\DateTime $month): string
     {
         $this->accounts = $this->accountingRepository->findBy([
             'enabled' => true,
@@ -161,7 +191,13 @@ class AccountingExporter implements AccountingExporterInterface
         $invoices = $this->invoiceRepository->findByMonth($month);
 
         while (false !== $this->invoice = current($invoices)) {
-            $this->currency = $this->invoice->getCurrency();
+            if ($this->invoice->getCurrency() !== $this->currency) {
+                $this->invoice = clone $this->invoice;
+                $this->invoice->setCurrency($this->currency);
+
+                $this->invoiceCalculator->calculate($this->invoice);
+            }
+
             $this->balance = 0;
 
             $this->writer->configure($this->invoice);
@@ -186,7 +222,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * @inheritDoc
      */
-    public function exportPayments(\DateTime $month)
+    public function exportPayments(\DateTime $month): string
     {
         $path = tempnam(sys_get_temp_dir(), 'acc');
 
@@ -216,7 +252,7 @@ class AccountingExporter implements AccountingExporterInterface
             }
 
             $credit = false; // TODO $payment->getType() === PaymentTypes::TYPE_REFUND;
-            $amount = (string)$this->round($payment->getAmount());
+            $amount = (string)$this->round($payment->getRealAmount());
             $date = $payment->getSale()->getCreatedAt();
 
             if ($credit) {
@@ -230,6 +266,8 @@ class AccountingExporter implements AccountingExporterInterface
                 // Customer debit
                 $this->writer->debit($number, $amount, $date);
             }
+
+            $this->writePaymentExchange($payment, $number, $date);
 
             // TODO Remove when refund payment implemented
             // Temporary : add an extra credit line for refund payments.
@@ -249,7 +287,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * Writes the invoice's grand total line(s).
      */
-    protected function writeInvoiceGrandTotal()
+    protected function writeInvoiceGrandTotal(): void
     {
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
@@ -324,7 +362,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * Writes the invoice's goods line.
      */
-    protected function writeInvoiceGoodsLines()
+    protected function writeInvoiceGoodsLines(): void
     {
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
@@ -351,18 +389,6 @@ class AccountingExporter implements AccountingExporterInterface
 
             $amount = $line->getBase();
 
-            // Apply sale's discounts
-            if (!empty($discounts)) {
-                $base = $amount;
-                foreach ($discounts as $adjustment) {
-                    if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
-                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
-                    } else {
-                        $amount -= $this->round($base / $this->invoice->getGoodsBase() * $adjustment->getAmount());
-                    }
-                }
-            }
-
             if (!isset($amounts[(string)$rate])) {
                 $amounts[(string)$rate] = 0;
             }
@@ -375,6 +401,20 @@ class AccountingExporter implements AccountingExporterInterface
         // Writes each tax rates's amount
         foreach ($amounts as $rate => $amount) {
             $amount = $this->round($amount);
+
+            // Apply sale's discounts
+            if (!empty($discounts)) {
+                $base = $amount;
+                foreach ($discounts as $adjustment) {
+                    if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
+                    } else {
+                        $this->amountCalculator->calculateSale($sale, $this->currency);
+                        $gross = $sale->getGrossResult($this->currency)->getBase();
+                        $amount -= $this->round($base * $adjustment->getAmount() / $gross);
+                    }
+                }
+            }
 
             if (0 === $this->compare($amount, 0)) {
                 continue; // next tax rate
@@ -395,7 +435,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * Writes the invoice's shipment line.
      */
-    protected function writeInvoiceShipmentLine()
+    protected function writeInvoiceShipmentLine(): void
     {
         $amount = $this->invoice->getShipmentBase();
 
@@ -423,7 +463,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * Writes the invoice's taxes lines.
      */
-    protected function writeInvoiceTaxesLine()
+    protected function writeInvoiceTaxesLine(): void
     {
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
@@ -450,15 +490,104 @@ class AccountingExporter implements AccountingExporterInterface
     }
 
     /**
+     * Writes the payment exchange loss or gain.
+     *
+     * @param PaymentInterface $payment
+     * @param string           $number
+     * @param \DateTime        $date
+     */
+    protected function writePaymentExchange(PaymentInterface $payment, string $number, \DateTime $date): void
+    {
+        $sale = $payment->getSale();
+        $pc = $payment->getCurrency()->getCode();
+        $sc = $sale->getCurrency()->getCode();
+
+        if ($this->currency !== $pc) { // If payment currency is not default
+            $currency = $pc;
+            $rate = $this->currencyConverter->getSubjectExchangeRate($payment, $currency, $this->currency);
+
+            $amount = $payment->getAmount();
+
+            $this->amountCalculator->calculateSale($sale, $currency);
+            $grandTotal = $sale->getFinalResult($currency)->getTotal();
+
+            if ($this->currency === $sc) {  // If sale currency is default
+                $amount = $this->currencyConverter->convertWithRate($amount, $rate, $this->currency);
+            }
+        } elseif ($this->currency !== $sc) {  // If sale currency is not default
+            $currency = $sc;
+            $rate = $this->currencyConverter->getSubjectExchangeRate($sale, $currency, $this->currency);
+
+            $amount = $payment->getAmount();
+
+            $this->amountCalculator->calculateSale($sale, $currency);
+            $grandTotal = $sale->getFinalResult($currency)->getTotal();
+
+            if ($this->currency === $pc) {  // If payment currency is default
+                $grandTotal = $this->currencyConverter->convertWithRate($grandTotal, $rate, $this->currency);
+            }
+        } else {
+            return;
+        }
+
+        $this->amountCalculator->calculateSale($sale, $this->currency);
+        $realGrandTotal = $sale->getFinalResult($this->currency)->getTotal();
+
+        // Diff = Payment amount DC - (Sale total DC * Payment amount FC / Sale total FC)
+        // (DC: default currency, FC: foreign currency)
+        $diff = $payment->getRealAmount() - ($realGrandTotal * $amount / $grandTotal);
+
+        if (0 === $c = $this->compare($diff, 0)) {
+            return;
+        }
+
+        if (1 === $c) {
+            // Gain
+            $account = $this->getExchangeAccountNumber(true);
+        } else {
+            // Loss
+            $account = $this->getExchangeAccountNumber(false);
+            $diff = -$diff;
+        }
+
+        if (null === $account) {
+            return;
+        }
+
+        $diff = (string)$this->round($diff);
+
+        $credit = false; // TODO $payment->getType() === PaymentTypes::TYPE_REFUND;
+
+        if ($credit) {
+            // Payment debit
+            $this->writer->credit($account, $diff, $date);
+            // Customer credit
+            $this->writer->debit($number, $diff, $date);
+        } else {
+            // Payment credit
+            $this->writer->debit($account, $diff, $date);
+            // Customer debit
+            $this->writer->credit($number, $diff, $date);
+        }
+
+        // TODO Remove when refund payment implemented
+        if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
+            // Payment debit
+            $this->writer->credit($account, $diff, $date);
+            // Customer credit
+            $this->writer->debit($number, $diff, $date);
+        }
+    }
+
+    /**
      * Rounds the amount.
      *
      * @param $amount
      *
      * @return float
      */
-    protected function round(float $amount)
+    protected function round(float $amount): float
     {
-        // TODO currency conversion ?
         return Money::round($amount, $this->currency);
     }
 
@@ -468,11 +597,10 @@ class AccountingExporter implements AccountingExporterInterface
      * @param $a
      * @param $b
      *
-     * @return float
+     * @return int
      */
-    protected function compare(float $a, float $b)
+    protected function compare(float $a, float $b): int
     {
-        // TODO currency conversion ?
         return Money::compare($a, $b, $this->currency);
     }
 
@@ -485,7 +613,7 @@ class AccountingExporter implements AccountingExporterInterface
      *
      * @return string
      */
-    protected function getGoodAccountNumber(TaxRuleInterface $rule, float $rate, string $origin)
+    protected function getGoodAccountNumber(TaxRuleInterface $rule, float $rate, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_GOOD) {
@@ -525,7 +653,7 @@ class AccountingExporter implements AccountingExporterInterface
      *
      * @return string
      */
-    protected function getShipmentAccountNumber(TaxRuleInterface $rule, string $origin)
+    protected function getShipmentAccountNumber(TaxRuleInterface $rule, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_SHIPPING) {
@@ -554,7 +682,7 @@ class AccountingExporter implements AccountingExporterInterface
      *
      * @return string
      */
-    protected function getTaxAccountNumber(float $rate, string $origin)
+    protected function getTaxAccountNumber(float $rate, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_TAX) {
@@ -583,7 +711,7 @@ class AccountingExporter implements AccountingExporterInterface
      *
      * @return string
      */
-    protected function getPaymentAccountNumber(PaymentMethodInterface $method, string $origin)
+    protected function getPaymentAccountNumber(PaymentMethodInterface $method, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_PAYMENT) {
@@ -612,7 +740,7 @@ class AccountingExporter implements AccountingExporterInterface
      *
      * @return string
      */
-    protected function getUnpaidAccountNumber(CustomerGroupInterface $group, string $origin)
+    protected function getUnpaidAccountNumber(CustomerGroupInterface $group, string $origin): string
     {
         foreach ($this->accounts as $account) {
             if ($account->getType() !== AccountingTypes::TYPE_UNPAID) {
@@ -644,5 +772,26 @@ class AccountingExporter implements AccountingExporterInterface
             $group->getName(),
             $origin
         ));
+    }
+
+    /**
+     * Returns exchange gain or lose account number.
+     *
+     * @param bool $gain
+     *
+     * @return string|null
+     */
+    protected function getExchangeAccountNumber(bool $gain = true): ?string
+    {
+        foreach ($this->accounts as $account) {
+            if ($gain && ($account->getType() === AccountingTypes::TYPE_EX_GAIN)) {
+                return $account->getNumber();
+            }
+            if (!$gain && ($account->getType() === AccountingTypes::TYPE_EX_LOSS)) {
+                return $account->getNumber();
+            }
+        }
+
+        return null;
     }
 }

@@ -21,6 +21,12 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="defaultCurrency" column="default_currency" type="boolean">
+            <options>
+                <option name="default">1</option>
+            </options>
+        </field>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Payment\Entity\PaymentMessage"
                      mapped-by="method" field="messages">
             <cascade>

@@ -16,7 +16,7 @@ interface OrderInvoiceInterface extends InvoiceInterface
      *
      * @return OrderInterface
      */
-    public function getOrder();
+    public function getOrder(): ?OrderInterface;
 
     /**
      * Sets the order.
@@ -25,5 +25,5 @@ interface OrderInvoiceInterface extends InvoiceInterface
      *
      * @return $this|OrderInvoiceInterface
      */
-    public function setOrder(OrderInterface $order = null);
+    public function setOrder(OrderInterface $order = null): OrderInvoiceInterface;
 }

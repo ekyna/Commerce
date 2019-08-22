@@ -57,6 +57,8 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
 
     /**
      * @inheritDoc
+     *
+     * @param Convert $request
      */
     public function execute($request)
     {
@@ -100,7 +102,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
             return;
         }
 
-        $this->calculator->calculateSale($sale);
+        $this->calculator->calculateSale($sale, $this->currency);
 
         $this->line = 0;
         $lineTotals = 0;
@@ -119,7 +121,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
         $details['PAYMENTREQUEST_0_ITEMAMT'] = $this->format($lineTotals);
 
         // Shipping
-        $details['PAYMENTREQUEST_0_SHIPPINGAMT'] = $this->format($sale->getShipmentResult()->getTotal());
+        $details['PAYMENTREQUEST_0_SHIPPINGAMT'] = $this->format($sale->getShipmentResult($this->currency)->getTotal());
 
         // Taxes
         //$details['PAYMENTREQUEST_0_TAXAMT'] = $this->format($sale->getFinalResult()->getTax());
@@ -138,7 +140,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
         $total = 0;
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            $itemResult = $item->getResult();
+            $itemResult = $item->getResult($this->currency);
 
             $details['L_PAYMENTREQUEST_0_NAME' . $this->line] = $item->getTotalQuantity() . 'x ' . $item->getDesignation();
             $details['L_PAYMENTREQUEST_0_NUMBER' . $this->line] = $item->getReference();
@@ -171,7 +173,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
      */
     private function addDiscountDetails(array &$details, Model\SaleAdjustmentInterface $discount)
     {
-        $discountResult = $discount->getResult();
+        $discountResult = $discount->getResult($this->currency);
 
         $details['L_PAYMENTREQUEST_0_NAME' . $this->line] = $discount->getDesignation();
         $details['L_PAYMENTREQUEST_0_AMT' . $this->line] = '-' . $this->format($discountResult->getTotal());

@@ -25,6 +25,7 @@ interface OrderItemInterface extends SaleItemInterface, StockAssignmentsInterfac
      * Sets the order.
      *
      * @param OrderInterface $order
+     *
      * @return $this|OrderItemInterface
      */
     public function setOrder(OrderInterface $order = null);

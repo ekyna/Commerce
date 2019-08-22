@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
@@ -20,23 +21,21 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 class OrderStateResolver extends AbstractSaleStateResolver implements StateResolverInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
+     *
+     * @param OrderInterface $subject
      */
-    protected function resolveState(SaleInterface $sale)
+    protected function resolveState(object $subject): string
     {
-        if (!$sale instanceof OrderInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderInterface::class);
-        }
+        $paymentState = $subject->getPaymentState();
+        $shipmentState = $subject->getShipmentState();
+        $invoiceState = $subject->getInvoiceState();
 
-        $paymentState = $sale->getPaymentState();
-        $shipmentState = $sale->getShipmentState();
-        $invoiceState = $sale->getInvoiceState();
-
-        if ($sale->hasItems()) {
+        if ($subject->hasItems()) {
             // Sample sale case
-            if ($sale->isSample()) {
+            if ($subject->isSample()) {
                 // COMPLETED If fully returned
-                if ($sale->isReleased() || ShipmentStates::STATE_RETURNED === $shipmentState) {
+                if ($subject->isReleased() || ShipmentStates::STATE_RETURNED === $shipmentState) {
                     return OrderStates::STATE_COMPLETED;
                 }
 
@@ -54,7 +53,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
 
             // ACCEPTED If outstanding accepted/expired amount
-            if (0 < $sale->getOutstandingAccepted() || 0 < $sale->getOutstandingExpired()) {
+            if (0 < $subject->getOutstandingAccepted() || 0 < $subject->getOutstandingExpired()) {
                 return OrderStates::STATE_ACCEPTED;
             }
 
@@ -82,7 +81,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
 
             // ACCEPTED If order has paid or pending total or shipment(s) or invoice(s).
-            if (0 < $sale->getPaidTotal() || 0 < $sale->getPendingTotal() || $sale->hasShipments() || $sale->hasInvoices()) {
+            if (0 < $subject->getPaidTotal() || 0 < $subject->getPendingTotal() || $subject->hasShipments() || $subject->hasInvoices()) {
                 return OrderStates::STATE_ACCEPTED;
             }
 
@@ -121,19 +120,36 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
     /**
      * @inheritDoc
      */
-    protected function postStateResolution(SaleInterface $sale)
+    protected function postStateResolution(SaleInterface $sale): void
     {
         if (!$sale instanceof OrderInterface) {
             throw new InvalidArgumentException("Expected instance of " . OrderInterface::class);
         }
 
-        if (in_array($sale->getState(), [OrderStates::STATE_CANCELED, OrderStates::STATE_REFUSED, OrderStates::STATE_REFUNDED], true)) {
-            if (!in_array($sale->getShipmentState(), ShipmentStates::getStockableStates(), true)) {
-                $sale->setShipmentState(ShipmentStates::STATE_CANCELED);
-            }
-            if ($sale->getInvoiceState() === InvoiceStates::STATE_NEW) {
-                $sale->setInvoiceState(InvoiceStates::STATE_CANCELED);
-            }
+        if (!in_array($sale->getState(), [
+            OrderStates::STATE_CANCELED,
+            OrderStates::STATE_REFUSED,
+            OrderStates::STATE_REFUNDED,
+        ], true)) {
+            return;
+        }
+
+        if (!in_array($sale->getShipmentState(), ShipmentStates::getStockableStates(), true)) {
+            $sale->setShipmentState(ShipmentStates::STATE_CANCELED);
+        }
+
+        if ($sale->getInvoiceState() === InvoiceStates::STATE_NEW) {
+            $sale->setInvoiceState(InvoiceStates::STATE_CANCELED);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function supports(object $subject): void
+    {
+        if (!$subject instanceof OrderInterface) {
+            throw new UnexpectedTypeException($subject, OrderInterface::class);
         }
     }
 }

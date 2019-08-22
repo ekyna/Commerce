@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class InvoiceLineValidator extends ConstraintValidator
 {
     /**
-     * @var InvoiceCalculatorInterface
+     * @var InvoiceSubjectCalculatorInterface
      */
     private $invoiceCalculator;
 
@@ -27,9 +27,9 @@ class InvoiceLineValidator extends ConstraintValidator
     /**
      * Constructor.
      *
-     * @param InvoiceCalculatorInterface $calculator
+     * @param InvoiceSubjectCalculatorInterface $calculator
      */
-    public function __construct(InvoiceCalculatorInterface $calculator)
+    public function __construct(InvoiceSubjectCalculatorInterface $calculator)
     {
         $this->invoiceCalculator = $calculator;
     }

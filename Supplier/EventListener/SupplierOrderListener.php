@@ -311,19 +311,7 @@ class SupplierOrderListener extends AbstractListener
             return false;
         }
 
-        $date = new \DateTime();
-
-        $rate = $this->currencyConverter->getRate(
-            $this->currencyConverter->getDefaultCurrency(),
-            $order->getCurrency()->getCode(),
-            $date
-        );
-
-        $order
-            ->setExchangeRate($rate)
-            ->setExchangeDate($date);
-
-        return true;
+        return $this->currencyConverter->setSubjectExchangeRate($order);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Tests\Order\Entity;
 
 use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class OrderItemTest
@@ -12,7 +13,7 @@ use Ekyna\Component\Commerce\Order\Entity\OrderItem;
  *
  * @coversDefaultClass \Ekyna\Component\Commerce\Order\Entity\OrderItem
  */
-class OrderItemTest extends \PHPUnit_Framework_TestCase
+class OrderItemTest extends TestCase
 {
     public function test_setOrder_withOrder()
     {

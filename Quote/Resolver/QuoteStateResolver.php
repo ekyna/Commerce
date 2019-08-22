@@ -2,10 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Quote\Resolver;
 
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractSaleStateResolver;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteStates;
@@ -18,16 +17,14 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteStates;
 class QuoteStateResolver extends AbstractSaleStateResolver implements StateResolverInterface
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
+     *
+     * @param QuoteInterface $subject
      */
-    protected function resolveState(SaleInterface $sale)
+    protected function resolveState(object $subject): string
     {
-        if (!$sale instanceof QuoteInterface) {
-            throw new InvalidArgumentException("Expected instance of " . QuoteInterface::class);
-        }
-
-        if ($sale->hasItems()) {
-            $paymentState = $sale->getPaymentState();
+        if ($subject->hasItems()) {
+            $paymentState = $subject->getPaymentState();
 
             // ACCEPTED If payment state is accepted or pending
             $acceptedStates = [
@@ -58,5 +55,15 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
         }
 
         return QuoteStates::STATE_NEW;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function supports(object $subject): void
+    {
+        if (!$subject instanceof QuoteInterface) {
+            throw new UnexpectedTypeException($subject, QuoteInterface::class);
+        }
     }
 }

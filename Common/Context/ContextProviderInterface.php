@@ -81,8 +81,13 @@ interface ContextProviderInterface
      *
      * @param \Ekyna\Component\Commerce\Common\Model\CurrencyInterface|string|null $currency
      * @param \Ekyna\Component\Commerce\Common\Model\CountryInterface|string|null  $country
+     * @param string|null                                                          $locale
      *
      * @return ContextProviderInterface
      */
-    public function changeCurrencyAndCountry($currency = null, $country = null): ContextProviderInterface;
+    public function changeCurrencyAndCountry(
+        $currency = null,
+        $country = null,
+        string $locale = null
+    ): ContextProviderInterface;
 }

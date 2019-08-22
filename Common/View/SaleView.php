@@ -12,6 +12,16 @@ class SaleView extends AbstractView
     /**
      * @var string
      */
+    private $locale;
+
+    /**
+     * @var string
+     */
+    private $currency;
+
+    /**
+     * @var string
+     */
     private $template;
 
     /**
@@ -94,13 +104,61 @@ class SaleView extends AbstractView
     }
 
     /**
+     * Sets the locale.
+     *
+     * @param string $locale
+     *
+     * @return SaleView
+     */
+    public function setLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    /**
+     * Returns the locale.
+     *
+     * @return string
+     */
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
+    /**
+     * Sets the currency.
+     *
+     * @param string $currency
+     *
+     * @return SaleView
+     */
+    public function setCurrency(string $currency): self
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
+    /**
+     * Returns the currency.
+     *
+     * @return string
+     */
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    /**
      * Sets the template.
      *
      * @param string $template
      *
      * @return SaleView
      */
-    public function setTemplate(string $template)
+    public function setTemplate(string $template): self
     {
         $this->template = $template;
 
@@ -112,7 +170,7 @@ class SaleView extends AbstractView
      *
      * @return string
      */
-    public function getTemplate()
+    public function getTemplate(): string
     {
         return $this->template;
     }
@@ -124,7 +182,7 @@ class SaleView extends AbstractView
      *
      * @return SaleView
      */
-    public function setAti(bool $ati)
+    public function setAti(bool $ati): self
     {
         $this->ati = $ati;
 
@@ -136,7 +194,7 @@ class SaleView extends AbstractView
      *
      * @return bool
      */
-    public function isAti()
+    public function isAti(): bool
     {
         return $this->ati;
     }
@@ -148,7 +206,7 @@ class SaleView extends AbstractView
      *
      * @return SaleView
      */
-    public function setGross(TotalView $gross)
+    public function setGross(TotalView $gross): self
     {
         $this->gross = $gross;
 
@@ -160,7 +218,7 @@ class SaleView extends AbstractView
      *
      * @return TotalView
      */
-    public function getGross()
+    public function getGross(): TotalView
     {
         return $this->gross;
     }
@@ -172,7 +230,7 @@ class SaleView extends AbstractView
      *
      * @return SaleView
      */
-    public function setFinal(TotalView $final)
+    public function setFinal(TotalView $final): self
     {
         $this->final = $final;
 
@@ -184,7 +242,7 @@ class SaleView extends AbstractView
      *
      * @return TotalView
      */
-    public function getFinal()
+    public function getFinal(): TotalView
     {
         return $this->final;
     }
@@ -196,7 +254,7 @@ class SaleView extends AbstractView
      *
      * @return SaleView
      */
-    public function setMargin($margin)
+    public function setMargin(MarginView $margin = null): self
     {
         $this->margin = $margin;
 
@@ -208,7 +266,7 @@ class SaleView extends AbstractView
      *
      * @return MarginView
      */
-    public function getMargin()
+    public function getMargin(): ?MarginView
     {
         return $this->margin;
     }
@@ -218,9 +276,9 @@ class SaleView extends AbstractView
      *
      * @param LineView $line
      *
-     * @return $this
+     * @return SaleView
      */
-    public function addItem(LineView $line)
+    public function addItem(LineView $line): self
     {
         $this->items[] = $line;
 
@@ -232,7 +290,7 @@ class SaleView extends AbstractView
      *
      * @return LineView[]
      */
-    public function getItems()
+    public function getItems(): array
     {
         return $this->items;
     }
@@ -242,9 +300,9 @@ class SaleView extends AbstractView
      *
      * @param LineView $line
      *
-     * @return $this
+     * @return SaleView
      */
-    public function addDiscount(LineView $line)
+    public function addDiscount(LineView $line): self
     {
         $this->discounts[] = $line;
 
@@ -256,7 +314,7 @@ class SaleView extends AbstractView
      *
      * @return LineView[]
      */
-    public function getDiscounts()
+    public function getDiscounts(): array
     {
         return $this->discounts;
     }
@@ -265,10 +323,14 @@ class SaleView extends AbstractView
      * Sets the shipment line.
      *
      * @param LineView $line
+     *
+     * @return SaleView
      */
-    public function setShipment(LineView $line)
+    public function setShipment(LineView $line): self
     {
         $this->shipment = $line;
+
+        return $this;
     }
 
     /**
@@ -286,9 +348,9 @@ class SaleView extends AbstractView
      *
      * @param TaxView $view
      *
-     * @return $this
+     * @return SaleView
      */
-    public function addTax(TaxView $view)
+    public function addTax(TaxView $view): self
     {
         $this->taxes[] = $view;
 
@@ -300,7 +362,7 @@ class SaleView extends AbstractView
      *
      * @return TaxView[]
      */
-    public function getTaxes()
+    public function getTaxes(): array
     {
         return $this->taxes;
     }
@@ -309,10 +371,14 @@ class SaleView extends AbstractView
      * Adds the button.
      *
      * @param Button $button
+     *
+     * @return SaleView
      */
-    public function addButton(Button $button)
+    public function addButton(Button $button): self
     {
         $this->vars['buttons'][] = $button;
+
+        return $this;
     }
 
     /**
@@ -322,7 +388,7 @@ class SaleView extends AbstractView
      *
      * @return SaleView
      */
-    public function addAlert(string $alert)
+    public function addAlert(string $alert): self
     {
         $this->alerts[] = $alert;
 
@@ -334,7 +400,7 @@ class SaleView extends AbstractView
      *
      * @return string[]
      */
-    public function getAlerts()
+    public function getAlerts(): array
     {
         return $this->alerts;
     }
@@ -346,7 +412,7 @@ class SaleView extends AbstractView
      *
      * @return SaleView
      */
-    public function addMessage(string $message)
+    public function addMessage(string $message): self
     {
         $this->messages[] = $message;
 
@@ -358,7 +424,7 @@ class SaleView extends AbstractView
      *
      * @return string[]
      */
-    public function getMessages()
+    public function getMessages(): array
     {
         return $this->messages;
     }
@@ -368,7 +434,7 @@ class SaleView extends AbstractView
      *
      * @return array
      */
-    public function getTranslations()
+    public function getTranslations(): array
     {
         return $this->translations;
     }
@@ -377,8 +443,10 @@ class SaleView extends AbstractView
      * Sets the translations.
      *
      * @param array $translations
+     *
+     * @return SaleView
      */
-    public function setTranslations(array $translations)
+    public function setTranslations(array $translations): self
     {
         foreach ($translations as $key => $string) {
             if (!(is_string($string) && !empty($string))) {
@@ -387,6 +455,8 @@ class SaleView extends AbstractView
         }
 
         $this->translations = array_replace($this->getDefaultTranslations(), $translations);
+
+        return $this;
     }
 
     /**
@@ -394,7 +464,7 @@ class SaleView extends AbstractView
      *
      * @return array
      */
-    public function getDefaultTranslations()
+    public function getDefaultTranslations(): array
     {
         return [
             'designation'    => 'Designation',

@@ -128,7 +128,7 @@ class LineView extends AbstractView
      * @param int    $number
      * @param int    $level
      */
-    public function __construct($id, $formId, $number, $level = 0)
+    public function __construct(string $id, string $formId, int $number, int $level = 0)
     {
         $this->id = $id;
         $this->formId = $formId;
@@ -151,9 +151,9 @@ class LineView extends AbstractView
     /**
      * Returns the id.
      *
-     * @return int
+     * @return string
      */
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }
@@ -161,9 +161,9 @@ class LineView extends AbstractView
     /**
      * Returns the form id.
      *
-     * @return int
+     * @return string
      */
-    public function getFormId()
+    public function getFormId(): string
     {
         return $this->formId;
     }
@@ -173,7 +173,7 @@ class LineView extends AbstractView
      *
      * @return int
      */
-    public function getNumber()
+    public function getNumber(): int
     {
         return $this->number;
     }
@@ -183,7 +183,7 @@ class LineView extends AbstractView
      *
      * @return int
      */
-    public function getLevel()
+    public function getLevel(): int
     {
         return $this->level;
     }
@@ -195,7 +195,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setDesignation($designation)
+    public function setDesignation(string $designation = null): self
     {
         $this->designation = $designation;
 
@@ -207,19 +207,9 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getDesignation()
+    public function getDesignation(): ?string
     {
         return $this->designation;
-    }
-
-    /**
-     * Returns the description.
-     *
-     * @return string
-     */
-    public function getDescription()
-    {
-        return $this->description;
     }
 
     /**
@@ -229,11 +219,21 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setDescription($description)
+    public function setDescription(string $description = null): self
     {
         $this->description = $description;
 
         return $this;
+    }
+
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription(): ?string
+    {
+        return $this->description;
     }
 
     /**
@@ -243,7 +243,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setReference($reference)
+    public function setReference(string $reference = null): self
     {
         $this->reference = $reference;
 
@@ -255,19 +255,9 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getReference()
+    public function getReference(): ?string
     {
         return $this->reference;
-    }
-
-    /**
-     * Returns the availability.
-     *
-     * @return string
-     */
-    public function getAvailability()
-    {
-        return $this->availability;
     }
 
     /**
@@ -277,11 +267,21 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setAvailability($availability)
+    public function setAvailability(string $availability = null): self
     {
         $this->availability = $availability;
 
         return $this;
+    }
+
+    /**
+     * Returns the availability.
+     *
+     * @return string
+     */
+    public function getAvailability(): ?string
+    {
+        return $this->availability;
     }
 
     /**
@@ -291,7 +291,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setUnit($unit)
+    public function setUnit(string $unit = null): self
     {
         $this->unit = $unit;
 
@@ -303,7 +303,7 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getUnit()
+    public function getUnit(): ?string
     {
         return $this->unit;
     }
@@ -315,7 +315,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setQuantity($quantity)
+    public function setQuantity(string $quantity = null): self
     {
         $this->quantity = $quantity;
 
@@ -327,19 +327,9 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getQuantity()
+    public function getQuantity(): ?string
     {
         return $this->quantity;
-    }
-
-    /**
-     * Returns the gross price.
-     *
-     * @return string
-     */
-    public function getGross()
-    {
-        return $this->gross;
     }
 
     /**
@@ -349,7 +339,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setGross($gross)
+    public function setGross(string $gross = null): self
     {
         $this->gross = $gross;
 
@@ -357,13 +347,13 @@ class LineView extends AbstractView
     }
 
     /**
-     * Returns the discount rates.
+     * Returns the gross price.
      *
      * @return string
      */
-    public function getDiscountRates()
+    public function getGross(): ?string
     {
-        return $this->discountRates;
+        return $this->gross;
     }
 
     /**
@@ -373,7 +363,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setDiscountRates($rates)
+    public function setDiscountRates(string $rates = null): self
     {
         $this->discountRates = $rates;
 
@@ -381,13 +371,13 @@ class LineView extends AbstractView
     }
 
     /**
-     * Returns the discount amount.
+     * Returns the discount rates.
      *
      * @return string
      */
-    public function getDiscountAmount()
+    public function getDiscountRates(): ?string
     {
-        return $this->discountAmount;
+        return $this->discountRates;
     }
 
     /**
@@ -397,11 +387,21 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setDiscountAmount($amount)
+    public function setDiscountAmount(string $amount = null): self
     {
         $this->discountAmount = $amount;
 
         return $this;
+    }
+
+    /**
+     * Returns the discount amount.
+     *
+     * @return string
+     */
+    public function getDiscountAmount(): ?string
+    {
+        return $this->discountAmount;
     }
 
     /**
@@ -411,7 +411,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setBase($base)
+    public function setBase(string $base = null): self
     {
         $this->base = $base;
 
@@ -423,7 +423,7 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getBase()
+    public function getBase(): ?string
     {
         return $this->base;
     }
@@ -435,7 +435,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setTaxRates($rates)
+    public function setTaxRates(string $rates = null): self
     {
         $this->taxRates = $rates;
 
@@ -447,7 +447,7 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getTaxRates()
+    public function getTaxRates(): ?string
     {
         return $this->taxRates;
     }
@@ -459,7 +459,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setTaxAmount($amount)
+    public function setTaxAmount(string $amount = null): self
     {
         $this->taxAmount = $amount;
 
@@ -471,7 +471,7 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getTaxAmount()
+    public function getTaxAmount(): ?string
     {
         return $this->taxAmount;
     }
@@ -483,7 +483,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setTotal($total)
+    public function setTotal(string $total = null): self
     {
         $this->total = $total;
 
@@ -495,7 +495,7 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getTotal()
+    public function getTotal(): ?string
     {
         return $this->total;
     }
@@ -507,7 +507,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setMargin($margin)
+    public function setMargin(string $margin = null): self
     {
         $this->margin = $margin;
 
@@ -519,7 +519,7 @@ class LineView extends AbstractView
      *
      * @return string
      */
-    public function getMargin()
+    public function getMargin(): ?string
     {
         return $this->margin;
     }
@@ -531,7 +531,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function addLine(LineView $line)
+    public function addLine(LineView $line): self
     {
         $this->lines[] = $line;
 
@@ -543,7 +543,7 @@ class LineView extends AbstractView
      *
      * @return LineView[]
      */
-    public function getLines()
+    public function getLines(): array
     {
         return $this->lines;
     }
@@ -555,7 +555,7 @@ class LineView extends AbstractView
      *
      * @return LineView
      */
-    public function setPrivate($private)
+    public function setPrivate(bool $private): self
     {
         $this->private = (bool)$private;
 
@@ -567,7 +567,7 @@ class LineView extends AbstractView
      *
      * @return boolean
      */
-    public function isPrivate()
+    public function isPrivate(): bool
     {
         return $this->private;
     }

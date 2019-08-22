@@ -87,9 +87,11 @@ class MarginCalculator implements MarginCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSale(Model\SaleInterface $sale): ?Margin
+    public function calculateSale(Model\SaleInterface $sale, string $currency = null): ?Model\Margin
     {
-        if (null !== $margin = $sale->getMargin()) {
+        $currency = $currency ?? $this->amountCalculator->getDefaultCurrency();
+
+        if (null !== $margin = $sale->getMargin($currency)) {
             return $margin;
         }
 
@@ -97,13 +99,13 @@ class MarginCalculator implements MarginCalculatorInterface
             return null;
         }
 
-        $this->amountCalculator->calculateSale($sale);
+        $this->amountCalculator->calculateSale($sale, $currency);
 
-        $margin = new Margin();
+        $margin = new Model\Margin($currency);
 
         $cancel = true;
         foreach ($sale->getItems() as $item) {
-            if (null !== $itemMargin = $this->calculateSaleItem($item)) {
+            if (null !== $itemMargin = $this->calculateSaleItem($item, $currency)) {
                 $margin->merge($itemMargin);
                 $cancel = false;
             }
@@ -114,10 +116,10 @@ class MarginCalculator implements MarginCalculatorInterface
         }
 
         foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-            $margin->addSellingPrice(-$adjustment->getResult()->getBase());
+            $margin->addSellingPrice(-$adjustment->getResult($currency)->getBase());
         }
 
-        $margin->merge($this->calculateSaleShipment($sale));
+        $margin->merge($this->calculateSaleShipment($sale, $currency));
 
         $sale->setMargin($margin);
 
@@ -127,16 +129,17 @@ class MarginCalculator implements MarginCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item): ?Margin
+    public function calculateSaleItem(Model\SaleItemInterface $item, string $currency = null): ?Model\Margin
     {
-        if (null !== $margin = $item->getMargin()) {
+        $currency = $currency ?? $this->amountCalculator->getDefaultCurrency();
+
+        if (null !== $margin = $item->getMargin($currency)) {
             return $margin;
         }
 
-        $margin = new Margin();
+        $margin = new Model\Margin($currency);
 
-        $result = $this->amountCalculator->calculateSaleItem($item);
-        $currency = $item->getSale()->getCurrency()->getCode();
+        $result = $this->amountCalculator->calculateSaleItem($item, null, $currency);
 
         $margin->addSellingPrice($result->getBase());
 
@@ -144,10 +147,12 @@ class MarginCalculator implements MarginCalculatorInterface
             if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
                 foreach ($item->getStockAssignments() as $assignment) {
                     if (0 < $netPrice = $assignment->getStockUnit()->getNetPrice()) {
-                        $c = $assignment->getStockUnit()->getCurrency();
-                        $cost = $this->currencyConverter->convert($netPrice, $c, $currency);
+                        $u = $assignment->getStockUnit();
+                        $cost = $this
+                            ->currencyConverter
+                            ->convert($netPrice, $u->getCurrency(), $currency, $u->getExchangeDate());
                         $margin->addPurchaseCost($assignment->getSoldQuantity() * $cost);
-                    } elseif (null !== $cost = $this->getPurchaseCost($item)) {
+                    } elseif (null !== $cost = $this->getPurchaseCost($item, $currency)) {
                         $margin
                             ->addPurchaseCost($cost * $assignment->getSoldQuantity())
                             ->setAverage(true);
@@ -155,7 +160,7 @@ class MarginCalculator implements MarginCalculatorInterface
                         $margin->setAverage(true);
                     }
                 }
-            } elseif (null !== $cost = $this->getPurchaseCost($item)) {
+            } elseif (null !== $cost = $this->getPurchaseCost($item, $currency)) {
                 $margin
                     ->addPurchaseCost($cost * $item->getTotalQuantity())
                     ->setAverage(true);
@@ -165,7 +170,7 @@ class MarginCalculator implements MarginCalculatorInterface
         }
 
         foreach ($item->getChildren() as $child) {
-            if (null !== $childMargin = $this->calculateSaleItem($child)) {
+            if (null !== $childMargin = $this->calculateSaleItem($child, $currency)) {
                 if ($child->isPrivate()) {
                     if (0 < $cost = $childMargin->getPurchaseCost()) {
                         $margin->addPurchaseCost($childMargin->getPurchaseCost());
@@ -186,43 +191,21 @@ class MarginCalculator implements MarginCalculatorInterface
     }
 
     /**
-     * Returns the sale item purchase cost.
-     *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return float|null
-     */
-    private function getPurchaseCost(Model\SaleItemInterface $item)
-    {
-        /** @var \Ekyna\Component\Commerce\Subject\Model\SubjectInterface $subject */
-        if (null === $subject = $this->subjectHelper->resolve($item)) {
-            return null;
-        }
-
-        $currency = $item->getSale()->getCurrency()->getCode();
-
-        if (null !== $cost = $this->purchaseCostGuesser->guess($subject, $currency)) {
-            return $cost;
-        }
-
-        return null;
-    }
-
-    /**
      * @inheritdoc
      */
-    public function calculateSaleShipment(Model\SaleInterface $sale): Margin
+    public function calculateSaleShipment(Model\SaleInterface $sale, string $currency = null): Model\Margin
     {
-        $baseC = $this->currencyConverter->getDefaultCurrency();
-        $quoteC = $sale->getCurrency()->getCode();
+        $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();
+        $base = $sale->getCurrency()->getCode();
 
-        if (($baseC != $quoteC) && (!is_null($rate = $sale->getExchangeRate()))) {
-            $sellPrice = $this->currencyConverter->convertWithRate($sale->getShipmentAmount(), $rate, $quoteC);
+        if (!is_null($amount = $sale->getShipmentAmount())) {
+            $rate = $this->currencyConverter->getSubjectExchangeRate($sale, $base, $currency);
+            $sellPrice = $this->currencyConverter->convertWithRate($amount, $rate, $currency);
         } else {
-            $sellPrice = $this->currencyConverter->convert($sale->getShipmentAmount(), $baseC, $quoteC);
+            $sellPrice = 0;
         }
 
-        $margin = new Margin(0, $sellPrice);
+        $margin = new Model\Margin($currency, 0, $sellPrice);
 
         if ($sale instanceof ShipmentSubjectInterface && 0 < $sale->getShipments()->count()) {
             foreach ($sale->getShipments() as $shipment) {
@@ -231,7 +214,10 @@ class MarginCalculator implements MarginCalculatorInterface
                 $method = $shipment->getMethod();
 
                 if ($country && $method) {
-                    $weight = $this->weightCalculator->calculateShipment($shipment);
+                    $weight = $this
+                        ->weightCalculator
+                        ->calculateShipment($shipment);
+
                     $price = $this
                         ->shipmentPriceResolver
                         ->getPriceByCountryAndMethodAndWeight($country, $method, $weight);
@@ -239,7 +225,7 @@ class MarginCalculator implements MarginCalculatorInterface
                     if (null !== $price) {
                         $margin->addPurchaseCost(
                             $this->currencyConverter->convert(
-                                $price->getPrice(), $baseC, $quoteC, $shipment->getShippedAt()
+                                $price->getPrice(), $base, $currency, $shipment->getShippedAt()
                             )
                         );
                         continue;
@@ -254,7 +240,7 @@ class MarginCalculator implements MarginCalculatorInterface
 
         $country = $sale->getDeliveryCountry();
         $method = $sale->getShipmentMethod();
-        $weight = $sale->getWeightTotal();
+        $weight = $sale->getShipmentWeight() ?? $sale->getWeightTotal();
 
         if ($country && $method) {
             $price = $this
@@ -263,7 +249,7 @@ class MarginCalculator implements MarginCalculatorInterface
 
             if (null !== $price) {
                 $margin->addPurchaseCost(
-                    $this->currencyConverter->convert($price->getPrice(), $baseC, $quoteC)
+                    $this->currencyConverter->convert($price->getPrice(), $base, $currency)
                 );
             } else {
                 $margin->setAverage(true);
@@ -274,5 +260,26 @@ class MarginCalculator implements MarginCalculatorInterface
 
         return $margin;
     }
-}
 
+    /**
+     * Returns the sale item purchase cost.
+     *
+     * @param Model\SaleItemInterface $item
+     * @param string                  $currency
+     *
+     * @return float|null
+     */
+    private function getPurchaseCost(Model\SaleItemInterface $item, string $currency): ?float
+    {
+        /** @var \Ekyna\Component\Commerce\Subject\Model\SubjectInterface $subject */
+        if (null === $subject = $this->subjectHelper->resolve($item)) {
+            return null;
+        }
+
+        if (null !== $cost = $this->purchaseCostGuesser->guess($subject, $currency)) {
+            return $cost;
+        }
+
+        return null;
+    }
+}

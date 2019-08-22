@@ -86,6 +86,8 @@ class OrderInvoiceExporter extends AbstractExporter
 
                 return null;
             },
+            'order_id'       => 'order.id',
+            'payment_state'  => 'order.paymentState',
         ];
     }
 }

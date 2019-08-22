@@ -148,10 +148,6 @@ class OrderListener extends AbstractSaleListener
 
         $changed |= parent::handleInsert($sale);
 
-        $changed |= $this->updateExchangeRate($sale);
-
-        $changed |= $this->updateLocale($sale);
-
         return $changed;
     }
 
@@ -180,19 +176,20 @@ class OrderListener extends AbstractSaleListener
      */
     public function handleReleasedChange(OrderInterface $order)
     {
-        if ($this->persistenceHelper->isChanged($order , 'sample')) {
+        if ($this->persistenceHelper->isChanged($order, 'sample')) {
             if ($order->isReleased() && !$order->isSample()) {
                 throw new IllegalOperationException("Can't turn 'sample' into false if order is released.");
             }
         }
 
-        if (!$this->persistenceHelper->isChanged($order , 'released')) {
+        if (!$this->persistenceHelper->isChanged($order, 'released')) {
             return false;
         }
 
         // Orders that are not samples can't be released.
         if (!$order->isSample() && $order->isReleased()) {
             $order->setReleased(false);
+
             return true;
         }
 
@@ -288,8 +285,7 @@ class OrderListener extends AbstractSaleListener
                 foreach ($sale->getItems() as $item) {
                     $this->assignSaleItemRecursively($item);
                 }
-            }
-            // If order state has changed from stockable to non stockable
+            } // If order state has changed from stockable to non stockable
             elseif (OrderStates::hasChangedFromStockable($stateCs)) {
                 foreach ($sale->getItems() as $item) {
                     $this->detachSaleItemRecursively($item);
@@ -362,15 +358,24 @@ class OrderListener extends AbstractSaleListener
         // TODO Updates credit paid total too, when refund payment will be implemented
         /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface $invoice */
         foreach ($sale->getInvoices(true)->toArray() as $invoice) {
-            $total = $this->invoicePaymentResolver->getPaidTotal($invoice);
+            $changed = false;
+            $currency = $invoice->getCurrency();
 
-            if (0 === Money::compare($total, $invoice->getPaidTotal(), $invoice->getCurrency())) {
-                continue;
+            $total = $this->invoicePaymentResolver->getPaidTotal($invoice);
+            if (0 !== Money::compare($total, $invoice->getPaidTotal(), $currency)) {
+                $invoice->setPaidTotal($total);
+                $changed = true;
             }
 
-            $invoice->setPaidTotal($total);
+            $total = $this->invoicePaymentResolver->getRealPaidTotal($invoice);
+            if (0 !== Money::compare($total, $invoice->getRealPaidTotal(), $currency)) {
+                $invoice->setRealPaidTotal($total);
+                $changed = true;
+            }
 
-            $this->persistenceHelper->persistAndRecompute($invoice, false);
+            if ($changed) {
+                $this->persistenceHelper->persistAndRecompute($invoice, false);
+            }
         }
     }
 
@@ -433,10 +438,10 @@ class OrderListener extends AbstractSaleListener
     protected function updateState(SaleInterface $sale)
     {
         if (parent::updateState($sale)) {
-            if (in_array($sale->getState(), OrderStates::getStockableStates(), true)) {
-                if (($sale->getState() === OrderStates::STATE_COMPLETED) && (null === $sale->getCompletedAt())) {
+            if (in_array($state = $sale->getState(), OrderStates::getStockableStates(), true)) {
+                if (($state === OrderStates::STATE_COMPLETED) && is_null($sale->getCompletedAt())) {
                     $sale->setCompletedAt(new \DateTime());
-                } elseif (($sale->getState() !== OrderStates::STATE_COMPLETED) && (null !== $sale->getCompletedAt())) {
+                } elseif (($state !== OrderStates::STATE_COMPLETED) && !is_null($sale->getCompletedAt())) {
                     $sale->setCompletedAt(null);
                 }
 
@@ -454,7 +459,6 @@ class OrderListener extends AbstractSaleListener
 
         return false;
     }
-
 
 
     /**

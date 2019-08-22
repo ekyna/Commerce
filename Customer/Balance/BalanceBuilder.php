@@ -3,7 +3,9 @@
 namespace Ekyna\Component\Commerce\Customer\Balance;
 
 use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants as CreditBalance;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
@@ -28,19 +30,27 @@ class BalanceBuilder
      */
     protected $paymentRepository;
 
+    /**
+     * @var CurrencyConverterInterface
+     */
+    protected $currencyConverter;
+
 
     /**
      * Constructor.
      *
      * @param OrderInvoiceRepositoryInterface $invoiceRepository
      * @param OrderPaymentRepositoryInterface $paymentRepository
+     * @param CurrencyConverterInterface      $currencyConverter
      */
     public function __construct(
         OrderInvoiceRepositoryInterface $invoiceRepository,
-        OrderPaymentRepositoryInterface $paymentRepository
+        OrderPaymentRepositoryInterface $paymentRepository,
+        CurrencyConverterInterface $currencyConverter
     ) {
         $this->invoiceRepository = $invoiceRepository;
         $this->paymentRepository = $paymentRepository;
+        $this->currencyConverter = $currencyConverter;
     }
 
     /**
@@ -53,15 +63,15 @@ class BalanceBuilder
         $payments = [];
 
         if ($balance->getFilter() === Balance::FILTER_DUE_INVOICES) {
-            $invoices = $this->invoiceRepository->findDueInvoices($balance->getCustomer());
+            $invoices = $this->invoiceRepository->findDueInvoices($balance->getCustomer(), $balance->getCurrency());
         } elseif ($balance->getFilter() === Balance::FILTER_BEFALL_INVOICES) {
-            $invoices = $this->invoiceRepository->findFallInvoices($balance->getCustomer());
+            $invoices = $this->invoiceRepository->findFallInvoices($balance->getCustomer(), $balance->getCurrency());
         } else {
-            $invoices = $this->invoiceRepository->findByCustomerAndDateRange($balance->getCustomer());
-            $payments = $this->paymentRepository->findByCustomerAndDateRange($balance->getCustomer());
+            $invoices = $this->invoiceRepository->findByCustomerAndDateRange($balance->getCustomer(),
+                $balance->getCurrency());
+            $payments = $this->paymentRepository->findByCustomerAndDateRange($balance->getCustomer(),
+                $balance->getCurrency());
         }
-
-        // $balance->getFrom(), $balance->getTo()
 
         $this->buildInvoices($balance, $invoices);
         $this->buildPayments($balance, $payments);
@@ -116,9 +126,11 @@ class BalanceBuilder
                 );
 
                 if ($invoice->getType() === InvoiceTypes::TYPE_INVOICE) {
+                    // TODO Not due if due date is future
                     // TODO Not due if there is a equivalent credit invoice :s
                     $line->setDue(
-                        1 === Money::compare($invoice->getGrandTotal(), $invoice->getPaidTotal(), $invoice->getCurrency())
+                        1 === Money::compare($invoice->getGrandTotal(), $invoice->getPaidTotal(),
+                            $invoice->getCurrency())
                     );
                 }
 
@@ -136,7 +148,7 @@ class BalanceBuilder
                     continue;
                 }
 
-                $debit = $invoice->getGrandTotal();
+                $debit = $invoice->getRealGrandTotal();
                 $credit = 0;
 
                 if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $invoice->getCreatedAt()->getTimestamp()) {
@@ -174,14 +186,26 @@ class BalanceBuilder
     private function buildPayments(Balance $balance, array $payments): void
     {
         foreach ($payments as $payment) {
-            $debit = $credit = 0;
+            $bc = $balance->getCurrency();
+            $pc = $payment->getCurrency()->getCode();
 
+            if ($pc === $bc) {
+                $amount = $payment->getAmount();
+            } elseif ($pc === $this->currencyConverter->getDefaultCurrency()) {
+                $amount = $this
+                    ->currencyConverter
+                    ->convertWithRate($payment->getAmount(), $payment->getSale()->getExchangeRate(), $bc);
+            } else {
+                throw new LogicException("Unexpected payment currency");
+            }
+
+            $debit = $credit = 0;
             if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
                 $type = Line::TYPE_REFUND;
-                $debit = $payment->getAmount();
+                $debit = $amount;
             } else {
                 $type = Line::TYPE_PAYMENT;
-                $credit = $payment->getAmount();
+                $credit = $amount;
             }
 
             if ($balance->getFrom() && $balance->getFrom()->getTimestamp() > $payment->getCreatedAt()->getTimestamp()) {

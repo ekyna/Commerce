@@ -121,11 +121,7 @@ class SaleTransformer implements SaleTransformerInterface
     }
 
     /**
-     * Transforms the given source sale to the given target sale.
-     *
-     * @return \Ekyna\Component\Resource\Event\ResourceEventInterface|null The event that stopped transformation if any.
-     *
-     * @throws LogicException If initialize has not been called first.
+     * @inheritDoc
      */
     public function transform()
     {
@@ -143,6 +139,8 @@ class SaleTransformer implements SaleTransformerInterface
         // Persist the target sale
         $targetEvent = $this->getOperator($this->target)->persist($this->target);
         if (!$targetEvent->isPropagationStopped() && !$targetEvent->hasErrors()) {
+            $this->getOperator($this->target)->refresh($this->target);
+
             // Disable the uploadable listener
             $this->uploadableListener->setEnabled(false);
 

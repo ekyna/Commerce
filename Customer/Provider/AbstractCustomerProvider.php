@@ -68,4 +68,12 @@ abstract class AbstractCustomerProvider implements CustomerProviderInterface
     {
         $this->customer = null;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function clear()
+    {
+        $this->customer = null;
+    }
 }

@@ -32,6 +32,8 @@ class AccountingValidator extends ConstraintValidator
         $paymentMethod = false;
         $customerGroups = false;
 
+        $exchange = [AccountingTypes::TYPE_EX_GAIN, AccountingTypes::TYPE_EX_LOSS];
+
         // Requirements
         if ($accounting->getType() === AccountingTypes::TYPE_PAYMENT) {
             $paymentMethod = true;
@@ -40,7 +42,7 @@ class AccountingValidator extends ConstraintValidator
             $customerGroups = null;
         } elseif ($accounting->getType() === AccountingTypes::TYPE_TAX) {
             $tax = true;
-        } else {
+        } elseif (!in_array($accounting->getType(), $exchange, true)) {
             $taxRule = true;
         }
 

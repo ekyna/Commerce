@@ -12,11 +12,11 @@ interface StateResolverInterface
     /**
      * Resolves the subject state.
      *
-     * @param mixed $subject
+     * @param object $subject
      *
      * @return bool Whether or not the state(s) has been changed.
      *
      * @throws \Ekyna\Component\Commerce\Exception\CommerceExceptionInterface
      */
-    public function resolve($subject);
+    public function resolve(object $subject): bool;
 }

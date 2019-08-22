@@ -15,11 +15,28 @@ interface SaleUpdaterInterface
      * Recalculate the whole sale.
      *
      * @param Model\SaleInterface $sale
-     * @param bool                $force
      *
      * @return bool Whether the sale has been changed or not.
      */
-    public function recalculate(Model\SaleInterface $sale, $force = false);
+    public function recalculate(Model\SaleInterface $sale): bool;
+
+    /**
+     * Updates the total weight.
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    public function updateWeightTotal(Model\SaleInterface $sale): bool;
+
+    /**
+     * Updates the totals (content, payments and invoices).
+     *
+     * @param Model\SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    public function updateTotals(Model\SaleInterface $sale): bool;
 
     /**
      * Sets the sale invoice address from the given address.
@@ -34,7 +51,7 @@ interface SaleUpdaterInterface
         Model\SaleInterface $sale,
         Model\AddressInterface $source,
         $persistence = false
-    );
+    ): bool;
 
     /**
      * Sets the sale invoice address from the given address.
@@ -49,7 +66,7 @@ interface SaleUpdaterInterface
         Model\SaleInterface $sale,
         Model\AddressInterface $source,
         $persistence = false
-    );
+    ): bool;
 
     /**
      * Updates the whole sale discount adjustments.
@@ -59,7 +76,7 @@ interface SaleUpdaterInterface
      *
      * @return bool Whether the sale has been changed or not.
      */
-    public function updateDiscounts(Model\SaleInterface $sale, $persistence = false);
+    public function updateDiscounts(Model\SaleInterface $sale, $persistence = false): bool;
 
     /**
      * Updates the whole sale taxation adjustments.
@@ -69,7 +86,7 @@ interface SaleUpdaterInterface
      *
      * @return bool Whether the sale has been changed or not.
      */
-    public function updateTaxation(Model\SaleInterface $sale, $persistence = false);
+    public function updateTaxation(Model\SaleInterface $sale, $persistence = false): bool;
 
     /**
      * Updates the sale shipment related taxation adjustments.
@@ -79,7 +96,7 @@ interface SaleUpdaterInterface
      *
      * @return bool Whether the sale has been changed or not.
      */
-    public function updateShipmentTaxation(Model\SaleInterface $sale, $persistence = false);
+    public function updateShipmentTaxation(Model\SaleInterface $sale, $persistence = false): bool;
 
     /**
      * Updates the sale shipment method and amount if needed.
@@ -88,7 +105,7 @@ interface SaleUpdaterInterface
      *
      * @return bool
      */
-    public function updateShipmentMethodAndAmount(Model\SaleInterface $sale);
+    public function updateShipmentMethodAndAmount(Model\SaleInterface $sale): bool;
 
     /**
      * Updates the payment terms and outstanding date.
@@ -97,14 +114,15 @@ interface SaleUpdaterInterface
      *
      * @return bool Whether or not the sale has been updated.
      */
-    public function updatePaymentTerm(Model\SaleInterface $sale);
+    public function updatePaymentTerm(Model\SaleInterface $sale): bool;
 
     /**
-     * Updates the totals (weights and amounts).
+     * Updates the exchange rate and date.
      *
      * @param Model\SaleInterface $sale
+     * @param bool                $force
      *
-     * @return bool Whether the sale has been changed or not.
+     * @return bool
      */
-    public function updateTotals(Model\SaleInterface $sale);
+    public function updateExchangeRate(Model\SaleInterface $sale, bool $force = false): bool;
 }

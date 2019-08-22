@@ -1,14 +1,14 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Tests\Common\Calculator;
+namespace Ekyna\Component\Commerce\Tests\Common\Model;
 
-use Ekyna\Component\Commerce\Common\Calculator\Adjustment;
-use Ekyna\Component\Commerce\Common\Calculator\Amount;
+use Ekyna\Component\Commerce\Common\Model\Adjustment;
+use Ekyna\Component\Commerce\Common\Model\Amount;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class AbstractAmountTest
- * @package Ekyna\Component\Commerce\Tests\Common\Calculator
+ * @package Ekyna\Component\Commerce\Tests\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 abstract class AbstractAmountTest extends TestCase

@@ -22,9 +22,9 @@ abstract class AbstractView
      *
      * @param string $class
      *
-     * @return $this
+     * @return self
      */
-    public function addClass($class)
+    public function addClass(string $class): self
     {
         $classes = $this->getClasses();
 
@@ -42,9 +42,9 @@ abstract class AbstractView
      *
      * @param string $class
      *
-     * @return $this
+     * @return self
      */
-    public function removeClass($class)
+    public function removeClass(string $class): self
     {
         $classes = $this->getClasses();
 
@@ -62,7 +62,7 @@ abstract class AbstractView
      *
      * @return array
      */
-    private function getClasses()
+    private function getClasses(): array
     {
         if (isset($this->vars['attr']['class'])) {
             return explode(' ', trim($this->vars['attr']['class']));
@@ -75,13 +75,17 @@ abstract class AbstractView
      * Sets the css classes.
      *
      * @param array $classes
+     *
+     * @return self
      */
-    private function setClasses(array $classes)
+    private function setClasses(array $classes): self
     {
         if (!empty($classes)) {
             $this->vars['attr']['class'] = trim(implode(' ', $classes));
         } else {
             unset($this->vars['attr']['class']);
         }
+
+        return $this;
     }
 }

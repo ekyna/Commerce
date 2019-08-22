@@ -3,17 +3,17 @@
 namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
 /**
- * Class ShipmentCalculator
+ * Class ShipmentSubjectCalculator
  * @package Ekyna\Component\Commerce\Shipment\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentCalculator implements ShipmentCalculatorInterface
+class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 {
     /**
      * @var SubjectHelperInterface
@@ -21,7 +21,7 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     private $subjectHelper;
 
     /**
-     * @var InvoiceCalculatorInterface
+     * @var InvoiceSubjectCalculatorInterface
      */
     private $invoiceCalculator;
 
@@ -39,9 +39,9 @@ class ShipmentCalculator implements ShipmentCalculatorInterface
     /**
      * Sets the invoice calculator.
      *
-     * @param InvoiceCalculatorInterface $calculator
+     * @param InvoiceSubjectCalculatorInterface $calculator
      */
-    public function setInvoiceCalculator(InvoiceCalculatorInterface $calculator)
+    public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $calculator)
     {
         $this->invoiceCalculator = $calculator;
     }

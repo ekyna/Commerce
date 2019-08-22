@@ -16,12 +16,12 @@ interface StateSubjectInterface
      *
      * @return $this|StateSubjectInterface
      */
-    public function setState($state);
+    public function setState(string $state);
 
     /**
      * Returns the state.
      *
      * @return string
      */
-    public function getState();
+    public function getState(): ?string;
 }

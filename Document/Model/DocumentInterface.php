@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Document\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Resource\Model\LocalizedInterface;
 
@@ -18,7 +18,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return SaleInterface
      */
-    public function getSale();
+    public function getSale(): ?SaleInterface;
 
     /**
      * Sets the sale.
@@ -27,14 +27,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setSale(SaleInterface $sale = null);
+    public function setSale(SaleInterface $sale = null): DocumentInterface;
 
     /**
      * Returns the type.
      *
      * @return string
      */
-    public function getType();
+    public function getType(): ?string;
 
     /**
      * Sets the type.
@@ -43,14 +43,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setType($type);
+    public function setType(string $type): DocumentInterface;
 
     /**
      * Returns the currency.
      *
      * @return string
      */
-    public function getCurrency();
+    public function getCurrency(): ?string;
 
     /**
      * Sets the currency.
@@ -59,14 +59,23 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setCurrency($currency);
+    public function setCurrency(string $currency = null): DocumentInterface;
+
+    /**
+     * Sets the locale.
+     *
+     * @param string $locale
+     *
+     * @return $this|DocumentInterface
+     */
+    public function setLocale(string $locale = null): DocumentInterface;
 
     /**
      * Returns the customer data.
      *
      * @return array
      */
-    public function getCustomer();
+    public function getCustomer(): ?array;
 
     /**
      * Sets the customer data.
@@ -75,14 +84,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setCustomer(array $data);
+    public function setCustomer(array $data): DocumentInterface;
 
     /**
      * Returns the invoice address data.
      *
      * @return array
      */
-    public function getInvoiceAddress();
+    public function getInvoiceAddress(): ?array;
 
     /**
      * Sets the invoice address data.
@@ -91,14 +100,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setInvoiceAddress(array $data);
+    public function setInvoiceAddress(array $data): DocumentInterface;
 
     /**
      * Returns the delivery address data.
      *
      * @return array
      */
-    public function getDeliveryAddress();
+    public function getDeliveryAddress(): ?array;
 
     /**
      * Sets the delivery address data.
@@ -107,14 +116,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setDeliveryAddress(array $data = null);
+    public function setDeliveryAddress(array $data = null): DocumentInterface;
 
     /**
      * Returns the relay point data.
      *
      * @return array
      */
-    public function getRelayPoint();
+    public function getRelayPoint(): ?array;
 
     /**
      * Sets the relay point data.
@@ -123,21 +132,21 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setRelayPoint(array $data = null);
+    public function setRelayPoint(array $data = null): DocumentInterface;
 
     /**
      * Returns whether the invoice has at least one line or not.
      *
      * @return bool
      */
-    public function hasLines();
+    public function hasLines(): bool;
 
     /**
      * Returns the lines.
      *
-     * @return \Doctrine\Common\Collections\Collection|DocumentLineInterface[]
+     * @return Collection|DocumentLineInterface[]
      */
-    public function getLines();
+    public function getLines(): Collection;
 
     /**
      * Returns the lines with the given type.
@@ -146,7 +155,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return array|DocumentLineInterface[]
      */
-    public function getLinesByType($type);
+    public function getLinesByType(string $type): array;
 
     /**
      * Returns whether the invoice has the line or not.
@@ -155,7 +164,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return bool
      */
-    public function hasLine(DocumentLineInterface $line);
+    public function hasLine(DocumentLineInterface $line): bool;
 
     /**
      * Returns whether the invoice has at least one with the given type.
@@ -164,7 +173,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return bool
      */
-    public function hasLineByType($type);
+    public function hasLineByType(string $type): bool;
 
     /**
      * Adds the line.
@@ -173,7 +182,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function addLine(DocumentLineInterface $line);
+    public function addLine(DocumentLineInterface $line): DocumentInterface;
 
     /**
      * Removes the line.
@@ -182,23 +191,23 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function removeLine(DocumentLineInterface $line);
+    public function removeLine(DocumentLineInterface $line): DocumentInterface;
 
     /**
      * Sets the document lines.
      *
-     * @param ArrayCollection|DocumentLineInterface[] $lines
+     * @param Collection|DocumentLineInterface[] $lines
      *
      * @return $this|DocumentInterface
      */
-    public function setLines(ArrayCollection $lines);
+    public function setLines(Collection $lines): DocumentInterface;
 
     /**
      * Returns the comment.
      *
      * @return string
      */
-    public function getComment();
+    public function getComment(): ?string;
 
     /**
      * Sets the comment.
@@ -207,14 +216,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setComment($comment);
+    public function setComment(string $comment = null): DocumentInterface;
 
     /**
      * Returns the description.
      *
      * @return string
      */
-    public function getDescription();
+    public function getDescription(): ?string;
 
     /**
      * Sets the description.
@@ -223,7 +232,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setDescription($description);
+    public function setDescription(string $description = null): DocumentInterface;
 
     /**
      * Returns the goods base (after discounts).
@@ -232,7 +241,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return float
      */
-    public function getGoodsBase(bool $ati = false);
+    public function getGoodsBase(bool $ati = false): float;
 
     /**
      * Sets the goods base (after discounts).
@@ -241,7 +250,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setGoodsBase($base);
+    public function setGoodsBase(float $base): DocumentInterface;
 
     /**
      * Returns the discount base.
@@ -250,7 +259,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return float
      */
-    public function getDiscountBase(bool $ati = false);
+    public function getDiscountBase(bool $ati = false): float;
 
     /**
      * Sets the discount base.
@@ -259,7 +268,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return Document
      */
-    public function setDiscountBase($base);
+    public function setDiscountBase(float $base): DocumentInterface;
 
     /**
      * Returns the shipment base.
@@ -268,7 +277,7 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return float
      */
-    public function getShipmentBase(bool $ati = false);
+    public function getShipmentBase(bool $ati = false): float;
 
     /**
      * Sets the shipment base.
@@ -277,14 +286,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setShipmentBase($base);
+    public function setShipmentBase(float $base): DocumentInterface;
 
     /**
      * Returns the taxes total.
      *
      * @return float
      */
-    public function getTaxesTotal();
+    public function getTaxesTotal(): float;
 
     /**
      * Sets the taxes total.
@@ -293,14 +302,14 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setTaxesTotal($total);
+    public function setTaxesTotal(float $total): DocumentInterface;
 
     /**
      * Returns the taxes details.
      *
      * @return array
      */
-    public function getTaxesDetails();
+    public function getTaxesDetails(): array;
 
     /**
      * Sets the taxes details.
@@ -309,42 +318,58 @@ interface DocumentInterface extends LocalizedInterface
      *
      * @return $this|DocumentInterface
      */
-    public function setTaxesDetails(array $details);
+    public function setTaxesDetails(array $details): DocumentInterface;
 
     /**
-     * Returns the grand total.
+     * Returns the grand total (document currency).
      *
      * @return float
      */
-    public function getGrandTotal();
+    public function getGrandTotal(): float;
 
     /**
-     * Sets the grand total.
+     * Sets the grand total (document currency).
      *
      * @param float $total
      *
      * @return $this|DocumentInterface
      */
-    public function setGrandTotal($total);
+    public function setGrandTotal(float $total): DocumentInterface;
+
+    /**
+     * Returns the real grand total (default currency).
+     *
+     * @return float
+     */
+    public function getRealGrandTotal(): float;
+
+    /**
+     * Sets the real grand total (default currency).
+     *
+     * @param float $amount
+     *
+     * @return $this|DocumentInterface
+     */
+    public function setRealGrandTotal(float $amount): DocumentInterface;
 
     /**
      * Returns whether the document has at least one line discount.
      *
      * @return bool
      */
-    public function hasLineDiscount();
+    public function hasLineDiscount(): bool;
 
     /**
      * Returns whether the document has multiple taxes.
      *
      * @return bool
      */
-    public function hasMultipleTaxes();
+    public function hasMultipleTaxes(): bool;
 
     /**
      * Returns the ati.
      *
      * @return bool
      */
-    public function isAti();
+    public function isAti(): bool;
 }

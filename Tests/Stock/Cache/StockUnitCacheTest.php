@@ -27,7 +27,8 @@ class StockUnitCacheTest extends BaseStockTestCase
         $cache = $this->createStockUnitCache();
         $cache->add($unit);
 
-        $this->assertCacheLength($cache, 0);
+        $this->assertAddedCacheLength($cache, 0);
+        $this->assertRemovedCacheLength($cache, 0);
     }
 
     /**
@@ -36,12 +37,13 @@ class StockUnitCacheTest extends BaseStockTestCase
     public function test_add()
     {
         // Adding a stock unit with subject should just work
-        $unit = Fixtures::createStockUnit(Fixtures::createProduct());
+        $unit = Fixtures::createStockUnit(Fixtures::createSubject());
 
         $cache = $this->createStockUnitCache();
         $cache->add($unit);
 
-        $this->assertCacheLength($cache, 1);
+        $this->assertAddedCacheLength($cache, 1);
+        $this->assertRemovedCacheLength($cache, 0);
     }
 
     /**
@@ -49,15 +51,16 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_remove()
     {
-        $unit = Fixtures::createStockUnit(Fixtures::createProduct());
+        $unit = Fixtures::createStockUnit(Fixtures::createSubject());
 
         $cache = $this->createStockUnitCache([$unit]);
 
-        $this->assertCacheLength($cache, 1);
+        $this->assertAddedCacheLength($cache, 1);
 
         $cache->remove($unit);
 
-        $this->assertCacheLength($cache, 0);
+        $this->assertAddedCacheLength($cache, 0);
+        $this->assertRemovedCacheLength($cache, 1);
     }
 
     /**
@@ -65,7 +68,7 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_findNewBySubject()
     {
-        $subject = Fixtures::createProduct();
+        $subject = Fixtures::createSubject();
 
         $newUnit = Fixtures::createStockUnit($subject);
         $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
@@ -84,7 +87,7 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_findPendingBySubject()
     {
-        $subject = Fixtures::createProduct();
+        $subject = Fixtures::createSubject();
 
         $newUnit = Fixtures::createStockUnit($subject);
         $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
@@ -103,7 +106,7 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_findPendingOrReadyBySubject()
     {
-        $subject = Fixtures::createProduct();
+        $subject = Fixtures::createSubject();
 
         $newUnit = Fixtures::createStockUnit($subject);
         $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
@@ -122,7 +125,7 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_findNotClosedBySubject()
     {
-        $subject = Fixtures::createProduct();
+        $subject = Fixtures::createSubject();
 
         $newUnit = Fixtures::createStockUnit($subject);
         $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
@@ -141,7 +144,7 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_findAssignableBySubject()
     {
-        $subject = Fixtures::createProduct();
+        $subject = Fixtures::createSubject();
 
         $newUnit = Fixtures::createStockUnit($subject);
         $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
@@ -160,7 +163,7 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_findLinkableBySubject()
     {
-        $subject = Fixtures::createProduct();
+        $subject = Fixtures::createSubject();
 
         $newUnit = Fixtures::createStockUnit($subject);
         $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
@@ -179,26 +182,41 @@ class StockUnitCacheTest extends BaseStockTestCase
      */
     public function test_onEventQueueClose()
     {
-        $unitA = Fixtures::createStockUnit(Fixtures::createProduct());
-        $unitB = Fixtures::createStockUnit(Fixtures::createProduct());
+        $unitA = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unitB = Fixtures::createStockUnit(Fixtures::createSubject());
 
         $cache = $this->createStockUnitCache([$unitA, $unitB]);
 
         $cache->onEventQueueClose();
 
-        $this->assertCacheLength($cache, 0);
+        $this->assertAddedCacheLength($cache, 0);
     }
 
     /**
-     * Asserts that the cache contains <expected> stock units.
+     * Asserts that the cache contains <expected> added stock units.
      *
      * @param StockUnitCacheInterface $cache
      * @param int                     $expected
      */
-    private function assertCacheLength(StockUnitCacheInterface $cache, $expected = 0)
+    private function assertAddedCacheLength(StockUnitCacheInterface $cache, $expected = 0)
     {
         $rc = new \ReflectionClass(StockUnitCache::class);
-        $rp = $rc->getProperty('stockUnits');
+        $rp = $rc->getProperty('addedUnits');
+        $rp->setAccessible(true);
+
+        $this->assertCount($expected, $rp->getValue($cache));
+    }
+
+    /**
+     * Asserts that the cache contains <expected> removed stock units.
+     *
+     * @param StockUnitCacheInterface $cache
+     * @param int                     $expected
+     */
+    private function assertRemovedCacheLength(StockUnitCacheInterface $cache, $expected = 0)
+    {
+        $rc = new \ReflectionClass(StockUnitCache::class);
+        $rp = $rc->getProperty('removedUnits');
         $rp->setAccessible(true);
 
         $this->assertCount($expected, $rp->getValue($cache));

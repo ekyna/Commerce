@@ -32,7 +32,7 @@ class Action
      * @param string $icon
      * @param array  $attributes
      */
-    public function __construct($path, $icon, array $attributes)
+    public function __construct(string $path, string $icon, array $attributes)
     {
         $this->path = $path;
         $this->icon = $icon;
@@ -44,7 +44,7 @@ class Action
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -54,7 +54,7 @@ class Action
      *
      * @return string
      */
-    public function getIcon()
+    public function getIcon(): string
     {
         return $this->icon;
     }
@@ -64,7 +64,7 @@ class Action
      *
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         return $this->attributes;
     }

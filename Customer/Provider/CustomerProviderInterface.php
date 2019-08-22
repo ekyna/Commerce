@@ -36,4 +36,9 @@ interface CustomerProviderInterface
      * Resets the customer provider.
      */
     public function reset();
+
+    /**
+     * Clears the customer provider.
+     */
+    public function clear();
 }

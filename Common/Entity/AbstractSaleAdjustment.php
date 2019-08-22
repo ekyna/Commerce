@@ -2,27 +2,27 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
-use Ekyna\Component\Commerce\Common\Calculator\Amount;
-use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model;
 
 /**
  * Class AbstractSaleAdjustment
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSaleAdjustment extends AbstractAdjustment implements SaleAdjustmentInterface
+abstract class AbstractSaleAdjustment extends AbstractAdjustment implements Model\SaleAdjustmentInterface
 {
     /**
-     * @var Amount
+     * @var Model\Amount[]
      */
-    private $result;
+    protected $results = [];
+
 
     /**
      * @inheritdoc
      */
-    public function clearResult()
+    public function clearResults(): Model\SaleAdjustmentInterface
     {
-        $this->result = null;
+        $this->results = [];
 
         return $this;
     }
@@ -30,16 +30,18 @@ abstract class AbstractSaleAdjustment extends AbstractAdjustment implements Sale
     /**
      * @inheritdoc
      */
-    public function setResult(Amount $result)
+    public function getResult(string $currency): ?Model\Amount
     {
-        $this->result = $result;
+        return $this->results[$currency] ?? null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getResult()
+    public function setResult(Model\Amount $result): Model\SaleAdjustmentInterface
     {
-        return $this->result;
+        $this->results[$result->getCurrency()] = $result;
+
+        return $this;
     }
 }

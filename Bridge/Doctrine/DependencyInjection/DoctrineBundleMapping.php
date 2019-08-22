@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection;
 
-use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Type\OpeningHours;
+use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Type;
 use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Customer;
 use Ekyna\Component\Commerce\Order;
@@ -29,8 +29,8 @@ class DoctrineBundleMapping
     static function buildTypesConfiguration()
     {
         return [
-            OpeningHours::NAME => [
-                'class'     => OpeningHours::class,
+            Type\OpeningHours::NAME => [
+                'class'     => Type\OpeningHours::class,
                 'commented' => true,
             ],
         ];

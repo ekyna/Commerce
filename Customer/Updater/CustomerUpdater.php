@@ -53,7 +53,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
         }
 
         $stateCs = $this->persistenceHelper->getChangeSet($payment, 'state');
-        $amountCs = $this->persistenceHelper->getChangeSet($payment, 'amount');
+        $amountCs = $this->persistenceHelper->getChangeSet($payment, 'realAmount');
 
         $acceptedStates = $this->getAcceptedStates($payment);
 
@@ -156,7 +156,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
             return false;
         }
 
-        $amount = $amount ?: $payment->getAmount();
+        $amount = $amount ?: $payment->getRealAmount();
         if ($this->isAcceptedPayment($payment)) {
             $amount = -$amount;
         }

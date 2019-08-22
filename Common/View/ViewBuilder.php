@@ -117,10 +117,12 @@ class ViewBuilder
     {
         $this->initialize($sale, $options);
 
-        $this->amountCalculator->calculateSale($sale);
+        $c = $this->view->getCurrency();
+
+        $this->amountCalculator->calculateSale($sale, $c);
 
         // Gross total view
-        $grossResult = $sale->getGrossResult();
+        $grossResult = $sale->getGrossResult($c);
         $this->view->setGross(new TotalView(
             $this->formatter->currency($grossResult->getGross($this->view->isAti())),
             $this->formatter->currency($grossResult->getDiscount($this->view->isAti())),
@@ -128,7 +130,7 @@ class ViewBuilder
         ));
 
         // Final total view
-        $finalResult = $sale->getFinalResult();
+        $finalResult = $sale->getFinalResult($c);
         $this->view->setFinal(new TotalView(
             $this->formatter->currency($finalResult->getBase()),
             $this->formatter->currency($finalResult->getTax()),
@@ -137,8 +139,14 @@ class ViewBuilder
 
         if ($this->options['private'] && null !== $margin = $this->marginCalculator->calculateSale($sale)) {
             $prefix = $margin->isAverage() ? '~' : '';
+
+            $amount = $this
+                ->amountCalculator
+                ->getCurrencyConverter()
+                ->convertWithSubject($margin->getAmount(), $sale, $c);
+
             $this->view->setMargin(new MarginView(
-                $prefix . $this->formatter->currency($margin->getAmount()),
+                $prefix . $this->formatter->currency($amount),
                 $prefix . $this->formatter->percent($margin->getPercent())
             ));
             $this->view->vars['show_margin'] = true;
@@ -175,6 +183,7 @@ class ViewBuilder
             $columnsCount++;
         }
         $this->view->vars['columns_count'] = $columnsCount;
+        $this->view->vars['private'] = $this->options['private'];
 
         return $this->view;
     }
@@ -198,15 +207,14 @@ class ViewBuilder
 
         $this->options = $this->getOptionsResolver()->resolve($options);
 
-        $this->view->setTemplate($this->options['template']);
+        $this
+            ->view
+            ->setTemplate($this->options['template'])
+            ->setAti($this->options['ati'])
+            ->setLocale($this->options['locale'])
+            ->setCurrency($this->options['currency']);
 
-        if (!is_null($this->options['ati'])) {
-            $this->view->setAti($this->options['ati']);
-        } else {
-            $this->view->setAti($sale->isAtiDisplayMode());
-        }
-
-        $this->formatter = $this->formatterFactory->create($this->options['locale'], $sale->getCurrency()->getCode());
+        $this->formatter = $this->formatterFactory->create($this->options['locale'], $this->options['currency']);
 
         foreach ($this->types as $type) {
             $type->setFormatter($this->formatter);
@@ -224,7 +232,7 @@ class ViewBuilder
             return;
         }
 
-        $amounts = $this->amountCalculator->calculateSale($sale);
+        $amounts = $this->amountCalculator->calculateSale($sale, $this->view->getCurrency());
 
         foreach ($amounts->getTaxAdjustments() as $tax) {
             $this->view->addTax(new TaxView(
@@ -292,7 +300,7 @@ class ViewBuilder
 
         $view->addClass('level-' . $level);
 
-        $result = $item->getResult();
+        $result = $item->getResult($this->view->getCurrency());
 
         $unit = $gross = $discountRates = $discountAmount = $base = $taxRates = $taxAmount = $total = null;
 
@@ -358,7 +366,7 @@ class ViewBuilder
         }
 
         if ($this->view->vars['show_margin'] && !($item->isCompound() && !$item->hasPrivateChildren())) {
-            if (null !== $margin = $item->getMargin()) {
+            if (null !== $margin = $item->getMargin($this->view->getCurrency())) {
                 $view->setMargin(
                     ($margin->isAverage() ? '~' : '') .
                     $this->formatter->percent($margin->getPercent())
@@ -407,7 +415,7 @@ class ViewBuilder
             }
         }
 
-        $result = $adjustment->getResult();
+        $result = $adjustment->getResult($this->view->getCurrency());
 
         $view
             ->setDesignation($designation)
@@ -444,14 +452,16 @@ class ViewBuilder
 
         // Method title
         $designation = 'Shipping cost';
-        if (null !== $method = $sale->getShipmentMethod()) {
+        if (!empty($label = $sale->getShipmentLabel())) {
+            $designation = $label;
+        } elseif (null !== $method = $sale->getShipmentMethod()) {
             $designation = $method->getTitle();
         }
 
-        // Total weight
-        $designation .= ' (' . $this->formatter->number($sale->getWeightTotal()) . ' kg)';
+        // Shipment weight
+        $designation .= ' (' . $this->formatter->number($sale->getShipmentWeight() ?? $sale->getWeightTotal()) . ' kg)';
 
-        $result = $sale->getShipmentResult();
+        $result = $sale->getShipmentResult($this->view->getCurrency());
 
         $view
             ->setDesignation($designation)
@@ -484,8 +494,9 @@ class ViewBuilder
                 'private'    => false,
                 'editable'   => false,
                 'taxes_view' => true,
-                'ati'        => null,
                 'locale'     => \Locale::getDefault(),
+                'currency'   => $this->amountCalculator->getDefaultCurrency(),
+                'ati'        => false,
                 'template'   => function (Options $options) {
                     if (true === $options['editable']) {
                         return $this->editableTemplate;
@@ -497,8 +508,9 @@ class ViewBuilder
             ->setAllowedTypes('private', 'bool')
             ->setAllowedTypes('editable', 'bool')
             ->setAllowedTypes('taxes_view', 'bool')
-            ->setAllowedTypes('ati', ['null', 'bool'])
             ->setAllowedTypes('locale', 'string')
+            ->setAllowedTypes('currency', 'string')
+            ->setAllowedTypes('ati', 'bool')
             ->setAllowedTypes('template', ['null', 'string']);
 
         return $this->optionsResolver = $resolver;

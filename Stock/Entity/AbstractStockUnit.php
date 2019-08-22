@@ -129,7 +129,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getId()
     {
@@ -138,7 +138,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getGeocodes()
     {
@@ -146,7 +146,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasGeocode($geocode)
     {
@@ -156,7 +156,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addGeocode($geocode)
     {
@@ -170,7 +170,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function removeGeocode($geocode)
     {
@@ -184,7 +184,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setGeocodes(array $codes)
     {
@@ -194,7 +194,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getSupplierOrderItem()
     {
@@ -202,7 +202,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null)
     {
@@ -221,7 +221,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getOrderedQuantity()
     {
@@ -229,7 +229,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setOrderedQuantity($quantity)
     {
@@ -239,7 +239,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getReceivedQuantity()
     {
@@ -247,7 +247,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setReceivedQuantity($quantity)
     {
@@ -257,7 +257,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getAdjustedQuantity()
     {
@@ -265,7 +265,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setAdjustedQuantity($quantity)
     {
@@ -275,7 +275,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getSoldQuantity()
     {
@@ -283,7 +283,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setSoldQuantity($quantity)
     {
@@ -293,7 +293,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getShippedQuantity()
     {
@@ -301,7 +301,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setShippedQuantity($quantity)
     {
@@ -311,7 +311,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getNetPrice()
     {
@@ -319,7 +319,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setNetPrice($price)
     {
@@ -329,7 +329,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getEstimatedDateOfArrival()
     {
@@ -337,7 +337,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setEstimatedDateOfArrival(\DateTime $date = null)
     {
@@ -347,7 +347,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCreatedAt()
     {
@@ -355,7 +355,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setCreatedAt(\DateTime $date = null)
     {
@@ -365,7 +365,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getClosedAt()
     {
@@ -373,7 +373,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setClosedAt(\DateTime $date = null)
     {
@@ -383,7 +383,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function hasStockAssignment(Model\StockAssignmentInterface $assignment)
     {
@@ -391,7 +391,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addStockAssignment(Model\StockAssignmentInterface $assignment)
     {
@@ -404,7 +404,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function removeStockAssignment(Model\StockAssignmentInterface $assignment)
     {
@@ -417,7 +417,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getStockAssignments()
     {
@@ -433,7 +433,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function addStockAdjustment(Model\StockAdjustmentInterface $adjustment)
     {
@@ -446,7 +446,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function removeStockAdjustment(Model\StockAdjustmentInterface $adjustment)
     {
@@ -459,7 +459,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getStockAdjustments()
     {
@@ -467,7 +467,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function isEmpty()
     {
@@ -487,7 +487,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getReservableQuantity()
     {
@@ -501,7 +501,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getShippableQuantity()
     {
@@ -511,7 +511,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getSupplierOrder(): ?SupplierOrderInterface
     {
@@ -523,7 +523,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getCurrency(): ?string
     {
@@ -535,12 +535,24 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getExchangeRate(): ?float
     {
         if ($this->supplierOrderItem) {
             return $this->supplierOrderItem->getOrder()->getExchangeRate();
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getExchangeDate(): ?\DateTime
+    {
+        if ($this->supplierOrderItem) {
+            return $this->supplierOrderItem->getOrder()->getExchangeDate();
         }
 
         return null;

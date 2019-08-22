@@ -14,7 +14,7 @@ interface CurrencySubjectInterface
      *
      * @return CurrencyInterface|null
      */
-    public function getCurrency();
+    public function getCurrency(): ?CurrencyInterface;
 
     /**
      * Sets the currency.

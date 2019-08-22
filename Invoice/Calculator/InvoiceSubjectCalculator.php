@@ -2,41 +2,48 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Calculator;
 
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
 
 /**
- * Class QuantityCalculator
+ * Class InvoiceSubjectCalculator
  * @package Ekyna\Component\Commerce\Invoice\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceCalculator implements InvoiceCalculatorInterface
+class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
 {
     /**
-     * @var ShipmentCalculatorInterface
+     * @var CurrencyConverterInterface
      */
-    private $shipmentCalculator;
+    protected $currencyConverter;
+
+    /**
+     * @var string
+     */
+    protected $currency;
 
 
     /**
-     * Sets the shipment calculator.
+     * Constructor.
      *
-     * @param ShipmentCalculatorInterface $calculator
+     * @param CurrencyConverterInterface $converter
      */
-    public function setShipmentCalculator($calculator)
+    public function __construct(CurrencyConverterInterface $converter)
     {
-        $this->shipmentCalculator = $calculator;
+        $this->currencyConverter = $converter;
+        $this->currency = $converter->getDefaultCurrency();
     }
 
     /**
      * @inheritdoc
      */
-    public function isInvoiced($itemOrAdjustment)
+    public function isInvoiced($itemOrAdjustment): bool
     {
         if ($itemOrAdjustment instanceof SaleItemInterface) {
             // If compound with only public children
@@ -84,15 +91,16 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             return false;
         }
 
-        throw new InvalidArgumentException(
-            "Expected instance of " . SaleItemInterface::class . " or " . SaleAdjustmentInterface::class
-        );
+        throw new UnexpectedTypeException($itemOrAdjustment, [
+            SaleItemInterface::class,
+            SaleAdjustmentInterface::class,
+        ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateInvoiceableQuantity($subject, Invoice\InvoiceInterface $ignore = null)
+    public function calculateInvoiceableQuantity($subject, Invoice\InvoiceInterface $ignore = null): float
     {
         // Good line case
         if ($subject instanceof SaleItemInterface) {
@@ -131,18 +139,17 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             return min(1, max(0, 1 - $invoiced));
         }
 
-        throw new InvalidArgumentException(sprintf(
-            "Unexpected instance of %s, %s or %s",
+        throw new UnexpectedTypeException($subject, [
             SaleInterface::class,
             SaleItemInterface::class,
-            SaleAdjustmentInterface::class
-        ));
+            SaleAdjustmentInterface::class,
+        ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateCreditableQuantity($subject, Invoice\InvoiceInterface $ignore = null)
+    public function calculateCreditableQuantity($subject, Invoice\InvoiceInterface $ignore = null): float
     {
         // Good line case
         if ($subject instanceof SaleItemInterface) {
@@ -151,10 +158,8 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 return 0;
             }
 
-            // Quantity = Invoiced - Shipped + Returned - Credited (ignoring current credit)
+            // Quantity = Invoiced - Credited (ignoring current credit)
             $quantity = $this->calculateInvoicedQuantity($subject)
-                - $this->shipmentCalculator->calculateShippedQuantity($subject)
-                + $this->shipmentCalculator->calculateReturnedQuantity($subject)
                 - $this->calculateCreditedQuantity($subject, $ignore);
 
             return max(0, $quantity);
@@ -181,18 +186,17 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             return max(1, $this->calculateInvoicedQuantity($subject));
         }
 
-        throw new InvalidArgumentException(sprintf(
-            "Unexpected instance of %s, %s or %s",
+        throw new UnexpectedTypeException($subject, [
             SaleInterface::class,
             SaleItemInterface::class,
-            SaleAdjustmentInterface::class
-        ));
+            SaleAdjustmentInterface::class,
+        ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateInvoicedQuantity($subject, Invoice\InvoiceInterface $ignore = null)
+    public function calculateInvoicedQuantity($subject, Invoice\InvoiceInterface $ignore = null): float
     {
         // Good line case
         if ($subject instanceof SaleItemInterface) {
@@ -260,18 +264,17 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             return $quantity;
         }
 
-        throw new InvalidArgumentException(sprintf(
-            "Unexpected instance of %s, %s or %s",
+        throw new UnexpectedTypeException($subject, [
             SaleInterface::class,
             SaleItemInterface::class,
-            SaleAdjustmentInterface::class
-        ));
+            SaleAdjustmentInterface::class,
+        ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateCreditedQuantity($subject, Invoice\InvoiceInterface $ignore = null)
+    public function calculateCreditedQuantity($subject, Invoice\InvoiceInterface $ignore = null): float
     {
         // Good line case
         if ($subject instanceof SaleItemInterface) {
@@ -339,24 +342,25 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
             return $quantity;
         }
 
-        throw new InvalidArgumentException(sprintf(
-            "Unexpected instance of %s, %s or %s",
+        throw new UnexpectedTypeException($subject, [
             SaleInterface::class,
             SaleItemInterface::class,
-            SaleAdjustmentInterface::class
-        ));
+            SaleAdjustmentInterface::class,
+        ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateInvoiceTotal(Invoice\InvoiceSubjectInterface $subject)
+    public function calculateInvoiceTotal(Invoice\InvoiceSubjectInterface $subject, string $currency = null): float
     {
+        $currency = $currency ?? $this->currency;
+
         $total = .0;
 
         foreach ($subject->getInvoices() as $invoice) {
             if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-                $total += $invoice->getGrandTotal();
+                $total += $this->getAmount($invoice, $currency);
             }
         }
 
@@ -366,13 +370,15 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateCreditTotal(Invoice\InvoiceSubjectInterface $subject)
+    public function calculateCreditTotal(Invoice\InvoiceSubjectInterface $subject, string $currency = null): float
     {
+        $currency = $currency ?? $this->currency;
+
         $total = .0;
 
         foreach ($subject->getInvoices() as $invoice) {
             if (Invoice\InvoiceTypes::isCredit($invoice)) {
-                $total += $invoice->getGrandTotal();
+                $total += $this->getAmount($invoice, $currency);
             }
         }
 
@@ -382,7 +388,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function buildInvoiceQuantityMap(Invoice\InvoiceSubjectInterface $subject)
+    public function buildInvoiceQuantityMap(Invoice\InvoiceSubjectInterface $subject): array
     {
         $quantities = [];
 
@@ -401,7 +407,7 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
      * @param SaleItemInterface $item
      * @param array             $quantities
      */
-    private function buildSaleItemQuantities(SaleItemInterface $item, array &$quantities)
+    private function buildSaleItemQuantities(SaleItemInterface $item, array &$quantities): void
     {
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
@@ -417,5 +423,30 @@ class InvoiceCalculator implements InvoiceCalculatorInterface
                 $this->buildSaleItemQuantities($child, $quantities);
             }
         }
+    }
+
+    /**
+     * Returns the payment amount in the given currency.
+     *
+     * @param Invoice\InvoiceInterface $invoice
+     * @param string           $currency
+     *
+     * @return float
+     */
+    protected function getAmount(Invoice\InvoiceInterface $invoice, string $currency): float
+    {
+        $ic = $invoice->getCurrency();
+
+        if ($currency === $ic) {
+            return Money::round($invoice->getGrandTotal(), $currency);
+        }
+
+        $rate = $this
+            ->currencyConverter
+            ->getSubjectExchangeRate($invoice->getSale(), $ic, $currency);
+
+        return $this
+            ->currencyConverter
+            ->convertWithRate($invoice->getGrandTotal(), $rate, $ic);
     }
 }

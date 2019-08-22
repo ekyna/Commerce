@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
@@ -15,7 +15,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
  * @package Ekyna\Component\Commerce\Common\Resolver
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSaleStateResolver implements StateResolverInterface
+abstract class AbstractSaleStateResolver extends AbstractStateResolver
 {
     /**
      * @var StateResolverInterface
@@ -65,12 +65,12 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
 
     /**
      * @inheritDoc
+     *
+     * @param SaleInterface $subject
      */
-    public function resolve($subject)
+    public function resolve(object $subject): bool
     {
-        if (!$subject instanceof SaleInterface) {
-            throw new InvalidArgumentException("Expected instance of " . SaleInterface::class);
-        }
+        $this->supports($subject);
 
         $changed = false;
 
@@ -116,21 +116,22 @@ abstract class AbstractSaleStateResolver implements StateResolverInterface
     }
 
     /**
-     * Resolves the sale state.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return string
-     */
-    abstract protected function resolveState(SaleInterface $sale);
-
-    /**
-     * Post sale state resolution (called if state changed).
+     * Post state resolution (called if state changed).
      *
      * @param SaleInterface $sale
      */
-    protected function postStateResolution(SaleInterface $sale)
+    protected function postStateResolution(SaleInterface $sale): void
     {
 
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function supports(object $subject): void
+    {
+        if (!$subject instanceof SaleInterface) {
+            throw new UnexpectedTypeException($subject, SaleInterface::class);
+        }
     }
 }

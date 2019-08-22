@@ -128,4 +128,13 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      * @return OrderInterface[]
      */
     public function getRemainingOrders();
+
+    /**
+     * Returns the currencies used by the customer.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return string[] The currencies codes.
+     */
+    public function getCustomerCurrencies(CustomerInterface $customer);
 }

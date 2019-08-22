@@ -2,10 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Tests\Shipment\Resolver;
 
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculator;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculator;
 use Ekyna\Component\Commerce\Tests\BaseTestCase;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class ShipmentCalculatorTest
@@ -15,12 +16,12 @@ use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 class ShipmentCalculatorTest extends BaseTestCase
 {
     /**
-     * @var ShipmentCalculator
+     * @var ShipmentSubjectCalculator
      */
     private $shipmentCalculator;
 
     /**
-     * @var InvoiceCalculatorInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var InvoiceSubjectCalculatorInterface|MockObject
      */
     private $invoiceCalculator;
 
@@ -28,11 +29,11 @@ class ShipmentCalculatorTest extends BaseTestCase
     /**
      * @inheritdoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->invoiceCalculator = $this->createMock(InvoiceCalculatorInterface::class);
+        $this->invoiceCalculator = $this->createMock(InvoiceSubjectCalculatorInterface::class);
 
-        $this->shipmentCalculator = new ShipmentCalculator(
+        $this->shipmentCalculator = new ShipmentSubjectCalculator(
             $this->getSubjectHelperMock()
         );
 
@@ -42,23 +43,23 @@ class ShipmentCalculatorTest extends BaseTestCase
     /**
      * @inheritdoc
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->shipmentCalculator = null;
         $this->invoiceCalculator = null;
     }
 
     /**
-     * @covers ShipmentCalculator::calculateAvailableQuantity()
+     * @covers ShipmentSubjectCalculator::calculateAvailableQuantity()
      */
     public function test_calculate_available()
     {
         $order = Fixtures::createOrder();
         $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
 
-        $shipmentItem = Fixtures::createShipmentItem(Fixtures::createShipment($order), $orderItem);
+        Fixtures::createShipmentItem(Fixtures::createShipment($order), $orderItem);
 
-        $subject = Fixtures::createProduct();
+        $subject = Fixtures::createSubject();
 
         $this
             ->getSubjectHelperMock()
@@ -77,6 +78,6 @@ class ShipmentCalculatorTest extends BaseTestCase
         $saA = Fixtures::createStockAssignment($suA, $orderItem, 5);
         $suB = Fixtures::createStockUnit($subject, null, 20, 0, 5);
         $saB = Fixtures::createStockAssignment($suB, $orderItem, 5);
-        $this->assertEquals(5, $this->shipmentCalculator->calculateAvailableQuantity($shipmentItem));
+        $this->assertEquals(5, $this->shipmentCalculator->calculateAvailableQuantity($orderItem));
     }
 }

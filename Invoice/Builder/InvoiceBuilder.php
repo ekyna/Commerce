@@ -7,9 +7,9 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumberUtil;
 
@@ -26,12 +26,12 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     private $saleFactory;
 
     /**
-     * @var InvoiceCalculatorInterface
+     * @var InvoiceSubjectCalculatorInterface
      */
     private $invoiceCalculator;
 
     /**
-     * @var ShipmentCalculatorInterface
+     * @var ShipmentSubjectCalculatorInterface
      */
     private $shipmentCalculator;
 
@@ -39,16 +39,16 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * Constructor.
      *
-     * @param SaleFactoryInterface        $factory
-     * @param InvoiceCalculatorInterface  $invoiceCalculator
-     * @param ShipmentCalculatorInterface $shipmentCalculator
-     * @param LocaleProviderInterface     $localeProvider
-     * @param PhoneNumberUtil             $phoneNumberUtil
+     * @param SaleFactoryInterface               $factory
+     * @param InvoiceSubjectCalculatorInterface  $invoiceCalculator
+     * @param ShipmentSubjectCalculatorInterface $shipmentCalculator
+     * @param LocaleProviderInterface            $localeProvider
+     * @param PhoneNumberUtil                    $phoneNumberUtil
      */
     public function __construct(
         SaleFactoryInterface $factory,
-        InvoiceCalculatorInterface $invoiceCalculator,
-        ShipmentCalculatorInterface $shipmentCalculator,
+        InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        ShipmentSubjectCalculatorInterface $shipmentCalculator,
         LocaleProviderInterface $localeProvider,
         PhoneNumberUtil $phoneNumberUtil = null
     ) {
@@ -72,7 +72,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * Returns the invoice calculator.
      *
-     * @return InvoiceCalculatorInterface
+     * @return InvoiceSubjectCalculatorInterface
      */
     public function getInvoiceCalculator()
     {

@@ -3,8 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
-use Ekyna\Component\Commerce\Common\Calculator\Amount;
-use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Model as ResourceModel;
@@ -340,7 +338,7 @@ interface SaleItemInterface extends
      *
      * @internal Usage reserved to calculator.
      */
-    public function clearResult();
+    public function clearResults(): SaleItemInterface;
 
     /**
      * Sets the result.
@@ -351,37 +349,43 @@ interface SaleItemInterface extends
      *
      * @internal Usage reserved to calculator.
      */
-    public function setResult(Amount $result);
+    public function setResult(Amount $result): SaleItemInterface;
 
     /**
-     * Returns the result.
+     * Returns the result for the given currency.
+     *
+     * @param string $currency
      *
      * @return Amount
      *
      * @internal Usage reserved to view builder.
      */
-    public function getResult();
+    public function getResult(string $currency): ?Amount;
 
     /**
      * Sets the margin.
      *
      * @param Margin $margin
+     *
+     * @return $this|SaleItemInterface
      */
-    public function setMargin(Margin $margin);
+    public function setMargin(Margin $margin): SaleItemInterface;
 
     /**
-     * Returns the margin.
+     * Returns the margin for the given currency.
+     *
+     * @param string $currency
      *
      * @return Margin
      */
-    public function getMargin();
+    public function getMargin(string $currency): ?Margin;
 
     /**
      * Returns whether the item is the last one (by position).
      *
      * @return bool
      */
-    public function isLast();
+    public function isLast(): bool;
 
     /**
      * Returns the unique hash.
@@ -390,5 +394,5 @@ interface SaleItemInterface extends
      *
      * @return array|string
      */
-    public function getHash($encode = true);
+    public function getHash(bool $encode = true);
 }

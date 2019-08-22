@@ -329,43 +329,4 @@ trait PaymentSubjectTrait
         // TRUE If paid total is greater than or equals grand total
         return 0 <= Money::compare($this->paidTotal, $this->grandTotal, $this->getCurrency()->getCode());
     }
-
-    /**
-     * Returns the payment remaining amount.
-     *
-     * @return float
-     */
-    public function getRemainingAmount()
-    {
-        $amount = 0;
-        $currency = $this->getCurrency()->getCode();
-
-        $hasDeposit = 1 === Money::compare($this->depositTotal, 0, $currency);
-
-        // If deposit total is greater than zero and paid total is lower than deposit total
-        if ($hasDeposit && (-1 === Money::compare($this->paidTotal, $this->depositTotal, $currency))) {
-            // Pay deposit
-            $total = $this->depositTotal;
-        } else {
-            // Pay grand total
-            $total = $this->grandTotal;
-        }
-
-        $c = Money::compare($total, $this->paidTotal + $this->outstandingAccepted + $this->pendingTotal, $currency);
-
-        // If (paid total + accepted outstanding + pending total) is lower limit
-        if (1 === $c) {
-            // Pay difference
-            $amount = $total - $this->paidTotal - $this->outstandingAccepted - $this->pendingTotal;
-        } else if (0 === $c && 0 < $this->outstandingAccepted) {
-            // Pay outstanding
-            $amount = $this->outstandingAccepted;
-        }
-
-        if (0 < $amount) {
-            return $amount;
-        }
-
-        return 0;
-    }
 }

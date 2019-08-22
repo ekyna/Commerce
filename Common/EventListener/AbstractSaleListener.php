@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
 use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
@@ -69,6 +70,11 @@ abstract class AbstractSaleListener
      * @var CurrencyConverterInterface
      */
     protected $currencyConverter;
+
+    /**
+     * @var CurrencyProviderInterface
+     */
+    protected $currencyProvider;
 
     /**
      * @var LocaleProviderInterface
@@ -172,6 +178,20 @@ abstract class AbstractSaleListener
     }
 
     /**
+     * Sets the currency provider.
+     *
+     * @param CurrencyProviderInterface $provider
+     *
+     * @return AbstractSaleListener
+     */
+    public function setCurrencyProvider(CurrencyProviderInterface $provider)
+    {
+        $this->currencyProvider = $provider;
+
+        return $this;
+    }
+
+    /**
      * Sets the locale provider.
      *
      * @param LocaleProviderInterface $provider
@@ -230,8 +250,17 @@ abstract class AbstractSaleListener
         // Update pricing
         $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
 
+        // Exchange rate
+        $changed |= $this->saleUpdater->updateExchangeRate($sale);
+
         // Update outstanding
         $changed |= $this->saleUpdater->updatePaymentTerm($sale);
+
+        // Update total weight
+        $changed |= $this->saleUpdater->updateWeightTotal($sale);
+
+        // Update shipment method and amount
+        $changed |= $this->saleUpdater->updateShipmentMethodAndAmount($sale);
 
         // Update discounts
         $changed |= $this->saleUpdater->updateDiscounts($sale, true);
@@ -264,15 +293,8 @@ abstract class AbstractSaleListener
         }
 
         // Schedule content change
-        if ($this->persistenceHelper->isChanged($sale, 'currency')) {
-            $sale->setExchangeRate(null); // Clear exchange rate
-            $this->scheduleContentChangeEvent($sale);
-        } elseif ($this->persistenceHelper->isChanged($sale, [
-            'sample',
-            'released',
-            'vatDisplayMode',
-            'paymentTerm',
-            'shipmentAmount',
+        if ($this->persistenceHelper->isChanged($sale, [
+            'sample', 'released', 'vatDisplayMode', 'paymentTerm', 'shipmentAmount',
         ])) {
             $this->scheduleContentChangeEvent($sale);
         }
@@ -322,7 +344,7 @@ abstract class AbstractSaleListener
         }
 
         // Update shipment and amount
-        if ($this->persistenceHelper->isChanged($sale, ['shipmentMethod', 'customerGroup'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['shipmentWeight', 'shipmentMethod', 'customerGroup'])) {
             $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale);
         }
 
@@ -430,8 +452,11 @@ abstract class AbstractSaleListener
      */
     protected function handleContentChange(SaleInterface $sale)
     {
+        // Update totals
+        $changed = $this->saleUpdater->updateWeightTotal($sale);
+
         // Shipment method and amount
-        $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale);
+        $changed |= $this->saleUpdater->updateShipmentMethodAndAmount($sale);
 
         // Shipment taxation
         if ($this->isShipmentTaxationUpdateNeeded($sale)) {
@@ -475,7 +500,7 @@ abstract class AbstractSaleListener
      */
     protected function handleStateChange(SaleInterface $sale)
     {
-        if ($this->configureAcceptedSale($sale)) {
+        if ($this->saleUpdater->updateExchangeRate($sale)) {
             $this->persistenceHelper->persistAndRecompute($sale, false);
         }
     }
@@ -490,15 +515,22 @@ abstract class AbstractSaleListener
         $sale = $this->getSaleFromEvent($event);
 
         if (null !== $customer = $sale->getCustomer()) {
-            $invoiceDefault = $customer->getDefaultInvoiceAddress(true);
-            $deliveryDefault = $customer->getDefaultDeliveryAddress(true);
+            if (!$sale->getLocale()) {
+                $sale->setLocale($customer->getLocale());
+            }
 
+            if (!$sale->getCurrency()) {
+                $sale->setCurrency($customer->getCurrency());
+            }
+
+            $invoiceDefault = $customer->getDefaultInvoiceAddress(true);
             if (null === $sale->getInvoiceAddress() && null !== $invoiceDefault) {
                 $sale->setInvoiceAddress(
                     $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
                 );
             }
 
+            $deliveryDefault = $customer->getDefaultDeliveryAddress(true);
             if (null === $sale->getDeliveryAddress() && null !== $deliveryDefault && $deliveryDefault !== $invoiceDefault) {
                 $sale
                     ->setSameAddress(false)
@@ -506,6 +538,14 @@ abstract class AbstractSaleListener
                         $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
                     );
             }
+        }
+
+        if (!$sale->getLocale()) {
+            $sale->setLocale($this->localeProvider->getCurrentLocale());
+        }
+
+        if (!$sale->getCurrency()) {
+            $sale->setCurrency($this->currencyProvider->getCurrency());
         }
     }
 
@@ -895,57 +935,9 @@ abstract class AbstractSaleListener
             return false;
         }
 
-        $changed = $this->updateExchangeRate($sale);
-
-        $changed |= $this->updateLocale($sale);
+        $changed = $this->saleUpdater->updateExchangeRate($sale);
 
         return $changed;
-    }
-
-    /**
-     * Sets the sale's exchange rate.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
-     */
-    protected function updateExchangeRate(SaleInterface $sale)
-    {
-        if (null !== $sale->getExchangeRate()) {
-            return false;
-        }
-
-        $date = $sale->getExchangeDate() ?? new \DateTime();
-
-        $rate = $this->currencyConverter->getRate(
-            $this->currencyConverter->getDefaultCurrency(),
-            $sale->getCurrency()->getCode(),
-            $date
-        );
-
-        $sale
-            ->setExchangeRate($rate)
-            ->setExchangeDate($date);
-
-        return true;
-    }
-
-    /**
-     * Sets the sale's locale.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
-     */
-    protected function updateLocale(SaleInterface $sale)
-    {
-        if (null !== $sale->getLocale()) {
-            return false;
-        }
-
-        $sale->setLocale($this->localeProvider->getCurrentLocale());
-
-        return true;
     }
 
     /**
@@ -957,6 +949,16 @@ abstract class AbstractSaleListener
      */
     protected function preventForbiddenChange(SaleInterface $sale)
     {
+        // Prevent currency change if exchange rate is defined
+        if ($this->persistenceHelper->isChanged($sale, 'currency')) {
+            if (null !== $sale->getExchangeRate()) {
+                throw new Exception\IllegalOperationException(
+                    "Changing the currency while exchange rate is set is not yet supported."
+                );
+            }
+        }
+
+        // Prevent customer change if outstanding accepted or expired
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
             list($old, $new) = $this->persistenceHelper->getChangeSet($sale, 'customer');
             if ($old != $new && (0 < $sale->getOutstandingAccepted() || 0 < $sale->getOutstandingExpired())) {

@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Invoice\Builder;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilderInterface;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 
@@ -26,7 +26,7 @@ interface InvoiceBuilderInterface extends DocumentBuilderInterface
     /**
      * Returns the invoice calculator.
      *
-     * @return InvoiceCalculatorInterface
+     * @return InvoiceSubjectCalculatorInterface
      */
     public function getInvoiceCalculator();
 

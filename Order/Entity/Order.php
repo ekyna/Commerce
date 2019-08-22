@@ -604,7 +604,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function canBeReleased()
+    public function canBeReleased(): bool
     {
         if (!$this->isSample()) {
             return false;

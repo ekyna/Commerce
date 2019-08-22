@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Constants as Outstanding;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderPaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
@@ -39,12 +40,20 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
      */
     private $customerRefundCountQuery;
 
+    /**
+     * @return void
+     */
+    public function createNew()
+    {
+        throw new RuntimeException("Disabled: use payment factory.");
+    }
 
     /**
      * @inheritDoc
      */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
+        string $currency = null,
         \DateTime $from = null,
         \DateTime $to = null,
         bool $scalar = false
@@ -54,6 +63,7 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
         if ($scalar) {
             $qb->select([
                 'p.id',
+                'p.currency.code as currency',
                 'p.number',
                 'p.amount',
                 'p.state',
@@ -75,6 +85,12 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             ->andWhere($ex->neq('m.factoryName', ':factory'))
             ->addOrderBy('p.completedAt', 'ASC');
 
+        if ($currency) {
+            $qb
+                ->join('o.currency', 'c')
+                ->andWhere($ex->eq('c.code', ':currency'));
+        }
+
         if ($from && $to) {
             $qb->andWhere($ex->between('p.completedAt', ':from', ':to'));
         } elseif ($from) {
@@ -92,6 +108,9 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
                 'factory'  => Outstanding::FACTORY_NAME,
             ]);
 
+        if ($currency) {
+            $query->setParameter('currency', $currency);
+        }
         if ($from) {
             $query->setParameter('from', $from, Type::DATETIME);
         }
@@ -165,26 +184,7 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             return $this->customerPaymentSumQuery;
         }
 
-        $qb = $this->createQueryBuilder('p');
-        $ex = $qb->expr();
-
-        return $this->customerPaymentSumQuery = $qb
-            ->select('SUM(p.amount)')
-            ->join('p.order', 'o')
-            ->join('p.method', 'm')
-            ->andWhere($ex->eq('o.sample', ':sample'))
-            ->andWhere($ex->eq('p.state', ':state'))
-            ->andWhere($ex->neq('m.factoryName', ':factory'))
-            ->andWhere($ex->neq('o.customer', ':customer'))
-            ->andWhere($ex->between('p.completed', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
-            ->getQuery()
-            ->setParameters([
-                'sample'  => false,
-                'state'   => PaymentStates::STATE_CAPTURED,
-                'factory' => Outstanding::FACTORY_NAME,
-            ])
-            ->useQueryCache(true);
+        return $this->customerPaymentSumQuery = $this->createCustomerSumQuery(PaymentStates::STATE_CAPTURED);
     }
 
     /**
@@ -198,10 +198,22 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             return $this->customerRefundSumQuery;
         }
 
+        return $this->customerRefundSumQuery = $this->createCustomerSumQuery(PaymentStates::STATE_REFUNDED);
+    }
+
+    /**
+     * Creates the customer payment sum query builder.
+     *
+     * @param string $paymentState
+     *
+     * @return Query
+     */
+    protected function createCustomerSumQuery(string $paymentState): Query
+    {
         $qb = $this->createQueryBuilder('p');
         $ex = $qb->expr();
 
-        return $this->customerRefundSumQuery = $qb
+        return $qb
             ->select('SUM(p.amount)')
             ->join('p.order', 'o')
             ->join('p.method', 'm')
@@ -210,11 +222,11 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             ->andWhere($ex->neq('m.factoryName', ':factory'))
             ->andWhere($ex->neq('o.customer', ':customer'))
             ->andWhere($ex->between('p.completed', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
+            ->addGroupBy('o.customer')
             ->getQuery()
             ->setParameters([
                 'sample'  => false,
-                'state'   => PaymentStates::STATE_REFUNDED,
+                'state'   => $paymentState,
                 'factory' => Outstanding::FACTORY_NAME,
             ])
             ->useQueryCache(true);
@@ -231,26 +243,7 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             return $this->customerPaymentCountQuery;
         }
 
-        $qb = $this->createQueryBuilder('p');
-        $ex = $qb->expr();
-
-        return $this->customerPaymentCountQuery = $qb
-            ->select('COUNT(p.id)')
-            ->join('p.order', 'o')
-            ->join('p.method', 'm')
-            ->andWhere($ex->eq('o.sample', ':sample'))
-            ->andWhere($ex->eq('p.state', ':state'))
-            ->andWhere($ex->neq('m.factoryName', ':factory'))
-            ->andWhere($ex->neq('o.customer', ':customer'))
-            ->andWhere($ex->between('p.completed', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
-            ->getQuery()
-            ->setParameters([
-                'sample'  => false,
-                'state'   => PaymentStates::STATE_CAPTURED,
-                'factory' => Outstanding::FACTORY_NAME,
-            ])
-            ->useQueryCache(true);
+        return $this->customerPaymentCountQuery = $this->createCustomerCountQuery(PaymentStates::STATE_CAPTURED);
     }
 
     /**
@@ -264,10 +257,22 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             return $this->customerRefundCountQuery;
         }
 
+        return $this->customerRefundCountQuery = $this->createCustomerCountQuery(PaymentStates::STATE_REFUNDED);
+    }
+
+    /**
+     * Creates the customer payment count query.
+     *
+     * @param string $paymentState
+     *
+     * @return Query
+     */
+    protected function createCustomerCountQuery(string $paymentState): Query
+    {
         $qb = $this->createQueryBuilder('p');
         $ex = $qb->expr();
 
-        return $this->customerRefundCountQuery = $qb
+        return $qb
             ->select('COUNT(p.id)')
             ->join('p.order', 'o')
             ->join('p.method', 'm')
@@ -276,11 +281,11 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             ->andWhere($ex->neq('m.factoryName', ':factory'))
             ->andWhere($ex->neq('o.customer', ':customer'))
             ->andWhere($ex->between('p.completed', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
+            ->addGroupBy('o.customer')
             ->getQuery()
             ->setParameters([
                 'sample'  => false,
-                'state'   => PaymentStates::STATE_REFUNDED,
+                'state'   => $paymentState,
                 'factory' => Outstanding::FACTORY_NAME,
             ])
             ->useQueryCache(true);

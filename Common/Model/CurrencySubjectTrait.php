@@ -20,7 +20,7 @@ trait CurrencySubjectTrait
      *
      * @return CurrencyInterface|null
      */
-    public function getCurrency()
+    public function getCurrency(): ?CurrencyInterface
     {
         return $this->currency;
     }

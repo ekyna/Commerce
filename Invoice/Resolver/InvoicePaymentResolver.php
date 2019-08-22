@@ -25,17 +25,12 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     /**
      * @var string
      */
-    protected $defaultCurrency;
+    protected $currency;
 
     /**
      * @var array
      */
     protected $cache;
-
-    /**
-     * @var string
-     */
-    private $currency;
 
     /**
      * @var array
@@ -52,12 +47,11 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      * Constructor.
      *
      * @param CurrencyConverterInterface $currencyConverter
-     * @param string                     $defaultCurrency
      */
-    public function __construct(CurrencyConverterInterface $currencyConverter, string $defaultCurrency)
+    public function __construct(CurrencyConverterInterface $currencyConverter)
     {
         $this->currencyConverter = $currencyConverter;
-        $this->defaultCurrency = $defaultCurrency;
+        $this->currency = $currencyConverter->getDefaultCurrency();
 
         $this->clear();
     }
@@ -71,7 +65,9 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
+     *
+     * @return IM\InvoicePayment[]
      */
     public function resolve(IM\InvoiceInterface $invoice): array
     {
@@ -89,11 +85,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     }
 
     /**
-     * Returns the invoice's paid total.
-     *
-     * @param IM\InvoiceInterface $invoice
-     *
-     * @return float
+     * @inheritDoc
      */
     public function getPaidTotal(IM\InvoiceInterface $invoice): float
     {
@@ -108,14 +100,27 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getRealPaidTotal(IM\InvoiceInterface $invoice): float
+    {
+        $payments = $this->resolve($invoice);
+
+        $total = 0;
+        foreach ($payments as $payment) {
+            $total += $payment->getRealAmount();
+        }
+
+        return $total;
+    }
+
+    /**
      * Builds invoice payments for the given sale.
      *
      * @param SaleInterface $sale
      */
     private function buildInvoicePayments(SaleInterface $sale): void
     {
-        $this->currency = $sale->getCurrency()->getCode(); // TODO Deal with currency conversions.
-
         $this->buildPaymentList($sale);
         /** @var IM\InvoiceSubjectInterface $sale */
         $this->buildInvoiceList($sale);
@@ -132,7 +137,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                     return $i['total'];
                 }, $combination));
 
-                if (0 !== Money::compare($sum, $payment['amount'], $this->defaultCurrency)) {
+                if (0 !== Money::compare($sum, $payment['amount'], $this->currency)) {
                     continue;
                 }
 
@@ -179,23 +184,33 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 $result = new IM\InvoicePayment();
                 $result->setPayment($this->payments[$p]['payment']);
 
+                // TODO sale currency
                 $c = Money::compare($this->invoices[$i]['total'], $this->payments[$p]['amount'], $this->currency);
 
                 if (0 === $c) { // Equal
                     $result->setAmount($this->payments[$p]['amount']);
+                    $result->setRealAmount($this->payments[$p]['real_amount']);
                     $this->invoices[$i]['total'] = 0;
+                    $this->invoices[$i]['real_total'] = 0;
                     $this->payments[$p]['amount'] = 0;
+                    $this->payments[$p]['real_amount'] = 0;
                     unset($this->invoices[$i]);
                     unset($this->payments[$p]);
                 } elseif (1 === $c) { // invoice > payment
                     $result->setAmount($this->payments[$p]['amount']);
+                    $result->setRealAmount($this->payments[$p]['real_amount']);
                     $this->invoices[$i]['total'] -= $this->payments[$p]['amount'];
+                    $this->invoices[$i]['real_total'] -= $this->payments[$p]['real_amount'];
                     $this->payments[$p]['amount'] = 0;
+                    $this->payments[$p]['real_amount'] = 0;
                     unset($this->payments[$p]);
                 } else { // payment > invoice
                     $result->setAmount($this->invoices[$i]['total']);
+                    $result->setRealAmount($this->invoices[$i]['real_total']);
                     $this->payments[$p]['amount'] -= $this->invoices[$i]['total'];
+                    $this->payments[$p]['real_amount'] -= $this->invoices[$i]['real_total'];
                     $this->invoices[$i]['total'] = 0;
+                    $this->invoices[$i]['real_total'] = 0;
                     unset($this->invoices[$i]);
                 }
 
@@ -211,18 +226,20 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      */
     private function buildInvoiceList(IM\InvoiceSubjectInterface $subject): void
     {
+        // Get all invoices but credits
         $invoices = $subject->getInvoices(true)->toArray();
 
+        // Sort invoices by date ASC
         usort($invoices, function (IM\InvoiceInterface $a, IM\InvoiceInterface $b) {
             return $a->getCreatedAt()->getTimestamp() - $b->getCreatedAt()->getTimestamp();
         });
 
-        // TODO Currency conversion (?)
-
+        // Build invoices list
         $this->invoices = array_map(function (IM\InvoiceInterface $invoice) {
             return [
-                'invoice' => $invoice,
-                'total'   => $invoice->getGrandTotal(),
+                'invoice'    => $invoice,
+                'total'      => $invoice->getGrandTotal(),
+                'real_total' => $invoice->getRealGrandTotal(),
             ];
         }, $invoices);
     }
@@ -234,7 +251,8 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      */
     private function buildPaymentList(PM\PaymentSubjectInterface $subject): void
     {
-        // TODO Deal with refund when implemented
+        // TODO Deal with refund payments when implemented
+        // Get all payments but outstanding or not paid
         $payments = array_filter($subject->getPayments()->toArray(), function (PM\PaymentInterface $p) {
             if ($p->getMethod()->isOutstanding()) {
                 return false;
@@ -247,16 +265,31 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             return true;
         });
 
+        // Sort payments by date ASC
         usort($payments, function (PM\PaymentInterface $a, PM\PaymentInterface $b) {
             return $a->getCompletedAt()->getTimestamp() - $b->getCompletedAt()->getTimestamp();
         });
 
-        // TODO Currency conversion
+        // Build payments list by converting amounts into default currency using sale's exchange rate
+        $this->payments = array_map(function (PM\PaymentInterface $payment) use ($subject) {
+            $sc = $subject->getCurrency()->getCode();
+            $pc = $payment->getCurrency()->getCode();
 
-        $this->payments = array_map(function (PM\PaymentInterface $payment) {
+            // Payment currency must be either sale's currency or the default currency
+            if (!in_array($pc, array_unique([$sc, $this->currency]), true)) {
+                throw new RuntimeException("Unexpected payment currency.");
+            }
+
+            $rate = $this->currencyConverter->getSubjectExchangeRate($subject, $pc, $sc);
+            $amount = $this->currencyConverter->convertWithRate($payment->getAmount(), $rate, $sc);
+
+            $rate = $this->currencyConverter->getSubjectExchangeRate($subject, $pc, $this->currency);
+            $realAmount = $this->currencyConverter->convertWithRate($payment->getAmount(), $rate, $this->currency);
+
             return [
-                'payment' => $payment,
-                'amount'  => $payment->getAmount(),
+                'payment'     => $payment,
+                'amount'      => $amount,
+                'real_amount' => $realAmount,
             ];
         }, $payments);
     }

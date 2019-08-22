@@ -44,8 +44,8 @@ class ConvertAction implements ActionInterface
 
         $details->defaults(array(
             Constants::FIELD_STATUS  => null,
-            Constants::FIELD_AMOUNT  => $payment->getAmount(),
-            Constants::FIELD_BALANCE => $customer->getCreditBalance(),
+            Constants::FIELD_AMOUNT  => $payment->getRealAmount(),     // Using default currency
+            Constants::FIELD_BALANCE => $customer->getCreditBalance(), // Using default currency
         ));
 
         $request->setResult((array) $details);

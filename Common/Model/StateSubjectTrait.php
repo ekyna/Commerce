@@ -20,7 +20,7 @@ trait StateSubjectTrait
      *
      * @return string
      */
-    public function getState()
+    public function getState(): ?string
     {
         return $this->state;
     }
@@ -32,7 +32,7 @@ trait StateSubjectTrait
      *
      * @return $this|StateSubjectInterface
      */
-    public function setState($state)
+    public function setState(string $state)
     {
         $this->state = $state;
 

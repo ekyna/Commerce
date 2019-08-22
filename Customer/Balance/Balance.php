@@ -21,6 +21,11 @@ class Balance
     private $customer;
 
     /**
+     * @var string
+     */
+    private $currency;
+
+    /**
      * @var \DateTime
      */
     private $from;
@@ -83,6 +88,7 @@ class Balance
         bool $public = true
     ) {
         $this->customer = $customer;
+        $this->currency = $customer->getCurrency() ? $customer->getCurrency()->getCode() : null;
         $this->from = $from;
         $this->to = $to;
         $this->filter = $filter;
@@ -97,6 +103,30 @@ class Balance
     public function getCustomer(): CustomerInterface
     {
         return $this->customer;
+    }
+
+    /**
+     * Returns the currency.
+     *
+     * @return string
+     */
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    /**
+     * Sets the currency.
+     *
+     * @param string $currency
+     *
+     * @return Balance
+     */
+    public function setCurrency(string $currency): Balance
+    {
+        $this->currency = $currency;
+
+        return $this;
     }
 
     /**

@@ -32,7 +32,7 @@ class TotalView extends AbstractView
      * @param string $adjustment
      * @param string $total
      */
-    public function __construct($base, $adjustment, $total)
+    public function __construct(string $base, string $adjustment, string $total)
     {
         $this->base = $base;
         $this->adjustment = $adjustment;
@@ -44,7 +44,7 @@ class TotalView extends AbstractView
      *
      * @return string
      */
-    public function getBase()
+    public function getBase(): string
     {
         return $this->base;
     }
@@ -54,7 +54,7 @@ class TotalView extends AbstractView
      *
      * @return string
      */
-    public function getAdjustment()
+    public function getAdjustment(): string
     {
         return $this->adjustment;
     }
@@ -64,7 +64,7 @@ class TotalView extends AbstractView
      *
      * @return string
      */
-    public function getTotal()
+    public function getTotal(): string
     {
         return $this->total;
     }

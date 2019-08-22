@@ -27,7 +27,7 @@ trait ExchangeSubjectTrait
      *
      * @return float|null
      */
-    public function getExchangeRate()
+    public function getExchangeRate(): ?float
     {
         return $this->exchangeRate;
     }
@@ -39,7 +39,7 @@ trait ExchangeSubjectTrait
      *
      * @return $this|ExchangeSubjectInterface
      */
-    public function setExchangeRate($rate)
+    public function setExchangeRate(float $rate = null): ExchangeSubjectInterface
     {
         $this->exchangeRate = $rate;
 
@@ -49,9 +49,9 @@ trait ExchangeSubjectTrait
     /**
      * Returns the exchange date.
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getExchangeDate()
+    public function getExchangeDate(): ?\DateTime
     {
         return $this->exchangeDate;
     }
@@ -59,13 +59,13 @@ trait ExchangeSubjectTrait
     /**
      * Sets the exchange date.
      *
-     * @param \DateTime $exchangeDate
+     * @param \DateTime $date
      *
      * @return $this|ExchangeSubjectInterface
      */
-    public function setExchangeDate(\DateTime $exchangeDate = null)
+    public function setExchangeDate(\DateTime $date = null): ExchangeSubjectInterface
     {
-        $this->exchangeDate = $exchangeDate;
+        $this->exchangeDate = $date;
 
         return $this;
     }

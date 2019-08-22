@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoicePayment;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
@@ -25,7 +26,7 @@ use PHPUnit\Framework\TestCase;
  */
 class InvoicePaymentResolverTest extends TestCase
 {
-    private const CURRENCY = 'USD';
+    private const CURRENCY = 'EUR';
 
     /**
      * @var InvoicePaymentResolverInterface
@@ -45,19 +46,23 @@ class InvoicePaymentResolverTest extends TestCase
     /**
      * @inheritDoc
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $converter = new ArrayCurrencyConverter([
             'EUR/USD' => 1.25,
             'USD/EUR' => 0.80,
-        ]);
+            'EUR/GBP' => 0.80,
+            'GBP/EUR' => 1.25,
+            'USD/GBP' => 0.64,
+            'GBP/USD' => 1.5625,
+        ], self::CURRENCY);
 
-        self::$resolver = new InvoicePaymentResolver($converter, self::CURRENCY);
+        self::$resolver = new InvoicePaymentResolver($converter);
     }
 
     /**
      * @param InvoiceInterface $invoice
-     * @param array $expected
+     * @param array            $expected
      *
      * @dataProvider provide_test_resolve
      */
@@ -77,9 +82,8 @@ class InvoicePaymentResolverTest extends TestCase
                 ['amount' => 200, 'date' => 'now'],
             ],
         ]);
-        // <invoice index> => [<payment index> => <amount>]
         yield from $this->buildResult([
-            0 => [0 => 300, 1 => 200],
+            0 => [0 => [300, 300], 1 => [200, 200]], // #0
         ]);
 
         $this->buildData([
@@ -94,8 +98,8 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [1 => 200],
-            1 => [0 => 300, 2 => 200],
+            0 => [1 => [200, 200]],                  // #1
+            1 => [0 => [300, 300], 2 => [200, 200]], // #2
         ]);
 
         $this->buildData([
@@ -110,9 +114,9 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => 100],
-            1 => [0 => 200],
-            2 => [1 => 50],
+            0 => [0 => [100, 100]], // #3
+            1 => [0 => [200, 200]], // #4
+            2 => [1 => [50, 50]],   // #5
         ]);
 
         $this->buildData([
@@ -126,10 +130,11 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => 75],
-            1 => [],
-            2 => [0 => 25],
+            0 => [0 => [75, 75]], // #6
+            1 => [],              // #7
+            2 => [0 => [25, 25]], // #8
         ]);
+
 
         $this->buildData([
             'invoices' => [
@@ -145,12 +150,63 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => 20],
-            1 => [1 => 90],
-            2 => [0 => 70],
-            3 => [1 => 80],
-            4 => [1 => 60],
+            0 => [0 => [20, 20]], // #9
+            1 => [1 => [90, 90]], // #10
+            2 => [0 => [70, 70]], // #11
+            3 => [1 => [80, 80]], // #12
+            4 => [1 => [60, 60]], // #13
         ]);
+
+        // --- USD ---
+
+        $this->buildData([
+            'currency'      => 'USD',
+            'exchange_rate' => 1.25,
+            'invoices'      => [
+                ['total' => 500, 'real_total' => 400, 'date' => '-3 days', 'currency' => 'USD'],
+            ],
+            'payments'      => [
+                ['amount' => 300, 'date' => '-1 days', 'currency' => 'USD'],
+                ['amount' => 200, 'date' => 'now', 'currency' => 'USD'],
+            ],
+        ]);
+        yield from $this->buildResult([
+            0 => [0 => [300, 240], 1 => [200, 160]], // #14
+        ]);
+    }
+
+    public function test_resolve_withUnexpectedPaymentCurrency()
+    {
+        $sale = $this->createMock(OrderInterface::class);
+        $sale->method('getCurrency')->willReturn($this->mockCurrency('USD'));
+        $sale->method('getExchangeRate')->willReturn(1.25);
+        $sale->method('getExchangeDate')->willReturn(new \DateTime());
+
+        $sale->method('getInvoices')->willReturn(new ArrayCollection([
+            $invoice = $this->mockInvoice(
+                $sale,
+                300,
+                240,
+                'now',
+                'USD',
+                InvoiceTypes::TYPE_INVOICE
+            ),
+        ]));
+
+        $sale->method('getPayments')->willReturn(new ArrayCollection([
+            $this->mockPayment(
+                $sale,
+                200,
+                'now',
+                'GBP',
+                PaymentStates::STATE_CAPTURED,
+                false
+            ),
+        ]));
+
+        $this->expectException(RuntimeException::class);
+
+        self::$resolver->resolve($invoice);
     }
 
     /**
@@ -164,55 +220,84 @@ class InvoicePaymentResolverTest extends TestCase
         $this->payments = [];
 
         $data = array_replace([
-            'currency' => self::CURRENCY,
-            'invoices' => [],
-            'payments' => [],
+            'currency'      => self::CURRENCY,
+            'exchange_rate' => 1.0,
+            'exchange_date' => new \DateTime(),
+            'invoices'      => [],
+            'payments'      => [],
         ], $data);
 
         /** @var OrderInterface|MockObject $sale */
         $sale = $this->createMock(OrderInterface::class);
-        $sale
-            ->method('getCurrency')
-            ->willReturn($this->mockCurrency($data['currency']));
+        $sale->method('getCurrency')->willReturn($this->mockCurrency($data['currency']));
+        $sale->method('getExchangeRate')->willReturn($data['exchange_rate']);
+        $sale->method('getExchangeDate')->willReturn($data['exchange_date']);
 
         foreach ($data['invoices'] as $datum) {
             $datum = array_replace([
-                'total'    => 0,
-                'date'     => 'now',
-                'currency' => self::CURRENCY,
+                'total'      => 0,
+                'real_total' => null,
+                'date'       => 'now',
+                'currency'   => self::CURRENCY,
+                'type'       => InvoiceTypes::TYPE_INVOICE,
             ], $datum);
 
-            $this->invoices[] = $this->mockInvoice($sale, $datum['total'], $datum['date'], $datum['currency']);
+            if (null === $datum['real_total']) {
+                $datum['real_total'] = $datum['total'];
+            }
+
+            $this->invoices[] = $this->mockInvoice(
+                $sale,
+                $datum['total'],
+                $datum['real_total'],
+                $datum['date'],
+                $datum['currency'],
+                $datum['type']
+            );
         }
-        $sale
-            ->method('getInvoices')
-            ->willReturn(new ArrayCollection($this->invoices));
+
+        $sale->method('getInvoices')->willReturn(new ArrayCollection($this->invoices));
 
         foreach ($data['payments'] as $datum) {
             $datum = array_replace([
-                'amount'   => 0,
-                'date'     => 'now',
-                'currency' => self::CURRENCY,
+                'amount'      => 0,
+                'date'        => 'now',
+                'currency'    => self::CURRENCY,
+                'state'       => PaymentStates::STATE_CAPTURED,
+                'outstanding' => false,
             ], $datum);
 
-            $this->payments[] = $this->mockPayment($sale, $datum['amount'], $datum['date'], $datum['currency']);
+            $this->payments[] = $this->mockPayment(
+                $sale,
+                $datum['amount'],
+                $datum['date'],
+                $datum['currency'],
+                $datum['state'],
+                $datum['outstanding']
+            );
         }
-        $sale
-            ->method('getPayments')
-            ->willReturn(new ArrayCollection($this->payments));
+
+        $sale->method('getPayments')->willReturn(new ArrayCollection($this->payments));
     }
 
+    /**
+     * @param array $map
+     *
+     * @return \Generator <invoice index> => [<payment index> => [<amount>, <realAmount>]]
+     */
     private function buildResult(array $map): \Generator
     {
         foreach ($map as $i => $m) {
             yield [
                 $this->invoices[$i],
-                array_map(function($p, $amount) {
+                array_map(function ($p, $amounts) {
                     $ip = new InvoicePayment();
                     $ip->setPayment($this->payments[$p]);
-                    $ip->setAmount($amount);
+                    $ip->setAmount($amounts[0]);
+                    $ip->setRealAmount($amounts[1]);
+
                     return $ip;
-                }, array_keys($m), $m)
+                }, array_keys($m), $m),
             ];
         }
     }
@@ -225,9 +310,7 @@ class InvoicePaymentResolverTest extends TestCase
     private function mockCurrency(string $code): CurrencyInterface
     {
         $currency = $this->createMock(CurrencyInterface::class);
-        $currency
-            ->method('getCode')
-            ->willReturn($code);
+        $currency->method('getCode')->willReturn($code);
 
         return $currency;
     }
@@ -235,34 +318,28 @@ class InvoicePaymentResolverTest extends TestCase
     /**
      * @param SaleInterface $sale
      * @param float         $total
+     * @param float         $realTotal
      * @param string        $date
      * @param string        $currency
+     * @param string        $type
      *
      * @return InvoiceInterface|MockObject
      */
-    private function mockInvoice(SaleInterface $sale, float $total, string $date, string $currency): InvoiceInterface
-    {
+    private function mockInvoice(
+        SaleInterface $sale,
+        float $total,
+        float $realTotal,
+        string $date,
+        string $currency,
+        string $type
+    ): InvoiceInterface {
         $invoice = $this->createMock(InvoiceInterface::class);
-
-        $invoice
-            ->method('getSale')
-            ->willReturn($sale);
-
-        $invoice
-            ->method('getType')
-            ->willReturn(InvoiceTypes::TYPE_INVOICE);
-
-        $invoice
-            ->method('getGrandTotal')
-            ->willReturn($total);
-
-        $invoice
-            ->method('getCreatedAt')
-            ->willReturn(new \DateTime($date));
-
-        $invoice
-            ->method('getCurrency')
-            ->willReturn($currency);
+        $invoice->method('getSale')->willReturn($sale);
+        $invoice->method('getType')->willReturn($type);
+        $invoice->method('getGrandTotal')->willReturn($total);
+        $invoice->method('getRealGrandTotal')->willReturn($realTotal);
+        $invoice->method('getCreatedAt')->willReturn(new \DateTime($date));
+        $invoice->method('getCurrency')->willReturn($currency);
 
         return $invoice;
     }
@@ -271,43 +348,31 @@ class InvoicePaymentResolverTest extends TestCase
      * @param SaleInterface $sale
      * @param float         $amount
      * @param string        $date
-     * @param string|null   $currency
+     * @param string        $currency
+     * @param string        $state
+     * @param bool          $outstanding
      *
      * @return PaymentInterface|MockObject
      * @throws \Exception
      */
-    private function mockPayment(SaleInterface $sale, float $amount, string $date, string $currency): PaymentInterface
-    {
+    private function mockPayment(
+        SaleInterface $sale,
+        float $amount,
+        string $date,
+        string $currency,
+        string $state,
+        bool $outstanding
+    ): PaymentInterface {
         $method = $this->createMock(PaymentMethodInterface::class);
-        $method
-            ->method('isOutstanding')
-            ->willReturn(false);
+        $method->method('isOutstanding')->willReturn($outstanding);
 
         $payment = $this->createMock(PaymentInterface::class);
-
-        $payment
-            ->method('getSale')
-            ->willReturn($sale);
-
-        $payment
-            ->method('getMethod')
-            ->willReturn($method);
-
-        $payment
-            ->method('getState')
-            ->willReturn(PaymentStates::STATE_CAPTURED);
-
-        $payment
-            ->method('getAmount')
-            ->willReturn($amount);
-
-        $payment
-            ->method('getCompletedAt')
-            ->willReturn(new \DateTime($date));
-
-        $payment
-            ->method('getCurrency')
-            ->willReturn($this->mockCurrency($currency));
+        $payment->method('getSale')->willReturn($sale);
+        $payment->method('getMethod')->willReturn($method);
+        $payment->method('getState')->willReturn($state);
+        $payment->method('getAmount')->willReturn($amount);
+        $payment->method('getCompletedAt')->willReturn(new \DateTime($date));
+        $payment->method('getCurrency')->willReturn($this->mockCurrency($currency));
 
         return $payment;
     }

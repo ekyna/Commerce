@@ -17,6 +17,8 @@ final class AccountingTypes
     const TYPE_TAX      = 'tax';
     const TYPE_PAYMENT  = 'payment';
     const TYPE_UNPAID   = 'unpaid';
+    const TYPE_EX_GAIN  = 'exchange_gain';
+    const TYPE_EX_LOSS  = 'exchange_loss';
 
 
     /**
@@ -33,6 +35,8 @@ final class AccountingTypes
             static::TYPE_TAX,
             static::TYPE_PAYMENT,
             static::TYPE_UNPAID,
+            static::TYPE_EX_GAIN,
+            static::TYPE_EX_LOSS,
         ];
     }
 

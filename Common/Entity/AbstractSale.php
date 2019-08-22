@@ -3,8 +3,6 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Calculator\Amount;
-use Ekyna\Component\Commerce\Common\Calculator\Margin;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -152,24 +150,24 @@ abstract class AbstractSale implements Common\SaleInterface
     protected $items;
 
     /**
-     * @var Amount
+     * @var Common\Amount[]
      */
-    private $grossResult;
+    protected $grossResults = [];
 
     /**
-     * @var Amount
+     * @var Common\Amount[]
      */
-    private $shipmentResult;
+    protected $shipmentResults = [];
 
     /**
-     * @var Amount
+     * @var Common\Amount[]
      */
-    private $finalResult;
+    protected $finalResults = [];
 
     /**
-     * @var Margin
+     * @var Common\Margin[]
      */
-    private $margin;
+    protected $margins = [];
 
     /**
      * @var ContextInterface
@@ -285,24 +283,6 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setEmail($email)
     {
         $this->email = $email;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isSameAddress()
-    {
-        return $this->sameAddress;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setSameAddress($sameAddress)
-    {
-        $this->sameAddress = (bool)$sameAddress;
 
         return $this;
     }
@@ -620,21 +600,39 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
-    public function clearResults()
+    public function isSameAddress()
+    {
+        return $this->sameAddress;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSameAddress($sameAddress)
+    {
+        $this->sameAddress = (bool)$sameAddress;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearResults(): Common\SaleInterface
     {
         foreach ($this->items as $item) {
-            $item->clearResult();
+            $item->clearResults();
         }
 
         /** @var Common\SaleAdjustmentInterface $adjustment */
         foreach ($this->adjustments as $adjustment) {
-            $adjustment->clearResult();
+            $adjustment->clearResults();
         }
 
-        $this->grossResult = null;
-        $this->shipmentResult = null;
-        $this->finalResult = null;
-        $this->margin = null;
+        $this->grossResults = [];
+        $this->shipmentResults = [];
+        $this->finalResults = [];
+        $this->margins = [];
 
         return $this;
     }
@@ -642,9 +640,17 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
-    public function setGrossResult(Amount $result)
+    public function getGrossResult(string $currency): ?Common\Amount
     {
-        $this->grossResult = $result;
+        return $this->grossResults[$currency] ?? null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGrossResult(Common\Amount $result): Common\SaleInterface
+    {
+        $this->grossResults[$result->getCurrency()] = $result;
 
         return $this;
     }
@@ -652,17 +658,17 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
-    public function getGrossResult()
+    public function getShipmentResult(string $currency): ?Common\Amount
     {
-        return $this->grossResult;
+        return $this->shipmentResults[$currency] ?? null;
     }
 
     /**
      * @inheritdoc
      */
-    public function setShipmentResult(Amount $result)
+    public function setShipmentResult(Common\Amount $result): Common\SaleInterface
     {
-        $this->shipmentResult = $result;
+        $this->shipmentResults[$result->getCurrency()] = $result;
 
         return $this;
     }
@@ -670,17 +676,17 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
-    public function getShipmentResult()
+    public function getFinalResult(string $currency): ?Common\Amount
     {
-        return $this->shipmentResult;
+        return $this->finalResults[$currency] ?? null;
     }
 
     /**
      * @inheritdoc
      */
-    public function setFinalResult(Amount $result)
+    public function setFinalResult(Common\Amount $result): Common\SaleInterface
     {
-        $this->finalResult = $result;
+        $this->finalResults[$result->getCurrency()] = $result;
 
         return $this;
     }
@@ -688,44 +694,43 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
-    public function getFinalResult()
+    public function getMargin(string $currency): ?Common\Margin
     {
-        return $this->finalResult;
+        return $this->margins[$currency] ?? null;
     }
 
     /**
      * @inheritdoc
      */
-    public function setMargin(Margin $margin)
+    public function setMargin(Common\Margin $margin): Common\SaleInterface
     {
-        $this->margin = $margin;
+        $this->margins[$margin->getCurrency()] = $margin;
+
+        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function getMargin()
-    {
-        return $this->margin;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setContext(ContextInterface $context)
-    {
-        $this->context = $context;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContext()
+    public function getContext(): ?ContextInterface
     {
         return $this->context;
     }
 
-    public function isLocked()
+    /**
+     * @inheritdoc
+     */
+    public function setContext(ContextInterface $context): Common\SaleInterface
+    {
+        $this->context = $context;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isLocked(): bool
     {
         foreach ($this->payments as $payment) {
             if ($payment->getState() === Payment\PaymentStates::STATE_NEW) {
@@ -739,7 +744,7 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
-    public function canBeReleased()
+    public function canBeReleased(): bool
     {
         return false;
     }

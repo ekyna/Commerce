@@ -14,7 +14,7 @@ interface ShippableInterface
      *
      * @return float
      */
-    public function getWeightTotal();
+    public function getWeightTotal(): float;
 
     /**
      * Sets the weight total (kilograms).
@@ -23,14 +23,14 @@ interface ShippableInterface
      *
      * @return $this|ShippableInterface
      */
-    public function setWeightTotal($total);
+    public function setWeightTotal(float $total): ShippableInterface;
 
     /**
      * Returns the shipment method.
      *
      * @return ShipmentMethodInterface
      */
-    public function getShipmentMethod();
+    public function getShipmentMethod(): ?ShipmentMethodInterface;
 
     /**
      * Sets the shipment method.
@@ -39,14 +39,14 @@ interface ShippableInterface
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentMethod(ShipmentMethodInterface $method = null);
+    public function setShipmentMethod(ShipmentMethodInterface $method = null): ShippableInterface;
 
     /**
      * Returns the shipment amount.
      *
      * @return float
      */
-    public function getShipmentAmount();
+    public function getShipmentAmount(): float;
 
     /**
      * Sets the shipment amount.
@@ -55,30 +55,62 @@ interface ShippableInterface
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentAmount($amount);
+    public function setShipmentAmount(float $amount): ShippableInterface;
+
+    /**
+     * Returns the shipment weight.
+     *
+     * @return float
+     */
+    public function getShipmentWeight(): ?float;
+
+    /**
+     * Sets the shipment weight.
+     *
+     * @param float $weight
+     *
+     * @return $this|ShippableInterface
+     */
+    public function setShipmentWeight(float $weight): ShippableInterface;
+
+    /**
+     * Returns the shipment label.
+     *
+     * @return string
+     */
+    public function getShipmentLabel(): ?string;
+
+    /**
+     * Sets the shipment label.
+     *
+     * @param string $label
+     *
+     * @return $this|ShippableInterface
+     */
+    public function setShipmentLabel(string $label = null): ShippableInterface;
 
     /**
      * Returns whether auto shipping is enabled.
      *
      * @return bool
      */
-    public function isAutoShipping();
+    public function isAutoShipping(): bool;
 
     /**
      * Sets whether auto shipping is enabled.
      *
      * @param bool $auto
      *
-     * @return ShippableTrait
+     * @return $this|ShippableInterface
      */
-    public function setAutoShipping($auto);
+    public function setAutoShipping(bool $auto): ShippableInterface;
 
     /**
      * Returns the relay point.
      *
      * @return RelayPointInterface
      */
-    public function getRelayPoint();
+    public function getRelayPoint(): ?RelayPointInterface;
 
     /**
      * Sets the relay point.
@@ -87,5 +119,5 @@ interface ShippableInterface
      *
      * @return $this|ShippableInterface
      */
-    public function setRelayPoint(RelayPointInterface $relayPoint = null);
+    public function setRelayPoint(RelayPointInterface $relayPoint = null): ShippableInterface;
 }

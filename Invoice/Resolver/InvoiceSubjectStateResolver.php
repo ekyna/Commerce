@@ -2,9 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Resolver;
 
-use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
@@ -15,36 +15,54 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
  * @package Ekyna\Component\Commerce\Invoice\Resolver
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class InvoiceSubjectStateResolver implements StateResolverInterface
+class InvoiceSubjectStateResolver extends AbstractStateResolver
 {
     /**
-     * @var InvoiceCalculatorInterface
+     * @var InvoiceSubjectCalculatorInterface
      */
-    protected $calculator;
+    protected $invoiceCalculator;
 
 
     /**
      * Constructor.
      *
-     * @param InvoiceCalculatorInterface $calculator
+     * @param InvoiceSubjectCalculatorInterface  $invoiceCalculator
      */
-    public function __construct(InvoiceCalculatorInterface $calculator)
+    public function __construct(InvoiceSubjectCalculatorInterface $invoiceCalculator)
     {
-        $this->calculator = $calculator;
+        $this->invoiceCalculator = $invoiceCalculator;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
+     *
+     * @param InvoiceSubjectInterface $subject
      */
-    public function resolve($subject)
+    public function resolve(object $subject): bool
     {
-        if (!$subject instanceof InvoiceSubjectInterface) {
-            throw new InvalidArgumentException("Expected instance of " . InvoiceSubjectInterface::class);
+        $this->supports($subject);
+
+        $state = $this->resolveState($subject);
+
+        if ($state !== $subject->getInvoiceState()) {
+            $subject->setInvoiceState($state);
+
+            return true;
         }
 
-        $quantities = $this->calculator->buildInvoiceQuantityMap($subject);
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param InvoiceSubjectInterface $subject
+     */
+    protected function resolveState(object $subject): string
+    {
+        $quantities = $this->invoiceCalculator->buildInvoiceQuantityMap($subject);
         if (0 === $itemsCount = count($quantities)) {
-            return $this->setState($subject, InvoiceStates::STATE_NEW);
+            return InvoiceStates::STATE_NEW;
         }
 
         $partialCount = $invoicedCount = $creditedCount = 0;
@@ -54,7 +72,6 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
             // If invoiced greater than zero
             if (0 < $q['invoiced']) {
                 // If total equals invoiced, item is fully invoiced
-                //if ($q['total'] == $q['invoiced']) {
                 if (0 === bccomp($q['total'], $q['invoiced'], 3)) {
                     $invoicedCount++;
 
@@ -74,47 +91,38 @@ class InvoiceSubjectStateResolver implements StateResolverInterface
         // TODO Assert sale's shipment and discounts are invoiced
 
         // If all fully credited
-        if ($creditedCount == $itemsCount) {
-            return $this->setState($subject, InvoiceStates::STATE_CREDITED);
+        if ($creditedCount === $itemsCount) {
+            return InvoiceStates::STATE_CREDITED;
         }
 
         // If all fully invoiced
-        if ($invoicedCount == $itemsCount) {
-            return $this->setState($subject, InvoiceStates::STATE_COMPLETED);
+        if ($invoicedCount === $itemsCount) {
+            return InvoiceStates::STATE_COMPLETED;
         }
 
         // If some partially invoiced
         if (0 < $partialCount || 0 < $invoicedCount) {
-            return $this->setState($subject, InvoiceStates::STATE_PARTIAL);
+            return InvoiceStates::STATE_PARTIAL;
         }
 
         // CANCELED If subject has payment(s) and has canceled state
-        if ($subject instanceof PaymentSubjectInterface){
+        if ($subject instanceof PaymentSubjectInterface) {
             if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
-                return $this->setState($subject, InvoiceStates::STATE_CANCELED);
+                return InvoiceStates::STATE_CANCELED;
             }
         }
 
         // NEW by default
-        return $this->setState($subject, InvoiceStates::STATE_NEW);
+        return InvoiceStates::STATE_NEW;
     }
 
     /**
-     * Sets the shipment state.
-     *
-     * @param InvoiceSubjectInterface $subject
-     * @param string                   $state
-     *
-     * @return bool Whether the shipment state has been updated.
+     * @inheritDoc
      */
-    protected function setState(InvoiceSubjectInterface $subject, $state)
+    protected function supports(object $subject): void
     {
-        if ($state !== $subject->getInvoiceState()) {
-            $subject->setInvoiceState($state);
-
-            return true;
+        if (!$subject instanceof InvoiceSubjectInterface) {
+            throw new UnexpectedTypeException($subject, InvoiceSubjectInterface::class);
         }
-
-        return false;
     }
 }

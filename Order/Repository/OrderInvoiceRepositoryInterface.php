@@ -24,6 +24,7 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
      * Finds invoices for the given customer and date range.
      *
      * @param CustomerInterface $customer
+     * @param string            $currency
      * @param \DateTime         $from
      * @param \DateTime         $to
      * @param bool              $scalar
@@ -32,6 +33,7 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
      */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
+        string $currency = null,
         \DateTime $from = null,
         \DateTime $to = null,
         bool $scalar = false
@@ -50,10 +52,11 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
      * Finds invoices of unpaid orders with due date lower than today.
      *
      * @param CustomerInterface $customer
+     * @param string            $currency
      *
      * @return OrderInvoiceInterface[]
      */
-    public function findDueInvoices(CustomerInterface $customer = null): array;
+    public function findDueInvoices(CustomerInterface $customer = null, string $currency = null): array;
 
     /**
      * Returns total of invoices from unpaid orders with due date greater than today.
@@ -68,10 +71,11 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
      * Finds invoices of unpaid orders with due date greater than today.
      *
      * @param CustomerInterface $customer
+     * @param string            $currency
      *
      * @return OrderInvoiceInterface[]
      */
-    public function findFallInvoices(CustomerInterface $customer = null): array;
+    public function findFallInvoices(CustomerInterface $customer = null, string $currency = null): array;
 
     /**
      * Returns the customer invoices amounts sum.

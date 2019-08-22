@@ -6,11 +6,11 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 
 /**
- * Interface ShipmentCalculatorInterface
+ * Interface ShipmentSubjectCalculatorInterface
  * @package Ekyna\Component\Commerce\Shipment\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentCalculatorInterface
+interface ShipmentSubjectCalculatorInterface
 {
     /**
      * Returns whether or not the given sale item is shipped (present in any shipment or return).

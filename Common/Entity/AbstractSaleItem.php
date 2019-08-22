@@ -3,13 +3,8 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Calculator\Amount;
-use Ekyna\Component\Commerce\Common\Calculator\Margin;
-use Ekyna\Component\Commerce\Common\Model\AdjustableTrait;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Model\Margin;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
@@ -20,9 +15,9 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSaleItem implements SaleItemInterface
+abstract class AbstractSaleItem implements Model\SaleItemInterface
 {
-    use AdjustableTrait,
+    use Model\AdjustableTrait,
         SubjectRelativeTrait,
         TaxableTrait,
         SortableTrait;
@@ -33,12 +28,12 @@ abstract class AbstractSaleItem implements SaleItemInterface
     protected $id;
 
     /**
-     * @var SaleItemInterface
+     * @var Model\SaleItemInterface
      */
     protected $parent;
 
     /**
-     * @var ArrayCollection|SaleItemInterface[]
+     * @var ArrayCollection|Model\SaleItemInterface[]
      */
     protected $children;
 
@@ -98,14 +93,14 @@ abstract class AbstractSaleItem implements SaleItemInterface
     protected $data = [];
 
     /**
-     * @var Amount
+     * @var Model\Amount[]
      */
-    private $result;
+    protected $results = [];
 
     /**
-     * @var Margin
+     * @var Model\Margin[]
      */
-    private $margin;
+    protected $margins = [];
 
 
     /**
@@ -148,7 +143,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function setParent(SaleItemInterface $parent = null)
+    public function setParent(Model\SaleItemInterface $parent = null)
     {
         $parent && $this->assertItemClass($parent);
 
@@ -189,7 +184,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function hasChild(SaleItemInterface $child)
+    public function hasChild(Model\SaleItemInterface $child)
     {
         $this->assertItemClass($child);
 
@@ -199,7 +194,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function addChild(SaleItemInterface $child)
+    public function addChild(Model\SaleItemInterface $child)
     {
         $this->assertItemClass($child);
 
@@ -214,7 +209,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function removeChild(SaleItemInterface $child)
+    public function removeChild(Model\SaleItemInterface $child)
     {
         $this->assertItemClass($child);
 
@@ -237,7 +232,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function hasAdjustment(AdjustmentInterface $adjustment)
+    public function hasAdjustment(Model\AdjustmentInterface $adjustment)
     {
         $this->assertItemAdjustmentClass($adjustment);
 
@@ -247,11 +242,11 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function addAdjustment(AdjustmentInterface $adjustment)
+    public function addAdjustment(Model\AdjustmentInterface $adjustment)
     {
         $this->assertItemAdjustmentClass($adjustment);
 
-        /** @var SaleItemAdjustmentInterface $adjustment*/
+        /** @var Model\SaleItemAdjustmentInterface $adjustment*/
         if (!$this->adjustments->contains($adjustment)) {
             $this->adjustments->add($adjustment);
             $adjustment->setItem($this);
@@ -263,7 +258,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function removeAdjustment(AdjustmentInterface $adjustment)
+    public function removeAdjustment(Model\AdjustmentInterface $adjustment)
     {
         $this->assertItemAdjustmentClass($adjustment);
 
@@ -585,14 +580,14 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function clearResult()
+    public function clearResults(): Model\SaleItemInterface
     {
         foreach ($this->children as $child) {
-            $child->clearResult();
+            $child->clearResults();
         }
 
-        $this->result = null;
-        $this->margin = null;
+        $this->results = [];
+        $this->margins = [];
 
         return $this;
     }
@@ -600,9 +595,9 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function setResult(Amount $result)
+    public function setResult(Model\Amount $result): Model\SaleItemInterface
     {
-        $this->result = $result;
+        $this->results[$result->getCurrency()] = $result;
 
         return $this;
     }
@@ -610,31 +605,33 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritdoc
      */
-    public function getResult()
+    public function getResult(string $currency): ?Model\Amount
     {
-        return $this->result;
+        return $this->results[$currency] ?? null;
     }
 
     /**
      * @inheritdoc
      */
-    public function setMargin(Margin $margin)
+    public function setMargin(Margin $margin): Model\SaleItemInterface
     {
-        $this->margin = $margin;
+        $this->margins[$margin->getCurrency()] = $margin;
+
+        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function getMargin()
+    public function getMargin(string $currency): ?Margin
     {
-        return $this->margin;
+        return $this->margins[$currency] ?? null;
     }
 
     /**
      * @inheritdoc
      */
-    public function isLast()
+    public function isLast(): bool
     {
         if (null !== $this->parent) {
             return $this->position === $this->parent->getChildren()->last()->getPosition();
@@ -646,7 +643,7 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * @inheritDoc
      */
-    public function getHash($encode = true)
+    public function getHash(bool $encode = true)
     {
         $data = [
             'r' => $this->reference,
@@ -682,21 +679,21 @@ abstract class AbstractSaleItem implements SaleItemInterface
     /**
      * Asserts that the given sale is an instance of the expected class.
      *
-     * @param SaleInterface $sale
+     * @param Model\SaleInterface $sale
      */
-    abstract protected function assertSaleClass(SaleInterface $sale);
+    abstract protected function assertSaleClass(Model\SaleInterface $sale);
 
     /**
      * Asserts that the given sale item is an instance of the expected class.
      *
-     * @param SaleItemInterface $child
+     * @param Model\SaleItemInterface $child
      */
-    abstract protected function assertItemClass(SaleItemInterface $child);
+    abstract protected function assertItemClass(Model\SaleItemInterface $child);
 
     /**
      * Asserts that the given adjustment is an instance of the expected class.
      *
-     * @param AdjustmentInterface $adjustment
+     * @param Model\AdjustmentInterface $adjustment
      */
-    abstract protected function assertItemAdjustmentClass(AdjustmentInterface $adjustment);
+    abstract protected function assertItemAdjustmentClass(Model\AdjustmentInterface $adjustment);
 }

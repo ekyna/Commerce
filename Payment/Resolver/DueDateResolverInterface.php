@@ -13,6 +13,15 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 interface DueDateResolverInterface
 {
     /**
+     * Returns whether the given invoice is due.
+     *
+     * @param InvoiceInterface $invoice
+     *
+     * @return bool
+     */
+    public function isInvoiceDue(InvoiceInterface $invoice): bool;
+
+    /**
      * Resolves the sale's due (outstanding) date.
      *
      * @param SaleInterface $sale

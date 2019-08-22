@@ -25,6 +25,16 @@ trait ShippableTrait
     protected $shipmentAmount;
 
     /**
+     * @var float
+     */
+    protected $shipmentWeight;
+
+    /**
+     * @var string
+     */
+    protected $shipmentLabel;
+
+    /**
      * @var bool
      */
     protected $autoShipping;
@@ -38,7 +48,7 @@ trait ShippableTrait
     /**
      * Initializes the shipment data.
      */
-    protected function initializeShippable()
+    protected function initializeShippable(): void
     {
         $this->weightTotal = 0;
         $this->shipmentAmount = 0;
@@ -50,7 +60,7 @@ trait ShippableTrait
      *
      * @return float
      */
-    public function getWeightTotal()
+    public function getWeightTotal(): float
     {
         return $this->weightTotal;
     }
@@ -62,7 +72,7 @@ trait ShippableTrait
      *
      * @return $this|ShippableInterface
      */
-    public function setWeightTotal($total)
+    public function setWeightTotal(float $total): ShippableInterface
     {
         $this->weightTotal = $total;
 
@@ -74,7 +84,7 @@ trait ShippableTrait
      *
      * @return ShipmentMethodInterface
      */
-    public function getShipmentMethod()
+    public function getShipmentMethod(): ?ShipmentMethodInterface
     {
         return $this->shipmentMethod;
     }
@@ -86,7 +96,7 @@ trait ShippableTrait
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentMethod(ShipmentMethodInterface $method = null)
+    public function setShipmentMethod(ShipmentMethodInterface $method = null): ShippableInterface
     {
         $this->shipmentMethod = $method;
 
@@ -98,7 +108,7 @@ trait ShippableTrait
      *
      * @return float
      */
-    public function getShipmentAmount()
+    public function getShipmentAmount(): float
     {
         return $this->shipmentAmount;
     }
@@ -110,9 +120,57 @@ trait ShippableTrait
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentAmount($amount)
+    public function setShipmentAmount(float $amount): ShippableInterface
     {
         $this->shipmentAmount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the shipment weight.
+     *
+     * @return float
+     */
+    public function getShipmentWeight(): ?float
+    {
+        return $this->shipmentWeight;
+    }
+
+    /**
+     * Sets the shipment weight.
+     *
+     * @param float $weight
+     *
+     * @return $this|ShippableInterface
+     */
+    public function setShipmentWeight(float $weight): ShippableInterface
+    {
+        $this->shipmentWeight = $weight;
+
+        return $this;
+    }
+
+    /**
+     * Returns the shipment label.
+     *
+     * @return string
+     */
+    public function getShipmentLabel(): ?string
+    {
+        return $this->shipmentLabel;
+    }
+
+    /**
+     * Sets the shipment label.
+     *
+     * @param string $label
+     *
+     * @return $this|ShippableInterface
+     */
+    public function setShipmentLabel(string $label = null): ShippableInterface
+    {
+        $this->shipmentLabel = $label;
 
         return $this;
     }
@@ -122,7 +180,7 @@ trait ShippableTrait
      *
      * @return bool
      */
-    public function isAutoShipping()
+    public function isAutoShipping(): bool
     {
         return $this->autoShipping;
     }
@@ -132,11 +190,11 @@ trait ShippableTrait
      *
      * @param bool $auto
      *
-     * @return ShippableTrait
+     * @return $this|ShippableInterface
      */
-    public function setAutoShipping($auto)
+    public function setAutoShipping(bool $auto): ShippableInterface
     {
-        $this->autoShipping = (bool)$auto;
+        $this->autoShipping = $auto;
 
         return $this;
     }
@@ -146,7 +204,7 @@ trait ShippableTrait
      *
      * @return RelayPointInterface
      */
-    public function getRelayPoint()
+    public function getRelayPoint(): ?RelayPointInterface
     {
         return $this->relayPoint;
     }
@@ -158,7 +216,7 @@ trait ShippableTrait
      *
      * @return $this|ShippableInterface
      */
-    public function setRelayPoint(RelayPointInterface $relayPoint = null)
+    public function setRelayPoint(RelayPointInterface $relayPoint = null): ShippableInterface
     {
         $this->relayPoint = $relayPoint;
 
