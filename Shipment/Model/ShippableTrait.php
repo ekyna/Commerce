@@ -144,7 +144,7 @@ trait ShippableTrait
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentWeight(float $weight): ShippableInterface
+    public function setShipmentWeight(float $weight = null): ShippableInterface
     {
         $this->shipmentWeight = $weight;
 

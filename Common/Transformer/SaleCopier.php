@@ -77,8 +77,8 @@ class SaleCopier implements SaleCopierInterface
     public function copyData()
     {
         $fields = [
-            'currency', 'customer', 'customerGroup',
-            'sameAddress', 'shipmentMethod', 'shipmentAmount', 'relayPoint',
+            'currency', 'customer', 'customerGroup', 'sameAddress', 'relayPoint',
+            'shipmentMethod', 'shipmentAmount', 'shipmentWeight', 'shipmentLabel',
             'autoShipping', 'autoDiscount', 'autoNotify', 'taxExempt', 'vatDisplayMode',
             'depositTotal', 'grandTotal', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
             'title', 'voucherNumber', 'description', 'preparationNote', 'comment', 'documentComment',

@@ -73,7 +73,7 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
      */
     public function setDocument(Document\DocumentInterface $document = null)
     {
-        if (!$document instanceof Model\InvoiceInterface) {
+        if ($document && !$document instanceof Model\InvoiceInterface) {
             throw new UnexpectedTypeException($document, Model\InvoiceInterface::class);
         }
 

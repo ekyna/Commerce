@@ -71,7 +71,7 @@ interface ShippableInterface
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentWeight(float $weight): ShippableInterface;
+    public function setShipmentWeight(float $weight = null): ShippableInterface;
 
     /**
      * Returns the shipment label.

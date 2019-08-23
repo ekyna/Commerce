@@ -67,7 +67,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
 
             $currency = $unit->getCurrency();
             $price = $formatter->currency($unit->getNetPrice(), $currency);
-            if ($currency !== $default = $this->currencyConverter->getDefaultCurrency()) {
+            if ($currency && ($currency !== $default = $this->currencyConverter->getDefaultCurrency())) {
                 $real = $this
                     ->currencyConverter
                     ->convert($unit->getNetPrice(), $currency, $default, $unit->getExchangeDate());
