@@ -378,7 +378,7 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Abort if shipment cost is lower than or equals zero
-        $base = $this->converter->convertWithSubject((float)$sale->getShipmentAmount(), $sale, $currency, false);
+        $base = $this->converter->convertWithSubject($sale->getShipmentAmount(), $sale, $currency, false);
         $result = new Model\Amount($currency, $base, $base, 0, $base, 0, $base);
 
         if (1 === Money::compare($base, 0, $currency)) {

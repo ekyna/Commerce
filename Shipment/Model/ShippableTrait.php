@@ -108,7 +108,7 @@ trait ShippableTrait
      *
      * @return float
      */
-    public function getShipmentAmount(): float
+    public function getShipmentAmount(): ?float
     {
         return $this->shipmentAmount;
     }
@@ -120,7 +120,7 @@ trait ShippableTrait
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentAmount(float $amount): ShippableInterface
+    public function setShipmentAmount(float $amount = null): ShippableInterface
     {
         $this->shipmentAmount = $amount;
 

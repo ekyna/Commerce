@@ -198,12 +198,8 @@ class MarginCalculator implements MarginCalculatorInterface
         $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();
         $base = $sale->getCurrency()->getCode();
 
-        if (!is_null($amount = $sale->getShipmentAmount())) {
-            $rate = $this->currencyConverter->getSubjectExchangeRate($sale, $base, $currency);
-            $sellPrice = $this->currencyConverter->convertWithRate($amount, $rate, $currency);
-        } else {
-            $sellPrice = 0;
-        }
+        $rate = $this->currencyConverter->getSubjectExchangeRate($sale, $base, $currency);
+        $sellPrice = $this->currencyConverter->convertWithRate($sale->getShipmentAmount(), $rate, $currency);
 
         $margin = new Model\Margin($currency, 0, $sellPrice);
 

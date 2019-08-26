@@ -46,7 +46,7 @@ interface ShippableInterface
      *
      * @return float
      */
-    public function getShipmentAmount(): float;
+    public function getShipmentAmount(): ?float;
 
     /**
      * Sets the shipment amount.
@@ -55,7 +55,7 @@ interface ShippableInterface
      *
      * @return $this|ShippableInterface
      */
-    public function setShipmentAmount(float $amount): ShippableInterface;
+    public function setShipmentAmount(float $amount = null): ShippableInterface;
 
     /**
      * Returns the shipment weight.
