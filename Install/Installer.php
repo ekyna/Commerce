@@ -95,6 +95,7 @@ class Installer
         $this->installTaxGroups($country);
         $this->installTaxRules($country);
         $this->installCustomerGroups();
+        $this->installDefaultWarehouse();
     }
 
     /**

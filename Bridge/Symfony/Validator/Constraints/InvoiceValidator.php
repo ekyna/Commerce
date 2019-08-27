@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
-use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\ValidationFailedException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
@@ -39,17 +38,6 @@ class InvoiceValidator extends ConstraintValidator
                 ->context
                 ->buildViolation($constraint->null_credit_method)
                 ->atPath('paymentMethod')
-                ->addViolation();
-
-            return;
-        }
-
-        // Can't have no good lines
-        if (empty($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD))) {
-            $this
-                ->context
-                ->buildViolation($constraint->empty_good_lines)
-                ->atPath('lines')
                 ->addViolation();
 
             return;

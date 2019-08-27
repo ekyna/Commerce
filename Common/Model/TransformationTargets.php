@@ -41,14 +41,12 @@ final class TransformationTargets
         }
 
         if ($sale instanceof OrderInterface) {
-            if ($sale->getState() === OrderStates::STATE_NEW) {
+            if ($duplicate) {
+                $targets = [static::TARGET_ORDER, static::TARGET_QUOTE];
+            } elseif ($sale->getState() === OrderStates::STATE_NEW) {
                 $targets = [static::TARGET_QUOTE];
             } else {
                 $targets = [];
-            }
-
-            if ($duplicate) {
-                $targets[] = static::TARGET_ORDER;
             }
 
             return $targets;
