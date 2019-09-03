@@ -2,6 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use Ekyna\Component\Commerce\Common\Model\Units;
+use Ekyna\Component\Commerce\Subject\Model\SubjectTrait;
+
 /**
  * Trait StockSubjectTrait
  * @package Ekyna\Component\Commerce\Stock\Model
@@ -9,6 +12,8 @@ namespace Ekyna\Component\Commerce\Stock\Model;
  */
 trait StockSubjectTrait
 {
+    use SubjectTrait;
+
     /**
      * @var string
      */
@@ -69,6 +74,51 @@ trait StockSubjectTrait
      */
     protected $endOfLife;
 
+    /**
+     * @var float
+     */
+    protected $weight;
+
+    /**
+     * @var int
+     */
+    protected $height;
+
+    /**
+     * @var int
+     */
+    protected $width;
+
+    /**
+     * @var int
+     */
+    protected $depth;
+
+    /**
+     * @var string
+     */
+    protected $unit;
+
+    /**
+     * @var float
+     */
+    protected $packageWeight;
+
+    /**
+     * @var int
+     */
+    protected $packageHeight;
+
+    /**
+     * @var int
+     */
+    protected $packageWidth;
+
+    /**
+     * @var int
+     */
+    protected $packageDepth;
+
 
     /**
      * Initializes the stock.
@@ -85,6 +135,15 @@ trait StockSubjectTrait
         $this->minimumOrderQuantity = 1;
         $this->quoteOnly = false;
         $this->endOfLife = false;
+        $this->unit = Units::PIECE;
+        $this->weight = 0;
+        $this->width = 0;
+        $this->height = 0;
+        $this->depth = 0;
+        $this->packageWeight = 0;
+        $this->packageWidth = 0;
+        $this->packageHeight = 0;
+        $this->packageDepth = 0;
     }
 
     /**
@@ -373,6 +432,242 @@ trait StockSubjectTrait
         $this->endOfLife = $endOfLife;
 
         return $this;
+    }
+
+    /**
+     * Returns the quantity unit.
+     *
+     * @return string
+     */
+    public function getUnit(): string
+    {
+        return $this->unit;
+    }
+
+    /**
+     * Sets the quantity unit.
+     *
+     * @param string $unit
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setUnit(string $unit): StockSubjectInterface
+    {
+        $this->unit = $unit;
+
+        return $this;
+    }
+
+    /**
+     * Returns the subject weight (kilograms).
+     *
+     * @return float
+     */
+    public function getWeight(): float
+    {
+        return $this->weight;
+    }
+
+    /**
+     * Sets the subject weight.
+     *
+     * @param float $weight
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setWeight(float $weight): StockSubjectInterface
+    {
+        $this->weight = $weight;
+
+        return $this;
+    }
+
+    /**
+     * Returns the subject width (millimeters).
+     *
+     * @return int
+     */
+    public function getWidth(): int
+    {
+        return $this->width;
+    }
+
+    /**
+     * Sets the subject width.
+     *
+     * @param int $width
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setWidth(int $width): StockSubjectInterface
+    {
+        $this->width = $width;
+
+        return $this;
+    }
+
+    /**
+     * Returns the subject height (millimeters).
+     *
+     * @return int
+     */
+    public function getHeight(): int
+    {
+        return $this->height;
+    }
+
+    /**
+     * Sets the subject height.
+     *
+     * @param int $height
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setHeight(int $height): StockSubjectInterface
+    {
+        $this->height = $height;
+
+        return $this;
+    }
+
+    /**
+     * Returns the depth (millimeters).
+     *
+     * @return int
+     */
+    public function getDepth(): int
+    {
+        return $this->depth;
+    }
+
+    /**
+     * Sets the subject depth.
+     *
+     * @param int $depth
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setDepth(int $depth): StockSubjectInterface
+    {
+        $this->depth = $depth;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether all the subject dimensions are set.
+     *
+     * @return bool
+     */
+    public function hasDimensions(): bool
+    {
+        return !empty($this->width) && !empty($this->height) && !empty($this->depth);
+    }
+
+    /**
+     * Returns the package weight (kilograms).
+     *
+     * @return float
+     */
+    public function getPackageWeight(): float
+    {
+        return $this->packageWeight;
+    }
+
+    /**
+     * Sets the package weight (kilograms).
+     *
+     * @param float $weight
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageWeight(float $weight): StockSubjectInterface
+    {
+        $this->packageWeight = $weight;
+
+        return $this;
+    }
+
+    /**
+     * Returns the package height (millimeters).
+     *
+     * @return int
+     */
+    public function getPackageHeight(): int
+    {
+        return $this->packageHeight;
+    }
+
+    /**
+     * Sets the package height (millimeters).
+     *
+     * @param int $height
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageHeight(int $height): StockSubjectInterface
+    {
+        $this->packageHeight = $height;
+
+        return $this;
+    }
+
+    /**
+     * Returns the package width (millimeters).
+     *
+     * @return int
+     */
+    public function getPackageWidth(): int
+    {
+        return $this->packageWidth;
+    }
+
+    /**
+     * Sets the package width (millimeters).
+     *
+     * @param int $width
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageWidth(int $width): StockSubjectInterface
+    {
+        $this->packageWidth = $width;
+
+        return $this;
+    }
+
+    /**
+     * Returns the package depth (millimeters).
+     *
+     * @return int
+     */
+    public function getPackageDepth(): int
+    {
+        return $this->packageDepth;
+    }
+
+    /**
+     * Sets the package depth (millimeters).
+     *
+     * @param int $depth
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageDepth(int $depth): StockSubjectInterface
+    {
+        $this->packageDepth = $depth;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether all the package dimensions are set.
+     *
+     * @return bool
+     */
+    public function hasPackageDimensions(): bool
+    {
+        return !empty($this->packageWidth) && !empty($this->packageHeight) && !empty($this->packageDepth);
     }
 
     /**

@@ -8,11 +8,13 @@ use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
+use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing as Pricing;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Mapping\DiscriminatorMapper;
 use Ekyna\Component\Resource\Doctrine\ORM\Mapping\EmbeddableMapper;
@@ -62,7 +64,12 @@ class LoadMetadataListener implements EventSubscriber
     /**
      * @var array
      */
-    private $stockClassCache = [];
+    private $subjectClassCache = [];
+
+    /**
+     * @var array
+     */
+    private $stockSubjectClassCache = [];
 
 
     /**
@@ -107,12 +114,14 @@ class LoadMetadataListener implements EventSubscriber
             $this->configurePaymentTermSubjectMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, Stock\StockSubjectInterface::class)) {
-            $this->configureStockSubjectMapping($eventArgs);
+        if (is_subclass_of($class, SubjectInterface::class)) {
+            $this->configureSubjectMapping($eventArgs);
+        } elseif (is_subclass_of($class, SubjectRelativeInterface::class)) {
+            $this->configureSubjectRelativeMapping($eventArgs);
         }
 
-        if (is_subclass_of($class, SubjectRelativeInterface::class)) {
-            $this->configureSubjectRelativeMapping($eventArgs);
+        if (is_subclass_of($class, Stock\StockSubjectInterface::class)) {
+            $this->configureStockSubjectMapping($eventArgs);
         }
 
         if (is_subclass_of($class, Stock\StockUnitInterface::class)) {
@@ -303,7 +312,7 @@ class LoadMetadataListener implements EventSubscriber
         }
 
         // Don't add twice
-        if (in_array($class, $this->stockClassCache)) {
+        if (in_array($class, $this->stockSubjectClassCache)) {
             return;
         }
 
@@ -311,7 +320,35 @@ class LoadMetadataListener implements EventSubscriber
         $this->addMappings($metadata, $this->getStockSubjectMappings());
 
         // Cache class
-        $this->stockClassCache[] = $class;
+        $this->stockSubjectClassCache[] = $class;
+    }
+
+    /**
+     * Configures the subject mapping.
+     *
+     * @param LoadClassMetadataEventArgs $eventArgs
+     */
+    private function configureSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
+    {
+        /** @var ClassMetadata $metadata */
+        $metadata = $eventArgs->getClassMetadata();
+        $class = $metadata->getName();
+
+        // Check class
+        if (!is_subclass_of($class, SubjectInterface::class)) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->subjectClassCache)) {
+            return;
+        }
+
+        // Add mappings
+        $this->addMappings($metadata, $this->getSubjectMappings());
+
+        // Cache class
+        $this->subjectClassCache[] = $class;
     }
 
     /**
@@ -543,6 +580,110 @@ class LoadMetadataListener implements EventSubscriber
                 'type'       => 'boolean',
                 'nullable'   => false,
                 'default'    => false,
+            ],
+
+            [
+                'fieldName'  => 'unit',
+                'columnName' => 'unit',
+                'type'       => 'string',
+                'length'     => 16,
+                'nullable'   => true,
+                'default'    => Units::PIECE,
+            ],
+            [
+                'fieldName'  => 'weight',
+                'columnName' => 'weight',
+                'type'       => 'decimal',
+                'precision'  => 10,
+                'scale'      => 5,
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'width',
+                'columnName' => 'width',
+                'type'       => 'smallint',
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'height',
+                'columnName' => 'height',
+                'type'       => 'smallint',
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'depth',
+                'columnName' => 'depth',
+                'type'       => 'smallint',
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'packageWeight',
+                'columnName' => 'package_weight',
+                'type'       => 'decimal',
+                'precision'  => 10,
+                'scale'      => 5,
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'packageWidth',
+                'columnName' => 'package_width',
+                'type'       => 'smallint',
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'packageHeight',
+                'columnName' => 'package_height',
+                'type'       => 'smallint',
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'packageDepth',
+                'columnName' => 'package_depth',
+                'type'       => 'smallint',
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+        ];
+    }
+
+    /**
+     * Returns the stock subject mappings.
+     *
+     * @return array
+     */
+    private function getSubjectMappings()
+    {
+        return [
+            [
+                'fieldName'  => 'designation',
+                'columnName' => 'designation',
+                'type'       => 'string',
+                'length'     => 128,
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'reference',
+                'columnName' => 'reference',
+                'type'       => 'string',
+                'length'     => 32,
+                'unique'     => 'true',
+                'nullable'   => true,
+            ],
+            [
+                'fieldName'  => 'netPrice',
+                'columnName' => 'net_price',
+                'type'       => 'decimal',
+                'precision'  => 10,
+                'scale'      => 5,
+                'nullable'   => true,
+                'default'    => 0,
             ],
         ];
     }

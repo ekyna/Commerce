@@ -20,7 +20,7 @@ trait TaxableTrait
      *
      * @return TaxGroupInterface
      */
-    public function getTaxGroup()
+    public function getTaxGroup(): ?TaxGroupInterface
     {
         return $this->taxGroup;
     }
@@ -30,9 +30,9 @@ trait TaxableTrait
      *
      * @param TaxGroupInterface $taxGroup
      *
-     * @return $this|TaxGroupInterface
+     * @return $this|TaxableInterface
      */
-    public function setTaxGroup(TaxGroupInterface $taxGroup = null)
+    public function setTaxGroup(TaxGroupInterface $taxGroup = null): TaxableInterface
     {
         $this->taxGroup = $taxGroup;
 

@@ -204,6 +204,164 @@ interface StockSubjectInterface extends SubjectInterface
     public function setEndOfLife(bool $endOfLife): StockSubjectInterface;
 
     /**
+     * Returns the quantity unit.
+     *
+     * @return string
+     */
+    public function getUnit(): string;
+
+    /**
+     * Sets the quantity unit.
+     *
+     * @param string $unit
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setUnit(string $unit): StockSubjectInterface;
+
+    /**
+     * Returns the subject weight (kilograms).
+     *
+     * @return float
+     */
+    public function getWeight(): ?float;
+
+    /**
+     * Sets the subject weight.
+     *
+     * @param float $weight
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setWeight(float $weight): StockSubjectInterface;
+
+    /**
+     * Returns the subject width (millimeters).
+     *
+     * @return int
+     */
+    public function getWidth(): int;
+
+    /**
+     * Sets the subject width.
+     *
+     * @param int $width
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setWidth(int $width): StockSubjectInterface;
+
+    /**
+     * Returns the subject height (millimeters).
+     *
+     * @return int
+     */
+    public function getHeight(): int;
+
+    /**
+     * Sets the subject height.
+     *
+     * @param int $height
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setHeight(int $height): StockSubjectInterface;
+
+    /**
+     * Returns the subject depth (millimeters).
+     *
+     * @return int
+     */
+    public function getDepth(): int;
+
+    /**
+     * Sets the subject depth.
+     *
+     * @param int $depth
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setDepth(int $depth): StockSubjectInterface;
+
+    /**
+     * Returns whether all the subject dimensions are set.
+     *
+     * @return bool
+     */
+    public function hasDimensions(): bool;
+
+    /**
+     * Returns the package weight (kilograms).
+     *
+     * @return float
+     */
+    public function getPackageWeight(): float;
+
+    /**
+     * Sets the package weight (kilograms).
+     *
+     * @param float $weight
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageWeight(float $weight): StockSubjectInterface;
+
+    /**
+     * Returns the package height (millimeters).
+     *
+     * @return int
+     */
+    public function getPackageHeight(): ?int;
+
+    /**
+     * Sets the package height (millimeters).
+     *
+     * @param int $height
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageHeight(int $height): StockSubjectInterface;
+
+    /**
+     * Returns the package width (millimeters).
+     *
+     * @return int
+     */
+    public function getPackageWidth(): int;
+
+    /**
+     * Sets the package width (millimeters).
+     *
+     * @param int $width
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageWidth(int $width): StockSubjectInterface;
+
+    /**
+     * Returns the package depth (millimeters).
+     *
+     * @return int
+     */
+    public function getPackageDepth(): int;
+
+    /**
+     * Sets the package depth (millimeters).
+     *
+     * @param int $depth
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setPackageDepth(int $depth): StockSubjectInterface;
+
+    /**
+     * Returns whether all the package dimensions are set.
+     *
+     * @return bool
+     */
+    public function hasPackageDimensions(): bool;
+
+    /**
      * Returns whether the subject is compound (ie stock is resolved regarding to children).
      *
      * @return bool
