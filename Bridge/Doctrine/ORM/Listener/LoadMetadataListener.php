@@ -581,7 +581,6 @@ class LoadMetadataListener implements EventSubscriber
                 'nullable'   => false,
                 'default'    => false,
             ],
-
             [
                 'fieldName'  => 'unit',
                 'columnName' => 'unit',

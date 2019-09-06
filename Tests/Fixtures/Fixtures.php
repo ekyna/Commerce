@@ -415,7 +415,7 @@ class Fixtures
             ->setDesignation($designation)
             ->setReference($reference)
             ->setNetPrice($price)
-            ->setWeight($weight);
+            ->setPackageWeight($weight);
 
         return $subject;
     }

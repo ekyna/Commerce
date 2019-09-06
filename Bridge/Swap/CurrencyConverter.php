@@ -6,11 +6,11 @@ use Ekyna\Component\Commerce\Common\Currency\AbstractCurrencyConverter;
 use Swap\Swap;
 
 /**
- * Class SwapCurrencyConverter
+ * Class CurrencyConverter
  * @package Ekyna\Component\Commerce\Bridge\Swap
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SwapCurrencyConverter extends AbstractCurrencyConverter
+class CurrencyConverter extends AbstractCurrencyConverter
 {
     /**
      * @var Swap

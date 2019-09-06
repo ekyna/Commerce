@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -28,7 +28,7 @@ abstract class AbstractShipmentListener
     protected $persistenceHelper;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $numberGenerator;
 
@@ -61,9 +61,9 @@ abstract class AbstractShipmentListener
     /**
      * Sets the number generator.
      *
-     * @param NumberGeneratorInterface $generator
+     * @param GeneratorInterface $generator
      */
-    public function setNumberGenerator(NumberGeneratorInterface $generator)
+    public function setNumberGenerator(GeneratorInterface $generator)
     {
         $this->numberGenerator = $generator;
     }
@@ -161,8 +161,7 @@ abstract class AbstractShipmentListener
                         $this->stockUnitAssigner->assignShipmentItem($item);
                     }
                 }
-            }
-            // Else if shipment state has changed from stockable to non stockable
+            } // Else if shipment state has changed from stockable to non stockable
             elseif (ShipmentStates::hasChangedFromStockable($stateCs)) {
                 // For each shipment item
                 foreach ($shipment->getItems() as $item) {
@@ -272,13 +271,13 @@ abstract class AbstractShipmentListener
      */
     protected function generateNumber(ShipmentInterface $shipment)
     {
-        if (0 == strlen($shipment->getNumber())) {
-            $this->numberGenerator->generate($shipment);
-
-            return true;
+        if (!empty($shipment->getNumber())) {
+            return false;
         }
 
-        return false;
+        $shipment->setNumber($this->numberGenerator->generate($shipment));
+
+        return true;
     }
 
     /**

@@ -144,7 +144,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     protected function updateCompound(StockSubjectInterface $subject)
     {
         $unit = $subject->getUnit();
-        $justInTime = $disabled = $supplierPreOrder = true;
+        $justInTime = $disabled = $resupply = true;
         $inStock = $virtualStock = $availableStock = $eda = null;
 
         foreach ($subject->getStockComposition() as $component) {
@@ -182,28 +182,19 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             }
 
             // Virtual stock
-            if (0 < $childVirtualStock = Units::round($child->getVirtualStock() / $quantity, $unit)) {
-                if (null === $virtualStock || $childVirtualStock <= $virtualStock) {
-                    $virtualStock = $childVirtualStock;
-
-                    // Estimated date of arrival
-                    if (null !== $slotEda = $child->getEstimatedDateOfArrival()) {
-                        if (null === $eda || $slotEda > $eda) {
-                            $eda = $slotEda;
-                        }
-                    }
-                }
-            } else {
-                $virtualStock = 0;
+            $childVirtualStock = Units::round($child->getVirtualStock() / $quantity, $unit);
+            if (null === $virtualStock || $childVirtualStock <= $virtualStock) {
+                $virtualStock = $childVirtualStock;
             }
 
-            // Supplier pre order
-            if (
-                0 >= $childAvailableStock &&
-                0 >= $childVirtualStock &&
-                $child->getStockState() === StockSubjectStates::STATE_OUT_OF_STOCK
-            ) {
-                $supplierPreOrder = false;
+            // Estimated date of arrival
+            if (null !== $childEda = $child->getEstimatedDateOfArrival()) {
+                if ($resupply && (null === $eda || $childEda > $eda)) {
+                    $eda = $childEda;
+                }
+            } elseif (0 >= $childAvailableStock) {
+                $resupply = false;
+                $eda = null;
             }
         }
 
@@ -226,7 +217,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $state = StockSubjectStates::STATE_OUT_OF_STOCK;
             if (0 < $availableStock) {
                 $state = StockSubjectStates::STATE_IN_STOCK;
-            } elseif ((0 < $virtualStock && null !== $eda) || $supplierPreOrder) {
+            } elseif (0 < $virtualStock && $eda) {
                 $state = StockSubjectStates::STATE_PRE_ORDER;
             }
 

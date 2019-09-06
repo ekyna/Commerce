@@ -5,8 +5,7 @@ namespace Ekyna\Component\Commerce\Common\EventListener;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
-use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
@@ -32,12 +31,12 @@ abstract class AbstractSaleListener
     protected $persistenceHelper;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $numberGenerator;
 
     /**
-     * @var KeyGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $keyGenerator;
 
@@ -100,9 +99,9 @@ abstract class AbstractSaleListener
     /**
      * Sets the number generator.
      *
-     * @param NumberGeneratorInterface $generator
+     * @param GeneratorInterface $generator
      */
-    public function setNumberGenerator(NumberGeneratorInterface $generator)
+    public function setNumberGenerator(GeneratorInterface $generator)
     {
         $this->numberGenerator = $generator;
     }
@@ -110,9 +109,9 @@ abstract class AbstractSaleListener
     /**
      * Sets the key generator.
      *
-     * @param KeyGeneratorInterface $generator
+     * @param GeneratorInterface $generator
      */
-    public function setKeyGenerator(KeyGeneratorInterface $generator)
+    public function setKeyGenerator(GeneratorInterface $generator)
     {
         $this->keyGenerator = $generator;
     }
@@ -294,7 +293,11 @@ abstract class AbstractSaleListener
 
         // Schedule content change
         if ($this->persistenceHelper->isChanged($sale, [
-            'sample', 'released', 'vatDisplayMode', 'paymentTerm', 'shipmentAmount',
+            'sample',
+            'released',
+            'vatDisplayMode',
+            'paymentTerm',
+            'shipmentAmount',
         ])) {
             $this->scheduleContentChangeEvent($sale);
         }
@@ -722,13 +725,13 @@ abstract class AbstractSaleListener
      */
     protected function updateNumber(SaleInterface $sale)
     {
-        if (0 == strlen($sale->getNumber())) {
-            $this->numberGenerator->generate($sale);
-
-            return true;
+        if (!empty($sale->getNumber())) {
+            return false;
         }
 
-        return false;
+        $sale->setNumber($this->numberGenerator->generate($sale));
+
+        return true;
     }
 
     /**
@@ -740,13 +743,13 @@ abstract class AbstractSaleListener
      */
     protected function updateKey(SaleInterface $sale)
     {
-        if (0 == strlen($sale->getKey())) {
-            $this->keyGenerator->generate($sale);
-
-            return true;
+        if (!empty($sale->getKey())) {
+            return false;
         }
 
-        return false;
+        $sale->setKey($this->keyGenerator->generate($sale));
+
+        return true;
     }
 
     /**

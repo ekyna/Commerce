@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Payment\EventListener;
 
-use Ekyna\Component\Commerce\Common\Generator\KeyGeneratorInterface;
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
@@ -30,12 +29,12 @@ abstract class AbstractPaymentListener
     protected $persistenceHelper;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $numberGenerator;
 
     /**
-     * @var KeyGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $keyGenerator;
 
@@ -63,9 +62,9 @@ abstract class AbstractPaymentListener
     /**
      * Sets the number generator.
      *
-     * @param NumberGeneratorInterface $generator
+     * @param GeneratorInterface $generator
      */
-    public function setNumberGenerator(NumberGeneratorInterface $generator)
+    public function setNumberGenerator(GeneratorInterface $generator)
     {
         $this->numberGenerator = $generator;
     }
@@ -73,9 +72,9 @@ abstract class AbstractPaymentListener
     /**
      * Sets the key generator.
      *
-     * @param KeyGeneratorInterface $generator
+     * @param GeneratorInterface $generator
      */
-    public function setKeyGenerator(KeyGeneratorInterface $generator)
+    public function setKeyGenerator(GeneratorInterface $generator)
     {
         $this->keyGenerator = $generator;
     }
@@ -255,13 +254,13 @@ abstract class AbstractPaymentListener
      */
     protected function generateNumber(PaymentInterface $payment)
     {
-        if (0 === strlen($payment->getNumber())) {
-            $this->numberGenerator->generate($payment);
-
-            return true;
+        if (!empty($payment->getNumber())) {
+            return false;
         }
 
-        return false;
+        $payment->setNumber($this->numberGenerator->generate($payment));
+
+        return true;
     }
 
     /**
@@ -273,13 +272,13 @@ abstract class AbstractPaymentListener
      */
     protected function generateKey(PaymentInterface $payment)
     {
-        if (0 === strlen($payment->getKey())) {
-            $this->keyGenerator->generate($payment);
-
-            return true;
+        if (!empty($payment->getKey())) {
+            return false;
         }
 
-        return false;
+        $payment->setKey($this->keyGenerator->generate($payment));
+
+        return true;
     }
 
     /**

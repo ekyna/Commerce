@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
@@ -28,12 +28,12 @@ abstract class AbstractInvoiceListener
     protected $persistenceHelper;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $invoiceNumberGenerator;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $creditNumberGenerator;
 
@@ -66,9 +66,9 @@ abstract class AbstractInvoiceListener
     /**
      * Sets the invoice number generator.
      *
-     * @param NumberGeneratorInterface $generator
+     * @param GeneratorInterface $generator
      */
-    public function setInvoiceNumberGenerator(NumberGeneratorInterface $generator)
+    public function setInvoiceNumberGenerator(GeneratorInterface $generator)
     {
         $this->invoiceNumberGenerator = $generator;
     }
@@ -76,9 +76,9 @@ abstract class AbstractInvoiceListener
     /**
      * Sets the credit number generator.
      *
-     * @param NumberGeneratorInterface $generator
+     * @param GeneratorInterface $generator
      */
-    public function setCreditNumberGenerator(NumberGeneratorInterface $generator)
+    public function setCreditNumberGenerator(GeneratorInterface $generator)
     {
         $this->creditNumberGenerator = $generator;
     }
@@ -298,7 +298,7 @@ abstract class AbstractInvoiceListener
         // TODO Multiple call will credit too much !
         if ($this->persistenceHelper->isScheduledForRemove($invoice)) {
             $method = empty($methodCs) ? $invoice->getPaymentMethod() : $methodCs[0];
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[0];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[0];
 
             if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
                 $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
@@ -315,7 +315,7 @@ abstract class AbstractInvoiceListener
         // Debit old method customer balance
         /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
         if (!empty($methodCs) && null !== $method = $methodCs[0]) {
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[0];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[0];
 
             if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
                 $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
@@ -325,11 +325,11 @@ abstract class AbstractInvoiceListener
         // Credit new method customer balance
         if (empty($methodCs)) {
             $method = $invoice->getPaymentMethod();
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[1] - $amountCs[0];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[1] - $amountCs[0];
         } else {
             /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
             $method = $methodCs[1];
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal(): $amountCs[1];
+            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[1];
         }
         if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
             $this->customerUpdater->updateCreditBalance($customer, $amount, true);
@@ -345,19 +345,23 @@ abstract class AbstractInvoiceListener
      */
     protected function generateNumber(InvoiceInterface $invoice)
     {
-        if (0 == strlen($invoice->getNumber())) {
-            if (InvoiceTypes::isInvoice($invoice)) {
-                $this->invoiceNumberGenerator->generate($invoice);
-            } elseif (InvoiceTypes::isCredit($invoice)) {
-                $this->creditNumberGenerator->generate($invoice);
-            } else {
-                throw new Exception\InvalidArgumentException("Unexpected invoice type.");
-            }
+        if (!empty($invoice->getNumber())) {
+            return false;
+        }
+
+        if (InvoiceTypes::isInvoice($invoice)) {
+            $invoice->setNumber($this->invoiceNumberGenerator->generate($invoice));
 
             return true;
         }
 
-        return false;
+        if (InvoiceTypes::isCredit($invoice)) {
+            $invoice->setNumber($this->creditNumberGenerator->generate($invoice));
+
+            return true;
+        }
+
+        throw new Exception\InvalidArgumentException("Unexpected invoice type.");
     }
 
     /**

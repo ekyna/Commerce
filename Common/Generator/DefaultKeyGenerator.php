@@ -2,26 +2,22 @@
 
 namespace Ekyna\Component\Commerce\Common\Generator;
 
-use Ekyna\Component\Commerce\Common\Model\KeySubjectInterface;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 
 /**
  * Class DefaultKeyGenerator
  * @package Ekyna\Component\Commerce\Order\Generator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class DefaultKeyGenerator implements KeyGeneratorInterface
+class DefaultKeyGenerator extends AbstractGenerator implements GeneratorInterface
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function generate(KeySubjectInterface $subject)
+    public function generate($subject): string
     {
-        if (null !== $subject->getKey()) {
-            return $this;
-        }
-
         // TODO read last key from a file
 
-        return $this;
+        throw new RuntimeException("Not yet implemented");
     }
 }

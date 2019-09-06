@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\EventListener;
 
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Customer\Event\CustomerEvents;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -23,7 +23,7 @@ class CustomerListener
     protected $persistenceHelper;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $numberGenerator;
 
@@ -37,12 +37,12 @@ class CustomerListener
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
-     * @param NumberGeneratorInterface   $numberGenerator
+     * @param GeneratorInterface         $numberGenerator
      * @param PricingUpdaterInterface    $pricingUpdater
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        NumberGeneratorInterface $numberGenerator,
+        GeneratorInterface $numberGenerator,
         PricingUpdaterInterface $pricingUpdater
     ) {
         $this->persistenceHelper = $persistenceHelper;
@@ -136,6 +136,7 @@ class CustomerListener
                     $this->persistenceHelper->persistAndRecompute($address, false);
                 }
             }
+
             return false;
         }
 
@@ -235,12 +236,12 @@ class CustomerListener
      */
     private function generateNumber(CustomerInterface $customer)
     {
-        if (0 == strlen($customer->getNumber())) {
-            $this->numberGenerator->generate($customer);
-
-            return true;
+        if (!empty($customer->getNumber())) {
+            return false;
         }
 
-        return false;
+        $customer->setNumber($this->numberGenerator->generate($customer));
+
+        return true;
     }
 }

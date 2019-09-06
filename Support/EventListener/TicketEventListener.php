@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Support\EventListener;
 
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -21,7 +21,7 @@ class TicketEventListener
     protected $persistenceHelper;
 
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $numberGenerator;
 
@@ -30,11 +30,11 @@ class TicketEventListener
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
-     * @param NumberGeneratorInterface   $numberGenerator
+     * @param GeneratorInterface         $numberGenerator
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        NumberGeneratorInterface $numberGenerator
+        GeneratorInterface $numberGenerator
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->numberGenerator = $numberGenerator;
@@ -101,13 +101,13 @@ class TicketEventListener
      */
     protected function updateNumber(TicketInterface $ticket)
     {
-        if (0 == strlen($ticket->getNumber())) {
-            $this->numberGenerator->generate($ticket);
-
-            return true;
+        if (!empty($ticket->getNumber())) {
+            return false;
         }
 
-        return false;
+        $ticket->setNumber($this->numberGenerator->generate($ticket));
+
+        return true;
     }
 
     /**

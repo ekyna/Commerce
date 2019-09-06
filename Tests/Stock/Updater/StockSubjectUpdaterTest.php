@@ -325,7 +325,7 @@ class StockSubjectUpdaterTest extends TestCase
                 $this->createSubject(
                     StockSubjectModes::MODE_JUST_IN_TIME,
                     StockSubjectStates::STATE_PRE_ORDER,
-                    0, 0, 0, null
+                    0, 0, 20, null
                 ),
                 1
             ),
@@ -345,7 +345,7 @@ class StockSubjectUpdaterTest extends TestCase
                 'state'     => StockSubjectStates::STATE_PRE_ORDER,
                 'in'        => 0.0,
                 'available' => 0.0,
-                'virtual'   => 0.0,
+                'virtual'   => 10.0,
                 'eda'       => null,
             ],
             $subject,
@@ -433,7 +433,7 @@ class StockSubjectUpdaterTest extends TestCase
                     $this->createSubject(
                         StockSubjectModes::MODE_AUTO,
                         StockSubjectStates::STATE_IN_STOCK,
-                        60, 60, 0, null
+                        30, 30, 30, null
                     ),
                     3
                 ),
@@ -443,7 +443,7 @@ class StockSubjectUpdaterTest extends TestCase
                     $this->createSubject(
                         StockSubjectModes::MODE_JUST_IN_TIME,
                         StockSubjectStates::STATE_IN_STOCK,
-                        0, 0, 30, new \DateTime('+2 days')
+                        0, 0, 10, $eda = new \DateTime('+2 days')
                     ),
                     1
                 ),
@@ -451,7 +451,7 @@ class StockSubjectUpdaterTest extends TestCase
                     $this->createSubject(
                         StockSubjectModes::MODE_JUST_IN_TIME,
                         StockSubjectStates::STATE_IN_STOCK,
-                        0, 0, 30, $eda = new \DateTime('+3 days')
+                        0, 0, 20, new \DateTime('+3 days')
                     ),
                     2
                 ),
@@ -464,7 +464,7 @@ class StockSubjectUpdaterTest extends TestCase
                 'state'     => StockSubjectStates::STATE_PRE_ORDER,
                 'in'        => 0.0,
                 'available' => 0.0,
-                'virtual'   => 15.0,
+                'virtual'   => 10.0,
                 'eda'       => $eda,
             ],
             $subject,

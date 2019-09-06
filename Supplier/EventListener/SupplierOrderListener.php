@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Generator\NumberGeneratorInterface;
+use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -20,7 +20,7 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class SupplierOrderListener extends AbstractListener
 {
     /**
-     * @var NumberGeneratorInterface
+     * @var GeneratorInterface
      */
     protected $numberGenerator;
 
@@ -43,13 +43,13 @@ class SupplierOrderListener extends AbstractListener
     /**
      * Constructor.
      *
-     * @param NumberGeneratorInterface         $numberGenerator
+     * @param GeneratorInterface               $numberGenerator
      * @param SupplierOrderCalculatorInterface $calculator
      * @param StateResolverInterface           $stateResolver
      * @param CurrencyConverterInterface       $currencyConverter
      */
     public function __construct(
-        NumberGeneratorInterface $numberGenerator,
+        GeneratorInterface $numberGenerator,
         SupplierOrderCalculatorInterface $calculator,
         StateResolverInterface $stateResolver,
         CurrencyConverterInterface $currencyConverter
@@ -202,13 +202,13 @@ class SupplierOrderListener extends AbstractListener
      */
     protected function updateNumber(SupplierOrderInterface $order)
     {
-        if (0 == strlen($order->getNumber())) {
-            $this->numberGenerator->generate($order);
-
-            return true;
+        if (!empty($order->getNumber())) {
+            return false;
         }
 
-        return false;
+        $order->setNumber($this->numberGenerator->generate($order));
+
+        return true;
     }
 
     /**
