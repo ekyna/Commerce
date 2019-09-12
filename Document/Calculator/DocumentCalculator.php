@@ -254,13 +254,13 @@ class DocumentCalculator implements DocumentCalculatorInterface
         $final = $result->getFinal();
 
         // Document goods base (after discounts)
-        if ($this->compareAmount($document->getGoodsBase(), $gross->getBase())) {
+        if ($this->compareAmount($document->getGoodsBase(), $final->getGross())) {
             $document->setGoodsBase($gross->getBase());
             $this->changed = true;
         }
 
         // Document discount base.
-        if ($this->compareAmount($document->getDiscountBase(), $gross->getDiscount())) {
+        if ($this->compareAmount($document->getDiscountBase(), $final->getDiscount())) {
             $document->setDiscountBase($final->getDiscount());
             $this->changed = true;
         }
