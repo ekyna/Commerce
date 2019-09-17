@@ -309,7 +309,7 @@
 
 {% block taxes %}
 {% spaceless %}
-    <table class="table table-striped taxes-view">
+    <table class="table table-striped taxes-view table-alt-head">
         <thead>
         <tr>
             <th>{{ view.translations.tax_name }}</th>
@@ -356,7 +356,7 @@
 {% spaceless %}
     <div class="sale-view">
         <div class="table-responsive">
-            <table class="table sale-detail">
+            <table class="table table-alt-head sale-detail">
                 {{ block('lines') }}
 
                 {% if view.discounts is not empty %}

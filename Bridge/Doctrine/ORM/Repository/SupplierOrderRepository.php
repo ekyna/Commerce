@@ -198,7 +198,9 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
                 $ex->isNotNull($as . '.' . $prefix . 'DueDate'),
                 $ex->lt($as . '.' . $prefix . 'DueDate', ':today')
             ))
+            ->andWhere($ex->neq($as . '.state', ':state'))
             ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Type::DATETIME)
+            ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }
 
@@ -222,7 +224,9 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
                 $ex->isNull($as . '.' . $prefix . 'DueDate'),
                 $ex->gte($as . '.' . $prefix . 'DueDate', ':today')
             ))
+            ->andWhere($ex->neq($as . '.state', ':state'))
             ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Type::DATETIME)
+            ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }
 
