@@ -101,7 +101,6 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
                     $shippedCount++;
 
                     // If shipped equals returned, item is fully returned
-                    //if ($q['shipped'] == $q['returned']) {
                     if (0 === bccomp($q['shipped'], $q['returned'], 3)) {
                         $returnedCount++;
                     }

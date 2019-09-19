@@ -68,12 +68,32 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
             }
 
             $sale = $item->getSale();
+            $total = $item->getTotalQuantity();
+
+            $invoiceData = ['invoiced' => 0, 'credited' => 0, 'invoice_class' => null,];
+            if ($sale instanceof InvoiceSubjectInterface && !$sale->isSample()) {
+                $invoiceData = [
+                    'invoiced' => $this->invoiceCalculator->calculateInvoicedQuantity($item),
+                    'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
+                ];
+
+                $invoiceable = $this->invoiceCalculator->calculateInvoiceableQuantity($item);
+                if (0 === bccomp(0, $invoiceable, 3)) {
+                    $invoiceData['invoice_class'] = 'success';
+                } elseif (0 === bccomp($total, $invoiceable, 3)) {
+                    $invoiceData['invoice_class'] = 'danger';
+                } else {
+                    $invoiceData['invoice_class'] = 'warning';
+                }
+            }
 
             $shipmentData = [
-                'shipped'   => null,
-                'returned'  => null,
-                'available' => null,
-                'in_stock'  => null,
+                'shipped'            => null,
+                'returned'           => null,
+                'available'          => null,
+                'in_stock'           => null,
+                'shipment_class'     => null,
+                'availability_class' => null,
             ];
             if ($sale instanceof ShipmentSubjectInterface) {
                 if ($item->isCompound()) {
@@ -88,27 +108,39 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
                     }
                 } else {
                     $shipmentData = [
-                        'shipped'   => $this->shipmentCalculator->calculateShippedQuantity($item),
-                        'returned'  => $this->shipmentCalculator->calculateReturnedQuantity($item),
-                        'available' => $this->shipmentCalculator->calculateAvailableQuantity($item),
-                        'in_stock'  => $this->getInStock($item),
+                        'shipped'            => $this->shipmentCalculator->calculateShippedQuantity($item),
+                        'returned'           => $this->shipmentCalculator->calculateReturnedQuantity($item),
+                        'available'          => $this->shipmentCalculator->calculateAvailableQuantity($item),
+                        'in_stock'           => $this->getInStock($item),
+                        'availability_class' => null,
                     ];
                 }
-            }
 
-            $invoiceData = ['invoiced' => 0, 'credited' => 0];
-            if ($sale instanceof InvoiceSubjectInterface) {
-                $invoiceData = [
-                    'invoiced' => $this->invoiceCalculator->calculateInvoicedQuantity($item),
-                    'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
-                ];
+                $shippable = $this->shipmentCalculator->calculateShippableQuantity($item);
+                if (0 === bccomp(0, $shippable, 3)) {
+                    $invoiceData['shipment_class'] = 'success';
+                } elseif (0 === bccomp($total, $shippable, 3)) {
+                    $invoiceData['shipment_class'] = 'danger';
+                } else {
+                    $invoiceData['shipment_class'] = 'warning';
+                }
+
+                if (0 < $shippable) {
+                    if (0 <= bccomp($shipmentData['available'], $shippable, 3)) {
+                        $invoiceData['availability_class'] = 'success';
+                    } elseif (0 === bccomp($shipmentData['available'], 0, 3)) {
+                        $invoiceData['availability_class'] = 'danger';
+                    } else {
+                        $invoiceData['availability_class'] = 'warning';
+                    }
+                }
             }
 
             $data = array_replace($data, [
                 'designation'    => $item->getDesignation(),
                 'reference'      => $item->getReference(),
                 'quantity'       => $item->getQuantity(),
-                'total_quantity' => $item->getTotalQuantity(),
+                'total_quantity' => $total,
                 'private'        => $item->isPrivate(),
                 //'compound'         => $item->isCompound(),
                 //'private_children' => $item->hasPrivateChildren(),
