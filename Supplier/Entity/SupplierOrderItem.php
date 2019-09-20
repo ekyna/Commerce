@@ -83,7 +83,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getOrder()
+    public function getOrder(): ?Model\SupplierOrderInterface
     {
         return $this->order;
     }
@@ -91,7 +91,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setOrder(Model\SupplierOrderInterface $order = null)
+    public function setOrder(Model\SupplierOrderInterface $order = null): Model\SupplierOrderItemInterface
     {
         if ($this->order !== $order) {
             if ($previous = $this->order) {
@@ -110,7 +110,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getProduct()
+    public function getProduct(): ?Model\SupplierProductInterface
     {
         return $this->product;
     }
@@ -118,7 +118,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setProduct(Model\SupplierProductInterface $product = null)
+    public function setProduct(Model\SupplierProductInterface $product = null): Model\SupplierOrderItemInterface
     {
         $this->product = $product;
 
@@ -128,7 +128,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getStockUnit()
+    public function getStockUnit(): ?StockUnitInterface
     {
         return $this->stockUnit;
     }
@@ -136,7 +136,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setStockUnit(StockUnitInterface $stockUnit = null)
+    public function setStockUnit(StockUnitInterface $stockUnit = null): Model\SupplierOrderItemInterface
     {
         if ($this->stockUnit !== $stockUnit) {
             if ($previous = $this->stockUnit) {
@@ -155,7 +155,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getDesignation()
+    public function getDesignation(): ?string
     {
         return $this->designation;
     }
@@ -163,7 +163,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setDesignation($designation)
+    public function setDesignation(string $designation): Model\SupplierOrderItemInterface
     {
         $this->designation = $designation;
 
@@ -173,7 +173,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getReference()
+    public function getReference(): ?string
     {
         return $this->reference;
     }
@@ -181,7 +181,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setReference($reference)
+    public function setReference(string $reference): Model\SupplierOrderItemInterface
     {
         $this->reference = $reference;
 
@@ -191,7 +191,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getQuantity()
+    public function getQuantity(): ?float
     {
         return $this->quantity;
     }
@@ -199,7 +199,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setQuantity($quantity)
+    public function setQuantity(float $quantity): Model\SupplierOrderItemInterface
     {
         $this->quantity = (float)$quantity;
 
@@ -209,7 +209,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getNetPrice()
+    public function getNetPrice(): ?float
     {
         return $this->netPrice;
     }
@@ -217,9 +217,9 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function setNetPrice($netPrice)
+    public function setNetPrice(float $price = null): Model\SupplierOrderItemInterface
     {
-        $this->netPrice = (float)$netPrice;
+        $this->netPrice = $price;
 
         return $this;
     }

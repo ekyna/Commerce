@@ -18,7 +18,7 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      *
      * @return SupplierOrderInterface
      */
-    public function getOrder();
+    public function getOrder(): ?SupplierOrderInterface;
 
     /**
      * Sets the supplier order.
@@ -27,14 +27,14 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      *
      * @return $this|SupplierOrderItemInterface
      */
-    public function setOrder(SupplierOrderInterface $order = null);
+    public function setOrder(SupplierOrderInterface $order = null): SupplierOrderItemInterface;
 
     /**
      * Returns the supplier product.
      *
      * @return SupplierProductInterface
      */
-    public function getProduct();
+    public function getProduct(): ?SupplierProductInterface;
 
     /**
      * Sets the supplier product.
@@ -43,14 +43,14 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      *
      * @return $this|SupplierOrderItemInterface
      */
-    public function setProduct(SupplierProductInterface $product = null);
+    public function setProduct(SupplierProductInterface $product = null): SupplierOrderItemInterface;
 
     /**
      * Returns the stock unit.
      *
      * @return StockUnitInterface
      */
-    public function getStockUnit();
+    public function getStockUnit(): ?StockUnitInterface;
 
     /**
      * Sets the stock unit.
@@ -59,14 +59,14 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      *
      * @return $this|SupplierOrderItemInterface
      */
-    public function setStockUnit(StockUnitInterface $stockUnit);
+    public function setStockUnit(StockUnitInterface $stockUnit): SupplierOrderItemInterface;
 
     /**
      * Returns the designation.
      *
      * @return string
      */
-    public function getDesignation();
+    public function getDesignation(): ?string;
 
     /**
      * Sets the designation.
@@ -75,14 +75,14 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      *
      * @return $this|SupplierOrderItemInterface
      */
-    public function setDesignation($designation);
+    public function setDesignation(string $designation): ?SupplierOrderItemInterface;
 
     /**
      * Returns the reference.
      *
      * @return string
      */
-    public function getReference();
+    public function getReference(): ?string;
 
     /**
      * Sets the reference.
@@ -91,14 +91,14 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      *
      * @return $this|SupplierOrderItemInterface
      */
-    public function setReference($reference);
+    public function setReference(string $reference): SupplierOrderItemInterface;
 
     /**
      * Returns the quantity.
      *
      * @return float
      */
-    public function getQuantity();
+    public function getQuantity(): ?float;
 
     /**
      * Sets the quantity.
@@ -107,7 +107,7 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
      *
      * @return $this|SupplierOrderItemInterface
      */
-    public function setQuantity($quantity);
+    public function setQuantity(float $quantity): SupplierOrderItemInterface;
 
     /**
      * Returns the net price.
@@ -119,9 +119,9 @@ interface SupplierOrderItemInterface extends ResourceInterface, SubjectRelativeI
     /**
      * Sets the net price.
      *
-     * @param float $netPrice
+     * @param float $price
      *
      * @return $this|SupplierOrderItemInterface
      */
-    public function setNetPrice($netPrice);
+    public function setNetPrice(float $price = null): SupplierOrderItemInterface;
 }

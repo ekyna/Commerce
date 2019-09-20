@@ -183,13 +183,13 @@ class SupplierOrderItemListener extends AbstractListener
                 );
             }
 
-            if (0 == strlen($item->getDesignation())) {
+            if (empty($item->getDesignation())) {
                 $item->setDesignation($product->getDesignation());
             }
-            if (0 == strlen($item->getReference())) {
+            if (empty($item->getReference())) {
                 $item->setReference($product->getReference());
             }
-            if (0 == $item->getNetPrice()) {
+            if (is_null($item->getNetPrice())) {
                 $item->setNetPrice($product->getNetPrice());
             }
         } elseif ($item->hasSubjectIdentity()) {
