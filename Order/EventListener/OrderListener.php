@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Common\Repository\CouponRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
@@ -41,6 +42,11 @@ class OrderListener extends AbstractSaleListener
     protected $orderRepository;
 
     /**
+     * @var CouponRepositoryInterface
+     */
+    protected $couponRepository;
+
+    /**
      * @var InvoicePaymentResolverInterface
      */
     protected $invoicePaymentResolver;
@@ -74,6 +80,16 @@ class OrderListener extends AbstractSaleListener
     public function setOrderRepository(OrderRepositoryInterface $repository)
     {
         $this->orderRepository = $repository;
+    }
+
+    /**
+     * Sets the couponRepository.
+     *
+     * @param CouponRepositoryInterface $repository
+     */
+    public function setCouponRepository(CouponRepositoryInterface $repository)
+    {
+        $this->couponRepository = $repository;
     }
 
     /**
@@ -142,6 +158,8 @@ class OrderListener extends AbstractSaleListener
      */
     protected function handleInsert(SaleInterface $sale)
     {
+        $this->handleCouponChange($sale);
+
         $changed = $this->fixCustomers($sale);
 
         $changed |= $this->setIsFirst($sale);
@@ -158,6 +176,8 @@ class OrderListener extends AbstractSaleListener
      */
     protected function handleUpdate(SaleInterface $sale)
     {
+        $this->handleCouponChange($sale);
+
         $changed = $this->fixCustomers($sale);
 
         $changed |= parent::handleUpdate($sale);
@@ -266,6 +286,40 @@ class OrderListener extends AbstractSaleListener
         }
 
         return $changed;
+    }
+
+    /**
+     * Handles coupon change.
+     *
+     * @param SaleInterface $sale
+     */
+    protected function handleCouponChange(SaleInterface $sale): void
+    {
+        if (empty($cs = $this->persistenceHelper->getChangeSet($sale, 'coupon'))) {
+            return;
+        }
+
+        list($old, $new) = $cs;
+
+        if ($old === $new) {
+            return;
+        }
+
+        if ($old) {
+            $coupon = $old;
+            $modifier = -1;
+        } else {
+            $coupon = $new;
+            $modifier = +1;
+        }
+
+        /** @var \Ekyna\Component\Commerce\Common\Model\CouponInterface $coupon */
+
+        $usage = $this->orderRepository->getCouponUsage($coupon) + $modifier;
+
+        $coupon->setUsage($usage);
+
+        $this->persistenceHelper->persistAndRecompute($coupon, false);
     }
 
     /**

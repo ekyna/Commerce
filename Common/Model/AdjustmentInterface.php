@@ -88,6 +88,22 @@ interface AdjustmentInterface extends ResourceModel\ResourceInterface, ResourceM
     public function setImmutable($immutable);
 
     /**
+     * Returns the source.
+     *
+     * @return string
+     */
+    public function getSource(): ?string;
+
+    /**
+     * Sets the source.
+     *
+     * @param string $source
+     *
+     * @return AdjustmentInterface
+     */
+    public function setSource(string $source = null): AdjustmentInterface;
+
+    /**
      * Returns whether this adjustment equals the given adjustment.
      *
      * @param AdjustmentInterface $adjustment

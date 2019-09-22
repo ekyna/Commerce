@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Repository;
 
+use Ekyna\Component\Commerce\Common\Model\CouponInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -137,4 +138,13 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      * @return string[] The currencies codes.
      */
     public function getCustomerCurrencies(CustomerInterface $customer);
+
+    /**
+     * Returns the coupon code usage.
+     *
+     * @param CouponInterface $coupon
+     *
+     * @return int
+     */
+    public function getCouponUsage(CouponInterface $coupon): int;
 }

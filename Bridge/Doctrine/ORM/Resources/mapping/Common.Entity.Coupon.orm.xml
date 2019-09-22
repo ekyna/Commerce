@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Common\Entity\Coupon"
+            table="commerce_coupon">
+
+        <indexes>
+            <index columns="code" name="idx_commerce_coupon_code"/>
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="code" name="unique_commerce_coupon_code"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="code" column="code" type="string" length="16"/>
+        <field name="startAt" column="start_at" type="date" nullable="true"/>
+        <field name="endAt" column="end_at" type="date" nullable="true"/>
+        <field name="limit" column="usage_limit" type="smallint" nullable="true"/>
+        <field name="usage" column="usage_count" type="smallint" nullable="false"/>
+        <field name="minGross" column="min_gross" type="decimal" precision="15" scale="5" nullable="false"/>
+        <field name="cumulative" column="cumulative" type="boolean" nullable="false"/>
+
+        <field name="designation" column="designation" type="string" length="64" nullable="true"/>
+        <field name="mode" column="mode" type="string" length="16"/>
+        <field name="amount" column="amount" type="decimal" precision="15" scale="5"/>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

@@ -128,6 +128,7 @@
                     <value>Calculation</value>
                 </option>
             </constraint>
+            <!-- TODO Lower than 100 if percent mode -->
         </property>
         <property name="position">
             <constraint name="GreaterThanOrEqual">
@@ -459,6 +460,76 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
         </constraint>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">code</option>
+        </constraint>
+    </class>
+
+    <!-- Coupon -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\Coupon">
+        <property name="code">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="min">4</option>
+                <option name="max">16</option>
+            </constraint>
+        </property>
+        <property name="startAt">
+            <constraint name="Type">
+                <option name="type">\DateTime</option>
+            </constraint>
+        </property>
+        <property name="endAt">
+            <constraint name="Type">
+                <option name="type">\DateTime</option>
+            </constraint>
+        </property>
+        <property name="limit">
+            <constraint name="NotBlank"/>
+            <constraint name="Type">
+                <option name="type">int</option>
+            </constraint>
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="usage">
+            <constraint name="NotBlank"/>
+            <constraint name="Type">
+                <option name="type">int</option>
+            </constraint>
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="minGross">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="designation">
+            <constraint name="Length">
+                <option name="max">64</option>
+            </constraint>
+        </property>
+        <property name="mode">
+            <constraint name="NotBlank"/>
+            <constraint name="Callback">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Common\Model\AdjustmentModes</value>
+                    <value>isValidMode</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="amount">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+            <!-- TODO Lower than 100 if percent mode -->
+        </property>
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">code</option>
         </constraint>

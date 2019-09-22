@@ -62,9 +62,9 @@
 {% block line_quantity %}
 {% spaceless %}
     <td class="sale-detail-quantity">
-        {% if view.vars.form[line.formId] is defined %}
-            {% form_theme view.vars.form[line.formId] _self %}
-            {{ form_widget(view.vars.form[line.formId]) }}
+        {% if view.vars.quantities_form[line.formId] is defined %}
+            {% form_theme view.vars.quantities_form[line.formId] _self %}
+            {{ form_widget(view.vars.quantities_form[line.formId]) }}
         {% else %}
             <span id="{{ line.id }}_quantity">{{ line.quantity }}</span>
         {% endif %}
@@ -104,7 +104,7 @@
     <tbody>
     <tr id="sale_gross">
         <th>&nbsp;</th>
-        <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 7 : 4) }}">
+        <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 7 : 4) + (view.vars.show_availability ? 1 : 0) }}">
             <strong>{{ view.translations.gross_totals }}</strong>
         </th>
         {%- if view.vars.show_discounts -%}
@@ -148,7 +148,7 @@
         <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
             rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}" class="sale-detail-buttons">
             {{ block('messages') -}}
-            {{ form_widget(view.vars.form.submit) -}}
+            {{ form_widget(view.vars.quantities_form.submit) }}
         </td>
         <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
         <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total|raw : view.final.base|raw }}</td>
@@ -175,33 +175,49 @@
 {% endblock gran_totals %}
 
 
+{% block coupon %}
+{% spaceless %}
+    {%- if view.vars.coupon_form is defined -%}
+    <div class="row sale-coupon">
+        <div class="col-sm-12">
+            {{ form(view.vars.coupon_form) }}
+        </div>
+    </div>
+    {%- endif -%}
+{% endspaceless %}
+{% endblock coupon %}
+
+
 {% block sale %}
 {% spaceless %}
-    {{ form_start(view.vars.form, {'attr': {'class': 'sale-view'}}) }}
-        {{ form_errors(view.vars.form) }}
-        <div class="table-responsive">
-            <table class="table table-alt-head sale-detail">
-                {{ block('lines') }}
+    <div class="sale-view">
+        {{ form_start(view.vars.quantities_form) }}
+            {{ form_errors(view.vars.quantities_form) }}
+            <div class="table-responsive">
+                <table class="table table-alt-head sale-detail">
+                    {{ block('lines') }}
 
-                {% if view.discounts is not empty %}
-                    {{ block('gross_totals') }}
+                    {% if view.discounts is not empty %}
+                        {{ block('gross_totals') }}
+                        {{ block('spacer') }}
+                        {{ block('discounts') }}
+                    {% endif %}
+
+                    {% if view.shipment is not null %}
+                        {{ block('spacer') }}
+                        {% set line = view.shipment %}
+                        <tbody><tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
+                        {{ block('shipment') }}
+                        </tr></tbody>
+                    {% endif %}
+
                     {{ block('spacer') }}
-                    {{ block('discounts') }}
-                {% endif %}
 
-                {% if view.shipment is not null %}
-                    {{ block('spacer') }}
-                    {% set line = view.shipment %}
-                    <tbody><tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
-                    {{ block('shipment') }}
-                    </tr></tbody>
-                {% endif %}
+                    {{ block('gran_totals') }}
+                </table>
+            </div>
+        {{ form_end(view.vars.quantities_form) }}
 
-                {{ block('spacer') }}
-
-                {{ block('gran_totals') }}
-            </table>
-        </div>
         <div class="row">
             <div class="col-sm-4">
                 {% if view.taxes is not empty %}
@@ -218,8 +234,10 @@
                 {% endif %}
             </div>
         </div>
-    {{ form_end(view.vars.form) }}
 
-    {{ block('alerts') }}
+        {{ block('coupon') }}
+
+        {{ block('alerts') }}
+    </div>
 {% endspaceless %}
 {% endblock sale %}

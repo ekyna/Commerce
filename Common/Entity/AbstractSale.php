@@ -75,6 +75,16 @@ abstract class AbstractSale implements Common\SaleInterface
     protected $sameAddress;
 
     /**
+     * @var Common\CouponInterface
+     */
+    protected $coupon;
+
+    /**
+     * @var array
+     */
+    protected $couponData;
+
+    /**
      * @var bool
      */
     protected $autoDiscount;
@@ -616,6 +626,42 @@ abstract class AbstractSale implements Common\SaleInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getCoupon(): ?Common\CouponInterface
+    {
+        return $this->coupon;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setCoupon(Common\CouponInterface $coupon = null): Common\SaleInterface
+    {
+        $this->coupon = $coupon;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCouponData(): ?array
+    {
+        return $this->couponData;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setCouponData(array $data = null): Common\SaleInterface
+    {
+        $this->couponData = $data;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function clearResults(): Common\SaleInterface
@@ -746,6 +792,26 @@ abstract class AbstractSale implements Common\SaleInterface
      */
     public function canBeReleased(): bool
     {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasDiscountItemAdjustment(array $items = null): bool
+    {
+        $items = $items ?? $this->items;
+
+        foreach ($items as $item) {
+            if ($item->hasAdjustments(Common\AdjustmentTypes::TYPE_DISCOUNT)) {
+                return true;
+            }
+
+            if ($item->hasChildren() && $this->hasDiscountItemAdjustment($item->getChildren())) {
+                return true;
+            }
+        }
+
         return false;
     }
 }

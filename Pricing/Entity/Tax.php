@@ -177,4 +177,16 @@ class Tax implements TaxInterface
     {
         return true;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSource()
+    {
+        if (!$this->id) {
+            return null;
+        }
+
+        return "tax:{$this->id}";
+    }
 }

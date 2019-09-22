@@ -187,7 +187,8 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
                 ->setMode($d->getMode())
                 ->setDesignation($d->getDesignation())
                 ->setAmount($d->getAmount())
-                ->setImmutable($d->isImmutable());
+                ->setImmutable($d->isImmutable())
+                ->setSource($d->getSource());
 
             $newAdjustments[] = $adjustment;
         }

@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
+use Ekyna\Component\Commerce\Common\Model\CouponInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -308,6 +309,21 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->setParameter('customer', $customer);
 
         return array_column($qb->getQuery()->getScalarResult(), 'code');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCouponUsage(CouponInterface $coupon): int
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        return (int) $qb
+            ->select('COUNT(o.id)')
+            ->andWhere($qb->expr()->eq('o.coupon', ':coupon'))
+            ->getQuery()
+            ->setParameter('coupon', $coupon)
+            ->getSingleScalarResult();
     }
 
     /**

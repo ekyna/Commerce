@@ -148,6 +148,38 @@ interface SaleInterface extends
     public function setSameAddress($same);
 
     /**
+     * Returns the coupon.
+     *
+     * @return CouponInterface|null
+     */
+    public function getCoupon(): ?CouponInterface;
+
+    /**
+     * Sets the coupon.
+     *
+     * @param CouponInterface|null $coupon
+     *
+     * @return SaleInterface
+     */
+    public function setCoupon(CouponInterface $coupon = null): SaleInterface;
+
+    /**
+     * Returns the coupon data.
+     *
+     * @return array|null
+     */
+    public function getCouponData(): ?array;
+
+    /**
+     * Sets the coupon data.
+     *
+     * @param array|null $data
+     *
+     * @return SaleInterface
+     */
+    public function setCouponData(array $data = null): SaleInterface;
+
+    /**
      * Returns whether to generate discounts automatically.
      *
      * @return bool
@@ -596,4 +628,11 @@ interface SaleInterface extends
      * @return bool
      */
     public function canBeReleased(): bool;
+
+    /**
+     * Returns whether at least one item has a discount adjustment.
+     *
+     * @return bool
+     */
+    public function hasDiscountItemAdjustment(): bool;
 }

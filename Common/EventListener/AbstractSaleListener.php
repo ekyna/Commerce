@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Resolver\DueDateResolverInterface;
@@ -273,6 +274,9 @@ abstract class AbstractSaleListener
         // Update state
         $changed |= $this->updateState($sale);
 
+        /// Coupon check
+        $changed |= $this->checkCouponValidity($sale);
+
         return $changed;
     }
 
@@ -441,6 +445,8 @@ abstract class AbstractSaleListener
         // Reflect content change on update timestamp
         $sale->setUpdatedAt(new\DateTime());
 
+        $this->checkCouponValidity($sale);
+
         $this->persistenceHelper->persistAndRecompute($sale, false);
     }
 
@@ -468,6 +474,8 @@ abstract class AbstractSaleListener
 
         // Update totals
         $changed |= $this->saleUpdater->updateTotals($sale);
+
+        // TODO Check coupon validity
 
         // Update state
         $changed |= $this->updateState($sale);
@@ -602,7 +610,7 @@ abstract class AbstractSaleListener
      */
     protected function isDiscountUpdateNeeded(SaleInterface $sale)
     {
-        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount', 'couponData'])) {
             return true;
         }
 
@@ -926,11 +934,60 @@ abstract class AbstractSaleListener
     }
 
     /**
+     * Checks that the coupon can still be applied to the given sale.
+     * If not, clears the coupon and its data.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the coupon has been cleared.
+     */
+    protected function checkCouponValidity(SaleInterface $sale): bool
+    {
+        if (null === $data = $sale->getCouponData()) {
+            return false;
+        }
+
+        if (0 < $data['gross']) {
+            $currency = $this->currencyConverter->getDefaultCurrency();
+            $gross = $sale->getFinalResult($currency)->getGross();
+            if (1 === Money::compare($data['gross'], $gross, $currency)) {
+                $this->clearCoupon($sale);
+
+                return true;
+            }
+        }
+
+        if (!$data['cumulative'] && $sale->hasDiscountItemAdjustment()) {
+            $this->clearCoupon($sale);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Clears the coupon and its data.
+     *
+     * @param SaleInterface $sale
+     */
+    protected function clearCoupon(SaleInterface $sale): void
+    {
+        $sale
+            ->setCoupon(null)
+            ->setCouponData(null);
+
+        $this->saleUpdater->updateDiscounts($sale, true);
+    }
+
+    /**
      * Updates the sale exchange rate.
      *
      * @param SaleInterface $sale
      *
      * @return bool Whether the sale has been changed.
+     *
+     * @TODO Remove as not used (?)
      */
     protected function configureAcceptedSale(SaleInterface $sale)
     {

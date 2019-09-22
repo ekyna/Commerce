@@ -102,7 +102,9 @@ class AccountingWriter
 
         $sale = $subject->getSale();
 
-        if ($customer = $sale->getCustomer()) {
+        if (!empty($company = $sale->getCompany())) {
+            $this->identity = $company;
+        } elseif ($customer = $sale->getCustomer()) {
             $this->identity = $customer->getFirstName() . ' ' . $customer->getLastName();
         } else {
             $this->identity = $sale->getFirstName() . ' ' . $sale->getLastName();

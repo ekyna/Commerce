@@ -25,6 +25,11 @@ class AdjustmentData implements AdjustmentDataInterface
     private $amount;
 
     /**
+     * @var string
+     */
+    private $source;
+
+    /**
      * @var bool
      */
     private $immutable;
@@ -37,13 +42,20 @@ class AdjustmentData implements AdjustmentDataInterface
      * @param string $designation
      * @param float  $amount
      * @param bool   $immutable
+     * @param string $source
      */
-    public function __construct($mode, $designation, $amount, $immutable = true)
-    {
+    public function __construct(
+        string $mode,
+        string $designation,
+        float $amount,
+        string $source,
+        bool $immutable = true
+    ) {
         $this->mode = $mode;
         $this->designation = $designation;
-        $this->amount = (float)$amount;
-        $this->immutable = (bool)$immutable;
+        $this->amount = $amount;
+        $this->source = $source;
+        $this->immutable = $immutable;
     }
 
     /**
@@ -68,6 +80,14 @@ class AdjustmentData implements AdjustmentDataInterface
     public function getAmount()
     {
         return $this->amount;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSource()
+    {
+        return $this->source;
     }
 
     /**

@@ -44,6 +44,11 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
      */
     protected $immutable;
 
+    /**
+     * @var string
+     */
+    protected $source;
+
 
     /**
      * Constructor.
@@ -166,6 +171,24 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSource(string $source = null): Model\AdjustmentInterface
+    {
+        $this->source = $source;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function equals(Model\AdjustmentInterface $adjustment)
     {
         // TODO unique hash (other data may vary)
@@ -174,7 +197,8 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
             && $this->type == $adjustment->getType()
             && $this->mode == $adjustment->getMode()
             && $this->amount == $adjustment->getAmount()
-            && $this->immutable == $adjustment->isImmutable();
+            && $this->immutable == $adjustment->isImmutable()
+            && $this->source == $adjustment->getSource();
     }
 
     /**

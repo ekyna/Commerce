@@ -94,7 +94,7 @@
     {{- block('line_quantity') -}}
     <td colspan="{{ view.vars.show_discounts ? 4 : 1 }}">&nbsp;</td>
     {% if view.vars.show_margin -%}
-        <td class="text-right" id="{{ line.id }}_margin">{{ line.margin }}</td>
+    <td class="text-right" id="{{ line.id }}_margin">{{ line.margin }}</td>
     {%- endif %}
 {% endspaceless %}
 {% endblock line_private %}
@@ -185,7 +185,7 @@
     <tbody>
         <tr>
             <th>&nbsp;</th>
-            <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 7 : 4) }}">
+            <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 5 : 2) + (view.vars.show_availability ? 1 : 0) }}">
                 <strong>{{ view.translations.gross_totals }}</strong>
             </th>
             {% if view.vars.show_discounts -%}
@@ -309,7 +309,7 @@
 
 {% block taxes %}
 {% spaceless %}
-    <table class="table table-striped taxes-view table-alt-head">
+    <table class="table table-striped sale-taxes table-alt-head">
         <thead>
         <tr>
             <th>{{ view.translations.tax_name }}</th>

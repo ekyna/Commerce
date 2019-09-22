@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\DependencyInjection;
 
 use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Type;
 use Ekyna\Component\Commerce\Cart;
+use Ekyna\Component\Commerce\Common;
 use Ekyna\Component\Commerce\Customer;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Payment;
@@ -64,6 +65,8 @@ class DoctrineBundleMapping
         return [
             Cart\Model\CartInterface::class                 => Cart\Entity\Cart::class,
             Cart\Model\CartAddressInterface::class          => Cart\Entity\CartAddress::class,
+
+            Common\Model\CouponInterface::class             => Common\Entity\Coupon::class,
 
             Customer\Model\CustomerInterface::class         => Customer\Entity\Customer::class,
             Customer\Model\CustomerGroupInterface::class    => Customer\Entity\CustomerGroup::class,
