@@ -33,16 +33,14 @@ class CustomerValidator extends ConstraintValidator
         /* @var CustomerInterface $customer */
         /* @var Customer $constraint */
 
-        // Prevent setting a parent to a customer that is already a parent (has children)
         if ($customer->hasParent()) {
+            // Prevent hierarchy overflow
             if ($customer->hasChildren() || $customer->getParent()->hasParent()) {
                 $this
                     ->context
                     ->buildViolation($constraint->hierarchy_overflow)
                     ->atPath('parent')
                     ->addViolation();
-
-                return;
             }
 
             // Prevent setting a parent to a customer who have non zero outstanding|credit balance
@@ -52,29 +50,45 @@ class CustomerValidator extends ConstraintValidator
                     ->buildViolation($constraint->non_zero_balance)
                     ->atPath('parent')
                     ->addViolation();
+            }
 
-                return;
+            // Child's parent must a have a company name
+            if (empty($customer->getParent()->getCompany())) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->parent_company_is_mandatory)
+                    ->atPath('parent')
+                    ->addViolation();
+            }
+
+            // Children can't have a default payment method
+            if ($customer->getDefaultPaymentMethod()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->default_payment_method_must_be_null)
+                    ->atPath('defaultPaymentMethod')
+                    ->addViolation();
+            }
+
+            // Children can't have restricted payment methods
+            if (0 < $customer->getPaymentMethods()->count()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->payment_methods_must_be_empty)
+                    ->atPath('paymentMethods')
+                    ->addViolation();
             }
         }
 
-        // A parent must have a company name.
-        if ($customer->hasParent() && 0 == strlen($customer->getParent()->getCompany())) {
-            $this
-                ->context
-                ->buildViolation($constraint->parent_company_is_mandatory)
-                ->atPath('parent')
-                ->addViolation();
-
-            return;
-        } elseif ($customer->hasChildren() && 0 == strlen($customer->getCompany())) {
+        // Parent must have a company name
+        if ($customer->hasChildren() && empty($customer->getCompany())) {
             $this
                 ->context
                 ->buildViolation($constraint->company_is_mandatory)
                 ->atPath('company')
                 ->addViolation();
-
-            return;
         }
+
 
         // Outstanding / Payment term
         $hasOutstanding = 0 < $customer->getOutstandingLimit();
@@ -85,16 +99,41 @@ class CustomerValidator extends ConstraintValidator
                 ->buildViolation($constraint->term_required_for_outstanding)
                 ->atPath('paymentTerm')
                 ->addViolation();
-
-            return;
         } else if ($hasPaymentTerm && !$hasOutstanding) {
             $this
                 ->context
                 ->buildViolation($constraint->outstanding_required_for_term)
                 ->atPath('outstandingLimit')
                 ->addViolation();
+        }
 
-            return;
+        if ($default = $customer->getDefaultPaymentMethod()) {
+            // Prevent duplicate
+            if ($customer->hasPaymentMethod($default)) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->duplicate_payment_method)
+                    ->atPath('paymentMethods')
+                    ->addViolation();
+            }
+        } elseif (0 < $customer->getPaymentMethods()->count()) {
+            // Customers with restricted payment methods must have a default payment method
+            $this
+                ->context
+                ->buildViolation($constraint->default_payment_method_is_mandatory)
+                ->atPath('defaultPaymentMethod')
+                ->addViolation();
+        }
+
+        // Credit and Outstanding payment methods must not be added to customer
+        foreach ($customer->getPaymentMethods() as $method) {
+            if ($method->isOutstanding() || $method->isCredit()) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->unexpected_payment_method)
+                    ->atPath('paymentMethods')
+                    ->addViolation();
+            }
         }
     }
 }

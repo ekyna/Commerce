@@ -3,8 +3,9 @@
 namespace Ekyna\Component\Commerce\Customer\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
 use Ekyna\Component\Resource\Model as RM;
 
@@ -20,7 +21,7 @@ interface CustomerInterface extends
     Common\IdentityInterface,
     Common\NumberSubjectInterface,
     Common\CurrencySubjectInterface,
-    PaymentTermSubjectInterface,
+    Payment\PaymentTermSubjectInterface,
     VatNumberSubjectInterface
 {
     /**
@@ -218,6 +219,56 @@ interface CustomerInterface extends
     public function removeAddress(CustomerAddressInterface $address);
 
     /**
+     * Returns the default payment method.
+     *
+     * @return Payment\PaymentMethodInterface
+     */
+    public function getDefaultPaymentMethod(): ?Payment\PaymentMethodInterface;
+
+    /**
+     * Sets the default payment method.
+     *
+     * @param Payment\PaymentMethodInterface $method
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setDefaultPaymentMethod(Payment\PaymentMethodInterface $method = null): CustomerInterface;
+
+    /**
+     * Returns the payment methods.
+     *
+     * @return ArrayCollection|Payment\PaymentMethodInterface[]
+     */
+    public function getPaymentMethods(): Collection;
+
+    /**
+     * Returns whether the customer has the payment method or not.
+     *
+     * @param Payment\PaymentMethodInterface $paymentMethod
+     *
+     * @return bool
+     */
+    public function hasPaymentMethod(Payment\PaymentMethodInterface $paymentMethod): bool;
+
+    /**
+     * Adds the payment method.
+     *
+     * @param Payment\PaymentMethodInterface $paymentMethod
+     *
+     * @return $this|CustomerInterface
+     */
+    public function addPaymentMethod(Payment\PaymentMethodInterface $paymentMethod): CustomerInterface;
+
+    /**
+     * Removes the payment method.
+     *
+     * @param Payment\PaymentMethodInterface $paymentMethod
+     *
+     * @return $this|CustomerInterface
+     */
+    public function removePaymentMethod(Payment\PaymentMethodInterface $paymentMethod): CustomerInterface;
+
+    /**
      * Returns the credit balance.
      *
      * @return float
@@ -248,6 +299,22 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function setOutstandingLimit($limit);
+
+    /**
+     * Returns whether outstanding overflow is allowed (by setting custom limit on sales).
+     *
+     * @return bool
+     */
+    public function isOutstandingOverflow(): bool;
+
+    /**
+     * Sets whether outstanding overflow is allowed (by setting custom limit on sales).
+     *
+     * @param bool $overflow
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setOutstandingOverflow(bool $overflow): CustomerInterface;
 
     /**
      * Returns the outstanding balance.

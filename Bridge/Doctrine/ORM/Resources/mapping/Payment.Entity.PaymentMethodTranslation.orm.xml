@@ -12,6 +12,9 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="mention" column="mention" type="text" nullable="true"/>
+        <field name="footer" column="footer" type="text" nullable="true"/>
+
     </entity>
 
 </doctrine-mapping>

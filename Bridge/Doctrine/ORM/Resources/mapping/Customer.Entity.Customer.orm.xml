@@ -33,6 +33,11 @@
         <field name="creditBalance" column="credit_balance" type="decimal" precision="13" scale="3"/>
         <field name="outstandingLimit" column="outstanding_limit" type="decimal" precision="13" scale="3"/>
         <field name="outstandingBalance" column="outstanding_balance" type="decimal" precision="13" scale="3"/>
+        <field name="outstandingOverflow" column="outstanding_overflow" type="boolean">
+            <options>
+                <option name="default">1</option>
+            </options>
+        </field>
 
         <field name="state" column="state" type="string" length="16" nullable="false"/>
         <field name="description" column="description" type="text" nullable="true"/>
@@ -65,13 +70,31 @@
             <join-column name="parent_id" referenced-column-name="id" nullable="true" on-delete="RESTRICT"/>
         </many-to-one>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface" field="customerGroup">
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface"
+                     field="customerGroup">
             <join-column name="customer_group_id" referenced-column-name="id" on-delete="RESTRICT"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
             <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface"
+                     field="defaultPaymentMethod">
+            <join-column name="payment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface"
+                      field="paymentMethods">
+            <join-table name="commerce_customers_payment_methods">
+                <join-columns>
+                    <join-column name="customer_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="method_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
 
     </mapped-superclass>
 

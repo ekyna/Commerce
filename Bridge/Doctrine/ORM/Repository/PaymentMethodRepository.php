@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Payment\Entity\PaymentMessage;
+use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentMethodRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
@@ -34,7 +35,7 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
     /**
      * @inheritDoc
      */
-    public function findAvailable(CurrencyInterface $currency = null)
+    public function findAvailable(CurrencyInterface $currency = null): array
     {
         $qb = $this->createQueryBuilder('m');
         $ex = $qb->expr();
@@ -42,11 +43,13 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
         $parameters = [
             'enabled'   => true,
             'available' => true,
+            'private'   => false,
         ];
 
         $qb
             ->andWhere($ex->eq('m.enabled', ':enabled'))
             ->andWhere($ex->eq('m.available', ':available'))
+            ->andWhere($ex->eq('m.private', ':private'))
             ->orderBy('m.position', 'ASC');
 
         if ($currency) {
@@ -66,17 +69,19 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
     /**
      * @inheritDoc
      */
-    public function findEnabled(CurrencyInterface $currency = null)
+    public function findEnabled(CurrencyInterface $currency = null): array
     {
         $qb = $this->createQueryBuilder('m');
         $ex = $qb->expr();
 
         $parameters = [
-            'enabled'   => true,
+            'enabled' => true,
+            'private' => false,
         ];
 
         $qb
             ->andWhere($ex->eq('m.enabled', ':enabled'))
+            ->andWhere($ex->eq('m.private', ':private'))
             ->orderBy('m.position', 'ASC');
 
         if ($currency) {
@@ -91,5 +96,19 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
             ->getQuery()
             ->setParameters($parameters)
             ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findOneByFactoryName(string $name): ?PaymentMethodInterface
+    {
+        $qb = $this->createQueryBuilder('m');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('m.factoryName', ':name'))
+            ->getQuery()
+            ->setParameter('name', $name)
+            ->getOneOrNullResult();
     }
 }

@@ -5,11 +5,15 @@ namespace Ekyna\Component\Commerce\Payment\Model;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\MethodInterface;
+use Ekyna\Component\Commerce\Payment\Entity\PaymentMethodTranslation;
 
 /**
  * Interface PaymentMethodInterface
  * @package Ekyna\Component\Commerce\Payment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method PaymentMethodTranslation translate($locale = null, $create = false)
+ * @method Collection|PaymentMethodTranslation[] getTranslations()
  */
 interface PaymentMethodInterface extends MethodInterface
 {
@@ -45,7 +49,7 @@ interface PaymentMethodInterface extends MethodInterface
      *
      * @return $this|PaymentMethodInterface
      */
-    public function removeCurrency(CurrencyInterface $currency) :PaymentMethodInterface;
+    public function removeCurrency(CurrencyInterface $currency): PaymentMethodInterface;
 
     /**
      * Returns the authorized currencies.
@@ -69,6 +73,22 @@ interface PaymentMethodInterface extends MethodInterface
      * @return PaymentMethodInterface
      */
     public function setDefaultCurrency(bool $default): PaymentMethodInterface;
+
+    /**
+     * Returns whether this method is private.
+     *
+     * @return bool
+     */
+    public function isPrivate(): bool;
+
+    /**
+     * Sets whether this method is private.
+     *
+     * @param bool $private
+     *
+     * @return PaymentMethodInterface
+     */
+    public function setPrivate(bool $private): PaymentMethodInterface;
 
     /**
      * Returns whether or not the method requires manual management of payments state.

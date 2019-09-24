@@ -26,6 +26,11 @@
                 <option name="default">1</option>
             </options>
         </field>
+        <field name="private" column="private" type="boolean">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Payment\Entity\PaymentMessage"
                      mapped-by="method" field="messages">

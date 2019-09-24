@@ -3,10 +3,11 @@
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model as Model;
-use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectTrait;
+use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Resource\Model as RM;
 
@@ -20,7 +21,7 @@ class Customer implements Model\CustomerInterface
     use Common\IdentityTrait,
         Common\NumberSubjectTrait,
         Common\CurrencySubjectTrait,
-        PaymentTermSubjectTrait,
+        Payment\PaymentTermSubjectTrait,
         VatNumberSubjectTrait,
         RM\LocalizedTrait,
         RM\TimestampableTrait;
@@ -76,6 +77,16 @@ class Customer implements Model\CustomerInterface
     protected $addresses;
 
     /**
+     * @var Payment\PaymentMethodInterface
+     */
+    protected $defaultPaymentMethod;
+
+    /**
+     * @var ArrayCollection|Payment\PaymentMethodInterface[]
+     */
+    protected $paymentMethods;
+
+    /**
      * @var float
      */
     protected $creditBalance;
@@ -84,6 +95,11 @@ class Customer implements Model\CustomerInterface
      * @var float
      */
     protected $outstandingLimit;
+
+    /**
+     * @var bool
+     */
+    protected $outstandingOverflow;
 
     /**
      * @var float
@@ -108,12 +124,14 @@ class Customer implements Model\CustomerInterface
     {
         $this->creditBalance = 0;
         $this->outstandingLimit = 0;
+        $this->outstandingOverflow = true;
         $this->outstandingBalance = 0;
 
         $this->state = Model\CustomerStates::STATE_NEW;
 
         $this->children = new ArrayCollection();
         $this->addresses = new ArrayCollection();
+        $this->paymentMethods = new ArrayCollection();
 
         $this->createdAt = new \DateTime();
     }
@@ -132,7 +150,8 @@ class Customer implements Model\CustomerInterface
             } elseif ($this->hasChildren()) { // TODO Greedy : triggers collection initialization
                 $sign = '◊'; //'&diams;';
             }
-            return sprintf('%s [%s] %s %s', $sign, $this->company, $this->lastName, $this->firstName);
+
+            return trim(sprintf('%s [%s] %s %s', $sign, $this->company, $this->lastName, $this->firstName));
         }
 
         return sprintf('%s %s', $this->lastName, $this->firstName);
@@ -392,6 +411,64 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
+    public function getDefaultPaymentMethod(): ?Payment\PaymentMethodInterface
+    {
+        return $this->defaultPaymentMethod;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDefaultPaymentMethod(Payment\PaymentMethodInterface $method = null): Model\CustomerInterface
+    {
+        $this->defaultPaymentMethod = $method;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPaymentMethods(): Collection
+    {
+        return $this->paymentMethods;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasPaymentMethod(Payment\PaymentMethodInterface $method): bool
+    {
+        return $this->paymentMethods->contains($method);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addPaymentMethod(Payment\PaymentMethodInterface $method): Model\CustomerInterface
+    {
+        if (!$this->hasPaymentMethod($method)) {
+            $this->paymentMethods->add($method);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removePaymentMethod(Payment\PaymentMethodInterface $method): Model\CustomerInterface
+    {
+        if ($this->hasPaymentMethod($method)) {
+            $this->paymentMethods->removeElement($method);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCreditBalance()
     {
         return $this->creditBalance;
@@ -421,6 +498,24 @@ class Customer implements Model\CustomerInterface
     public function setOutstandingLimit($limit)
     {
         $this->outstandingLimit = (float)$limit;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isOutstandingOverflow(): bool
+    {
+        return $this->outstandingOverflow;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOutstandingOverflow(bool $overflow): Model\CustomerInterface
+    {
+        $this->outstandingOverflow = $overflow;
 
         return $this;
     }

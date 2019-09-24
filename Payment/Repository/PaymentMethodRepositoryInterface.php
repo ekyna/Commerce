@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Payment\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepositoryInterface;
 
 /**
@@ -15,7 +16,7 @@ interface PaymentMethodRepositoryInterface extends TranslatableResourceRepositor
     /**
      * Create a new payment method with pre-populated messages (one by notifiable state).
      *
-     * @return \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface
+     * @return PaymentMethodInterface
      */
     public function createNew();
 
@@ -24,16 +25,25 @@ interface PaymentMethodRepositoryInterface extends TranslatableResourceRepositor
      *
      * @param CurrencyInterface $currency Filter authorized currency.
      *
-     * @return \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface[]
+     * @return PaymentMethodInterface[]
      */
-    public function findAvailable(CurrencyInterface $currency = null);
+    public function findAvailable(CurrencyInterface $currency = null): array;
 
     /**
      * Finds the enabled payment methods.
      *
      * @param CurrencyInterface $currency Filter authorized currency.
      *
-     * @return \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface[]
+     * @return PaymentMethodInterface[]
      */
-    public function findEnabled(CurrencyInterface $currency = null);
+    public function findEnabled(CurrencyInterface $currency = null): array;
+
+    /**
+     * Finds a payment method by its factory name.
+     *
+     * @param string $name
+     *
+     * @return PaymentMethodInterface|null
+     */
+    public function findOneByFactoryName(string $name): ?PaymentMethodInterface;
 }

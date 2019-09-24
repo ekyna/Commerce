@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Resource\Serializer\AbstractResourceNormalizer;
 
 /**
@@ -46,15 +47,20 @@ class CustomerNormalizer extends AbstractResourceNormalizer
             $payment = $parent ? $parent : $customer;
 
             $data = array_replace($data, [
-                'group'               => (string)$customer->getCustomerGroup(),
-                'parent'              => (string)$parent,
-                'vat_number'          => $payment->getVatNumber(),
-                'vat_valid'           => $payment->isVatValid(),
-                'payment_term'        => (string)$payment->getPaymentTerm(),
-                'outstanding_limit'   => $payment->getOutstandingLimit(),
-                'outstanding_balance' => $payment->getOutstandingBalance(),
-                'credit_balance'      => $payment->getCreditBalance(),
-                'description'         => $payment->getDescription(),
+                'group'                  => (string)$customer->getCustomerGroup(),
+                'parent'                 => (string)$parent,
+                'vat_number'             => $payment->getVatNumber(),
+                'vat_valid'              => $payment->isVatValid(),
+                'payment_term'           => (string)$payment->getPaymentTerm(),
+                'outstanding_limit'      => $payment->getOutstandingLimit(),
+                'outstanding_balance'    => $payment->getOutstandingBalance(),
+                'outstanding_overflow'   => $payment->isOutstandingOverflow(),
+                'credit_balance'         => $payment->getCreditBalance(),
+                'default_payment_method' => (string)$payment->getDefaultPaymentMethod(),
+                'payment_methods'        => implode(', ', array_map(function (PaymentMethodInterface $method) {
+                    return (string)$method;
+                }, $payment->getPaymentMethods()->toArray())),
+                'description'            => $payment->getDescription(),
             ]);
         }
 

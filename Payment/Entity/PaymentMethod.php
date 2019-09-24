@@ -14,6 +14,9 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
  * Class PaymentMethod
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @method PaymentMethodTranslation translate($locale = null, $create = false)
+ * @method ArrayCollection|PaymentMethodTranslation[] getTranslations()
  */
 class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
 {
@@ -27,6 +30,11 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
      */
     protected $defaultCurrency;
 
+    /**
+     * @var bool
+     */
+    protected $private;
+
 
     /**
      * Constructor.
@@ -37,6 +45,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
 
         $this->currencies = new ArrayCollection();
         $this->defaultCurrency = true;
+        $this->private = false;
     }
 
     /**
@@ -88,9 +97,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     }
 
     /**
-     * Returns whether to use the default currency.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function isDefaultCurrency(): bool
     {
@@ -98,15 +105,29 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     }
 
     /**
-     * Sets whether to use the default currency.
-     *
-     * @param bool $default
-     *
-     * @return PaymentMethod
+     * @inheritdoc
      */
     public function setDefaultCurrency(bool $default): PaymentMethodInterface
     {
         $this->defaultCurrency = $default;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isPrivate(): bool
+    {
+        return $this->private;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPrivate(bool $private): PaymentMethodInterface
+    {
+        $this->private = $private;
 
         return $this;
     }

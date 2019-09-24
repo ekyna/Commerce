@@ -158,15 +158,23 @@ class SaleValidator extends ConstraintValidator
             return;
         }
 
-        if (null === $term = $sale->getPaymentTerm()) {
-            if (null !== $customer = $sale->getCustomer()) {
-                // From parent if available
-                if ($customer->hasParent()) {
-                    $term = $customer->getParent()->getPaymentTerm();
-                } else {
-                    $term = $customer->getPaymentTerm();
-                }
+        $term = $sale->getPaymentTerm();
+
+        if ($customer = $sale->getCustomer()) {
+            if ($customer->hasParent()) {
+                $customer = $customer->getParent();
             }
+
+            if (null === $term) {
+                $term = $customer->getPaymentTerm();
+            }
+        }
+
+        if ($customer && !$customer->isOutstandingOverflow()) {
+            $this->context
+                ->buildViolation($constraint->outstanding_overflow_is_forbidden)
+                ->atPath('outstandingLimit')
+                ->addViolation();
         }
 
         if (null === $term) {
