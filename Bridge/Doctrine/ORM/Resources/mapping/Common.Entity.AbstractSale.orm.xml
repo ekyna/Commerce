@@ -71,12 +71,16 @@
             <join-column name="customer_group_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Entity\RelayPoint" field="relayPoint">
+            <join-column name="relay_point_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface" field="shipmentMethod">
             <join-column name="shipment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Entity\RelayPoint" field="relayPoint">
-            <join-column name="relay_point_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        <many-to-one target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface" field="paymentMethod">
+            <join-column name="payment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">

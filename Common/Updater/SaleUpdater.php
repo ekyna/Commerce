@@ -320,6 +320,39 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
+     * Updates the payment method.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed.
+     */
+    public function updatePaymentMethod(SaleInterface $sale): bool
+    {
+        $method = null;
+
+        if ($customer = $sale->getCustomer()) {
+            if ($customer->hasParent()) {
+                $customer = $customer->getParent();
+            }
+
+            $method = $customer->getDefaultPaymentMethod();
+        }
+
+        $current = $sale->getPaymentMethod();
+        if ($method !== $current) {
+            if ($customer && !$method) {
+                return false;
+            }
+
+            $sale->setPaymentMethod($method);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @inheritDoc
      */
     public function updateExchangeRate(SaleInterface $sale, bool $force = false): bool

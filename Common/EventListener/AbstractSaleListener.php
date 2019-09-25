@@ -244,14 +244,17 @@ abstract class AbstractSaleListener
         $changed |= $this->updateNumber($sale);
         $changed |= $this->updateKey($sale);
 
-        // Handle customer information
+        // Update customer information
         $changed |= $this->updateInformation($sale, true);
 
         // Update pricing
         $changed |= $this->pricingUpdater->updateVatNumberSubject($sale);
 
-        // Exchange rate
+        // Update exchange rate
         $changed |= $this->saleUpdater->updateExchangeRate($sale);
+
+        // Update payment method
+        $changed |= $this->saleUpdater->updatePaymentMethod($sale);
 
         // Update outstanding
         $changed |= $this->saleUpdater->updatePaymentTerm($sale);
@@ -274,7 +277,7 @@ abstract class AbstractSaleListener
         // Update state
         $changed |= $this->updateState($sale);
 
-        /// Coupon check
+        // Coupon validity check
         $changed |= $this->checkCouponValidity($sale);
 
         return $changed;
@@ -337,6 +340,10 @@ abstract class AbstractSaleListener
 
         // If customer has changed
         if ($this->persistenceHelper->isChanged($sale, 'customer')) {
+            // Update payment method
+            $changed |= $this->saleUpdater->updatePaymentMethod($sale);
+
+            // Update payment term
             $changed |= $this->saleUpdater->updatePaymentTerm($sale);
 
             // TODO For now customer change is prevented

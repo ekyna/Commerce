@@ -140,6 +140,22 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
     public function setOutstandingDate(\DateTime $date = null);
 
     /**
+     * Returns the (default) payment method.
+     *
+     * @return PaymentMethodInterface|null
+     */
+    public function getPaymentMethod(): ?PaymentMethodInterface;
+
+    /**
+     * Sets the (default) payment method.
+     *
+     * @param PaymentMethodInterface|null $method
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setPaymentMethod(PaymentMethodInterface $method = null): PaymentSubjectInterface;
+
+    /**
      * Returns the payment state.
      *
      * @return string

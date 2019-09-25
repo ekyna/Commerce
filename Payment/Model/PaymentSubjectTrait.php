@@ -61,6 +61,11 @@ trait PaymentSubjectTrait
     protected $paymentState;
 
     /**
+     * @var PaymentMethodInterface|null
+     */
+    protected $paymentMethod;
+
+    /**
      * @var \Doctrine\Common\Collections\Collection|PaymentInterface[]
      */
     protected $payments;
@@ -271,6 +276,30 @@ trait PaymentSubjectTrait
     public function setOutstandingDate(\DateTime $date = null)
     {
         $this->outstandingDate = $date;
+
+        return $this;
+    }
+
+    /**
+     * Returns the (default) payment method.
+     *
+     * @return PaymentMethodInterface|null
+     */
+    public function getPaymentMethod(): ?PaymentMethodInterface
+    {
+        return $this->paymentMethod;
+    }
+
+    /**
+     * Sets the (default) payment method.
+     *
+     * @param PaymentMethodInterface|null $method
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setPaymentMethod(PaymentMethodInterface $method = null): PaymentSubjectInterface
+    {
+        $this->paymentMethod = $method;
 
         return $this;
     }
