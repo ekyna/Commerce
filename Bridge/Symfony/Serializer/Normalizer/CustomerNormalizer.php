@@ -35,11 +35,16 @@ class CustomerNormalizer extends AbstractResourceNormalizer
                 'email'      => $customer->getEmail(),
                 'first_name' => $customer->getFirstName(),
                 'last_name'  => $customer->getLastName(),
-                'phone'      => $this->normalizeObject($customer->getPhone(), $format, $context),
-                'mobile'     => $this->normalizeObject($customer->getMobile(), $format, $context),
                 'parent'     => $parent ? $parent->getId() : null,
                 'currency'   => $customer->getCurrency()->getCode(),
                 'locale'     => $customer->getLocale(),
+            ]);
+        }
+
+        if ($this->contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
+            $data = array_replace($data, [
+                'phone'      => $this->normalizeObject($customer->getPhone(), $format, $context),
+                'mobile'     => $this->normalizeObject($customer->getMobile(), $format, $context),
             ]);
         }
 
