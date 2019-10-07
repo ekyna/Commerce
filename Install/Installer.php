@@ -14,6 +14,7 @@ use Ekyna\Component\Commerce\Pricing\Entity\Tax;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxRule;
 use Ekyna\Component\Commerce\Stock\Entity\Warehouse;
+use Ekyna\Component\Commerce\Supplier\Repository\SupplierTemplateRepositoryInterface;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Yaml\Yaml;
 
@@ -40,6 +41,11 @@ class Installer
     private $countryRepository;
 
     /**
+     * @var SupplierTemplateRepositoryInterface
+     */
+    private $supplierTemplateRepository;
+
+    /**
      * @var callable
      */
     private $log;
@@ -48,20 +54,23 @@ class Installer
     /**
      * Constructor.
      *
-     * @param ObjectManager                    $manager
-     * @param CustomerGroupRepositoryInterface $customerRepository
-     * @param CountryRepositoryInterface       $countryRepository
-     * @param mixed                            $logger
+     * @param ObjectManager                       $manager
+     * @param CustomerGroupRepositoryInterface    $customerRepository
+     * @param CountryRepositoryInterface          $countryRepository
+     * @param SupplierTemplateRepositoryInterface $supplierTemplateRepository
+     * @param mixed                               $logger
      */
     public function __construct(
         ObjectManager $manager,
         CustomerGroupRepositoryInterface $customerRepository,
         CountryRepositoryInterface $countryRepository,
+        SupplierTemplateRepositoryInterface $supplierTemplateRepository,
         $logger = null
     ) {
         $this->manager = $manager;
         $this->customerGroupRepository = $customerRepository;
         $this->countryRepository = $countryRepository;
+        $this->supplierTemplateRepository = $supplierTemplateRepository;
 
         if (in_array('Symfony\Component\Console\Output\OutputInterface', class_implements($logger))) {
             $this->log = function ($name, $result) use ($logger) {
@@ -405,6 +414,39 @@ class Installer
         $this->manager->flush();
 
         call_user_func($this->log, 'Default', 'done');
+    }
+
+    /**
+     * Creates the default supplier templates.
+     */
+    public function installSupplierTemplates()
+    {
+        if (0 < $this->supplierTemplateRepository->findBy([], [], 1)->count()) {
+            call_user_func($this->log, 'All', 'skipped');
+
+            return;
+        }
+
+        $data = Yaml::parse(file_get_contents(__DIR__ . '/data/supplier_templates.yml'));
+
+        foreach ($data as $datum) {
+            /** @var \Ekyna\Component\Commerce\Supplier\Model\SupplierTemplateInterface $template */
+            $template = $this->supplierTemplateRepository->createNew();
+            $template->setTitle($datum['title']);
+
+            foreach ($datum['translations'] as $locale => $trans) {
+                $template
+                    ->translate($locale, true)
+                    ->setSubject($trans['subject'])
+                    ->setMessage($trans['message']);
+            }
+
+            $this->manager->persist($template);
+
+            call_user_func($this->log, $datum['title'], 'done');
+        }
+
+        $this->manager->flush();
     }
 
     /**

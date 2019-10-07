@@ -33,9 +33,14 @@ class SupplierOrderStateResolver extends AbstractStateResolver
         // Default state is 'new'
         $resolved = SupplierOrderStates::STATE_NEW;
 
-        // If ordered at is set
-        if (null !== $subject->getOrderedAt()) {
+        // Order with 'ordered at' date is 'ordered'
+        if ($subject->getOrderedAt()) {
             $resolved = SupplierOrderStates::STATE_ORDERED;
+
+            // Order with EDA is validated
+            if ($subject->getEstimatedDateOfArrival()) {
+                $resolved = SupplierOrderStates::STATE_VALIDATED;
+            }
         }
 
         // TODO Use packaging format

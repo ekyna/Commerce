@@ -222,9 +222,18 @@ class SupplierOrderListener extends AbstractListener
     {
         $changed = $this->stateResolver->resolve($order);
 
+        // Ordered with EDA is validated
+        if (
+            ($order->getState() === SupplierOrderStates::STATE_ORDERED)
+            && $order->getEstimatedDateOfArrival()
+        ) {
+            $order->setState(SupplierOrderStates::STATE_VALIDATED);
+            $changed = true;
+        }
         // If order state is 'completed' and 'competed at' date is not set
-        if ($order->getState() === SupplierOrderStates::STATE_COMPLETED
-            && null === $order->getCompletedAt()
+        elseif (
+            ($order->getState() === SupplierOrderStates::STATE_COMPLETED)
+            && !$order->getCompletedAt()
         ) {
             // Set the 'completed at' date
             $order->setCompletedAt(new \DateTime());

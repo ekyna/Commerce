@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraint;
  */
 class SupplierDelivery extends Constraint
 {
+    public $unexpected_order_state = 'ekyna_commerce.supplier_delivery.unexpected_order_state';
     public $duplicate_order_item = 'ekyna_commerce.supplier_delivery.duplicate_order_item';
 
 

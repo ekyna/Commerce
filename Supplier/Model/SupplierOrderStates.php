@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 
 /**
  * Class SupplierOrderStates
@@ -13,6 +14,7 @@ final class SupplierOrderStates
 {
     const STATE_NEW       = 'new';
     const STATE_ORDERED   = 'ordered';
+    const STATE_VALIDATED = 'validated';
     const STATE_PARTIAL   = 'partial';
     const STATE_RECEIVED  = 'received';
     const STATE_COMPLETED = 'completed';
@@ -24,11 +26,12 @@ final class SupplierOrderStates
      *
      * @return array
      */
-    static public function getStates()
+    static public function getStates(): array
     {
         return [
             static::STATE_NEW,
             static::STATE_ORDERED,
+            static::STATE_VALIDATED,
             static::STATE_PARTIAL,
             static::STATE_RECEIVED,
             static::STATE_COMPLETED,
@@ -37,15 +40,35 @@ final class SupplierOrderStates
     }
 
     /**
+     * Returns the from the given order if not string.
+     *
+     * @param SupplierOrderInterface|string $state
+     *
+     * @return string
+     */
+    static private function stateFromOrder($state): string
+    {
+        if (is_string($state)) {
+            return $state;
+        }
+
+        if ($state instanceof SupplierOrderInterface) {
+            return $state->getState();
+        }
+
+        throw new UnexpectedTypeException($state, ['string', SupplierOrderInterface::class]);
+    }
+
+    /**
      * Returns whether the given state is valid or not.
      *
-     * @param string $state
+     * @param SupplierOrderInterface|string $state
      *
      * @return bool
      */
-    static public function isValidState($state)
+    static public function isValidState($state): bool
     {
-        return in_array($state, static::getStates(), true);
+        return in_array(static::stateFromOrder($state), static::getStates(), true);
     }
 
     /**
@@ -53,7 +76,7 @@ final class SupplierOrderStates
      *
      * @return array
      */
-    static public function getDeletableStates()
+    static public function getDeletableStates(): array
     {
         return [
             static::STATE_NEW,
@@ -64,24 +87,54 @@ final class SupplierOrderStates
     /**
      * Returns whether the given state is a deletable state.
      *
-     * @param string $state
+     * @param SupplierOrderInterface|string $state
      *
      * @return bool
      */
-    static public function isDeletableState($state)
+    static public function isDeletableState($state): bool
     {
+        $state = static::stateFromOrder($state);
+
         return is_null($state) || in_array($state, static::getDeletableStates(), true);
+    }
+
+    /**
+     * Returns the deletable states.
+     *
+     * @return array
+     */
+    static public function getCancelableStates(): array
+    {
+        return [
+            static::STATE_NEW,
+            static::STATE_ORDERED,
+            static::STATE_VALIDATED,
+        ];
+    }
+
+    /**
+     * Returns whether the given state is a deletable state.
+     *
+     * @param SupplierOrderInterface|string $state
+     *
+     * @return bool
+     */
+    static public function isCancelableState($state): bool
+    {
+        $state = static::stateFromOrder($state);
+
+        return is_null($state) || in_array($state, static::getCancelableStates(), true);
     }
 
     /**
      * Returns whether or not the state has changed
      * from a non deletable state to a deletable state.
      *
-     * @param array $cs The persistence change set
+     * @param array $cs The state persistence change set
      *
      * @return bool
      */
-    static public function hasChangedToDeletable(array $cs)
+    static public function hasChangedToDeletable(array $cs): bool
     {
         return static::assertValidChangeSet($cs)
             && !static::isDeletableState($cs[0])
@@ -92,11 +145,11 @@ final class SupplierOrderStates
      * Returns whether or not the state has changed
      * from a deletable state to a non deletable state.
      *
-     * @param array $cs The persistence change set
+     * @param array $cs The state persistence change set
      *
      * @return bool
      */
-    static public function hasChangedFromDeletable(array $cs)
+    static public function hasChangedFromDeletable(array $cs): bool
     {
         return static::assertValidChangeSet($cs)
             && static::isDeletableState($cs[0])
@@ -108,25 +161,27 @@ final class SupplierOrderStates
      *
      * @return array
      */
-    static public function getStockableStates()
+    static public function getStockableStates(): array
     {
         return [
-            static::STATE_ORDERED,
+            static::STATE_VALIDATED,
             static::STATE_PARTIAL,
             static::STATE_RECEIVED,
-            static::STATE_COMPLETED
+            static::STATE_COMPLETED,
         ];
     }
 
     /**
      * Returns whether the given state is a stock state.
      *
-     * @param string $state
+     * @param SupplierOrderInterface|string $state
      *
      * @return bool
      */
-    static public function isStockableState($state)
+    static public function isStockableState($state): bool
     {
+        $state = static::stateFromOrder($state);
+
         return !is_null($state) && in_array($state, static::getStockableStates(), true);
     }
 
@@ -134,11 +189,11 @@ final class SupplierOrderStates
      * Returns whether the state has changed
      * from a non stockable state to a stockable state.
      *
-     * @param array $cs The persistence change set
+     * @param array $cs The state persistence change set
      *
      * @return bool
      */
-    static public function hasChangedToStockable(array $cs)
+    static public function hasChangedToStockable(array $cs): bool
     {
         return static::assertValidChangeSet($cs)
             && !static::isStockableState($cs[0])
@@ -149,11 +204,11 @@ final class SupplierOrderStates
      * Returns whether or not the state has changed
      * from a stockable state to a non stockable state.
      *
-     * @param array $cs The persistence change set
+     * @param array $cs The state persistence change set
      *
      * @return bool
      */
-    static public function hasChangedFromStockable(array $cs)
+    static public function hasChangedFromStockable(array $cs): bool
     {
         return static::assertValidChangeSet($cs)
             && static::isStockableState($cs[0])
@@ -163,13 +218,13 @@ final class SupplierOrderStates
     /**
      * Returns whether or not the change set is valid.
      *
-     * @param array $cs
+     * @param array $cs The state persistence change set
      *
      * @return bool
      *
      * @throws InvalidArgumentException
      */
-    static private function assertValidChangeSet(array $cs)
+    static private function assertValidChangeSet(array $cs): bool
     {
         if (
             array_key_exists(0, $cs) &&

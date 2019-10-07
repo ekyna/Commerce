@@ -32,7 +32,12 @@ class SupplierDeliveryValidator extends ConstraintValidator
         }
 
         if (!SupplierOrderStates::isStockableState($delivery->getOrder()->getState())) {
+            $this
+                ->context
+                ->buildViolation($constraint->unexpected_order_state)
+                ->addViolation();
 
+            return;
         }
 
         // Order item uniqueness

@@ -276,4 +276,25 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierProduct"/>
     </class>
 
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierTemplate">
+        <property name="title">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierTemplateTranslation">
+        <property name="subject">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="message">
+            <constraint name="NotBlank"/>
+        </property>
+    </class>
+
 </constraint-mapping>

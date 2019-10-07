@@ -32,7 +32,7 @@ class SupplierOrderValidator extends ConstraintValidator
         }
 
         // Stockable supplier order must have an EDA
-        if (SupplierOrderStates::isStockableState($order->getState()) && null === $order->getEstimatedDateOfArrival()) {
+        if (SupplierOrderStates::isStockableState($order->getState()) && is_null($order->getEstimatedDateOfArrival())) {
             $this
                 ->context
                 ->buildViolation($constraint->null_estimated_date_of_arrival)

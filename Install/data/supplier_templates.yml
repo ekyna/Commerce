@@ -1,0 +1,36 @@
+estimated_date_of_arrival:
+    title: Estimated date of arrival
+    translations:
+        en:
+            subject: EDA request for order %number%
+            message: >
+                <p>Hi,</p>
+                <p>Could you please provide us the estimated delivery date
+                for the order <strong>%number%</strong> attached to this mail, ordered %date% ?</p>
+                <p>Regards,</p>
+        fr:
+            subject: Demande de délai de livraison pour la commande %number%
+            message: >
+                <p>Bonjour,</p>
+                <p>Pourriez-vous s'il vous plait nous fournir un délai de livraison
+                pour la commande <strong>%number%</strong> en pièce jointe, et
+                passée le %date% ?</p>
+                <p>Cordialement,</p>
+tracking_information:
+    title: Tracking information
+    translations:
+        en:
+            subject: Tracking information request for order %number%
+            message: >
+                <p>Hi,</p>
+                <p>Could you please provide us the tracking number and the carrier's name
+                for the order <strong>%number%</strong> attached to this mail, ordered %date% ?</p>
+                <p>Regards,</p>
+        fr:
+            subject: Demande d'information de suivi pour la commande %number%
+            message: >
+                <p>Bonjour,</p>
+                <p>Pourriez-vous s'il vous plait nous communiquer le numéro de suivi
+                et le nom du transporteur pour la commande <strong>%number%</strong>
+                en pièce jointe, et passée le %date% ?</p>
+                <p>Cordialement,</p>

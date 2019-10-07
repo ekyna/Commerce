@@ -194,10 +194,8 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
         return $qb
             ->andWhere($ex->gt($as . '.' . $prefix . 'Total', 0))
             ->andWhere($ex->isNull($as . '.' . $prefix . 'Date'))
-            ->andWhere($ex->andX(
-                $ex->isNotNull($as . '.' . $prefix . 'DueDate'),
-                $ex->lt($as . '.' . $prefix . 'DueDate', ':today')
-            ))
+            ->andWhere($ex->isNotNull($as . '.' . $prefix . 'DueDate'))
+            ->andWhere($ex->lt($as . '.' . $prefix . 'DueDate', ':today'))
             ->andWhere($ex->neq($as . '.state', ':state'))
             ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Type::DATETIME)
             ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)

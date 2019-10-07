@@ -11,9 +11,9 @@ use Ekyna\Component\Commerce\Payment;
 use Ekyna\Component\Commerce\Pricing;
 use Ekyna\Component\Commerce\Quote;
 use Ekyna\Component\Commerce\Shipment;
+use Ekyna\Component\Commerce\Stock;
 use Ekyna\Component\Commerce\Supplier;
 use Ekyna\Component\Commerce\Support;
-use Ekyna\Component\Commerce\Stock;
 
 /**
  * Class DoctrineBundleMapping
@@ -65,33 +65,25 @@ class DoctrineBundleMapping
         return [
             Cart\Model\CartInterface::class                 => Cart\Entity\Cart::class,
             Cart\Model\CartAddressInterface::class          => Cart\Entity\CartAddress::class,
-
             Common\Model\CouponInterface::class             => Common\Entity\Coupon::class,
-
             Customer\Model\CustomerInterface::class         => Customer\Entity\Customer::class,
             Customer\Model\CustomerGroupInterface::class    => Customer\Entity\CustomerGroup::class,
             Customer\Model\CustomerAddressInterface::class  => Customer\Entity\CustomerAddress::class,
-
             Order\Model\OrderInterface::class               => Order\Entity\Order::class,
             Order\Model\OrderAddressInterface::class        => Order\Entity\OrderAddress::class,
-
             Payment\Model\PaymentMethodInterface::class     => Payment\Entity\PaymentMethod::class,
             Payment\Model\PaymentTermInterface::class       => Payment\Entity\PaymentTerm::class,
-
             Quote\Model\QuoteInterface::class               => Quote\Entity\Quote::class,
             Quote\Model\QuoteAddressInterface::class        => Quote\Entity\QuoteAddress::class,
-
             Shipment\Model\ShipmentMethodInterface::class   => Shipment\Entity\ShipmentMethod::class,
-
             Supplier\Model\SupplierInterface::class         => Supplier\Entity\Supplier::class,
             Supplier\Model\SupplierAddressInterface::class  => Supplier\Entity\SupplierAddress::class,
             Supplier\Model\SupplierDeliveryInterface::class => Supplier\Entity\SupplierDelivery::class,
             Supplier\Model\SupplierOrderInterface::class    => Supplier\Entity\SupplierOrder::class,
+            Supplier\Model\SupplierTemplateInterface::class => Supplier\Entity\SupplierTemplate::class,
             Supplier\Model\SupplierProductInterface::class  => Supplier\Entity\SupplierProduct::class,
-
             Support\Model\TicketInterface::class            => Support\Entity\Ticket::class,
             Support\Model\TicketMessageInterface::class     => Support\Entity\TicketMessage::class,
-
             Stock\Model\WarehouseInterface::class           => Stock\Entity\Warehouse::class,
         ];
     }
