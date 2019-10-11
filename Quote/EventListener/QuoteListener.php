@@ -49,6 +49,65 @@ class QuoteListener extends AbstractSaleListener
     }
 
     /**
+     * @inheritDoc
+     *
+     * @param QuoteInterface $sale
+     */
+    protected function handleInsert(SaleInterface $sale)
+    {
+        $changed = parent::handleInsert($sale);
+
+        $changed |= $this->handleEditable($sale);
+
+        return $changed;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param QuoteInterface $sale
+     */
+    protected function handleUpdate(SaleInterface $sale)
+    {
+        $changed = parent::handleUpdate($sale);
+
+        $changed |= $this->handleEditable($sale);
+
+        return $changed;
+    }
+
+    /**
+     * @param QuoteInterface $quote
+     *
+     * @return bool
+     */
+    protected function handleEditable(QuoteInterface $quote)
+    {
+        if (!$quote->isEditable()) {
+            return false;
+        }
+
+        $changed = false;
+
+        if (!$quote->isAutoDiscount()) {
+            $quote->setAutoDiscount(true);
+            $changed = true;
+        }
+
+        if (!$quote->isAutoShipping()) {
+            $quote->setAutoShipping(true);
+            $changed = true;
+        }
+
+        if (!$quote->isAutoNotify()) {
+            $quote->setAutoNotify(true);
+            $changed = true;
+        }
+
+        return $changed;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function updateState(SaleInterface $sale)

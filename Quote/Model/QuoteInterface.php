@@ -12,6 +12,22 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 interface QuoteInterface extends Common\SaleInterface
 {
     /**
+     * Returns whether this quote can be modified by the customer.
+     *
+     * @return bool
+     */
+    public function isEditable(): bool;
+
+    /**
+     * Sets whether this quote can be modified by the customer.
+     *
+     * @param bool $editable
+     *
+     * @return QuoteInterface
+     */
+    public function setEditable(bool $editable): QuoteInterface;
+
+    /**
      * Returns the "expires at" date time.
      *
      * @return \DateTime
@@ -35,11 +51,18 @@ interface QuoteInterface extends Common\SaleInterface
     public function isExpired();
 
     /**
-     * Returns whether or not the quote has voucher number and attachment set.
+     * Returns whether this quote requires a voucher.
      *
      * @return bool
      */
-    public function hasVoucher();
+    public function requiresVoucher(): bool;
+
+    /**
+     * Returns whether this quote has voucher number and attachment set.
+     *
+     * @return bool
+     */
+    public function hasVoucher(): bool;
 
     /**
      * Returns the voucher attachment if set.

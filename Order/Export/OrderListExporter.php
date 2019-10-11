@@ -9,11 +9,11 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 
 /**
- * Class OrderExporter
+ * Class OrderListExporter
  * @package Ekyna\Component\Commerce\Order\Export
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderExporter extends AbstractExporter
+class OrderListExporter extends AbstractExporter
 {
     /**
      * @var OrderRepositoryInterface

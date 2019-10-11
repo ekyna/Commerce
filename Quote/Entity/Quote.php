@@ -17,6 +17,11 @@ use Ekyna\Component\Commerce\Quote\Model;
 class Quote extends AbstractSale implements Model\QuoteInterface
 {
     /**
+     * @var bool
+     */
+    protected $editable;
+
+    /**
      * @var \DateTime
      */
     protected $expiresAt;
@@ -31,6 +36,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 
         $this->state = Model\QuoteStates::STATE_NEW;
         $this->source = Common\SaleSources::SOURCE_COMMERCIAL;
+        $this->editable = false;
     }
 
     /**
@@ -336,6 +342,24 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
+    public function isEditable(): bool
+    {
+        return $this->editable;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEditable(bool $editable): Model\QuoteInterface
+    {
+        $this->editable = $editable;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getExpiresAt()
     {
         return $this->expiresAt;
@@ -366,9 +390,21 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function requiresVoucher(): bool
+    {
+        if (!$this->customer) {
+            return false;
+        }
+
+        return $this->customer->hasParent() || $this->customer->hasChildren();
+    }
+
+    /**
      * @inheritdoc
      */
-    public function hasVoucher()
+    public function hasVoucher(): bool
     {
         return !empty($this->voucherNumber) && null !== $this->getVoucherAttachment();
     }
