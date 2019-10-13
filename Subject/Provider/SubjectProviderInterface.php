@@ -16,6 +16,7 @@ interface SubjectProviderInterface
 
     const CONTEXT_ITEM     = 'item';     // Sale item subject
     const CONTEXT_SALE     = 'sale';     // Sale item search
+    const CONTEXT_ACCOUNT  = 'account';  // Sale item search from customer account
     const CONTEXT_SUPPLIER = 'supplier'; // Supplier item subject
 
 
