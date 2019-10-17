@@ -20,6 +20,11 @@ class CustomerAddressListener
      */
     protected $persistenceHelper;
 
+    /**
+     * @var bool
+     */
+    protected $enabled = true;
+
 
     /**
      * Constructor.
@@ -32,6 +37,16 @@ class CustomerAddressListener
     }
 
     /**
+     * Sets whether this listener is enabled.
+     *
+     * @param bool $enabled
+     */
+    public function setEnabled(bool $enabled): void
+    {
+        $this->enabled = $enabled;
+    }
+
+    /**
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
@@ -40,6 +55,10 @@ class CustomerAddressListener
      */
     public function onPreDelete(ResourceEventInterface $event)
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $address = $this->getAddressFromEvent($event);
 
         if (null === $customer = $address->getCustomer()) {
@@ -64,6 +83,10 @@ class CustomerAddressListener
      */
     public function onInsert(ResourceEventInterface $event)
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $address = $this->getAddressFromEvent($event);
 
         $this->fixInvoiceDefault($address);
@@ -77,6 +100,10 @@ class CustomerAddressListener
      */
     public function onUpdate(ResourceEventInterface $event)
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $address = $this->getAddressFromEvent($event);
 
         $this->fixInvoiceDefault($address);
