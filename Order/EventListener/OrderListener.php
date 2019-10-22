@@ -233,10 +233,13 @@ class OrderListener extends AbstractSaleListener
      */
     protected function setIsFirst(OrderInterface $order)
     {
-        if (null !== $customer = $order->getCustomer()) {
+        if ($customer = $order->getCustomer()) {
             if ($customer->hasParent()) {
                 $customer = $customer->getParent();
             }
+        }
+
+        if ($customer && $customer->getId()) {
             $first = !$this->orderRepository->existsForCustomer($customer);
         } else {
             $first = !$this->orderRepository->existsForEmail($order->getEmail());

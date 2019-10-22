@@ -13,6 +13,24 @@
                 <value>Profile</value>
             </option>
         </constraint>
+        <property name="currency">
+            <constraint name="NotNull">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                    <value>Profile</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="locale">
+            <constraint name="NotBlank">
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Registration</value>
+                    <value>Profile</value>
+                </option>
+            </constraint>
+        </property>
         <property name="company">
             <constraint name="Length">
                 <option name="min">2</option>
