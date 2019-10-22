@@ -158,13 +158,13 @@ class OrderListener extends AbstractSaleListener
      */
     protected function handleInsert(SaleInterface $sale)
     {
-        $this->handleCouponChange($sale);
-
         $changed = $this->fixCustomers($sale);
+
+        $changed |= parent::handleInsert($sale);
 
         $changed |= $this->setIsFirst($sale);
 
-        $changed |= parent::handleInsert($sale);
+        $this->handleCouponChange($sale);
 
         return $changed;
     }
@@ -176,13 +176,13 @@ class OrderListener extends AbstractSaleListener
      */
     protected function handleUpdate(SaleInterface $sale)
     {
-        $this->handleCouponChange($sale);
-
         $changed = $this->fixCustomers($sale);
 
         $changed |= parent::handleUpdate($sale);
 
         $changed |= $this->handleReleasedChange($sale);
+
+        $this->handleCouponChange($sale);
 
         return $changed;
     }
