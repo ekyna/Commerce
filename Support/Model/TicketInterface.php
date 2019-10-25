@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Support\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -51,6 +51,22 @@ interface TicketInterface extends ResourceInterface, NumberSubjectInterface, Tim
     public function setState(string $state);
 
     /**
+     * Returns whether this ticket is internal.
+     *
+     * @return bool
+     */
+    public function isInternal(): bool;
+
+    /**
+     * Sets whether this ticket is internal.
+     *
+     * @param bool $internal
+     *
+     * @return TicketInterface
+     */
+    public function setInternal(bool $internal): TicketInterface;
+
+    /**
      * Returns the customer.
      *
      * @return CustomerInterface
@@ -69,7 +85,7 @@ interface TicketInterface extends ResourceInterface, NumberSubjectInterface, Tim
     /**
      * Returns the order.
      *
-     * @return OrderInterface[]
+     * @return Collection|OrderInterface[]
      */
     public function getOrders();
 
@@ -94,7 +110,7 @@ interface TicketInterface extends ResourceInterface, NumberSubjectInterface, Tim
     /**
      * Returns the quote.
      *
-     * @return QuoteInterface[]
+     * @return Collection|QuoteInterface[]
      */
     public function getQuotes();
 
@@ -119,7 +135,7 @@ interface TicketInterface extends ResourceInterface, NumberSubjectInterface, Tim
     /**
      * Returns the messages.
      *
-     * @return ArrayCollection|TicketMessage[]
+     * @return Collection|TicketMessage[]
      */
     public function getMessages();
 

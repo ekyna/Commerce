@@ -36,7 +36,7 @@ class TicketMessageEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $message = $this->getMessageFromEvent($event);
 
@@ -48,7 +48,7 @@ class TicketMessageEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $message = $this->getMessageFromEvent($event);
 
@@ -60,7 +60,7 @@ class TicketMessageEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         // TODO Update ticket regarding to last message (not this one)
     }
@@ -70,7 +70,7 @@ class TicketMessageEventListener
      *
      * @param TicketMessageInterface $message
      */
-    protected function updateTicket(TicketMessageInterface $message)
+    protected function updateTicket(TicketMessageInterface $message): void
     {
         $ticket = $message->getTicket()->setUpdatedAt(new \DateTime());
 

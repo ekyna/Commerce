@@ -24,27 +24,30 @@ class TicketNormalizer extends AbstractResourceNormalizer
     {
         if ($this->contextHasGroup(['Default', 'Ticket'], $context)) {
             $formatter = $this->getFormatter();
-            $customer = $ticket->getCustomer();
 
             $data = [
                 'id'           => $ticket->getId(),
                 'number'       => $ticket->getNumber(),
                 'state'        => $ticket->getState(),
+                'internal'     => $ticket->isInternal(),
                 'subject'      => $ticket->getSubject(),
-                // TODO customer, order, quote ?
                 'created_at'   => ($date = $ticket->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,
                 'f_created_at' => ($date = $ticket->getCreatedAt()) ? $formatter->dateTime($date) : null,
                 'updated_at'   => ($date = $ticket->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
                 'f_updated_at' => ($date = $ticket->getUpdatedAt()) ? $formatter->dateTime($date) : null,
-                'customer' => [
-                    'id' => $customer->getId(),
-                    'first_name' => $customer->getFirstName(),
-                    'last_name' => $customer->getLastName(),
-                    'company' => $customer->getCompany(),
-                ],
-                'orders' => [],
-                'quotes' => [],
+                'customer'     => null,
+                'orders'       => [],
+                'quotes'       => [],
             ];
+
+            if ($customer = $ticket->getCustomer()) {
+                $data['customer'] = [
+                    'id'         => $customer->getId(),
+                    'first_name' => $customer->getFirstName(),
+                    'last_name'  => $customer->getLastName(),
+                    'company'    => $customer->getCompany(),
+                ];
+            }
 
             foreach ($ticket->getQuotes() as $quote) {
                 $data['quotes'][] = [

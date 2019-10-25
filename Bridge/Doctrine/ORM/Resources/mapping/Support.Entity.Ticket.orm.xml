@@ -17,7 +17,11 @@
         <field name="number" column="number" type="string" precision="16" nullable="false"/>
         <field name="subject" column="subject" type="string" length="255" nullable="false"/>
         <field name="state" column="state" type="string" length="16" nullable="false"/>
-
+        <field name="internal" column="notify" type="boolean">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
         </field>

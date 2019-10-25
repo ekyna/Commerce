@@ -27,26 +27,29 @@ interface TicketRepositoryInterface
      * Finds tickets by customer.
      *
      * @param CustomerInterface $customer
+     * @param bool              $admin
      *
      * @return TicketInterface[]
      */
-    public function findByCustomer(CustomerInterface $customer);
+    public function findByCustomer(CustomerInterface $customer, bool $admin);
 
     /**
      * Finds tickets by order.
      *
      * @param OrderInterface $order
+     * @param bool           $admin
      *
      * @return TicketInterface[]
      */
-    public function findByOrder(OrderInterface $order);
+    public function findByOrder(OrderInterface $order, bool $admin);
 
     /**
      * Finds tickets by quote.
      *
      * @param QuoteInterface $quote
+     * @param bool           $admin
      *
      * @return TicketInterface[]
      */
-    public function findByQuote(QuoteInterface $quote);
+    public function findByQuote(QuoteInterface $quote, bool $admin);
 }

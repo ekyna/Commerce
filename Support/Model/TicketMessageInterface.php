@@ -103,6 +103,38 @@ interface TicketMessageInterface extends ResourceInterface, TimestampableInterfa
     public function removeAttachment(TicketAttachmentInterface $attachment);
 
     /**
+     * Returns whether this message is internal.
+     *
+     * @return bool
+     */
+    public function isInternal();
+
+    /**
+     * Sets whether this message is internal.
+     *
+     * @param bool $internal
+     *
+     * @return TicketMessageInterface
+     */
+    public function setInternal(bool $internal);
+
+    /**
+     * Returns whether to notify the customer or admin.
+     *
+     * @return bool
+     */
+    public function isNotify();
+
+    /**
+     * Sets whether to notify the customer or admin.
+     *
+     * @param bool $notify
+     *
+     * @return TicketMessageInterface
+     */
+    public function setNotify(bool $notify);
+
+    /**
      * Returns whether or not this message is from the customer.
      *
      * @return bool

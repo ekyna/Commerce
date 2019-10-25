@@ -49,7 +49,7 @@ class TicketEventListener
     {
         $ticket = $this->getTicketFromEvent($event);
 
-        if ($this->handleUpdate($ticket)) {
+        if ($this->handleInsert($ticket)) {
             $this->persistenceHelper->persistAndRecompute($ticket, false);
         }
     }
@@ -77,7 +77,11 @@ class TicketEventListener
      */
     protected function handleInsert(TicketInterface $ticket)
     {
-        return $this->updateNumber($ticket);
+        $changed = $this->updateNumber($ticket);
+
+        $changed |= $this->fixCustomer($ticket);
+
+        return $changed;
     }
 
     /**
@@ -89,7 +93,11 @@ class TicketEventListener
      */
     protected function handleUpdate(TicketInterface $ticket)
     {
-        return $this->updateNumber($ticket);
+        $changed = $this->updateNumber($ticket);
+
+        $changed |= $this->fixCustomer($ticket);
+
+        return $changed;
     }
 
     /**
@@ -97,9 +105,9 @@ class TicketEventListener
      *
      * @param TicketInterface $ticket
      *
-     * @return bool Whether the sale number has been update.
+     * @return bool Whether the sale number has been changed.
      */
-    protected function updateNumber(TicketInterface $ticket)
+    protected function updateNumber(TicketInterface $ticket): bool
     {
         if (!empty($ticket->getNumber())) {
             return false;
@@ -108,6 +116,38 @@ class TicketEventListener
         $ticket->setNumber($this->numberGenerator->generate($ticket));
 
         return true;
+    }
+
+    /**
+     * Updates the number.
+     *
+     * @param TicketInterface $ticket
+     *
+     * @return bool Whether the ticket customer has been changed.
+     */
+    protected function fixCustomer(TicketInterface $ticket): bool
+    {
+        if ($ticket->getCustomer()) {
+            return false;
+        }
+
+        foreach ($ticket->getOrders() as $order) {
+            if ($c = $order->getCustomer()) {
+                $ticket->setCustomer($c);
+
+                return true;
+            }
+        }
+
+        foreach ($ticket->getQuotes() as $quote) {
+            if ($c = $quote->getCustomer()) {
+                $ticket->setCustomer($c);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

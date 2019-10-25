@@ -6,9 +6,6 @@
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
     <class name="Ekyna\Component\Commerce\Support\Entity\Ticket">
-        <property name="customer">
-            <constraint name="NotNull"/>
-        </property>
         <property name="state">
             <constraint name="NotNull"/>
             <constraint name="Choice">
@@ -30,6 +27,7 @@
                 <option name="min">1</option>
             </constraint>
         </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Ticket"/>
     </class>
 
     <class name="Ekyna\Component\Commerce\Support\Entity\TicketMessage">

@@ -31,6 +31,8 @@ class TicketMessageNormalizer extends AbstractResourceNormalizer
                 'ticket'        => $message->getTicket()->getId(),
                 'content'       => $message->getContent(),
                 'author'        => $message->getAuthor(),
+                'internal'      => $message->isInternal(),
+                'notify'        => $message->isNotify(),
                 'notified_at'   => ($date = $message->getNotifiedAt()) ? $date->format('Y-m-d H:i:s') : null,
                 'f_notified_at' => ($date = $message->getNotifiedAt()) ? $formatter->dateTime($date) : null,
                 'created_at'    => ($date = $message->getCreatedAt()) ? $date->format('Y-m-d H:i:s') : null,

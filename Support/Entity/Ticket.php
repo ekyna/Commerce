@@ -37,6 +37,11 @@ class Ticket implements TicketInterface
     protected $state;
 
     /**
+     * @var bool
+     */
+    protected $internal;
+
+    /**
      * @var CustomerInterface
      */
     protected $customer;
@@ -63,6 +68,7 @@ class Ticket implements TicketInterface
     public function __construct()
     {
         $this->state = TicketStates::STATE_OPENED;
+        $this->internal = false;
         $this->orders = new ArrayCollection();
         $this->quotes = new ArrayCollection();
         $this->messages = new ArrayCollection();
@@ -126,6 +132,24 @@ class Ticket implements TicketInterface
     public function getCustomer()
     {
         return $this->customer;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isInternal(): bool
+    {
+        return $this->internal;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setInternal(bool $internal): TicketInterface
+    {
+        $this->internal = $internal;
+
+        return $this;
     }
 
     /**

@@ -43,6 +43,16 @@ class TicketMessage implements TicketMessageInterface
     protected $content;
 
     /**
+     * @var bool
+     */
+    protected $internal;
+
+    /**
+     * @var bool
+     */
+    protected $notify;
+
+    /**
      * @var \DateTime
      */
     protected $notifiedAt;
@@ -58,6 +68,8 @@ class TicketMessage implements TicketMessageInterface
      */
     public function __construct()
     {
+        $this->internal = false;
+        $this->notify = true;
         $this->attachments = new ArrayCollection();
     }
 
@@ -133,6 +145,42 @@ class TicketMessage implements TicketMessageInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isInternal()
+    {
+        return $this->internal;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setInternal(bool $internal)
+    {
+        $this->internal = $internal;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isNotify()
+    {
+        return $this->notify;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setNotify(bool $notify)
+    {
+        $this->notify = $notify;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getNotifiedAt()
@@ -197,8 +245,6 @@ class TicketMessage implements TicketMessageInterface
      */
     public function isLatest()
     {
-        $last = $this->getTicket()->getMessages()->last();
-
-        return $this === $last;
+        return $this === $this->getTicket()->getMessages()->last();
     }
 }
