@@ -6,13 +6,14 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
+use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
  * Interface TicketRepositoryInterface
  * @package Ekyna\Component\Commerce\Support\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TicketRepositoryInterface
+interface TicketRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the oldest opened tickets.

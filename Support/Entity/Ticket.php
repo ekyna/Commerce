@@ -4,10 +4,12 @@ namespace Ekyna\Component\Commerce\Support\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
+use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
+use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketStates;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -18,7 +20,8 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class Ticket implements TicketInterface
 {
-    use TimestampableTrait,
+    use StateSubjectTrait,
+        TimestampableTrait,
         NumberSubjectTrait;
 
     /**
@@ -30,11 +33,6 @@ class Ticket implements TicketInterface
      * @var string
      */
     protected $subject;
-
-    /**
-     * @var string
-     */
-    protected $state;
 
     /**
      * @var bool
@@ -57,7 +55,7 @@ class Ticket implements TicketInterface
     protected $quotes;
 
     /**
-     * @var ArrayCollection|TicketMessage[]
+     * @var ArrayCollection|TicketMessageInterface[]
      */
     protected $messages;
 
@@ -104,24 +102,6 @@ class Ticket implements TicketInterface
     public function setSubject(string $subject)
     {
         $this->subject = $subject;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setState(string $state)
-    {
-        $this->state = $state;
 
         return $this;
     }
@@ -237,7 +217,7 @@ class Ticket implements TicketInterface
     /**
      * @inheritdoc
      */
-    public function addMessage(TicketMessage $message)
+    public function addMessage(TicketMessageInterface $message)
     {
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
@@ -250,7 +230,7 @@ class Ticket implements TicketInterface
     /**
      * @inheritdoc
      */
-    public function removeMessage(TicketMessage $message)
+    public function removeMessage(TicketMessageInterface $message)
     {
         if ($this->messages->contains($message)) {
             $this->messages->removeElement($message);

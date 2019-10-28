@@ -36,7 +36,7 @@ class TicketAttachmentEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $attachment = $this->getAttachmentFromEvent($event);
 
@@ -48,7 +48,7 @@ class TicketAttachmentEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $attachment = $this->getAttachmentFromEvent($event);
 
@@ -60,7 +60,7 @@ class TicketAttachmentEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         $attachment = $this->getAttachmentFromEvent($event);
 
@@ -76,7 +76,7 @@ class TicketAttachmentEventListener
      *
      * @param TicketMessageInterface $message
      */
-    protected function updateMessage(TicketMessageInterface $message)
+    protected function updateMessage(TicketMessageInterface $message): void
     {
         $message->setUpdatedAt(new \DateTime());
 
@@ -90,7 +90,7 @@ class TicketAttachmentEventListener
      *
      * @return TicketAttachmentInterface
      */
-    protected function getAttachmentFromEvent(ResourceEventInterface $event)
+    protected function getAttachmentFromEvent(ResourceEventInterface $event): TicketAttachmentInterface
     {
         $attachment = $event->getResource();
 
@@ -100,5 +100,4 @@ class TicketAttachmentEventListener
 
         return $attachment;
     }
-
 }

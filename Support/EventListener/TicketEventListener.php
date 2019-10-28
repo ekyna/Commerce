@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Support\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
+use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -25,19 +26,27 @@ class TicketEventListener
      */
     protected $numberGenerator;
 
+    /**
+     * @var StateResolverInterface
+     */
+    protected $stateResolver;
+
 
     /**
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
      * @param GeneratorInterface         $numberGenerator
+     * @param StateResolverInterface     $stateResolver
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
-        GeneratorInterface $numberGenerator
+        GeneratorInterface $numberGenerator,
+        StateResolverInterface $stateResolver
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->numberGenerator = $numberGenerator;
+        $this->stateResolver = $stateResolver;
     }
 
     /**
@@ -45,7 +54,7 @@ class TicketEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $ticket = $this->getTicketFromEvent($event);
 
@@ -59,11 +68,25 @@ class TicketEventListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $ticket = $this->getTicketFromEvent($event);
 
         if ($this->handleUpdate($ticket)) {
+            $this->persistenceHelper->persistAndRecompute($ticket, false);
+        }
+    }
+
+    /**
+     * Content change event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onContentChange(ResourceEventInterface $event): void
+    {
+        $ticket = $this->getTicketFromEvent($event);
+
+        if ($this->updateState($ticket)) {
             $this->persistenceHelper->persistAndRecompute($ticket, false);
         }
     }
@@ -75,9 +98,11 @@ class TicketEventListener
      *
      * @return bool
      */
-    protected function handleInsert(TicketInterface $ticket)
+    protected function handleInsert(TicketInterface $ticket): bool
     {
         $changed = $this->updateNumber($ticket);
+
+        $changed |= $this->updateState($ticket);
 
         $changed |= $this->fixCustomer($ticket);
 
@@ -91,13 +116,39 @@ class TicketEventListener
      *
      * @return bool
      */
-    protected function handleUpdate(TicketInterface $ticket)
+    protected function handleUpdate(TicketInterface $ticket): bool
     {
         $changed = $this->updateNumber($ticket);
+
+        $changed |= $this->updateState($ticket);
 
         $changed |= $this->fixCustomer($ticket);
 
         return $changed;
+    }
+
+    /**
+     * Handles the ticket content change.
+     *
+     * @param TicketInterface $ticket
+     *
+     * @return bool
+     */
+    protected function handleContentChange(TicketInterface $ticket): bool
+    {
+        return $this->updateState($ticket);
+    }
+
+    /**
+     * Updates the ticket state.
+     *
+     * @param TicketInterface $ticket
+     *
+     * @return bool
+     */
+    protected function updateState(TicketInterface $ticket): bool
+    {
+        return $this->stateResolver->resolve($ticket);
     }
 
     /**

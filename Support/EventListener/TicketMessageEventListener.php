@@ -3,8 +3,9 @@
 namespace Ekyna\Component\Commerce\Support\EventListener;
 
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Commerce\Support\Event\TicketEvents;
+use Ekyna\Component\Commerce\Support\Model\TicketInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
-use Ekyna\Component\Commerce\Support\Model\TicketStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -40,7 +41,7 @@ class TicketMessageEventListener
     {
         $message = $this->getMessageFromEvent($event);
 
-        $this->updateTicket($message);
+        $this->scheduleTicketContentChangeEvent($message->getTicket());
     }
 
     /**
@@ -52,7 +53,7 @@ class TicketMessageEventListener
     {
         $message = $this->getMessageFromEvent($event);
 
-        $this->updateTicket($message);
+        $this->scheduleTicketContentChangeEvent($message->getTicket());
     }
 
     /**
@@ -62,29 +63,21 @@ class TicketMessageEventListener
      */
     public function onDelete(ResourceEventInterface $event): void
     {
-        // TODO Update ticket regarding to last message (not this one)
+        $message = $this->getMessageFromEvent($event);
+
+        if (null === $ticket = $message->getTicket()) {
+            $ticket = $this->persistenceHelper->getChangeSet($message, 'ticket')[0];
+        }
+
+        $this->scheduleTicketContentChangeEvent($ticket);
     }
 
     /**
-     * Updates the ticket.
-     *
-     * @param TicketMessageInterface $message
+     * @inheritdoc
      */
-    protected function updateTicket(TicketMessageInterface $message): void
+    protected function scheduleTicketContentChangeEvent(TicketInterface $ticket): void
     {
-        $ticket = $message->getTicket()->setUpdatedAt(new \DateTime());
-
-        if ($message->isLatest() && ($ticket->getState() !== TicketStates::STATE_CLOSED)) {
-            if ($message->isCustomer()) {
-                if ($ticket->getState() === TicketStates::STATE_PENDING) {
-                    $ticket->setState(TicketStates::STATE_OPENED);
-                }
-            } elseif ($ticket->getState() === TicketStates::STATE_OPENED) {
-                $ticket->setState(TicketStates::STATE_PENDING);
-            }
-        }
-
-        $this->persistenceHelper->persistAndRecompute($ticket, false);
+        $this->persistenceHelper->scheduleEvent(TicketEvents::CONTENT_CHANGE, $ticket);
     }
 
     /**
@@ -94,7 +87,7 @@ class TicketMessageEventListener
      *
      * @return TicketMessageInterface
      */
-    protected function getMessageFromEvent(ResourceEventInterface $event)
+    protected function getMessageFromEvent(ResourceEventInterface $event): TicketMessageInterface
     {
         $message = $event->getResource();
 

@@ -9,9 +9,11 @@ namespace Ekyna\Component\Commerce\Support\Model;
  */
 final class TicketStates
 {
-    const STATE_OPENED  = 'opened';
-    const STATE_PENDING = 'pending';
-    const STATE_CLOSED  = 'closed';
+    const STATE_NEW      = 'new';
+    const STATE_OPENED   = 'opened';
+    const STATE_PENDING  = 'pending';
+    const STATE_INTERNAL = 'internal';
+    const STATE_CLOSED   = 'closed';
 
 
     /**
@@ -22,8 +24,10 @@ final class TicketStates
     static public function getStates()
     {
         return [
+            static::STATE_NEW,
             static::STATE_OPENED,
             static::STATE_PENDING,
+            static::STATE_INTERNAL,
             static::STATE_CLOSED,
         ];
     }

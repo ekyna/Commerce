@@ -19,8 +19,9 @@ class TicketEventSubscriber extends TicketEventListener implements EventSubscrib
     public static function getSubscribedEvents()
     {
         return [
-            TicketEvents::INSERT => ['onInsert', 0],
-            TicketEvents::UPDATE => ['onUpdate', 0],
+            TicketEvents::INSERT         => ['onInsert', 0],
+            TicketEvents::UPDATE         => ['onUpdate', 0],
+            TicketEvents::CONTENT_CHANGE => ['onContentChange', 0],
         ];
     }
 }

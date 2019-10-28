@@ -15,7 +15,7 @@ final class TicketEvents
     const DELETE         = 'ekyna_commerce.ticket.delete';
 
     // Domain
-    const STATE_CHANGE   = 'ekyna_commerce.ticket.state_change';
+    const CONTENT_CHANGE = 'ekyna_commerce.ticket.content_change';
 
     const INITIALIZE     = 'ekyna_commerce.ticket.initialize';
 

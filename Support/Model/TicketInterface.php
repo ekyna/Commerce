@@ -4,10 +4,10 @@ namespace Ekyna\Component\Commerce\Support\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
+use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
-use Ekyna\Component\Commerce\Support\Entity\TicketMessage;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 use Ekyna\Component\Resource\Model\TimestampableInterface;
 
@@ -16,7 +16,7 @@ use Ekyna\Component\Resource\Model\TimestampableInterface;
  * @package Ekyna\Component\Commerce\Support\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TicketInterface extends ResourceInterface, NumberSubjectInterface, TimestampableInterface
+interface TicketInterface extends ResourceInterface, StateSubjectInterface, NumberSubjectInterface, TimestampableInterface
 {
     /**
      * Returns the subject.
@@ -33,22 +33,6 @@ interface TicketInterface extends ResourceInterface, NumberSubjectInterface, Tim
      * @return $this|TicketInterface
      */
     public function setSubject(string $subject);
-
-    /**
-     * Returns the state.
-     *
-     * @return string
-     */
-    public function getState();
-
-    /**
-     * Sets the state.
-     *
-     * @param string $state
-     *
-     * @return $this|TicketInterface
-     */
-    public function setState(string $state);
 
     /**
      * Returns whether this ticket is internal.
@@ -135,25 +119,25 @@ interface TicketInterface extends ResourceInterface, NumberSubjectInterface, Tim
     /**
      * Returns the messages.
      *
-     * @return Collection|TicketMessage[]
+     * @return Collection|TicketMessageInterface[]
      */
     public function getMessages();
 
     /**
      * Adds the message.
      *
-     * @param TicketMessage $message
+     * @param TicketMessageInterface $message
      *
      * @return $this|TicketInterface
      */
-    public function addMessage(TicketMessage $message);
+    public function addMessage(TicketMessageInterface $message);
 
     /**
      * Removes the message.
      *
-     * @param TicketMessage $message
+     * @param TicketMessageInterface $message
      *
      * @return $this|TicketInterface
      */
-    public function removeMessage(TicketMessage $message);
+    public function removeMessage(TicketMessageInterface $message);
 }
