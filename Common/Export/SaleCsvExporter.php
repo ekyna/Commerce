@@ -7,11 +7,11 @@ use Ekyna\Component\Commerce\Common\View;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 
 /**
- * Class OrderExporter
+ * Class SaleCsvExporter
  * @package Ekyna\Component\Commerce\Order\Export
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SaleExporter
+class SaleCsvExporter implements SaleExporterInterface
 {
     /**
      * @var View\ViewBuilder
@@ -30,17 +30,14 @@ class SaleExporter
     }
 
     /**
-     * Exports the order as CSV.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return string The CSV file path.
+     * @inheritDoc
      */
     public function export(SaleInterface $sale): string
     {
         $view = $this->viewBuilder->buildSaleView($sale, [
             'private'  => false,
             'editable' => false,
+            'export'   => true,
         ]);
 
         $rows = [$this->buildHeaderRow($view)];
@@ -51,7 +48,6 @@ class SaleExporter
             $this->buildGrossTotalsRow($view, $rows);
             $rows[] = []; // TODO Spacer
             $this->buildDiscountsRows($view, $view->getDiscounts(), $rows);
-
         }
 
         if ($shipment = $view->getShipment()) {
@@ -73,7 +69,7 @@ class SaleExporter
      *
      * @return array
      */
-    protected function buildHeaderRow(View\SaleView $view): array
+    private function buildHeaderRow(View\SaleView $view): array
     {
         $trans = $view->getTranslations();
 
@@ -113,11 +109,11 @@ class SaleExporter
     /**
      * Builds the items rows.
      *
-     * @param View\SaleView $view
+     * @param View\SaleView   $view
      * @param View\LineView[] $lines
-     * @param array         $rows
+     * @param array           $rows
      */
-    protected function buildItemsRows(View\SaleView $view, array $lines, array &$rows): void
+    private function buildItemsRows(View\SaleView $view, array $lines, array &$rows): void
     {
         foreach ($lines as $line) {
             $this->buildItemRow($view, $line, $rows);
@@ -131,7 +127,7 @@ class SaleExporter
      * @param View\LineView $line
      * @param array         $rows
      */
-    protected function buildItemRow(View\SaleView $view, View\LineView $line, array &$rows): void
+    private function buildItemRow(View\SaleView $view, View\LineView $line, array &$rows): void
     {
         if ($line->isPrivate()) {
             return;
@@ -139,7 +135,8 @@ class SaleExporter
 
         $row = [
             $line->getNumber(),
-            implode('', array_fill(0, $line->getLevel(), ' - ')) . $line->getDesignation(), // TODO prefix with tree symbols
+            implode('', array_fill(0, $line->getLevel(), ' - ')) . $line->getDesignation(),
+            // TODO prefix with tree symbols
             // TODO Description (?)
             $line->getReference(),
         ];
@@ -181,7 +178,7 @@ class SaleExporter
      * @param View\SaleView $view
      * @param array         $rows
      */
-    protected function buildGrossTotalsRow(View\SaleView $view, array &$rows): void
+    private function buildGrossTotalsRow(View\SaleView $view, array &$rows): void
     {
         $offset = $view->vars['columns_count']
             - ($view->vars['show_discounts'] ? 4 : 1)
@@ -206,7 +203,7 @@ class SaleExporter
      * @param array         $discounts
      * @param array         $rows
      */
-    protected function buildDiscountsRows(View\SaleView $view, array $discounts, array &$rows): void
+    private function buildDiscountsRows(View\SaleView $view, array $discounts, array &$rows): void
     {
         foreach ($discounts as $discount) {
             $this->buildDiscountRow($view, $discount, $rows);
@@ -220,7 +217,7 @@ class SaleExporter
      * @param View\LineView $line
      * @param array         $rows
      */
-    protected function buildDiscountRow(View\SaleView $view, View\LineView $line, array &$rows): void
+    private function buildDiscountRow(View\SaleView $view, View\LineView $line, array &$rows): void
     {
         $row = [
             null,
@@ -248,7 +245,7 @@ class SaleExporter
      * @param View\LineView $line
      * @param array         $rows
      */
-    protected function buildShipmentRow(View\SaleView $view, View\LineView $line, array &$rows): void
+    private function buildShipmentRow(View\SaleView $view, View\LineView $line, array &$rows): void
     {
         $row = [
             null,
@@ -275,7 +272,7 @@ class SaleExporter
      * @param View\SaleView $view
      * @param array         $rows
      */
-    protected function buildGranTotalsRows(View\SaleView $view, array &$rows): void
+    private function buildGranTotalsRows(View\SaleView $view, array &$rows): void
     {
         $trans = $view->getTranslations();
 
@@ -307,7 +304,7 @@ class SaleExporter
      *
      * @return string
      */
-    protected function buildCsv(string $name, array $rows): string
+    private function buildCsv(string $name, array $rows): string
     {
         if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
             throw new RuntimeException("Failed to create temporary file.");

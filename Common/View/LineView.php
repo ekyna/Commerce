@@ -119,6 +119,11 @@ class LineView extends AbstractView
      */
     private $private = false;
 
+    /**
+     * @var object
+     */
+    private $source;
+
 
     /**
      * Constructor.
@@ -570,5 +575,29 @@ class LineView extends AbstractView
     public function isPrivate(): bool
     {
         return $this->private;
+    }
+
+    /**
+     * Returns the source.
+     *
+     * @return object
+     */
+    public function getSource(): object
+    {
+        return $this->source;
+    }
+
+    /**
+     * Sets the source.
+     *
+     * @param object $source
+     *
+     * @return LineView
+     */
+    public function setSource(object $source): self
+    {
+        $this->source = $source;
+
+        return $this;
     }
 }

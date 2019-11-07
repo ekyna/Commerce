@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Common\View;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -124,17 +125,17 @@ class ViewBuilder
         // Gross total view
         $grossResult = $sale->getGrossResult($c);
         $this->view->setGross(new TotalView(
-            $this->formatter->currency($grossResult->getGross($this->view->isAti())),
-            $this->formatter->currency($grossResult->getDiscount($this->view->isAti())),
-            $this->formatter->currency($grossResult->getBase($this->view->isAti()))
+            $this->currency($grossResult->getGross($this->view->isAti())),
+            $this->currency($grossResult->getDiscount($this->view->isAti())),
+            $this->currency($grossResult->getBase($this->view->isAti()))
         ));
 
         // Final total view
         $finalResult = $sale->getFinalResult($c);
         $this->view->setFinal(new TotalView(
-            $this->formatter->currency($finalResult->getBase()),
-            $this->formatter->currency($finalResult->getTax()),
-            $this->formatter->currency($finalResult->getTotal())
+            $this->currency($finalResult->getBase()),
+            $this->currency($finalResult->getTax()),
+            $this->currency($finalResult->getTotal())
         ));
 
         if ($this->options['private'] && null !== $margin = $this->marginCalculator->calculateSale($sale)) {
@@ -146,8 +147,8 @@ class ViewBuilder
                 ->convertWithSubject($margin->getAmount(), $sale, $c);
 
             $this->view->setMargin(new MarginView(
-                $prefix . $this->formatter->currency($amount),
-                $prefix . $this->formatter->percent($margin->getPercent())
+                $this->currency($amount, $prefix),
+                $this->percent($margin->getPercent(), $prefix)
             ));
             $this->view->vars['show_margin'] = true;
         }
@@ -170,10 +171,16 @@ class ViewBuilder
         if ($this->view->vars['show_availability']) {
             $columnsCount++;
         }
-        if ($this->view->vars['show_discounts'] = 0 < count($grossResult->getDiscountAdjustments())) {
+
+        $this->view->vars['show_discounts'] =
+            $this->options['discounts'] || 0 < count($grossResult->getDiscountAdjustments());
+        if ($this->view->vars['show_discounts']) {
             $columnsCount += 3;
         }
-        if ($this->view->vars['show_taxes'] = 1 < count($finalResult->getTaxAdjustments())) {
+
+        $this->view->vars['show_taxes'] =
+            $this->options['taxes'] || 1 < count($finalResult->getTaxAdjustments());
+        if ($this->view->vars['show_taxes']) {
             $columnsCount++;
         }
         if ($this->view->vars['show_margin']) {
@@ -237,7 +244,7 @@ class ViewBuilder
         foreach ($amounts->getTaxAdjustments() as $tax) {
             $this->view->addTax(new TaxView(
                 $tax->getName(),
-                $this->formatter->currency($tax->getAmount())
+                $this->currency($tax->getAmount())
             ));
         }
     }
@@ -306,29 +313,29 @@ class ViewBuilder
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $ati = $this->view->isAti();
-            $unit = $this->formatter->currency($result->getUnit($ati));
-            $gross = $this->formatter->currency($result->getGross($ati));
-            $discountRates = $this->formatter->rates(...$result->getDiscountAdjustments());
+            $unit = $this->currency($result->getUnit($ati));
+            $gross = $this->currency($result->getGross($ati));
+            $discountRates = $this->rates(...$result->getDiscountAdjustments());
             if (0 < $discount = $result->getDiscount($ati)) {
-                $discountAmount = $this->formatter->currency($discount);
+                $discountAmount = $this->currency($discount);
             }
-            $base = $this->formatter->currency($result->getBase($ati));
-            $taxRates = $this->formatter->rates(...$result->getTaxAdjustments());
+            $base = $this->currency($result->getBase($ati));
+            $taxRates = $this->rates(...$result->getTaxAdjustments());
             if (0 < $tax = $result->getTax()) {
-                $taxAmount = $this->formatter->currency($tax);
+                $taxAmount = $this->currency($tax);
             }
-            $total = $this->formatter->currency($result->getTotal());
+            $total = $this->currency($result->getTotal());
         }
 
         // TODO Use packaging format
         if ($item->isPrivate()) {
             $quantity = sprintf(
                 '%s (x%s)',
-                $this->formatter->number($item->getQuantity()),
-                $this->formatter->number($item->getParentsQuantity())
+                $this->number($item->getQuantity()),
+                $this->number($item->getParentsQuantity())
             );
         } else {
-            $quantity = $this->formatter->number($item->getTotalQuantity());
+            $quantity = $this->number($item->getTotalQuantity());
         }
 
         if (
@@ -349,7 +356,8 @@ class ViewBuilder
             ->setBase($base)
             ->setTaxRates($taxRates)
             ->setTaxAmount($taxAmount)
-            ->setTotal($total);
+            ->setTotal($total)
+            ->setSource($item);
 
         if ($item->isPrivate()) {
             $view->setPrivate(true)->addClass('private');
@@ -368,8 +376,7 @@ class ViewBuilder
         if ($this->view->vars['show_margin'] && !($item->isCompound() && !$item->hasPrivateChildren())) {
             if (null !== $margin = $item->getMargin($this->view->getCurrency())) {
                 $view->setMargin(
-                    ($margin->isAverage() ? '~' : '') .
-                    $this->formatter->percent($margin->getPercent())
+                    $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '')
                 );
             }
         }
@@ -411,7 +418,7 @@ class ViewBuilder
         if (empty($designation = $adjustment->getDesignation())) {
             $designation = 'Discount ';
             if ($adjustment->getMode() === Model\AdjustmentModes::MODE_PERCENT) {
-                $designation .= $this->formatter->percent($adjustment->getAmount());
+                $designation .= $this->percent($adjustment->getAmount());
             }
         }
 
@@ -419,9 +426,10 @@ class ViewBuilder
 
         $view
             ->setDesignation($designation)
-            ->setBase($this->formatter->currency($result->getBase()))
-            ->setTaxAmount($this->formatter->currency($result->getTax()))
-            ->setTotal($this->formatter->currency($result->getTotal()));
+            ->setBase($this->currency($result->getBase()))
+            ->setTaxAmount($this->currency($result->getTax()))
+            ->setTotal($this->currency($result->getTotal()))
+            ->setSource($adjustment);
 
         foreach ($this->types as $type) {
             $type->buildAdjustmentView($adjustment, $view, $this->options);
@@ -459,22 +467,98 @@ class ViewBuilder
         }
 
         // Shipment weight
-        $designation .= ' (' . $this->formatter->number($sale->getShipmentWeight() ?? $sale->getWeightTotal()) . ' kg)';
+        $designation .= ' (' . $this->number($sale->getShipmentWeight() ?? $sale->getWeightTotal()) . ' kg)';
 
         $result = $sale->getShipmentResult($this->view->getCurrency());
 
         $view
             ->setDesignation($designation)
-            ->setBase($this->formatter->currency($result->getBase()))
-            ->setTaxRates($this->formatter->rates(...$result->getTaxAdjustments()))
-            ->setTaxAmount($this->formatter->currency($result->getTax()))
-            ->setTotal($this->formatter->currency($result->getTotal()));
+            ->setBase($this->currency($result->getBase()))
+            ->setTaxRates($this->rates(...$result->getTaxAdjustments()))
+            ->setTaxAmount($this->currency($result->getTax()))
+            ->setTotal($this->currency($result->getTotal()))
+            ->setSource($sale);
 
         foreach ($this->types as $type) {
             $type->buildShipmentView($sale, $view, $this->options);
         }
 
         $this->view->setShipment($view);
+    }
+
+    /**
+     * Formats currency as needed.
+     *
+     * @param float  $amount
+     * @param string $prefix
+     *
+     * @return string
+     */
+    private function currency(float $amount, string $prefix = ''): string
+    {
+        if ($this->options['export']) {
+            return (string)round($amount, 5);
+        }
+
+        return $prefix . $this->formatter->currency($amount);
+    }
+
+    /**
+     * Formats percent as needed.
+     *
+     * @param float  $amount
+     * @param string $prefix
+     *
+     * @return string
+     */
+    private function percent(float $amount, string $prefix = ''): string
+    {
+        if ($this->options['export']) {
+            return (string)round($amount, 2);
+        }
+
+        return $prefix . $this->formatter->percent($amount);
+    }
+
+    /**
+     * Formats number as needed.
+     *
+     * @param float  $value
+     * @param string $prefix
+     *
+     * @return string
+     */
+    private function number(float $value, string $prefix = ''): string
+    {
+        if ($this->options['export']) {
+            return (string)round($value, 2);
+        }
+
+        return $prefix . $this->formatter->number($value);
+    }
+
+    /**
+     * Formats adjustments rates as needed.
+     *
+     * @param Adjustment ...$adjustments
+     *
+     * @return string
+     */
+    private function rates(Adjustment ...$adjustments): string
+    {
+        if ($this->options['export']) {
+            $rate = 0;
+            if (!empty($adjustments)) {
+                $rate = reset($adjustments)->getRate() / 100;
+                foreach (array_slice($adjustments, 1) as $adjustment) {
+                    $rate *= 1 + $adjustment->getRate() / 100;
+                }
+            }
+
+            return (string)round($rate, 2);
+        }
+
+        return $this->formatter->rates(...$adjustments);
     }
 
     /**
@@ -497,6 +581,9 @@ class ViewBuilder
                 'locale'     => \Locale::getDefault(),
                 'currency'   => $this->amountCalculator->getDefaultCurrency(),
                 'ati'        => false,
+                'export'     => false,
+                'discounts'  => null,
+                'taxes'      => null,
                 'template'   => function (Options $options) {
                     if (true === $options['editable']) {
                         return $this->editableTemplate;
@@ -511,7 +598,31 @@ class ViewBuilder
             ->setAllowedTypes('locale', 'string')
             ->setAllowedTypes('currency', 'string')
             ->setAllowedTypes('ati', 'bool')
-            ->setAllowedTypes('template', ['null', 'string']);
+            ->setAllowedTypes('export', 'bool')
+            ->setAllowedTypes('discounts', ['null', 'bool'])
+            ->setAllowedTypes('taxes', ['null', 'bool'])
+            ->setAllowedTypes('template', ['null', 'string'])
+            ->setNormalizer('ati', function (Options $options, $value) {
+                if (true === $options['export']) {
+                    return false;
+                }
+
+                return $value;
+            })
+            ->setNormalizer('discounts', function (Options $options, $value) {
+                if (true === $options['export']) {
+                    return true;
+                }
+
+                return $value;
+            })
+            ->setNormalizer('taxes', function (Options $options, $value) {
+                if (true === $options['export']) {
+                    return true;
+                }
+
+                return $value;
+            });
 
         return $this->optionsResolver = $resolver;
     }
