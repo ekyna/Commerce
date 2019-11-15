@@ -32,8 +32,8 @@ class InvoiceValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, Invoice::class);
         }
 
-        // If credit, must have a payment method
-        if (InvoiceTypes::isCredit($invoice) && null === $invoice->getPaymentMethod() && $invoice->getSale()->isPaid()) {
+        // If credit and sale is paid, must have a payment method
+        if (InvoiceTypes::isCredit($invoice) && $invoice->getSale()->isPaid() && is_null($invoice->getPaymentMethod())) {
             $this
                 ->context
                 ->buildViolation($constraint->null_credit_method)

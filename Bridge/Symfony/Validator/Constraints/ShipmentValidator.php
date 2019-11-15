@@ -157,8 +157,8 @@ class ShipmentValidator extends ConstraintValidator
         }
 
         // Credit method requirement
-        if ($shipment->isReturn() && $shipment->isAutoInvoice() && !$shipment->getSale()->isSample()) {
-            if (null === $shipment->getCreditMethod()) {
+        if ($shipment->isReturn() && $shipment->isAutoInvoice()) {
+            if (is_null($shipment->getCreditMethod()) && !$sale->isSample() && $sale->isPaid()) {
                 $this
                     ->context
                     ->buildViolation($constraint->credit_method_is_required)

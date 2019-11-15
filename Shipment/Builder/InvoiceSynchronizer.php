@@ -91,13 +91,9 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
                 ->setShipment($shipment);
 
             if ($shipment->isReturn()) {
-                if (null === $method = $shipment->getCreditMethod()) {
-                    throw new RuntimeException("Return's credit method must be set at this point.");
-                }
-
                 $invoice
                     ->setType(Invoice\InvoiceTypes::TYPE_CREDIT)
-                    ->setPaymentMethod($method);
+                    ->setPaymentMethod($shipment->getCreditMethod());
             }
         }
 
