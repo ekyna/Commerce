@@ -225,6 +225,8 @@ class PaymentCalculator implements PaymentCalculatorInterface
         } elseif (0 === $p && 0 < $outstanding) {
             // Pay outstanding
             $amount = $outstanding;
+        } elseif (-1 === $p) {
+            $amount = $total - $paid;
         }
 
         if (0 < $amount) {

@@ -168,7 +168,8 @@ class SaleItemValidator extends ConstraintValidator
             return;
         }
 
-        $min = $this->shipmentCalculator->calculateShippedQuantity($item);
+        $min = $this->shipmentCalculator->calculateShippedQuantity($item)
+             - $this->shipmentCalculator->calculateReturnedQuantity($item);
 
         // TODO Use packaging format
         //if (0 < $min && $item->getTotalQuantity() < $min) {
