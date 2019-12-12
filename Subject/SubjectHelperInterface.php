@@ -64,7 +64,7 @@ interface SubjectHelperInterface
      *
      * @return null|string
      */
-    public function generateAddToCartUrl($subject, $path = true);
+    public function generateAddToCartUrl($subject, bool $path = true): ?string;
 
     /**
      * Returns the subject public url.
@@ -74,7 +74,17 @@ interface SubjectHelperInterface
      *
      * @return null|string
      */
-    public function generatePublicUrl($subject, $path = true);
+    public function generatePublicUrl($subject, bool $path = true): ?string;
+
+    /**
+     * Returns the subject image url.
+     *
+     * @param SubjectRelativeInterface|SubjectInterface $subject
+     * @param bool                                      $path
+     *
+     * @return null|string
+     */
+    public function generateImageUrl($subject, bool $path = true): ?string;
 
     /**
      * Returns the subject private url.
@@ -84,5 +94,5 @@ interface SubjectHelperInterface
      *
      * @return null|string
      */
-    public function generatePrivateUrl($subject, $path = true);
+    public function generatePrivateUrl($subject, bool $path = true): ?string;
 }

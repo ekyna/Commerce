@@ -14,6 +14,7 @@ class SubjectUrlEvent extends Event
 {
     const ADD_TO_CART = 'ekyna_commerce.subject_url.add_to_cart';
     const PUBLIC      = 'ekyna_commerce.subject_url.public';
+    const IMAGE       = 'ekyna_commerce.subject_url.image';
     const PRIVATE     = 'ekyna_commerce.subject_url.private';
 
     /**
@@ -41,7 +42,7 @@ class SubjectUrlEvent extends Event
     public function __construct(SubjectInterface $subject, $path = true)
     {
         $this->subject = $subject;
-        $this->path = $path;
+        $this->path    = $path;
     }
 
     /**

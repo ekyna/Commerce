@@ -81,14 +81,13 @@ class SubjectHelper implements SubjectHelperInterface
      */
     public function find($provider, $identifier)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getProvider($provider)->getRepository()->find($identifier);
     }
 
     /**
      * @inheritdoc
      */
-    public function generateAddToCartUrl($subject, $path = true)
+    public function generateAddToCartUrl($subject, bool $path = true): ?string
     {
         return $this->getUrl(SubjectUrlEvent::ADD_TO_CART, $subject, $path);
     }
@@ -96,7 +95,7 @@ class SubjectHelper implements SubjectHelperInterface
     /**
      * @inheritdoc
      */
-    public function generatePublicUrl($subject, $path = true)
+    public function generatePublicUrl($subject, bool $path = true): ?string
     {
         return $this->getUrl(SubjectUrlEvent::PUBLIC, $subject, $path);
     }
@@ -104,7 +103,15 @@ class SubjectHelper implements SubjectHelperInterface
     /**
      * @inheritdoc
      */
-    public function generatePrivateUrl($subject, $path = true)
+    public function generateImageUrl($subject, bool $path = true): ?string
+    {
+        return $this->getUrl(SubjectUrlEvent::IMAGE, $subject, $path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function generatePrivateUrl($subject, bool $path = true): ?string
     {
         return $this->getUrl(SubjectUrlEvent::PRIVATE, $subject, $path);
     }
@@ -135,7 +142,7 @@ class SubjectHelper implements SubjectHelperInterface
      *
      * @return string|null
      */
-    protected function getUrl($name, $subject, $path)
+    protected function getUrl(string $name, $subject, bool $path): ?string
     {
         if ($subject instanceof SubjectRelativeInterface) {
             if (null === $subject = $this->resolve($subject, false)) {

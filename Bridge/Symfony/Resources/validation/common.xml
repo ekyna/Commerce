@@ -38,6 +38,8 @@
         </constraint>
     </class>
 
+    <!-- TODO Ekyna\Component\Commerce\Common\Context\Context -->
+
     <!-- Address -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractAddress">
