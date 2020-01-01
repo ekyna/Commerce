@@ -57,6 +57,11 @@ class CouponHelper
         }
 
         if ($check) {
+            // Check owner
+            if ($coupon->getCustomer() && $sale->getCustomer() !== $coupon->getCustomer()) {
+                throw $this->createException("owner");
+            }
+
             // Check usage limit
             if ((0 < $limit = $coupon->getLimit()) && ($coupon->getUsage() >= $limit)) {
                 throw $this->createException("usage");

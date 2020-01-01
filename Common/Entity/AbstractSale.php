@@ -807,7 +807,7 @@ abstract class AbstractSale implements Common\SaleInterface
                 return true;
             }
 
-            if ($item->hasChildren() && $this->hasDiscountItemAdjustment($item->getChildren())) {
+            if ($item->hasChildren() && $this->hasDiscountItemAdjustment($item->getChildren()->toArray())) {
                 return true;
             }
         }

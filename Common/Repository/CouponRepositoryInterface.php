@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CouponInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
 /**
@@ -20,4 +21,14 @@ interface CouponRepositoryInterface extends ResourceRepositoryInterface
      * @return CouponInterface|null
      */
     public function findOneByCode(string $code): ?CouponInterface;
+
+    /**
+     * Finds coupons by customer.
+     *
+     * @param CustomerInterface $customer
+     * @param bool              $unused
+     *
+     * @return CouponInterface[]
+     */
+    public function findByCustomer(CustomerInterface $customer, bool $unused = true): array;
 }

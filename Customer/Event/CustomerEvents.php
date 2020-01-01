@@ -10,12 +10,12 @@ namespace Ekyna\Component\Commerce\Customer\Event;
 final class CustomerEvents
 {
     // Persistence
-    const INSERT      = 'ekyna_commerce.customer.insert';
-    const UPDATE      = 'ekyna_commerce.customer.update';
-    const DELETE      = 'ekyna_commerce.customer.delete';
+    const INSERT = 'ekyna_commerce.customer.insert';
+    const UPDATE = 'ekyna_commerce.customer.update';
+    const DELETE = 'ekyna_commerce.customer.delete';
 
     // Domain
-    const INITIALIZE  = 'ekyna_commerce.customer.initialize';
+    const INITIALIZE = 'ekyna_commerce.customer.initialize';
 
     const PRE_CREATE  = 'ekyna_commerce.customer.pre_create';
     const POST_CREATE = 'ekyna_commerce.customer.post_create';
@@ -27,4 +27,8 @@ final class CustomerEvents
     const POST_DELETE = 'ekyna_commerce.customer.post_delete';
 
     const PARENT_CHANGE = 'ekyna_commerce.customer.parent_change';
+
+    const BIRTHDAY               = 'ekyna_commerce.customer.birthday';
+    const NEWSLETTER_SUBSCRIBE   = 'ekyna_commerce.customer.newsletter_subscribe';
+    const NEWSLETTER_UNSUBSCRIBE = 'ekyna_commerce.customer.newsletter_unsubscribe';
 }

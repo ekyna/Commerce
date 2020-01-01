@@ -33,6 +33,11 @@
         <field name="mode" column="mode" type="string" length="16"/>
         <field name="amount" column="amount" type="decimal" precision="15" scale="5"/>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
+                     field="customer">
+            <join-column name="customer_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
+        </many-to-one>
+
     </mapped-superclass>
 
 </doctrine-mapping>

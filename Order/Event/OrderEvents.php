@@ -31,6 +31,8 @@ final class OrderEvents
     const PRE_DELETE     = 'ekyna_commerce.order.pre_delete';
     const POST_DELETE    = 'ekyna_commerce.order.post_delete';
 
+    const COMPLETED      = 'ekyna_commerce.order.completed';
+
 
     /**
      * Disabled constructor.

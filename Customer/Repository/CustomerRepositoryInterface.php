@@ -20,4 +20,20 @@ interface CustomerRepositoryInterface extends ResourceRepositoryInterface
      * @return CustomerInterface|null
      */
     public function findOneByNumber(string $number): ?CustomerInterface;
+
+    /**
+     * Finds the customers having their birthday today.
+     *
+     * @return CustomerInterface[]
+     */
+    public function findWithBirthdayToday(): array;
+
+    /**
+     * Finds the customers having a minimum of loyalty points.
+     *
+     * @param int $points
+     *
+     * @return CustomerInterface[]
+     */
+    public function findWithLoyaltyPoints(int $points): array;
 }

@@ -105,6 +105,22 @@ interface CustomerInterface extends
     public function setBirthday(\DateTime $birthday = null);
 
     /**
+     * Returns whether this customer subscribes to the newsletter.
+     *
+     * @return bool
+     */
+    public function isNewsletter(): bool;
+
+    /**
+     * Sets whether this customer subscribes to the newsletter.
+     *
+     * @param bool $newsletter
+     *
+     * @return CustomerInterface
+     */
+    public function setNewsletter(bool $newsletter): CustomerInterface;
+
+    /**
      * Returns whether the customer has a parent or not.
      *
      * @return bool
@@ -267,6 +283,22 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function removePaymentMethod(Payment\PaymentMethodInterface $paymentMethod): CustomerInterface;
+
+    /**
+     * Returns the loyalty points.
+     *
+     * @return int
+     */
+    public function getLoyaltyPoints(): int;
+
+    /**
+     * Sets the loyalty points.
+     *
+     * @param int $points
+     *
+     * @return CustomerInterface
+     */
+    public function setLoyaltyPoints(int $points): CustomerInterface;
 
     /**
      * Returns the credit balance.

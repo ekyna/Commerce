@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Customer\Event\CustomerEvents;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Pricing\Updater\PricingUpdaterInterface;
+use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -32,22 +33,30 @@ class CustomerListener
      */
     protected $pricingUpdater;
 
+    /**
+     * @var ResourceEventDispatcherInterface
+     */
+    protected $dispatcher;
+
 
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param GeneratorInterface         $numberGenerator
-     * @param PricingUpdaterInterface    $pricingUpdater
+     * @param PersistenceHelperInterface       $persistenceHelper
+     * @param GeneratorInterface               $numberGenerator
+     * @param PricingUpdaterInterface          $pricingUpdater
+     * @param ResourceEventDispatcherInterface $dispatcher
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         GeneratorInterface $numberGenerator,
-        PricingUpdaterInterface $pricingUpdater
+        PricingUpdaterInterface $pricingUpdater,
+        ResourceEventDispatcherInterface $dispatcher
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->numberGenerator = $numberGenerator;
         $this->pricingUpdater = $pricingUpdater;
+        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -66,7 +75,11 @@ class CustomerListener
         $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($customer);
+            $this->persistenceHelper->persistAndRecompute($customer, false);
+        }
+
+        if ($customer->isNewsletter()) {
+            $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_SUBSCRIBE, $event);
         }
     }
 
@@ -88,12 +101,23 @@ class CustomerListener
         $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($customer);
+            $this->persistenceHelper->persistAndRecompute($customer, false);
         }
 
         $hierarchyFields = ['company', 'customerGroup', 'vatNumber', 'vatDetails', 'vatValid'];
         if ($this->persistenceHelper->isChanged($customer, $hierarchyFields)) {
             $this->scheduleParentChangeEvents($customer);
+        }
+
+        if (!$this->persistenceHelper->isChanged($customer, 'newsletter')) {
+            return;
+        }
+
+        $cs = $this->persistenceHelper->getChangeSet($customer, 'newsletter');
+        if ($cs[0] && !$cs[1]) {
+            $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_UNSUBSCRIBE, $event);
+        } elseif(!$cs[0] && $cs[1]) {
+            $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_SUBSCRIBE, $event);
         }
     }
 

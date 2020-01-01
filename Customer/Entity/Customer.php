@@ -57,6 +57,11 @@ class Customer implements Model\CustomerInterface
     protected $birthday;
 
     /**
+     * @var bool
+     */
+    protected $newsletter;
+
+    /**
      * @var Model\CustomerInterface
      */
     protected $parent;
@@ -85,6 +90,11 @@ class Customer implements Model\CustomerInterface
      * @var ArrayCollection|Payment\PaymentMethodInterface[]
      */
     protected $paymentMethods;
+
+    /**
+     * @var int
+     */
+    protected $loyaltyPoints;
 
     /**
      * @var float
@@ -122,6 +132,8 @@ class Customer implements Model\CustomerInterface
      */
     public function __construct()
     {
+        $this->newsletter = false;
+        $this->loyaltyPoints = 0;
         $this->creditBalance = 0;
         $this->outstandingLimit = 0;
         $this->outstandingOverflow = true;
@@ -259,6 +271,24 @@ class Customer implements Model\CustomerInterface
     public function setBirthday(\DateTime $birthday = null)
     {
         $this->birthday = $birthday;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isNewsletter(): bool
+    {
+        return $this->newsletter;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNewsletter(bool $newsletter): Model\CustomerInterface
+    {
+        $this->newsletter = $newsletter;
 
         return $this;
     }
@@ -462,6 +492,24 @@ class Customer implements Model\CustomerInterface
         if ($this->hasPaymentMethod($method)) {
             $this->paymentMethods->removeElement($method);
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLoyaltyPoints(): int
+    {
+        return $this->loyaltyPoints;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLoyaltyPoints(int $points): Model\CustomerInterface
+    {
+        $this->loyaltyPoints = $points;
 
         return $this;
     }

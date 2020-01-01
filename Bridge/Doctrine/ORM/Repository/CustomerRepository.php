@@ -21,4 +21,36 @@ class CustomerRepository extends ResourceRepository implements CustomerRepositor
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->findOneBy(['number' => $number]);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function findWithBirthdayToday(): array
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('DAY(c.birthday)', ':day'))
+            ->andWhere($qb->expr()->eq('MONTH(c.birthday)', ':month'))
+            ->getQuery()
+            ->setParameters([
+                'day'   => date('j'),
+                'month' => date('n'),
+            ])
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findWithLoyaltyPoints(int $points): array
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        return $qb
+            ->andWhere($qb->expr()->gte('c.loyaltyPoints', ':points'))
+            ->getQuery()
+            ->setParameter('points', $points)
+            ->getResult();
+    }
 }

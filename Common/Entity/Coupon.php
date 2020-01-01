@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 
 /**
  * Class Coupon
@@ -15,6 +16,11 @@ class Coupon implements Model\CouponInterface
      * @var int
      */
     private $id;
+
+    /**
+     * @var CustomerInterface|null
+     */
+    private $customer;
 
     /**
      * @var string
@@ -93,6 +99,23 @@ class Coupon implements Model\CouponInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCustomer(): ?CustomerInterface
+    {
+        return $this->customer;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setCustomer(CustomerInterface $customer = null): Model\CouponInterface
+    {
+        $this->customer = $customer;
+        return $this;
     }
 
     /**

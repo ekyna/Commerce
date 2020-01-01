@@ -98,6 +98,29 @@ class CustomerUpdater implements CustomerUpdaterInterface
     /**
      * @inheritdoc
      */
+    public function updateLoyaltyPoints(CustomerInterface $customer, $points, $relative = false)
+    {
+        // Switch to parent if available
+        if ($customer->hasParent()) {
+            $customer = $customer->getParent();
+        }
+
+        $old = $customer->getLoyaltyPoints();
+        $new = $relative ? $old + $points : $points;
+
+        if ($old != $new) {
+            $customer->setLoyaltyPoints($new);
+            $this->persistenceHelper->persistAndRecompute($customer, false);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false)
     {
         // Switch to parent if available

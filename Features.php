@@ -11,8 +11,11 @@ use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
  */
 class Features
 {
-    public const COUPON = 'coupon';
-    // TODO (move) public const SUPPORT = 'support';
+    public const BIRTHDAY   = 'birthday';
+    public const NEWSLETTER = 'newsletter';
+    public const COUPON     = 'coupon';
+    public const LOYALTY    = 'loyalty';
+    public const SUPPORT    = 'support';
 
     /**
      * @var array
@@ -27,8 +30,42 @@ class Features
      */
     public function __construct(array $config)
     {
-        $this->config = array_replace([
-            self::COUPON        => [
+        // Must be kept in sync with:
+        /** @see \Ekyna\Bundle\CommerceBundle\DependencyInjection\Configuration::addFeatureSection */
+        $this->config = array_replace_recursive([
+            self::BIRTHDAY   => [
+                'enabled' => false,
+            ],
+            self::NEWSLETTER => [
+                'enabled' => false,
+            ],
+            self::COUPON     => [
+                'enabled' => false,
+            ],
+            self::LOYALTY    => [
+                'enabled'     => false,
+                'credit_rate' => 1,
+                'credit'      => [
+                    self::BIRTHDAY   => 0,
+                    self::NEWSLETTER => 0,
+                ],
+                'coupons'     => [
+                    /* Examples:
+                    // 150pts grants a -20€ coupon valid for 2 months
+                    150 => [
+                        'mode'   => AdjustmentModes::MODE_FLAT,
+                        'amount' => 20,
+                        'period' => '+2 months',
+                    ],
+                    // 300pts grants a -15% coupon valid for 1 month
+                    300 => [
+                        'mode'   => AdjustmentModes::MODE_PERCENT,
+                        'amount' => 15,
+                        'period' => '+1 month',
+                    ],*/
+                ],
+            ],
+            self::SUPPORT    => [
                 'enabled' => false,
             ],
         ], $config);
@@ -43,10 +80,22 @@ class Features
      */
     public function isEnabled(string $feature): bool
     {
+        return $this->getConfig($feature)['enabled'];
+    }
+
+    /**
+     * Returns the feature configuration.
+     *
+     * @param string $feature
+     *
+     * @return array
+     */
+    public function getConfig(string $feature): array
+    {
         if (!isset($this->config[$feature])) {
             throw new UnexpectedValueException("Unknown feature '$feature'.");
         }
 
-        return $this->config[$feature]['enabled'];
+        return $this->config[$feature];
     }
 }

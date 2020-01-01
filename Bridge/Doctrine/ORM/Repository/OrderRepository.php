@@ -130,6 +130,28 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     }
 
     /**
+     * @inheritDoc
+     */
+    public function findCompletedYesterday(): array
+    {
+        $start = (new \DateTime('-1 day'))->setTime(0, 0, 0, 0);
+        $end = (clone $start)->setTime(23, 59, 59, 999999);
+
+        $qb = $this->createQueryBuilder('o');
+
+        return $qb
+            ->andWhere($qb->expr()->between('o.completedAt', ':start', ':end'))
+            ->andWhere($qb->expr()->eq('o.state', ':state'))
+            ->getQuery()
+            ->setParameters([
+                'start' => $start,
+                'end'   => $end,
+                'state' => OrderStates::STATE_COMPLETED,
+            ])
+            ->getResult();
+    }
+
+    /**
      * @inheritdoc
      */
     public function findDueOrders()
@@ -318,7 +340,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     {
         $qb = $this->createQueryBuilder('o');
 
-        return (int) $qb
+        return (int)$qb
             ->select('COUNT(o.id)')
             ->andWhere($qb->expr()->eq('o.coupon', ':coupon'))
             ->getQuery()

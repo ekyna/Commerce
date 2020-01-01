@@ -54,6 +54,13 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function findByOriginCustomer(CustomerInterface $customer, array $states = []);
 
     /**
+     * Finds orders completed yesterday.
+     *
+     * @return array|OrderInterface[]
+     */
+    public function findCompletedYesterday(): array;
+
+    /**
      * Returns the dues orders.
      *
      * @return OrderInterface[]

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -11,6 +12,22 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface CouponInterface extends ResourceInterface
 {
+    /**
+     * Returns the customer that owns this coupon.
+     *
+     * @return CustomerInterface
+     */
+    public function getCustomer(): ?CustomerInterface;
+
+    /**
+     * Sets the customer that owns this coupon.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return $this|CouponInterface
+     */
+    public function setCustomer(CustomerInterface $customer = null): CouponInterface;
+
     /**
      * Returns the code.
      *
