@@ -48,7 +48,11 @@ class LoyaltyListener
     {
         $customer = $this->getCustomerFromEvent($event);
 
-        $points = (int)$this->features->getConfig(Features::LOYALTY)['credit'][Features::BIRTHDAY];
+        if (!$customer->getCustomerGroup()->isLoyalty()) {
+            return;
+        }
+
+        $points = (int)$this->features->getConfig(Features::LOYALTY)['credit']['birthday'];
 
         if (0 >= $points) {
             return;
@@ -66,7 +70,11 @@ class LoyaltyListener
     {
         $customer = $this->getCustomerFromEvent($event);
 
-        $points = (int)$this->features->getConfig(Features::LOYALTY)['credit'][Features::NEWSLETTER];
+        if (!$customer->getCustomerGroup()->isLoyalty()) {
+            return;
+        }
+
+        $points = (int)$this->features->getConfig(Features::LOYALTY)['credit']['newsletter'];
 
         if (0 >= $points) {
             return;
@@ -89,6 +97,10 @@ class LoyaltyListener
         }
 
         if (null === $customer = $order->getCustomer()) {
+            return;
+        }
+
+        if (!$customer->getCustomerGroup()->isLoyalty()) {
             return;
         }
 

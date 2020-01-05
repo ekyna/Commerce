@@ -18,7 +18,7 @@ interface CustomerGroupInterface extends TranslatableInterface
      *
      * @return string
      */
-    public function getName();
+    public function getName(): ?string;
 
     /**
      * Sets the name.
@@ -27,14 +27,14 @@ interface CustomerGroupInterface extends TranslatableInterface
      *
      * @return $this|CustomerGroupInterface
      */
-    public function setName($name);
+    public function setName(string $name): CustomerGroupInterface;
 
     /**
      * Returns whether or not this is the default customer group.
      *
      * @return bool
      */
-    public function isDefault();
+    public function isDefault(): bool;
 
     /**
      * Sets whether or not this is the default customer group.
@@ -43,14 +43,14 @@ interface CustomerGroupInterface extends TranslatableInterface
      *
      * @return $this|CustomerGroupInterface
      */
-    public function setDefault($default);
+    public function setDefault(bool $default): CustomerGroupInterface;
 
     /**
      * Returns whether or not this group is a business one.
      *
      * @return bool
      */
-    public function isBusiness();
+    public function isBusiness(): bool;
 
     /**
      * Sets whether or not this group is a business one.
@@ -59,14 +59,14 @@ interface CustomerGroupInterface extends TranslatableInterface
      *
      * @return $this|CustomerGroupInterface
      */
-    public function setBusiness($business);
+    public function setBusiness(bool $business): CustomerGroupInterface;
 
     /**
      * Returns whether or not this group is available for registration (apply).
      *
      * @return bool
      */
-    public function isRegistration();
+    public function isRegistration(): bool;
 
     /**
      * Sets whether or not this group is available for registration (apply).
@@ -75,14 +75,14 @@ interface CustomerGroupInterface extends TranslatableInterface
      *
      * @return $this|CustomerGroupInterface
      */
-    public function setRegistration($registration);
+    public function setRegistration(bool $registration): CustomerGroupInterface;
 
     /**
      * Returns whether users of this group can create quotes.
      *
      * @return bool
      */
-    public function isQuoteAllowed();
+    public function isQuoteAllowed(): bool;
 
     /**
      * Sets whether users of this group can create quotes.
@@ -91,14 +91,30 @@ interface CustomerGroupInterface extends TranslatableInterface
      *
      * @return $this|CustomerGroupInterface
      */
-    public function setQuoteAllowed($allowed);
+    public function setQuoteAllowed(bool $allowed): CustomerGroupInterface;
+
+    /**
+     * Returns whether loyalty is enabled for this group.
+     *
+     * @return bool
+     */
+    public function isLoyalty(): bool;
+
+    /**
+     * Sets whether loyalty is enabled for this group.
+     *
+     * @param bool $enabled
+     *
+     * @return $this|CustomerGroupInterface
+     */
+    public function setLoyalty(bool $enabled): CustomerGroupInterface;
 
     /**
      * Returns the vat display mode.
      *
      * @return string|null
      */
-    public function getVatDisplayMode();
+    public function getVatDisplayMode(): ?string;
 
     /**
      * Sets the vat display mode.
@@ -107,12 +123,12 @@ interface CustomerGroupInterface extends TranslatableInterface
      *
      * @return $this|CustomerGroupInterface
      */
-    public function setVatDisplayMode($mode);
+    public function setVatDisplayMode(string $mode = null): CustomerGroupInterface;
 
     /**
      * Returns the (translated) title.
      *
-     * @return string
+     * @return string|null
      */
-    public function getTitle();
+    public function getTitle(): ?string;
 }

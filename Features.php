@@ -46,8 +46,9 @@ class Features
                 'enabled'     => false,
                 'credit_rate' => 1,
                 'credit'      => [
-                    self::BIRTHDAY   => 0,
-                    self::NEWSLETTER => 0,
+                    'birthday'   => 0,
+                    'newsletter' => 0,
+                    'review'     => 0,
                 ],
                 'coupons'     => [
                     /* Examples:
@@ -56,12 +57,14 @@ class Features
                         'mode'   => AdjustmentModes::MODE_FLAT,
                         'amount' => 20,
                         'period' => '+2 months',
+                        'final'  => false,
                     ],
                     // 300pts grants a -15% coupon valid for 1 month
                     300 => [
                         'mode'   => AdjustmentModes::MODE_PERCENT,
                         'amount' => 15,
                         'period' => '+1 month',
+                        'final'  => true, // Customer loyalty points will be reset to zero after this coupon generation
                     ],*/
                 ],
             ],

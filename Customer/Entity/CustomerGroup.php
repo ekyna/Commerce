@@ -26,24 +26,29 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     protected $name;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $default;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $business;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $registration;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $quoteAllowed;
+
+    /**
+     * @var bool
+     */
+    protected $loyalty;
 
     /**
      * @var string|null
@@ -62,7 +67,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
         $this->business = false;
         $this->registration = false;
         $this->quoteAllowed = false;
-        $this->freeShipping = false;
+        $this->loyalty = false;
     }
 
     /**
@@ -88,7 +93,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -96,7 +101,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function setName($name)
+    public function setName(string $name): CustomerGroupInterface
     {
         $this->name = $name;
 
@@ -106,7 +111,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function isDefault()
+    public function isDefault(): bool
     {
         return $this->default;
     }
@@ -114,9 +119,9 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function setDefault($default)
+    public function setDefault(bool $default): CustomerGroupInterface
     {
-        $this->default = (bool)$default;
+        $this->default = $default;
 
         return $this;
     }
@@ -124,7 +129,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function isBusiness()
+    public function isBusiness(): bool
     {
         return $this->business;
     }
@@ -132,9 +137,9 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function setBusiness($business)
+    public function setBusiness(bool $business): CustomerGroupInterface
     {
-        $this->business = (bool)$business;
+        $this->business = $business;
 
         return $this;
     }
@@ -142,7 +147,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function isRegistration()
+    public function isRegistration(): bool
     {
         return $this->registration;
     }
@@ -150,9 +155,9 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function setRegistration($registration)
+    public function setRegistration(bool $registration): CustomerGroupInterface
     {
-        $this->registration = (bool)$registration;
+        $this->registration = $registration;
 
         return $this;
     }
@@ -160,7 +165,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function isQuoteAllowed()
+    public function isQuoteAllowed(): bool
     {
         return $this->quoteAllowed;
     }
@@ -168,9 +173,9 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function setQuoteAllowed($allowed)
+    public function setQuoteAllowed(bool $allowed): CustomerGroupInterface
     {
-        $this->quoteAllowed = (bool)$allowed;
+        $this->quoteAllowed = $allowed;
 
         return $this;
     }
@@ -178,7 +183,25 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function getVatDisplayMode()
+    public function isLoyalty(): bool
+    {
+        return $this->loyalty;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLoyalty(bool $enabled): CustomerGroupInterface
+    {
+        $this->loyalty = $enabled;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getVatDisplayMode(): ?string
     {
         return $this->vatDisplayMode;
     }
@@ -186,7 +209,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function setVatDisplayMode($mode)
+    public function setVatDisplayMode(string $mode = null): CustomerGroupInterface
     {
         $this->vatDisplayMode = $mode;
 
@@ -196,7 +219,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->translate()->getTitle();
     }

@@ -41,6 +41,11 @@ class CouponGenerator
      */
     private $manager;
 
+    /**
+     * @var array
+     */
+    private $generated;
+
 
     /**
      * Constructor.
@@ -67,20 +72,26 @@ class CouponGenerator
 
     /**
      * Generates coupons regarding to customers loyalty point amounts.
+     *
+     * @return array The generated coupons.
      */
-    public function generate(): void
+    public function generate(): array
     {
         $config = $this->features->getConfig(Features::LOYALTY)['coupons'];
 
         if (empty($config)) {
-            return;
+            return [];
         }
+
+        $this->generated = [];
 
         krsort($config);
 
         foreach ($config as $points => $data) {
             $this->generateForPointsWithConfig($points, $data);
         }
+
+        return $this->generated;
     }
 
     /**
@@ -98,9 +109,24 @@ class CouponGenerator
         }
 
         foreach ($customers as $customer) {
-            $coupon = $this->createCoupon($customer, $config);
+            while ($points <= $customer->getLoyaltyPoints()) {
+                $coupon = $this->createCoupon($customer, $config);
 
-            $this->updater->remove($customer, $points, 'Coupon ' . $coupon->getCode());
+                $this->updater->remove(
+                    $customer,
+                    $config['final'] ? $customer->getLoyaltyPoints() : $points,
+                    'Coupon ' . $coupon->getCode()
+                );
+
+                if (!isset($this->generated[$customer->getId()])) {
+                    $this->generated[$customer->getId()] = [
+                        'customer' => $customer,
+                        'coupons'  => [],
+                    ];
+                }
+
+                $this->generated[$customer->getId()]['coupons'][] = $coupon;
+            }
         }
 
         $this->manager->flush();

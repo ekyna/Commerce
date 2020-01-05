@@ -22,10 +22,21 @@
         </id>
 
         <field name="name" column="name" type="string" length="64"/>
-        <field name="default" column="is_default" type="boolean"/>
-        <field name="business" column="is_business" type="boolean"/>
-        <field name="registration" column="is_registration" type="boolean"/>
-        <field name="quoteAllowed" column="is_quote_allowed" type="boolean"/>
+        <field name="default" column="is_default" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="business" column="is_business" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="registration" column="is_registration" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="quoteAllowed" column="is_quote_allowed" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="loyalty" column="is_loyalty" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
         <field name="vatDisplayMode" column="vat_display_mode" type="string" length="3" nullable="true"/>
 
     </mapped-superclass>
