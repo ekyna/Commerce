@@ -6,14 +6,14 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockAssignmentUpdater;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
-use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
+use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
  * Class StockAssignmentUpdaterTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Updater
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockAssignmentUpdaterTest extends BaseStockTestCase
+class StockAssignmentUpdaterTest extends StockTestCase
 {
     /**
      * @var StockAssignmentUpdater
@@ -37,6 +37,8 @@ class StockAssignmentUpdaterTest extends BaseStockTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->updater = null;
     }
 

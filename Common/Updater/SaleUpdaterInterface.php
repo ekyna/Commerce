@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Updater;
 
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
  * Interface SaleUpdaterInterface
@@ -125,4 +126,31 @@ interface SaleUpdaterInterface
      * @return bool
      */
     public function updateExchangeRate(Model\SaleInterface $sale, bool $force = false): bool;
+
+    /**
+     * Updates the sale's net and grand totals.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    public function updateAmountsTotal(SaleInterface $sale): bool;
+
+    /**
+     * Updates the payment totals total.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    public function updatePaymentTotal(SaleInterface $sale): bool;
+
+    /**
+     * Updates the sale invoice total.
+     *
+     * @param SaleInterface $sale
+     *
+     * @return bool Whether the sale has been changed or not.
+     */
+    public function updateInvoiceTotal(SaleInterface $sale): bool;
 }

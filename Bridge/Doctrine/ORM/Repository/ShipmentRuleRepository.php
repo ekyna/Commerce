@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -84,7 +84,7 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
         return $this
             ->getFindOneBySaleQuery()
             ->setParameters($parameters)
-            ->setParameter('date', $context->getDate(), Type::DATE)
+            ->setParameter('date', $context->getDate(), Types::DATETIME_MUTABLE)
             ->getOneOrNullResult();
     }
 
@@ -100,7 +100,7 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
         }
 
         $qb = $this->createQueryBuilder('r');
-        $e = $qb->expr();
+        $e  = $qb->expr();
 
         return $this->findOneBySaleQuery = $qb
             ->andWhere($e->orX(

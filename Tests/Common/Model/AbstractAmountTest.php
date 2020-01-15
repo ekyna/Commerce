@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Tests\Common\Model;
 
 use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use Ekyna\Component\Commerce\Common\Model\Amount;
-use PHPUnit\Framework\TestCase;
+use Ekyna\Component\Commerce\Tests\TestCase;
 
 /**
  * Class AbstractAmountTest

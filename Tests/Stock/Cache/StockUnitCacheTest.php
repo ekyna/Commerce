@@ -6,14 +6,14 @@ use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCache;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
-use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
+use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
  * Class StockUnitCacheTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Cache
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitCacheTest extends BaseStockTestCase
+class StockUnitCacheTest extends StockTestCase
 {
     /**
      * @covers StockUnitCache::add()

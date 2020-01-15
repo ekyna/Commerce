@@ -32,10 +32,6 @@
             <join-column name="method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface" field="creditMethod">
-            <join-column name="credit_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
-        </many-to-one>
-
         <many-to-one target-entity="Ekyna\Component\Commerce\Shipment\Entity\RelayPoint" field="relayPoint">
             <join-column name="relay_point_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>

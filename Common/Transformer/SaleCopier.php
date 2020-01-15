@@ -13,6 +13,10 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
  * Class SaleCopier
  * @package Ekyna\Component\Commerce\Common\Transformer
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * Must be kept in sync with all mapped properties of AbstractSale.
+ * @see     \Ekyna\Component\Commerce\Common\Entity\AbstractSale
+ *
  */
 class SaleCopier implements SaleCopierInterface
 {
@@ -50,8 +54,8 @@ class SaleCopier implements SaleCopierInterface
         Model\SaleInterface $target
     ) {
         $this->saleFactory = $saleFactory;
-        $this->source = $source;
-        $this->target = $target;
+        $this->source      = $source;
+        $this->target      = $target;
 
         $this->accessor = PropertyAccess::createPropertyAccessor();
     }
@@ -77,12 +81,39 @@ class SaleCopier implements SaleCopierInterface
     public function copyData()
     {
         $fields = [
-            'currency', 'customer', 'customerGroup', 'sameAddress', 'coupon', 'couponData',
-            'relayPoint', 'shipmentMethod', 'shipmentAmount', 'shipmentWeight', 'shipmentLabel',
-            'autoShipping', 'autoDiscount', 'autoNotify', 'taxExempt', 'vatDisplayMode',
-            'depositTotal', 'grandTotal', 'paymentMethod', 'paymentTerm', 'outstandingDate', 'outstandingLimit',
-            'title', 'voucherNumber', 'description', 'preparationNote', 'comment', 'documentComment',
-            'exchangeRate', 'exchangeDate', 'locale', 'acceptedAt', 'source'
+            'currency',
+            'customer',
+            'customerGroup',
+            'sameAddress',
+            'coupon',
+            'couponData',
+            'relayPoint',
+            'shipmentMethod',
+            'shipmentAmount',
+            'shipmentWeight',
+            'shipmentLabel',
+            'autoShipping',
+            'autoDiscount',
+            'autoNotify',
+            'taxExempt',
+            'vatDisplayMode',
+            'depositTotal',
+            'grandTotal', // TODO Remove as calculated
+            'paymentMethod',
+            'paymentTerm',
+            'outstandingDate',
+            'outstandingLimit',
+            'title',
+            'voucherNumber',
+            'description',
+            'preparationNote',
+            'comment',
+            'documentComment',
+            'exchangeRate',
+            'exchangeDate',
+            'locale',
+            'acceptedAt',
+            'source',
         ];
 
         // Copy information fields only if source has no customer entity
@@ -242,7 +273,11 @@ class SaleCopier implements SaleCopierInterface
     private function copyAdjustment(Model\AdjustmentInterface $source, Model\AdjustmentInterface $target)
     {
         $this->copy($source, $target, [
-            'designation', 'type', 'mode', 'amount', 'immutable',
+            'designation',
+            'type',
+            'mode',
+            'amount',
+            'immutable',
         ]);
     }
 
@@ -255,7 +290,13 @@ class SaleCopier implements SaleCopierInterface
     private function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target)
     {
         $this->copy($source, $target, [
-            'path', 'title', 'type', 'size', 'internal', 'createdAt', 'updatedAt',
+            'path',
+            'title',
+            'type',
+            'size',
+            'internal',
+            'createdAt',
+            'updatedAt',
         ]);
     }
 
@@ -268,7 +309,10 @@ class SaleCopier implements SaleCopierInterface
     private function copyNotification(Model\SaleNotificationInterface $source, Model\SaleNotificationInterface $target)
     {
         $this->copy($source, $target, [
-            'type', 'data', 'sentAt', 'details'
+            'type',
+            'data',
+            'sentAt',
+            'details',
         ]);
     }
 
@@ -281,13 +325,25 @@ class SaleCopier implements SaleCopierInterface
     private function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target)
     {
         $this->copy($source, $target, [
-            'designation', 'description', 'reference', 'taxGroup', 'netPrice', 'weight', 'quantity',
-            'position', 'compound', 'immutable', 'configurable', 'private', 'data',
+            'designation',
+            'description',
+            'reference',
+            'taxGroup',
+            'netPrice',
+            'weight',
+            'quantity',
+            'position',
+            'compound',
+            'immutable',
+            'configurable',
+            'private',
+            'data',
         ]);
 
         // SubjectIdentity
         $this->copy($source->getSubjectIdentity(), $target->getSubjectIdentity(), [
-            'provider', 'identifier',
+            'provider',
+            'identifier',
         ]);
 
         // Adjustments
@@ -314,8 +370,21 @@ class SaleCopier implements SaleCopierInterface
     private function copyPayment(PaymentInterface $source, PaymentInterface $target)
     {
         $this->copy($source, $target, [
-            'currency', 'method', 'key', 'number', 'amount', 'realAmount', 'state', 'details', 'description',
-            'createdAt', 'updatedAt', 'completedAt', 'exchangeRate', 'exchangeDate'
+            'refund',
+            'currency',
+            'method',
+            'key',
+            'number',
+            'amount',
+            'realAmount',
+            'state',
+            'details',
+            'description',
+            'createdAt',
+            'updatedAt',
+            'completedAt',
+            'exchangeRate',
+            'exchangeDate',
         ]);
     }
 
@@ -324,7 +393,7 @@ class SaleCopier implements SaleCopierInterface
      *
      * @param object $source
      * @param object $target
-     * @param array $properties
+     * @param array  $properties
      */
     private function copy($source, $target, array $properties)
     {

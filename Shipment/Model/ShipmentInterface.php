@@ -317,22 +317,6 @@ interface ShipmentInterface extends
     public function setRelayPoint(RelayPointInterface $relayPoint = null);
 
     /**
-     * Returns the credit method.
-     *
-     * @return Payment\PaymentMethodInterface
-     */
-    public function getCreditMethod();
-
-    /**
-     * Sets the credit method.
-     *
-     * @param Payment\PaymentMethodInterface $method
-     *
-     * @return $this|ShipmentInterface
-     */
-    public function setCreditMethod(Payment\PaymentMethodInterface $method = null);
-
-    /**
      * Returns whether the shipment is empty
      * (do not have at least one item with quantity greater than zero).
      *

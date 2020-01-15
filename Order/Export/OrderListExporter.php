@@ -164,6 +164,12 @@ class OrderListExporter extends AbstractExporter
                 return null;
             },
             'due_amount'          => function (OrderInterface $order): string {
+                if ($order->hasInvoices()) {
+                    return (string)
+                        $order->getInvoiceTotal() - $order->getCreditTotal()
+                        - $order->getPaidTotal() + $order->getRefundedTotal();
+                }
+
                 return (string)($order->getGrandTotal() - $order->getPaidTotal());
             },
             'outstanding_expired' => 'outstandingExpired',

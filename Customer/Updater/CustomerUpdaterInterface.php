@@ -19,7 +19,7 @@ interface CustomerUpdaterInterface
      *
      * @return bool Whether the customer has been changed.
      */
-    public function handlePaymentInsert(PaymentInterface $payment);
+    public function handlePaymentInsert(PaymentInterface $payment): bool;
 
     /**
      * Handles the payment update.
@@ -28,7 +28,7 @@ interface CustomerUpdaterInterface
      *
      * @return bool Whether the customer has been changed.
      */
-    public function handlePaymentUpdate(PaymentInterface $payment);
+    public function handlePaymentUpdate(PaymentInterface $payment): bool;
 
     /**
      * Handles the payment delete.
@@ -37,7 +37,7 @@ interface CustomerUpdaterInterface
      *
      * @return bool Whether the customer has been changed.
      */
-    public function handlePaymentDelete(PaymentInterface $payment);
+    public function handlePaymentDelete(PaymentInterface $payment): bool;
 
     /**
      * Updates the customer's credit balance.
@@ -48,7 +48,7 @@ interface CustomerUpdaterInterface
      *
      * @return bool Whether the customer has been changed.
      */
-    public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false);
+    public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false): bool;
 
     /**
      * Updates the customer's outstanding balance.
@@ -57,7 +57,7 @@ interface CustomerUpdaterInterface
      * @param float             $amount
      * @param bool              $relative
      *
-     * @return float Whether the customer has been changed.
+     * @return bool Whether the customer has been changed.
      */
-    public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false);
+    public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false): bool;
 }

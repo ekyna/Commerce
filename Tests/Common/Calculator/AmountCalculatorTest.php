@@ -4,8 +4,6 @@ namespace Ekyna\Component\Commerce\Tests\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculator;
 use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
-use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Tests\Common\Model\AbstractAmountTest;
@@ -27,11 +25,6 @@ class AmountCalculatorTest extends AbstractAmountTest
     private $context;
 
     /**
-     * @var CurrencyConverterInterface|MockObject
-     */
-    private $converter;
-
-    /**
      * @var AmountCalculator
      */
     private $calculator;
@@ -44,12 +37,7 @@ class AmountCalculatorTest extends AbstractAmountTest
     {
         $this->context = $this->createMock(ContextProviderInterface::class);
 
-        $this->converter = new ArrayCurrencyConverter([
-            'EUR/USD' => 1.25,
-            'USD/EUR' => 0.80,
-        ], self::C);
-
-        $this->calculator = new AmountCalculator($this->context, $this->converter);
+        $this->calculator = new AmountCalculator($this->context, $this->getCurrencyConverter());
     }
 
     /**
@@ -57,6 +45,8 @@ class AmountCalculatorTest extends AbstractAmountTest
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->calculator = null;
     }
 
@@ -124,7 +114,7 @@ class AmountCalculatorTest extends AbstractAmountTest
 
         $discountResult = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)[0]->getResult(self::C);
         $shipmentResult = $sale->getShipmentResult(self::C);
-        $finalResult = $sale->getFinalResult(self::C);
+        $finalResult    = $sale->getFinalResult(self::C);
 
         $this->assertResult($grossResult, 1029.93, 1029.93, 93.61, 936.32, 66.19, 1002.51);
 

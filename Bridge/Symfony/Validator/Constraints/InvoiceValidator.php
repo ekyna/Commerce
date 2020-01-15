@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Exception\ValidationFailedException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -30,17 +29,6 @@ class InvoiceValidator extends ConstraintValidator
         }
         if (!$constraint instanceof Invoice) {
             throw new UnexpectedTypeException($constraint, Invoice::class);
-        }
-
-        // If credit and sale is paid, must have a payment method
-        if (InvoiceTypes::isCredit($invoice) && $invoice->getSale()->isPaid() && is_null($invoice->getPaymentMethod())) {
-            $this
-                ->context
-                ->buildViolation($constraint->null_credit_method)
-                ->atPath('paymentMethod')
-                ->addViolation();
-
-            return;
         }
 
         try {
@@ -69,13 +57,8 @@ class InvoiceValidator extends ConstraintValidator
                 throw new ValidationFailedException();
             }
 
-            // Credit <-> Return
-            if (InvoiceTypes::isCredit($invoice) && !$shipment->isReturn()) {
-                throw new ValidationFailedException();
-            }
-
-            // Invoice <-> Shipment
-            if (InvoiceTypes::isInvoice($invoice) && $shipment->isReturn()) {
+            // Credit <-> Return or Invoice <-> Shipment
+            if ($invoice->isCredit() xor $shipment->isReturn()) {
                 throw new ValidationFailedException();
             }
         }

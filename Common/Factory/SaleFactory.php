@@ -187,25 +187,26 @@ class SaleFactory implements SaleFactoryInterface
                 Order\Model\OrderInterface::class => Order\Entity\OrderAddress::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAddress::class,
             ],
+            'adjustment'            => [
+                Cart\Model\CartInterface::class   => Cart\Entity\CartAdjustment::class,
+                Order\Model\OrderInterface::class => Order\Entity\OrderAdjustment::class,
+                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAdjustment::class,
+            ],
             'attachment'            => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartAttachment::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderAttachment::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAttachment::class,
             ],
-            'notification'          => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartNotification::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderNotification::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteNotification::class,
+            'invoice'               => [
+                Order\Model\OrderInterface::class => Order\Entity\OrderInvoice::class,
+            ],
+            'invoice_line'          => [
+                Order\Model\OrderInvoiceInterface::class => Order\Entity\OrderInvoiceLine::class,
             ],
             'item'                  => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartItem::class,
                 Order\Model\OrderInterface::class => Order\Entity\OrderItem::class,
                 Quote\Model\QuoteInterface::class => Quote\Entity\QuoteItem::class,
-            ],
-            'adjustment'            => [
-                Cart\Model\CartInterface::class   => Cart\Entity\CartAdjustment::class,
-                Order\Model\OrderInterface::class => Order\Entity\OrderAdjustment::class,
-                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteAdjustment::class,
             ],
             'item_adjustment'       => [
                 Cart\Model\CartItemInterface::class   => Cart\Entity\CartItemAdjustment::class,
@@ -214,6 +215,11 @@ class SaleFactory implements SaleFactoryInterface
             ],
             'item_stock_assignment' => [
                 Order\Model\OrderItemInterface::class => Order\Entity\OrderItemStockAssignment::class,
+            ],
+            'notification'          => [
+                Cart\Model\CartInterface::class   => Cart\Entity\CartNotification::class,
+                Order\Model\OrderInterface::class => Order\Entity\OrderNotification::class,
+                Quote\Model\QuoteInterface::class => Quote\Entity\QuoteNotification::class,
             ],
             'payment'               => [
                 Cart\Model\CartInterface::class   => Cart\Entity\CartPayment::class,
@@ -225,12 +231,6 @@ class SaleFactory implements SaleFactoryInterface
             ],
             'shipment_item'         => [
                 Order\Model\OrderShipmentInterface::class => Order\Entity\OrderShipmentItem::class,
-            ],
-            'invoice'               => [
-                Order\Model\OrderInterface::class => Order\Entity\OrderInvoice::class,
-            ],
-            'invoice_line'          => [
-                Order\Model\OrderInvoiceInterface::class => Order\Entity\OrderInvoiceLine::class,
             ],
         ];
     }

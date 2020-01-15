@@ -6,7 +6,6 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
@@ -86,12 +85,12 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         SaleFactoryInterface $saleFactory
     ) {
         $this->persistenceHelper = $persistenceHelper;
-        $this->subjectHelper = $subjectHelper;
-        $this->unitResolver = $unitResolver;
-        $this->unitUpdater = $unitUpdater;
+        $this->subjectHelper     = $subjectHelper;
+        $this->unitResolver      = $unitResolver;
+        $this->unitUpdater       = $unitUpdater;
         $this->assignmentManager = $assignmentManager;
         $this->assignmentUpdater = $assignmentUpdater;
-        $this->saleFactory = $saleFactory;
+        $this->saleFactory       = $saleFactory;
     }
 
     /**
@@ -194,7 +193,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // TODO Use packaging format
 
         $quantity = $item->getQuantity();
-        $return = $item->getShipment()->isReturn();
+        $return   = $item->getShipment()->isReturn();
 
         foreach ($assignments as $assignment) {
             if ($return) {
@@ -227,7 +226,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         if (!$this->persistenceHelper->isChanged($item, 'quantity')) {
             return;
         }
-        list($old, $new) = $this->persistenceHelper->getChangeSet($item, 'quantity');
+        [$old, $new] = $this->persistenceHelper->getChangeSet($item, 'quantity');
         if (0 == $quantity = $new - $old) {
             return;
         }
@@ -310,7 +309,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     public function assignInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not credit
-        if (!InvoiceTypes::isCredit($line->getInvoice()->getType())) {
+        if (!$line->getInvoice()->isCredit()) {
             return;
         }
 
@@ -343,7 +342,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     public function applyInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not credit
-        if (!InvoiceTypes::isCredit($line->getInvoice()->getType())) {
+        if (!$line->getInvoice()->isCredit()) {
             return;
         }
 
@@ -356,7 +355,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         if (!$this->persistenceHelper->isChanged($line, 'quantity')) {
             return;
         }
-        list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'quantity');
+        [$old, $new] = $this->persistenceHelper->getChangeSet($line, 'quantity');
         if (0 == $quantity = $new - $old) {
             return;
         }
@@ -388,15 +387,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     public function detachInvoiceLine(InvoiceLineInterface $line)
     {
         // Abort if not credit
-        // TODO This might be a problem :
-        // we should never call this method when invoice is null
-        // cause we won't be able to test if invoice is credit
-        // TODO get invoice from change set
         if (null === $invoice = $line->getInvoice()) {
             $invoice = $this->persistenceHelper->getChangeSet($line, 'invoice')[0];
         }
-
-        if (!InvoiceTypes::isCredit($invoice->getType())) {
+        if (!$invoice->isCredit()) {
             return;
         }
 
@@ -550,14 +544,14 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Own item quantity changes
         if ($this->persistenceHelper->isChanged($item, 'quantity')) {
-            list($old, $new) = $this->persistenceHelper->getChangeSet($item, 'quantity');
+            [$old, $new] = $this->persistenceHelper->getChangeSet($item, 'quantity');
         }
 
         // Parent items quantity changes
         $parent = $item;
         while (null !== $parent = $parent->getParent()) {
             if ($this->persistenceHelper->isChanged($parent, 'quantity')) {
-                list($parentOld, $parentNew) = $this->persistenceHelper->getChangeSet($parent, 'quantity');
+                [$parentOld, $parentNew] = $this->persistenceHelper->getChangeSet($parent, 'quantity');
             } else {
                 $parentOld = $parentNew = $parent->getQuantity();
             }
@@ -566,11 +560,11 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // Sale released change
-        $sale = $item->getSale();
+        $sale       = $item->getSale();
         $shippedOld = $shippedNew = 0;
-        $f = $t = false;
+        $f          = $t = false;
         if ($this->persistenceHelper->isChanged($sale, 'released')) {
-            list($f, $t) = $this->persistenceHelper->getChangeSet($sale, 'released');
+            [$f, $t] = $this->persistenceHelper->getChangeSet($sale, 'released');
         } elseif ($item->getSale()->isReleased()) {
             $f = $t = true;
         }
@@ -578,7 +572,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             /** @var StockAssignmentsInterface $item */
             foreach ($item->getStockAssignments() as $assignment) {
                 if ($this->persistenceHelper->isChanged($assignment, 'shippedQuantity')) {
-                    list($o, $n) = $this->persistenceHelper->getChangeSet($assignment, 'shippedQuantity');
+                    [$o, $n] = $this->persistenceHelper->getChangeSet($assignment, 'shippedQuantity');
                 } else {
                     $o = $n = $assignment->getShippedQuantity();
                 }

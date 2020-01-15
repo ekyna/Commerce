@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 
 /**
@@ -16,7 +17,7 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return float
      */
-    public function getDepositTotal();
+    public function getDepositTotal(): float;
 
     /**
      * Sets the deposit total.
@@ -25,14 +26,14 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setDepositTotal($total);
+    public function setDepositTotal(float $total): PaymentSubjectInterface;
 
     /**
      * Returns the grand total.
      *
      * @return float
      */
-    public function getGrandTotal();
+    public function getGrandTotal(): float;
 
     /**
      * Sets the grand total.
@@ -41,14 +42,14 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setGrandTotal($total);
+    public function setGrandTotal(float $total): PaymentSubjectInterface;
 
     /**
      * Returns the paid total.
      *
      * @return float
      */
-    public function getPaidTotal();
+    public function getPaidTotal(): float;
 
     /**
      * Sets the paid total.
@@ -57,14 +58,30 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setPaidTotal($total);
+    public function setPaidTotal(float $total): PaymentSubjectInterface;
+
+    /**
+     * Returns the refunded total.
+     *
+     * @return float
+     */
+    public function getRefundedTotal(): float;
+
+    /**
+     * Sets the refunded total.
+     *
+     * @param float $total
+     *
+     * @return $this|PaymentSubjectInterface
+     */
+    public function setRefundedTotal(float $total): PaymentSubjectInterface;
 
     /**
      * Returns the pending total.
      *
      * @return float
      */
-    public function getPendingTotal();
+    public function getPendingTotal(): float;
 
     /**
      * Sets the pending total.
@@ -73,14 +90,14 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setPendingTotal($total);
+    public function setPendingTotal(float $total): PaymentSubjectInterface;
 
     /**
      * Returns the accepted outstanding total.
      *
      * @return float
      */
-    public function getOutstandingAccepted();
+    public function getOutstandingAccepted(): float;
 
     /**
      * Sets the accepted outstanding total.
@@ -89,14 +106,14 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingAccepted($total);
+    public function setOutstandingAccepted(float $total): PaymentSubjectInterface;
 
     /**
      * Returns the expired outstanding total.
      *
      * @return float
      */
-    public function getOutstandingExpired();
+    public function getOutstandingExpired(): float;
 
     /**
      * Sets the expired outstanding total.
@@ -105,14 +122,14 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingExpired($total);
+    public function setOutstandingExpired(float $total): PaymentSubjectInterface;
 
     /**
      * Returns the outstanding limit.
      *
      * @return float
      */
-    public function getOutstandingLimit();
+    public function getOutstandingLimit(): float;
 
     /**
      * Sets the outstanding amount.
@@ -121,14 +138,14 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingLimit($amount);
+    public function setOutstandingLimit(float $amount): PaymentSubjectInterface;
 
     /**
      * Returns the outstanding date.
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getOutstandingDate();
+    public function getOutstandingDate(): ?\DateTime;
 
     /**
      * Sets the outstanding date.
@@ -137,7 +154,7 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setOutstandingDate(\DateTime $date = null);
+    public function setOutstandingDate(\DateTime $date = null): PaymentSubjectInterface;
 
     /**
      * Returns the (default) payment method.
@@ -160,7 +177,7 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return string
      */
-    public function getPaymentState();
+    public function getPaymentState(): string;
 
     /**
      * Sets the payment state.
@@ -169,14 +186,23 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function setPaymentState($state);
+    public function setPaymentState(string $state): PaymentSubjectInterface;
 
     /**
-     * Returns whether the order has payments or not.
+     * Returns whether the subject has at least one payment or refund (with any state).
      *
      * @return bool
      */
-    public function hasPayments();
+    public function hasPayments(): bool;
+
+    /**
+     * Returns whether the subject has at least one paid (or refunded) payment.
+     *
+     * @param bool $orRefunded
+     *
+     * @return bool
+     */
+    public function hasPaidPayments(bool $orRefunded = false): bool;
 
     /**
      * Returns whether the order has the payment or not.
@@ -185,7 +211,7 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return bool
      */
-    public function hasPayment(PaymentInterface $payment);
+    public function hasPayment(PaymentInterface $payment): bool;
 
     /**
      * Adds the payment.
@@ -194,7 +220,7 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function addPayment(PaymentInterface $payment);
+    public function addPayment(PaymentInterface $payment): PaymentSubjectInterface;
 
     /**
      * Removes the payment.
@@ -203,19 +229,21 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @return $this|PaymentSubjectInterface
      */
-    public function removePayment(PaymentInterface $payment);
+    public function removePayment(PaymentInterface $payment): PaymentSubjectInterface;
 
     /**
      * Returns the payments.
      *
-     * @return \Doctrine\Common\Collections\Collection|PaymentInterface[]
+     * @param bool|null $filter TRUE for payments, FALSE for refunds, NULL for all
+     *
+     * @return Collection|PaymentInterface[]
      */
-    public function getPayments();
+    public function getPayments(bool $filter = null): Collection;
 
     /**
      * Returns whether or not the subject is fully paid.
      *
      * @return bool
      */
-    public function isPaid();
+    public function isPaid(): bool;
 }

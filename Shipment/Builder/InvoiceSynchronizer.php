@@ -6,7 +6,6 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Builder\InvoiceBuilderInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -55,7 +54,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
     /**
      * @inheritdoc
      */
-    public function synchronize(Shipment\ShipmentInterface $shipment)
+    public function synchronize(Shipment\ShipmentInterface $shipment, bool $force = false): void
     {
         // Abort if auto invoicing is disabled
         // (We do not remove linked invoice)
@@ -71,13 +70,18 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         $invoice = $shipment->getInvoice();
 
+        // Abort if invoice has an id.
+        if ($invoice && $invoice->getId() && !$force) {
+            return;
+        }
+
         // Abort if sale is sample, shipment is removed or shipment not in stockable state
         if (
             $sale->isSample() ||
             $this->persistenceHelper->isScheduledForRemove($shipment) ||
             !Shipment\ShipmentStates::isStockableState($shipment->getState())
         ) {
-            if (null !== $invoice) {
+            if ($invoice) {
                 $this->removeInvoice($invoice);
             }
 
@@ -88,13 +92,8 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
             $invoice = $this->invoiceBuilder->getSaleFactory()->createInvoiceForSale($sale);
             $invoice
                 ->setSale($sale)
-                ->setShipment($shipment);
-
-            if ($shipment->isReturn()) {
-                $invoice
-                    ->setType(Invoice\InvoiceTypes::TYPE_CREDIT)
-                    ->setPaymentMethod($shipment->getCreditMethod());
-            }
+                ->setShipment($shipment)
+                ->setCredit($shipment->isReturn());
         }
 
         $this->checkShipmentInvoice($invoice);
@@ -139,17 +138,15 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
      */
     private function removeInvoice(Invoice\InvoiceInterface $invoice)
     {
+        // Never remove an existing invoice
+        if ($invoice->getId()) {
+            return;
+        }
+
         $invoice->setShipment(null);
         $invoice->setSale(null);
 
-        if (null !== $invoice->getId()) {
-            foreach ($invoice->getLines() as $line) {
-                $this->persistenceHelper->remove($line, true);
-            }
-            $this->persistenceHelper->remove($invoice, true);
-        } elseif ($this->persistenceHelper->isScheduledForInsert($invoice)) {
-            $this->persistenceHelper->getManager()->remove($invoice);
-        }
+        $this->persistenceHelper->remove($invoice, true);
     }
 
     /**
@@ -176,9 +173,9 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         }
 
         // Check shipment/invoice types integrity.
-        if ($shipment->isReturn() && !Invoice\InvoiceTypes::isCredit($invoice)) {
+        if ($shipment->isReturn() && !$invoice->isCredit()) {
             throw new LogicException("Invoice should not be associated with Return.");
-        } elseif (!$shipment->isReturn() && !Invoice\InvoiceTypes::isInvoice($invoice)) {
+        } elseif (!$shipment->isReturn() && $invoice->isCredit()) {
             throw new LogicException("Credit should not be associated with Shipment.");
         }
     }
@@ -266,8 +263,8 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
             $saleItem = $shipmentItem->getSaleItem();
 
             $max = $shipment->isReturn()
-                ? $calculator->calculateCreditableQuantity($saleItem)
-                : $calculator->calculateInvoiceableQuantity($saleItem);
+                ? $calculator->calculateCreditableQuantity($saleItem, $invoice)
+                : $calculator->calculateInvoiceableQuantity($saleItem, $invoice);
 
             if (0 < $quantity = min($max, $shipmentItem->getQuantity())) {
                 $line = $this->invoiceBuilder->findOrCreateGoodLine($invoice, $saleItem, $max);

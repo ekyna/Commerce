@@ -137,7 +137,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
      */
     public function isManual(): bool
     {
-        return false;
+        return false; // TODO Method should be abstract
     }
 
     /**
@@ -145,7 +145,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
      */
     public function isCredit(): bool
     {
-        return false;
+        return false; // TODO Method should be abstract
     }
 
     /**
@@ -153,7 +153,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
      */
     public function isOutstanding(): bool
     {
-        return false;
+        return false; // TODO Method should be abstract
     }
 
     /**

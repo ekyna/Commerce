@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @package Ekyna\Component\Commerce\Order\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderItemEventSubscriber extends OrderItemListener  implements EventSubscriberInterface
+class OrderItemEventSubscriber extends OrderItemListener implements EventSubscriberInterface
 {
     /**
      * @inheritdoc

@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance\Constants as Outstanding;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -55,25 +55,9 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
         CustomerInterface $customer,
         string $currency = null,
         \DateTime $from = null,
-        \DateTime $to = null,
-        bool $scalar = false
+        \DateTime $to = null
     ): array {
         $qb = $this->createQueryBuilder('p');
-
-        if ($scalar) {
-            $qb->select([
-                'p.id',
-                'p.currency.code as currency',
-                'p.number',
-                'p.amount',
-                'p.state',
-                'p.completedAt',
-                'o.id as orderId',
-                'o.number as orderNumber',
-                'o.voucherNumber',
-                'o.createdAt as orderDate',
-            ]);
-        }
 
         $ex = $qb->expr();
         $qb
@@ -104,7 +88,7 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             ->setParameters([
                 'customer' => $customer,
                 'sample'   => false,
-                'states'   => [PaymentStates::STATE_CAPTURED, PaymentStates::STATE_REFUNDED],
+                'states'   => PaymentStates::getPaidStates(true),
                 'factory'  => Outstanding::FACTORY_NAME,
             ]);
 
@@ -112,13 +96,13 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
             $query->setParameter('currency', $currency);
         }
         if ($from) {
-            $query->setParameter('from', $from, Type::DATETIME);
+            $query->setParameter('from', $from, Types::DATETIME_MUTABLE);
         }
         if ($to) {
-            $query->setParameter('to', $to, Type::DATETIME);
+            $query->setParameter('to', $to, Types::DATETIME_MUTABLE);
         }
 
-        return $scalar ? $query->getScalarResult() : $query->getResult();
+        return $query->getResult();
     }
 
     /**
@@ -129,8 +113,8 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
         return (float)$this
             ->getCustomerPaymentSumQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 
@@ -142,8 +126,8 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
         return (float)$this
             ->getCustomerRefundSumQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 
@@ -155,8 +139,8 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
         return (int)$this
             ->getCustomerPaymentCountQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 
@@ -168,8 +152,8 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
         return (int)$this
             ->getCustomerRefundCountQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 

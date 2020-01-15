@@ -82,12 +82,12 @@ class SaleTransformer implements SaleTransformerInterface
         UploadableListener $uploadableListener,
         EventDispatcherInterface $eventDispatcher
     ) {
-        $this->saleCopierFactory = $saleCopierFactory;
-        $this->cartOperator = $cartOperator;
-        $this->quoteOperator = $quoteOperator;
-        $this->orderOperator = $orderOperator;
+        $this->saleCopierFactory  = $saleCopierFactory;
+        $this->cartOperator       = $cartOperator;
+        $this->quoteOperator      = $quoteOperator;
+        $this->orderOperator      = $orderOperator;
         $this->uploadableListener = $uploadableListener;
-        $this->eventDispatcher = $eventDispatcher;
+        $this->eventDispatcher    = $eventDispatcher;
     }
 
     /**

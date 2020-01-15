@@ -431,24 +431,6 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     /**
      * @inheritDoc
      */
-    public function getCreditMethod()
-    {
-        return $this->creditMethod;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setCreditMethod(Payment\PaymentMethodInterface $method = null)
-    {
-        $this->creditMethod = $method;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function isEmpty()
     {
         foreach ($this->items as $item) {

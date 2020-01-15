@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Exception;
+use Ekyna\Component\Commerce\Invoice\EventListener\AbstractInvoiceListener;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
-use Ekyna\Component\Commerce\Invoice\EventListener\AbstractInvoiceListener;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -29,14 +29,14 @@ class OrderInvoiceListener extends AbstractInvoiceListener
         }
 
         if ($this->persistenceHelper->isChanged($invoice, 'currency')) {
-            list($old, $new) = $this->persistenceHelper->getChangeSet($invoice, 'currency');
+            [$old, $new] = $this->persistenceHelper->getChangeSet($invoice, 'currency');
             if ($old != $new) {
                 throw new Exception\RuntimeException("Changing the invoice's currency is not yet supported.");
             }
         }
 
         if ($this->persistenceHelper->isChanged($invoice, 'order')) {
-            list($old, $new) = $this->persistenceHelper->getChangeSet($invoice, 'order');
+            [$old, $new] = $this->persistenceHelper->getChangeSet($invoice, 'order');
             if ($old != $new) {
                 throw new Exception\RuntimeException("Changing the invoice's order is not yet supported.");
             }

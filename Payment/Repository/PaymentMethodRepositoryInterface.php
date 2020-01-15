@@ -39,11 +39,22 @@ interface PaymentMethodRepositoryInterface extends TranslatableResourceRepositor
     public function findEnabled(CurrencyInterface $currency = null): array;
 
     /**
+     * Finds payment methods by their factory name.
+     *
+     * @param string $name
+     * @param bool   $available
+     *
+     * @return PaymentMethodInterface[]
+     */
+    public function findByFactoryName(string $name, bool $available = true): array;
+
+    /**
      * Finds a payment method by its factory name.
      *
      * @param string $name
+     * @param bool   $available
      *
      * @return PaymentMethodInterface|null
      */
-    public function findOneByFactoryName(string $name): ?PaymentMethodInterface;
+    public function findOneByFactoryName(string $name, bool $available = true): ?PaymentMethodInterface;
 }

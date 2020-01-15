@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
@@ -46,7 +46,7 @@ abstract class AbstractPaymentRepository extends ResourceRepository implements P
         return $this
             ->getByMethodAndStatesFromDateQuery()
             ->setParameter('method', $method)
-            ->setParameter('date', $fromDate, Type::DATE)
+            ->setParameter('date', $fromDate, Types::DATE_IMMUTABLE)
             ->setParameter('states', $states)
             ->getResult();
     }
@@ -99,8 +99,8 @@ abstract class AbstractPaymentRepository extends ResourceRepository implements P
             ->andWhere($qb->expr()->in('p.state', ':states'))
             ->addOrderBy('p.completedAt', 'ASC')
             ->getQuery()
-            ->setParameter('start', $start, Type::DATETIME)
-            ->setParameter('end', $end, Type::DATETIME)
+            ->setParameter('start', $start, Types::DATETIME_MUTABLE)
+            ->setParameter('end', $end, Types::DATETIME_MUTABLE)
             ->setParameter('states', $states)
             ->getResult();
     }

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
@@ -99,6 +100,10 @@ class MarginCalculator implements MarginCalculatorInterface
             return null;
         }
 
+        if (!in_array($sale->getState(), [OrderStates::STATE_ACCEPTED, OrderStates::STATE_COMPLETED], true)) {
+            return null;
+        }
+
         $this->amountCalculator->calculateSale($sale, $currency);
 
         $margin = new Model\Margin($currency);
@@ -127,9 +132,14 @@ class MarginCalculator implements MarginCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * Calculates the sale item margin.
+     *
+     * @param Model\SaleItemInterface $item
+     * @param string                  $currency
+     *
+     * @return Model\Margin|null
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item, string $currency = null): ?Model\Margin
+    private function calculateSaleItem(Model\SaleItemInterface $item, string $currency = null): ?Model\Margin
     {
         $currency = $currency ?? $this->amountCalculator->getDefaultCurrency();
 
@@ -191,9 +201,14 @@ class MarginCalculator implements MarginCalculatorInterface
     }
 
     /**
-     * @inheritdoc
+     * Calculates the sale shipment margin.
+     *
+     * @param Model\SaleInterface $sale
+     * @param string              $currency
+     *
+     * @return Model\Margin
      */
-    public function calculateSaleShipment(Model\SaleInterface $sale, string $currency = null): Model\Margin
+    private function calculateSaleShipment(Model\SaleInterface $sale, string $currency = null): Model\Margin
     {
         $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();
         $base = $sale->getCurrency()->getCode();

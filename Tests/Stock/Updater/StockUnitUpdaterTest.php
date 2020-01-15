@@ -6,14 +6,14 @@ use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdater;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
-use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
+use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
  * Class StockUnitUpdaterTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Updater
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitUpdaterTest extends BaseStockTestCase
+class StockUnitUpdaterTest extends StockTestCase
 {
     /**
      * @var StockUnitUpdater
@@ -39,6 +39,8 @@ class StockUnitUpdaterTest extends BaseStockTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->updater = null;
     }
 

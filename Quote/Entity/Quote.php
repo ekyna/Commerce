@@ -296,7 +296,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
-    public function hasPayment(Payment\PaymentInterface $payment)
+    public function hasPayment(Payment\PaymentInterface $payment): bool
     {
         if (!$payment instanceof Model\QuotePaymentInterface) {
             throw new InvalidArgumentException("Expected instance of " . Model\QuotePaymentInterface::class);
@@ -308,7 +308,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
-    public function addPayment(Payment\PaymentInterface $payment)
+    public function addPayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\QuotePaymentInterface) {
             throw new InvalidArgumentException("Expected instance of " . Model\QuotePaymentInterface::class);
@@ -325,7 +325,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     /**
      * @inheritdoc
      */
-    public function removePayment(Payment\PaymentInterface $payment)
+    public function removePayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\QuotePaymentInterface) {
             throw new InvalidArgumentException("Expected instance of " . Model\QuotePaymentInterface::class);

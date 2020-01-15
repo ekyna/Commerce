@@ -100,7 +100,14 @@ class SupplierOrderListener extends AbstractListener
         $changed |= $this->updateExchangeRate($order);
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($order);
+            if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
+                $order
+                    ->setEstimatedDateOfArrival(null)
+                    ->setPaymentDate(null)
+                    ->setForwarderDate(null)
+                    ->setCompletedAt(null);
+            }
+            $this->persistenceHelper->persistAndRecompute($order, false);
         }
 
         // Deletable <=> Stockable state change case.

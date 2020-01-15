@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -80,9 +79,9 @@ class InvoiceLineValidator extends ConstraintValidator
 
                 // Check that quantities equals
                 if ($shipmentItem->getQuantity() != $line->getQuantity()) {
-                    $message = InvoiceTypes::isInvoice($invoice)
-                        ? $constraint->shipped_miss_match
-                        : $constraint->returned_miss_match;
+                    $message = $invoice->isCredit()
+                        ? $constraint->returned_miss_match
+                        : $constraint->shipped_miss_match;
 
                     $this
                         ->context
@@ -131,14 +130,14 @@ class InvoiceLineValidator extends ConstraintValidator
             }
         }
 
-        if (InvoiceTypes::isInvoice($invoice)) {
-            // Invoice case
-            $max = $this->invoiceCalculator->calculateInvoiceableQuantity($subject, $invoice);
-            $message = $constraint->invoiceable_overflow;
-        } else {
+        if ($invoice->isCredit()) {
             // Credit case
             $max = $this->invoiceCalculator->calculateCreditableQuantity($subject, $invoice);
             $message = $constraint->creditable_overflow;
+        } else {
+            // Invoice case
+            $max = $this->invoiceCalculator->calculateInvoiceableQuantity($subject, $invoice);
+            $message = $constraint->invoiceable_overflow;
         }
 
         // Check quantity integrity

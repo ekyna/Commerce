@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
@@ -135,7 +135,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     public function findCompletedYesterday(): array
     {
         $start = (new \DateTime('-1 day'))->setTime(0, 0, 0, 0);
-        $end = (clone $start)->setTime(23, 59, 59, 999999);
+        $end   = (clone $start)->setTime(23, 59, 59, 999999);
 
         $qb = $this->createQueryBuilder('o');
 
@@ -181,7 +181,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         return $query
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->useQueryCache(true)
             ->getResult();
     }
@@ -417,7 +417,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ))
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
 
         $this->setDueParameters($qb);
@@ -446,7 +446,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ))
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
-            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);
 
         $this->setDueParameters($qb);

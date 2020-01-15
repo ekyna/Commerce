@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Payment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -20,16 +19,22 @@ class DueDateResolver implements DueDateResolverInterface
      */
     public function isInvoiceDue(Invoice\InvoiceInterface $invoice): bool
     {
-        $paid = $invoice->getPaidTotal();
-
-        if (1 !== Money::compare($invoice->getGrandTotal(), $paid, $invoice->getCurrency())) {
-            return false;
-        }
-
+        // Not due if no due date.
         if (null === $date = $invoice->getDueDate()) {
             return false;
         }
 
+        // Not due if paid
+        if ($invoice->isPaid()) {
+            return false;
+        }
+
+        // Not due if fully credit with no payment
+        if ($invoice->getSale()->isPaid()) {
+            return false;
+        }
+
+        // Due if due date is past
         $diff = $date->diff((new \DateTime())->setTime(0, 0, 0, 0));
         if (0 < $diff->days && !$diff->invert) {
             return true;
@@ -54,7 +59,7 @@ class DueDateResolver implements DueDateResolverInterface
             return null;
         }
 
-        if ($invoice->getType() !== Invoice\InvoiceTypes::TYPE_INVOICE) {
+        if ($invoice->isCredit()) {
             return clone $invoice->getCreatedAt();
         }
 
@@ -125,10 +130,6 @@ class DueDateResolver implements DueDateResolverInterface
             return null;
         }
 
-        /* TODO Remove ? if (!$this->saleHasOutstandingPayments($sale)) {
-            return null;
-        }*/
-
         $from = null;
         switch ($term->getTrigger()) {
             case Payment\PaymentTermTriggers::TRIGGER_SHIPPED:
@@ -170,7 +171,7 @@ class DueDateResolver implements DueDateResolverInterface
     protected function applyTermToDate(Payment\PaymentTermInterface $term, \DateTime $date): \DateTime
     {
         $date = clone $date;
-        $date->setTime(23, 59, 59, 0);
+        $date->setTime(23, 59, 59, 999999);
         $date->modify(sprintf('+%s days', $term->getDays()));
         if ($term->getEndOfMonth()) {
             $date->modify('last day of this month');
@@ -178,27 +179,4 @@ class DueDateResolver implements DueDateResolverInterface
 
         return $date;
     }
-
-//    /**
-//     * Returns whether the sale has (accepted/expired) outstanding payments.
-//     *
-//     * @param SaleInterface $sale
-//     *
-//     * @return bool
-//     */
-//    protected function saleHasOutstandingPayments(SaleInterface $sale)
-//    {
-//        $allowedStates = [
-//            Payment\PaymentStates::STATE_CAPTURED,
-//            Payment\PaymentStates::STATE_AUTHORIZED,
-//            Payment\PaymentStates::STATE_EXPIRED,
-//        ];
-//        foreach ($sale->getPayments() as $payment) {
-//            if ($payment->getMethod()->isOutstanding() && in_array($payment->getState(), $allowedStates, true)) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
 }

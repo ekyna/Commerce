@@ -2,14 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Tests\Stock\Assigner;
 
-use Ekyna\Component\Commerce\Tests\BaseTestCase;
+use Ekyna\Component\Commerce\Tests\TestCase;
 
 /**
  * Class StockUnitAssignerTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Assigner
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitAssignerTest extends BaseTestCase
+class StockUnitAssignerTest extends TestCase
 {
     // TODO Test when both parent and children change
     // TODO Test with credit invoices

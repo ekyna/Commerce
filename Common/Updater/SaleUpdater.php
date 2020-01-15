@@ -130,6 +130,8 @@ class SaleUpdater implements SaleUpdaterInterface
         // 5. totals (content, payments and invoices)
         $changed |= $this->updateTotals($sale);
 
+        // TODO item count
+
         return $changed;
     }
 
@@ -372,7 +374,7 @@ class SaleUpdater implements SaleUpdaterInterface
         }
 
         // Get exchange rate from the first paid payment
-        foreach ($sale->getPayments() as $payment) {
+        foreach ($sale->getPayments(true) as $payment) {
             // Skip not paid
             if (!PaymentStates::isPaidState($payment->getState())) {
                 continue;
@@ -400,20 +402,16 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
-     * Updates the sale's net and grand totals.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
+     * @inheritDoc
      */
-    protected function updateAmountsTotal(SaleInterface $sale): bool
+    public function updateAmountsTotal(SaleInterface $sale): bool
     {
         $changed = false;
 
         $base = $sale->getCurrency()->getCode();
         $quote = $this->amountCalculator->getDefaultCurrency();
 
-        // TODO Clear results on content change
+        // TODO Clear results on content change (? may be greedy and not needed)
         $sale->clearResults();
 
         $result = $this->amountCalculator->calculateSale($sale, $base);
@@ -443,13 +441,9 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
-     * Updates the payment totals total.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
+     * @inheritDoc
      */
-    protected function updatePaymentTotal(SaleInterface $sale): bool
+    public function updatePaymentTotal(SaleInterface $sale): bool
     {
         $changed = false;
 
@@ -459,6 +453,12 @@ class SaleUpdater implements SaleUpdaterInterface
         $paid = $this->paymentCalculator->calculatePaidTotal($sale);
         if (0 != Money::compare($paid, $sale->getPaidTotal(), $currency)) {
             $sale->setPaidTotal($paid);
+            $changed = true;
+        }
+        // Update refunded total if needed
+        $refunded = $this->paymentCalculator->calculateRefundedTotal($sale);
+        if (0 != Money::compare($refunded, $sale->getRefundedTotal(), $currency)) {
+            $sale->setRefundedTotal($refunded);
             $changed = true;
         }
         // Update pending total total if needed
@@ -483,8 +483,6 @@ class SaleUpdater implements SaleUpdaterInterface
         // If payment totals has changed and fund has been released
         if ($changed && $this->outstandingReleaser->releaseFund($sale)) {
             // Re-update the outstanding totals
-            //$sale->setPaidTotal($this->paymentCalculator->calculatePaidTotal($sale));
-            //$sale->setPendingTotal($this->paymentCalculator->calculateOfflinePendingTotal($sale));
             $sale->setOutstandingAccepted($this->paymentCalculator->calculateOutstandingAcceptedTotal($sale));
             $sale->setOutstandingExpired($this->paymentCalculator->calculateOutstandingExpiredTotal($sale));
         }
@@ -493,13 +491,9 @@ class SaleUpdater implements SaleUpdaterInterface
     }
 
     /**
-     * Updates the sale invoice total.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool Whether the sale has been changed or not.
+     * @inheritDoc
      */
-    protected function updateInvoiceTotal(SaleInterface $sale): bool
+    public function updateInvoiceTotal(SaleInterface $sale): bool
     {
         if (!$sale instanceof InvoiceSubjectInterface) {
             return false;

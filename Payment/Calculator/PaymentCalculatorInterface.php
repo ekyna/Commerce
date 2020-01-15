@@ -12,6 +12,16 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 interface PaymentCalculatorInterface
 {
     /**
+     * Returns the subject's payment amounts.
+     *
+     * @param PaymentSubjectInterface $subject
+     * @param string|null             $currency
+     *
+     * @return array [total, paid, refunded, deposit, pending]
+     */
+    public function getPaymentAmounts(PaymentSubjectInterface $subject, string $currency = null): array;
+
+    /**
      * Calculates the paid total.
      *
      * @param PaymentSubjectInterface $subject
@@ -20,6 +30,16 @@ interface PaymentCalculatorInterface
      * @return float
      */
     public function calculatePaidTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+
+    /**
+     * Calculates the refunded total.
+     *
+     * @param PaymentSubjectInterface $subject
+     * @param string|null             $currency
+     *
+     * @return float
+     */
+    public function calculateRefundedTotal(PaymentSubjectInterface $subject, string $currency = null): float;
 
     /**
      * Calculates the accepted outstanding total.
@@ -40,16 +60,6 @@ interface PaymentCalculatorInterface
      * @return float
      */
     public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, string $currency = null): float;
-
-    /**
-     * Calculates the refunded total.
-     *
-     * @param PaymentSubjectInterface $subject
-     * @param string|null             $currency
-     *
-     * @return float
-     */
-    public function calculateRefundedTotal(PaymentSubjectInterface $subject, string $currency = null): float;
 
     /**
      * Calculates the failed total.
@@ -82,12 +92,22 @@ interface PaymentCalculatorInterface
     public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject, string $currency = null): float;
 
     /**
-     * Calculates the subject's remaining total (new payment amount).
+     * Calculates the subject's expected payment amount.
      *
      * @param PaymentSubjectInterface $subject
      * @param string|null             $currency
      *
      * @return float
      */
-    public function calculateRemainingTotal(PaymentSubjectInterface $subject, string $currency = null): float;
+    public function calculateExpectedPaymentAmount(PaymentSubjectInterface $subject, string $currency = null): float;
+
+    /**
+     * Calculates the subject's expected refund amount.
+     *
+     * @param PaymentSubjectInterface $subject
+     * @param string|null             $currency
+     *
+     * @return float
+     */
+    public function calculateExpectedRefundAmount(PaymentSubjectInterface $subject, string $currency = null): float;
 }

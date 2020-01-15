@@ -190,6 +190,14 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
     }
 
     /**
+     * Entity manager clear event handler.
+     */
+    public function onClear(): void
+    {
+        $this->grids = [];
+    }
+
+    /**
      * Resolves the price form the given grid entry and total weight.
      *
      * @param array $entry

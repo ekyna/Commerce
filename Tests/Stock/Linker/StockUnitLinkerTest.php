@@ -8,14 +8,14 @@ use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinker;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
-use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
+use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
  * Class StockUnitLinkerTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Linker
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitLinkerTest extends BaseStockTestCase
+class StockUnitLinkerTest extends StockTestCase
 {
     /**
      * @var StockUnitLinker
@@ -41,6 +41,8 @@ class StockUnitLinkerTest extends BaseStockTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->linker = null;
     }
 

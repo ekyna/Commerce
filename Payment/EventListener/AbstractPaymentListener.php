@@ -140,13 +140,17 @@ abstract class AbstractPaymentListener
     {
         $payment = $this->getPaymentFromEvent($event);
 
+        // Method and currency can't be changed
+        if ($this->persistenceHelper->isChanged($payment, 'method')) {
+            throw new LogicException("Payment method can't be changed.");
+        }
+        if ($this->persistenceHelper->isChanged($payment, 'currency')) {
+            throw new LogicException("Payment currency can't be changed.");
+        }
+
         // Generate number and key
         $changed = $this->generateNumber($payment);
         $changed |= $this->generateKey($payment);
-
-        if ($this->persistenceHelper->isChanged($payment, 'currency')) {
-            throw new LogicException("Payment method can't be changed.");
-        }
 
         if ($this->persistenceHelper->isChanged($payment, 'amount')) {
             $changed |= $this->paymentUpdater->fixRealAmount($payment);
@@ -160,20 +164,6 @@ abstract class AbstractPaymentListener
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($payment);
-        }
-
-        if ($this->persistenceHelper->isChanged($payment, 'method')) {
-            $methodCs = $this->persistenceHelper->getChangeSet($payment, 'method');
-            /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $fromMethod */
-            $fromMethod = $methodCs[0];
-            /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $toMethod */
-            $toMethod = $methodCs[1];
-
-            if ($fromMethod->isManual() && !$toMethod->isManual()) {
-                throw new LogicException("Payment method can't be changed from manual to non manual method.");
-            } elseif (!$fromMethod->isManual()) {
-                throw new LogicException("Payment method can't be changed.");
-            }
         }
 
         if ($this->persistenceHelper->isChanged($payment, ['realAmount', 'state'])) {
@@ -197,10 +187,10 @@ abstract class AbstractPaymentListener
         $state = $payment->getState();
         $completedAt = $payment->getCompletedAt();
 
-        if (PaymentStates::isPaidState($state) && null === $completedAt) {
+        if (PaymentStates::isPaidState($state) && is_null($completedAt)) {
             $payment->setCompletedAt(new \DateTime());
             $changed = true;
-        } elseif (!PaymentStates::isPaidState($state) && null !== $completedAt) {
+        } elseif (!PaymentStates::isPaidState($state) && !is_null($completedAt)) {
             $payment->setCompletedAt(null);
             $changed = true;
         }

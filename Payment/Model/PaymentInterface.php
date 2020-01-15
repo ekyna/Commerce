@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Payment\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
 use Ekyna\Component\Resource\Model as ResourceModel;
 use Payum\Core\Model as Payum;
 
@@ -30,6 +31,22 @@ interface PaymentInterface extends
      * @return Common\SaleInterface
      */
     public function getSale();
+
+    /**
+     * Returns whether this a refund payment.
+     *
+     * @return bool
+     */
+    public function isRefund(): bool;
+
+    /**
+     * Sets whether this a refund payment.
+     *
+     * @param bool $refund
+     *
+     * @return $this|PaymentInterface
+     */
+    public function setRefund(bool $refund): PaymentInterface;
 
     /**
      * Returns the method.

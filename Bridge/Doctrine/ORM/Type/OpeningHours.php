@@ -107,12 +107,4 @@ class OpeningHours extends Type
     {
         return self::NAME;
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function requiresSQLCommentHint(AbstractPlatform $platform)
-    {
-        return true;
-    }
 }

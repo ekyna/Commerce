@@ -16,7 +16,6 @@ use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
@@ -229,11 +228,7 @@ class AccountingExporter implements AccountingExporterInterface
         $this->writer = new AccountingWriter();
         $this->writer->open($path);
 
-        $payments = $this->paymentRepository->findByMonth($month, [
-            PaymentStates::STATE_CAPTURED,
-            PaymentStates::STATE_COMPLETED,
-            PaymentStates::STATE_REFUNDED,
-        ]);
+        $payments = $this->paymentRepository->findByMonth($month, PaymentStates::getPaidStates(true));
 
         foreach ($payments as $payment) {
             $method = $payment->getMethod();
@@ -251,11 +246,10 @@ class AccountingExporter implements AccountingExporterInterface
                 $number = '10000000';
             }
 
-            $credit = false; // TODO $payment->getType() === PaymentTypes::TYPE_REFUND;
             $amount = (string)$this->round($payment->getRealAmount());
             $date = $payment->getSale()->getCreatedAt();
 
-            if ($credit) {
+            if ($payment->isRefund()) {
                 // Payment debit
                 $this->writer->debit($account, $amount, $date);
                 // Customer credit
@@ -265,18 +259,17 @@ class AccountingExporter implements AccountingExporterInterface
                 $this->writer->credit($account, $amount, $date);
                 // Customer debit
                 $this->writer->debit($number, $amount, $date);
+
+                // Add an extra credit line for refund payments.
+                if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
+                    // Payment debit
+                    $this->writer->debit($account, $amount, $date);
+                    // Customer credit
+                    $this->writer->credit($number, $amount, $date);
+                }
             }
 
             $this->writePaymentExchange($payment, $number, $date);
-
-            // TODO Remove when refund payment implemented
-            // Temporary : add an extra credit line for refund payments.
-            if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
-                // Payment debit
-                $this->writer->debit($account, $amount, $date);
-                // Customer credit
-                $this->writer->credit($number, $amount, $date);
-            }
         }
 
         $this->writer->close();
@@ -294,22 +287,6 @@ class AccountingExporter implements AccountingExporterInterface
 
         // Grand total row
         if ($this->config['total_as_payment']) {
-
-            // Credit case
-            if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
-                $account = $this->getPaymentAccountNumber(
-                    $this->invoice->getPaymentMethod(),
-                    $this->invoice->getNumber()
-                );
-
-                $amount = $this->round($this->invoice->getGrandTotal());
-
-                $this->writer->debit($account, (string)$amount, $date);
-                $this->balance += $amount;
-
-                return;
-            }
-
             // Invoice case
             $unpaid = $this->invoice->getGrandTotal();
 
@@ -323,20 +300,28 @@ class AccountingExporter implements AccountingExporterInterface
                 );
 
                 $amount = $this->round($payment->getAmount());
-
-                $this->writer->credit($account, (string)$amount, $date);
-
                 $unpaid -= $amount;
-                $this->balance -= $amount;
+
+                if ($payment->getPayment()->isRefund()) {
+                    $this->writer->debit($account, (string)$amount, $date);
+                    $this->balance += $amount;
+                } else {
+                    $this->writer->credit($account, (string)$amount, $date);
+                    $this->balance -= $amount;
+                }
             }
 
             // Unpaid amount
             if (1 === $this->compare($unpaid, 0)) {
                 $account = $this->getUnpaidAccountNumber($sale->getCustomerGroup(), $this->invoice->getNumber());
 
-                $this->writer->credit($account, (string)$unpaid, $date);
-
-                $this->balance -= $unpaid;
+                if ($this->invoice->isCredit()) {
+                    $this->writer->debit($account, (string)$unpaid, $date);
+                    $this->balance += $unpaid;
+                } else {
+                    $this->writer->credit($account, (string)$unpaid, $date);
+                    $this->balance -= $unpaid;
+                }
             }
 
             return;
@@ -350,7 +335,7 @@ class AccountingExporter implements AccountingExporterInterface
 
         $amount = $this->round($this->invoice->getGrandTotal());
 
-        if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+        if ($this->invoice->isCredit()) {
             $this->writer->debit($account, (string)$amount, $date);
             $this->balance += $amount;
         } else {
@@ -396,8 +381,6 @@ class AccountingExporter implements AccountingExporterInterface
             $amounts[(string)$rate] += $this->round($amount);
         }
 
-        $credit = $this->invoice->getType() === InvoiceTypes::TYPE_CREDIT;
-
         // Writes each tax rates's amount
         foreach ($amounts as $rate => $amount) {
             $amount = $this->round($amount);
@@ -422,7 +405,7 @@ class AccountingExporter implements AccountingExporterInterface
 
             $account = $this->getGoodAccountNumber($taxRule, (float)$rate, $this->invoice->getNumber());
 
-            if ($credit) {
+            if ($this->invoice->isCredit()) {
                 $this->writer->credit($account, (string)$amount, $date);
                 $this->balance -= $amount;
             } else {
@@ -451,7 +434,7 @@ class AccountingExporter implements AccountingExporterInterface
 
         $account = $this->getShipmentAccountNumber($taxRule, $this->invoice->getNumber());
 
-        if ($this->invoice->getType() === InvoiceTypes::TYPE_CREDIT) {
+        if ($this->invoice->isCredit()) {
             $this->writer->credit($account, (string)$amount, $date);
             $this->balance -= $amount;
         } else {
@@ -468,8 +451,6 @@ class AccountingExporter implements AccountingExporterInterface
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
 
-        $credit = $this->invoice->getType() === InvoiceTypes::TYPE_CREDIT;
-
         foreach ($this->invoice->getTaxesDetails() as $detail) {
             $amount = $this->round($detail['amount']);
 
@@ -479,7 +460,7 @@ class AccountingExporter implements AccountingExporterInterface
 
             $account = $this->getTaxAccountNumber($detail['rate'], $this->invoice->getNumber());
 
-            if ($credit) {
+            if ($this->invoice->isCredit()) {
                 $this->writer->credit($account, (string)$amount, $date);
                 $this->balance -= $amount;
             } else {
@@ -556,9 +537,7 @@ class AccountingExporter implements AccountingExporterInterface
 
         $diff = (string)$this->round($diff);
 
-        $credit = false; // TODO $payment->getType() === PaymentTypes::TYPE_REFUND;
-
-        if ($credit) {
+        if ($payment->isRefund()) {
             // Payment debit
             $this->writer->credit($account, $diff, $date);
             // Customer credit
@@ -568,14 +547,13 @@ class AccountingExporter implements AccountingExporterInterface
             $this->writer->debit($account, $diff, $date);
             // Customer debit
             $this->writer->credit($number, $diff, $date);
-        }
 
-        // TODO Remove when refund payment implemented
-        if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
-            // Payment debit
-            $this->writer->credit($account, $diff, $date);
-            // Customer credit
-            $this->writer->debit($number, $diff, $date);
+            if ($payment->getState() === PaymentStates::STATE_REFUNDED) {
+                // Payment debit
+                $this->writer->credit($account, $diff, $date);
+                // Customer credit
+                $this->writer->debit($number, $diff, $date);
+            }
         }
     }
 

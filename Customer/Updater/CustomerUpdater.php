@@ -34,7 +34,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function handlePaymentInsert(PaymentInterface $payment)
+    public function handlePaymentInsert(PaymentInterface $payment): bool
     {
         if ($this->supports($payment) && $this->isAcceptedPayment($payment)) {
             return $this->updateCustomerBalance($payment);
@@ -46,7 +46,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function handlePaymentUpdate(PaymentInterface $payment)
+    public function handlePaymentUpdate(PaymentInterface $payment): bool
     {
         if (!$this->supports($payment)) {
             return false;
@@ -58,14 +58,14 @@ class CustomerUpdater implements CustomerUpdaterInterface
         $acceptedStates = $this->getAcceptedStates($payment);
 
         // By state change
-        if (!empty($stateCs) && $stateCs[0] !== $stateCs[1]) {
+        if (!empty($stateCs) && ($stateCs[0] !== $stateCs[1])) {
             $fromAccepted = in_array($stateCs[0], $acceptedStates, true);
             $toAccepted = in_array($stateCs[1], $acceptedStates, true);
 
             // If payment state has changed from or to a accepted state
             if ($fromAccepted xor $toAccepted) {
-                // Update the customer balance
-                return $this->updateCustomerBalance($payment, isset($amountCs[0]) ? $amountCs[0] : null);
+                // Update the customer balance, use old amount if state changed from accepted.
+                return $this->updateCustomerBalance($payment, $fromAccepted && !empty($amountCs) ? $amountCs[0] : null);
             }
         }
 
@@ -84,7 +84,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function handlePaymentDelete(PaymentInterface $payment)
+    public function handlePaymentDelete(PaymentInterface $payment): bool
     {
         if ($this->supports($payment) && $this->isAcceptedPayment($payment)) {
             $payment->setState(PaymentStates::STATE_CANCELED);
@@ -98,30 +98,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateLoyaltyPoints(CustomerInterface $customer, $points, $relative = false)
-    {
-        // Switch to parent if available
-        if ($customer->hasParent()) {
-            $customer = $customer->getParent();
-        }
-
-        $old = $customer->getLoyaltyPoints();
-        $new = $relative ? $old + $points : $points;
-
-        if ($old != $new) {
-            $customer->setLoyaltyPoints($new);
-            $this->persistenceHelper->persistAndRecompute($customer, false);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false)
+    public function updateCreditBalance(CustomerInterface $customer, $amount, $relative = false): bool
     {
         // Switch to parent if available
         if ($customer->hasParent()) {
@@ -144,7 +121,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false)
+    public function updateOutstandingBalance(CustomerInterface $customer, $amount, $relative = false): bool
     {
         // Switch to parent if available
         if ($customer->hasParent()) {
@@ -172,7 +149,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
      *
      * @return bool Whether the customer has been changed.
      */
-    protected function updateCustomerBalance(PaymentInterface $payment, $amount = null)
+    protected function updateCustomerBalance(PaymentInterface $payment, $amount = null): bool
     {
         if (null === $customer = $payment->getSale()->getCustomer()) {
             // TODO Deals with customer change
@@ -180,6 +157,9 @@ class CustomerUpdater implements CustomerUpdaterInterface
         }
 
         $amount = $amount ?: $payment->getRealAmount();
+        if ($payment->isRefund()) {
+            $amount = -$amount;
+        }
         if ($this->isAcceptedPayment($payment)) {
             $amount = -$amount;
         }
@@ -200,7 +180,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
      *
      * @return bool
      */
-    protected function isAcceptedPayment(PaymentInterface $payment)
+    protected function isAcceptedPayment(PaymentInterface $payment): bool
     {
         return in_array($payment->getState(), $this->getAcceptedStates($payment), true);
     }
@@ -212,7 +192,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
      *
      * @return array
      */
-    protected function getAcceptedStates(PaymentInterface $payment)
+    protected function getAcceptedStates(PaymentInterface $payment): array
     {
         $acceptedStates = PaymentStates::getPaidStates();
 
@@ -230,7 +210,7 @@ class CustomerUpdater implements CustomerUpdaterInterface
      *
      * @return bool
      */
-    protected function supports(PaymentInterface $payment)
+    protected function supports(PaymentInterface $payment): bool
     {
         if (null === $method = $payment->getMethod()) {
             throw new RuntimeException("Payment method must be set.");

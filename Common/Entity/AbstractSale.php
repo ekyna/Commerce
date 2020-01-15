@@ -17,6 +17,9 @@ use Ekyna\Component\Resource\Model as RM;
  * Class AbstractSale
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * Any mapped property (from traits too) must be reported into the SaleCopier.
+ * @see     \Ekyna\Component\Commerce\Common\Transformer\SaleCopier
  */
 abstract class AbstractSale implements Common\SaleInterface
 {
@@ -190,16 +193,16 @@ abstract class AbstractSale implements Common\SaleInterface
      */
     public function __construct()
     {
-        $this->sameAddress = true;
+        $this->sameAddress  = true;
         $this->autoDiscount = true;
-        $this->taxExempt = false;
+        $this->taxExempt    = false;
 
         $this->netTotal = 0;
 
         $this->createdAt = new \DateTime();
 
         $this->attachments = new ArrayCollection();
-        $this->items = new ArrayCollection();
+        $this->items       = new ArrayCollection();
 
         $this->initializeAdjustments();
         $this->initializeNotifications();
@@ -598,9 +601,9 @@ abstract class AbstractSale implements Common\SaleInterface
      */
     public function getDeliveryCountry()
     {
-        /* TODO if (null !== $relayPoint = $this->getRelayPoint()) {
+        if ($relayPoint = $this->getRelayPoint()) {
             return $relayPoint->getCountry();
-        }*/
+        }
 
         $address = $this->isSameAddress() ? $this->getInvoiceAddress() : $this->getDeliveryAddress();
 
@@ -675,10 +678,10 @@ abstract class AbstractSale implements Common\SaleInterface
             $adjustment->clearResults();
         }
 
-        $this->grossResults = [];
+        $this->grossResults    = [];
         $this->shipmentResults = [];
-        $this->finalResults = [];
-        $this->margins = [];
+        $this->finalResults    = [];
+        $this->margins         = [];
 
         return $this;
     }

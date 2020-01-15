@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Ekyna\Component\Commerce\Supplier\Model;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
@@ -197,7 +197,7 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
             ->andWhere($ex->isNotNull($as . '.' . $prefix . 'DueDate'))
             ->andWhere($ex->lt($as . '.' . $prefix . 'DueDate', ':today'))
             ->andWhere($ex->neq($as . '.state', ':state'))
-            ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Types::DATETIME_MUTABLE)
             ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }
@@ -223,7 +223,7 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
                 $ex->gte($as . '.' . $prefix . 'DueDate', ':today')
             ))
             ->andWhere($ex->neq($as . '.state', ':state'))
-            ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Type::DATETIME)
+            ->setParameter('today', (new \DateTime())->setTime(0, 0, 0, 0), Types::DATETIME_MUTABLE)
             ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }

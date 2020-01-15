@@ -2,11 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Tests\Payment\Factory;
 
-use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderPayment;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
@@ -16,8 +13,8 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdater;
 use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface;
+use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Class PaymentFactoryTest
@@ -42,56 +39,36 @@ class PaymentFactoryTest extends TestCase
     private $paymentCalculator;
 
     /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
-
-    /**
-     * @var CurrencyRepositoryInterface|MockObject
-     */
-    private $currencyRepository;
-
-    /**
      * @var PaymentFactoryInterface
      */
     private $paymentFactory;
+
 
     protected function setUp(): void
     {
         $this->saleFactory = $this->createMock(SaleFactoryInterface::class);
 
-        $this->currencyConverter = new ArrayCurrencyConverter([
-            'EUR/USD' => 1.25,
-            'USD/EUR' => 0.80,
-        ], 'EUR');
-
-        $this->paymentUpdater = new PaymentUpdater($this->currencyConverter);
+        $this->paymentUpdater = new PaymentUpdater($this->getCurrencyConverter());
 
         $this->paymentCalculator = $this->createMock(PaymentCalculatorInterface::class);
-
-        $currency = $this->createMock(CurrencyInterface::class);
-        $currency->method('getCode')->willReturn('EUR');
-
-        $this->currencyRepository = $this->createMock(CurrencyRepositoryInterface::class);
-        $this->currencyRepository->method('findDefault')->willReturn($currency);
 
         $this->paymentFactory = new PaymentFactory(
             $this->saleFactory,
             $this->paymentUpdater,
             $this->paymentCalculator,
-            $this->currencyConverter,
-            $this->currencyRepository
+            $this->getCurrencyConverter(),
+            $this->getCurrencyRepositoryMock()
         );
     }
 
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->paymentFactory = null;
         $this->saleFactory = null;
         $this->paymentUpdater = null;
         $this->paymentCalculator = null;
-        $this->currencyConverter = null;
-        $this->currencyRepository = null;
     }
 
     /**
@@ -102,9 +79,9 @@ class PaymentFactoryTest extends TestCase
      * @param float  $realAmount
      * @param string $paymentCurrency
      *
-     * @dataProvider provide_create
+     * @dataProvider provide_createPayment
      */
-    public function test_create(
+    public function test_createPayment(
         string $class,
         string $subjectCurrency,
         bool $default,
@@ -133,7 +110,7 @@ class PaymentFactoryTest extends TestCase
 
         $this
             ->paymentCalculator
-            ->method('calculateRemainingTotal')
+            ->method('calculateExpectedPaymentAmount')
             ->with($subject)
             ->willReturn($amount);
 
@@ -145,7 +122,7 @@ class PaymentFactoryTest extends TestCase
         $this->assertEquals($realAmount, $payment->getRealAmount());
     }
 
-    public function provide_create(): array
+    public function provide_createPayment(): array
     {
         return [
             'Case 1' => [Order::class, 'EUR', true,  100, 100, 'EUR'],
@@ -154,4 +131,6 @@ class PaymentFactoryTest extends TestCase
             'Case 4' => [Order::class, 'USD', false,  40,  32, 'USD'],
         ];
     }
+
+    // TODO public function test_createRefund(): void {}
 }

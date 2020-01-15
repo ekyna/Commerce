@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model as InvoiceM;
 use Ekyna\Component\Commerce\Order\Entity as OrderE;
 use Ekyna\Component\Commerce\Order\Model as OrderM;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Pricing\Entity as PricingE;
 use Ekyna\Component\Commerce\Pricing\Model as PricingM;
 use Ekyna\Component\Commerce\Shipment\Model as ShipmentM;
@@ -30,9 +31,9 @@ use Symfony\Component\Yaml\Yaml;
  */
 class Fixtures
 {
-    const DATA_DIR   = __DIR__ . '/../../Install/data/';
-    const COUNTRIES  = ['FR', 'US'];
-    const CURRENCIES = ['EUR', 'USD'];
+    private const DATA_DIR   = __DIR__ . '/../../Install/data/';
+    private const COUNTRIES  = ['FR', 'US'];
+    private const CURRENCIES = ['EUR', 'USD'];
 
     /**
      * @var CustomerM\CustomerGroupInterface[]
@@ -65,7 +66,7 @@ class Fixtures
      *
      * @param StockM\StockUnitInterface $stockUnit
      */
-    public static function resolveStockUnitState(StockM\StockUnitInterface $stockUnit)
+    public static function resolveStockUnitState(StockM\StockUnitInterface $stockUnit): void
     {
         if (null === static::$stockUnitStateResolver) {
             static::$stockUnitStateResolver = new StockUnitStateResolver();
@@ -74,13 +75,12 @@ class Fixtures
         static::$stockUnitStateResolver->resolve($stockUnit);
     }
 
-
     /**
      * Returns the customer groups.
      *
      * @return array|CustomerM\CustomerGroupInterface[]
      */
-    public static function getCustomerGroups()
+    public static function getCustomerGroups(): array
     {
         if (null !== static::$customerGroups) {
             return static::$customerGroups;
@@ -104,7 +104,7 @@ class Fixtures
      *
      * @return CustomerM\CustomerGroupInterface
      */
-    public static function getDefaultCustomerGroup()
+    public static function getDefaultCustomerGroup(): CustomerM\CustomerGroupInterface
     {
         return static::getCustomerGroups()[0];
     }
@@ -114,7 +114,7 @@ class Fixtures
      *
      * @return CommonM\CurrencyInterface[]
      */
-    public static function getCurrencies()
+    public static function getCurrencies(): array
     {
         if (null !== static::$currencies) {
             return static::$currencies;
@@ -140,7 +140,7 @@ class Fixtures
      *
      * @return CommonM\CurrencyInterface
      */
-    public static function getDefaultCurrency()
+    public static function getDefaultCurrency(): CommonM\CurrencyInterface
     {
         return static::getCurrencies()[0];
     }
@@ -152,7 +152,7 @@ class Fixtures
      *
      * @return CommonM\CurrencyInterface
      */
-    public static function getCurrencyByCode($code)
+    public static function getCurrencyByCode(string $code): CommonM\CurrencyInterface
     {
         foreach (static::getCurrencies() as $currency) {
             if ($currency->getCode() === $code) {
@@ -168,7 +168,7 @@ class Fixtures
      *
      * @return CommonM\CountryInterface[]
      */
-    public static function getCountries()
+    public static function getCountries(): array
     {
         if (null !== static::$countries) {
             return static::$countries;
@@ -194,7 +194,7 @@ class Fixtures
      *
      * @return CommonM\CountryInterface
      */
-    public static function getDefaultCountry()
+    public static function getDefaultCountry(): CommonM\CountryInterface
     {
         return static::getCountries()[0];
     }
@@ -206,7 +206,7 @@ class Fixtures
      *
      * @return CommonM\CountryInterface
      */
-    public static function getCountryByCode($code)
+    public static function getCountryByCode(string $code): CommonM\CountryInterface
     {
         foreach (static::getCountries() as $country) {
             if ($country->getCode() === $code) {
@@ -222,7 +222,7 @@ class Fixtures
      *
      * @return PricingM\TaxGroupInterface[]
      */
-    public static function getTaxGroups()
+    public static function getTaxGroups(): array
     {
         if (null !== static::$taxGroups) {
             return static::$taxGroups;
@@ -260,7 +260,7 @@ class Fixtures
      *
      * @return PricingM\TaxGroupInterface
      */
-    public static function getDefaultTaxGroup()
+    public static function getDefaultTaxGroup(): PricingM\TaxGroupInterface
     {
         foreach (static::getTaxGroups() as $group) {
             if ($group->isDefault()) {
@@ -278,7 +278,7 @@ class Fixtures
      *
      * @return PricingM\TaxGroupInterface
      */
-    public static function getTaxGroupByName($name)
+    public static function getTaxGroupByName(string $name): PricingM\TaxGroupInterface
     {
         foreach (static::getTaxGroups() as $group) {
             if ($group->getName() === $name) {
@@ -287,6 +287,25 @@ class Fixtures
         }
 
         throw new \RuntimeException("Tax group '$name' not found.");
+    }
+
+    /**
+     * Creates a customer.
+     *
+     * @return CustomerM\CustomerInterface
+     */
+    public static function createCustomer(): CustomerM\CustomerInterface
+    {
+        $customer = new CustomerE\Customer();
+
+        $customer
+            ->setCustomerGroup(self::getDefaultCustomerGroup())
+            ->setCompany('Acme')
+            ->setFirstName('John')
+            ->setLastName('Doe')
+            ->setEmail('john.doe@acme.com');
+
+        return $customer;
     }
 
     /**
@@ -299,8 +318,12 @@ class Fixtures
      *
      * @return OrderE\OrderItemStockAssignment
      */
-    public static function createStockAssignment($unit = null, $item = null, $sold = 0, $shipped = 0)
-    {
+    public static function createStockAssignment(
+        StockM\StockUnitInterface $unit = null,
+        OrderM\OrderItemInterface $item = null,
+        int $sold = 0,
+        int $shipped = 0
+    ): OrderE\OrderItemStockAssignment {
         $assignment = new OrderE\OrderItemStockAssignment();
 
         $assignment
@@ -325,13 +348,13 @@ class Fixtures
      * @return Acme\StockUnit
      */
     public static function createStockUnit(
-        $subject = null,
-        $item = null,
-        $ordered = .0,
-        $received = .0,
-        $sold = .0,
-        $shipped = .0
-    ) {
+        StockM\StockSubjectInterface $subject = null,
+        SupplierE\SupplierOrderItem $item = null,
+        float $ordered = .0,
+        float $received = .0,
+        float $sold = .0,
+        float $shipped = .0
+    ): StockM\StockUnitInterface {
         $unit = new Acme\StockUnit();
 
         if (null === $subject && $item && null === $subject = $item->getSubjectIdentity()->getSubject()) {
@@ -365,8 +388,11 @@ class Fixtures
      *
      * @return StockAdjustment
      */
-    public static function createStockAdjustment($unit, $quantity, $debit = false)
-    {
+    public static function createStockAdjustment(
+        StockM\StockUnitInterface $unit,
+        float $quantity,
+        bool $debit = false
+    ): StockM\StockAdjustmentInterface {
         $adjustment = new StockAdjustment();
         $adjustment
             ->setStockUnit($unit)
@@ -383,15 +409,19 @@ class Fixtures
     /**
      * Creates a new subject (acme product).
      *
-     * @param null $designation
-     * @param null $reference
-     * @param null $price
-     * @param null $weight
+     * @param string $designation
+     * @param string $reference
+     * @param float  $price
+     * @param float  $weight
      *
      * @return Acme\Product
      */
-    public static function createSubject($designation = null, $reference = null, $price = null, $weight = null)
-    {
+    public static function createSubject(
+        string $designation = null,
+        string $reference = null,
+        float $price = null,
+        float $weight = null
+    ): Acme\Product {
         $subject = new Acme\Product();
 
         if (empty($designation)) {
@@ -429,7 +459,7 @@ class Fixtures
      *
      * @return SupplierE\SupplierOrder
      */
-    public static function createSupplierOrder($currency = null, $createdAt = null, $orderedAt = null)
+    public static function createSupplierOrder(string $currency = null, string $createdAt = null, string $orderedAt = null): SupplierE\SupplierOrder
     {
         $order = new SupplierE\SupplierOrder();
         $order
@@ -452,8 +482,11 @@ class Fixtures
      *
      * @return SupplierE\SupplierOrderItem
      */
-    public static function createSupplierOrderItem($subject = null, $quantity = 1., $netPrice = .0)
-    {
+    public static function createSupplierOrderItem(
+        StockM\StockSubjectInterface $subject = null,
+        float $quantity = 1.,
+        float $netPrice = .0
+    ): SupplierE\SupplierOrderItem {
         $item = new SupplierE\SupplierOrderItem();
 
         if (null === $subject) {
@@ -476,6 +509,30 @@ class Fixtures
     }
 
     /**
+     * Creates a payment.
+     *
+     * @param string $currency
+     * @param float  $amount
+     * @param string $state
+     *
+     * @return OrderE\OrderPayment
+     */
+    public static function createPayment(
+        string $currency = 'EUR',
+        float $amount = 100,
+        string $state = PaymentStates::STATE_CAPTURED
+    ): OrderE\OrderPayment {
+        $payment = new OrderE\OrderPayment();
+        $payment
+            ->setCurrency(static::getCurrencyByCode($currency))
+            ->setAmount($amount)
+            ->setRealAmount($amount)
+            ->setState($state);
+
+        return $payment;
+    }
+
+    /**
      * Creates a new order.
      *
      * @param string $currency
@@ -483,7 +540,7 @@ class Fixtures
      *
      * @return OrderE\Order
      */
-    public static function createOrder($currency = 'EUR', $createdAt = 'now')
+    public static function createOrder(string $currency = 'EUR', string $createdAt = 'now'): OrderE\Order
     {
         $order = new OrderE\Order();
 
@@ -504,7 +561,7 @@ class Fixtures
      *
      * @return OrderE\OrderItem
      */
-    public static function createOrderItem($quantity = 1., $netPrice = .0, array $discounts = [], array $taxes = [])
+    public static function createOrderItem(float $quantity = 1., float $netPrice = .0, array $discounts = [], array $taxes = []): OrderE\OrderItem
     {
         $item = new OrderE\OrderItem();
         $item
@@ -529,7 +586,7 @@ class Fixtures
      *
      * @return OrderE\OrderItemAdjustment
      */
-    public static function createOrderItemTaxationAdjustment($amount)
+    public static function createOrderItemTaxationAdjustment(float $amount): OrderE\OrderItemAdjustment
     {
         $adjustment = new OrderE\OrderItemAdjustment();
         $adjustment
@@ -548,7 +605,7 @@ class Fixtures
      *
      * @return OrderE\OrderItemAdjustment
      */
-    public static function createOrderItemDiscountAdjustment($amount)
+    public static function createOrderItemDiscountAdjustment(float $amount): OrderE\OrderItemAdjustment
     {
         $adjustment = new OrderE\OrderItemAdjustment();
         $adjustment
@@ -567,7 +624,7 @@ class Fixtures
      *
      * @return OrderE\OrderAdjustment
      */
-    public static function createOrderTaxationAdjustment($amount)
+    public static function createOrderTaxationAdjustment(float $amount): OrderE\OrderAdjustment
     {
         $adjustment = new OrderE\OrderAdjustment();
         $adjustment
@@ -587,7 +644,7 @@ class Fixtures
      *
      * @return OrderE\OrderAdjustment
      */
-    public static function createOrderDiscountAdjustment($amount, $flat = false)
+    public static function createOrderDiscountAdjustment(float $amount, bool $flat = false): OrderE\OrderAdjustment
     {
         $adjustment = new OrderE\OrderAdjustment();
         $adjustment
@@ -606,7 +663,7 @@ class Fixtures
      *
      * @return OrderE\OrderShipment
      */
-    public static function createShipment(OrderM\OrderInterface $order)
+    public static function createShipment(OrderM\OrderInterface $order): OrderE\OrderShipment
     {
         $shipment = new OrderE\OrderShipment();
         $shipment->setOrder($order);
@@ -625,7 +682,7 @@ class Fixtures
     public static function createShipmentItem(
         ShipmentM\ShipmentInterface $shipment,
         OrderM\OrderItemInterface $orderItem
-    ) {
+    ): OrderE\OrderShipmentItem {
         $item = new OrderE\OrderShipmentItem();
         $item
             ->setShipment($shipment)
@@ -642,14 +699,12 @@ class Fixtures
      *
      * @return OrderE\OrderInvoice
      */
-    public static function createInvoice(OrderM\OrderInterface $order, bool $credit = false)
+    public static function createInvoice(OrderM\OrderInterface $order, bool $credit = false): OrderE\OrderInvoice
     {
         $invoice = new OrderE\OrderInvoice();
-        $invoice->setOrder($order);
-
-        if ($credit) {
-            $invoice->setType(InvoiceM\InvoiceTypes::TYPE_CREDIT);
-        }
+        $invoice
+            ->setOrder($order)
+            ->setCredit($credit);
 
         return $invoice;
     }
@@ -662,7 +717,7 @@ class Fixtures
      *
      * @return OrderE\OrderInvoiceLine
      */
-    public static function createInvoiceLine(InvoiceM\InvoiceInterface $invoice, object $target)
+    public static function createInvoiceLine(InvoiceM\InvoiceInterface $invoice, object $target): OrderE\OrderInvoiceLine
     {
         $line = new OrderE\OrderInvoiceLine();
         $line->setInvoice($invoice);
@@ -695,7 +750,7 @@ class Fixtures
      *
      * @throws \ReflectionException
      */
-    public static function setId(object $object, int $id)
+    public static function setId(object $object, int $id): void
     {
         $r = new \ReflectionClass(get_class($object));
         $p = $r->getProperty('id');

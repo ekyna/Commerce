@@ -2,12 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
-use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance\Constants as CreditBalance;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
@@ -76,32 +74,13 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         CustomerInterface $customer,
         string $currency = null,
         \DateTime $from = null,
-        \DateTime $to = null,
-        bool $scalar = false
+        \DateTime $to = null
     ): array {
         $qb = $this->createQueryBuilder('i');
-
-        if ($scalar) {
-            $qb->select([
-                'i.id',
-                'i.number',
-                'o.currency.code as currency',
-                'i.grandTotal',
-                'i.type',
-                'i.dueDate',
-                'i.createdAt',
-                'm.factoryName',
-                'o.id as orderId',
-                'o.number as orderNumber',
-                'o.voucherNumber',
-                'o.createdAt as orderDate',
-            ]);
-        }
 
         $ex = $qb->expr();
         $qb
             ->join('i.order', 'o')
-            ->leftJoin('i.paymentMethod', 'm')
             ->andWhere($ex->eq('o.customer', ':customer'))
             ->andWhere($ex->eq('o.sample', ':sample'))
             ->addOrderBy('i.createdAt', 'ASC');
@@ -131,13 +110,13 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             $query->setParameter('currency', $currency);
         }
         if ($from) {
-            $query->setParameter('from', $from, Type::DATETIME);
+            $query->setParameter('from', $from, Types::DATETIME_MUTABLE);
         }
         if ($to) {
-            $query->setParameter('to', $to, Type::DATETIME);
+            $query->setParameter('to', $to, Types::DATETIME_MUTABLE);
         }
 
-        return $scalar ? $query->getScalarResult() : $query->getResult();
+        return $query->getResult();
     }
 
     /**
@@ -185,8 +164,8 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->andWhere($qb->expr()->eq('o.sample', ':sample'))
             ->addOrderBy('i.createdAt', 'ASC')
             ->getQuery()
-            ->setParameter('start', $start, Type::DATETIME)
-            ->setParameter('end', $end, Type::DATETIME)
+            ->setParameter('start', $start, Types::DATETIME_MUTABLE)
+            ->setParameter('end', $end, Types::DATETIME_MUTABLE)
             ->setParameter('sample', false)
             ->getResult();
     }
@@ -247,8 +226,8 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return (float)$this
             ->getCustomerInvoiceSumQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 
@@ -260,23 +239,8 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return (float)$this
             ->getCustomerCreditSumQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
-            ->getSingleScalarResult();
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @TODO Remove when refund payment (types) will be implemented.
-     */
-    public function getCustomerCreditRefundSum(CustomerInterface $customer, \DateTime $from, \DateTime $to): float
-    {
-        return (float)$this
-            ->getCustomerCreditRefundSumQuery()
-            ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 
@@ -288,8 +252,8 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return (int)$this
             ->getCustomerInvoiceCountQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 
@@ -301,8 +265,8 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return (int)$this
             ->getCustomerCreditCountQuery()
             ->setParameter('customer', $customer)
-            ->setParameter('from', $from, Type::DATETIME)
-            ->setParameter('to', $to, Type::DATETIME)
+            ->setParameter('from', $from, Types::DATETIME_MUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_MUTABLE)
             ->getSingleScalarResult();
     }
 
@@ -322,7 +286,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
 
         $qb
             ->join('i.order', 'o')
-            ->andWhere($qb->expr()->eq('i.type', ':type'))
+            ->andWhere($qb->expr()->eq('i.credit', ':credit'))
             ->andWhere($qb->expr()->lt('i.paidTotal', 'i.grandTotal'))
             ->andWhere($qb->expr()->isNotNull('i.dueDate'))
             ->andWhere($qb->expr()->lte('i.dueDate', ':today'))
@@ -350,7 +314,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
 
         $qb
             ->join('i.order', 'o')
-            ->andWhere($qb->expr()->eq('i.type', ':type'))
+            ->andWhere($qb->expr()->eq('i.credit', ':credit'))
             ->andWhere($qb->expr()->lt('i.paidTotal', 'i.grandTotal'))
             ->andWhere($qb->expr()->isNotNull('i.dueDate'))
             ->andWhere($qb->expr()->gt('i.dueDate', ':today'))
@@ -380,8 +344,8 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         $today->setTime(23, 59, 59, 999999);
 
         $qb
-            ->setParameter('type', InvoiceTypes::TYPE_INVOICE)
-            ->setParameter('today', $today, Type::DATETIME)
+            ->setParameter('credit', false)
+            ->setParameter('today', $today, Types::DATETIME_MUTABLE)
             ->setParameter('states', [OrderStates::STATE_CANCELED, OrderStates::STATE_REFUNDED])
             ->setParameter('sample', false);
 
@@ -416,15 +380,15 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $this->customerInvoiceSumQuery = $qb
             ->select('SUM(i.grandTotal)')
             ->join('i.order', 'o')
+            ->andWhere($ex->eq('i.credit', ':credit'))
             ->andWhere($ex->eq('o.sample', ':sample'))
-            ->andWhere($ex->eq('i.type', InvoiceTypes::TYPE_INVOICE))
-            ->andWhere($ex->neq('o.customer', ':customer'))
+            ->andWhere($ex->eq('o.customer', ':customer'))
             ->andWhere($ex->between('i.createdAt', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
+            ->addGroupBy('o.customer')
             ->getQuery()
             ->setParameters([
                 'sample' => false,
-                'type'   => InvoiceTypes::TYPE_INVOICE,
+                'credit' => false,
             ])
             ->useQueryCache(true);
     }
@@ -446,55 +410,15 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $this->customerCreditSumQuery = $qb
             ->select('SUM(i.grandTotal)')
             ->join('i.order', 'o')
-            ->leftJoin('i.paymentMethod', 'm')
+            ->andWhere($ex->eq('i.credit', ':credit'))
             ->andWhere($ex->eq('o.sample', ':sample'))
-            ->andWhere($ex->neq('o.customer', ':customer'))
-            ->andWhere($ex->eq('i.type', ':type'))
+            ->andWhere($ex->eq('o.customer', ':customer'))
             ->andWhere($ex->between('i.createdAt', ':from', ':to'))
-            // TODO Remove when refund payment (types) will be implemented.
-            ->andWhere($ex->neq('m.factoryName', ':factory'))
-            ->addGroupBy('o.customer')// TODO Remove ?
+            ->addGroupBy('o.customer')
             ->getQuery()
             ->setParameters([
-                'sample'  => false,
-                'type'    => InvoiceTypes::TYPE_CREDIT,
-                'factory' => CreditBalance::FACTORY_NAME,
-            ])
-            ->useQueryCache(true);
-    }
-
-    /**
-     * Returns the "customer invoice sum query".
-     *
-     * @return Query
-     *
-     * @TODO Remove when refund payment (types) will be implemented.
-     */
-    protected function getCustomerCreditRefundSumQuery(): Query
-    {
-        if ($this->customerInvoiceSumQuery) {
-            return $this->customerInvoiceSumQuery;
-        }
-
-        $qb = $this->createQueryBuilder('i');
-        $ex = $qb->expr();
-
-        return $this->customerInvoiceSumQuery = $qb
-            ->select('SUM(i.grandTotal)')
-            ->join('i.order', 'o')
-            ->leftJoin('i.paymentMethod', 'm')
-            ->andWhere($ex->eq('o.sample', ':sample'))
-            ->andWhere($ex->eq('i.type', ':type'))
-            // TODO Remove when refund payment (types) will be implemented.
-            ->andWhere($ex->eq('m.factoryName', ':factory'))
-            ->andWhere($ex->neq('o.customer', ':customer'))
-            ->andWhere($ex->between('i.createdAt', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
-            ->getQuery()
-            ->setParameters([
-                'sample'  => false,
-                'type'    => InvoiceTypes::TYPE_CREDIT,
-                'factory' => CreditBalance::FACTORY_NAME,
+                'credit' => true,
+                'sample' => false,
             ])
             ->useQueryCache(true);
     }
@@ -516,15 +440,15 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $this->customerInvoiceCountQuery = $qb
             ->select('COUNT(p.id)')
             ->join('i.order', 'o')
+            ->andWhere($ex->eq('i.credit', ':credit'))
             ->andWhere($ex->eq('o.sample', ':sample'))
-            ->andWhere($ex->eq('i.type', ':type'))
-            ->andWhere($ex->neq('o.customer', ':customer'))
+            ->andWhere($ex->eq('o.customer', ':customer'))
             ->andWhere($ex->between('i.createdAt', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
+            ->addGroupBy('o.customer')
             ->getQuery()
             ->setParameters([
+                'credit' => false,
                 'sample' => false,
-                'type'   => InvoiceTypes::TYPE_INVOICE,
             ])
             ->useQueryCache(true);
     }
@@ -546,19 +470,15 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $this->customerCreditCountQuery = $qb
             ->select('COUNT(i.id)')
             ->join('i.order', 'o')
-            ->leftJoin('i.paymentMethod', 'm')
+            ->andWhere($ex->eq('i.credit', ':credit'))
             ->andWhere($ex->eq('o.sample', ':sample'))
-            ->andWhere($ex->eq('i.type', ':type'))
-            // TODO Remove when refund payment (types) will be implemented.
-            ->andWhere($ex->neq('m.factoryName', ':factory'))
-            ->andWhere($ex->neq('o.customer', ':customer'))
+            ->andWhere($ex->eq('o.customer', ':customer'))
             ->andWhere($ex->between('i.createdAt', ':from', ':to'))
-            ->addGroupBy('o.customer')// TODO Remove ?
+            ->addGroupBy('o.customer')
             ->getQuery()
             ->setParameters([
-                'sample'  => false,
-                'type'    => InvoiceTypes::TYPE_CREDIT,
-                'factory' => CreditBalance::FACTORY_NAME,
+                'credit' => true,
+                'sample' => false,
             ])
             ->useQueryCache(true);
     }

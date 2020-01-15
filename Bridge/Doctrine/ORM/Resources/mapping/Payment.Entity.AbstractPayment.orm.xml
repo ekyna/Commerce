@@ -10,6 +10,11 @@
 
         <field name="key" column="secret" type="string" length="32"/>
         <field name="number" column="number" type="string" length="16"/>
+        <field name="refund" column="refund" type="boolean">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
         <field name="amount" column="amount" type="decimal" precision="15" scale="5">
             <options>
                 <option name="comment">The amount in payment currency.</option>

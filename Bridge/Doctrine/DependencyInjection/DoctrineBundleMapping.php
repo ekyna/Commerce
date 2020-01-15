@@ -31,8 +31,7 @@ class DoctrineBundleMapping
     {
         return [
             Type\OpeningHours::NAME => [
-                'class'     => Type\OpeningHours::class,
-                'commented' => true,
+                'class' => Type\OpeningHours::class,
             ],
         ];
     }

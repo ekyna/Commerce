@@ -37,7 +37,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     public function __construct(CurrencyConverterInterface $converter)
     {
         $this->currencyConverter = $converter;
-        $this->currency = $converter->getDefaultCurrency();
+        $this->currency          = $converter->getDefaultCurrency();
     }
 
     /**
@@ -198,83 +198,27 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      */
     public function calculateInvoicedQuantity($subject, Invoice\InvoiceInterface $ignore = null): float
     {
-        // Good line case
-        if ($subject instanceof SaleItemInterface) {
-            $sale = $subject->getSale();
-            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-                return 0;
-            }
-
-            $quantity = 0;
-            foreach ($sale->getInvoices() as $invoice) {
-                if (Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
-                    continue;
-                }
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
-                    if ($line->getSaleItem() === $subject) {
-                        $quantity += $line->getQuantity();
-                    }
-                }
-            }
-
-            return $quantity;
-        }
-
-        // Discount line case
-        if ($subject instanceof SaleAdjustmentInterface) {
-            $sale = $subject->getSale();
-            if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-                return 0;
-            }
-
-            $quantity = 0;
-            foreach ($sale->getInvoices() as $invoice) {
-                if (Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
-                    continue;
-                }
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $line) {
-                    if ($line->getSaleAdjustment() === $subject) {
-                        $quantity += $line->getQuantity();
-                    }
-                }
-            }
-
-            return $quantity;
-        }
-
-        // Shipment line case
-        if ($subject instanceof SaleInterface) {
-            if (!$subject instanceof Invoice\InvoiceSubjectInterface) {
-                return 0;
-            }
-
-            $quantity = 0;
-            foreach ($subject->getInvoices() as $invoice) {
-                if (Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
-                    continue;
-                }
-
-                foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_SHIPMENT) as $line) {
-                    $quantity += $line->getQuantity();
-                }
-            }
-
-            return $quantity;
-        }
-
-        throw new UnexpectedTypeException($subject, [
-            SaleInterface::class,
-            SaleItemInterface::class,
-            SaleAdjustmentInterface::class,
-        ]);
+        return $this->calculateQuantity($subject, false, $ignore);
     }
 
     /**
      * @inheritdoc
      */
     public function calculateCreditedQuantity($subject, Invoice\InvoiceInterface $ignore = null): float
+    {
+        return $this->calculateQuantity($subject, true, $ignore);
+    }
+
+    /**
+     * Calculates the given subject's quantity.
+     *
+     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
+     * @param bool                                                    $credit
+     * @param Invoice\InvoiceInterface                                $ignore
+     *
+     * @return float
+     */
+    private function calculateQuantity($subject, bool $credit = false, Invoice\InvoiceInterface $ignore = null): float
     {
         // Good line case
         if ($subject instanceof SaleItemInterface) {
@@ -284,8 +228,8 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
             }
 
             $quantity = 0;
-            foreach ($sale->getInvoices() as $invoice) {
-                if (!Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+            foreach ($sale->getInvoices(!$credit) as $invoice) {
+                if ($invoice === $ignore) {
                     continue;
                 }
 
@@ -307,8 +251,8 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
             }
 
             $quantity = 0;
-            foreach ($sale->getInvoices() as $invoice) {
-                if (!Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+            foreach ($sale->getInvoices(!$credit) as $invoice) {
+                if ($invoice === $ignore) {
                     continue;
                 }
 
@@ -329,8 +273,8 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
             }
 
             $quantity = 0;
-            foreach ($subject->getInvoices() as $invoice) {
-                if (!Invoice\InvoiceTypes::isCredit($invoice) || $invoice === $ignore) {
+            foreach ($subject->getInvoices(!$credit) as $invoice) {
+                if ($invoice === $ignore) {
                     continue;
                 }
 
@@ -354,17 +298,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      */
     public function calculateInvoiceTotal(Invoice\InvoiceSubjectInterface $subject, string $currency = null): float
     {
-        $currency = $currency ?? $this->currency;
-
-        $total = .0;
-
-        foreach ($subject->getInvoices() as $invoice) {
-            if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-                $total += $this->getAmount($invoice, $currency);
-            }
-        }
-
-        return $total;
+        return $this->calculateTotal($subject, false, $currency);
     }
 
     /**
@@ -372,14 +306,29 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      */
     public function calculateCreditTotal(Invoice\InvoiceSubjectInterface $subject, string $currency = null): float
     {
+        return $this->calculateTotal($subject, true, $currency);
+    }
+
+    /**
+     * Calculates the total of all subject's invoices or credits.
+     *
+     * @param Invoice\InvoiceSubjectInterface $subject
+     * @param bool                            $credit
+     * @param string|null                     $currency
+     *
+     * @return float
+     */
+    private function calculateTotal(
+        Invoice\InvoiceSubjectInterface $subject,
+        bool $credit,
+        string $currency = null
+    ): float {
         $currency = $currency ?? $this->currency;
 
         $total = .0;
 
-        foreach ($subject->getInvoices() as $invoice) {
-            if (Invoice\InvoiceTypes::isCredit($invoice)) {
-                $total += $this->getAmount($invoice, $currency);
-            }
+        foreach ($subject->getInvoices(!$credit) as $invoice) {
+            $total += $this->getAmount($invoice, $currency);
         }
 
         return $total;
@@ -412,7 +361,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
-                'total'    => $item->getTotalQuantity(),
+                'total' => $item->getTotalQuantity(),
                 'invoiced' => $this->calculateInvoicedQuantity($item),
                 'credited' => $this->calculateCreditedQuantity($item),
             ];
@@ -429,7 +378,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      * Returns the payment amount in the given currency.
      *
      * @param Invoice\InvoiceInterface $invoice
-     * @param string           $currency
+     * @param string                   $currency
      *
      * @return float
      */
@@ -447,6 +396,6 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
 
         return $this
             ->currencyConverter
-            ->convertWithRate($invoice->getGrandTotal(), $rate, $ic);
+            ->convertWithRate($invoice->getGrandTotal(), $rate, $currency);
     }
 }

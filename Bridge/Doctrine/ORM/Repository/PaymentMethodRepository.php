@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Payment\Entity\PaymentMessage;
-use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentMethodRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
@@ -14,7 +13,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\TranslatableResourceRepository;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class PaymentMethodRepository extends TranslatableResourceRepository implements PaymentMethodRepositoryInterface
+abstract class PaymentMethodRepository extends TranslatableResourceRepository implements PaymentMethodRepositoryInterface
 {
     /**
      * {@inheritdoc}
@@ -96,19 +95,5 @@ class PaymentMethodRepository extends TranslatableResourceRepository implements 
             ->getQuery()
             ->setParameters($parameters)
             ->getResult();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function findOneByFactoryName(string $name): ?PaymentMethodInterface
-    {
-        $qb = $this->createQueryBuilder('m');
-
-        return $qb
-            ->andWhere($qb->expr()->eq('m.factoryName', ':name'))
-            ->getQuery()
-            ->setParameter('name', $name)
-            ->getOneOrNullResult();
     }
 }

@@ -397,6 +397,22 @@ interface CustomerInterface extends
     public function setDescription($description);
 
     /**
+     * Returns the company number.
+     *
+     * @return string
+     */
+    public function getCompanyNumber(): ?string;
+
+    /**
+     * Sets the company number.
+     *
+     * @param string $number
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setCompanyNumber(string $number = null): CustomerInterface;
+
+    /**
      * Sets the locale
      *
      * @param string|null $locale

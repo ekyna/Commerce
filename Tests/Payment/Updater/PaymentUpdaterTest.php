@@ -2,10 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Tests\Payment\Updater;
 
-use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdater;
-use PHPUnit\Framework\TestCase;
+use Ekyna\Component\Commerce\Tests\TestCase;
 
 /**
  * Class PaymentUpdaterTest
@@ -30,16 +29,13 @@ class PaymentUpdaterTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->converter = new ArrayCurrencyConverter([
-            'EUR/USD' => 1.25,
-            'USD/EUR' => 0.80,
-        ], 'EUR');
-
-        $this->updater = new PaymentUpdater($this->converter);
+        $this->updater = new PaymentUpdater($this->getCurrencyConverter());
     }
 
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->updater = null;
         $this->converter = null;
     }

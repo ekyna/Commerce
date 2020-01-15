@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\Export;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -31,7 +31,7 @@ class CustomerExporter
      */
     public function __construct(EntityManagerInterface $manager, string $orderClass)
     {
-        $this->manager = $manager;
+        $this->manager    = $manager;
         $this->orderClass = $orderClass;
     }
 
@@ -95,13 +95,13 @@ class CustomerExporter
         if (null !== $from = $config->getFrom()) {
             $qb
                 ->andWhere($qb->expr()->gte('o.acceptedAt', ':from'))
-                ->setParameter('from', $from, Type::DATE);
+                ->setParameter('from', $from, Types::DATE_IMMUTABLE);
         }
 
         if (null !== $to = $config->getTo()) {
             $qb
                 ->andWhere($qb->expr()->lte('o.acceptedAt', ':to'))
-                ->setParameter('to', $to, Type::DATE);
+                ->setParameter('to', $to, Types::DATE_IMMUTABLE);
         }
 
         if (0 < $config->getGroups()->count()) {

@@ -132,11 +132,11 @@ class SaleItemValidator extends ConstraintValidator
             return;
         }
 
-        $min = $this->invoiceCalculator->calculateInvoicedQuantity($item);
-        $qty = $item->getTotalQuantity();
+        $min = $this->invoiceCalculator->calculateInvoicedQuantity($item)
+             - $this->invoiceCalculator->calculateCreditedQuantity($item);
 
         // TODO Use packaging format
-        if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $qty, 3)) {
+        if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $item->getTotalQuantity(), 3)) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_is_lower_than_invoiced, [
@@ -172,7 +172,6 @@ class SaleItemValidator extends ConstraintValidator
              - $this->shipmentCalculator->calculateReturnedQuantity($item);
 
         // TODO Use packaging format
-        //if (0 < $min && $item->getTotalQuantity() < $min) {
         if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $item->getTotalQuantity(), 3)) {
             $this
                 ->context

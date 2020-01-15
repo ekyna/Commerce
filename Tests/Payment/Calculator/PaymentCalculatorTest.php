@@ -3,19 +3,14 @@
 namespace Ekyna\Component\Commerce\Tests\Payment\Calculator;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
-use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\Amount;
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Order\Entity\Order;
-use Ekyna\Component\Commerce\Order\Entity\OrderPayment;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculator;
-use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
+use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Class PaymentCalculatorTest
@@ -24,51 +19,28 @@ use PHPUnit\Framework\TestCase;
  */
 class PaymentCalculatorTest extends TestCase
 {
-    const DEFAULT     = 0;
-    const MANUAL      = 1;
-    const OUTSTANDING = 2;
-
     /**
      * @var AmountCalculatorInterface|MockObject
      */
     private $amountCalculator;
 
     /**
-     * @var CurrencyConverterInterface
-     */
-    private $currencyConverter;
-
-    /**
      * @var PaymentCalculator
      */
     private $paymentCalculator;
 
-    /**
-     * @var CurrencyInterface[]|MockObject[]
-     */
-    private $currencies = [];
-
-    /**
-     * @var PaymentMethodInterface[]|MockObject[]
-     */
-    private $methods = [];
-
 
     protected function setUp(): void
     {
-        $this->currencyConverter = new ArrayCurrencyConverter([
-            'EUR/USD' => 1.25,
-            'USD/EUR' => 0.80,
-        ], 'EUR');
-
-        $this->amountCalculator = $this->createMock(AmountCalculatorInterface::class);
-        $this->paymentCalculator = new PaymentCalculator($this->amountCalculator, $this->currencyConverter);
+        $this->amountCalculator  = $this->createMock(AmountCalculatorInterface::class);
+        $this->paymentCalculator = new PaymentCalculator($this->amountCalculator, $this->getCurrencyConverter());
     }
 
     protected function tearDown(): void
     {
-        $this->currencyConverter = null;
-        $this->amountCalculator = null;
+        parent::tearDown();
+
+        $this->amountCalculator  = null;
         $this->paymentCalculator = null;
     }
 
@@ -95,11 +67,17 @@ class PaymentCalculatorTest extends TestCase
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
         $this->createPayment($subject, 'EUR', 100, 1);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
+        $this->createPayment($subject, 'EUR', 100, 1);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT,
+            true);
         yield [$subject, ['EUR' => 100, 'USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
@@ -109,88 +87,6 @@ class PaymentCalculatorTest extends TestCase
         $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
         $this->createPayment($subject, 'USD', 100, 1.25);
         $this->createPayment($subject, 'EUR', 20, 1);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
-    }
-
-    /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
-     *
-     * @dataProvider provide_calculateOutstandingAcceptedTotal
-     */
-    public function test_calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, array $results): void
-    {
-        foreach ($results as $currency => $expected) {
-            $actual = $this->paymentCalculator->calculateOutstandingAcceptedTotal($subject, $currency);
-            $this->assertEquals($expected, $actual);
-        }
-    }
-
-    public function provide_calculateOutstandingAcceptedTotal(): \Generator
-    {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED, self::OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
-    }
-
-    /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
-     *
-     * @dataProvider provide_calculateOutstandingExpiredTotal
-     */
-    public function test_calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, array $results): void
-    {
-        foreach ($results as $currency => $expected) {
-            $this->assertEquals($expected,
-                $this->paymentCalculator->calculateOutstandingExpiredTotal($subject, $currency));
-        }
-    }
-
-    public function provide_calculateOutstandingExpiredTotal(): \Generator
-    {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_EXPIRED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_EXPIRED, self::OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_EXPIRED, self::OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_EXPIRED, self::OUTSTANDING);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_EXPIRED, self::OUTSTANDING);
         yield [$subject, ['EUR' => 100, 'USD' => 125]];
     }
 
@@ -217,11 +113,11 @@ class PaymentCalculatorTest extends TestCase
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_REFUNDED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_REFUNDED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_REFUNDED);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_REFUNDED, self::PAYMENT_METHOD_CREDIT);
         yield [$subject, ['EUR' => 100, 'USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
@@ -231,6 +127,123 @@ class PaymentCalculatorTest extends TestCase
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
         $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_REFUNDED);
         $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_REFUNDED);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        // Refunds
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT,
+            true);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING,
+            true);
+        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_CREDIT, true);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT,
+            true);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_REFUNDED);
+        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT, true);
+        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_MANUAL, true);
+        yield [$subject, ['EUR' => 120, 'USD' => 150]];
+    }
+
+    /**
+     * @param PaymentSubjectInterface $subject
+     * @param array                   $results
+     *
+     * @dataProvider provide_calculateOutstandingAcceptedTotal
+     */
+    public function test_calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, array $results): void
+    {
+        foreach ($results as $currency => $expected) {
+            $actual = $this->paymentCalculator->calculateOutstandingAcceptedTotal($subject, $currency);
+            $this->assertEquals($expected, $actual);
+        }
+    }
+
+    public function provide_calculateOutstandingAcceptedTotal(): \Generator
+    {
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
+        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED, self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
+        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_CAPTURED,
+            self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_CAPTURED,
+            self::PAYMENT_METHOD_OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+    }
+
+    /**
+     * @param PaymentSubjectInterface $subject
+     * @param array                   $results
+     *
+     * @dataProvider provide_calculateOutstandingExpiredTotal
+     */
+    public function test_calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, array $results): void
+    {
+        foreach ($results as $currency => $expected) {
+            $this->assertEquals($expected,
+                $this->paymentCalculator->calculateOutstandingExpiredTotal($subject, $currency));
+        }
+    }
+
+    public function provide_calculateOutstandingExpiredTotal(): \Generator
+    {
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
+        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_EXPIRED);
+        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_EXPIRED, self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_EXPIRED,
+            self::PAYMENT_METHOD_OUTSTANDING);
+        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+
+        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
+        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_EXPIRED,
+            self::PAYMENT_METHOD_OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_EXPIRED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 100, 'USD' => 125]];
     }
 
@@ -257,7 +270,7 @@ class PaymentCalculatorTest extends TestCase
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
@@ -297,7 +310,7 @@ class PaymentCalculatorTest extends TestCase
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CANCELED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CANCELED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
@@ -333,7 +346,7 @@ class PaymentCalculatorTest extends TestCase
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::MANUAL);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
@@ -341,16 +354,16 @@ class PaymentCalculatorTest extends TestCase
         yield [$subject, ['EUR' => 0, 'USD' => 0]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 100, 'USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 100, 'USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_PENDING, self::MANUAL);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
+        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 100, 'USD' => 125]];
     }
 
@@ -359,54 +372,58 @@ class PaymentCalculatorTest extends TestCase
      * @param array                   $results
      * @param array                   $amounts
      *
-     * @dataProvider provide_calculateRemainingTotal
+     * @dataProvider provide_calculateExpectedPaymentAmount
      */
-    public function test_calculateRemainingTotal(PaymentSubjectInterface $subject, array $results, array $amounts): void
-    {
+    public function test_calculateExpectedPaymentAmount(
+        PaymentSubjectInterface $subject,
+        array $results,
+        array $amounts
+    ): void {
         foreach ($results as $currency => $expected) {
             if (isset($amounts[$currency])) {
                 /** @noinspection PhpParamsInspection */
                 $this->configureAmountCalculator($subject, $amounts[$currency]);
             }
-            $this->assertEquals($expected, $this->paymentCalculator->calculateRemainingTotal($subject, $currency));
+            $this->assertEquals($expected,
+                $this->paymentCalculator->calculateExpectedPaymentAmount($subject, $currency));
         }
     }
 
-    public function provide_calculateRemainingTotal(): \Generator
+    public function provide_calculateExpectedPaymentAmount(): \Generator
     {
         $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
         yield [$subject, ['EUR' => 100, 'USD' => 125], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 40, 0, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 40, 0, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 100, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 100, 0, 0);
-        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 40, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 40, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 100, 'USD' => 125], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 100, 'USD' => 125], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 0, 40);
@@ -427,27 +444,27 @@ class PaymentCalculatorTest extends TestCase
 
 
         $subject = $this->createSubject('EUR', 100, 0, 30, 30, 0);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::MANUAL);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
+        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 30, 30, 0);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::MANUAL);
-        $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
+        $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 30, 0, 30);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED);
         yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 30, 30);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED);
         yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 0, 0, 30, 30);
-        $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED);
         yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
 
@@ -456,21 +473,21 @@ class PaymentCalculatorTest extends TestCase
         yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 40, 40, 0, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 40, 40, 0, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::MANUAL);
+        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 40, 40, 60, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::MANUAL);
-        $this->createPayment($subject, 'EUR', 60, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
+        $this->createPayment($subject, 'EUR', 60, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 40, 40, 60, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::MANUAL);
-        $this->createPayment($subject, 'EUR', 60, 1, PaymentStates::STATE_CAPTURED, self::OUTSTANDING);
+        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
+        $this->createPayment($subject, 'EUR', 60, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
         yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
 
         $subject = $this->createSubject('EUR', 100, 40, 0, 0, 40);
@@ -497,6 +514,9 @@ class PaymentCalculatorTest extends TestCase
         $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_CAPTURED);
         yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
     }
+
+    // TODO Refunds cases
+    // TODO Invoices/credits cases
 
     /**
      * @param SaleInterface $subject
@@ -529,8 +549,7 @@ class PaymentCalculatorTest extends TestCase
         float $outstanding,
         float $paid
     ): SaleInterface {
-        return (new Order())
-            ->setCurrency($this->createCurrency($currency))
+        return Fixtures::createOrder($currency)
             ->setGrandTotal($grand)
             ->setDepositTotal($deposit)
             ->setPendingTotal($pending)
@@ -540,11 +559,12 @@ class PaymentCalculatorTest extends TestCase
 
     /**
      * @param PaymentSubjectInterface $subject
-     * @param string $currency
-     * @param float  $amount
-     * @param float  $rate
-     * @param string $state
-     * @param int $method
+     * @param string                  $currency
+     * @param float                   $amount
+     * @param float                   $rate
+     * @param string                  $state
+     * @param int                     $method
+     * @param bool                    $refund
      */
     private function createPayment(
         PaymentSubjectInterface $subject,
@@ -552,62 +572,14 @@ class PaymentCalculatorTest extends TestCase
         float $amount,
         float $rate,
         string $state = PaymentStates::STATE_CAPTURED,
-        int $method = self::DEFAULT
+        int $method = self::PAYMENT_METHOD_DEFAULT,
+        bool $refund = false
     ) {
         $subject->addPayment(
-            (new OrderPayment())
-                ->setCurrency($this->createCurrency($currency))
-                ->setMethod($this->createMethod($method))
-                ->setState($state)
-                ->setAmount($amount)
+            Fixtures::createPayment($currency, $amount, $state)
+                ->setMethod($this->getPaymentMethodMock($method))
                 ->setExchangeRate($rate)
+                ->setRefund($refund)
         );
-    }
-
-    /**
-     * @param int $type
-     *
-     * @return PaymentMethodInterface
-     */
-    private function createMethod(int $type): PaymentMethodInterface
-    {
-        if (isset($this->methods[$type])) {
-            return $this->methods[$type];
-        }
-
-        /** @var PaymentMethodInterface|MockObject $method */
-        $method = $this->createMock(PaymentMethodInterface::class);
-        if ($type === self::DEFAULT) {
-            $method->method('isOutstanding')->willReturn(false);
-            $method->method('isManual')->willReturn(false);
-        } elseif ($type === self::MANUAL) {
-            $method->method('isOutstanding')->willReturn(false);
-            $method->method('isManual')->willReturn(true);
-        } elseif ($type === self::OUTSTANDING) {
-            $method->method('isOutstanding')->willReturn(true);
-            $method->method('isManual')->willReturn(false);
-        } else {
-            throw new \UnexpectedValueException();
-        }
-
-        return $this->methods[$type] = $method;
-    }
-
-    /**
-     * @param string $code
-     *
-     * @return CurrencyInterface
-     */
-    private function createCurrency(string $code): CurrencyInterface
-    {
-        if (isset($this->currencies[$code])) {
-            return $this->currencies[$code];
-        }
-
-        /** @var CurrencyInterface|MockObject $currency */
-        $currency = $this->createMock(CurrencyInterface::class);
-        $currency->method('getCode')->willReturn($code);
-
-        return $this->currencies[$code] = $currency;
     }
 }

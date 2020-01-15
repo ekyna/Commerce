@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Payment\Releaser;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -44,9 +45,15 @@ class OutstandingReleaser implements ReleaserInterface
     {
         $overpaidAmount =
             $sale->getPaidTotal()
+            - $sale->getRefundedTotal()
             + $sale->getOutstandingExpired()
-            + $sale->getOutstandingAccepted()
-            - Money::round($sale->getGrandTotal(), $this->defaultCurrency);
+            + $sale->getOutstandingAccepted();
+
+        if ($sale instanceof InvoiceSubjectInterface && $sale->hasInvoices()) {
+            $overpaidAmount -= $sale->getInvoiceTotal() - $sale->getCreditTotal();
+        } else {
+            $overpaidAmount -= $sale->getGrandTotal();
+        }
 
         $overpaidAmount = Money::round($overpaidAmount, $this->defaultCurrency);
 
@@ -61,7 +68,7 @@ class OutstandingReleaser implements ReleaserInterface
         $paidStates[] = PaymentStates::STATE_EXPIRED;
 
         // For each payments
-        foreach ($sale->getPayments() as $payment) {
+        foreach ($sale->getPayments(true) as $payment) {
             // Continue if the payment does not use an outstanding balance method
             if (!$payment->getMethod()->isOutstanding()) {
                 continue;

@@ -8,7 +8,7 @@ use Ekyna\Component\Commerce\Common\Model\AdjustmentData;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
-use Ekyna\Component\Commerce\Tests\BaseTestCase;
+use Ekyna\Component\Commerce\Tests\TestCase;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 
 /**
@@ -16,7 +16,7 @@ use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
  * @package Ekyna\Component\Commerce\Tests\Common\Builder
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AdjustmentBuilderTest extends BaseTestCase
+class AdjustmentBuilderTest extends TestCase
 {
     /**
      * @var AdjustmentBuilderInterface
@@ -42,6 +42,8 @@ class AdjustmentBuilderTest extends BaseTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->builder = null;
     }
 
@@ -58,7 +60,7 @@ class AdjustmentBuilderTest extends BaseTestCase
             ->getDiscountResolverMock()
             ->method('resolveSaleItem')
             ->with($item)
-            ->willReturn([new AdjustmentData(AdjustmentModes::MODE_PERCENT, 'Discount 7%', 7)]);
+            ->willReturn([new AdjustmentData(AdjustmentModes::MODE_PERCENT, 'Discount 7%', 7, 'test')]);
 
         $this->builder->buildDiscountAdjustmentsForSaleItem($item);
 

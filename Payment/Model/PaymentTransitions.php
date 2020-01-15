@@ -43,7 +43,9 @@ class PaymentTransitions
                     case PaymentStates::STATE_CAPTURED:
                         $transitions[] = static::TRANSITION_CANCEL;
                         $transitions[] = static::TRANSITION_HANG;
-                        $transitions[] = static::TRANSITION_REFUND;
+                        if (!$payment->isRefund()) {
+                            $transitions[] = static::TRANSITION_REFUND;
+                        }
                         break;
                     case PaymentStates::STATE_REFUNDED:
                         $transitions[] = static::TRANSITION_CANCEL;
@@ -55,25 +57,27 @@ class PaymentTransitions
                         $transitions[] = static::TRANSITION_ACCEPT;
                         break;
                 }
-            } elseif ($method->isOutstanding() || $method->isManual()) {
+            } elseif ($method->isCredit()) {
+                if (in_array($state, [PaymentStates::STATE_CAPTURED, PaymentStates::STATE_REFUNDED], true)) {
+                    $transitions[] = static::TRANSITION_CANCEL;
+                } else {
+                    $transitions[] = static::TRANSITION_ACCEPT;
+                }
+            }elseif ($method->isOutstanding()) {
                 if ($state === PaymentStates::STATE_CAPTURED) {
                     $transitions[] = static::TRANSITION_CANCEL;
                 } else {
                     $transitions[] = static::TRANSITION_ACCEPT;
                 }
             } else {
-                if ($state === PaymentStates::STATE_CAPTURED) {
+                if (!$payment->isRefund() && ($state === PaymentStates::STATE_CAPTURED)) {
                     $transitions[] = static::TRANSITION_REFUND;
                 }
                 if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
-                    //$diff = $payment->getUpdatedAt()->diff(new \DateTime());
-                    //if (0 < $diff->days && !$diff->invert) {
-                        $transitions[] = static::TRANSITION_CANCEL;
-                    //}
+                    $transitions[] = static::TRANSITION_CANCEL;
                 }
             }
         } else {
-            //if ($method->isManual() && $state === PaymentStates::STATE_PENDING) {
             if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
                 $transitions[] = static::TRANSITION_CANCEL;
             }

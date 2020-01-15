@@ -126,6 +126,11 @@ class Customer implements Model\CustomerInterface
      */
     protected $description;
 
+    /**
+     * @var string
+     */
+    protected $companyNumber;
+
 
     /**
      * Constructor.
@@ -618,6 +623,24 @@ class Customer implements Model\CustomerInterface
     public function setDescription($description)
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCompanyNumber(): ?string
+    {
+        return $this->companyNumber;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCompanyNumber(string $number = null): Model\CustomerInterface
+    {
+        $this->companyNumber = $number;
 
         return $this;
     }

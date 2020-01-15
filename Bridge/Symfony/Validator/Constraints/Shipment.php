@@ -20,9 +20,6 @@ class Shipment extends Constraint
     public $max_weight                           = 'ekyna_commerce.shipment_max_weight';
     public $valorization_or_parcels_but_not_both = 'ekyna_commerce.shipment.valorization_or_parcels_but_not_both';
     public $at_least_two_parcels_or_none         = 'ekyna_commerce.shipment.at_least_two_parcels_or_none';
-    public $relay_point_is_required              = 'ekyna_commerce.shipment.relay_point_is_required';
-    public $credit_method_is_required            = 'ekyna_commerce.shipment.credit_method_is_required';
-    public $credit_method_must_be_null           = 'ekyna_commerce.shipment.credit_method_must_be_null';
 
 
     /**

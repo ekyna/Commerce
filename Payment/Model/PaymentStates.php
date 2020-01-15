@@ -11,16 +11,16 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class PaymentStates
 {
-    const STATE_NEW         = 'new';
-    const STATE_PENDING     = 'pending';
-    const STATE_CAPTURED    = 'captured';
-    const STATE_FAILED      = 'failed';
-    const STATE_CANCELED    = 'canceled';
-    const STATE_REFUNDED    = 'refunded';
-    const STATE_AUTHORIZED  = 'authorized';
-    const STATE_SUSPENDED   = 'suspended';
-    const STATE_EXPIRED     = 'expired';
-    const STATE_UNKNOWN     = 'unknown';
+    const STATE_NEW        = 'new';
+    const STATE_PENDING    = 'pending';
+    const STATE_CAPTURED   = 'captured';
+    const STATE_FAILED     = 'failed';
+    const STATE_CANCELED   = 'canceled';
+    const STATE_REFUNDED   = 'refunded';
+    const STATE_AUTHORIZED = 'authorized';
+    const STATE_SUSPENDED  = 'suspended';
+    const STATE_EXPIRED    = 'expired';
+    const STATE_UNKNOWN    = 'unknown';
 
     // For sale
     const STATE_OUTSTANDING = 'outstanding';
@@ -33,7 +33,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getStates()
+    static public function getStates(): array
     {
         return [
             static::STATE_NEW,
@@ -60,7 +60,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function isValidState($state, $throwException = true)
+    static public function isValidState(string $state, bool $throwException = true): bool
     {
         if (in_array($state, static::getStates(), true)) {
             return true;
@@ -78,7 +78,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getNotifiableStates()
+    static public function getNotifiableStates(): array
     {
         return [
             static::STATE_PENDING,
@@ -92,12 +92,14 @@ final class PaymentStates
     /**
      * Returns whether or not the given state is a notifiable state.
      *
-     * @param string $state
+     * @param PaymentInterface|string $state
      *
      * @return bool
      */
-    static public function isNotifiableState($state)
+    static public function isNotifiableState($state): bool
     {
+        $state = static::stateFromPayment($state);
+
         return in_array($state, static::getNotifiableStates(), true);
     }
 
@@ -106,7 +108,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getDeletableStates()
+    static public function getDeletableStates(): array
     {
         return [
             static::STATE_NEW,
@@ -118,22 +120,34 @@ final class PaymentStates
     /**
      * Returns whether or not the given state is a deletable state.
      *
-     * @param string $state
+     * @param PaymentInterface|string $state
      *
      * @return bool
      */
-    static public function isDeletableState($state)
+    static public function isDeletableState($state): bool
     {
+        $state = static::stateFromPayment($state);
+
         return is_null($state) || in_array($state, static::getDeletableStates(), true);
     }
 
     /**
      * Returns the paid states.
      *
+     * @param bool $andRefunded Whether to include refunded state.
+     *
      * @return array
      */
-    static public function getPaidStates()
+    static public function getPaidStates(bool $andRefunded = false): array
     {
+        if ($andRefunded) {
+            return [
+                static::STATE_CAPTURED,
+                static::STATE_AUTHORIZED,
+                static::STATE_REFUNDED,
+            ];
+        }
+
         return [
             static::STATE_CAPTURED,
             static::STATE_AUTHORIZED,
@@ -143,13 +157,14 @@ final class PaymentStates
     /**
      * Returns whether or not the given state is a paid state.
      *
-     * @param string $state
+     * @param PaymentInterface|string $state
+     * @param bool                    $orRefunded
      *
      * @return bool
      */
-    static public function isPaidState($state)
+    static public function isPaidState($state, bool $orRefunded = false): bool
     {
-        return in_array($state, static::getPaidStates(), true);
+        return in_array(static::stateFromPayment($state), static::getPaidStates($orRefunded), true);
     }
 
     /**
@@ -157,13 +172,45 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getCanceledStates()
+    static public function getCanceledStates(): array
     {
         return [
             static::STATE_CANCELED,
             static::STATE_FAILED,
             static::STATE_REFUNDED,
         ];
+    }
+
+    /**
+     * Returns whether or not the given state is a canceled state.
+     *
+     * @param PaymentInterface|string $state
+     *
+     * @return bool
+     */
+    static public function isCanceledState($state): bool
+    {
+        return in_array(static::stateFromPayment($state), static::getCanceledStates(), true);
+    }
+
+    /**
+     * Returns the state from the payment.
+     *
+     * @param PaymentInterface|string $stateOrPayment
+     *
+     * @return string
+     */
+    static private function stateFromPayment($stateOrPayment): string
+    {
+        if ($stateOrPayment instanceof PaymentInterface) {
+            $stateOrPayment = $stateOrPayment->getState();
+        }
+
+        if (is_string($stateOrPayment) && !empty($stateOrPayment)) {
+            return $stateOrPayment;
+        }
+
+        throw new InvalidArgumentException("Expected string or " . PaymentInterface::class);
     }
 
     /**
@@ -174,7 +221,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function hasChangedToPaid(array $cs)
+    static public function hasChangedToPaid(array $cs): bool
     {
         return static::assertValidChangeSet($cs)
             && !static::isPaidState($cs[0])
@@ -189,7 +236,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function hasChangedFromPaid(array $cs)
+    static public function hasChangedFromPaid(array $cs): bool
     {
         return static::assertValidChangeSet($cs)
             && static::isPaidState($cs[0])
@@ -205,13 +252,13 @@ final class PaymentStates
      *
      * @throws InvalidArgumentException
      */
-    static private function assertValidChangeSet(array $cs)
+    static private function assertValidChangeSet(array $cs): bool
     {
         if (
-            array_key_exists(0, $cs) &&
-            array_key_exists(1, $cs) &&
-            (is_null($cs[0]) || in_array($cs[0], static::getStates(), true)) &&
-            (is_null($cs[1]) || in_array($cs[1], static::getStates(), true))
+            array_key_exists(0, $cs)
+            && array_key_exists(1, $cs)
+            && (is_null($cs[0]) || static::isValidState($cs[0], false))
+            && (is_null($cs[1]) || static::isValidState($cs[1], false))
         ) {
             return true;
         }

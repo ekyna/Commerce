@@ -56,7 +56,7 @@ class CurrencyRenderer implements CurrencyRendererInterface
     public function __construct(CurrencyConverterInterface $currencyConverter, FormatterFactory $formatterFactory)
     {
         $this->currencyConverter = $currencyConverter;
-        $this->formatterFactory = $formatterFactory;
+        $this->formatterFactory  = $formatterFactory;
 
         $this->base = $this->currencyConverter->getDefaultCurrency();
     }
@@ -67,15 +67,15 @@ class CurrencyRenderer implements CurrencyRendererInterface
     public function configure($quote = null, float $rate = null, string $locale = null): void
     {
         if (is_null($quote)) {
-            $this->quote = null;
-            $this->rate = null;
-            $this->date = null;
+            $this->quote  = null;
+            $this->rate   = null;
+            $this->date   = null;
             $this->locale = null;
 
             return;
         }
 
-        list($this->quote, $this->rate, $this->date) = $this->resolve($quote);
+        [$this->quote, $this->rate, $this->date] = $this->resolve($quote);
 
         if (!is_null($rate)) {
             $this->rate = $rate;
@@ -110,11 +110,11 @@ class CurrencyRenderer implements CurrencyRendererInterface
     public function renderRate($quote = null, bool $invert = true, bool $withDate = false): string
     {
         if ($quote) {
-            list($quote, $rate, $date) = $this->resolve($quote);
+            [$quote, $rate, $date] = $this->resolve($quote);
         } elseif ($this->isConfigured()) {
             $quote = $this->quote;
-            $rate = $this->rate;
-            $date = $this->date;
+            $rate  = $this->rate;
+            $date  = $this->date;
         } else {
             throw new RuntimeException("You must either provide a value as quote argument or call configure().");
         }
@@ -146,10 +146,10 @@ class CurrencyRenderer implements CurrencyRendererInterface
     public function renderQuote(float $amount, $quote = null, bool $withBase = false): string
     {
         if ($quote) {
-            list($quote, $rate) = $this->resolve($quote);
+            [$quote, $rate] = $this->resolve($quote);
         } elseif ($this->isConfigured()) {
             $quote = $this->quote;
-            $rate = $this->rate;
+            $rate  = $this->rate;
         } else {
             throw new RuntimeException("You must either provide a value as quote argument or call configure().");
         }
@@ -169,10 +169,10 @@ class CurrencyRenderer implements CurrencyRendererInterface
     public function renderBase(float $amount, $quote = null, bool $withQuote = false)
     {
         if ($quote) {
-            list($quote, $rate) = $this->resolve($quote);
+            [$quote, $rate] = $this->resolve($quote);
         } elseif ($this->isConfigured()) {
             $quote = $this->quote;
-            $rate = $this->rate;
+            $rate  = $this->rate;
         } else {
             throw new RuntimeException("You must either provide a value as quote argument or call configure().");
         }
@@ -184,15 +184,6 @@ class CurrencyRenderer implements CurrencyRendererInterface
         }
 
         return $output;
-    }
-
-    public function renderConvert(float $amount, string $base, string $quote = null, \DateTime $date = null)
-    {
-        $quote = strtoupper($quote ?? $this->currencyConverter->getDefaultCurrency());
-
-        $amount = $this->currencyConverter->convert($amount, $base, $quote, $date);
-
-        return $this->format($amount, $quote);
     }
 
     /**

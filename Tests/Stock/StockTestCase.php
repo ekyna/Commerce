@@ -4,11 +4,12 @@ namespace Ekyna\Component\Commerce\Tests\Stock;
 
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcherInterface;
+use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Overflow\OverflowHandlerInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
-use Ekyna\Component\Commerce\Tests\BaseTestCase;
+use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -16,7 +17,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @package Ekyna\Component\Commerce\Tests\Stock
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class BaseStockTestCase extends BaseTestCase
+class StockTestCase extends TestCase
 {
     /**
      * @var StockUnitResolverInterface|MockObject
@@ -37,6 +38,11 @@ class BaseStockTestCase extends BaseTestCase
      * @var StockUnitUpdaterInterface|MockObject
      */
     private $stockUnitUpdater;
+
+    /**
+     * @var StockAssignmentManagerInterface|MockObject
+     */
+    private $stockAssignmentManager;
 
     /**
      * @var StockAssignmentDispatcherInterface|MockObject
@@ -116,6 +122,20 @@ class BaseStockTestCase extends BaseTestCase
         }
 
         return $this->stockAssignmentDispatcher = $this->createMock(StockAssignmentDispatcherInterface::class);
+    }
+
+    /**
+     * Returns the stock assignment manager mock.
+     *
+     * @return StockAssignmentManagerInterface|MockObject
+     */
+    protected function getStockAssignmentManagerMock(): StockAssignmentManagerInterface
+    {
+        if (null !== $this->stockAssignmentManager) {
+            return $this->stockAssignmentManager;
+        }
+
+        return $this->stockAssignmentManager = $this->createMock(StockAssignmentManagerInterface::class);
     }
 
     /**

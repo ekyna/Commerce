@@ -49,6 +49,7 @@ interface CurrencyConverterInterface
      * @param ExchangeSubjectInterface $subject The subject
      * @param string                   $quote   The quote currency ISO 4217 code
      * @param bool                     $round   Whether the round the result regarding to the currency
+     * @param bool                     $invert  Whether to use inverted exchange rate
      *
      * @return float
      */
@@ -56,7 +57,8 @@ interface CurrencyConverterInterface
         float $amount,
         ExchangeSubjectInterface $subject,
         string $quote = null,
-        bool $round = true
+        bool $round = true,
+        bool $invert = false
     ): float;
 
     /**
@@ -68,7 +70,11 @@ interface CurrencyConverterInterface
      *
      * @return float
      */
-    public function getSubjectExchangeRate(ExchangeSubjectInterface $subject, string $base, string $quote): float;
+    public function getSubjectExchangeRate(
+        ExchangeSubjectInterface $subject,
+        string $base = null,
+        string $quote = null
+    ): float;
 
     /**
      * Sets the subject's exchange rate (and date).

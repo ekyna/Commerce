@@ -31,7 +31,6 @@ class InvoiceNormalizer extends AbstractResourceNormalizer
                 'first_name'  => $sale->getFirstName(),
                 'last_name'   => $sale->getLastName(),
                 'type'        => $invoice->getType(),
-                'method'      => $invoice->getPaymentMethod()->getName(),
                 'description' => $invoice->getDescription(),
                 'comment'     => $invoice->getComment(),
             ]);

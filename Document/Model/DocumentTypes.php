@@ -20,13 +20,16 @@ final class DocumentTypes
     const TYPE_PROFORMA     = 'proforma';
     const TYPE_CONFIRMATION = 'confirmation';
 
+    const TYPE_INVOICE      = 'invoice';
+    const TYPE_CREDIT       = 'credit';
+
 
     /**
-     * Returns the invoice types.
+     * Returns the document types.
      *
      * @return array
      */
-    static public function getTypes()
+    static public function getTypes(): array
     {
         return [
             static::TYPE_FORM,
@@ -44,7 +47,7 @@ final class DocumentTypes
      *
      * @return array
      */
-    static public function getClasses($type)
+    static public function getClasses(string $type): array
     {
         switch ($type) {
             case static::TYPE_FORM:
@@ -69,7 +72,7 @@ final class DocumentTypes
      *
      * @return bool
      */
-    static public function isValidType($type)
+    static public function isValidType(string $type): bool
     {
         return in_array($type, static::getTypes(), true);
     }

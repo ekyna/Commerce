@@ -412,7 +412,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function hasPayment(Payment\PaymentInterface $payment)
+    public function hasPayment(Payment\PaymentInterface $payment): bool
     {
         if (!$payment instanceof Model\OrderPaymentInterface) {
             throw new InvalidArgumentException("Expected instance of " . Model\OrderPaymentInterface::class);
@@ -424,7 +424,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function addPayment(Payment\PaymentInterface $payment)
+    public function addPayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\OrderPaymentInterface) {
             throw new InvalidArgumentException("Expected instance of " . Model\OrderPaymentInterface::class);
@@ -441,7 +441,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function removePayment(Payment\PaymentInterface $payment)
+    public function removePayment(Payment\PaymentInterface $payment): Payment\PaymentSubjectInterface
     {
         if (!$payment instanceof Model\OrderPaymentInterface) {
             throw new InvalidArgumentException("Expected instance of " . Model\OrderPaymentInterface::class);

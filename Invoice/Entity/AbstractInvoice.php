@@ -3,7 +3,9 @@
 namespace Ekyna\Component\Commerce\Invoice\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
-use Ekyna\Component\Commerce\Document\Model\Document;
+use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Document\Model as Document;
+use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
@@ -13,7 +15,7 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Invoice\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterface
+abstract class AbstractInvoice extends Document\Document implements Invoice\InvoiceInterface
 {
     use NumberSubjectTrait,
         TimestampableTrait;
@@ -22,6 +24,11 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
      * @var int
      */
     protected $id;
+
+    /**
+     * @var bool
+     */
+    protected $credit;
 
     /**
      * The paid total (document currency).
@@ -55,10 +62,11 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     {
         parent::__construct();
 
-        $this->createdAt = new \DateTime();
-        $this->type = Invoice\InvoiceTypes::TYPE_INVOICE;
-        $this->paidTotal = 0;
+        $this->type          = Document\DocumentTypes::TYPE_INVOICE;
+        $this->credit        = false;
+        $this->paidTotal     = 0;
         $this->realPaidTotal = 0;
+        $this->createdAt     = new \DateTime();
     }
 
     /**
@@ -85,6 +93,36 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCredit(): bool
+    {
+        return $this->credit;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCredit(bool $credit): Invoice\InvoiceInterface
+    {
+        $this->credit = $credit;
+
+        $this->type = $credit ? Document\DocumentTypes::TYPE_CREDIT : Document\DocumentTypes::TYPE_INVOICE;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setType(string $type): DocumentInterface
+    {
+        $this->credit = $type === Document\DocumentTypes::TYPE_CREDIT;
+
+        return parent::setType($type);
     }
 
     /**
@@ -144,18 +182,12 @@ abstract class AbstractInvoice extends Document implements Invoice\InvoiceInterf
     /**
      * @inheritdoc
      */
-    public function setPaymentMethod(PaymentMethodInterface $method = null): Invoice\InvoiceInterface
+    public function isPaid(): bool
     {
-        $this->paymentMethod = $method;
+        if ($this->grandTotal && $this->paidTotal && $this->currency) {
+            return 1 !== Money::compare($this->grandTotal, $this->paidTotal, $this->currency);
+        }
 
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPaymentMethod(): ?PaymentMethodInterface
-    {
-        return $this->paymentMethod;
+        return false;
     }
 }

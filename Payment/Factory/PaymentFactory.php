@@ -74,6 +74,43 @@ class PaymentFactory implements PaymentFactoryInterface
      */
     public function createPayment(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface
     {
+        $payment = $this->create($subject, $method)->setRefund(false);
+
+        $amount = $this->paymentCalculator->calculateExpectedPaymentAmount($subject, $payment->getCurrency()->getCode());
+
+        $payment->setAmount($amount);
+
+        $this->paymentUpdater->fixRealAmount($payment);
+
+        return $payment;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createRefund(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface
+    {
+        $payment = $this->create($subject, $method)->setRefund(true);
+
+        $amount = $this->paymentCalculator->calculateExpectedRefundAmount($subject, $payment->getCurrency()->getCode());
+
+        $payment->setAmount($amount);
+
+        $this->paymentUpdater->fixRealAmount($payment);
+
+        return $payment;
+    }
+
+    /**
+     * Creates a payment.
+     *
+     * @param PaymentSubjectInterface $subject
+     * @param PaymentMethodInterface  $method
+     *
+     * @return PaymentInterface
+     */
+    protected function create(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface
+    {
         if ($subject instanceof SaleInterface) {
             $payment = $this->saleFactory->createPaymentForSale($subject);
         } else {
@@ -90,26 +127,16 @@ class PaymentFactory implements PaymentFactoryInterface
 
         if ($method->isCredit() || $method->isOutstanding()) {
             $date = $subject->getExchangeDate() ?? new \DateTime();
-
-            $rate = $this
-                ->currencyConverter
-                ->getSubjectExchangeRate($subject, $this->currencyConverter->getDefaultCurrency(), $currency->getCode());
         } else {
             $date = new \DateTime();
-
-            $rate = $this
-                ->currencyConverter
-                ->getSubjectExchangeRate($payment, $this->currencyConverter->getDefaultCurrency(), $currency->getCode());
         }
 
-        $payment
-            ->setMethod($method)
-            ->setExchangeRate($rate)
-            ->setExchangeDate($date)
-            ->setAmount($this->paymentCalculator->calculateRemainingTotal($subject, $currency->getCode()));
+        $payment->setExchangeDate($date);
 
-        $this->paymentUpdater->fixRealAmount($payment);
+        $rate = $this
+            ->currencyConverter
+            ->getSubjectExchangeRate($payment, $this->currencyConverter->getDefaultCurrency(), $currency->getCode());
 
-        return $payment;
+        return $payment->setMethod($method)->setExchangeRate($rate);
     }
 }

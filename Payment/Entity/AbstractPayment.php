@@ -25,14 +25,9 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     protected $id;
 
     /**
-     * @var string
-     *
-     * TODO 'payment' or 'refund'
-     * @see \Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolver
-     * @see \Ekyna\Component\Commerce\Accounting\Export\AccountingExporter
-     * @see and many others...
+     * @var bool
      */
-    protected $type;
+    protected $refund;
 
     /**
      * @var Payment\PaymentMethodInterface
@@ -74,6 +69,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      */
     public function __construct()
     {
+        $this->refund = false;
         $this->amount = 0;
         $this->realAmount = 0;
 
@@ -122,6 +118,24 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isRefund(): bool
+    {
+        return $this->refund;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRefund(bool $refund): Payment\PaymentInterface
+    {
+        $this->refund = $refund;
+
+        return $this;
     }
 
     /**

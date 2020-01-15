@@ -22,4 +22,14 @@ interface PaymentFactoryInterface
      * @return PaymentInterface
      */
     public function createPayment(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface;
+
+    /**
+     * Creates a refund for the given subject.
+     *
+     * @param PaymentSubjectInterface $subject
+     * @param PaymentMethodInterface  $method
+     *
+     * @return PaymentInterface
+     */
+    public function createRefund(PaymentSubjectInterface $subject, PaymentMethodInterface $method): PaymentInterface;
 }

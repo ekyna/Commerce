@@ -22,6 +22,22 @@ interface InvoiceInterface extends
     Common\NumberSubjectInterface
 {
     /**
+     * Returns the credit.
+     *
+     * @return bool
+     */
+    public function isCredit(): bool;
+
+    /**
+     * Sets the credit.
+     *
+     * @param bool $credit
+     *
+     * @return InvoiceInterface
+     */
+    public function setCredit(bool $credit): InvoiceInterface;
+
+    /**
      * Sets the shipment.
      *
      * @param ShipmentInterface $shipment
@@ -86,18 +102,9 @@ interface InvoiceInterface extends
     public function setDueDate(\DateTime $dueDate = null): InvoiceInterface;
 
     /**
-     * Returns the payment method.
+     * Returns whether this invoice is paid.
      *
-     * @return PaymentMethodInterface
+     * @return bool
      */
-    public function getPaymentMethod(): ?PaymentMethodInterface;
-
-    /**
-     * Sets the payment method.
-     *
-     * @param PaymentMethodInterface $method
-     *
-     * @return $this|InvoiceInterface
-     */
-    public function setPaymentMethod(PaymentMethodInterface $method = null): InvoiceInterface;
+    public function isPaid(): bool;
 }

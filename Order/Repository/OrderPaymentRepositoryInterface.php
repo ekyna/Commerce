@@ -26,19 +26,17 @@ interface OrderPaymentRepositoryInterface extends PaymentRepositoryInterface
      * Finds payments for the given customer and date range.
      *
      * @param CustomerInterface $customer
-     * @param \DateTime         $from
      * @param string            $currency
-     * @param \DateTime         $to
-     * @param bool              $scalar
+     * @param \DateTime|null    $from
+     * @param \DateTime|null    $to
      *
-     * @return OrderPaymentInterface[]|array[]
+     * @return OrderPaymentInterface[]
      */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
         string $currency = null,
         \DateTime $from = null,
-        \DateTime $to = null,
-        bool $scalar = false
+        \DateTime $to = null
     ): array;
 
     /**

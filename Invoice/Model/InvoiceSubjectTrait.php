@@ -39,9 +39,9 @@ trait InvoiceSubjectTrait
     protected function initializeInvoiceSubject()
     {
         $this->invoiceTotal = 0;
-        $this->creditTotal = 0;
+        $this->creditTotal  = 0;
         $this->invoiceState = InvoiceStates::STATE_NEW;
-        $this->invoices = new ArrayCollection();
+        $this->invoices     = new ArrayCollection();
     }
 
     /**
@@ -139,8 +139,8 @@ trait InvoiceSubjectTrait
             return $this->invoices;
         }
 
-        return $this->invoices->filter(function(InvoiceInterface $invoice) use ($filter) {
-            return $filter xor InvoiceTypes::isCredit($invoice);
+        return $this->invoices->filter(function (InvoiceInterface $invoice) use ($filter) {
+            return $filter xor $invoice->isCredit();
         });
     }
 
@@ -159,7 +159,7 @@ trait InvoiceSubjectTrait
 
         $criteria = Criteria::create();
         $criteria
-            ->andWhere(Criteria::expr()->eq('type', InvoiceTypes::TYPE_INVOICE))
+            ->andWhere(Criteria::expr()->eq('credit', false))
             ->orderBy(['createdAt' => $latest ? Criteria::DESC : Criteria::ASC]);
 
         /** @var ArrayCollection $invoices */

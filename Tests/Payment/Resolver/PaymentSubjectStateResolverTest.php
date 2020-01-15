@@ -3,18 +3,15 @@
 namespace Ekyna\Component\Commerce\Tests\Payment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
-use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Model\Amount;
-use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Resolver\PaymentSubjectStateResolver;
+use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Class PaymentSubjectStateResolverTest
@@ -34,19 +31,9 @@ class PaymentSubjectStateResolverTest extends TestCase
     private $paymentCalculator;
 
     /**
-     * @var CurrencyConverterInterface
-     */
-    private $converter;
-
-    /**
      * @var PaymentSubjectStateResolver
      */
     private $resolver;
-
-    /**
-     * @var CurrencyInterface[]|MockObject[]
-     */
-    private $currencies = [];
 
 
     /**
@@ -54,52 +41,38 @@ class PaymentSubjectStateResolverTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->converter = new ArrayCurrencyConverter([
-            'EUR/USD' => 1.25,
-            'USD/EUR' => 0.80,
-        ], 'EUR');
-
         $this->paymentCalculator = $this->createMock(PaymentCalculatorInterface::class);
 
-        $this->amountCalculator = $this->createMock(AmountCalculatorInterface::class);
-
         $this->resolver = new PaymentSubjectStateResolver(
-            $this->amountCalculator,
             $this->paymentCalculator,
-            $this->converter
+            $this->getCurrencyConverter()
         );
     }
 
     protected function tearDown(): void
     {
-        $this->resolver = null;
-        $this->amountCalculator = null;
+        parent::tearDown();
+
+        $this->resolver          = null;
+        $this->amountCalculator  = null;
         $this->paymentCalculator = null;
-        $this->converter = null;
     }
 
     /**
      * @param string        $state
      * @param SaleInterface $subject
-     * @param array         $payment
-     * @param array         $amount
+     * @param array         $calculator
      *
      * @dataProvider provide_resolveState
      */
     public function test_resolveState(
         string $state,
         SaleInterface $subject,
-        array $payment = null,
-        array $amount = null
+        array $calculator
     ): void {
-        if ($payment) {
-            call_user_func_array([$this, 'configurePaymentCalculator'], $payment);
-        }
-        if ($amount) {
-            call_user_func_array([$this, 'configureAmountCalculator'], $amount);
-        }
+        call_user_func_array([$this, 'configurePaymentCalculator'], $calculator);
 
-        $ro = new \ReflectionObject($this->resolver);
+        $ro     = new \ReflectionObject($this->resolver);
         $method = $ro->getMethod('resolveState');
         $method->setAccessible(true);
 
@@ -108,73 +81,74 @@ class PaymentSubjectStateResolverTest extends TestCase
 
     public function provide_resolveState(): \Generator
     {
-        // Subject [Currency, Grand, Deposit, Paid, Pending, Accepted, Expired, Rate, HasPayments, InvoiceState]
-        // Calculator [Subject, Paid, Pending, Accepted, Expired, Refunded, Failed, Canceled]
+        // Subject [Currency, Accepted, Expired, HasPayments, InvoiceState]
+        // Calculator [Amounts [Total, Paid, Refunded, Deposit, Pending], Accepted, Expired, Failed, Canceled]
 
         // 0) No payments
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0, 0, 1, false);
-        yield [PaymentStates::STATE_NEW, $subject];
+        $subject = $this->createSubject('EUR', 0, 0, false);
+        $calculator = [[100, 0, 0, 0, 0], 0, 0, 0, 0];
+        yield 'No payments' => [PaymentStates::STATE_NEW, $subject, $calculator];
 
         // 1) No payments and fully credited invoices
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0, 0, 1, false, InvoiceStates::STATE_CREDITED);
-        yield [PaymentStates::STATE_CANCELED, $subject];
+        $subject = $this->createSubject('EUR', 0, 0, false, InvoiceStates::STATE_CREDITED);
+        $calculator = [[0, 0, 0, 0, 0], 0, 0, 0, 0];
+        yield 'No payments and fully credited invoices' => [PaymentStates::STATE_CANCELED, $subject, $calculator];
 
         // 2) Paid = Grand
-        $subject = $this->createSubject('EUR', 100, 0, 100, 0, 0, 0);
-        yield [PaymentStates::STATE_COMPLETED, $subject];
+        $subject = $this->createSubject('EUR', 0, 0);
+        $calculator = [[100, 100, 0, 0, 0], 0, 0, 0, 0];
+        yield 'Paid = Grand' => [PaymentStates::STATE_COMPLETED, $subject, $calculator];
 
         // 3) Accepted outstanding = Grand
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100, 0);
-        yield [PaymentStates::STATE_CAPTURED, $subject];
+        $subject = $this->createSubject('EUR', 100, 0);
+        $calculator = [[100, 0, 0, 0, 0], 100, 0, 0, 0];
+        yield 'Accepted outstanding = Grand' => [PaymentStates::STATE_CAPTURED, $subject, $calculator];
 
         // 4) Paid = Deposit
-        $subject = $this->createSubject('EUR', 100, 50, 50, 0, 0, 0);
-        yield [PaymentStates::STATE_DEPOSIT, $subject];
+        $subject = $this->createSubject('EUR', 0, 0);
+        $calculator = [[100, 50, 0, 50, 0], 0, 0, 0, 0];
+        yield 'Paid = Deposit' => [PaymentStates::STATE_DEPOSIT, $subject, $calculator];
 
         // 5) Expired > 0
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0, 50);
-        yield [PaymentStates::STATE_OUTSTANDING, $subject];
+        $subject = $this->createSubject('EUR', 0, 50);
+        $calculator = [[100, 0, 0, 0, 0], 0, 50, 0, 0];
+        yield 'Expired > 0' => [PaymentStates::STATE_OUTSTANDING, $subject, $calculator];
 
-        // 6) Paid + Accepted + Pending = Grand
-        $subject = $this->createSubject('EUR', 100, 0, 0, 50, 50, 0);
-        yield [PaymentStates::STATE_PENDING, $subject];
+        // 6) Paid + Pending = Grand
+        $subject = $this->createSubject('EUR', 0, 0);
+        $calculator = [[100, 50, 0, 0, 50], 0, 0, 0, 0];
+        yield 'Paid + Pending = Grand' => [PaymentStates::STATE_PENDING, $subject, $calculator];
 
-        // 7) Refunded = Grand
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0, 0);
-        $payment = [$subject, 0, 0, 0, 0, 100, 0, 0];
-        yield [PaymentStates::STATE_REFUNDED, $subject, $payment];
+        // 7) Paid = Refunded = Grand
+        $subject = $this->createSubject('EUR', 0, 0);
+        $calculator = [[0, 100, 100, 0, 0], 0, 0, 0, 0];
+        yield 'Paid = Refunded = Grand' => [PaymentStates::STATE_REFUNDED, $subject, $calculator];
 
-        // 8) Payments (but ot paid/accepted/pending) and fully credited invoices
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0, 0, 1, true, InvoiceStates::STATE_CREDITED);
-        $payment = [$subject, 0, 0, 0, 0, 0, 0, 0];
-        yield [PaymentStates::STATE_CANCELED, $subject, $payment];
+        // 8) Not paid, fully credited
+        $subject = $this->createSubject('EUR', 0, 0, true, InvoiceStates::STATE_CREDITED);
+        $calculator = [[0, 0, 0, 0, 0], 0, 0, 0, 0];
+        yield 'Not paid, fully credited' => [PaymentStates::STATE_CANCELED, $subject, $calculator];
 
         // 9) Failed = Grand
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0, 0);
-        $payment = [$subject, 0, 0, 0, 0, 0, 100, 0];
-        yield [PaymentStates::STATE_FAILED, $subject, $payment];
+        $subject = $this->createSubject('EUR', 0, 0);
+        $calculator = [[100, 0, 0, 0, 0], 0, 0, 100, 0];
+        yield 'Failed = Grand' => [PaymentStates::STATE_FAILED, $subject, $calculator];
 
         // 10) Canceled = Grand
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0, 0);
-        $payment = [$subject, 0, 0, 0, 0, 0, 0, 100];
-        yield [PaymentStates::STATE_CANCELED, $subject, $payment];
+        $subject = $this->createSubject('EUR', 0, 0);
+        $calculator = [[100, 0, 0, 0, 0], 0, 0, 0, 100];
+        yield 'Canceled = Grand' => [PaymentStates::STATE_CANCELED, $subject, $calculator];
 
         // 11) USD Paid = Grand
-        $subject = $this->createSubject('USD', 100, 0, 100, 0, 0, 0);
-        $payment = [$subject, 125, 0, 0, 0, 0, 0, 0];
-        $amount = [$subject, 125];
-        yield [PaymentStates::STATE_COMPLETED, $subject, $payment, $amount];
+        $subject = $this->createSubject('USD', 0, 0);
+        $calculator = [[125, 125, 0, 0, 0], 0, 0, 0, 0];
+        yield 'USD Paid = Grand' => [PaymentStates::STATE_COMPLETED, $subject, $calculator];
     }
 
     /**
      * @param string $currency
-     * @param float  $grand
-     * @param float  $deposit
-     * @param float  $pending
      * @param float  $accepted
      * @param float  $expired
-     * @param float  $paid
-     * @param float  $rate
      * @param bool   $hasPayments
      * @param string $invoiceState
      *
@@ -182,111 +156,41 @@ class PaymentSubjectStateResolverTest extends TestCase
      */
     private function createSubject(
         string $currency,
-        float $grand,
-        float $deposit,
-        float $paid,
-        float $pending,
-        float $accepted,
-        float $expired,
-        float $rate = 1,
+        float $accepted = 0,
+        float $expired = 0,
         bool $hasPayments = true,
         string $invoiceState = InvoiceStates::STATE_NEW
     ): SaleInterface {
         $subject = $this->createMock([SaleInterface::class, InvoiceSubjectInterface::class]);
 
-        $subject->method('getCurrency')->willReturn($this->createCurrency($currency));
-        $subject->method('getGrandTotal')->willReturn($grand);
-        $subject->method('getDepositTotal')->willReturn($deposit);
-        $subject->method('getPaidTotal')->willReturn($paid);
-        $subject->method('getPendingTotal')->willReturn($pending);
+        $subject->method('getCurrency')->willReturn(Fixtures::getCurrencyByCode($currency));
         $subject->method('getOutstandingAccepted')->willReturn($accepted);
         $subject->method('getOutstandingExpired')->willReturn($expired);
-        $subject->method('getExchangeRate')->willReturn($rate);
         $subject->method('hasPayments')->willReturn($hasPayments);
-        $subject->method('getPaymentState')->willReturn(PaymentStates::STATE_NEW);
         $subject->method('getInvoiceState')->willReturn($invoiceState);
+        $subject->method('getPaymentState')->willReturn(PaymentStates::STATE_NEW);
 
         return $subject;
     }
 
     /**
-     * @param SaleInterface $subject
-     * @param float         $paid
-     * @param float         $pending
-     * @param float         $accepted
-     * @param float         $expired
-     * @param float         $refunded
-     * @param float         $failed
-     * @param float         $canceled
+     * @param array $amounts
+     * @param float $accepted
+     * @param float $expired
+     * @param float $failed
+     * @param float $canceled
      */
     private function configurePaymentCalculator(
-        SaleInterface $subject,
-        float $paid,
-        float $pending,
-        float $accepted,
-        float $expired,
-        float $refunded,
-        float $failed,
-        float $canceled
+        array $amounts,
+        float $accepted = 0,
+        float $expired = 0,
+        float $failed = 0,
+        float $canceled = 0
     ): void {
-        $this->paymentCalculator->method('calculatePaidTotal')->with($subject)->willReturn($paid);
-        if ($paid) {
-            $this->paymentCalculator->expects($this->once())->method('calculatePaidTotal');
-        }
-        $this->paymentCalculator->method('calculateOfflinePendingTotal')->with($subject)->willReturn($pending);
-        if ($pending) {
-            $this->paymentCalculator->expects($this->once())->method('calculateOfflinePendingTotal');
-        }
-        $this->paymentCalculator->method('calculateOutstandingAcceptedTotal')->with($subject)->willReturn($accepted);
-        if ($accepted) {
-            $this->paymentCalculator->expects($this->once())->method('calculateOutstandingAcceptedTotal');
-        }
-        $this->paymentCalculator->method('calculateOutstandingExpiredTotal')->with($subject)->willReturn($expired);
-        if ($expired) {
-            $this->paymentCalculator->expects($this->once())->method('calculateOutstandingExpiredTotal');
-        }
-        $this->paymentCalculator->method('calculateRefundedTotal')->with($subject)->willReturn($refunded);
-        if ($refunded) {
-            $this->paymentCalculator->expects($this->once())->method('calculateRefundedTotal');
-        }
-        $this->paymentCalculator->method('calculateFailedTotal')->with($subject)->willReturn($failed);
-        if ($failed) {
-            $this->paymentCalculator->expects($this->once())->method('calculateFailedTotal');
-        }
-        $this->paymentCalculator->method('calculateCanceledTotal')->with($subject)->willReturn($canceled);
-        if ($canceled) {
-            $this->paymentCalculator->expects($this->once())->method('calculateCanceledTotal');
-        }
-    }
-
-    /**
-     * @param SaleInterface $subject
-     * @param float         $total
-     */
-    private function configureAmountCalculator(SaleInterface $subject, float $total): void
-    {
-        $result = $this->createMock(Amount::class);
-        $result->method('getTotal')->willReturn($total);
-
-        $this->amountCalculator->method('calculateSale')->with($subject)->willReturn($result);
-        $this->amountCalculator->expects($this->once())->method('calculateSale');
-    }
-
-    /**
-     * @param string $code
-     *
-     * @return CurrencyInterface
-     */
-    private function createCurrency(string $code): CurrencyInterface
-    {
-        if (isset($this->currencies[$code])) {
-            return $this->currencies[$code];
-        }
-
-        /** @var CurrencyInterface|MockObject $currency */
-        $currency = $this->createMock(CurrencyInterface::class);
-        $currency->method('getCode')->willReturn($code);
-
-        return $this->currencies[$code] = $currency;
+        $this->paymentCalculator->method('getPaymentAmounts')->willReturn(array_replace([0, 0, 0, 0, 0], $amounts));
+        $this->paymentCalculator->method('calculateOutstandingAcceptedTotal')->willReturn($accepted);
+        $this->paymentCalculator->method('calculateOutstandingExpiredTotal')->willReturn($expired);
+        $this->paymentCalculator->method('calculateFailedTotal')->willReturn($failed);
+        $this->paymentCalculator->method('calculateCanceledTotal')->willReturn($canceled);
     }
 }

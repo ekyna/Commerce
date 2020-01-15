@@ -4,7 +4,7 @@ namespace Ekyna\Component\Commerce\Tests\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculator;
-use Ekyna\Component\Commerce\Tests\BaseTestCase;
+use Ekyna\Component\Commerce\Tests\TestCase;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -13,7 +13,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @package Ekyna\Component\Commerce\Tests\Shipment
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentCalculatorTest extends BaseTestCase
+class ShipmentCalculatorTest extends TestCase
 {
     /**
      * @var ShipmentSubjectCalculator
@@ -45,6 +45,8 @@ class ShipmentCalculatorTest extends BaseTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
+
         $this->shipmentCalculator = null;
         $this->invoiceCalculator = null;
     }

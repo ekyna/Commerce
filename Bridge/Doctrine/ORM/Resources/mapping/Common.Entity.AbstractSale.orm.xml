@@ -33,6 +33,7 @@
         <field name="depositTotal" column="deposit_total" type="decimal" precision="15" scale="5"/>
         <field name="grandTotal" column="grand_total" type="decimal" precision="15" scale="5"/>
         <field name="paidTotal" column="paid_total" type="decimal" precision="15" scale="5"/>
+        <field name="refundedTotal" column="refunded_total" type="decimal" precision="15" scale="5"/>
         <field name="pendingTotal" column="pending_total" type="decimal" precision="15" scale="5"/>
         <field name="outstandingAccepted" column="outstanding_accepted" type="decimal" precision="15" scale="5"/>
         <field name="outstandingExpired" column="outstanding_expired" type="decimal" precision="15" scale="5"/>

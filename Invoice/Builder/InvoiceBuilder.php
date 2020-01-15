@@ -118,17 +118,17 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-                // Invoice case
-                $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $invoice);
-            } else {
+            if ($invoice->isCredit()) {
                 // Credit case
                 $available = $this->invoiceCalculator->calculateCreditableQuantity($item, $invoice);
+            } else {
+                // Invoice case
+                $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $invoice);
             }
 
             if (0 < $available) {
                 $expected = null;
-                if (Invoice\InvoiceTypes::isInvoice($invoice)) {
+                if (!$invoice->isCredit()) {
                     $expected = min($available, $this->shipmentCalculator->calculateShippedQuantity($item));
                 }
 
@@ -157,12 +157,12 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 
         $line = null;
         $expected = null;
-        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-            // Invoice case
-            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($adjustment, $invoice);
-        } else {
+        if ($invoice->isCredit()) {
             // Credit case
             $available = $this->invoiceCalculator->calculateCreditableQuantity($adjustment, $invoice);
+        } else {
+            // Invoice case
+            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($adjustment, $invoice);
         }
 
         if (0 < $available) {
@@ -189,12 +189,12 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
         $line = null;
         $expected = null;
         $sale = $invoice->getSale();
-        if (Invoice\InvoiceTypes::isInvoice($invoice)) {
-            // Invoice case
-            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($sale, $invoice);
-        } else {
+        if ($invoice->isCredit()) {
             // Credit case
             $available = $this->invoiceCalculator->calculateCreditableQuantity($sale, $invoice);
+        } else {
+            // Invoice case
+            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($sale, $invoice);
         }
 
         if (0 < $available) {
@@ -254,7 +254,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
         $line->setAvailable($available);
         $line->setExpected($expected);
 
-        if (Invoice\InvoiceTypes::isInvoice($invoice) && null === $invoice->getId()) {
+        if (!$invoice->isCredit() && is_null($invoice->getId())) {
             // Set default quantity for new non return shipment items
             $line->setQuantity(min($expected, $available));
         }

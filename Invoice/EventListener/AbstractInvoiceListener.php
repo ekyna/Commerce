@@ -4,14 +4,11 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Util\Money;
-use Ekyna\Component\Commerce\Customer\Updater\CustomerUpdaterInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilderInterface;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -46,11 +43,6 @@ abstract class AbstractInvoiceListener
      * @var DocumentCalculatorInterface
      */
     protected $invoiceCalculator;
-
-    /**
-     * @var CustomerUpdaterInterface
-     */
-    protected $customerUpdater;
 
 
     /**
@@ -104,16 +96,6 @@ abstract class AbstractInvoiceListener
     }
 
     /**
-     * Sets the customer updater.
-     *
-     * @param CustomerUpdaterInterface $updater
-     */
-    public function setCustomerUpdater(CustomerUpdaterInterface $updater)
-    {
-        $this->customerUpdater = $updater;
-    }
-
-    /**
      * Insert event handler.
      *
      * @param ResourceEventInterface $event
@@ -163,10 +145,6 @@ abstract class AbstractInvoiceListener
         // Updates the totals
         $changed |= $this->updateTotals($invoice);
 
-        if ($this->persistenceHelper->isChanged($invoice, 'paymentMethod')) {
-            $this->updateCustomerBalance($invoice);
-        }
-
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
 
@@ -182,8 +160,6 @@ abstract class AbstractInvoiceListener
     public function onDelete(ResourceEventInterface $event)
     {
         $invoice = $this->getInvoiceFromEvent($event);
-
-        $this->updateCustomerBalance($invoice);
 
         $sale = $this->getSaleFromInvoice($invoice);
 
@@ -205,8 +181,6 @@ abstract class AbstractInvoiceListener
             if ($this->updateTotals($invoice)) {
                 $this->persistenceHelper->persistAndRecompute($invoice, false);
             }
-
-            $this->updateCustomerBalance($invoice);
         }
 
         $sale = $this->getSaleFromInvoice($invoice);
@@ -271,72 +245,6 @@ abstract class AbstractInvoiceListener
     }
 
     /**
-     * Updates the customer balance
-     *
-     * @param InvoiceInterface $invoice
-     */
-    protected function updateCustomerBalance(InvoiceInterface $invoice)
-    {
-        // Abort if not credit
-        if (!InvoiceTypes::isCredit($invoice)) {
-            return;
-        }
-
-        $sale = $this->getSaleFromInvoice($invoice);
-
-        // Abort if no customer
-        if (null === $customer = $sale->getCustomer()) {
-            return;
-        }
-
-        // TODO Use refund payments when implemented
-
-        $methodCs = $this->persistenceHelper->getChangeSet($invoice, 'paymentMethod');
-        $amountCs = $this->persistenceHelper->getChangeSet($invoice, 'realGrandTotal');
-
-        // Debit grand total if invoice is removed
-        // TODO Multiple call will credit too much !
-        if ($this->persistenceHelper->isScheduledForRemove($invoice)) {
-            $method = empty($methodCs) ? $invoice->getPaymentMethod() : $methodCs[0];
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[0];
-
-            if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
-                $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
-            }
-
-            return;
-        }
-
-        // Abort if nothing has changed
-        if (empty($methodCs) && empty($amountCs)) {
-            return;
-        }
-
-        // Debit old method customer balance
-        /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
-        if (!empty($methodCs) && null !== $method = $methodCs[0]) {
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[0];
-
-            if ($method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
-                $this->customerUpdater->updateCreditBalance($customer, -$amount, true);
-            }
-        }
-
-        // Credit new method customer balance
-        if (empty($methodCs)) {
-            $method = $invoice->getPaymentMethod();
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[1] - $amountCs[0];
-        } else {
-            /** @var \Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface $method */
-            $method = $methodCs[1];
-            $amount = empty($amountCs) ? $invoice->getRealGrandTotal() : $amountCs[1];
-        }
-        if ($method && $method->isCredit() && 0 != Money::compare($amount, 0, $invoice->getCurrency())) {
-            $this->customerUpdater->updateCreditBalance($customer, $amount, true);
-        }
-    }
-
-    /**
      * Generates the number.
      *
      * @param InvoiceInterface $invoice
@@ -349,19 +257,13 @@ abstract class AbstractInvoiceListener
             return false;
         }
 
-        if (InvoiceTypes::isInvoice($invoice)) {
-            $invoice->setNumber($this->invoiceNumberGenerator->generate($invoice));
-
-            return true;
-        }
-
-        if (InvoiceTypes::isCredit($invoice)) {
+        if ($invoice->isCredit()) {
             $invoice->setNumber($this->creditNumberGenerator->generate($invoice));
-
-            return true;
+        } else {
+            $invoice->setNumber($this->invoiceNumberGenerator->generate($invoice));
         }
 
-        throw new Exception\InvalidArgumentException("Unexpected invoice type.");
+        return true;
     }
 
     /**
@@ -374,7 +276,7 @@ abstract class AbstractInvoiceListener
     protected function preventForbiddenChange(InvoiceInterface $invoice)
     {
         if ($this->persistenceHelper->isChanged($invoice, 'type')) {
-            list($old, $new) = $this->persistenceHelper->getChangeSet($invoice, 'type');
+            [$old, $new] = $this->persistenceHelper->getChangeSet($invoice, 'type');
             if ($old != $new) {
                 throw new Exception\IllegalOperationException(
                     "Changing the invoice type is not yet supported."

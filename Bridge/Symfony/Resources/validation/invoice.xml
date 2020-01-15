@@ -15,9 +15,9 @@
         <property name="type">
             <constraint name="NotBlank"/>
             <constraint name="Choice">
-                <option name="callback">
-                    <value>Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes</value>
-                    <value>getTypes</value>
+                <option name="choices">
+                    <value>invoice</value>
+                    <value>credit</value>
                 </option>
             </constraint>
         </property>

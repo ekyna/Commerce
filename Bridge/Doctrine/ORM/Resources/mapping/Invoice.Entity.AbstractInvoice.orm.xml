@@ -8,6 +8,7 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoice">
 
+        <field name="credit" column="credit" type="boolean"/>
         <field name="type" column="type" type="string" length="16"/>
         <field name="number" column="number" type="string" length="16"/>
 
@@ -52,10 +53,6 @@
         <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
             <gedmo:timestampable on="update"/>
         </field>
-
-        <many-to-one target-entity="Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface" field="paymentMethod">
-            <join-column name="payment_method_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
-        </many-to-one>
 
     </mapped-superclass>
 

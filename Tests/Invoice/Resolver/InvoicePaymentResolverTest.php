@@ -3,21 +3,19 @@
 namespace Ekyna\Component\Commerce\Tests\Invoice\Resolver;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Ekyna\Component\Commerce\Common\Currency\ArrayCurrencyConverter;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoicePayment;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceTypes;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolver;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Class InvoicePaymentResolverTest
@@ -26,12 +24,10 @@ use PHPUnit\Framework\TestCase;
  */
 class InvoicePaymentResolverTest extends TestCase
 {
-    private const CURRENCY = 'EUR';
-
     /**
      * @var InvoicePaymentResolverInterface
      */
-    private static $resolver;
+    private $resolver;
 
     /**
      * @var InvoiceInterface[]
@@ -43,21 +39,17 @@ class InvoicePaymentResolverTest extends TestCase
      */
     private $payments;
 
-    /**
-     * @inheritDoc
-     */
-    public static function setUpBeforeClass(): void
-    {
-        $converter = new ArrayCurrencyConverter([
-            'EUR/USD' => 1.25,
-            'USD/EUR' => 0.80,
-            'EUR/GBP' => 0.80,
-            'GBP/EUR' => 1.25,
-            'USD/GBP' => 0.64,
-            'GBP/USD' => 1.5625,
-        ], self::CURRENCY);
 
-        self::$resolver = new InvoicePaymentResolver($converter);
+    public function setUp(): void
+    {
+        $this->resolver = new InvoicePaymentResolver($this->getCurrencyConverter());
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->resolver = null;
     }
 
     /**
@@ -68,7 +60,7 @@ class InvoicePaymentResolverTest extends TestCase
      */
     public function test_resolve(InvoiceInterface $invoice, array $expected)
     {
-        $this->assertEquals($expected, self::$resolver->resolve($invoice));
+        $this->assertEquals($expected, $this->resolver->resolve($invoice));
     }
 
     public function provide_test_resolve(): \Generator
@@ -189,7 +181,7 @@ class InvoicePaymentResolverTest extends TestCase
                 240,
                 'now',
                 'USD',
-                InvoiceTypes::TYPE_INVOICE
+                false
             ),
         ]));
 
@@ -206,7 +198,7 @@ class InvoicePaymentResolverTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        self::$resolver->resolve($invoice);
+        $this->resolver->resolve($invoice);
     }
 
     /**
@@ -220,7 +212,7 @@ class InvoicePaymentResolverTest extends TestCase
         $this->payments = [];
 
         $data = array_replace([
-            'currency'      => self::CURRENCY,
+            'currency'      => self::DEFAULT_CURRENCY,
             'exchange_rate' => 1.0,
             'exchange_date' => new \DateTime(),
             'invoices'      => [],
@@ -238,8 +230,8 @@ class InvoicePaymentResolverTest extends TestCase
                 'total'      => 0,
                 'real_total' => null,
                 'date'       => 'now',
-                'currency'   => self::CURRENCY,
-                'type'       => InvoiceTypes::TYPE_INVOICE,
+                'currency'   => self::DEFAULT_CURRENCY,
+                'credit'     => false,
             ], $datum);
 
             if (null === $datum['real_total']) {
@@ -252,7 +244,7 @@ class InvoicePaymentResolverTest extends TestCase
                 $datum['real_total'],
                 $datum['date'],
                 $datum['currency'],
-                $datum['type']
+                $datum['credit']
             );
         }
 
@@ -262,7 +254,7 @@ class InvoicePaymentResolverTest extends TestCase
             $datum = array_replace([
                 'amount'      => 0,
                 'date'        => 'now',
-                'currency'    => self::CURRENCY,
+                'currency'    => self::DEFAULT_CURRENCY,
                 'state'       => PaymentStates::STATE_CAPTURED,
                 'outstanding' => false,
             ], $datum);
@@ -321,7 +313,7 @@ class InvoicePaymentResolverTest extends TestCase
      * @param float         $realTotal
      * @param string        $date
      * @param string        $currency
-     * @param string        $type
+     * @param bool          $credit
      *
      * @return InvoiceInterface|MockObject
      */
@@ -331,11 +323,11 @@ class InvoicePaymentResolverTest extends TestCase
         float $realTotal,
         string $date,
         string $currency,
-        string $type
+        bool $credit
     ): InvoiceInterface {
         $invoice = $this->createMock(InvoiceInterface::class);
         $invoice->method('getSale')->willReturn($sale);
-        $invoice->method('getType')->willReturn($type);
+        $invoice->method('isCredit')->willReturn($credit);
         $invoice->method('getGrandTotal')->willReturn($total);
         $invoice->method('getRealGrandTotal')->willReturn($realTotal);
         $invoice->method('getCreatedAt')->willReturn(new \DateTime($date));

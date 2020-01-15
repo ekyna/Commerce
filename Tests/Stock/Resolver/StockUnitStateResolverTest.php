@@ -5,14 +5,14 @@ namespace Ekyna\Component\Commerce\Tests\Stock\Resolver;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
 use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
-use Ekyna\Component\Commerce\Tests\Stock\BaseStockTestCase;
+use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
  * Class StockUnitStateResolverTest
  * @package Ekyna\Component\Commerce\Tests\Stock\Resolver
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitStateResolverTest extends BaseStockTestCase
+class StockUnitStateResolverTest extends StockTestCase
 {
     /**
      * @covers StockUnitStateResolver::resolve()

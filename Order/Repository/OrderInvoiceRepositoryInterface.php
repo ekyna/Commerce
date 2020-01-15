@@ -25,18 +25,16 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
      *
      * @param CustomerInterface $customer
      * @param string            $currency
-     * @param \DateTime         $from
-     * @param \DateTime         $to
-     * @param bool              $scalar
+     * @param \DateTime|null    $from
+     * @param \DateTime|null    $to
      *
-     * @return OrderInvoiceInterface[]|array[]
+     * @return OrderInvoiceInterface[]
      */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
         string $currency = null,
         \DateTime $from = null,
-        \DateTime $to = null,
-        bool $scalar = false
+        \DateTime $to = null
     ): array;
 
     /**
@@ -98,19 +96,6 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
      * @return float
      */
     public function getCustomerCreditSum(CustomerInterface $customer, \DateTime $from, \DateTime $to): float;
-
-    /**
-     * Returns the customer credit refunds amounts sum.
-     *
-     * @param CustomerInterface $customer
-     * @param \DateTime         $from
-     * @param \DateTime         $to
-     *
-     * @return float
-     *
-     * @TODO Remove when refund payment (types) will be implemented.
-     */
-    public function getCustomerCreditRefundSum(CustomerInterface $customer, \DateTime $from, \DateTime $to): float;
 
     /**
      * Returns the customer invoices count.

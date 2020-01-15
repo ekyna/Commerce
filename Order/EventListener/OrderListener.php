@@ -412,9 +412,8 @@ class OrderListener extends AbstractSaleListener
      */
     protected function updateInvoicePaidTotal(OrderInterface $sale): void
     {
-        // TODO Updates credit paid total too, when refund payment will be implemented
         /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface $invoice */
-        foreach ($sale->getInvoices(true)->toArray() as $invoice) {
+        foreach ($sale->getInvoices()->toArray() as $invoice) {
             $changed = false;
             $currency = $invoice->getCurrency();
 

@@ -156,23 +156,6 @@ class ShipmentValidator extends ConstraintValidator
             }
         }
 
-        // Credit method requirement
-        if ($shipment->isReturn() && $shipment->isAutoInvoice()) {
-            if (is_null($shipment->getCreditMethod()) && !$sale->isSample() && $sale->isPaid()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->credit_method_is_required)
-                    ->atPath('creditMethod')
-                    ->addViolation();
-            }
-        } elseif (null !== $shipment->getCreditMethod()) {
-            $this
-                ->context
-                ->buildViolation($constraint->credit_method_must_be_null)
-                ->atPath('creditMethod')
-                ->addViolation();
-        }
-
         // Mobile requirement
         $address = $gateway->getAddressResolver()->resolveReceiverAddress($shipment, true);
         if ($gateway->requires(Gateway\GatewayInterface::REQUIREMENT_MOBILE)) {

@@ -14,7 +14,8 @@ interface InvoiceSynchronizerInterface
     /**
      * Synchronize the invoice with its shipment.
      *
-     * @param ShipmentInterface $shipment
+     * @param ShipmentInterface $shipment The shipment
+     * @param bool              $force    Whether to force the synchronisation event if the invoice has an id.
      */
-    public function synchronize(ShipmentInterface $shipment);
+    public function synchronize(ShipmentInterface $shipment, bool $force = false): void;
 }
