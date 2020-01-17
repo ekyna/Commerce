@@ -196,7 +196,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            ->useResultCache(true, 300)
+            ->enableResultCache(300)
             ->getSingleScalarResult();
     }
 
@@ -208,7 +208,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         return $this
             ->getRegularDueQueryBuilder()
             ->getQuery()
-            ->useQueryCache(true)
+            ->enableResultCache(300)
             ->getResult();
     }
 
@@ -222,7 +222,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            ->useResultCache(true, 300)
+            ->enableResultCache(300)
             ->getSingleScalarResult();
     }
 
@@ -235,6 +235,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getOutstandingExpiredDueQueryBuilder()
             ->getQuery()
             ->useQueryCache(true)
+            ->enableResultCache(300)
             ->getResult();
     }
 
@@ -248,7 +249,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            ->useResultCache(true, 300)
+            ->enableResultCache(300)
             ->getSingleScalarResult();
     }
 
@@ -260,7 +261,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         return $this
             ->getOutstandingFallDueQueryBuilder()
             ->getQuery()
-            ->useQueryCache(true)
+            ->enableResultCache(300)
             ->getResult();
     }
 
@@ -274,7 +275,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->select('SUM(o.grandTotal - o.paidTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            ->useResultCache(true, 300)
+            ->enableResultCache(300)
             ->getSingleScalarResult();
     }
 
@@ -300,7 +301,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->select('SUM(o.grandTotal - o.invoiceTotal)')
             ->getQuery()
             ->useQueryCache(true)
-            ->useResultCache(true, 300)
+            ->enableResultCache(300)
             ->getSingleScalarResult();
     }
 
