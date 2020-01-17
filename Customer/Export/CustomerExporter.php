@@ -95,13 +95,13 @@ class CustomerExporter
         if (null !== $from = $config->getFrom()) {
             $qb
                 ->andWhere($qb->expr()->gte('o.acceptedAt', ':from'))
-                ->setParameter('from', $from, Types::DATE_IMMUTABLE);
+                ->setParameter('from', $from, Types::DATE_MUTABLE);
         }
 
         if (null !== $to = $config->getTo()) {
             $qb
                 ->andWhere($qb->expr()->lte('o.acceptedAt', ':to'))
-                ->setParameter('to', $to, Types::DATE_IMMUTABLE);
+                ->setParameter('to', $to, Types::DATE_MUTABLE);
         }
 
         if (0 < $config->getGroups()->count()) {

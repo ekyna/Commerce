@@ -46,7 +46,7 @@ abstract class AbstractPaymentRepository extends ResourceRepository implements P
         return $this
             ->getByMethodAndStatesFromDateQuery()
             ->setParameter('method', $method)
-            ->setParameter('date', $fromDate, Types::DATE_IMMUTABLE)
+            ->setParameter('date', $fromDate, Types::DATE_MUTABLE)
             ->setParameter('states', $states)
             ->getResult();
     }
