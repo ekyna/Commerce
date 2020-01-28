@@ -47,6 +47,7 @@ class PaymentTransitions
                             $transitions[] = static::TRANSITION_REFUND;
                         }
                         break;
+                    case PaymentStates::STATE_NEW:
                     case PaymentStates::STATE_REFUNDED:
                         $transitions[] = static::TRANSITION_CANCEL;
                         $transitions[] = static::TRANSITION_HANG;
