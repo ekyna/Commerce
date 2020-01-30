@@ -100,10 +100,6 @@ class MarginCalculator implements MarginCalculatorInterface
             return null;
         }
 
-        if (!in_array($sale->getState(), [OrderStates::STATE_ACCEPTED, OrderStates::STATE_COMPLETED], true)) {
-            return null;
-        }
-
         $this->amountCalculator->calculateSale($sale, $currency);
 
         $margin = new Model\Margin($currency);
@@ -141,7 +137,8 @@ class MarginCalculator implements MarginCalculatorInterface
      */
     private function calculateSaleItem(Model\SaleItemInterface $item, string $currency = null): ?Model\Margin
     {
-        $currency = $currency ?? $this->amountCalculator->getDefaultCurrency();
+        $default = $this->amountCalculator->getDefaultCurrency();
+        $currency = $currency ?? $default;
 
         if (null !== $margin = $item->getMargin($currency)) {
             return $margin;
@@ -158,9 +155,10 @@ class MarginCalculator implements MarginCalculatorInterface
                 foreach ($item->getStockAssignments() as $assignment) {
                     if (0 < $netPrice = $assignment->getStockUnit()->getNetPrice()) {
                         $u = $assignment->getStockUnit();
+                        $c = $u->getCurrency() ?? $default;
                         $cost = $this
                             ->currencyConverter
-                            ->convert($netPrice, $u->getCurrency(), $currency, $u->getExchangeDate());
+                            ->convert($netPrice, $c, $currency, $u->getExchangeDate());
                         $margin->addPurchaseCost($assignment->getSoldQuantity() * $cost);
                     } elseif (null !== $cost = $this->getPurchaseCost($item, $currency)) {
                         $margin
