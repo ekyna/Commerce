@@ -30,21 +30,22 @@ class CustomerNormalizer extends AbstractResourceNormalizer
 
         if ($this->contextHasGroup(['Default', 'Customer', 'Search', 'Summary'], $context)) {
             $data = array_replace($data, [
-                'number'     => $customer->getNumber(),
-                'company'    => $customer->getCompany(),
-                'email'      => $customer->getEmail(),
-                'first_name' => $customer->getFirstName(),
-                'last_name'  => $customer->getLastName(),
-                'parent'     => $parent ? $parent->getId() : null,
-                'currency'   => $customer->getCurrency()->getCode(),
-                'locale'     => $customer->getLocale(),
+                'number'         => $customer->getNumber(),
+                'company'        => $customer->getCompany(),
+                'company_number' => $customer->getCompanyNumber(),
+                'email'          => $customer->getEmail(),
+                'first_name'     => $customer->getFirstName(),
+                'last_name'      => $customer->getLastName(),
+                'parent'         => $parent ? $parent->getId() : null,
+                'currency'       => $customer->getCurrency()->getCode(),
+                'locale'         => $customer->getLocale(),
             ]);
         }
 
         if ($this->contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
             $data = array_replace($data, [
-                'phone'      => $this->normalizeObject($customer->getPhone(), $format, $context),
-                'mobile'     => $this->normalizeObject($customer->getMobile(), $format, $context),
+                'phone'  => $this->normalizeObject($customer->getPhone(), $format, $context),
+                'mobile' => $this->normalizeObject($customer->getMobile(), $format, $context),
             ]);
         }
 

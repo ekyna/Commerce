@@ -29,11 +29,13 @@ class SaleNormalizer extends AbstractResourceNormalizer
 
         if ($this->contextHasGroup(['Default', 'Cart', 'Order', 'Quote', 'Search'], $context)) {
             $data = array_replace($data, [
-                'number'     => $sale->getNumber(),
-                'company'    => $sale->getCompany(),
-                'email'      => $sale->getEmail(),
-                'first_name' => $sale->getFirstName(),
-                'last_name'  => $sale->getLastName(),
+                'number'         => $sale->getNumber(),
+                'voucher_number' => $sale->getVoucherNumber(),
+                'email'          => $sale->getEmail(),
+                'company'        => $sale->getCompany(),
+                'first_name'     => $sale->getFirstName(),
+                'last_name'      => $sale->getLastName(),
+                'title'          => $sale->getTitle(),
             ]);
         } elseif ($this->contextHasGroup('Summary', $context)) {
             $items = [];
