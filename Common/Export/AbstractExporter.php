@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Common\Export;
 
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
@@ -32,13 +31,38 @@ abstract class AbstractExporter
     /**
      * Builds the CSV file.
      *
-     * @param OrderInterface[] $orders
-     * @param string           $name
-     * @param array            $map
+     * @param array  $objects
+     * @param string $name
+     * @param array  $map
      *
      * @return string
      */
-    protected function buildFile(array $orders, string $name, array $map): string
+    protected function buildFile(array $objects, string $name, array $map): string
+    {
+        $rows = [];
+
+        if (!empty($headers = $this->buildHeaders(array_keys($map)))) {
+            $rows[] = $headers;
+        }
+
+        foreach ($objects as $object) {
+            if (!empty($row = $this->buildRow($object, $map))) {
+                $rows[] = $row;
+            }
+        }
+
+        return $this->createFile($rows, $name);
+    }
+
+    /**
+     * Creates the CSV file.
+     *
+     * @param array  $rows
+     * @param string $name
+     *
+     * @return string
+     */
+    protected function createFile(array $rows, string $name): string
     {
         if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
             throw new RuntimeException("Failed to create temporary file.");
@@ -48,14 +72,8 @@ abstract class AbstractExporter
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
-        if (!empty($headers = $this->buildHeaders(array_keys($map)))) {
-            fputcsv($handle, $headers, ';', '"');
-        }
-
-        foreach ($orders as $order) {
-            if (!empty($row = $this->buildRow($order, $map))) {
-                fputcsv($handle, $row, ';', '"');
-            }
+        foreach ($rows as $row) {
+            fputcsv($handle, $row, ';', '"');
         }
 
         fclose($handle);

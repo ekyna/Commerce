@@ -12,11 +12,12 @@ interface AccountingExporterInterface
     /**
      * Exports invoices and payments for the given date.
      *
-     * @param \DateTime $month
+     * @param string      $year
+     * @param string|null $month
      *
      * @return string The generated zip file path
      */
-    public function export(\DateTime $month): string;
+    public function export(string $year, string $month = null): string;
 
     /**
      * Exports invoices for the given date.

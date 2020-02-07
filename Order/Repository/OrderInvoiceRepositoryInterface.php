@@ -57,6 +57,13 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
     public function findDueInvoices(CustomerInterface $customer = null, string $currency = null): array;
 
     /**
+     * Finds the first invoice's 'created at' date.
+     *
+     * @return \DateTime|null
+     */
+    public function findFirstInvoiceDate(): ?\DateTime;
+
+    /**
      * Returns total of invoices from unpaid orders with due date greater than today.
      *
      * @param CustomerInterface $customer

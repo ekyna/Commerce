@@ -13,6 +13,7 @@ use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
@@ -127,14 +128,14 @@ class AccountingExporter implements AccountingExporterInterface
         TaxResolverInterface $taxResolver,
         array $config
     ) {
-        $this->invoiceRepository = $invoiceRepository;
-        $this->paymentRepository = $paymentRepository;
-        $this->accountingRepository = $accountingRepository;
-        $this->currencyConverter = $currencyConverter;
-        $this->amountCalculator = $amountCalculator;
-        $this->invoiceCalculator = $invoiceCalculator;
+        $this->invoiceRepository      = $invoiceRepository;
+        $this->paymentRepository      = $paymentRepository;
+        $this->accountingRepository   = $accountingRepository;
+        $this->currencyConverter      = $currencyConverter;
+        $this->amountCalculator       = $amountCalculator;
+        $this->invoiceCalculator      = $invoiceCalculator;
         $this->invoicePaymentResolver = $invoicePaymentResolver;
-        $this->taxResolver = $taxResolver;
+        $this->taxResolver            = $taxResolver;
 
         $this->currency = $this->currencyConverter->getDefaultCurrency();
 
@@ -147,9 +148,31 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * @inheritDoc
      */
-    public function export(\DateTime $month): string
+    public function export(string $year, string $month = null): string
     {
-        $path = tempnam(sys_get_temp_dir(), 'acc');
+        ini_set('max_execution_time', 0);
+
+        $months = [];
+        if (is_null($month)) {
+            try {
+                $start = new \DateTime("$year-01-01");
+            } catch (\Exception $e) {
+                throw new InvalidArgumentException("Failed to create date.");
+            }
+            $months = iterator_to_array(new \DatePeriod(
+                $start,
+                new \DateInterval('P1M'),
+                (clone $start)->modify('last day of december')
+            ));
+        } else {
+            try {
+                $months[] = new \DateTime("$year-$month-01");
+            } catch (\Exception $e) {
+                throw new InvalidArgumentException("Failed to create date.");
+            }
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'accounting');
 
         $zip = new \ZipArchive();
 
@@ -157,10 +180,13 @@ class AccountingExporter implements AccountingExporterInterface
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
-        $zip->addFile($this->exportInvoices($month), 'invoices.csv');
+        /** @var \DateTime $month */
+        foreach ($months as $month) {
+            $zip->addFile($this->exportInvoices($month), sprintf('%s_invoices.csv', $month->format('Y-m')));
 
-        if (!$this->config['total_as_payment']) {
-            $zip->addFile($this->exportPayments($month), 'payments.csv');
+            if (!$this->config['total_as_payment']) {
+                $zip->addFile($this->exportPayments($month), sprintf('%s_payments.csv', $month->format('Y-m')));
+            }
         }
 
         $zip->close();
@@ -247,7 +273,7 @@ class AccountingExporter implements AccountingExporterInterface
             }
 
             $amount = (string)$this->round($payment->getRealAmount());
-            $date = $payment->getSale()->getCreatedAt();
+            $date   = $payment->getSale()->getCreatedAt();
 
             if ($payment->isRefund()) {
                 // Payment debit
@@ -349,8 +375,8 @@ class AccountingExporter implements AccountingExporterInterface
      */
     protected function writeInvoiceGoodsLines(): void
     {
-        $sale = $this->invoice->getSale();
-        $date = $sale->getCreatedAt();
+        $sale    = $this->invoice->getSale();
+        $date    = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
         /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[] $discounts */
         $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
@@ -393,7 +419,7 @@ class AccountingExporter implements AccountingExporterInterface
                         $amount -= $this->round($amount * $adjustment->getAmount() / 100);
                     } else {
                         $this->amountCalculator->calculateSale($sale, $this->currency);
-                        $gross = $sale->getGrossResult($this->currency)->getBase();
+                        $gross  = $sale->getGrossResult($this->currency)->getBase();
                         $amount -= $this->round($base * $adjustment->getAmount() / $gross);
                     }
                 }
@@ -428,8 +454,8 @@ class AccountingExporter implements AccountingExporterInterface
 
         $amount = $this->round($amount);
 
-        $sale = $this->invoice->getSale();
-        $date = $sale->getCreatedAt();
+        $sale    = $this->invoice->getSale();
+        $date    = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
 
         $account = $this->getShipmentAccountNumber($taxRule, $this->invoice->getNumber());
@@ -480,12 +506,12 @@ class AccountingExporter implements AccountingExporterInterface
     protected function writePaymentExchange(PaymentInterface $payment, string $number, \DateTime $date): void
     {
         $sale = $payment->getSale();
-        $pc = $payment->getCurrency()->getCode();
-        $sc = $sale->getCurrency()->getCode();
+        $pc   = $payment->getCurrency()->getCode();
+        $sc   = $sale->getCurrency()->getCode();
 
         if ($this->currency !== $pc) { // If payment currency is not default
             $currency = $pc;
-            $rate = $this->currencyConverter->getSubjectExchangeRate($payment, $currency, $this->currency);
+            $rate     = $this->currencyConverter->getSubjectExchangeRate($payment, $currency, $this->currency);
 
             $amount = $payment->getAmount();
 
@@ -497,7 +523,7 @@ class AccountingExporter implements AccountingExporterInterface
             }
         } elseif ($this->currency !== $sc) {  // If sale currency is not default
             $currency = $sc;
-            $rate = $this->currencyConverter->getSubjectExchangeRate($sale, $currency, $this->currency);
+            $rate     = $this->currencyConverter->getSubjectExchangeRate($sale, $currency, $this->currency);
 
             $amount = $payment->getAmount();
 
@@ -528,7 +554,7 @@ class AccountingExporter implements AccountingExporterInterface
         } else {
             // Loss
             $account = $this->getExchangeAccountNumber(false);
-            $diff = -$diff;
+            $diff    = -$diff;
         }
 
         if (null === $account) {

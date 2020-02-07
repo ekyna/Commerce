@@ -3,9 +3,11 @@
 namespace Ekyna\Component\Commerce\Order\Export;
 
 use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
+use Ekyna\Component\Commerce\Common\Export\RegionProvider;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
+use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
 
 /**
  * Class InvoiceExporter
@@ -19,17 +21,24 @@ class OrderInvoiceExporter extends AbstractExporter
      */
     protected $repository;
 
+    /**
+     * @var RegionProvider
+     */
+    protected $regionProvider;
+
 
     /**
      * Constructor.
      *
      * @param OrderInvoiceRepositoryInterface $repository
+     * @param RegionProvider $regionProvider
      */
-    public function __construct(OrderInvoiceRepositoryInterface $repository)
+    public function __construct(OrderInvoiceRepositoryInterface $repository, RegionProvider $regionProvider)
     {
         parent::__construct();
 
         $this->repository = $repository;
+        $this->regionProvider = $regionProvider;
     }
 
     /**
@@ -50,6 +59,67 @@ class OrderInvoiceExporter extends AbstractExporter
     public function exportFallInvoices(): string
     {
         return $this->buildFile($this->repository->findFallInvoices(), 'invoices_fall', $this->getDefaultMap());
+    }
+
+    /**
+     * @param \DateTime $from
+     * @param \DateTime $to
+     *
+     * @return string
+     */
+    public function exportRegionsInvoices(\DateTime $from, \DateTime $to): string
+    {
+        $period = new \DatePeriod(
+            (clone $from)->setTime(0, 0, 0, 0),
+            new \DateInterval('P1M'),
+            (clone $to)->setTime(23, 59, 59, 999999)
+        );
+
+        $rows = [
+            ['Date', 'Region', 'Grand', 'Goods', 'Discount', 'Shipping', 'Taxes'],
+        ];
+
+        $regions = $this->regionProvider->getRegions();
+
+        $filter = $filter ?? new StatFilter();
+
+        /** @var \DateTime $date */
+        foreach ($period as $date) {
+            foreach ($regions as $region => $countries) {
+                $filter->setCountries($countries);
+
+                $invoices = $this->repository->findByMonthAndCountries($date, $countries);
+
+                $grand = $goods = $discount = $shipping = $taxes = 0;
+                foreach ($invoices as $invoice) {
+                    if ($invoice['credit']) {
+                        $grand -= $invoice['grandTotal'];
+                        $goods -= $invoice['goodsBase'];
+                        $discount -= $invoice['discountBase'];
+                        $shipping -= $invoice['shipmentBase'];
+                        $taxes -= $invoice['taxesTotal'];
+                    } else {
+                        $grand += $invoice['grandTotal'];
+                        $goods += $invoice['goodsBase'];
+                        $discount += $invoice['discountBase'];
+                        $shipping += $invoice['shipmentBase'];
+                        $taxes += $invoice['taxesTotal'];
+                    }
+                }
+
+                $rows[] = [
+                    $date->format('Y-m'),
+                    $region,
+                    $grand,
+                    $goods,
+                    $discount,
+                    $shipping,
+                    $taxes
+                ];
+            }
+        }
+
+        return $this->createFile($rows, sprintf('invoices-stats_%s_%s.csv', $from->format('Y-m'), $to->format('Y-m')));
     }
 
     /**

@@ -14,32 +14,42 @@ interface StatCalculatorInterface
      *
      * @return array
      */
-    public function calculateStockStats();
+    public function calculateStockStats(): array;
 
     /**
      * Calculates the in order stats for the given day.
      *
-     * @param \DateTime $date
+     * @param \DateTime       $date
+     * @param StatFilter|null $filter
      *
      * @return array
      */
-    public function calculateDayOrderStats(\DateTime $date);
+    public function calculateDayOrderStats(\DateTime $date, StatFilter $filter = null): array;
 
     /**
      * Calculates the in order stats for the given month.
      *
-     * @param \DateTime $date
+     * @param \DateTime       $date
+     * @param StatFilter|null $filter
      *
      * @return array
      */
-    public function calculateMonthOrderStats(\DateTime $date);
+    public function calculateMonthOrderStats(\DateTime $date, StatFilter $filter = null): array;
 
     /**
      * Calculates the in order stats for the given year.
      *
-     * @param \DateTime $date
+     * @param \DateTime       $date
+     * @param StatFilter|null $filter
      *
      * @return array
      */
-    public function calculateYearOrderStats(\DateTime $date);
+    public function calculateYearOrderStats(\DateTime $date, StatFilter $filter = null): array;
+
+    /**
+     * Creates an empty result.
+     *
+     * @return array
+     */
+    public function createEmptyResult(): array;
 }

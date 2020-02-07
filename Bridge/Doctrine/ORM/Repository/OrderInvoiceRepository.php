@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -173,6 +174,59 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * @inheritDoc
      */
+    public function findByMonthAndCountries(\DateTime $date, array $codes, bool $exclude = false): array
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        $start = clone $date;
+        $start->modify('first day of this month');
+        $start->setTime(0, 0, 0, 0);
+
+        $end = clone $date;
+        $end->modify('last day of this month');
+        $end->setTime(23, 59, 59, 999999);
+
+        $qb
+            ->select([
+                'i.credit',
+                'i.goodsBase',
+                'i.discountBase',
+                'i.shipmentBase',
+                'i.taxesTotal',
+                'i.grandTotal',
+            ])
+            ->join('i.order', 'o')
+            ->andWhere($qb->expr()->between('i.createdAt', ':start', ':end'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
+            ->addOrderBy('i.createdAt', 'ASC');
+
+        if (!empty($codes)) {
+            $qb
+                ->join('o.invoiceAddress', 'a')
+                ->join('a.country', 'c');
+
+            if ($exclude) {
+                $qb->andWhere($qb->expr()->notIn('c.code', ':countries'));
+            } else {
+                $qb->andWhere($qb->expr()->in('c.code', ':countries'));
+            }
+        }
+
+        $query = $qb->getQuery()
+            ->setParameter('start', $start, Types::DATETIME_MUTABLE)
+            ->setParameter('end', $end, Types::DATETIME_MUTABLE)
+            ->setParameter('sample', false);
+
+        if (!empty($codes)) {
+            $query->setParameter('countries', $codes);
+        }
+
+        return $query->getScalarResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findDueInvoices(CustomerInterface $customer = null, string $currency = null): array
     {
         return $this
@@ -180,6 +234,23 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->addOrderBy('i.dueDate', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findFirstInvoiceDate(): ?\DateTime
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        $date = $qb
+            ->select('i.createdAt')
+            ->addOrderBy('i.createdAt', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
+
+        return $date ? new \DateTime($date) : null;
     }
 
     /**

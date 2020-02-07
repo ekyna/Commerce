@@ -42,4 +42,15 @@ interface InvoiceRepositoryInterface extends ResourceRepositoryInterface
      * @return InvoiceInterface[]
      */
     public function findByMonth(\DateTime $date): array;
+
+    /**
+     * Returns invoices  by months and countries codes.
+     *
+     * @param \DateTime $date
+     * @param array     $codes
+     * @param bool      $exclude
+     *
+     * @return array The invoice list as scalar results
+     */
+    public function findByMonthAndCountries(\DateTime $date, array $codes, bool $exclude = false): array;
 }
