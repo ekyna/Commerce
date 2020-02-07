@@ -212,6 +212,18 @@ class CustomerListener
             $customer->setOutstandingBalance(0);
             $changed = true;
         }*/
+        // Clear default payment method
+        if ($customer->getDefaultPaymentMethod()) {
+            $customer->setDefaultPaymentMethod(null);
+            $changed = true;
+        }
+        // Clear restricted payment methods
+        if (0 < $customer->getPaymentMethods()->count()) {
+            foreach ($customer->getPaymentMethods() as $method) {
+                $customer->removePaymentMethod($method);
+            }
+            $changed = true;
+        }
 
         return $changed;
     }
