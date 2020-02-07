@@ -146,7 +146,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         $invoice->setShipment(null);
         $invoice->setSale(null);
 
-        $this->persistenceHelper->remove($invoice, true);
+        $this->persistenceHelper->remove($invoice);
     }
 
     /**
