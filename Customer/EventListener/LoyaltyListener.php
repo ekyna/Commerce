@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\EventListener;
 
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Customer\Loyalty\LoyaltyUpdater;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -26,17 +27,24 @@ class LoyaltyListener
      */
     private $updater;
 
+    /**
+     * @var AmountCalculatorInterface
+     */
+    private $calculator;
+
 
     /**
      * Constructor.
      *
-     * @param Features       $features
-     * @param LoyaltyUpdater $updater
+     * @param Features                  $features
+     * @param LoyaltyUpdater            $updater
+     * @param AmountCalculatorInterface $calculator
      */
-    public function __construct(Features $features, LoyaltyUpdater $updater)
+    public function __construct(Features $features, LoyaltyUpdater $updater, AmountCalculatorInterface $calculator)
     {
         $this->features = $features;
         $this->updater = $updater;
+        $this->calculator = $calculator;
     }
 
     /**
@@ -104,7 +112,14 @@ class LoyaltyListener
             return;
         }
 
-        $points = floor($order->getGrandTotal() * (float)$this->features->getConfig(Features::LOYALTY)['credit_rate']);
+        $currency = $this->calculator->getDefaultCurrency();
+
+        $this->calculator->calculateSale($order);
+
+        $points = floor(
+            ($order->getGrandTotal() - $order->getShipmentResult($currency)->getTotal()) *
+            (float)$this->features->getConfig(Features::LOYALTY)['credit_rate']
+        );
 
         if (0 >= $points) {
             return;

@@ -92,10 +92,10 @@
                     <value>Calculation</value>
                 </option>
             </constraint>
-            <constraint name="Callback">
+            <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Common\Model\AdjustmentTypes</value>
-                    <value>isValidType</value>
+                    <value>getTypes</value>
                 </option>
                 <option name="groups">
                     <value>Default</value>
@@ -110,10 +110,10 @@
                     <value>Calculation</value>
                 </option>
             </constraint>
-            <constraint name="Callback">
+            <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Common\Model\AdjustmentModes</value>
-                    <value>isValidMode</value>
+                    <value>getModes</value>
                 </option>
                 <option name="groups">
                     <value>Default</value>
@@ -518,10 +518,10 @@
         </property>
         <property name="mode">
             <constraint name="NotBlank"/>
-            <constraint name="Callback">
+            <constraint name="Choice">
                 <option name="callback">
                     <value>Ekyna\Component\Commerce\Common\Model\AdjustmentModes</value>
-                    <value>isValidMode</value>
+                    <value>getModes</value>
                 </option>
             </constraint>
         </property>
