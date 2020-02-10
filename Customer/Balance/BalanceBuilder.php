@@ -133,7 +133,7 @@ class BalanceBuilder
                     $order->getNumber(),
                     (string)$order->getVoucherNumber(),
                     $order->getCreatedAt(),
-                    $isDue ? $dueDate : null
+                    $dueDate
                 );
 
                 $line->setDue($isDue);
