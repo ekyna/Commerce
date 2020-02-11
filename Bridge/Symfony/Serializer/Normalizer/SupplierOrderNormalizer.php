@@ -21,6 +21,23 @@ class SupplierOrderNormalizer extends AbstractResourceNormalizer
     {
         $data = parent::normalize($order, $format, $context);
 
+        if ($this->contextHasGroup('Search', $context)) {
+            $carrier = $order->getCarrier();
+
+            $data = array_replace($data, [
+                'number'   => $order->getNumber(),
+                'supplier' => [
+                    'id'   => $order->getSupplier()->getId(),
+                    'name' => $order->getSupplier()->getName(),
+                ],
+                'carrier'  => $carrier ? [
+                    'id'   => $carrier->getId(),
+                    'name' => $carrier->getName(),
+                ] : null,
+                'description' => $order->getDescription(),
+            ]);
+        }
+
         if ($this->contextHasGroup('Summary', $context)) {
             $items = [];
             foreach ($order->getItems() as $item) {

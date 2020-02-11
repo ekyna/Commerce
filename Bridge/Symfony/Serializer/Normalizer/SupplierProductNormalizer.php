@@ -22,11 +22,17 @@ class SupplierProductNormalizer extends AbstractResourceNormalizer
         $data = parent::normalize($product, $format, $context);
 
         if ($this->contextHasGroup(['Default', 'SupplierProduct', 'Search'], $context)) {
+            $supplier = $product->getSupplier();
+
             $data = array_replace($data, [
                 'designation' => $product->getDesignation(),
                 'reference'   => $product->getReference(),
                 'net_price'   => $product->getNetPrice(),
-                'currency'    => $product->getSupplier()->getCurrency()->getCode(),
+                'currency'    => $supplier->getCurrency()->getCode(),
+                'supplier'    => [
+                    'id'   => $supplier->getId(),
+                    'name' => $supplier->getName(),
+                ],
             ]);
         }
 

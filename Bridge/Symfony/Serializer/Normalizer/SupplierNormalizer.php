@@ -21,7 +21,12 @@ class SupplierNormalizer extends AbstractResourceNormalizer
     {
         $data = parent::normalize($supplier, $format, $context);
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if ($this->contextHasGroup('Search', $context)) {
+            $data = array_replace($data, [
+                'name'        => $supplier->getName(),
+                'description' => $supplier->getDescription(),
+            ]);
+        } elseif ($this->contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
                 'description' => $supplier->getDescription(),
             ]);
