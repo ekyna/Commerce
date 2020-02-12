@@ -25,6 +25,15 @@ class CustomerRepository extends ResourceRepository implements CustomerRepositor
     /**
      * @inheritDoc
      */
+    public function findOneByEmail(string $email): ?CustomerInterface
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->findOneBy(['email' => $email]);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findWithBirthdayToday(): array
     {
         $qb = $this->createQueryBuilder('c');

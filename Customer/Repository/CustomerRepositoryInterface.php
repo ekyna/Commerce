@@ -22,6 +22,15 @@ interface CustomerRepositoryInterface extends ResourceRepositoryInterface
     public function findOneByNumber(string $number): ?CustomerInterface;
 
     /**
+     * Finds the customer by its email.
+     *
+     * @param string $email
+     *
+     * @return CustomerInterface|null
+     */
+    public function findOneByEmail(string $email): ?CustomerInterface;
+
+    /**
      * Finds the customers having their birthday today.
      *
      * @return CustomerInterface[]
