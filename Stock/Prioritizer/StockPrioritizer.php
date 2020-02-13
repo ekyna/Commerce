@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
+use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
@@ -37,6 +38,11 @@ class StockPrioritizer implements StockPrioritizerInterface
     protected $unitManager;
 
     /**
+     * @var StockUnitCacheInterface
+     */
+    protected $unitCache;
+
+    /**
      * @var StockAssignmentManagerInterface
      */
     protected $assignmentManager;
@@ -53,6 +59,7 @@ class StockPrioritizer implements StockPrioritizerInterface
      * @param StockUnitResolverInterface      $unitResolver
      * @param StockUnitAssignerInterface      $unitAssigner
      * @param StockUnitManagerInterface       $unitManager
+     * @param StockUnitCacheInterface         $unitCache
      * @param StockAssignmentManagerInterface $assignmentManager
      * @param StockLoggerInterface            $logger
      */
@@ -60,14 +67,16 @@ class StockPrioritizer implements StockPrioritizerInterface
         StockUnitResolverInterface $unitResolver,
         StockUnitAssignerInterface $unitAssigner,
         StockUnitManagerInterface $unitManager,
+        StockUnitCacheInterface $unitCache,
         StockAssignmentManagerInterface $assignmentManager,
         StockLoggerInterface $logger
     ) {
-        $this->unitResolver = $unitResolver;
-        $this->unitAssigner = $unitAssigner;
-        $this->unitManager = $unitManager;
+        $this->unitResolver      = $unitResolver;
+        $this->unitAssigner      = $unitAssigner;
+        $this->unitManager       = $unitManager;
+        $this->unitCache         = $unitCache;
         $this->assignmentManager = $assignmentManager;
-        $this->logger = $logger;
+        $this->logger            = $logger;
     }
 
     /**
@@ -235,7 +244,7 @@ class StockPrioritizer implements StockPrioritizerInterface
 
         $changed = false;
 
-        $helper = new PrioritizeHelper($this->unitResolver);
+        $helper = new PrioritizeHelper($this->unitResolver, $this->unitCache);
 
         $sourceUnit = $assignment->getStockUnit();
 
@@ -262,7 +271,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             }
 
             // Move assignment to the target unit using reservable quantity first.
-            $delta = min($quantity, $targetUnit->getReservableQuantity());
+            $delta    = min($quantity, $targetUnit->getReservableQuantity());
             $quantity -= $this->moveAssignment($assignment, $targetUnit, $delta);
 
             // TODO Validate units ?
@@ -302,7 +311,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         $sourceUnit = $assignment->getStockUnit();
-        $saleItem = $assignment->getSaleItem();
+        $saleItem   = $assignment->getSaleItem();
 
         // Debit source unit's sold quantity
         $this->logger->unitSold($sourceUnit, -$quantity);

@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Cache;
 
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitFinderInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
  * @package Ekyna\Component\Commerce\Stock\Cache
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface StockUnitCacheInterface extends StockUnitFinderInterface
+interface StockUnitCacheInterface
 {
     /**
      * Adds the stock unit to the cache.
@@ -20,7 +20,7 @@ interface StockUnitCacheInterface extends StockUnitFinderInterface
      *
      * @throws LogicException
      */
-    public function add(StockUnitInterface $unit);
+    public function add(StockUnitInterface $unit): void;
 
     /**
      * Returns whether a stock unit has been cached as added.
@@ -30,7 +30,7 @@ interface StockUnitCacheInterface extends StockUnitFinderInterface
      * @return bool
      * @throws LogicException
      */
-    public function isAdded(StockUnitInterface $unit);
+    public function isAdded(StockUnitInterface $unit): bool;
 
     /**
      * Removes the stock unit from the cache.
@@ -39,7 +39,7 @@ interface StockUnitCacheInterface extends StockUnitFinderInterface
      *
      * @throws LogicException
      */
-    public function remove(StockUnitInterface $unit);
+    public function remove(StockUnitInterface $unit): void;
 
     /**
      * Returns whether a stock unit has been cached as removed.
@@ -49,5 +49,14 @@ interface StockUnitCacheInterface extends StockUnitFinderInterface
      * @return bool
      * @throws LogicException
      */
-    public function isRemoved(StockUnitInterface $unit);
+    public function isRemoved(StockUnitInterface $unit): bool;
+
+    /**
+     * Finds units by subject.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return StockUnitInterface[]
+     */
+    public function findBySubject(StockSubjectInterface $subject): array;
 }

@@ -56,6 +56,13 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
      */
     public function persist(StockAssignmentInterface $assignment): void
     {
+        // Do not persist
+        if (is_null($assignment->getId()) && $assignment->isEmpty()) {
+            $this->remove($assignment);
+
+            return;
+        }
+
         $this->persistenceHelper->persistAndRecompute($assignment, false);
     }
 

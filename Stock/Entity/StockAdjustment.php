@@ -24,7 +24,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @var float
      */
-    protected $quantity;
+    protected $quantity = 0;
 
     /**
      * @var string
@@ -53,7 +53,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getStockUnit()
+    public function getStockUnit(): ?Model\StockUnitInterface
     {
         return $this->stockUnit;
     }
@@ -61,7 +61,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setStockUnit(Model\StockUnitInterface $stockUnit = null)
+    public function setStockUnit(Model\StockUnitInterface $stockUnit = null): Model\StockAdjustmentInterface
     {
         if ($this->stockUnit === $stockUnit) {
             return $this;
@@ -82,7 +82,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getQuantity()
+    public function getQuantity(): float
     {
         return $this->quantity;
     }
@@ -90,7 +90,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setQuantity($quantity)
+    public function setQuantity(float $quantity): Model\StockAdjustmentInterface
     {
         $this->quantity = $quantity;
 
@@ -100,7 +100,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getReason()
+    public function getReason(): ?string
     {
         return $this->reason;
     }
@@ -108,7 +108,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setReason($reason)
+    public function setReason(string $reason): Model\StockAdjustmentInterface
     {
         $this->reason = $reason;
 
@@ -116,23 +116,17 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     }
 
     /**
-     * Returns the note.
-     *
-     * @return string
+     * @inheritDoc
      */
-    public function getNote()
+    public function getNote(): ?string
     {
         return $this->note;
     }
 
     /**
-     * Sets the note.
-     *
-     * @param string $note
-     *
-     * @return StockAdjustment
+     * @inheritDoc
      */
-    public function setNote($note)
+    public function setNote(string $note): Model\StockAdjustmentInterface
     {
         $this->note = $note;
 
@@ -140,17 +134,17 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(\DateTime $createdAt): Model\StockAdjustmentInterface
     {
         $this->createdAt = $createdAt;
 

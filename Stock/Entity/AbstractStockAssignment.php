@@ -70,7 +70,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function getSoldQuantity()
+    public function getSoldQuantity(): float
     {
         return $this->soldQuantity;
     }
@@ -78,9 +78,9 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function setSoldQuantity($quantity)
+    public function setSoldQuantity(float $quantity): Stock\StockAssignmentInterface
     {
-        $this->soldQuantity = (float)$quantity;
+        $this->soldQuantity = $quantity;
 
         return $this;
     }
@@ -88,7 +88,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function getShippedQuantity()
+    public function getShippedQuantity(): float
     {
         return $this->shippedQuantity;
     }
@@ -96,9 +96,9 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function setShippedQuantity($quantity)
+    public function setShippedQuantity(float $quantity): Stock\StockAssignmentInterface
     {
-        $this->shippedQuantity = (float)$quantity;
+        $this->shippedQuantity = $quantity;
 
         return $this;
     }
@@ -106,7 +106,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function getShippableQuantity()
+    public function getShippableQuantity(): float
     {
         if (!$this->stockUnit) {
             return 0;
@@ -121,7 +121,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function isFullyShipped()
+    public function isFullyShipped(): bool
     {
         return 0 === bccomp($this->soldQuantity, $this->shippedQuantity, 5);
     }
@@ -129,7 +129,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function isFullyShippable()
+    public function isFullyShippable(): bool
     {
         //return $this->getShippableQuantity() >= $this->soldQuantity - $this->shippedQuantity;
         return 0 <= bccomp($this->getShippableQuantity(), $this->soldQuantity - $this->shippedQuantity, 5);

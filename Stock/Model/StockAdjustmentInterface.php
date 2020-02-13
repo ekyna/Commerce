@@ -14,9 +14,9 @@ interface StockAdjustmentInterface extends ResourceInterface
     /**
      * Returns the stock unit.
      *
-     * @return StockUnitInterface
+     * @return StockUnitInterface|null
      */
-    public function getStockUnit();
+    public function getStockUnit(): ?StockUnitInterface;
 
     /**
      * Sets the stock unit.
@@ -25,14 +25,14 @@ interface StockAdjustmentInterface extends ResourceInterface
      *
      * @return $this|StockAdjustmentInterface
      */
-    public function setStockUnit(StockUnitInterface $stockUnit = null);
+    public function setStockUnit(StockUnitInterface $stockUnit = null): StockAdjustmentInterface;
 
     /**
      * Returns the quantity.
      *
      * @return float
      */
-    public function getQuantity();
+    public function getQuantity(): float;
 
     /**
      * Sets the quantity.
@@ -41,14 +41,14 @@ interface StockAdjustmentInterface extends ResourceInterface
      *
      * @return $this|StockAdjustmentInterface
      */
-    public function setQuantity($quantity);
+    public function setQuantity(float $quantity): StockAdjustmentInterface;
 
     /**
      * Returns the reason.
      *
      * @return string
      */
-    public function getReason();
+    public function getReason(): ?string;
 
     /**
      * Sets the reason.
@@ -57,14 +57,14 @@ interface StockAdjustmentInterface extends ResourceInterface
      *
      * @return $this|StockAdjustmentInterface
      */
-    public function setReason($reason);
+    public function setReason(string $reason): StockAdjustmentInterface;
 
     /**
      * Returns the note.
      *
      * @return string
      */
-    public function getNote();
+    public function getNote(): ?string;
 
     /**
      * Sets the note.
@@ -73,14 +73,14 @@ interface StockAdjustmentInterface extends ResourceInterface
      *
      * @return $this|StockAdjustmentInterface
      */
-    public function setNote($note);
+    public function setNote(string $note): StockAdjustmentInterface;
 
     /**
      * Returns the "created at" date time.
      *
      * @return \DateTime
      */
-    public function getCreatedAt();
+    public function getCreatedAt(): \DateTime;
 
     /**
      * Sets the "created at" date time.
@@ -89,5 +89,5 @@ interface StockAdjustmentInterface extends ResourceInterface
      *
      * @return $this|StockAdjustmentInterface
      */
-    public function setCreatedAt(\DateTime $createdAt);
+    public function setCreatedAt(\DateTime $createdAt): StockAdjustmentInterface;
 }

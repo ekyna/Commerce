@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
@@ -140,7 +141,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getGeocodes()
+    public function getGeocodes(): array
     {
         return $this->geocodes;
     }
@@ -148,7 +149,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function hasGeocode($geocode)
+    public function hasGeocode(string $geocode): bool
     {
         $geocode = strtoupper($geocode);
 
@@ -158,7 +159,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function addGeocode($geocode)
+    public function addGeocode(string $geocode): Model\StockUnitInterface
     {
         $geocode = strtoupper($geocode);
 
@@ -172,7 +173,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function removeGeocode($geocode)
+    public function removeGeocode(string $geocode): Model\StockUnitInterface
     {
         $geocode = strtoupper($geocode);
 
@@ -186,7 +187,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setGeocodes(array $codes)
+    public function setGeocodes(array $codes): Model\StockUnitInterface
     {
         $this->geocodes = $codes;
 
@@ -196,7 +197,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getSupplierOrderItem()
+    public function getSupplierOrderItem(): ?SupplierOrderItemInterface
     {
         return $this->supplierOrderItem;
     }
@@ -204,7 +205,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null)
+    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null): Model\StockUnitInterface
     {
         if ($item !== $this->supplierOrderItem) {
             if ($previous = $this->supplierOrderItem) {
@@ -223,115 +224,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getOrderedQuantity()
-    {
-        return $this->orderedQuantity;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setOrderedQuantity($quantity)
-    {
-        $this->orderedQuantity = (float)$quantity;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getReceivedQuantity()
-    {
-        return $this->receivedQuantity;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setReceivedQuantity($quantity)
-    {
-        $this->receivedQuantity = (float)$quantity;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAdjustedQuantity()
-    {
-        return $this->adjustedQuantity;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setAdjustedQuantity($quantity)
-    {
-        $this->adjustedQuantity = (float)$quantity;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getSoldQuantity()
-    {
-        return $this->soldQuantity;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setSoldQuantity($quantity)
-    {
-        $this->soldQuantity = (float)$quantity;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getShippedQuantity()
-    {
-        return $this->shippedQuantity;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setShippedQuantity($quantity)
-    {
-        $this->shippedQuantity = (float)$quantity;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getNetPrice()
-    {
-        return $this->netPrice;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setNetPrice($price)
-    {
-        $this->netPrice = (float)$price;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getEstimatedDateOfArrival()
+    public function getEstimatedDateOfArrival(): ?\DateTime
     {
         return $this->estimatedDateOfArrival;
     }
@@ -339,7 +232,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setEstimatedDateOfArrival(\DateTime $date = null)
+    public function setEstimatedDateOfArrival(\DateTime $date = null): Model\StockUnitInterface
     {
         $this->estimatedDateOfArrival = $date;
 
@@ -349,7 +242,115 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getCreatedAt()
+    public function getOrderedQuantity(): float
+    {
+        return $this->orderedQuantity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setOrderedQuantity(float $quantity): Model\StockUnitInterface
+    {
+        $this->orderedQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getReceivedQuantity(): float
+    {
+        return $this->receivedQuantity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setReceivedQuantity(float $quantity): Model\StockUnitInterface
+    {
+        $this->receivedQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAdjustedQuantity(): float
+    {
+        return $this->adjustedQuantity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAdjustedQuantity(float $quantity): Model\StockUnitInterface
+    {
+        $this->adjustedQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSoldQuantity(): float
+    {
+        return $this->soldQuantity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSoldQuantity(float $quantity): Model\StockUnitInterface
+    {
+        $this->soldQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getShippedQuantity(): float
+    {
+        return $this->shippedQuantity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setShippedQuantity(float $quantity): Model\StockUnitInterface
+    {
+        $this->shippedQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNetPrice(): float
+    {
+        return $this->netPrice;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setNetPrice(float $price): Model\StockUnitInterface
+    {
+        $this->netPrice = $price;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
@@ -357,7 +358,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setCreatedAt(\DateTime $date = null)
+    public function setCreatedAt(\DateTime $date): Model\StockUnitInterface
     {
         $this->createdAt = $date;
 
@@ -367,7 +368,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getClosedAt()
+    public function getClosedAt(): ?\DateTime
     {
         return $this->closedAt;
     }
@@ -375,7 +376,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setClosedAt(\DateTime $date = null)
+    public function setClosedAt(\DateTime $date = null): Model\StockUnitInterface
     {
         $this->closedAt = $date;
 
@@ -385,7 +386,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function hasStockAssignment(Model\StockAssignmentInterface $assignment)
+    public function hasStockAssignment(Model\StockAssignmentInterface $assignment): bool
     {
         return $this->stockAssignments->contains($assignment);
     }
@@ -393,7 +394,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function addStockAssignment(Model\StockAssignmentInterface $assignment)
+    public function addStockAssignment(Model\StockAssignmentInterface $assignment): Model\StockUnitInterface
     {
         if (!$this->hasStockAssignment($assignment)) {
             $this->stockAssignments->add($assignment);
@@ -406,7 +407,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function removeStockAssignment(Model\StockAssignmentInterface $assignment)
+    public function removeStockAssignment(Model\StockAssignmentInterface $assignment): Model\StockUnitInterface
     {
         if ($this->hasStockAssignment($assignment)) {
             $this->stockAssignments->removeElement($assignment);
@@ -419,7 +420,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getStockAssignments()
+    public function getStockAssignments(): Collection
     {
         return $this->stockAssignments;
     }
@@ -427,7 +428,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function hasStockAdjustment(Model\StockAdjustmentInterface $adjustment)
+    public function hasStockAdjustment(Model\StockAdjustmentInterface $adjustment): bool
     {
         return $this->stockAdjustments->contains($adjustment);
     }
@@ -435,7 +436,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function addStockAdjustment(Model\StockAdjustmentInterface $adjustment)
+    public function addStockAdjustment(Model\StockAdjustmentInterface $adjustment): Model\StockUnitInterface
     {
         if (!$this->hasStockAdjustment($adjustment)) {
             $this->stockAdjustments->add($adjustment);
@@ -448,7 +449,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function removeStockAdjustment(Model\StockAdjustmentInterface $adjustment)
+    public function removeStockAdjustment(Model\StockAdjustmentInterface $adjustment): Model\StockUnitInterface
     {
         if ($this->hasStockAdjustment($adjustment)) {
             $this->stockAdjustments->removeElement($adjustment);
@@ -461,7 +462,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getStockAdjustments()
+    public function getStockAdjustments(): Collection
     {
         return $this->stockAdjustments;
     }
@@ -469,7 +470,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return null === $this->supplierOrderItem
             && 0 == $this->stockAssignments->count()
@@ -481,7 +482,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function isClosed()
+    public function isClosed(): bool
     {
         return $this->state === Model\StockUnitStates::STATE_CLOSED;
     }
@@ -489,7 +490,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getReservableQuantity()
+    public function getReservableQuantity(): float
     {
         if (0 == $this->orderedQuantity) {
             return INF;
@@ -503,7 +504,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getShippableQuantity()
+    public function getShippableQuantity(): float
     {
         $result = $this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity;
 

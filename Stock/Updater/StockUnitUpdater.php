@@ -148,6 +148,8 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $stockUnit->setSoldQuantity($quantity);
 
+        // TODO Use overflow handler ?
+
         $this->unitManager->persistOrRemove($stockUnit);
     }
 

@@ -55,7 +55,7 @@ class StockUnitManager implements StockUnitManagerInterface
         // Resolve the stock unit's state
         $this->stateResolver->resolve($stockUnit);
 
-        // If empty, remove without scheduling event
+        // If empty, remove and schedule event
         if ($stockUnit->isEmpty()) {
             // Remove the stock unit from the cache
             $this->unitCache->remove($stockUnit);

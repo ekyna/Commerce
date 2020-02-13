@@ -18,21 +18,21 @@ interface StockUnitAssignerInterface
      *
      * @param SaleItemInterface $item
      */
-    public function assignSaleItem(SaleItemInterface $item);
+    public function assignSaleItem(SaleItemInterface $item): void;
 
     /**
      * Applies the sale item quantity change to stock units.
      *
      * @param SaleItemInterface $item
      */
-    public function applySaleItem(SaleItemInterface $item);
+    public function applySaleItem(SaleItemInterface $item): void;
 
     /**
      * Detaches the sale item from stock units by removing stock assignments.
      *
      * @param SaleItemInterface $item
      */
-    public function detachSaleItem(SaleItemInterface $item);
+    public function detachSaleItem(SaleItemInterface $item): void;
 
     /**
      * Assigns the shipment item to stock units
@@ -40,7 +40,7 @@ interface StockUnitAssignerInterface
      *
      * @param ShipmentItemInterface $item
      */
-    public function assignShipmentItem(ShipmentItemInterface $item);
+    public function assignShipmentItem(ShipmentItemInterface $item): void;
 
     /**
      * Applies the shipment item quantity change to stock units
@@ -48,7 +48,7 @@ interface StockUnitAssignerInterface
      *
      * @param ShipmentItemInterface $item
      */
-    public function applyShipmentItem(ShipmentItemInterface $item);
+    public function applyShipmentItem(ShipmentItemInterface $item): void;
 
     /**
      * Detaches the shipment item from stock units
@@ -56,7 +56,7 @@ interface StockUnitAssignerInterface
      *
      * @param ShipmentItemInterface $item
      */
-    public function detachShipmentItem(ShipmentItemInterface $item);
+    public function detachShipmentItem(ShipmentItemInterface $item): void;
 
     /**
      * Assigns the invoice line to stock units
@@ -64,7 +64,7 @@ interface StockUnitAssignerInterface
      *
      * @param InvoiceLineInterface $line
      */
-    public function assignInvoiceLine(InvoiceLineInterface $line);
+    public function assignInvoiceLine(InvoiceLineInterface $line): void;
 
     /**
      * Applies the invoice line quantity change to stock units
@@ -72,7 +72,7 @@ interface StockUnitAssignerInterface
      *
      * @param InvoiceLineInterface $line
      */
-    public function applyInvoiceLine(InvoiceLineInterface $line);
+    public function applyInvoiceLine(InvoiceLineInterface $line): void;
 
     /**
      * Detaches the invoice line from stock units
@@ -80,7 +80,7 @@ interface StockUnitAssignerInterface
      *
      * @param InvoiceLineInterface $line
      */
-    public function detachInvoiceLine(InvoiceLineInterface $line);
+    public function detachInvoiceLine(InvoiceLineInterface $line): void;
 
     /**
      * Returns whether or not the given item supports assignments.
@@ -89,5 +89,5 @@ interface StockUnitAssignerInterface
      *
      * @return bool
      */
-    public function supportsAssignment(SaleItemInterface $item);
+    public function supportsAssignment(SaleItemInterface $item): bool;
 }

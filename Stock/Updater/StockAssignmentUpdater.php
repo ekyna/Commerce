@@ -6,7 +6,6 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
-use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class StockAssignmentUpdater
@@ -15,11 +14,6 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
-
     /**
      * @var StockUnitUpdaterInterface
      */
@@ -34,17 +28,14 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface      $persistenceHelper
      * @param StockUnitUpdaterInterface       $stockUnitUpdater
      * @param StockAssignmentManagerInterface $assignmentManager
      */
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
         StockUnitUpdaterInterface $stockUnitUpdater,
         StockAssignmentManagerInterface $assignmentManager
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->stockUnitUpdater = $stockUnitUpdater;
+        $this->stockUnitUpdater  = $stockUnitUpdater;
         $this->assignmentManager = $assignmentManager;
     }
 
@@ -89,9 +80,9 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         // Assignment update
         $result = $assignment->getSoldQuantity() + $quantity;
         if (0 == $result) {
-            $prevent = false;
+            $prevent  = false;
             $saleItem = $assignment->getSaleItem();
-            $sale = $saleItem->getSale();
+            $sale     = $saleItem->getSale();
 
             if ($sale instanceof ShipmentSubjectInterface && $sale->hasShipments()) {
                 $prevent = true;
@@ -149,7 +140,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 
         // Assignment update
         $assignment->setShippedQuantity($assignment->getShippedQuantity() + $quantity);
-        $this->persistenceHelper->persistAndRecompute($assignment, false);
+        $this->assignmentManager->persist($assignment);
 
         return $quantity;
     }

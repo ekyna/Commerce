@@ -49,7 +49,7 @@ interface StockAssignmentInterface extends ResourceInterface
      *
      * @return float
      */
-    public function getSoldQuantity();
+    public function getSoldQuantity(): float;
 
     /**
      * Sets the sold quantity.
@@ -58,14 +58,14 @@ interface StockAssignmentInterface extends ResourceInterface
      *
      * @return $this|StockAssignmentInterface
      */
-    public function setSoldQuantity($quantity);
+    public function setSoldQuantity(float $quantity): StockAssignmentInterface;
 
     /**
      * Returns the shipped quantity.
      *
      * @return float
      */
-    public function getShippedQuantity();
+    public function getShippedQuantity(): float;
 
     /**
      * Sets the shipped quantity.
@@ -74,28 +74,28 @@ interface StockAssignmentInterface extends ResourceInterface
      *
      * @return $this|StockAssignmentInterface
      */
-    public function setShippedQuantity($quantity);
+    public function setShippedQuantity(float $quantity): StockAssignmentInterface;
 
     /**
      * Returns the shippable quantity.
      *
      * @return float
      */
-    public function getShippableQuantity();
+    public function getShippableQuantity(): float;
 
     /**
      * Returns whether or not the assignment is fully shipped.
      *
      * @return bool
      */
-    public function isFullyShipped();
+    public function isFullyShipped(): bool;
 
     /**
      * Returns whether or not the assignment is fully shippable.
      *
      * @return bool
      */
-    public function isFullyShippable();
+    public function isFullyShippable(): bool;
 
     /**
      * REturns whether the assignment is empty.

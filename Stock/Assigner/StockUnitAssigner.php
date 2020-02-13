@@ -96,7 +96,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function assignSaleItem(SaleItemInterface $item)
+    public function assignSaleItem(SaleItemInterface $item): void
     {
         // Abort if not supported
         if (!$this->supportsAssignment($item)) {
@@ -118,7 +118,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function applySaleItem(SaleItemInterface $item)
+    public function applySaleItem(SaleItemInterface $item): void
     {
         // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
@@ -132,7 +132,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         /** @var StockAssignmentsInterface $item */
 
         // Determine on which stock units the sold quantity change should be dispatched
-        $assignments = $this->sortAssignments($assignments);
+        $this->sortAssignments($assignments);
 
         // Debit case : reverse the sorted assignments
         if (0 > $quantity) {
@@ -164,7 +164,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function detachSaleItem(SaleItemInterface $item)
+    public function detachSaleItem(SaleItemInterface $item): void
     {
         // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
@@ -182,7 +182,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function assignShipmentItem(ShipmentItemInterface $item)
+    public function assignShipmentItem(ShipmentItemInterface $item): void
     {
         // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
@@ -215,7 +215,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function applyShipmentItem(ShipmentItemInterface $item)
+    public function applyShipmentItem(ShipmentItemInterface $item): void
     {
         // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
@@ -261,7 +261,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function detachShipmentItem(ShipmentItemInterface $item)
+    public function detachShipmentItem(ShipmentItemInterface $item): void
     {
         // Abort if not supported
         if (null === $assignments = $this->getAssignments($item)) {
@@ -306,7 +306,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function assignInvoiceLine(InvoiceLineInterface $line)
+    public function assignInvoiceLine(InvoiceLineInterface $line): void
     {
         // Abort if not credit
         if (!$line->getInvoice()->isCredit()) {
@@ -339,7 +339,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function applyInvoiceLine(InvoiceLineInterface $line)
+    public function applyInvoiceLine(InvoiceLineInterface $line): void
     {
         // Abort if not credit
         if (!$line->getInvoice()->isCredit()) {
@@ -384,7 +384,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function detachInvoiceLine(InvoiceLineInterface $line)
+    public function detachInvoiceLine(InvoiceLineInterface $line): void
     {
         // Abort if not credit
         if (null === $invoice = $line->getInvoice()) {
@@ -421,7 +421,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * @inheritdoc
      */
-    public function supportsAssignment(SaleItemInterface $item)
+    public function supportsAssignment(SaleItemInterface $item): bool
     {
         // TODO Check if sale is in stockable state
 
@@ -455,7 +455,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @return null|StockAssignmentInterface[]
      */
-    protected function getAssignments($item)
+    protected function getAssignments($item): ?array
     {
         if ($item instanceof ShipmentItemInterface) {
             $item = $item->getSaleItem();
@@ -477,7 +477,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @param StockAssignmentInterface $assignment
      */
-    protected function removeAssignment(StockAssignmentInterface $assignment)
+    protected function removeAssignment(StockAssignmentInterface $assignment): void
     {
         $this->unitUpdater->updateSold($assignment->getStockUnit(), -$assignment->getSoldQuantity(), true);
 
@@ -492,16 +492,20 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @throws StockLogicException If assignment creation fails.
      */
-    protected function createAssignmentsForQuantity(SaleItemInterface $item, $quantity)
+    protected function createAssignmentsForQuantity(SaleItemInterface $item, float $quantity): void
     {
         if (0 >= $quantity) {
             return;
         }
 
         // Find enough available stock units
-        $stockUnits = $this->sortStockUnits($this->unitResolver->findAssignable($item));
+        $stockUnits = $this->unitResolver->findAssignable($item);
+
+        $this->sortStockUnits($stockUnits);
 
         foreach ($stockUnits as $stockUnit) {
+            // TODO Look for new assignment that could be used
+
             $assignment = $this->assignmentManager->create($item, $stockUnit);
 
             $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
@@ -509,16 +513,17 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             if (0 == $quantity) {
                 return;
             }
+
+            if ($assignment->isEmpty()) {
+                $this->assignmentManager->remove($assignment);
+            }
         }
 
         // Remaining quantity
         if (0 < $quantity) {
             $stockUnit = $this->unitResolver->createBySubjectRelative($item);
 
-            $assignment = $this->saleFactory->createStockAssignmentForItem($item);
-            $assignment
-                ->setSaleItem($item)
-                ->setStockUnit($stockUnit);
+            $assignment = $this->assignmentManager->create($item, $stockUnit);
 
             $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
         }
@@ -538,7 +543,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @return float
      */
-    protected function resolveSoldDeltaQuantity(SaleItemInterface $item)
+    protected function resolveSoldDeltaQuantity(SaleItemInterface $item): float
     {
         $old = $new = $item->getQuantity();
 
@@ -596,13 +601,11 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     }
 
     /**
-     * Sorts assignments.
+     * Sorts the stock assignments.
      *
      * @param array $assignments
-     *
-     * @return array
      */
-    protected function sortAssignments(array $assignments)
+    protected function sortAssignments(array &$assignments): void
     {
         usort($assignments, function (StockAssignmentInterface $a1, StockAssignmentInterface $a2) {
             $u1 = $a1->getStockUnit();
@@ -610,22 +613,16 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
             return $this->compareStockUnit($u1, $u2);
         });
-
-        return $assignments;
     }
 
     /**
      * Sorts the stock units.
      *
-     * @param array $stockUnits
-     *
-     * @return array
+     * @param array $units
      */
-    protected function sortStockUnits(array $stockUnits)
+    protected function sortStockUnits(array &$units): void
     {
-        usort($stockUnits, [$this, 'compareStockUnit']);
-
-        return $stockUnits;
+        usort($units, [$this, 'compareStockUnit']);
     }
 
     /**
@@ -636,7 +633,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @return int
      */
-    protected function compareStockUnit(StockUnitInterface $u1, StockUnitInterface $u2)
+    protected function compareStockUnit(StockUnitInterface $u1, StockUnitInterface $u2): int
     {
         // TODO Review this code / make it configurable
 
@@ -701,7 +698,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @return int
      */
-    protected function compareStockUnitByPrice(StockUnitInterface $u1, StockUnitInterface $u2)
+    protected function compareStockUnitByPrice(StockUnitInterface $u1, StockUnitInterface $u2): int
     {
         $u1HasPrice = 0 < $u1->getNetPrice();
         $u2HasPrice = 0 < $u2->getNetPrice();
@@ -727,7 +724,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      *
      * @return int
      */
-    protected function compareStockUnitByEda(StockUnitInterface $u1, StockUnitInterface $u2)
+    protected function compareStockUnitByEda(StockUnitInterface $u1, StockUnitInterface $u2): int
     {
         $u1HasEda = null !== $u1->getEstimatedDateOfArrival();
         $u2HasEda = null !== $u2->getEstimatedDateOfArrival();

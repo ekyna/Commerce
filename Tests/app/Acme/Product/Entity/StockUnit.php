@@ -5,6 +5,7 @@ namespace Acme\Product\Entity;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
  * Class StockUnit
@@ -22,7 +23,7 @@ class StockUnit extends AbstractStockUnit
     /**
      * @inheritdoc
      */
-    public function setProduct(Product $product)
+    public function setProduct(Product $product): StockUnitInterface
     {
         $this->product = $product;
 
@@ -32,7 +33,7 @@ class StockUnit extends AbstractStockUnit
     /**
      * @inheritdoc
      */
-    public function getProduct()
+    public function getProduct(): ?Product
     {
         return $this->product;
     }
@@ -40,7 +41,7 @@ class StockUnit extends AbstractStockUnit
     /**
      * @inheritdoc
      */
-    public function setSubject(StockSubjectInterface $subject)
+    public function setSubject(StockSubjectInterface $subject): StockUnitInterface
     {
         if (!$subject instanceof Product) {
             throw new InvalidArgumentException("Expected instance of Product.");
@@ -52,7 +53,7 @@ class StockUnit extends AbstractStockUnit
     /**
      * @inheritdoc
      */
-    public function getSubject()
+    public function getSubject(): ?StockSubjectInterface
     {
         return $this->getProduct();
     }

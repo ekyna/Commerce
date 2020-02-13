@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
+use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 
@@ -18,15 +19,22 @@ class PrioritizeHelper
      */
     protected $unitResolver;
 
+    /**
+     * @var StockUnitCacheInterface
+     */
+    protected $unitCache;
+
 
     /**
      * Constructor.
      *
      * @param StockUnitResolverInterface $unitResolver
+     * @param StockUnitCacheInterface    $unitCache
      */
-    public function __construct(StockUnitResolverInterface $unitResolver)
+    public function __construct(StockUnitResolverInterface $unitResolver, StockUnitCacheInterface $unitCache)
     {
         $this->unitResolver = $unitResolver;
+        $this->unitCache    = $unitCache;
     }
 
     /**
@@ -56,7 +64,7 @@ class PrioritizeHelper
                 continue;
             }
 
-            $this->unitResolver->getStockUnitCache()->add($unit);
+            $this->unitCache->add($unit);
 
             $candidate = UnitCandidate::build($unit, $sale);
 

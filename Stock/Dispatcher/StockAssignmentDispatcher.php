@@ -59,7 +59,7 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
         StockUnitInterface $targetUnit,
         $quantity,
         $direction = SORT_DESC
-    ) {
+    ): float {
         if (0 >= $quantity) {
             throw new StockLogicException("Quantity must be greater than zero.");
         }
@@ -183,7 +183,7 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
      *
      * @return StockAssignmentInterface[]
      */
-    private function sortAssignments(array $assignments, $direction = SORT_DESC)
+    private function sortAssignments(array $assignments, $direction = SORT_DESC): array
     {
         usort($assignments, function (StockAssignmentInterface $a, StockAssignmentInterface $b) use ($direction) {
             $aDate = $a->getSaleItem()->getSale()->getCreatedAt();

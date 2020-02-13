@@ -43,6 +43,7 @@ class StockAssignmentCache implements StockAssignmentCacheInterface
         if (isset($this->removedAssignments[$key])) {
             $assignment = $this->removedAssignments[$key];
             unset($this->removedAssignments[$key]);
+
             return $assignment;
         }
 

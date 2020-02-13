@@ -18,7 +18,7 @@ class StockUnitCacheTest extends StockTestCase
     /**
      * @covers StockUnitCache::add()
      */
-    public function test_add_withoutSubject_throwsException()
+    public function test_add_withoutSubject_throwsException(): void
     {
         $unit = Fixtures::createStockUnit();
 
@@ -34,9 +34,8 @@ class StockUnitCacheTest extends StockTestCase
     /**
      * @covers StockUnitCache::add()
      */
-    public function test_add()
+    public function test_add(): void
     {
-        // Adding a stock unit with subject should just work
         $unit = Fixtures::createStockUnit(Fixtures::createSubject());
 
         $cache = $this->createStockUnitCache();
@@ -47,9 +46,24 @@ class StockUnitCacheTest extends StockTestCase
     }
 
     /**
+     * @covers StockUnitCache::isAdded()
+     */
+    public function test_isAdded(): void
+    {
+        $unitA = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unitB = Fixtures::createStockUnit(Fixtures::createSubject());
+
+        $cache = $this->createStockUnitCache();
+        $cache->add($unitA);
+
+        $this->assertTrue($cache->isAdded($unitA));
+        $this->assertFalse($cache->isAdded($unitB));
+    }
+
+    /**
      * @covers StockUnitCache::remove()
      */
-    public function test_remove()
+    public function test_remove(): void
     {
         $unit = Fixtures::createStockUnit(Fixtures::createSubject());
 
@@ -64,123 +78,44 @@ class StockUnitCacheTest extends StockTestCase
     }
 
     /**
-     * @covers StockUnitCache::findNewBySubject()
+     * @covers StockUnitCache::isRemoved()
      */
-    public function test_findNewBySubject()
+    public function test_isRemoved(): void
     {
-        $subject = Fixtures::createSubject();
+        $unitA = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unitB = Fixtures::createStockUnit(Fixtures::createSubject());
 
-        $newUnit = Fixtures::createStockUnit($subject);
-        $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
-        $readyUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 5, 5);
-        $closedUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 10, 10);
+        $cache = $this->createStockUnitCache();
+        $cache->remove($unitA);
 
-        $cache = $this->createStockUnitCache([$newUnit, $pendingUnit, $readyUnit, $closedUnit]);
-
-        $found = array_values($cache->findNewBySubject($subject));
-
-        $this->assertEquals([$newUnit], $found);
+        $this->assertTrue($cache->isRemoved($unitA));
+        $this->assertFalse($cache->isRemoved($unitB));
     }
 
     /**
-     * @covers StockUnitCache::findPendingBySubject()
+     * @covers StockUnitCache::findBySubject()
      */
-    public function test_findPendingBySubject()
+    public function test_findBySubject(): void
     {
-        $subject = Fixtures::createSubject();
+        $unitA = Fixtures::createStockUnit($subjectA = Fixtures::createSubject());
+        $unitB = Fixtures::createStockUnit($subjectB = Fixtures::createSubject());
+        $unitC = Fixtures::createStockUnit($subjectA);
+        $unitD = Fixtures::createStockUnit($subjectB);
 
-        $newUnit = Fixtures::createStockUnit($subject);
-        $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
-        $readyUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 5, 5);
-        $closedUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 10, 10);
+        $cache = $this->createStockUnitCache();
+        $cache->add($unitA);
+        $cache->add($unitB);
+        $cache->add($unitC);
+        $cache->add($unitD);
 
-        $cache = $this->createStockUnitCache([$newUnit, $pendingUnit, $readyUnit, $closedUnit]);
-
-        $found = array_values($cache->findPendingBySubject($subject));
-
-        $this->assertEquals([$pendingUnit], $found);
-    }
-
-    /**
-     * @covers StockUnitCache::findPendingOrReadyBySubject()
-     */
-    public function test_findPendingOrReadyBySubject()
-    {
-        $subject = Fixtures::createSubject();
-
-        $newUnit = Fixtures::createStockUnit($subject);
-        $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
-        $readyUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 5, 5);
-        $closedUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 10, 10);
-
-        $cache = $this->createStockUnitCache([$newUnit, $pendingUnit, $readyUnit, $closedUnit]);
-
-        $found = array_values($cache->findPendingOrReadyBySubject($subject));
-
-        $this->assertEquals([$pendingUnit, $readyUnit], $found);
-    }
-
-    /**
-     * @covers StockUnitCache::findNotClosedBySubject()
-     */
-    public function test_findNotClosedBySubject()
-    {
-        $subject = Fixtures::createSubject();
-
-        $newUnit = Fixtures::createStockUnit($subject);
-        $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
-        $readyUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 5, 5);
-        $closedUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 10, 10);
-
-        $cache = $this->createStockUnitCache([$newUnit, $pendingUnit, $readyUnit, $closedUnit]);
-
-        $found = array_values($cache->findNotClosedBySubject($subject));
-
-        $this->assertEquals([$newUnit, $pendingUnit, $readyUnit], $found);
-    }
-
-    /**
-     * @covers StockUnitCache::findAssignableBySubject()
-     */
-    public function test_findAssignableBySubject()
-    {
-        $subject = Fixtures::createSubject();
-
-        $newUnit = Fixtures::createStockUnit($subject);
-        $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
-        $readyUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 5, 5);
-        $closedUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 10, 10);
-
-        $cache = $this->createStockUnitCache([$newUnit, $pendingUnit, $readyUnit, $closedUnit]);
-
-        $found = array_values($cache->findAssignableBySubject($subject));
-
-        $this->assertEquals([$newUnit, $pendingUnit, $readyUnit], $found);
-    }
-
-    /**
-     * @covers StockUnitCache::findLinkableBySubject()
-     */
-    public function test_findLinkableBySubject()
-    {
-        $subject = Fixtures::createSubject();
-
-        $newUnit = Fixtures::createStockUnit($subject);
-        $pendingUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10);
-        $readyUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10);
-        $closedUnit = Fixtures::createStockUnit($subject, Fixtures::createSupplierOrderItem(), 10, 10, 10, 10);
-
-        $cache = $this->createStockUnitCache([$newUnit, $pendingUnit, $readyUnit, $closedUnit]);
-
-        $found = array_values($cache->findLinkableBySubject($subject));
-
-        $this->assertEquals([$newUnit], $found);
+        $this->assertEquals([$unitA, $unitC], $cache->findBySubject($subjectA));
+        $this->assertEquals([$unitB, $unitD], $cache->findBySubject($subjectB));
     }
 
     /**
      * @covers StockUnitCache::onEventQueueClose()
      */
-    public function test_onEventQueueClose()
+    public function test_onEventQueueClose(): void
     {
         $unitA = Fixtures::createStockUnit(Fixtures::createSubject());
         $unitB = Fixtures::createStockUnit(Fixtures::createSubject());
@@ -198,7 +133,7 @@ class StockUnitCacheTest extends StockTestCase
      * @param StockUnitCacheInterface $cache
      * @param int                     $expected
      */
-    private function assertAddedCacheLength(StockUnitCacheInterface $cache, $expected = 0)
+    private function assertAddedCacheLength(StockUnitCacheInterface $cache, int $expected = 0): void
     {
         $rc = new \ReflectionClass(StockUnitCache::class);
         $rp = $rc->getProperty('addedUnits');
@@ -213,7 +148,7 @@ class StockUnitCacheTest extends StockTestCase
      * @param StockUnitCacheInterface $cache
      * @param int                     $expected
      */
-    private function assertRemovedCacheLength(StockUnitCacheInterface $cache, $expected = 0)
+    private function assertRemovedCacheLength(StockUnitCacheInterface $cache, int $expected = 0): void
     {
         $rc = new \ReflectionClass(StockUnitCache::class);
         $rp = $rc->getProperty('removedUnits');
@@ -229,7 +164,7 @@ class StockUnitCacheTest extends StockTestCase
      *
      * @return StockUnitCache
      */
-    private function createStockUnitCache(array $stockUnits = [])
+    private function createStockUnitCache(array $stockUnits = []): StockUnitCache
     {
         $cache = new StockUnitCache();
 

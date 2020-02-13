@@ -30,5 +30,5 @@ interface StockAssignmentDispatcherInterface
         StockUnitInterface $targetUnit,
         $quantity,
         $direction = SORT_DESC
-    );
+    ): float;
 }

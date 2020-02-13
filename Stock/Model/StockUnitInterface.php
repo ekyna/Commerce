@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
@@ -21,21 +22,21 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setSubject(StockSubjectInterface $subject);
+    public function setSubject(StockSubjectInterface $subject): StockUnitInterface;
 
     /**
      * Returns the subject.
      *
-     * @return StockSubjectInterface
+     * @return StockSubjectInterface|null
      */
-    public function getSubject();
+    public function getSubject(): ?StockSubjectInterface;
 
     /**
      * Returns the geocodes.
      *
      * @return array
      */
-    public function getGeocodes();
+    public function getGeocodes(): array;
 
     /**
      * Returns whether the stock unit has the given geocode.
@@ -44,7 +45,7 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return bool
      */
-    public function hasGeocode($geocode);
+    public function hasGeocode(string $geocode): bool;
 
     /**
      * Adds the geocode.
@@ -53,7 +54,7 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function addGeocode($geocode);
+    public function addGeocode(string $geocode): StockUnitInterface;
 
     /**
      * Removes the geocode.
@@ -62,7 +63,7 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function removeGeocode($geocode);
+    public function removeGeocode(string $geocode): StockUnitInterface;
 
     /**
      * Sets the geocodes.
@@ -71,30 +72,46 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setGeocodes(array $codes);
+    public function setGeocodes(array $codes): StockUnitInterface;
 
     /**
-     * Returns the supplierOrderItem.
+     * Returns the supplier order item.
      *
      * @return SupplierOrderItemInterface
      */
-    public function getSupplierOrderItem();
+    public function getSupplierOrderItem(): ?SupplierOrderItemInterface;
 
     /**
-     * Sets the supplierOrderItem.
+     * Sets the supplier order item.
      *
-     * @param SupplierOrderItemInterface $item
+     * @param SupplierOrderItemInterface|null $item
      *
      * @return $this|StockUnitInterface
      */
     public function setSupplierOrderItem(SupplierOrderItemInterface $item = null);
 
     /**
+     * Returns the estimated date of arrival.
+     *
+     * @return \DateTime|null
+     */
+    public function getEstimatedDateOfArrival(): ?\DateTime;
+
+    /**
+     * Sets the estimated date of arrival.
+     *
+     * @param \DateTime|null $date
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setEstimatedDateOfArrival(\DateTime $date = null);
+
+    /**
      * Returns the ordered quantity.
      *
      * @return float
      */
-    public function getOrderedQuantity();
+    public function getOrderedQuantity(): float;
 
     /**
      * Sets the ordered quantity.
@@ -103,30 +120,14 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setOrderedQuantity($quantity);
-
-    /**
-     * Returns the estimated date of arrival.
-     *
-     * @return \DateTime
-     */
-    public function getEstimatedDateOfArrival();
-
-    /**
-     * Sets the estimated date of arrival.
-     *
-     * @param \DateTime $date
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setEstimatedDateOfArrival(\DateTime $date = null);
+    public function setOrderedQuantity(float $quantity): StockUnitInterface;
 
     /**
      * Returns the received quantity.
      *
      * @return float
      */
-    public function getReceivedQuantity();
+    public function getReceivedQuantity(): float;
 
     /**
      * Sets the received quantity.
@@ -135,14 +136,14 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setReceivedQuantity($quantity);
+    public function setReceivedQuantity(float $quantity): StockUnitInterface;
 
     /**
      * Returns the adjusted quantity.
      *
      * @return float
      */
-    public function getAdjustedQuantity();
+    public function getAdjustedQuantity(): float;
 
     /**
      * Sets the adjusted quantity.
@@ -151,14 +152,14 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setAdjustedQuantity($quantity);
+    public function setAdjustedQuantity(float $quantity): StockUnitInterface;
 
     /**
      * Returns the sold quantity.
      *
      * @return float
      */
-    public function getSoldQuantity();
+    public function getSoldQuantity(): float;
 
     /**
      * Sets the sold quantity.
@@ -167,14 +168,14 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setSoldQuantity($quantity);
+    public function setSoldQuantity(float $quantity): StockUnitInterface;
 
     /**
      * Returns the shipped quantity.
      *
      * @return float
      */
-    public function getShippedQuantity();
+    public function getShippedQuantity(): float;
 
     /**
      * Sets the shipped quantity.
@@ -183,14 +184,14 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setShippedQuantity($quantity);
+    public function setShippedQuantity(float $quantity): StockUnitInterface;
 
     /**
      * Returns the net price.
      *
      * @return float
      */
-    public function getNetPrice();
+    public function getNetPrice(): float;
 
     /**
      * Sets the net price.
@@ -199,14 +200,14 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setNetPrice($price);
+    public function setNetPrice(float $price): StockUnitInterface;
 
     /**
      * Returns the "created at" date.
      *
      * @return \DateTime
      */
-    public function getCreatedAt();
+    public function getCreatedAt(): \DateTime;
 
     /**
      * Sets the "created at" date.
@@ -215,23 +216,23 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function setCreatedAt(\DateTime $date = null);
+    public function setCreatedAt(\DateTime $date): StockUnitInterface;
 
     /**
      * Returns the "closed at" date time.
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getClosedAt();
+    public function getClosedAt(): ?\DateTime;
 
     /**
      * Sets the "closed at" at date time.
      *
-     * @param \DateTime $date
+     * @param \DateTime|null $date
      *
      * @return $this|StockUnitInterface
      */
-    public function setClosedAt(\DateTime $date = null);
+    public function setClosedAt(\DateTime $date = null): StockUnitInterface;
 
     /**
      * Returns whether the stock unit has the given stock assignment.
@@ -240,7 +241,7 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return bool
      */
-    public function hasStockAssignment(StockAssignmentInterface $assignment);
+    public function hasStockAssignment(StockAssignmentInterface $assignment): bool;
 
     /**
      * Adds the stock assignments.
@@ -249,7 +250,7 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function addStockAssignment(StockAssignmentInterface $assignment);
+    public function addStockAssignment(StockAssignmentInterface $assignment): StockUnitInterface;
 
     /**
      * Removes the stock assignments.
@@ -258,23 +259,23 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function removeStockAssignment(StockAssignmentInterface $assignment);
+    public function removeStockAssignment(StockAssignmentInterface $assignment): StockUnitInterface;
 
     /**
      * Returns the stock assignments.
      *
-     * @return \Doctrine\Common\Collections\Collection|StockAssignmentInterface[]
+     * @return Collection|StockAssignmentInterface[]
      */
-    public function getStockAssignments();
+    public function getStockAssignments(): Collection;
 
     /**
      * Returns whether this stock unit has the given stock adjustment.
      *
      * @param StockAdjustmentInterface $adjustment
      *
-     * @return $this|StockUnitInterface
+     * @return bool
      */
-    public function hasStockAdjustment(StockAdjustmentInterface $adjustment);
+    public function hasStockAdjustment(StockAdjustmentInterface $adjustment): bool;
 
     /**
      * Adds the stock adjustments.
@@ -283,7 +284,7 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function addStockAdjustment(StockAdjustmentInterface $adjustment);
+    public function addStockAdjustment(StockAdjustmentInterface $adjustment): StockUnitInterface;
 
     /**
      * Removes the stock adjustments.
@@ -292,42 +293,42 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      *
      * @return $this|StockUnitInterface
      */
-    public function removeStockAdjustment(StockAdjustmentInterface $adjustment);
+    public function removeStockAdjustment(StockAdjustmentInterface $adjustment): StockUnitInterface;
 
     /**
      * Returns the stock adjustments.
      *
-     * @return \Doctrine\Common\Collections\Collection|StockAdjustmentInterface[]
+     * @return Collection|StockAdjustmentInterface[]
      */
-    public function getStockAdjustments();
+    public function getStockAdjustments(): Collection;
 
     /**
      * Returns whether this stock unit is empty (regarding to the ordered and sold quantities).
      *
      * @return bool
      */
-    public function isEmpty();
+    public function isEmpty(): bool;
 
     /**
      * Returns whether this stock unit is closed.
      *
      * @return bool
      */
-    public function isClosed();
+    public function isClosed(): bool;
 
     /**
      * Returns the reservable stock quantity.
      *
      * @return float
      */
-    public function getReservableQuantity();
+    public function getReservableQuantity(): float;
 
     /**
      * Returns the shippable stock quantity.
      *
      * @return float
      */
-    public function getShippableQuantity();
+    public function getShippableQuantity(): float;
 
     /**
      * Returns the supplier order.

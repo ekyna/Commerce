@@ -113,7 +113,7 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
             (0 === Money::compare($paid - $refunded, $total, $currency))
         ) {
             // REFUNDED Fully if refunded amount equals total
-            if (0 === Money::compare($refunded, $total, $currency)) {
+            if (0 == $total || 0 === Money::compare($refunded, $total, $currency)) {
                 return PaymentStates::STATE_REFUNDED;
             }
 

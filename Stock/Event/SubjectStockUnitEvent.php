@@ -2,10 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Stock\Event;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Event\ResourceEvent;
-use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Class SubjectStockUnitEvent
@@ -37,7 +35,7 @@ class SubjectStockUnitEvent extends ResourceEvent
      *
      * @return StockUnitInterface
      */
-    public function getStockUnit()
+    public function getStockUnit(): StockUnitInterface
     {
         return $this->stockUnit;
     }
