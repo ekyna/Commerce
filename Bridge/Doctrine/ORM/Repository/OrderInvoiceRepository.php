@@ -53,7 +53,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->join('i.order', 'o')
             ->andWhere($qb->expr()->eq('o.customer', ':customer'))
             ->andWhere($qb->expr()->eq('o.sample', ':sample'))
-            ->addOrderBy('i.createdAt', 'ASC');
+            ->addOrderBy('i.createdAt', 'DESC');
 
         if (0 < $limit) {
             $qb->setMaxResults($limit);

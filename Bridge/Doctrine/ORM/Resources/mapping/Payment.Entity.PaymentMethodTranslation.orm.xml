@@ -12,6 +12,7 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="notice" column="notice" type="text" nullable="true"/>
         <field name="mention" column="mention" type="text" nullable="true"/>
         <field name="footer" column="footer" type="text" nullable="true"/>
 

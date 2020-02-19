@@ -110,4 +110,25 @@ interface PaymentMethodInterface extends MethodInterface
      * @return bool
      */
     public function isOutstanding(): bool;
+
+    /**
+     * Returns the order notice.
+     *
+     * @return string|null
+     */
+    public function getNotice(): ?string;
+
+    /**
+     * Returns the document mention.
+     *
+     * @return string|null
+     */
+    public function getMention(): ?string;
+
+    /**
+     * Returns the document footer.
+     *
+     * @return string|null
+     */
+    public function getFooter(): ?string;
 }

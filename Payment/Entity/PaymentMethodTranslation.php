@@ -14,6 +14,11 @@ class PaymentMethodTranslation extends AbstractMethodTranslation
     /**
      * @var string
      */
+    private $notice;
+
+    /**
+     * @var string
+     */
     private $mention;
 
     /**
@@ -21,6 +26,30 @@ class PaymentMethodTranslation extends AbstractMethodTranslation
      */
     private $footer;
 
+
+    /**
+     * Returns the notice.
+     *
+     * @return string
+     */
+    public function getNotice(): ?string
+    {
+        return $this->notice;
+    }
+
+    /**
+     * Sets the notice.
+     *
+     * @param string $notice
+     *
+     * @return PaymentMethodTranslation
+     */
+    public function setNotice(string $notice = null): PaymentMethodTranslation
+    {
+        $this->notice = $notice;
+
+        return $this;
+    }
 
     /**
      * Returns the mention.

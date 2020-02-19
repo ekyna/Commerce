@@ -173,4 +173,28 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     {
         return PaymentMethodTranslation::class;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNotice(): ?string
+    {
+        return $this->translate()->getNotice();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMention(): ?string
+    {
+        return $this->translate()->getMention();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFooter(): ?string
+    {
+        return $this->translate()->getFooter();
+    }
 }
