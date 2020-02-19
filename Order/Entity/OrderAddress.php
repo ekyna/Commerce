@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAddress;
 use Ekyna\Component\Commerce\Order\Model;
 
 /**
@@ -10,7 +10,7 @@ use Ekyna\Component\Commerce\Order\Model;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderAddress extends AbstractAddress implements Model\OrderAddressInterface
+class OrderAddress extends AbstractSaleAddress implements Model\OrderAddressInterface
 {
     /**
      * @var int

@@ -75,4 +75,11 @@ final class Combination
             yield $result;
         }
     }
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

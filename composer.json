@@ -27,7 +27,8 @@
         "ekyna/resource": "0.7.x-dev",
         "giggsey/libphonenumber-for-php": "^8.0",
         "antalaron/vat-number-validator": "^1.0",
-        "phpoffice/phpspreadsheet": "^1.9"
+        "phpoffice/phpspreadsheet": "^1.9",
+        "ozdemirburak/iris": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~8.0",

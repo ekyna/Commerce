@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Customer\Model;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Customer\Entity\CustomerLogo;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
 use Ekyna\Component\Resource\Model as RM;
@@ -285,6 +286,86 @@ interface CustomerInterface extends
     public function removePaymentMethod(Payment\PaymentMethodInterface $paymentMethod): CustomerInterface;
 
     /**
+     * Returns the branding logo.
+     *
+     * @return CustomerLogo|null
+     */
+    public function getBrandLogo(): ?CustomerLogo;
+
+    /**
+     * Sets the branding logo.
+     *
+     * @param CustomerLogo $logo
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setBrandLogo(CustomerLogo $logo = null): CustomerInterface;
+
+    /**
+     * Returns the branding color.
+     *
+     * @return string|null
+     */
+    public function getBrandColor(): ?string;
+
+    /**
+     * Sets the branding color.
+     *
+     * @param string $color
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setBrandColor(string $color = null): CustomerInterface;
+
+    /**
+     * Returns the branding url.
+     *
+     * @return string|null
+     */
+    public function getBrandUrl(): ?string;
+
+    /**
+     * Sets the branding url.
+     *
+     * @param string $url
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setBrandUrl(string $url = null): CustomerInterface;
+
+    /**
+     * Returns the document footer.
+     *
+     * @return string
+     */
+    public function getDocumentFooter(): ?string;
+
+    /**
+     * Sets the document footer.
+     *
+     * @param string $html
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setDocumentFooter(string $html = null): CustomerInterface;
+
+    /**
+     * Returns the document types (logo and color usage).
+     *
+     * @return string[]
+     */
+    public function getDocumentTypes(): array;
+
+    /**
+     * Sets the document types (logo and color usage).
+     *
+     * @param array $types
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setDocumentTypes(array $types): CustomerInterface;
+
+    /**
      * Returns the loyalty points.
      *
      * @return int
@@ -296,7 +377,7 @@ interface CustomerInterface extends
      *
      * @param int $points
      *
-     * @return CustomerInterface
+     * @return $this|CustomerInterface
      */
     public function setLoyaltyPoints(int $points): CustomerInterface;
 

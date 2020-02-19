@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Payment\Model;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Payment\Entity\AbstractPayment;
 use Ekyna\Component\Resource\Model as ResourceModel;
 use Payum\Core\Model as Payum;
 

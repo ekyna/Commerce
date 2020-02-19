@@ -225,6 +225,32 @@ class CustomerListener
             $changed = true;
         }
 
+        // Clear brand logo
+        if (null !== $customer->getBrandLogo()) {
+            $customer->setBrandLogo(null);
+            $changed = true;
+        }
+        // Clear brand color
+        if (!empty($customer->getBrandColor())) {
+            $customer->setBrandColor(null);
+            $changed = true;
+        }
+        // Clear brand url
+        if (!empty($customer->getBrandUrl())) {
+            $customer->setBrandUrl(null);
+            $changed = true;
+        }
+        // Clear document footer
+        if (!empty($customer->getDocumentFooter())) {
+            $customer->setDocumentFooter(null);
+            $changed = true;
+        }
+        // Clear document types
+        if (!empty($customer->getDocumentTypes())) {
+            $customer->setDocumentTypes([]);
+            $changed = true;
+        }
+
         return $changed;
     }
 

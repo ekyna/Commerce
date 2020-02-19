@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
-use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
+use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAddress;
 use Ekyna\Component\Commerce\Quote\Model;
 
 /**
@@ -10,7 +10,7 @@ use Ekyna\Component\Commerce\Quote\Model;
  * @package Ekyna\Component\Commerce\Quote\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class QuoteAddress extends AbstractAddress implements Model\QuoteAddressInterface
+class QuoteAddress extends AbstractSaleAddress implements Model\QuoteAddressInterface
 {
     /**
      * @var int
@@ -35,7 +35,6 @@ class QuoteAddress extends AbstractAddress implements Model\QuoteAddressInterfac
     {
         return $this->id;
     }
-
 
     /**
      * @inheritdoc

@@ -92,6 +92,32 @@ class Customer implements Model\CustomerInterface
     protected $paymentMethods;
 
     /**
+     * @var CustomerLogo
+     */
+    protected $brandLogo;
+
+    /**
+     * @var string
+     */
+    protected $brandColor;
+
+    /**
+     * @var string
+     */
+    protected $brandUrl;
+
+    /**
+     * @var string
+     */
+    protected $documentFooter;
+
+    /**
+     * @var string[]
+     * @see \Ekyna\Component\Commerce\Document\Model\DocumentTypes
+     */
+    protected $documentTypes;
+
+    /**
      * @var int
      */
     protected $loyaltyPoints;
@@ -138,6 +164,7 @@ class Customer implements Model\CustomerInterface
     public function __construct()
     {
         $this->newsletter = false;
+        $this->documentTypes = [];
         $this->loyaltyPoints = 0;
         $this->creditBalance = 0;
         $this->outstandingLimit = 0;
@@ -502,7 +529,105 @@ class Customer implements Model\CustomerInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
+     */
+    public function getBrandLogo(): ?CustomerLogo
+    {
+        return $this->brandLogo;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setBrandLogo(CustomerLogo $brandLogo = null): Model\CustomerInterface
+    {
+        if ($brandLogo !== $this->brandLogo) {
+            if ($this->brandLogo) {
+                $this->brandLogo->setCustomer(null);
+            }
+
+            $this->brandLogo = $brandLogo;
+
+            $this->brandLogo->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBrandColor(): ?string
+    {
+        return $this->brandColor;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setBrandColor(string $color = null): Model\CustomerInterface
+    {
+        $this->brandColor = $color;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBrandUrl(): ?string
+    {
+        return $this->brandUrl;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setBrandUrl(string $url = null): Model\CustomerInterface
+    {
+        $this->brandUrl = $url;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDocumentFooter(): ?string
+    {
+        return $this->documentFooter;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setDocumentFooter(string $html = null): Model\CustomerInterface
+    {
+        $this->documentFooter = $html;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDocumentTypes(): array
+    {
+        return $this->documentTypes;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setDocumentTypes(array $types): Model\CustomerInterface
+    {
+        $this->documentTypes = array_unique($types);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function getLoyaltyPoints(): int
     {
@@ -510,7 +635,7 @@ class Customer implements Model\CustomerInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function setLoyaltyPoints(int $points): Model\CustomerInterface
     {

@@ -294,6 +294,10 @@ class DocumentBuilder implements DocumentBuilderInterface
             $data['number'] = $address->getNumber();
         }
 
+        if ($address instanceof Common\SaleAddressInterface) {
+            $data['information'] = $address->getInformation();
+        }
+
         return $data;
     }
 

@@ -26,6 +26,7 @@
 
         <field name="email" column="email" type="string" length="255" unique="true"/>
         <field name="company" column="company" type="string" length="64" nullable="true"/>
+        <field name="companyNumber" column="company_number" type="string" length="32" nullable="true"/>
         <field name="birthday" column="birthday" type="date" nullable="true"/>
         <field name="newsletter" column="newsletter" type="boolean">
             <options>
@@ -48,7 +49,10 @@
 
         <field name="state" column="state" type="string" length="16" nullable="false"/>
         <field name="description" column="description" type="text" nullable="true"/>
-        <field name="companyNumber" column="company_number" type="string" length="16" nullable="true"/>
+        <field name="brandColor" column="brand_color" type="string" length="16" nullable="true"/>
+        <field name="brandUrl" column="brand_url" type="string" length="255" nullable="true"/>
+        <field name="documentFooter" column="document_footer" type="text" nullable="true"/>
+        <field name="documentTypes" column="document_types" type="simple_array" nullable="true"/>
         <field name="locale" column="locale" type="string" length="6" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
@@ -57,6 +61,14 @@
         <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
             <gedmo:timestampable on="update"/>
         </field>
+
+        <one-to-one target-entity="Ekyna\Component\Commerce\Customer\Entity\CustomerLogo"
+                    field="brandLogo" mapped-by="customer">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-one>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
                      mapped-by="parent" field="children">

@@ -19,11 +19,11 @@ final class SaleDocumentUtil
      *
      * @return array
      */
-    static public function getSaleEditableDocumentTypes(SaleInterface $sale)
+    static public function getSaleEditableDocumentTypes(SaleInterface $sale): array
     {
         $types = [];
 
-        foreach (DocumentTypes::getTypes() as $type) {
+        foreach (DocumentTypes::getSaleTypes() as $type) {
             if (!static::isSaleSupportsDocumentType($sale, $type)) {
                 continue;
             }
@@ -48,9 +48,9 @@ final class SaleDocumentUtil
      *
      * @return bool
      */
-    static public function isSaleSupportsDocumentType(SaleInterface $sale, $type)
+    static public function isSaleSupportsDocumentType(SaleInterface $sale, string $type): bool
     {
-        if (!DocumentTypes::isValidType($type)) {
+        if (!DocumentTypes::isValidSaleType($type)) {
             return false;
         }
 

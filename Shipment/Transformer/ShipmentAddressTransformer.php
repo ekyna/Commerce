@@ -51,6 +51,7 @@ class ShipmentAddressTransformer
         'intercom',
         'latitude',
         'longitude',
+        'information',
     ];
 
     /**

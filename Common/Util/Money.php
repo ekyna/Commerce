@@ -9,7 +9,7 @@ use Symfony\Component\Intl\Intl;
  * @package Ekyna\Component\Commerce\Common\Util
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class Money
+final class Money
 {
     /**
      * @var \Symfony\Component\Intl\ResourceBundle\CurrencyBundleInterface
@@ -116,5 +116,12 @@ abstract class Money
         }
 
         return static::$currencyBundle = Intl::getCurrencyBundle();
+    }
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
     }
 }

@@ -33,4 +33,11 @@ final class DateUtil
 
         return false;
     }
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
+    }
 }

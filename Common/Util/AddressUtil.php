@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Util;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
 
 /**
  * Class AddressUtil
@@ -48,13 +49,13 @@ final class AddressUtil
         if ($sourceStateId != $targetStateId) {
             return false;
         }
-        
+
         $sourcePhone = (string) $source->getPhone();
         $targetPhone = (string) $target->getPhone();
         if ($sourcePhone !== $targetPhone) {
             return false;
         }
-        
+
         $sourceMobile = (string) $source->getMobile();
         $targetMobile = (string) $target->getMobile();
         if ($sourceMobile !== $targetMobile) {
@@ -102,5 +103,16 @@ final class AddressUtil
         } else {
             $target->setMobile($mobile);
         }
+
+        if ($source instanceof SaleAddressInterface && $target instanceof SaleAddressInterface) {
+            $target->setInformation($source->getInformation());
+        }
+    }
+
+    /**
+     * Disabled constructor.
+     */
+    private function __construct()
+    {
     }
 }

@@ -11,11 +11,12 @@ use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
  */
 class Features
 {
-    public const BIRTHDAY   = 'birthday';
-    public const NEWSLETTER = 'newsletter';
-    public const COUPON     = 'coupon';
-    public const LOYALTY    = 'loyalty';
-    public const SUPPORT    = 'support';
+    public const BIRTHDAY         = 'birthday';
+    public const NEWSLETTER       = 'newsletter';
+    public const COUPON           = 'coupon';
+    public const LOYALTY          = 'loyalty';
+    public const SUPPORT          = 'support';
+    public const CUSTOMER_GRAPHIC = 'customer_graphic';
 
     /**
      * @var array
@@ -33,16 +34,16 @@ class Features
         // Must be kept in sync with:
         /** @see \Ekyna\Bundle\CommerceBundle\DependencyInjection\Configuration::addFeatureSection */
         $this->config = array_replace_recursive([
-            self::BIRTHDAY   => [
+            self::BIRTHDAY         => [
                 'enabled' => false,
             ],
-            self::NEWSLETTER => [
+            self::NEWSLETTER       => [
                 'enabled' => false,
             ],
-            self::COUPON     => [
+            self::COUPON           => [
                 'enabled' => false,
             ],
-            self::LOYALTY    => [
+            self::LOYALTY          => [
                 'enabled'     => false,
                 'credit_rate' => 1,
                 'credit'      => [
@@ -68,7 +69,10 @@ class Features
                     ],*/
                 ],
             ],
-            self::SUPPORT    => [
+            self::SUPPORT          => [
+                'enabled' => false,
+            ],
+            self::CUSTOMER_GRAPHIC => [
                 'enabled' => false,
             ],
         ], $config);

@@ -17,4 +17,20 @@ interface SaleAddressInterface extends AddressInterface, ResourceInterface
      * @return SaleInterface
      */
     public function getSale();
+
+    /**
+     * Returns the information.
+     *
+     * @return string
+     */
+    public function getInformation(): ?string;
+
+    /**
+     * Sets the information.
+     *
+     * @param string $information
+     *
+     * @return $this|SaleAddressInterface
+     */
+    public function setInformation(string $information = null): SaleAddressInterface;
 }

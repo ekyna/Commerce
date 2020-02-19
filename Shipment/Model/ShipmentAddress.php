@@ -11,5 +11,33 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
  */
 class ShipmentAddress extends AbstractAddress
 {
+    /**
+     * @var string
+     */
+    protected $information;
 
+
+    /**
+     * Returns the information.
+     *
+     * @return string|null
+     */
+    public function getInformation(): ?string
+    {
+        return $this->information;
+    }
+
+    /**
+     * Sets the information.
+     *
+     * @param string|null $information
+     *
+     * @return $this|ShipmentAddress
+     */
+    public function setInformation(string $information = null): ShipmentAddress
+    {
+        $this->information = $information;
+
+        return $this;
+    }
 }
