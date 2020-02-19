@@ -16,6 +16,15 @@ class CustomerRepository extends ResourceRepository implements CustomerRepositor
     /**
      * @inheritDoc
      */
+    public function findOneByKey(string $key): ?CustomerInterface
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->findOneBy(['key' => $key]);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findOneByNumber(string $number): ?CustomerInterface
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */

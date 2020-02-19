@@ -29,6 +29,11 @@ class CustomerListener
     protected $numberGenerator;
 
     /**
+     * @var GeneratorInterface
+     */
+    protected $keyGenerator;
+
+    /**
      * @var PricingUpdaterInterface
      */
     protected $pricingUpdater;
@@ -44,19 +49,22 @@ class CustomerListener
      *
      * @param PersistenceHelperInterface       $persistenceHelper
      * @param GeneratorInterface               $numberGenerator
+     * @param GeneratorInterface               $keyGenerator
      * @param PricingUpdaterInterface          $pricingUpdater
      * @param ResourceEventDispatcherInterface $dispatcher
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         GeneratorInterface $numberGenerator,
+        GeneratorInterface $keyGenerator,
         PricingUpdaterInterface $pricingUpdater,
         ResourceEventDispatcherInterface $dispatcher
     ) {
         $this->persistenceHelper = $persistenceHelper;
-        $this->numberGenerator = $numberGenerator;
-        $this->pricingUpdater = $pricingUpdater;
-        $this->dispatcher = $dispatcher;
+        $this->numberGenerator   = $numberGenerator;
+        $this->keyGenerator      = $keyGenerator;
+        $this->pricingUpdater    = $pricingUpdater;
+        $this->dispatcher        = $dispatcher;
     }
 
     /**
@@ -69,6 +77,8 @@ class CustomerListener
         $customer = $this->getCustomerFromEvent($event);
 
         $changed = $this->generateNumber($customer);
+
+        $changed |= $this->generateKey($customer);
 
         $changed |= $this->updateFromParent($customer);
 
@@ -94,6 +104,8 @@ class CustomerListener
 
         $changed = $this->generateNumber($customer);
 
+        $changed |= $this->generateKey($customer);
+
         if ($this->persistenceHelper->isChanged($customer, 'parent')) {
             $changed |= $this->updateFromParent($customer);
         }
@@ -116,7 +128,7 @@ class CustomerListener
         $cs = $this->persistenceHelper->getChangeSet($customer, 'newsletter');
         if ($cs[0] && !$cs[1]) {
             $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_UNSUBSCRIBE, $event);
-        } elseif(!$cs[0] && $cs[1]) {
+        } elseif (!$cs[0] && $cs[1]) {
             $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_SUBSCRIBE, $event);
         }
     }
@@ -164,7 +176,7 @@ class CustomerListener
             return false;
         }
 
-        $parent = $customer->getParent();
+        $parent  = $customer->getParent();
         $changed = false;
 
         // Company
@@ -290,11 +302,11 @@ class CustomerListener
     }
 
     /**
-     * Generates the number.
+     * Generates the customer number.
      *
      * @param CustomerInterface $customer
      *
-     * @return bool Whether the customer number has been generated or not.
+     * @return bool Whether the customer number has been generated.
      */
     private function generateNumber(CustomerInterface $customer)
     {
@@ -303,6 +315,24 @@ class CustomerListener
         }
 
         $customer->setNumber($this->numberGenerator->generate($customer));
+
+        return true;
+    }
+
+    /**
+     * Generates the customer key.
+     *
+     * @param CustomerInterface $customer
+     *
+     * @return bool Whether the customer key has been generated.
+     */
+    private function generateKey(CustomerInterface $customer)
+    {
+        if (!empty($customer->getKey())) {
+            return false;
+        }
+
+        $customer->setKey($this->keyGenerator->generate($customer));
 
         return true;
     }

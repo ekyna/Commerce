@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Type;
 use Ekyna\Component\Commerce\Cart;
 use Ekyna\Component\Commerce\Common;
 use Ekyna\Component\Commerce\Customer;
+use Ekyna\Component\Commerce\Newsletter;
 use Ekyna\Component\Commerce\Order;
 use Ekyna\Component\Commerce\Payment;
 use Ekyna\Component\Commerce\Pricing;
@@ -68,6 +69,8 @@ class DoctrineBundleMapping
             Customer\Model\CustomerInterface::class         => Customer\Entity\Customer::class,
             Customer\Model\CustomerGroupInterface::class    => Customer\Entity\CustomerGroup::class,
             Customer\Model\CustomerAddressInterface::class  => Customer\Entity\CustomerAddress::class,
+            Newsletter\Model\AudienceInterface::class       => Newsletter\Entity\Audience::class,
+            Newsletter\Model\MemberInterface::class         => Newsletter\Entity\Member::class,
             Order\Model\OrderInterface::class               => Order\Entity\Order::class,
             Order\Model\OrderAddressInterface::class        => Order\Entity\OrderAddress::class,
             Payment\Model\PaymentMethodInterface::class     => Payment\Entity\PaymentMethod::class,

@@ -22,6 +22,7 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="key" column="secret" type="string" length="32"/>
         <field name="number" column="number" type="string" length="16"/>
 
         <field name="email" column="email" type="string" length="255" unique="true"/>

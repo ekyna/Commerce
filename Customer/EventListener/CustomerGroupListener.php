@@ -116,7 +116,6 @@ class CustomerGroupListener
      * @param ResourceEventInterface $event
      *
      * @return CustomerGroupInterface
-     * @throws InvalidArgumentException
      */
     protected function getCustomerGroupFromEvent(ResourceEventInterface $event)
     {

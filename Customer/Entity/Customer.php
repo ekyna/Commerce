@@ -19,6 +19,7 @@ use Ekyna\Component\Resource\Model as RM;
 class Customer implements Model\CustomerInterface
 {
     use Common\IdentityTrait,
+        Common\KeySubjectTrait,
         Common\NumberSubjectTrait,
         Common\CurrencySubjectTrait,
         Payment\PaymentTermSubjectTrait,
@@ -30,6 +31,11 @@ class Customer implements Model\CustomerInterface
      * @var int
      */
     protected $id;
+
+    /**
+     * @var string
+     */
+    protected $secret;
 
     /**
      * @var string

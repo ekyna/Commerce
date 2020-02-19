@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Newsletter\Entity\Audience"
+            table="commerce_newsletter_audience">
+
+        <unique-constraints>
+            <unique-constraint columns="secret" name="unique_commerce_newsletter_audience_secret"/>
+            <unique-constraint columns="name,gateway" name="unique_commerce_newsletter_audience_name"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="key" column="secret" type="string" length="32"/>
+        <field name="gateway" column="gateway" type="string" length="16"/>
+        <field name="identifier" column="identifier" type="string" length="32"/>
+        <field name="name" column="name" type="string" length="32"/>
+        <field name="webhook" column="is_webhook" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="public" column="is_public" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="default" column="is_default" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
+
+        <field name="createdAt" type="datetime" column="created_at">
+            <gedmo:timestampable on="create"/>
+        </field>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

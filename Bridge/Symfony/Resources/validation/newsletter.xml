@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Newsletter\Entity\Audience">
+        <property name="provider">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="identifier">
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Newsletter\Entity\Member">
+        <property name="audience">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="key">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="email">
+            <constraint name="NotBlank"/>
+            <constraint name="Email"/>
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="status">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Newsletter\Model\MemberStatuses</value>
+                    <value>getConstants</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
+
+</constraint-mapping>

@@ -20,6 +20,7 @@ interface CustomerInterface extends
     RM\LocalizedInterface,
     RM\TimestampableInterface,
     Common\IdentityInterface,
+    Common\KeySubjectInterface,
     Common\NumberSubjectInterface,
     Common\CurrencySubjectInterface,
     Payment\PaymentTermSubjectInterface,

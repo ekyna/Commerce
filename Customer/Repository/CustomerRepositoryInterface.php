@@ -13,6 +13,15 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface CustomerRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
+     * Finds the customer by its key.
+     *
+     * @param string $key
+     *
+     * @return CustomerInterface|null
+     */
+    public function findOneByKey(string $key): ?CustomerInterface;
+
+    /**
      * Finds the customer by its number.
      *
      * @param string $number

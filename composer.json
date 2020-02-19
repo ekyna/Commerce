@@ -41,7 +41,8 @@
     "suggest": {
         "florianv/swap": "For currency exchange rates",
         "barbieswimcrew/zip-code-validator": "For zip code validation",
-        "misd/phone-number-bundle": "For phone number formatting"
+        "misd/phone-number-bundle": "For phone number formatting",
+        "drewm/mailchimp-api": "For mailchimp newsletter"
     },
     "autoload": {
         "psr-4": {

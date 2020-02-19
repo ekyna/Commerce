@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Newsletter\Entity\Member"
+            table="commerce_newsletter_member">
+
+        <unique-constraints>
+            <unique-constraint columns="email,audience_id" name="unique_commerce_newsletter_member"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="identifier" column="identifier" type="string" length="32"/>
+        <field name="email" column="email" type="string" length="255"/>
+        <field name="status" column="status" type="string" length="16"/>
+        <field name="attributes" column="attributes" type="simple_array" nullable="true"/>
+
+        <field name="createdAt" type="datetime" column="created_at">
+            <gedmo:timestampable on="create"/>
+        </field>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface" field="audience">
+            <join-column name="audience_id" referenced-column-name="id" nullable="false" on-delete="CASCADE"/>
+        </many-to-one>
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="customer">
+            <join-column name="customer_id" referenced-column-name="id" nullable="true" on-delete="SET NULL"/>
+        </many-to-one>
+
+    </mapped-superclass>
+
+</doctrine-mapping>
