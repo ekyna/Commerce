@@ -15,19 +15,22 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 final class DocumentTypes
 {
     // Sale
-    const TYPE_FORM          = 'form';
-    const TYPE_VOUCHER       = 'voucher';
-    const TYPE_QUOTE         = 'quote';
-    const TYPE_PROFORMA      = 'proforma';
-    const TYPE_CONFIRMATION  = 'confirmation';
+    public const TYPE_FORM          = 'form';
+    public const TYPE_VOUCHER       = 'voucher';
+    public const TYPE_QUOTE         = 'quote';
+    public const TYPE_PROFORMA      = 'proforma';
+    public const TYPE_CONFIRMATION  = 'confirmation';
 
     // Invoice
-    const TYPE_INVOICE       = 'invoice';
-    const TYPE_CREDIT        = 'credit';
+    public const TYPE_INVOICE       = 'invoice';
+    public const TYPE_CREDIT        = 'credit';
 
     // Shipment
-    const TYPE_SHIPMENT_FORM = 'shipment_form';
-    const TYPE_SHIPMENT_BILL = 'shipment_bill';
+    public const TYPE_SHIPMENT_FORM = 'shipment_form';
+    public const TYPE_SHIPMENT_BILL = 'shipment_bill';
+
+    // Supplier order
+    public const TYPE_SUPPLIER_ORDER = 'supplier_order';
 
 
     /**
