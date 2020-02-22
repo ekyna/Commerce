@@ -87,10 +87,6 @@ class CustomerListener
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer, false);
         }
-
-        if ($customer->isNewsletter()) {
-            $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_SUBSCRIBE, $event);
-        }
     }
 
     /**
@@ -119,17 +115,6 @@ class CustomerListener
         $hierarchyFields = ['company', 'customerGroup', 'vatNumber', 'vatDetails', 'vatValid'];
         if ($this->persistenceHelper->isChanged($customer, $hierarchyFields)) {
             $this->scheduleParentChangeEvents($customer);
-        }
-
-        if (!$this->persistenceHelper->isChanged($customer, 'newsletter')) {
-            return;
-        }
-
-        $cs = $this->persistenceHelper->getChangeSet($customer, 'newsletter');
-        if ($cs[0] && !$cs[1]) {
-            $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_UNSUBSCRIBE, $event);
-        } elseif (!$cs[0] && $cs[1]) {
-            $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_SUBSCRIBE, $event);
         }
     }
 

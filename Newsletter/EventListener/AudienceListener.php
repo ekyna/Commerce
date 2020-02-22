@@ -76,7 +76,7 @@ class AudienceListener implements ListenerInterface
     {
         $audience = $this->getAudienceFromEvent($event);
 
-        $this->getGateway($audience->getGateway(), GatewayInterface::CREATE_AUDIENCE);
+        $this->getGateway($audience->getGateway(), GatewayInterface::INSERT_AUDIENCE);
     }
 
     /**
@@ -114,17 +114,18 @@ class AudienceListener implements ListenerInterface
      */
     public function onInsert(ResourceEventInterface $event): void
     {
+        $audience = $this->getAudienceFromEvent($event);
+
+        $this->audienceUpdater->fixDefault($audience);
+
         if (!$this->enabled) {
             return;
         }
 
-        $audience = $this->getAudienceFromEvent($event);
-
         $this
-            ->getGateway($audience->getGateway(), GatewayInterface::CREATE_AUDIENCE)
-            ->createAudience($audience);
+            ->getGateway($audience->getGateway(), GatewayInterface::INSERT_AUDIENCE)
+            ->insertAudience($audience);
 
-        $this->audienceUpdater->fixDefault($audience);
     }
 
     /**
@@ -134,17 +135,18 @@ class AudienceListener implements ListenerInterface
      */
     public function onUpdate(ResourceEventInterface $event): void
     {
+        $audience = $this->getAudienceFromEvent($event);
+
+        $this->audienceUpdater->fixDefault($audience);
+
         if (!$this->enabled) {
             return;
         }
-
-        $audience = $this->getAudienceFromEvent($event);
 
         $this
             ->getGateway($audience->getGateway(), GatewayInterface::UPDATE_AUDIENCE)
             ->updateAudience($audience, $this->persistenceHelper->getChangeSet($audience));
 
-        $this->audienceUpdater->fixDefault($audience);
     }
 
     /**

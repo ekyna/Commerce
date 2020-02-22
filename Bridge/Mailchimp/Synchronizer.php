@@ -7,7 +7,7 @@ use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Newsletter\Event\AudienceEvents;
 use Ekyna\Component\Commerce\Newsletter\Event\MemberEvents;
-use Ekyna\Component\Commerce\Newsletter\EventListener\ListenerToggler;
+use Ekyna\Component\Commerce\Newsletter\EventListener\ListenerGatewayToggler;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberStatuses;
@@ -43,9 +43,9 @@ class Synchronizer implements SynchronizerInterface
     private $memberRepository;
 
     /**
-     * @var ListenerToggler
+     * @var ListenerGatewayToggler
      */
-    private $listenerToggler;
+    private $gatewayToggler;
 
     /**
      * @var EventDispatcherInterface
@@ -85,7 +85,7 @@ class Synchronizer implements SynchronizerInterface
      * @param AudienceRepositoryInterface $audienceRepository
      * @param MemberRepositoryInterface   $memberRepository
      * @param EventDispatcherInterface    $dispatcher
-     * @param ListenerToggler             $listenerToggler
+     * @param ListenerGatewayToggler      $gatewayToggler
      * @param EntityManagerInterface      $manager
      * @param UrlGeneratorInterface       $urlGenerator
      * @param LoggerInterface             $logger
@@ -94,7 +94,7 @@ class Synchronizer implements SynchronizerInterface
         Api $api,
         AudienceRepositoryInterface $audienceRepository,
         MemberRepositoryInterface $memberRepository,
-        ListenerToggler $listenerToggler,
+        ListenerGatewayToggler $gatewayToggler,
         EventDispatcherInterface $dispatcher,
         EntityManagerInterface $manager,
         UrlGeneratorInterface $urlGenerator,
@@ -103,7 +103,7 @@ class Synchronizer implements SynchronizerInterface
         $this->api                = $api;
         $this->audienceRepository = $audienceRepository;
         $this->memberRepository   = $memberRepository;
-        $this->listenerToggler    = $listenerToggler;
+        $this->gatewayToggler     = $gatewayToggler;
         $this->dispatcher         = $dispatcher;
         $this->manager            = $manager;
         $this->urlGenerator       = $urlGenerator;
@@ -119,7 +119,7 @@ class Synchronizer implements SynchronizerInterface
 
         $this->audienceIdentifiers = [];
 
-        $this->listenerToggler->disable();
+        $this->gatewayToggler->disable();
 
         $this->syncAudiences();
 
@@ -127,7 +127,7 @@ class Synchronizer implements SynchronizerInterface
 
         $this->purgeAudiences();
 
-        $this->listenerToggler->enable();
+        $this->gatewayToggler->enable();
     }
 
     /**
@@ -197,8 +197,8 @@ class Synchronizer implements SynchronizerInterface
             $url = $this->urlGenerator->generate(
                 'ekyna_commerce_api_newsletter_webhook',
                 [
-                    'name'   => Constants::NAME,
-                    'key' => $audience->getKey(),
+                    'name' => Constants::NAME,
+                    'key'  => $audience->getKey(),
                 ],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );

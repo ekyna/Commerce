@@ -30,5 +30,4 @@ final class CustomerEvents
 
     const BIRTHDAY               = 'ekyna_commerce.customer.birthday';
     const NEWSLETTER_SUBSCRIBE   = 'ekyna_commerce.customer.newsletter_subscribe';
-    const NEWSLETTER_UNSUBSCRIBE = 'ekyna_commerce.customer.newsletter_unsubscribe';
 }

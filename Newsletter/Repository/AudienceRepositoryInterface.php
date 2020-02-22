@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Newsletter\Repository;
 
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 
@@ -12,12 +13,26 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
  */
 interface AudienceRepositoryInterface extends ResourceRepositoryInterface
 {
+    public const DEFAULT_CACHE_KEY = 'commerce_newsletter_default';
+
     /**
      * Returns the default audience.
      *
      * @return AudienceInterface
      */
     public function findDefault(): AudienceInterface;
+
+    /**
+     * Purges the default audience.
+     */
+    public function purgeDefault(): void;
+
+    /**
+     * Returns the "find public" query builder.
+     *
+     * @return QueryBuilder
+     */
+    public function getFindPublicQueryBuilder(): QueryBuilder;
 
     /**
      * Returns the public audiences.

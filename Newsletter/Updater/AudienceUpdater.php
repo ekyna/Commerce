@@ -53,7 +53,7 @@ class AudienceUpdater
      *
      * @param AudienceInterface $audience
      *
-     * @return bool Whether the key has been changed.
+     * @return bool Whether the audience has been changed.
      */
     public function generateKey(AudienceInterface $audience): bool
     {
@@ -76,6 +76,8 @@ class AudienceUpdater
         if (!$this->persistenceHelper->isChanged($audience, ['default'])) {
             return;
         }
+
+        $this->audienceRepository->purgeDefault();
 
         if ($audience->isDefault()) {
             if (!$audience->isPublic()) {

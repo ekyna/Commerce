@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Exception\NewsletterException;
 use Ekyna\Component\Commerce\Newsletter\Gateway\GatewayInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
+use Ekyna\Component\Commerce\Newsletter\Model\Subscription;
 
 /**
  * Class Gateway
@@ -33,7 +34,7 @@ class Gateway implements GatewayInterface
     /**
      * @inheritDoc
      */
-    public function createAudience(AudienceInterface $audience): bool
+    public function insertAudience(AudienceInterface $audience): bool
     {
         throw new NewsletterException("Unsupported operation");
     }
@@ -73,7 +74,37 @@ class Gateway implements GatewayInterface
     /**
      * @inheritDoc
      */
-    public function createMember(MemberInterface $member): bool
+    public function createMember(MemberInterface $member, Subscription $source = null): void
+    {
+        if (!$source && $member->getCustomer()) {
+            $source = $member->getCustomer();
+        }
+
+        $attributes = $member->getAttributes();
+
+        if (empty($member->getEmail())) {
+            $member->setEmail($source->getEmail());
+        }
+
+        if (!isset($attributes['FNAME']) && !empty($firsName = $source->getFirstName())) {
+            $attributes['FNAME'] = $firsName;
+        }
+
+        if (!isset($attributes['LNAME']) && !empty($lastName = $source->getLastName())) {
+            $attributes['LNAME'] = $lastName;
+        }
+
+        if (!isset($attributes['BIRTHDAY']) && null !== $birthday = $source->getBirthday()) {
+            $attributes['BIRTHDAY'] = $birthday->format('m/d');
+        }
+
+        $member->setAttributes($attributes);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function insertMember(MemberInterface $member): bool
     {
         $audienceId = $member->getAudience()->getIdentifier();
 
@@ -125,7 +156,7 @@ class Gateway implements GatewayInterface
         $map['emailAddress'] = $member->getEmail();
 
         $audienceId = $member->getAudience()->getIdentifier();
-        $hash = $this->api->subscriberHash($member->getEmail());
+        $hash       = $this->api->subscriberHash($member->getEmail());
 
         $result = $this->api->patch("lists/$audienceId/members/$hash", $map);
 
@@ -165,6 +196,7 @@ class Gateway implements GatewayInterface
         return in_array($action, [
             self::UPDATE_AUDIENCE,
             self::CREATE_MEMBER,
+            self::INSERT_MEMBER,
             self::UPDATE_MEMBER,
             self::DELETE_MEMBER,
         ], true);

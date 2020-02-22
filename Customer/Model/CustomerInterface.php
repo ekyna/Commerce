@@ -107,22 +107,6 @@ interface CustomerInterface extends
     public function setBirthday(\DateTime $birthday = null);
 
     /**
-     * Returns whether this customer subscribes to the newsletter.
-     *
-     * @return bool
-     */
-    public function isNewsletter(): bool;
-
-    /**
-     * Sets whether this customer subscribes to the newsletter.
-     *
-     * @param bool $newsletter
-     *
-     * @return CustomerInterface
-     */
-    public function setNewsletter(bool $newsletter): CustomerInterface;
-
-    /**
      * Returns whether the customer has a parent or not.
      *
      * @return bool

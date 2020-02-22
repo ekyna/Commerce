@@ -3,11 +3,11 @@
 namespace Ekyna\Component\Commerce\Newsletter\EventListener;
 
 /**
- * Class ListenerToggler
+ * Class ListenerGatewayToggler
  * @package Ekyna\Component\Commerce\Newsletter\EventListener
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class ListenerToggler
+class ListenerGatewayToggler
 {
     /**
      * @var ListenerInterface[]

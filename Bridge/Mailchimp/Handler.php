@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Mailchimp;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Ekyna\Component\Commerce\Newsletter\EventListener\ListenerToggler;
+use Ekyna\Component\Commerce\Newsletter\EventListener\ListenerGatewayToggler;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberStatuses;
@@ -33,9 +33,9 @@ class Handler implements HandlerInterface
     private $memberRepository;
 
     /**
-     * @var ListenerToggler
+     * @var ListenerGatewayToggler
      */
-    private $listenerToggler;
+    private $gatewayToggler;
 
     /**
      * @var EntityManagerInterface
@@ -53,20 +53,20 @@ class Handler implements HandlerInterface
      *
      * @param AudienceRepositoryInterface $audienceRepository
      * @param MemberRepositoryInterface   $memberRepository
-     * @param ListenerToggler             $listenerToggler
+     * @param ListenerGatewayToggler      $gatewayToggler
      * @param EntityManagerInterface      $manager
      * @param LoggerInterface             $logger
      */
     public function __construct(
         AudienceRepositoryInterface $audienceRepository,
         MemberRepositoryInterface $memberRepository,
-        ListenerToggler $listenerToggler,
+        ListenerGatewayToggler $gatewayToggler,
         EntityManagerInterface $manager,
         LoggerInterface $logger
     ) {
         $this->audienceRepository = $audienceRepository;
         $this->memberRepository   = $memberRepository;
-        $this->listenerToggler    = $listenerToggler;
+        $this->gatewayToggler    = $gatewayToggler;
         $this->manager            = $manager;
         $this->logger             = $logger;
     }
@@ -272,13 +272,13 @@ class Handler implements HandlerInterface
      */
     private function persist(MemberInterface $member): void
     {
-        $this->listenerToggler->disable();
+        $this->gatewayToggler->disable();
 
         $this->manager->persist($member);
         $this->manager->flush();
         $this->manager->clear();
 
-        $this->listenerToggler->enable();
+        $this->gatewayToggler->enable();
     }
 
     /**

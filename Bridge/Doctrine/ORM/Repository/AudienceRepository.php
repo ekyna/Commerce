@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Repository\AudienceRepositoryInterface;
@@ -41,6 +42,14 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
             return $this->defaultAudience;
         }
 
+        $qb = $this->getQueryBuilder('a');
+        $qb
+            ->andWhere($qb->expr()->eq('a.default', true))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->enableResultCache(60*60*24, self::DEFAULT_CACHE_KEY)
+            ->getOneOrNullResult();
+
         if (null !== $this->defaultAudience = $this->findOneBy(['default' => true])) {
             return $this->defaultAudience;
         }
@@ -49,15 +58,40 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
     }
 
     /**
-     * @inheritDoc
+     * Purges the default audience.
      */
-    public function findPublic(): array
+    public function purgeDefault(): void
+    {
+        $this->defaultAudience = null;
+
+        $this
+            ->getEntityManager()
+            ->getConfiguration()
+            ->getResultCacheImpl()
+            ->delete(self::DEFAULT_CACHE_KEY);
+    }
+
+    /**
+     * Returns the "find public" query builder.
+     *
+     * @return QueryBuilder
+     */
+    public function getFindPublicQueryBuilder(): QueryBuilder
     {
         $qb = $this->getQueryBuilder('a');
 
         return $qb
             ->andWhere($qb->expr()->eq('a.public', ':public'))
-            ->addOrderBy('translation.title', 'ASC')
+            ->addOrderBy('translation.title', 'ASC');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findPublic(): array
+    {
+        return $this
+            ->getFindPublicQueryBuilder()
             ->getQuery()
             ->setParameter('public', true)
             ->getResult();

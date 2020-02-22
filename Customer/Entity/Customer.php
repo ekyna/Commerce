@@ -63,11 +63,6 @@ class Customer implements Model\CustomerInterface
     protected $birthday;
 
     /**
-     * @var bool
-     */
-    protected $newsletter;
-
-    /**
      * @var Model\CustomerInterface
      */
     protected $parent;
@@ -309,24 +304,6 @@ class Customer implements Model\CustomerInterface
     public function setBirthday(\DateTime $birthday = null)
     {
         $this->birthday = $birthday;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isNewsletter(): bool
-    {
-        return $this->newsletter;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNewsletter(bool $newsletter): Model\CustomerInterface
-    {
-        $this->newsletter = $newsletter;
 
         return $this;
     }

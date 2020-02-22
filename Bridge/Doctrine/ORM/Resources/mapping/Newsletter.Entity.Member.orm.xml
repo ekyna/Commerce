@@ -21,7 +21,7 @@
         <field name="identifier" column="identifier" type="string" length="32"/>
         <field name="email" column="email" type="string" length="255"/>
         <field name="status" column="status" type="string" length="16"/>
-        <field name="attributes" column="attributes" type="simple_array" nullable="true"/>
+        <field name="attributes" column="attributes" type="json" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
@@ -31,7 +31,7 @@
         </field>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface" field="audience">
-            <join-column name="audience_id" referenced-column-name="id" nullable="false" on-delete="CASCADE"/>
+            <join-column name="audience_id" referenced-column-name="id" nullable="false" on-delete="RESTRICT"/>
         </many-to-one>
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="customer">
             <join-column name="customer_id" referenced-column-name="id" nullable="true" on-delete="SET NULL"/>
