@@ -134,7 +134,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
         // Unlink stock unit by setting supplier order item to null and ordered quantity to zero
         $stockUnit
             ->setSupplierOrderItem(null)
-            ->setNetPrice(null)
+            ->setNetPrice(0)
             ->setEstimatedDateOfArrival(null);
 
         $this->stockUnitUpdater->updateOrdered($stockUnit, 0, false);
@@ -151,7 +151,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
      */
     private function updatePrice(StockUnitInterface $stockUnit)
     {
-        $price = null;
+        $price = 0;
 
         if (null !== $item = $stockUnit->getSupplierOrderItem()) {
             if (null === $order = $item->getOrder()) {

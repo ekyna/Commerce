@@ -73,7 +73,7 @@ class OverflowHandler implements OverflowHandlerInterface
             // TODO prefer ready units with enough quantity
             $targetStockUnits = $this->unitResolver->findPendingOrReady($subject);
             foreach ($targetStockUnits as $targetStockUnit) {
-                // Skip the stock unit we're applying
+                // Skip the stock unit we're handling
                 if ($targetStockUnit === $stockUnit) {
                     continue;
                 }
@@ -85,10 +85,18 @@ class OverflowHandler implements OverflowHandlerInterface
                 }
             }
 
-            // Try to move sold overflow to a linkable stock unit
-            if (null !== $targetStockUnit = $this->unitResolver->findLinkable($subject)) {
-                if ($targetStockUnit !== $stockUnit) {
-                    $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
+            // Try to move sold overflow to a assignable stock units
+            $targetStockUnits = $this->unitResolver->findAssignable($subject);
+            foreach ($targetStockUnits as $targetStockUnit) {
+                // Skip the stock unit we're handling
+                if ($targetStockUnit === $stockUnit) {
+                    continue;
+                }
+
+                $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
+
+                if (0 == $overflow) {
+                    return true; // We're done dispatching sold quantity
                 }
             }
 
@@ -107,6 +115,11 @@ class OverflowHandler implements OverflowHandlerInterface
             }
 
             return true;
+        }
+
+        // Don't move assignment to a non linked stock unit
+        if (!$stockUnit->getSupplierOrderItem()) {
+            return false;
         }
 
         // Negative case : not enough sold quantity

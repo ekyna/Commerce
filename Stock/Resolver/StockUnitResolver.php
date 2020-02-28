@@ -52,8 +52,8 @@ class StockUnitResolver implements StockUnitResolverInterface
         StockUnitCacheInterface $unitCache,
         PersistenceHelperInterface $persistenceHelper
     ) {
-        $this->subjectHelper     = $subjectHelper;
-        $this->unitCache         = $unitCache;
+        $this->subjectHelper = $subjectHelper;
+        $this->unitCache = $unitCache;
         $this->persistenceHelper = $persistenceHelper;
 
         $this->repositoryCache = [];
@@ -69,7 +69,7 @@ class StockUnitResolver implements StockUnitResolverInterface
         // TODO Cache 'new' stock units created by sales (?)
 
         $stockUnits = array_filter(
-            $this->unitCache->findBySubject($subject),
+            $this->unitCache->findAddedBySubject($subject),
             function (StockUnitInterface $unit) {
                 return $unit->getState() === StockUnitStates::STATE_NEW;
             }
@@ -119,11 +119,9 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         [$subject, $repository] = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $this->replaceAndFilter(
-            $repository->findPendingBySubject($subject),
-            $this->unitCache->findBySubject($subject),
-            new StateFilter([StockUnitStates::STATE_PENDING])
-        );
+        $fetched = $repository->findPendingBySubject($subject);
+
+        return $this->replaceAndFilter($fetched, $subject, new StateFilter([StockUnitStates::STATE_PENDING]));
     }
 
     /**
@@ -137,11 +135,9 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         [$subject, $repository] = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $this->replaceAndFilter(
-            $repository->findReadyBySubject($subject),
-            $this->unitCache->findBySubject($subject),
-            new StateFilter([StockUnitStates::STATE_READY])
-        );
+        $fetched = $repository->findReadyBySubject($subject);
+
+        return $this->replaceAndFilter($fetched, $subject, new StateFilter([StockUnitStates::STATE_READY]));
     }
 
     /**
@@ -155,11 +151,12 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         [$subject, $repository] = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $this->replaceAndFilter(
-            $repository->findPendingOrReadyBySubject($subject),
-            $this->unitCache->findBySubject($subject),
-            new StateFilter([StockUnitStates::STATE_PENDING, StockUnitStates::STATE_READY])
-        );
+        $fetched = $repository->findPendingOrReadyBySubject($subject);
+
+        return $this->replaceAndFilter($fetched, $subject, new StateFilter([
+            StockUnitStates::STATE_PENDING,
+            StockUnitStates::STATE_READY,
+        ]));
     }
 
     /**
@@ -173,15 +170,13 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         [$subject, $repository] = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $this->replaceAndFilter(
-            $repository->findNotClosedBySubject($subject),
-            $this->unitCache->findBySubject($subject),
-            new StateFilter([
-                StockUnitStates::STATE_NEW,
-                StockUnitStates::STATE_PENDING,
-                StockUnitStates::STATE_READY,
-            ])
-        );
+        $fetched = $repository->findNotClosedBySubject($subject);
+
+        return $this->replaceAndFilter($fetched, $subject, new StateFilter([
+            StockUnitStates::STATE_NEW,
+            StockUnitStates::STATE_PENDING,
+            StockUnitStates::STATE_READY,
+        ]));
     }
 
     /**
@@ -195,20 +190,19 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         [$subject, $repository] = $this->getSubjectAndRepository($subjectOrRelative);
 
-        return $this->replaceAndFilter(
-            $repository->findAssignableBySubject($subject),
-            $this->unitCache->findBySubject($subject),
-            new class implements FilterInterface {
-                /** @inheritDoc */
-                public function filter(StockUnitInterface $unit): bool
-                {
-                    // - Not linked to a supplier order
-                    // - Sold lower than ordered
-                    return is_null($unit->getSupplierOrderItem())
-                        || ($unit->getSoldQuantity() < $unit->getOrderedQuantity() + $unit->getAdjustedQuantity());
-                }
+        $fetched = $repository->findAssignableBySubject($subject);
+
+        $filter = new class implements FilterInterface {
+            public function filter(StockUnitInterface $unit): bool
+            {
+                // - Not linked to a supplier order
+                // - Sold lower than ordered
+                return is_null($unit->getSupplierOrderItem())
+                    || ($unit->getSoldQuantity() < $unit->getOrderedQuantity() + $unit->getAdjustedQuantity());
             }
-        );
+        };
+
+        return $this->replaceAndFilter($fetched, $subject, $filter);
     }
 
     /**
@@ -222,20 +216,20 @@ class StockUnitResolver implements StockUnitResolverInterface
          */
         [$subject, $repository] = $this->getSubjectAndRepository($subjectOrRelative);
 
-        $stockUnits = $this->replaceAndFilter(
-            $repository->findLinkableBySubject($subject),
-            $this->unitCache->findBySubject($subject),
-            new class implements FilterInterface {
-                /** @inheritDoc */
-                public function filter(StockUnitInterface $unit): bool
-                {
-                    // - Not linked to a supplier order
-                    // - Not closed
-                    return (null === $unit->getSupplierOrderItem())
-                        && ($unit->getState() !== StockUnitStates::STATE_CLOSED);
-                }
+        $fetched = $repository->findLinkableBySubject($subject);
+
+        $filter = new class implements FilterInterface {
+            /** @inheritDoc */
+            public function filter(StockUnitInterface $unit): bool
+            {
+                // - Not linked to a supplier order
+                // - Not closed
+                return (null === $unit->getSupplierOrderItem())
+                    && ($unit->getState() !== StockUnitStates::STATE_CLOSED);
             }
-        );
+        };
+
+        $stockUnits = $this->replaceAndFilter($fetched, $subject, $filter);
 
         if (!empty($stockUnits)) {
             return reset($stockUnits);
@@ -247,21 +241,34 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * Replaces fetched units by their cached version, and filters the result.
      *
-     * @param StockUnitInterface[] $fetchedUnits
-     * @param StockUnitInterface[] $cachedUnits
-     * @param FilterInterface      $filter
+     * @param StockUnitInterface[]  $fetchedUnits
+     * @param StockSubjectInterface $subject
+     * @param FilterInterface       $filter
      *
      * @return array
      */
-    protected function replaceAndFilter(array $fetchedUnits, array $cachedUnits, FilterInterface $filter): array
-    {
+    protected function replaceAndFilter(
+        array $fetchedUnits,
+        StockSubjectInterface $subject,
+        FilterInterface $filter
+    ): array {
         $filtered = [];
 
+        $addedUnits = $this->unitCache->findAddedBySubject($subject);
+        $removedUnits = $this->unitCache->findRemovedBySubject($subject);
+
         foreach ($fetchedUnits as $fetchedUnit) {
-            foreach ($cachedUnits as $cachedUnit) {
+            foreach ($addedUnits as $cachedUnit) {
                 if ($cachedUnit->getId() === $fetchedUnit->getId()) {
                     $filtered[] = $cachedUnit;
                     continue 2; // Found cached version, go to next fetched unit
+                }
+            }
+
+            foreach ($removedUnits as $cachedUnit) {
+                if ($cachedUnit->getId() === $fetchedUnit->getId()) {
+                    // Unit has been removed, got to next fetched unit
+                    continue 2;
                 }
             }
 

@@ -52,11 +52,20 @@ interface StockUnitCacheInterface
     public function isRemoved(StockUnitInterface $unit): bool;
 
     /**
-     * Finds units by subject.
+     * Finds added units by subject.
      *
      * @param StockSubjectInterface $subject
      *
      * @return StockUnitInterface[]
      */
-    public function findBySubject(StockSubjectInterface $subject): array;
+    public function findAddedBySubject(StockSubjectInterface $subject): array;
+
+    /**
+     * Finds removed units by subject.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return StockUnitInterface[]
+     */
+    public function findRemovedBySubject(StockSubjectInterface $subject): array;
 }

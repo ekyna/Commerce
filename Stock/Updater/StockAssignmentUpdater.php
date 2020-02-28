@@ -54,7 +54,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 
         // Positive update
         if (0 < $quantity) {
-            // Sold quantity can't be greater than stock unit ordered
+            // Sold quantity can't be greater than stock unit ordered + adjusted
             if ($quantity > $limit = $stockUnit->getReservableQuantity()) {
                 $quantity = $limit;
             }
@@ -74,9 +74,6 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
             return 0;
         }
 
-        // Stock unit update
-        $this->stockUnitUpdater->updateSold($stockUnit, $quantity, true);
-
         // Assignment update
         $result = $assignment->getSoldQuantity() + $quantity;
         if (0 == $result) {
@@ -90,16 +87,18 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
                 $prevent = true;
             }
 
-            if (!$prevent) {
+            if ($prevent) {
+                $this->assignmentManager->persist($assignment);
+            } else {
                 $this->assignmentManager->remove($assignment);
-
-                return $quantity;
             }
+        } else {
+            $assignment->setSoldQuantity($result);
+            $this->assignmentManager->persist($assignment);
         }
 
-        $assignment->setSoldQuantity($result);
-
-        $this->assignmentManager->persist($assignment);
+        // Stock unit update
+        $this->stockUnitUpdater->updateSold($stockUnit, $quantity, true);
 
         return $quantity;
     }

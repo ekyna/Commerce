@@ -24,8 +24,9 @@ interface StockAssignmentManagerInterface
      * Removes the stock assignment.
      *
      * @param StockAssignmentInterface $assignment
+     * @param bool $hard Whether to remove assignment even if it has an id
      */
-    public function remove(StockAssignmentInterface $assignment): void;
+    public function remove(StockAssignmentInterface $assignment, bool $hard = false): void;
 
     /**
      * Creates the stock assignment for the given sale item and stock unit.

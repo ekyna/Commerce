@@ -492,7 +492,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getReservableQuantity(): float
     {
-        if (0 == $this->orderedQuantity) {
+        if (0 == $this->orderedQuantity + $this->adjustedQuantity) {
             return INF;
         }
 

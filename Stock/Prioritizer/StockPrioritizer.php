@@ -316,12 +316,10 @@ class StockPrioritizer implements StockPrioritizerInterface
         // Debit source unit's sold quantity
         $this->logger->unitSold($sourceUnit, -$quantity);
         $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $quantity);
-        $this->unitManager->persistOrRemove($sourceUnit); // TODO Without event scheduling ?
 
         // Credit target unit
         $this->logger->unitSold($targetUnit, $quantity);
         $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $quantity);
-        $this->unitManager->persistOrRemove($targetUnit); // TODO Without event scheduling ?
 
         // Merge assignment lookup
         $merge = null;
@@ -342,7 +340,7 @@ class StockPrioritizer implements StockPrioritizerInterface
                 // Debit quantity from source assignment
                 $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
                 $assignment->setSoldQuantity(0);
-                $this->assignmentManager->remove($assignment);
+                $this->assignmentManager->remove($assignment, true);
             } else {
                 // Move source assignment to target unit
                 $this->logger->assignmentUnit($assignment, $targetUnit);
@@ -372,6 +370,9 @@ class StockPrioritizer implements StockPrioritizerInterface
                 $this->assignmentManager->persist($create);
             }
         }
+
+        $this->unitManager->persistOrRemove($sourceUnit); // TODO Without event scheduling ?
+        $this->unitManager->persistOrRemove($targetUnit); // TODO Without event scheduling ?
 
         return $quantity;
     }

@@ -69,13 +69,13 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
     /**
      * @inheritDoc
      */
-    public function remove(StockAssignmentInterface $assignment): void
+    public function remove(StockAssignmentInterface $assignment, bool $hard = false): void
     {
         $assignment
             ->setSoldQuantity(0)
             ->setShippedQuantity(0);
 
-        if ($assignment->getId()) {
+        if ($assignment->getId() && !$hard) {
             $this->assignmentCache->remove($assignment);
             return;
         }

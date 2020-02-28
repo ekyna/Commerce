@@ -471,6 +471,19 @@ class StockSubjectUpdaterTest extends TestCase
         ];
     }
 
+    /**
+     * @param string         $state
+     * @param float          $sold
+     * @param float          $shipped
+     * @param float          $adjusted
+     * @param float          $ordered
+     * @param float          $received
+     * @param \DateTime|null $eda
+     *
+     * @return StockUnit
+     *
+     * @deprecated Use Fixtures::createStockUnit
+     */
     private function createStockUnit(
         string $state = StockUnitStates::STATE_NEW,
         float $sold = .0,
@@ -494,6 +507,18 @@ class StockSubjectUpdaterTest extends TestCase
         return $unit;
     }
 
+    /**
+     * @param string         $mode
+     * @param string         $state
+     * @param float          $in
+     * @param float          $available
+     * @param float          $virtual
+     * @param \DateTime|null $eda
+     *
+     * @return Product
+     *
+     * @deprecated Use Fixtures::createSubject
+     */
     private function createSubject(
         string $mode = StockSubjectModes::MODE_DISABLED,
         string $state = StockSubjectStates::STATE_IN_STOCK,

@@ -469,6 +469,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return null;
         }
 
+        /** @noinspection PhpUndefinedMethodInspection */
         return $item->getStockAssignments()->toArray();
     }
 
@@ -479,9 +480,12 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     protected function removeAssignment(StockAssignmentInterface $assignment): void
     {
-        $this->unitUpdater->updateSold($assignment->getStockUnit(), -$assignment->getSoldQuantity(), true);
+        $unit = $assignment->getStockUnit();
+        $sold = $assignment->getSoldQuantity();
 
-        $this->assignmentManager->remove($assignment);
+        $this->assignmentManager->remove($assignment, true);
+
+        $this->unitUpdater->updateSold($unit, -$sold, true);
     }
 
     /**
@@ -508,7 +512,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
             $assignment = $this->assignmentManager->create($item, $stockUnit);
 
-            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
+            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity, true);
 
             if (0 == $quantity) {
                 return;
@@ -525,7 +529,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
             $assignment = $this->assignmentManager->create($item, $stockUnit);
 
-            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity);
+            $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity, true);
         }
 
         if (0 < $quantity) {

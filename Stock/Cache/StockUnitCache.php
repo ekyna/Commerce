@@ -107,12 +107,26 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     /**
      * @inheritdoc
      */
-    public function findBySubject(StockSubjectInterface $subject): array
+    public function findAddedBySubject(StockSubjectInterface $subject): array
     {
         $hash = $this->getSubjectHash($subject);
 
         if (isset($this->addedUnits[$hash])) {
             return $this->addedUnits[$hash];
+        }
+
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findRemovedBySubject(StockSubjectInterface $subject): array
+    {
+        $hash = $this->getSubjectHash($subject);
+
+        if (isset($this->removedUnits[$hash])) {
+            return $this->removedUnits[$hash];
         }
 
         return [];

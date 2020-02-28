@@ -93,9 +93,9 @@ class StockUnitCacheTest extends StockTestCase
     }
 
     /**
-     * @covers StockUnitCache::findBySubject()
+     * @covers StockUnitCache::findAddedBySubject()
      */
-    public function test_findBySubject(): void
+    public function test_findAddedBySubject(): void
     {
         $unitA = Fixtures::createStockUnit($subjectA = Fixtures::createSubject());
         $unitB = Fixtures::createStockUnit($subjectB = Fixtures::createSubject());
@@ -108,8 +108,8 @@ class StockUnitCacheTest extends StockTestCase
         $cache->add($unitC);
         $cache->add($unitD);
 
-        $this->assertEquals([$unitA, $unitC], $cache->findBySubject($subjectA));
-        $this->assertEquals([$unitB, $unitD], $cache->findBySubject($subjectB));
+        $this->assertEquals([$unitA, $unitC], $cache->findAddedBySubject($subjectA));
+        $this->assertEquals([$unitB, $unitD], $cache->findAddedBySubject($subjectB));
     }
 
     /**
