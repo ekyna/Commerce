@@ -15,19 +15,19 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 final class DocumentTypes
 {
     // Sale
-    public const TYPE_FORM          = 'form';
-    public const TYPE_VOUCHER       = 'voucher';
-    public const TYPE_QUOTE         = 'quote';
-    public const TYPE_PROFORMA      = 'proforma';
-    public const TYPE_CONFIRMATION  = 'confirmation';
+    public const TYPE_FORM           = 'form';
+    public const TYPE_VOUCHER        = 'voucher';
+    public const TYPE_QUOTE          = 'quote';
+    public const TYPE_PROFORMA       = 'proforma';
+    public const TYPE_CONFIRMATION   = 'confirmation';
 
     // Invoice
-    public const TYPE_INVOICE       = 'invoice';
-    public const TYPE_CREDIT        = 'credit';
+    public const TYPE_INVOICE        = 'invoice';
+    public const TYPE_CREDIT         = 'credit';
 
     // Shipment
-    public const TYPE_SHIPMENT_FORM = 'shipment_form';
-    public const TYPE_SHIPMENT_BILL = 'shipment_bill';
+    public const TYPE_SHIPMENT_FORM  = 'shipment_form';
+    public const TYPE_SHIPMENT_BILL  = 'shipment_bill';
 
     // Supplier order
     public const TYPE_SUPPLIER_ORDER = 'supplier_order';
@@ -41,15 +41,15 @@ final class DocumentTypes
     static public function getTypes(): array
     {
         return [
-            static::TYPE_FORM,
-            static::TYPE_VOUCHER,
-            static::TYPE_QUOTE,
-            static::TYPE_PROFORMA,
-            static::TYPE_CONFIRMATION,
-            static::TYPE_INVOICE,
-            static::TYPE_CREDIT,
-            static::TYPE_SHIPMENT_FORM,
-            static::TYPE_SHIPMENT_BILL,
+            self::TYPE_FORM,
+            self::TYPE_VOUCHER,
+            self::TYPE_QUOTE,
+            self::TYPE_PROFORMA,
+            self::TYPE_CONFIRMATION,
+            self::TYPE_INVOICE,
+            self::TYPE_CREDIT,
+            self::TYPE_SHIPMENT_FORM,
+            self::TYPE_SHIPMENT_BILL,
         ];
     }
 
@@ -61,11 +61,11 @@ final class DocumentTypes
     static public function getSaleTypes(): array
     {
         return [
-            static::TYPE_FORM,
-            static::TYPE_VOUCHER,
-            static::TYPE_QUOTE,
-            static::TYPE_PROFORMA,
-            static::TYPE_CONFIRMATION,
+            self::TYPE_FORM,
+            self::TYPE_VOUCHER,
+            self::TYPE_QUOTE,
+            self::TYPE_PROFORMA,
+            self::TYPE_CONFIRMATION,
         ];
     }
 
@@ -78,7 +78,7 @@ final class DocumentTypes
      */
     static public function isValidSaleType(string $type): bool
     {
-        return in_array($type, static::getSaleTypes(), true);
+        return in_array($type, self::getSaleTypes(), true);
     }
 
     /**
@@ -89,8 +89,8 @@ final class DocumentTypes
     static public function getInvoiceTypes(): array
     {
         return [
-            static::TYPE_INVOICE,
-            static::TYPE_CREDIT,
+            self::TYPE_INVOICE,
+            self::TYPE_CREDIT,
         ];
     }
 
@@ -103,7 +103,17 @@ final class DocumentTypes
      */
     static public function isValidInvoiceType(string $type): bool
     {
-        return in_array($type, static::getInvoiceTypes(), true);
+        return in_array($type, self::getInvoiceTypes(), true);
+    }
+
+    /**
+     * Returns the sale & invoice document types.
+     *
+     * @return array
+     */
+    static public function getSaleAndInvoiceTypes(): array
+    {
+        return array_merge(self::getSaleTypes(), self::getInvoiceTypes());
     }
 
     /**
@@ -114,8 +124,8 @@ final class DocumentTypes
     static public function getShipmentTypes(): array
     {
         return [
-            static::TYPE_SHIPMENT_FORM,
-            static::TYPE_SHIPMENT_BILL,
+            self::TYPE_SHIPMENT_FORM,
+            self::TYPE_SHIPMENT_BILL,
         ];
     }
 
@@ -128,7 +138,7 @@ final class DocumentTypes
      */
     static public function isValidShipmentType(string $type): bool
     {
-        return in_array($type, static::getShipmentTypes(), true);
+        return in_array($type, self::getShipmentTypes(), true);
     }
 
     /**
@@ -141,15 +151,15 @@ final class DocumentTypes
     static public function getClasses(string $type): array
     {
         switch ($type) {
-            case static::TYPE_FORM:
+            case self::TYPE_FORM:
                 return [CartInterface::class];
-            case static::TYPE_QUOTE:
+            case self::TYPE_QUOTE:
                 return [QuoteInterface::class];
-            case static::TYPE_PROFORMA:
+            case self::TYPE_PROFORMA:
                 return [QuoteInterface::class, OrderInterface::class];
-            case static::TYPE_CONFIRMATION:
+            case self::TYPE_CONFIRMATION:
                 return [OrderInterface::class];
-            case static::TYPE_VOUCHER:
+            case self::TYPE_VOUCHER:
                 return [];
             default:
                 throw new InvalidArgumentException("Unexpected type '$type'.");

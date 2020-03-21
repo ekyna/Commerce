@@ -91,6 +91,22 @@ interface PaymentMethodInterface extends MethodInterface
     public function setPrivate(bool $private): PaymentMethodInterface;
 
     /**
+     * Returns the mention types filtering.
+     *
+     * @return array
+     */
+    public function getMentionTypes(): ?array;
+
+    /**
+     * Sets the mention types filtering.
+     *
+     * @param array $types
+     *
+     * @return PaymentMethodInterface
+     */
+    public function setMentionTypes(array $types = null): PaymentMethodInterface;
+
+    /**
      * Returns whether or not the method requires manual management of payments state.
      *
      * @return bool

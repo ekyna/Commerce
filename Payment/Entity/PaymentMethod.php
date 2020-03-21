@@ -35,6 +35,11 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
      */
     protected $private;
 
+    /**
+     * @var string[]
+     */
+    protected $mentionTypes;
+
 
     /**
      * Constructor.
@@ -128,6 +133,24 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     public function setPrivate(bool $private): PaymentMethodInterface
     {
         $this->private = $private;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMentionTypes(): ?array
+    {
+        return $this->mentionTypes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setMentionTypes(array $types = null): PaymentMethodInterface
+    {
+        $this->mentionTypes = $types;
 
         return $this;
     }

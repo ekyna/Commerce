@@ -21,16 +21,17 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="defaultCurrency" column="default_currency" type="boolean">
+        <field name="defaultCurrency" column="default_currency" type="boolean" nullable="false">
             <options>
                 <option name="default">1</option>
             </options>
         </field>
-        <field name="private" column="private" type="boolean">
+        <field name="private" column="private" type="boolean" nullable="false">
             <options>
                 <option name="default">0</option>
             </options>
         </field>
+        <field name="mentionTypes" column="mention_types" type="simple_array" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Payment\Entity\PaymentMessage"
                      mapped-by="method" field="messages">

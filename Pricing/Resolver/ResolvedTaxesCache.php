@@ -28,7 +28,7 @@ class ResolvedTaxesCache
      *
      * @return TaxInterface[]|null
      */
-    public function get(TaxGroupInterface $taxGroup, CountryInterface $country, $business = false)
+    public function get(TaxGroupInterface $taxGroup, CountryInterface $country, $business = false): ?array
     {
         $key = $this->buildKey($taxGroup, $country, $business);
 
@@ -47,7 +47,7 @@ class ResolvedTaxesCache
      * @param bool              $business
      * @param array             $taxes
      */
-    public function set(TaxGroupInterface $taxGroup, CountryInterface $country, $business = false, array $taxes)
+    public function set(TaxGroupInterface $taxGroup, CountryInterface $country, bool $business, array $taxes): void
     {
         $key = $this->buildKey($taxGroup, $country, $business);
 
@@ -63,7 +63,7 @@ class ResolvedTaxesCache
      *
      * @return string
      */
-    private function buildKey(TaxGroupInterface $taxGroup, CountryInterface $country, $business = false)
+    private function buildKey(TaxGroupInterface $taxGroup, CountryInterface $country, bool $business = false): string
     {
         return sprintf('%s-%s-%s', $taxGroup->getId(), $country->getId(), (int)$business);
     }
