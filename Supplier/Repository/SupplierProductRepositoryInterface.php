@@ -48,9 +48,18 @@ interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
      *
      * @param SubjectInterface $subject
      *
-     * @return \DateTime|null
+     * @return float
      */
     public function getAvailableQuantitySumBySubject(SubjectInterface $subject);
+
+    /**
+     * Returns the ordered quantity sum by subject.
+     *
+     * @param SubjectInterface $subject
+     *
+     * @return float
+     */
+    public function getOrderedQuantitySumBySubject(SubjectInterface $subject);
 
     /**
      * Finds the supplier product by subject and supplier.

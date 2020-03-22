@@ -257,14 +257,21 @@ class StockUnitResolver implements StockUnitResolverInterface
         $addedUnits = $this->unitCache->findAddedBySubject($subject);
         $removedUnits = $this->unitCache->findRemovedBySubject($subject);
 
+        // Loop through fetched units
         foreach ($fetchedUnits as $fetchedUnit) {
-            foreach ($addedUnits as $cachedUnit) {
+            // Compare with cache's added units
+            foreach ($addedUnits as $index => $cachedUnit) {
                 if ($cachedUnit->getId() === $fetchedUnit->getId()) {
+                    // Use cached version
                     $filtered[] = $cachedUnit;
+                    // Shift cached unit to not add twice
+                    unset($addedUnits[$index]);
+
                     continue 2; // Found cached version, go to next fetched unit
                 }
             }
 
+            // Compare with cache's removed units
             foreach ($removedUnits as $cachedUnit) {
                 if ($cachedUnit->getId() === $fetchedUnit->getId()) {
                     // Unit has been removed, got to next fetched unit
@@ -274,6 +281,11 @@ class StockUnitResolver implements StockUnitResolverInterface
 
             // Cached unit version not found, use fetched one
             $filtered[] = $fetchedUnit;
+        }
+
+        // Add cache's remaining added units
+        foreach ($addedUnits as $cachedUnit) {
+            $filtered[] = $cachedUnit;
         }
 
         return array_filter($filtered, [$filter, 'filter']);

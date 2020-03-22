@@ -35,32 +35,32 @@ final class ShipmentStates
      *
      * @return array
      */
-    static public function getStates()
+    public static function getStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_CANCELED,
-            static::STATE_PREPARATION,
-            static::STATE_READY,
-            static::STATE_SHIPPED,
-            static::STATE_PENDING,
-            static::STATE_RETURNED,
-            static::STATE_NONE,
-            static::STATE_PARTIAL,
-            static::STATE_COMPLETED,
+            self::STATE_NEW,
+            self::STATE_CANCELED,
+            self::STATE_PREPARATION,
+            self::STATE_READY,
+            self::STATE_SHIPPED,
+            self::STATE_PENDING,
+            self::STATE_RETURNED,
+            self::STATE_NONE,
+            self::STATE_PARTIAL,
+            self::STATE_COMPLETED,
         ];
     }
 
     /**
      * Returns whether the given state is valid or not.
      *
-     * @param string $state
+     * @param ShipmentInterface|string $state
      *
      * @return bool
      */
-    static public function isValidState($state)
+    public static function isValidState($state): bool
     {
-        return in_array($state, static::getStates(), true);
+        return in_array(self::stateFormShipment($state), self::getStates(), true);
     }
 
     /**
@@ -68,48 +68,25 @@ final class ShipmentStates
      *
      * @return array
      */
-    static public function getNotifiableStates()
+    public static function getNotifiableStates(): array
     {
         return [
-            static::STATE_READY,
-            static::STATE_RETURNED,
-            static::STATE_SHIPPED,
+            self::STATE_READY,
+            self::STATE_RETURNED,
+            self::STATE_SHIPPED,
         ];
     }
 
     /**
      * Returns whether the given state is a notifiable state.
      *
-     * @param string $state
+     * @param ShipmentInterface|string $state
      *
      * @return bool
      */
-    static public function isNotifiableState($state)
+    public static function isNotifiableState($state): bool
     {
-        return in_array($state, static::getNotifiableStates(), true);
-    }
-
-    /**
-     * Returns whether the given shipment (or return) is a done.
-     *
-     * @param ShipmentInterface $shipment
-     *
-     * @return bool
-     *
-     * @TODO remove
-     * @deprecated No longer used
-     */
-    static public function isDone(ShipmentInterface $shipment)
-    {
-        if ($shipment->isReturn()) {
-            if (static::STATE_RETURNED === $shipment->getState()) {
-                return true;
-            }
-        } elseif (static::STATE_SHIPPED === $shipment->getState()) {
-            return true;
-        }
-
-        return false;
+        return in_array(self::stateFormShipment($state), self::getNotifiableStates(), true);
     }
 
     /**
@@ -117,25 +94,27 @@ final class ShipmentStates
      *
      * @return array
      */
-    static public function getDeletableStates()
+    public static function getDeletableStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_NONE,
-            static::STATE_CANCELED,
+            self::STATE_NEW,
+            self::STATE_NONE,
+            self::STATE_CANCELED,
         ];
     }
 
     /**
      * Returns whether the given state is a deletable state.
      *
-     * @param string $state
+     * @param ShipmentInterface|string $state
      *
      * @return bool
      */
-    static public function isDeletableState($state)
+    public static function isDeletableState($state): bool
     {
-        return is_null($state) || in_array($state, static::getDeletableStates(), true);
+        $state = self::stateFormShipment($state);
+
+        return in_array($state, self::getDeletableStates(), true);
     }
 
     /**
@@ -143,25 +122,27 @@ final class ShipmentStates
      *
      * @return array
      */
-    static public function getPreparableStates()
+    public static function getPreparableStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_NONE,
-            static::STATE_PARTIAL,
+            self::STATE_NEW,
+            self::STATE_NONE,
+            self::STATE_PARTIAL,
         ];
     }
 
     /**
      * Returns whether the given state is a preparable state.
      *
-     * @param string $state
+     * @param ShipmentInterface|string $state
      *
      * @return bool
      */
-    static public function isPreparableState($state)
+    public static function isPreparableState($state): bool
     {
-        return is_null($state) || in_array($state, static::getPreparableStates(), true);
+        $state = self::stateFormShipment($state);
+
+        return in_array($state, self::getPreparableStates(), true);
     }
 
     /**
@@ -172,11 +153,11 @@ final class ShipmentStates
      *
      * @return bool
      */
-    static public function hasChangedToDeletable(array $cs)
+    public static function hasChangedToDeletable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && !static::isDeletableState($cs[0])
-            && static::isDeletableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && !self::isDeletableState($cs[0])
+            && self::isDeletableState($cs[1]);
     }
 
     /**
@@ -187,11 +168,11 @@ final class ShipmentStates
      *
      * @return bool
      */
-    static public function hasChangedFromDeletable(array $cs)
+    public static function hasChangedFromDeletable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && static::isDeletableState($cs[0])
-            && !static::isDeletableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && self::isDeletableState($cs[0])
+            && !self::isDeletableState($cs[1]);
     }
 
     /**
@@ -199,27 +180,29 @@ final class ShipmentStates
      *
      * @return array
      */
-    static public function getStockableStates()
+    public static function getStockableStates(): array
     {
         return [
-            static::STATE_READY,
-            static::STATE_PARTIAL, // This is a sale state
-            static::STATE_SHIPPED,
-            static::STATE_RETURNED,
-            static::STATE_COMPLETED,
+            self::STATE_READY,
+            self::STATE_PARTIAL, // This is a sale state
+            self::STATE_SHIPPED,
+            self::STATE_RETURNED,
+            self::STATE_COMPLETED,
         ];
     }
 
     /**
      * Returns whether the given state is a stockable state.
      *
-     * @param string $state
+     * @param ShipmentInterface|string $state
      *
      * @return bool
      */
-    static public function isStockableState($state)
+    public static function isStockableState($state): bool
     {
-        return in_array($state, static::getStockableStates(), true);
+        $state = self::stateFormShipment($state);
+
+        return in_array($state, self::getStockableStates(), true);
     }
 
     /**
@@ -230,11 +213,11 @@ final class ShipmentStates
      *
      * @return bool
      */
-    static public function hasChangedToStockable(array $cs)
+    public static function hasChangedToStockable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && !static::isStockableState($cs[0])
-            && static::isStockableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && !self::isStockableState($cs[0])
+            && self::isStockableState($cs[1]);
     }
 
     /**
@@ -245,11 +228,31 @@ final class ShipmentStates
      *
      * @return bool
      */
-    static public function hasChangedFromStockable(array $cs)
+    public static function hasChangedFromStockable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && static::isStockableState($cs[0])
-            && !static::isStockableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && self::isStockableState($cs[0])
+            && !self::isStockableState($cs[1]);
+    }
+
+    /**
+     * Returns the shipment state.
+     *
+     * @param ShipmentInterface|string $stateOrShipment
+     *
+     * @return string
+     */
+    private static function stateFormShipment($stateOrShipment): string
+    {
+        if ($stateOrShipment instanceof ShipmentInterface) {
+            $stateOrShipment = $stateOrShipment->getState();
+        }
+
+        if (is_string($stateOrShipment) && !empty($stateOrShipment)) {
+            return $stateOrShipment;
+        }
+
+        throw new InvalidArgumentException("Expected string or instance of " . ShipmentInterface::class);
     }
 
     /**
@@ -261,13 +264,13 @@ final class ShipmentStates
      *
      * @throws InvalidArgumentException
      */
-    static private function assertValidChangeSet(array $cs)
+    private static function assertValidChangeSet(array $cs): bool
     {
         if (
             array_key_exists(0, $cs) &&
             array_key_exists(1, $cs) &&
-            (is_null($cs[0]) || static::isValidState($cs[0])) &&
-            (is_null($cs[1]) || static::isValidState($cs[1]))
+            (is_null($cs[0]) || self::isValidState($cs[0])) &&
+            (is_null($cs[1]) || self::isValidState($cs[1]))
         ) {
             return true;
         }

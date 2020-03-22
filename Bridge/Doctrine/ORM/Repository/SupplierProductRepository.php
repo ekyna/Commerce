@@ -28,6 +28,11 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
     /**
      * @var \Doctrine\ORM\Query
      */
+    private $getOrderedSumBySubjectQuery;
+
+    /**
+     * @var \Doctrine\ORM\Query
+     */
     private $getMinEdaBySubjectQuery;
 
     /**
@@ -81,6 +86,20 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
     {
         return (float)$this
             ->getGetAvailableSumBySubjectQuery()
+            ->setParameters([
+                'provider'   => $subject->getProviderName(),
+                'identifier' => $subject->getId(),
+            ])
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOrderedQuantitySumBySubject(SubjectInterface $subject)
+    {
+        return (float)$this
+            ->getGetOrderedSumBySubjectQuery()
             ->setParameters([
                 'provider'   => $subject->getProviderName(),
                 'identifier' => $subject->getId(),
@@ -157,6 +176,27 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
             ->select('SUM(' . $as . '.availableStock) as available');
 
         return $this->getAvailableSumBySubjectQuery = $qb->getQuery();
+    }
+
+    /**
+     * Returns the "get ordered quantity sum by subject" query.
+     *
+     * @return \Doctrine\ORM\Query
+     */
+    protected function getGetOrderedSumBySubjectQuery()
+    {
+        if (null !== $this->getOrderedSumBySubjectQuery) {
+            return $this->getOrderedSumBySubjectQuery;
+        }
+
+        $as = $this->getAlias();
+        $qb = $this->createFindBySubjectQueryBuilder();
+
+        $qb
+            ->andWhere($qb->expr()->gte($as . '.orderedStock', 0))
+            ->select('SUM(' . $as . '.orderedStock) as ordered');
+
+        return $this->getOrderedSumBySubjectQuery = $qb->getQuery();
     }
 
     /**

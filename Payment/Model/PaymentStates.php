@@ -36,19 +36,19 @@ final class PaymentStates
     static public function getStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_PENDING,
-            static::STATE_CAPTURED,
-            static::STATE_FAILED,
-            static::STATE_CANCELED,
-            static::STATE_REFUNDED,
-            static::STATE_AUTHORIZED,
-            static::STATE_SUSPENDED,
-            static::STATE_EXPIRED,
-            static::STATE_UNKNOWN,
-            static::STATE_OUTSTANDING,
-            static::STATE_DEPOSIT,
-            static::STATE_COMPLETED,
+            self::STATE_NEW,
+            self::STATE_PENDING,
+            self::STATE_CAPTURED,
+            self::STATE_FAILED,
+            self::STATE_CANCELED,
+            self::STATE_REFUNDED,
+            self::STATE_AUTHORIZED,
+            self::STATE_SUSPENDED,
+            self::STATE_EXPIRED,
+            self::STATE_UNKNOWN,
+            self::STATE_OUTSTANDING,
+            self::STATE_DEPOSIT,
+            self::STATE_COMPLETED,
         ];
     }
 
@@ -62,7 +62,7 @@ final class PaymentStates
      */
     static public function isValidState(string $state, bool $throwException = true): bool
     {
-        if (in_array($state, static::getStates(), true)) {
+        if (in_array($state, self::getStates(), true)) {
             return true;
         }
 
@@ -81,11 +81,11 @@ final class PaymentStates
     static public function getNotifiableStates(): array
     {
         return [
-            static::STATE_PENDING,
-            static::STATE_CAPTURED,
-            static::STATE_AUTHORIZED,
-            static::STATE_FAILED,
-            static::STATE_REFUNDED,
+            self::STATE_PENDING,
+            self::STATE_CAPTURED,
+            self::STATE_AUTHORIZED,
+            self::STATE_FAILED,
+            self::STATE_REFUNDED,
         ];
     }
 
@@ -98,9 +98,9 @@ final class PaymentStates
      */
     static public function isNotifiableState($state): bool
     {
-        $state = static::stateFromPayment($state);
+        $state = self::stateFromPayment($state);
 
-        return in_array($state, static::getNotifiableStates(), true);
+        return in_array($state, self::getNotifiableStates(), true);
     }
 
     /**
@@ -111,9 +111,9 @@ final class PaymentStates
     static public function getDeletableStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_CANCELED,
-            static::STATE_FAILED,
+            self::STATE_NEW,
+            self::STATE_CANCELED,
+            self::STATE_FAILED,
         ];
     }
 
@@ -126,9 +126,9 @@ final class PaymentStates
      */
     static public function isDeletableState($state): bool
     {
-        $state = static::stateFromPayment($state);
+        $state = self::stateFromPayment($state);
 
-        return is_null($state) || in_array($state, static::getDeletableStates(), true);
+        return is_null($state) || in_array($state, self::getDeletableStates(), true);
     }
 
     /**
@@ -142,15 +142,15 @@ final class PaymentStates
     {
         if ($andRefunded) {
             return [
-                static::STATE_CAPTURED,
-                static::STATE_AUTHORIZED,
-                static::STATE_REFUNDED,
+                self::STATE_CAPTURED,
+                self::STATE_AUTHORIZED,
+                self::STATE_REFUNDED,
             ];
         }
 
         return [
-            static::STATE_CAPTURED,
-            static::STATE_AUTHORIZED,
+            self::STATE_CAPTURED,
+            self::STATE_AUTHORIZED,
         ];
     }
 
@@ -164,7 +164,7 @@ final class PaymentStates
      */
     static public function isPaidState($state, bool $orRefunded = false): bool
     {
-        return in_array(static::stateFromPayment($state), static::getPaidStates($orRefunded), true);
+        return in_array(self::stateFromPayment($state), self::getPaidStates($orRefunded), true);
     }
 
     /**
@@ -175,9 +175,9 @@ final class PaymentStates
     static public function getCanceledStates(): array
     {
         return [
-            static::STATE_CANCELED,
-            static::STATE_FAILED,
-            static::STATE_REFUNDED,
+            self::STATE_CANCELED,
+            self::STATE_FAILED,
+            self::STATE_REFUNDED,
         ];
     }
 
@@ -190,7 +190,7 @@ final class PaymentStates
      */
     static public function isCanceledState($state): bool
     {
-        return in_array(static::stateFromPayment($state), static::getCanceledStates(), true);
+        return in_array(self::stateFromPayment($state), self::getCanceledStates(), true);
     }
 
     /**
@@ -223,9 +223,9 @@ final class PaymentStates
      */
     static public function hasChangedToPaid(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && !static::isPaidState($cs[0])
-            && static::isPaidState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && !self::isPaidState($cs[0])
+            && self::isPaidState($cs[1]);
     }
 
     /**
@@ -238,9 +238,9 @@ final class PaymentStates
      */
     static public function hasChangedFromPaid(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && static::isPaidState($cs[0])
-            && !static::isPaidState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && self::isPaidState($cs[0])
+            && !self::isPaidState($cs[1]);
     }
 
     /**
@@ -257,8 +257,8 @@ final class PaymentStates
         if (
             array_key_exists(0, $cs)
             && array_key_exists(1, $cs)
-            && (is_null($cs[0]) || static::isValidState($cs[0], false))
-            && (is_null($cs[1]) || static::isValidState($cs[1], false))
+            && (is_null($cs[0]) || self::isValidState($cs[0], false))
+            && (is_null($cs[1]) || self::isValidState($cs[1], false))
         ) {
             return true;
         }

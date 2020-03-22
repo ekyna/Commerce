@@ -340,8 +340,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         elseif (!$subject->isStockCompound() && $mode !== StockSubjectModes::MODE_MANUAL) {
             // Supplier product availability
             $available = $this->supplierProductRepository->getAvailableQuantitySumBySubject($subject);
-            $ordered = 0;
-            // TODO $ordered = $this->supplierProductRepository->getOrderedQuantitySumBySubject($subject);
+            $ordered = $this->supplierProductRepository->getOrderedQuantitySumBySubject($subject);
             $eda = $this->nullDateIfLowerThanToday($subject->getEstimatedDateOfArrival());
 
             // If suppliers has available stock or is about to get it
