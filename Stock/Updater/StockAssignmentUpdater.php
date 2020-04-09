@@ -76,6 +76,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 
         // Assignment update
         $result = $assignment->getSoldQuantity() + $quantity;
+        $assignment->setSoldQuantity($result);
         if (0 == $result) {
             $prevent  = false;
             $saleItem = $assignment->getSaleItem();
@@ -93,7 +94,6 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
                 $this->assignmentManager->remove($assignment);
             }
         } else {
-            $assignment->setSoldQuantity($result);
             $this->assignmentManager->persist($assignment);
         }
 
