@@ -289,7 +289,8 @@ SELECT
         IFNULL(i2.quantity, 1) * 
         IFNULL(i3.quantity, 1) * 
         IFNULL(i4.quantity, 1) * 
-        IFNULL(i5.quantity, 1)
+        IFNULL(i5.quantity, 1) *
+        IFNULL(i6.quantity, 1)
     ) AS item_sum,
     IFNULL((
         SELECT SUM(line.quantity)
@@ -320,7 +321,11 @@ LEFT JOIN commerce_order_item AS i2 ON i2.id=i1.parent_id
 LEFT JOIN commerce_order_item AS i3 ON i3.id=i2.parent_id
 LEFT JOIN commerce_order_item AS i4 ON i4.id=i3.parent_id
 LEFT JOIN commerce_order_item AS i5 ON i5.id=i4.parent_id
-JOIN commerce_order AS o ON (o.id=i1.order_id OR o.id=i2.order_id OR o.id=i3.order_id OR o.id=i4.order_id OR o.id=i5.order_id)
+LEFT JOIN commerce_order_item AS i6 ON i6.id=i5.parent_id
+JOIN commerce_order AS o ON (
+    o.id=i1.order_id OR o.id=i2.order_id OR o.id=i3.order_id 
+    OR o.id=i4.order_id OR o.id=i5.order_id OR o.id=i6.order_id
+)
 GROUP BY i1.id
 ORDER BY o.id, i1.id;
 SQL;

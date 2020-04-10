@@ -52,8 +52,12 @@ class UnitOverflowChecker extends AbstractChecker
     /**
      * @inheritDoc
      */
-    public function build(OutputInterface $output): void
+    public function fix(OutputInterface $output, array &$unitIds): void
     {
+        if (empty($this->results)) {
+            return;
+        }
+
         $repository = $this->entityManager->getRepository(AbstractStockUnit::class);
 
         foreach ($this->results as $result) {
@@ -63,6 +67,8 @@ class UnitOverflowChecker extends AbstractChecker
             }
 
             $this->overflowHandler->handle($unit);
+
+            $unitIds[] = (int)$result['id'];
         }
 
         $this->entityManager->flush();

@@ -16,7 +16,7 @@ class UnitAssignChecker extends AbstractChecker
      */
     public function getTitle(): string
     {
-        return "Stock unit sold and shipped quantities.";
+        return "Stock unit sold and shipped quantities";
     }
 
     /**
