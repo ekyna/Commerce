@@ -27,8 +27,8 @@
         <field name="netPrice" column="net_price" type="decimal" precision="15" scale="5" nullable="false"/>
         <field name="weight" column="weight" type="decimal" precision="7" scale="3" nullable="true"/>
 
-        <field name="availableStock" column="available_stock" type="decimal" precision="10" scale="5" nullable="true"/>
-        <field name="orderedStock" column="ordered_stock" type="decimal" precision="10" scale="5" nullable="true"/>
+        <field name="availableStock" column="available_stock" type="decimal" precision="10" scale="3" nullable="true"/>
+        <field name="orderedStock" column="ordered_stock" type="decimal" precision="10" scale="3" nullable="true"/>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier">
