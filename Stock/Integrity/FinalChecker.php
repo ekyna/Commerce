@@ -114,7 +114,9 @@ SQL,
             <<<SQL
 SELECT u.id, u.product_id, u.adjusted_quantity, u.sold_quantity
 FROM commerce_stock_unit u
+JOIN product_product p ON p.id=u.product_id 
 WHERE u.sold_quantity > u.adjusted_quantity
+  AND p.stock_mode != 'manual'
   AND u.supplier_order_item_id IS NULL AND state != 'new'
   AND u.adjusted_quantity > 0 AND u.sold_quantity > u.adjusted_quantity
 SQL,
@@ -132,7 +134,9 @@ SQL,
             <<<SQL
 SELECT u.id, u.product_id, u.state, u.adjusted_quantity, u.shipped_quantity
 FROM commerce_stock_unit u
+JOIN product_product p ON p.id=u.product_id 
 WHERE u.shipped_quantity > u.adjusted_quantity
+  AND p.stock_mode != 'manual'
   AND u.supplier_order_item_id IS NULL
 SQL,
             [

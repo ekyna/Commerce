@@ -175,11 +175,11 @@ SQL
                 // Sold change
                 if (0 < $soldDelta) {
                     // Credit case
-                    $soldQty = max(0, min(
-                        $soldDelta
-                        // Lower than unit ordered + adjusted
-                        //,$data['u_ordered'] + $data['u_adjusted'] - $unit['sold'][1]
-                    ));
+                    $soldQty = max(0, $soldDelta); //min(
+                    //    $soldDelta
+                    //    // Lower than unit ordered + adjusted
+                    //    //,$data['u_ordered'] + $data['u_adjusted'] - $unit['sold'][1]
+                    //));
                 } else {
                     // Debit case
                     $soldQty = min(0, max(
