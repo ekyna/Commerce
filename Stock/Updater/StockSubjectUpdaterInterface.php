@@ -18,5 +18,5 @@ interface StockSubjectUpdaterInterface
      *
      * @return bool Whether or not the subject has been updated.
      */
-    public function update(StockSubjectInterface $subject);
+    public function update(StockSubjectInterface $subject): bool;
 }

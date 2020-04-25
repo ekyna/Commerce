@@ -6,7 +6,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
-use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -85,11 +84,6 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
      * @var Shipment\RelayPointInterface
      */
     protected $relayPoint;
-
-    /**
-     * @var Payment\PaymentMethodInterface
-     */
-    protected $creditMethod;
 
 
     /**

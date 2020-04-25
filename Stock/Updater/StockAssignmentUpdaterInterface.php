@@ -20,7 +20,7 @@ interface StockAssignmentUpdaterInterface
      *
      * @return float The resulting updated quantity (relative or absolute).
      */
-    public function updateSold(StockAssignmentInterface $assignment, $quantity, $relative = true);
+    public function updateSold(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float;
 
     /**
      * Updates the assignment's shipped quantity.
@@ -31,5 +31,5 @@ interface StockAssignmentUpdaterInterface
      *
      * @return float The resulting updated quantity (relative or absolute).
      */
-    public function updateShipped(StockAssignmentInterface $assignment, $quantity, $relative = true);
+    public function updateShipped(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float;
 }

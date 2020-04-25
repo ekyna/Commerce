@@ -85,7 +85,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         // Skip mapped super classes
         if ($metadata->isMappedSuperclass) {
@@ -136,7 +135,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configureTaxableMapping(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
@@ -176,7 +174,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configureIdentityMapping(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
@@ -204,7 +201,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configureVatNumberSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
@@ -232,7 +228,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configurePaymentTermSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
@@ -272,7 +267,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configureSubjectRelativeMapping(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
@@ -285,6 +279,9 @@ class LoadMetadataListener implements EventSubscriber
         if (in_array($class, $this->subjectRelativeClassCache)) {
             return;
         }
+
+        // Add mappings
+        $this->addMappings($metadata, $this->getSubjectRelativeMappings());
 
         // Map embedded
         $this
@@ -302,7 +299,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configureStockSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
@@ -330,7 +326,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configureSubjectMapping(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
         $class = $metadata->getName();
 
@@ -358,7 +353,6 @@ class LoadMetadataListener implements EventSubscriber
      */
     private function configureStockUnitDiscriminatorMap(LoadClassMetadataEventArgs $eventArgs)
     {
-        /** @var ClassMetadata $metadata */
         $metadata = $eventArgs->getClassMetadata();
 
         if (!is_subclass_of($metadata->name, Stock\StockUnitInterface::class)) {
@@ -474,6 +468,49 @@ class LoadMetadataListener implements EventSubscriber
                 'fieldName'  => 'vatValid',
                 'columnName' => 'vat_valid',
                 'type'       => 'boolean',
+            ],
+        ];
+    }
+
+    /**
+     * Returns the subject relative mappings.
+     *
+     * @return array
+     */
+    private function getSubjectRelativeMappings(): array
+    {
+        return [
+            [
+                'fieldName'  => 'designation',
+                'columnName' => 'designation',
+                'type'       => 'string',
+                'length'     => 255,
+                'nullable'   => false,
+            ],
+            [
+                'fieldName'  => 'reference',
+                'columnName' => 'reference',
+                'type'       => 'string',
+                'length'     => 32,
+                'nullable'   => false,
+            ],
+            [
+                'fieldName'  => 'netPrice',
+                'columnName' => 'net_price',
+                'type'       => 'decimal',
+                'precision'  => 15,
+                'scale'      => 5,
+                'nullable'   => false,
+                'default'    => 0,
+            ],
+            [
+                'fieldName'  => 'weight',
+                'columnName' => 'weight',
+                'type'       => 'decimal',
+                'precision'  => 7,
+                'scale'      => 3,
+                'nullable'   => false,
+                'default'    => 0,
             ],
         ];
     }

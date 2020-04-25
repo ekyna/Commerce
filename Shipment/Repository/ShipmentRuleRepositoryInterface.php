@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Shipment\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentRuleInterface;
 
 /**
  * Interface ShipmentRuleRepositoryInterface
@@ -18,7 +19,7 @@ interface ShipmentRuleRepositoryInterface
      * @param SaleInterface                $sale
      * @param ShipmentMethodInterface|null $method
      *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentRuleInterface|null
+     * @return ShipmentRuleInterface|null
      */
-    public function findOneBySale(SaleInterface $sale, ShipmentMethodInterface $method = null);
+    public function findOneBySale(SaleInterface $sale, ShipmentMethodInterface $method = null): ?ShipmentRuleInterface;
 }

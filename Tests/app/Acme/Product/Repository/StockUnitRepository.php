@@ -18,7 +18,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
-    public function findNewBySubject(StockSubjectInterface $subject)
+    public function findNewBySubject(StockSubjectInterface $subject): array
     {
         return $this->findBySubjectAndStates($subject, [
             StockUnitStates::STATE_NEW
@@ -28,7 +28,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
-    public function findPendingBySubject(StockSubjectInterface $subject)
+    public function findPendingBySubject(StockSubjectInterface $subject): array
     {
         return $this->findBySubjectAndStates($subject, [
             StockUnitStates::STATE_PENDING
@@ -38,7 +38,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
-    public function findReadyBySubject(StockSubjectInterface $subject)
+    public function findReadyBySubject(StockSubjectInterface $subject): array
     {
         return $this->findBySubjectAndStates($subject, [
             StockUnitStates::STATE_READY,
@@ -48,7 +48,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
-    public function findPendingOrReadyBySubject(StockSubjectInterface $subject)
+    public function findPendingOrReadyBySubject(StockSubjectInterface $subject): array
     {
         return $this->findBySubjectAndStates($subject, [
             StockUnitStates::STATE_PENDING,
@@ -59,7 +59,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
-    public function findNotClosedBySubject(StockSubjectInterface $subject)
+    public function findNotClosedBySubject(StockSubjectInterface $subject): array
     {
         return $this->findBySubjectAndStates($subject, [
             StockUnitStates::STATE_NEW,
@@ -71,7 +71,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
-    public function findAssignableBySubject(StockSubjectInterface $subject)
+    public function findAssignableBySubject(StockSubjectInterface $subject): array
     {
         if (!$subject instanceof Product) {
             throw new \InvalidArgumentException('Expected instance of ' . Product::class);
@@ -98,14 +98,14 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritdoc
      */
-    public function findLinkableBySubject(StockSubjectInterface $subject)
+    public function findLinkableBySubject(StockSubjectInterface $subject): array
     {
         if (!$subject instanceof Product) {
             throw new \InvalidArgumentException('Expected instance of ' . Product::class);
         }
 
         if (!$subject->getId()) {
-            return null;
+            return [];
         }
 
         $alias = $this->getAlias();
@@ -127,7 +127,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
      *
      * @return array
      */
-    private function findBySubjectAndStates(StockSubjectInterface $subject, array $states)
+    private function findBySubjectAndStates(StockSubjectInterface $subject, array $states): array
     {
         if (!$subject instanceof Product) {
             throw new \InvalidArgumentException('Expected instance of ' . Product::class);
@@ -164,7 +164,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritDoc
      */
-    public function findInStock()
+    public function findInStock(): array
     {
         $qb = $this->getQueryBuilder('su');
 
@@ -179,7 +179,7 @@ class StockUnitRepository extends ResourceRepository implements StockUnitReposit
     /**
      * @inheritDoc
      */
-    public function findLatestClosedBySubject(StockSubjectInterface $subject, $limit = 3)
+    public function findLatestClosedBySubject(StockSubjectInterface $subject, int $limit = 3): array
     {
         if (!$subject instanceof Product) {
             throw new \InvalidArgumentException('Expected instance of ' . Product::class);

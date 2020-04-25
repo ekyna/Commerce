@@ -30,10 +30,7 @@ class SubjectIdentityValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, SubjectIdentity::class);
         }
 
-        $hasProvider = empty($identity->getProvider());
-        $hasIdentifier = empty($identity->getIdentifier());
-
-        if (($hasProvider || $hasIdentifier) && !($hasProvider && $hasIdentifier)) {
+        if (empty($identity->getProvider()) xor empty($identity->getIdentifier())) {
             $this->context
                 ->buildViolation($constraint->identity_subject_must_be_selected)
                 ->atPath('provider')

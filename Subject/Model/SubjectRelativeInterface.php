@@ -2,7 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Subject\Model;
 
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface SubjectRelativeInterface
@@ -11,7 +13,7 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
  *
  * @see SubjectRelativeTrait
  */
-interface SubjectRelativeInterface
+interface SubjectRelativeInterface extends TaxableInterface, ResourceInterface
 {
     /**
      * Returns whether or not the subject identity is set.
@@ -20,19 +22,83 @@ interface SubjectRelativeInterface
      *
      * @return bool
      */
-    public function hasSubjectIdentity();
+    public function hasSubjectIdentity(): bool;
 
     /**
      * Returns the subject identity.
      *
      * @return SubjectIdentity
      */
-    public function getSubjectIdentity();
+    public function getSubjectIdentity(): SubjectIdentity;
 
     /**
      * Clears the subject identity.
      *
      * @return $this|SubjectRelativeInterface
      */
-    public function clearSubjectIdentity();
+    public function clearSubjectIdentity(): SubjectRelativeInterface;
+
+    /**
+     * Returns the designation.
+     *
+     * @return string
+     */
+    public function getDesignation(): ?string;
+
+    /**
+     * Sets the designation.
+     *
+     * @param string $designation
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setDesignation(string $designation): SubjectRelativeInterface;
+
+    /**
+     * Returns the reference.
+     *
+     * @return string
+     */
+    public function getReference(): ?string;
+
+    /**
+     * Sets the reference.
+     *
+     * @param string $reference
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setReference(string $reference): SubjectRelativeInterface;
+
+    /**
+     * Returns the net price.
+     *
+     * @return float
+     */
+    public function getNetPrice(): float;
+
+    /**
+     * Sets the net price.
+     *
+     * @param float $price
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setNetPrice(float $price): SubjectRelativeInterface;
+
+    /**
+     * Returns the weight (kilograms).
+     *
+     * @return float
+     */
+    public function getWeight(): float;
+
+    /**
+     * Sets the weight (kilograms).
+     *
+     * @param float $weight
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setWeight(float $weight): SubjectRelativeInterface;
 }

@@ -1,0 +1,20 @@
+normal:
+    name: Taux normal
+    default: true
+    taxes: [fr_normal]
+intermediate:
+    name: Taux intermédiaire
+    default: false
+    taxes: [fr_intermediate]
+reduced:
+    name: Taux réduit
+    default: false
+    taxes: [fr_reduced]
+super_reduced:
+    name: Taux super-réduit
+    default: false
+    taxes: [fr_super_reduced]
+exempt:
+    name: Exonéré
+    default: false
+    taxes: []

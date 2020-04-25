@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -17,7 +16,7 @@ interface ShipmentPriceInterface extends ResourceInterface
      *
      * @return ShipmentZoneInterface
      */
-    public function getZone();
+    public function getZone(): ?ShipmentZoneInterface;
 
     /**
      * Sets the zone.
@@ -26,14 +25,14 @@ interface ShipmentPriceInterface extends ResourceInterface
      *
      * @return $this|ShipmentPriceInterface
      */
-    public function setZone(ShipmentZoneInterface $zone = null);
+    public function setZone(ShipmentZoneInterface $zone = null): ShipmentPriceInterface;
 
     /**
      * Returns the method.
      *
      * @return ShipmentMethodInterface
      */
-    public function getMethod();
+    public function getMethod(): ?ShipmentMethodInterface;
 
     /**
      * Sets the method.
@@ -42,14 +41,14 @@ interface ShipmentPriceInterface extends ResourceInterface
      *
      * @return $this|ShipmentPriceInterface
      */
-    public function setMethod(ShipmentMethodInterface $method = null);
+    public function setMethod(ShipmentMethodInterface $method = null): ShipmentPriceInterface;
 
     /**
      * Returns the weight (kilograms).
      *
      * @return float
      */
-    public function getWeight();
+    public function getWeight(): float;
 
     /**
      * Sets the weight (kilograms).
@@ -58,14 +57,14 @@ interface ShipmentPriceInterface extends ResourceInterface
      *
      * @return $this|ShipmentPriceInterface
      */
-    public function setWeight($weight);
+    public function setWeight(float $weight): ShipmentPriceInterface;
 
     /**
      * Returns the net price.
      *
      * @return float
      */
-    public function getNetPrice();
+    public function getNetPrice(): float;
 
     /**
      * Sets the net price.
@@ -74,37 +73,5 @@ interface ShipmentPriceInterface extends ResourceInterface
      *
      * @return $this|ShipmentPriceInterface
      */
-    public function setNetPrice($price);
-
-    /**
-     * Returns the taxes (non-mapped).
-     *
-     * @return TaxInterface[]
-     */
-    public function getTaxes();
-
-    /**
-     * Sets the taxes (non-mapped).
-     *
-     * @param TaxInterface[] $taxes
-     *
-     * @return $this|ShipmentPriceInterface
-     */
-    public function setTaxes(array $taxes);
-
-    /**
-     * Returns whether the price is free (non-mapped).
-     *
-     * @return bool
-     */
-    public function isFree();
-
-    /**
-     * Sets whether the price is free (non-mapped).
-     *
-     * @param bool $free
-     *
-     * @return $this|ShipmentPriceInterface
-     */
-    public function setFree($free);
+    public function setNetPrice(float $price): ShipmentPriceInterface;
 }

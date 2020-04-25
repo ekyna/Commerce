@@ -14,7 +14,7 @@ interface StatUpdaterInterface
      *
      * @return bool Whether or not the stat has been created.
      */
-    public function updateStockStat();
+    public function updateStockStat(): bool;
 
     /**
      * Updates the order stats for the given day.
@@ -24,7 +24,7 @@ interface StatUpdaterInterface
      *
      * @return bool
      */
-    public function updateDayOrderStat(\DateTime $date, $force = false);
+    public function updateDayOrderStat(\DateTime $date, bool $force = false): bool;
 
     /**
      * Updates the order stats for the given month.
@@ -34,7 +34,7 @@ interface StatUpdaterInterface
      *
      * @return bool
      */
-    public function updateMonthOrderStat(\DateTime $date, $force = false);
+    public function updateMonthOrderStat(\DateTime $date, bool $force = false): bool;
 
     /**
      * Updates the order stats for the given year.
@@ -44,5 +44,5 @@ interface StatUpdaterInterface
      *
      * @return bool
      */
-    public function updateYearOrderStat(\DateTime $date, $force = false);
+    public function updateYearOrderStat(\DateTime $date, bool $force = false): bool;
 }

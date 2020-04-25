@@ -135,7 +135,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     public function findCompletedYesterday(): array
     {
         $start = (new \DateTime('-1 day'))->setTime(0, 0, 0, 0);
-        $end   = (clone $start)->setTime(23, 59, 59, 999999);
+        $end = (clone $start)->setTime(23, 59, 59, 999999);
 
         $qb = $this->createQueryBuilder('o');
 
@@ -184,6 +184,29 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->setParameter('today', (new \DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->useQueryCache(true)
             ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findWithNullRevenueOrMargin(): array
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        $ids = $qb
+            ->select('o.id')
+            ->orWhere($qb->expr()->isNull('o.revenueTotal'))
+            ->orWhere($qb->expr()->isNull('o.marginTotal'))
+            ->getQuery()
+            ->getScalarResult();
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        return array_map(function ($id) {
+            return (int)$id;
+        }, array_column($ids, 'id'));
     }
 
     /**

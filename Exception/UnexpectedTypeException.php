@@ -10,18 +10,25 @@ namespace Ekyna\Component\Commerce\Exception;
 class UnexpectedTypeException extends \UnexpectedValueException implements CommerceExceptionInterface
 {
     /**
-     * @inheritDoc
+     * Constructor.
+     *
+     * @param mixed           $value
+     * @param string|string[] $types
+     * @param int             $code
+     * @param \Throwable|null $previous
      */
     public function __construct($value, $types, $code = 0, \Throwable $previous = null)
     {
-        $types = (array) $types;
+        $types = (array)$types;
 
         if (1 === $length = count($types)) {
-            $types = $types[0];
+            $types = reset($types);
         } else {
             $types = implode(', ', array_slice($types, 0, $length - 2)) . ' or ' . $types[$length - 1];
         }
 
-        parent::__construct(sprintf("Expected %s, got %s", $types, gettype($value)), $code, $previous);
+        $message = sprintf("Expected %s, got %s", $types, \is_object($value) ? \get_class($value) : \gettype($value));
+
+        parent::__construct($message, $code, $previous);
     }
 }

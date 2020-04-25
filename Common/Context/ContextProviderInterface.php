@@ -70,13 +70,6 @@ interface ContextProviderInterface
     public function setContext($contextOrSale): ContextProviderInterface;
 
     /**
-     * Clears the cached context.
-     *
-     * @return ContextProviderInterface
-     */
-    public function clearContext(): ContextProviderInterface;
-
-    /**
      * Change the currency and the country.
      *
      * @param \Ekyna\Component\Commerce\Common\Model\CurrencyInterface|string|null $currency
@@ -90,4 +83,9 @@ interface ContextProviderInterface
         $country = null,
         string $locale = null
     ): ContextProviderInterface;
+
+    /**
+     * Clears the cached context.
+     */
+    public function onClear(): void;
 }

@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethod;
 use Ekyna\Component\Commerce\Common\Model\MessageInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Pricing\Model as Pricing;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 
 /**
@@ -16,7 +16,7 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
  */
 class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodInterface
 {
-    use Pricing\TaxableTrait;
+    use TaxableTrait;
 
     /**
      * @var string
@@ -133,8 +133,8 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
     public function addPrice(Shipment\ShipmentPriceInterface $price)
     {
         if (!$this->hasPrice($price)) {
-            $price->setMethod($this);
             $this->prices->add($price);
+            $price->setMethod($this);
         }
 
         return $this;
@@ -146,8 +146,8 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
     public function removePrice(Shipment\ShipmentPriceInterface $price)
     {
         if ($this->hasPrice($price)) {
-            $price->setMethod(null);
             $this->prices->removeElement($price);
+            $price->setMethod(null);
         }
 
         return $this;

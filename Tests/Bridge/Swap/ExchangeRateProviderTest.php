@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Tests\Bridge\Swap;
 
 use Ekyna\Component\Commerce\Bridge\Swap\ExchangeRateProvider;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Exchanger\Exception\Exception;
 use Exchanger\ExchangeRate;
 use PHPUnit\Framework\TestCase;
@@ -23,9 +24,9 @@ class ExchangeRateProviderTest extends TestCase
         $swap->expects($this->once())->method('historical')->with('EUR/USD', $date)->willReturn(new ExchangeRate(1.25));
         $swap->expects($this->never())->method('latest');
 
-        $provider = new ExchangeRateProvider($swap, 'EUR');
+        $provider = new ExchangeRateProvider($swap, Fixture::CURRENCY_EUR);
 
-        $this->assertEquals(1.25, $provider->get('EUR', 'USD', $date));
+        $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
 
     public function testGet_latest(): void
@@ -36,9 +37,9 @@ class ExchangeRateProviderTest extends TestCase
         $swap->expects($this->once())->method('latest')->with('EUR/USD')->willReturn(new ExchangeRate(1.25));
         $swap->expects($this->never())->method('historical');
 
-        $provider = new ExchangeRateProvider($swap, 'EUR');
+        $provider = new ExchangeRateProvider($swap, Fixture::CURRENCY_EUR);
 
-        $this->assertEquals(1.25, $provider->get('EUR', 'USD', $date));
+        $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
 
     public function testGet_invert(): void
@@ -50,8 +51,8 @@ class ExchangeRateProviderTest extends TestCase
         $swap->expects($this->at(1))->method('latest')->with('EUR/USD')->willReturn(new ExchangeRate(1.25));
         $swap->expects($this->never())->method('historical');
 
-        $provider = new ExchangeRateProvider($swap, 'EUR');
+        $provider = new ExchangeRateProvider($swap, Fixture::CURRENCY_EUR);
 
-        $this->assertEquals(0.8, $provider->get('USD', 'EUR', $date));
+        $this->assertEquals(0.8, $provider->get(Fixture::CURRENCY_USD, Fixture::CURRENCY_EUR, $date));
     }
 }

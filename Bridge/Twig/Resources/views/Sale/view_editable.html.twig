@@ -1,7 +1,7 @@
 {% extends '@Commerce/Sale/view.html.twig' %}
 
 {% block integer_widget %}
-{% spaceless %}
+{% apply spaceless %}
     <div class="sale-detail-quantity{% if errors|length > 0 %} has-error{% endif %}">
         {% set type = type|default('number') %}
         {% if errors|length > 0 %}
@@ -9,12 +9,12 @@
         {% endif %}
         {{ block('form_widget_simple') }}
     </div>
-{% endspaceless %}
+{% endapply %}
 {% endblock %}
 
 
 {% block actions %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="sale-detail-actions">
     {% if line.vars.actions is defined -%}
         {% if 2 < line.vars.actions|length -%}
@@ -33,12 +33,12 @@
         {%- endif %}
     {%- endif %}
     </td>
-{% endspaceless %}
+{% endapply %}
 {% endblock actions %}
 
 
 {% block lines_headers %}
-{% spaceless %}
+{% apply spaceless %}
     {{ parent() }}
     <th class="sale-detail-actions">
         {% if view.vars.private -%}
@@ -55,12 +55,12 @@
         </a>#}
         {%- endif %}
     </th>
-{% endspaceless %}
+{% endapply %}
 {% endblock lines_headers %}
 
 
 {% block line_quantity %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="sale-detail-quantity">
         {% if view.vars.quantities_form[line.formId] is defined %}
             {% form_theme view.vars.quantities_form[line.formId] _self %}
@@ -69,38 +69,38 @@
             <span id="{{ line.id }}_quantity">{{ line.quantity }}</span>
         {% endif %}
     </td>
-{% endspaceless %}
+{% endapply %}
 {% endblock line_quantity %}
 
 
 {% block line_public %}
-{% spaceless %}
+{% apply spaceless %}
     {{ parent() }}
     {{ block('actions') }}
-{% endspaceless %}
+{% endapply %}
 {% endblock line_public %}
 
 
 {% block line_private %}
-{% spaceless %}
+{% apply spaceless %}
     {{ parent() }}
     {{ block('actions') }}
-{% endspaceless %}
+{% endapply %}
 {% endblock line_private %}
 
 
 {% block line_information %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="sale-detail-information" colspan="{{ view.vars.columns_count - 2 }}">
         {{ line.vars.information|raw }}
     </td>
     <td class="sale-detail-actions">&nbsp;</td>
-{% endspaceless %}
+{% endapply %}
 {% endblock line_information %}
 
 
 {% block gross_totals %}
-{% spaceless %}
+{% apply spaceless %}
     <tbody>
     <tr id="sale_gross">
         <th>&nbsp;</th>
@@ -121,28 +121,28 @@
         <th{% if view.vars.show_margin %} colspan="2"{% endif %}>&nbsp;</th>
     </tr>
     </tbody>
-{% endspaceless %}
+{% endapply %}
 {% endblock gross_totals %}
 
 
 {% block discount %}
-{% spaceless %}
+{% apply spaceless %}
     {{ parent() }}
     {{ block('actions') }}
-{% endspaceless %}
+{% endapply %}
 {% endblock discount %}
 
 
 {% block shipment %}
-{% spaceless %}
+{% apply spaceless %}
     {{ parent() }}
     {{ block('actions') }}
-{% endspaceless %}
+{% endapply %}
 {% endblock shipment %}
 
 
 {% block gran_totals %}
-{% spaceless %}
+{% apply spaceless %}
     <tbody>
     <tr>
         <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
@@ -171,12 +171,12 @@
     </tr>
     {%- endif %}
     </tbody>
-{% endspaceless %}
+{% endapply %}
 {% endblock gran_totals %}
 
 
 {% block coupon %}
-{% spaceless %}
+{% apply spaceless %}
     {%- if view.vars.coupon_form is defined -%}
     <div class="row sale-coupon">
         <div class="col-sm-12">
@@ -184,12 +184,12 @@
         </div>
     </div>
     {%- endif -%}
-{% endspaceless %}
+{% endapply %}
 {% endblock coupon %}
 
 
 {% block sale %}
-{% spaceless %}
+{% apply spaceless %}
     <div class="sale-view">
         {{ form_start(view.vars.quantities_form) }}
             {{ form_errors(view.vars.quantities_form) }}
@@ -239,5 +239,5 @@
 
         {{ block('alerts') }}
     </div>
-{% endspaceless %}
+{% endapply %}
 {% endblock sale %}

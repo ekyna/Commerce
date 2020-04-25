@@ -469,7 +469,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return null;
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var StockAssignmentsInterface $item */
         return $item->getStockAssignments()->toArray();
     }
 

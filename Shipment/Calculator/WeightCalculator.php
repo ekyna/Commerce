@@ -14,7 +14,7 @@ class WeightCalculator implements WeightCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateShipment(Model\ShipmentInterface $shipment)
+    public function calculateShipment(Model\ShipmentInterface $shipment): float
     {
         $total = .0;
 
@@ -36,7 +36,7 @@ class WeightCalculator implements WeightCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateShipmentItem(Model\ShipmentItemInterface $item)
+    public function calculateShipmentItem(Model\ShipmentItemInterface $item): float
     {
         return $item->getSaleItem()->getWeight() * $item->getQuantity();
     }

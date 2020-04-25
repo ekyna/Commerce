@@ -2,13 +2,13 @@
 
 namespace Ekyna\Component\Commerce\Tests\Payment\Calculator;
 
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model\Amount;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculator;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -20,9 +20,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 class PaymentCalculatorTest extends TestCase
 {
     /**
-     * @var AmountCalculatorInterface|MockObject
+     * @var AmountCalculatorFactory|MockObject
      */
-    private $amountCalculator;
+    private $calculatorFactory;
 
     /**
      * @var PaymentCalculator
@@ -32,487 +32,1280 @@ class PaymentCalculatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->amountCalculator  = $this->createMock(AmountCalculatorInterface::class);
-        $this->paymentCalculator = new PaymentCalculator($this->amountCalculator, $this->getCurrencyConverter());
+        $this->calculatorFactory = $this->createMock(AmountCalculatorFactory::class);
+        $this->paymentCalculator = new PaymentCalculator($this->calculatorFactory, $this->getCurrencyConverter());
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
 
-        $this->amountCalculator  = null;
+        $this->calculatorFactory = null;
         $this->paymentCalculator = null;
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
+     * @param array $data
+     * @param array $results
      *
      * @dataProvider provide_calculatePaidTotal
      */
-    public function test_calculatePaidTotal(PaymentSubjectInterface $subject, array $results): void
+    public function test_calculatePaidTotal(array $data, array $results): void
     {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
-            $this->assertEquals($expected, $this->paymentCalculator->calculatePaidTotal($subject, $currency));
+            $this->assertEquals($expected, $this->paymentCalculator->calculatePaidTotal($order, $currency));
         }
     }
 
     public function provide_calculatePaidTotal(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100, 'state' => PaymentStates::STATE_FAILED],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['method' => Fixture::PAYMENT_METHOD_OUTSTANDING, 'amount' => 100,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
-        $this->createPayment($subject, 'EUR', 100, 1);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
-        $this->createPayment($subject, 'EUR', 100, 1);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT,
-            true);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100,],
+                    ['refund' => true, 'amount' => 100,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
-        $this->createPayment($subject, 'USD', 125, 1.25);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    ['currency' => Fixture::CURRENCY_USD, 'amount' => 125, 'exchange_rate' => 1.25,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
-        $this->createPayment($subject, 'USD', 100, 1.25);
-        $this->createPayment($subject, 'EUR', 20, 1);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    ['currency' => Fixture::CURRENCY_USD, 'amount' => 100, 'exchange_rate' => 1.25,],
+                    ['amount' => 20,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
+     * @param array $data
+     * @param array $results
      *
      * @dataProvider provide_calculateRefundedTotal
      */
-    public function test_calculateRefundedTotal(PaymentSubjectInterface $subject, array $results): void
+    public function test_calculateRefundedTotal(array $data, array $results): void
     {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
-            $this->assertEquals($expected, $this->paymentCalculator->calculateRefundedTotal($subject, $currency));
+            $this->assertEquals($expected, $this->paymentCalculator->calculateRefundedTotal($order, $currency));
         }
     }
 
     public function provide_calculateRefundedTotal(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_REFUNDED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_REFUNDED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_REFUNDED, self::PAYMENT_METHOD_CREDIT);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_CREDIT,
+                        'state'  => PaymentStates::STATE_REFUNDED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_REFUNDED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'state'         => PaymentStates::STATE_REFUNDED,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_REFUNDED);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_REFUNDED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'state'         => PaymentStates::STATE_REFUNDED,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'amount'        => 100,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'state'  => PaymentStates::STATE_REFUNDED,
+                        'amount' => 20,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
         // Refunds
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT,
-            true);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100, 'refund' => true,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING,
-            true);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'amount' => 100,
+                        'refund' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_CREDIT, true);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_CREDIT,
+                        'amount' => 100,
+                        'refund' => true,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT,
-            true);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                        'refund'        => true,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_REFUNDED);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_DEFAULT, true);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_MANUAL, true);
-        yield [$subject, ['EUR' => 120, 'USD' => 150]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_REFUNDED,
+                        'amount'        => 100,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'amount' => 20,
+                        'refund' => true,
+                    ],
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'amount' => 20,
+                        'refund' => true,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 120, Fixture::CURRENCY_USD => 150],
+        ];
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
+     * @param array $data
+     * @param array $results
      *
      * @dataProvider provide_calculateOutstandingAcceptedTotal
      */
-    public function test_calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, array $results): void
+    public function test_calculateOutstandingAcceptedTotal(array $data, array $results): void
     {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
-            $actual = $this->paymentCalculator->calculateOutstandingAcceptedTotal($subject, $currency);
+            $actual = $this->paymentCalculator->calculateOutstandingAcceptedTotal($order, $currency);
             $this->assertEquals($expected, $actual);
         }
     }
 
     public function provide_calculateOutstandingAcceptedTotal(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_FAILED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_CAPTURED,
-            self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
-
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_CAPTURED,
-            self::PAYMENT_METHOD_OUTSTANDING);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'amount'        => 100,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'amount' => 20,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
+     * @param array $data
+     * @param array $results
      *
      * @dataProvider provide_calculateOutstandingExpiredTotal
      */
-    public function test_calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, array $results): void
+    public function test_calculateOutstandingExpiredTotal(array $data, array $results): void
     {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
-            $this->assertEquals($expected,
-                $this->paymentCalculator->calculateOutstandingExpiredTotal($subject, $currency));
+            $actual = $this->paymentCalculator->calculateOutstandingExpiredTotal($order, $currency);
+            $this->assertEquals($expected, $actual);
         }
     }
 
     public function provide_calculateOutstandingExpiredTotal(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100, 'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_EXPIRED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100, 'state' => PaymentStates::STATE_EXPIRED,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_EXPIRED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_EXPIRED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_EXPIRED,
-            self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_EXPIRED,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_EXPIRED,
-            self::PAYMENT_METHOD_OUTSTANDING);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_EXPIRED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_EXPIRED,
+                        'amount'        => 100,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_EXPIRED,
+                        'amount' => 20,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
+     * @param array $data
+     * @param array $results
      *
      * @dataProvider provide_calculateFailedTotal
      */
-    public function test_calculateFailedTotal(PaymentSubjectInterface $subject, array $results): void
+    public function test_calculateFailedTotal(array $data, array $results): void
     {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
-            $this->assertEquals($expected, $this->paymentCalculator->calculateFailedTotal($subject, $currency));
+            $this->assertEquals($expected, $this->paymentCalculator->calculateFailedTotal($order, $currency));
         }
     }
 
     public function provide_calculateFailedTotal(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'grand'    => 100,
+                'payments' => [
+                    ['amount' => 100,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_FAILED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_FAILED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100, 'state' => PaymentStates::STATE_FAILED,],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_FAILED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_FAILED,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_FAILED);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_FAILED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_FAILED,
+                        'amount'        => 100,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'state'  => PaymentStates::STATE_FAILED,
+                        'amount' => 20,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
+     * @param array $data
+     * @param array $results
      *
      * @dataProvider provide_calculateCanceledTotal
      */
-    public function test_calculateCanceledTotal(PaymentSubjectInterface $subject, array $results): void
+    public function test_calculateCanceledTotal(array $data, array $results): void
     {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
-            $this->assertEquals($expected, $this->paymentCalculator->calculateCanceledTotal($subject, $currency));
+            $this->assertEquals($expected, $this->paymentCalculator->calculateCanceledTotal($order, $currency));
         }
     }
 
     public function provide_calculateCanceledTotal(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CANCELED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_CANCELED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CANCELED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'state'  => PaymentStates::STATE_CANCELED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_CANCELED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CANCELED,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_CANCELED);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_CANCELED);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CANCELED,
+                        'amount'        => 100,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'state'  => PaymentStates::STATE_CANCELED,
+                        'amount' => 20,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
+     * @param array $data
+     * @param array $results
      *
      * @dataProvider provide_calculateOfflinePendingTotal
      */
-    public function test_calculateOfflinePendingTotal(PaymentSubjectInterface $subject, array $results): void
+    public function test_calculateOfflinePendingTotal(array $data, array $results): void
     {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
-            $this->assertEquals($expected, $this->paymentCalculator->calculateOfflinePendingTotal($subject, $currency));
+            $this->assertEquals($expected, $this->paymentCalculator->calculateOfflinePendingTotal($order, $currency));
         }
     }
 
     public function provide_calculateOfflinePendingTotal(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100, 'method' => Fixture::PAYMENT_METHOD_MANUAL],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_PENDING);
-        yield [$subject, ['EUR' => 0, 'USD' => 0]];
+        yield [
+            [
+                'payments' => [
+                    ['amount' => 100, 'state' => PaymentStates::STATE_PENDING],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1.25, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method'        => Fixture::PAYMENT_METHOD_MANUAL,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_PENDING,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 100, 1.25, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        $this->createPayment($subject, 'EUR', 20, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 100, 'USD' => 125]];
+        yield [
+            [
+                'payments' => [
+                    [
+                        'method'        => Fixture::PAYMENT_METHOD_MANUAL,
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_PENDING,
+                        'amount'        => 100,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 20,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+        ];
     }
 
     /**
-     * @param PaymentSubjectInterface $subject
-     * @param array                   $results
-     * @param array                   $amounts
+     * @param array $data
+     * @param array $results
+     * @param array $amounts
      *
      * @dataProvider provide_calculateExpectedPaymentAmount
      */
-    public function test_calculateExpectedPaymentAmount(
-        PaymentSubjectInterface $subject,
-        array $results,
-        array $amounts
-    ): void {
+    public function test_calculateExpectedPaymentAmount(array $data, array $results, array $amounts): void
+    {
+        $order = Fixture::order($data);
+
         foreach ($results as $currency => $expected) {
             if (isset($amounts[$currency])) {
-                /** @noinspection PhpParamsInspection */
-                $this->configureAmountCalculator($subject, $amounts[$currency]);
+                $this->configureAmountFactory($order, $amounts[$currency]);
             }
-            $this->assertEquals($expected,
-                $this->paymentCalculator->calculateExpectedPaymentAmount($subject, $currency));
+
+            $actual = $this->paymentCalculator->calculateExpectedPaymentAmount($order, $currency);
+
+            $this->assertEquals($expected, $actual);
         }
     }
 
     public function provide_calculateExpectedPaymentAmount(): \Generator
     {
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 0);
-        yield [$subject, ['EUR' => 100, 'USD' => 125], ['USD' => 125]];
+        yield 'Case 1' => [
+            [
+                'grand_total' => 100,
+                'payments'    => [],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 40, 0, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 2' => [
+            [
+                'grand_total'   => 100,
+                'pending_total' => 40,
+                'payments'      => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 40,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 40, 0, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 3' => [
+            [
+                'grand_total'   => 100,
+                'pending_total' => 40,
+                'payments'      => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'method'        => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'         => PaymentStates::STATE_PENDING,
+                        'exchange_rate' => 1.25,
+                        'amount'        => 50,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 100, 0, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
+        yield 'Case 4' => [
+            [
+                'grand_total'   => 100,
+                'pending_total' => 100,
+                'payments'      => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 100, 0, 0);
-        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
+        yield 'Case 5' => [
+            [
+                'grand_total'   => 100,
+                'pending_total' => 100,
+                'payments'      => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'method'        => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'         => PaymentStates::STATE_PENDING,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 40, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 6' => [
+            [
+                'grand_total'          => 100,
+                'outstanding_accepted' => 40,
+                'payments'             => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 40,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 40, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 7' => [
+            [
+                'grand_total'          => 100,
+                'outstanding_accepted' => 40,
+                'payments'             => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 50,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125], ['USD' => 125]];
+        yield 'Case 8' => [
+            [
+                'grand_total'          => 100,
+                'outstanding_accepted' => 100,
+                'payments'             => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 100, 0);
-        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 100, 'USD' => 125], ['USD' => 125]];
+        yield 'Case 9' => [
+            [
+                'grand_total'          => 100,
+                'outstanding_accepted' => 100,
+                'payments'             => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 100, Fixture::CURRENCY_USD => 125],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 40);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 10' => [
+            [
+                'grand_total' => 100,
+                'paid_total'  => 40,
+                'payments'    => [
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 40,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 40);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 11' => [
+            [
+                'grand_total' => 100,
+                'paid_total'  => 40,
+                'payments'    => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 50,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
+        yield 'Case 12' => [
+            [
+                'grand_total' => 100,
+                'paid_total'  => 100,
+                'payments'    => [
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 0, 100);
-        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
+        yield 'Case 13' => [
+            [
+                'grand_total' => 100,
+                'paid_total'  => 100,
+                'payments'    => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
+        yield 'Case 14' => [
+            [
+                'grand_total'          => 100,
+                'pending_total'        => 30,
+                'outstanding_accepted' => 30,
+                'payments'             => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 30,
+                    ],
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 30,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 30, 30, 0);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 15' => [
+            [
+                'grand_total'          => 100,
+                'pending_total'        => 30,
+                'outstanding_accepted' => 30,
+                'payments'             => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 30,
+                    ],
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 37.5,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 30, 30, 0);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 16' => [
+            [
+                'grand_total'   => 100,
+                'pending_total' => 30,
+                'paid_total'    => 30,
+                'payments'      => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 30,
+                    ],
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 30,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 30, 0, 30);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 17' => [
+            [
+                'grand_total'   => 100,
+                'pending_total' => 30,
+                'paid_total'    => 30,
+                'payments'      => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_PENDING,
+                        'amount' => 30,
+                    ],
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 30,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 30, 30);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        $this->createPayment($subject, 'EUR', 30, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 18' => [
+            [
+                'grand_total'          => 100,
+                'outstanding_accepted' => 30,
+                'paid_total'           => 30,
+                'payments'             => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 30,
+                    ],
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 30,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 0, 0, 30, 30);
-        $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        $this->createPayment($subject, 'USD', 37.5, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 19' => [
+            [
+                'grand_total'          => 100,
+                'outstanding_accepted' => 30,
+                'paid_total'           => 30,
+                'payments'             => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'method'        => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 37.5,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 37.5,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
+        yield 'Case 20' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'payments'      => [],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 0, 0, 0);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 21' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'pending_total' => 40,
+                'payments'      => [
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 40,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 40, 0, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 22' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'pending_total' => 40,
+                'payments'      => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'method'        => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 50,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 40, 0, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 23' => [
+            [
+                'grand_total'          => 100,
+                'deposit_total'        => 40,
+                'pending_total'        => 40,
+                'outstanding_accepted' => 60,
+                'payments'             => [
+                    [
+                        'method'        => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'         => PaymentStates::STATE_PENDING,
+                        'amount'        => 40,
+                        'exchange_rate' => 1.25,
+                    ],
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 60,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 40, 60, 0);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        $this->createPayment($subject, 'EUR', 60, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 24' => [
+            [
+                'grand_total'          => 100,
+                'deposit_total'        => 40,
+                'pending_total'        => 40,
+                'outstanding_accepted' => 60,
+                'payments'             => [
+                    [
+                        'currency' => Fixture::CURRENCY_USD,
+                        'method'   => Fixture::PAYMENT_METHOD_MANUAL,
+                        'state'    => PaymentStates::STATE_PENDING,
+                        'amount'   => 50,
+                    ],
+                    [
+                        'method' => Fixture::PAYMENT_METHOD_OUTSTANDING,
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 60,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 40, 60, 0);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_PENDING, self::PAYMENT_METHOD_MANUAL);
-        $this->createPayment($subject, 'EUR', 60, 1, PaymentStates::STATE_CAPTURED, self::PAYMENT_METHOD_OUTSTANDING);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 25' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'paid_total'    => 40,
+                'payments'      => [
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 40,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 0, 0, 40);
-        $this->createPayment($subject, 'EUR', 40, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 26' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'paid_total'    => 40,
+                'payments'      => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 50,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 60, Fixture::CURRENCY_USD => 75],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 0, 0, 40);
-        $this->createPayment($subject, 'USD', 50, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 60, 'USD' => 75], ['USD' => 125]];
+        yield 'Case 27' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'paid_total'    => 60,
+                'payments'      => [
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 60,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 0, 0, 60);
-        $this->createPayment($subject, 'EUR', 60, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 28' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'paid_total'    => 60,
+                'payments'      => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 75,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 40, Fixture::CURRENCY_USD => 50],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 0, 0, 60);
-        $this->createPayment($subject, 'USD', 75, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 40, 'USD' => 50], ['USD' => 125]];
+        yield 'Case 29' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'paid_total'    => 100,
+                'payments'      => [
+                    [
+                        'state'  => PaymentStates::STATE_CAPTURED,
+                        'amount' => 100,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+            [Fixture::CURRENCY_USD => 125],
+        ];
 
-        $subject = $this->createSubject('EUR', 100, 40, 0, 0, 100);
-        $this->createPayment($subject, 'EUR', 100, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
-
-        $subject = $this->createSubject('EUR', 100, 40, 0, 0, 100);
-        $this->createPayment($subject, 'USD', 125, 1, PaymentStates::STATE_CAPTURED);
-        yield [$subject, ['EUR' => 0, 'USD' => 0], ['USD' => 125]];
+        yield 'Case 30' => [
+            [
+                'grand_total'   => 100,
+                'deposit_total' => 40,
+                'paid_total'    => 100,
+                'payments'      => [
+                    [
+                        'currency'      => Fixture::CURRENCY_USD,
+                        'state'         => PaymentStates::STATE_CAPTURED,
+                        'amount'        => 125,
+                        'exchange_rate' => 1.25,
+                    ],
+                ],
+            ],
+            [Fixture::CURRENCY_EUR => 0, Fixture::CURRENCY_USD => 0],
+            [Fixture::CURRENCY_USD => 125],
+        ];
     }
 
     // TODO Refunds cases
@@ -522,64 +1315,19 @@ class PaymentCalculatorTest extends TestCase
      * @param SaleInterface $subject
      * @param float         $total
      */
-    private function configureAmountCalculator(SaleInterface $subject, float $total): void
+    private function configureAmountFactory(SaleInterface $subject, float $total): void
     {
         $result = $this->createMock(Amount::class);
         $result->method('getTotal')->willReturn($total);
 
-        $this->amountCalculator->method('calculateSale')->with($subject)->willReturn($result);
-        $this->amountCalculator->expects($this->once())->method('calculateSale');
-    }
+        $calculator = $this->createMock(AmountCalculatorInterface::class);
 
-    /**
-     * @param string $currency
-     * @param float  $grand
-     * @param float  $deposit
-     * @param float  $pending
-     * @param float  $outstanding
-     * @param float  $paid
-     *
-     * @return SaleInterface
-     */
-    private function createSubject(
-        string $currency,
-        float $grand,
-        float $deposit,
-        float $pending,
-        float $outstanding,
-        float $paid
-    ): SaleInterface {
-        return Fixtures::createOrder($currency)
-            ->setGrandTotal($grand)
-            ->setDepositTotal($deposit)
-            ->setPendingTotal($pending)
-            ->setOutstandingAccepted($outstanding)
-            ->setPaidTotal($paid);
-    }
+        $calculator
+            ->expects($this->once())
+            ->method('calculateSale')
+            ->with($subject)
+            ->willReturn($result);
 
-    /**
-     * @param PaymentSubjectInterface $subject
-     * @param string                  $currency
-     * @param float                   $amount
-     * @param float                   $rate
-     * @param string                  $state
-     * @param int                     $method
-     * @param bool                    $refund
-     */
-    private function createPayment(
-        PaymentSubjectInterface $subject,
-        string $currency,
-        float $amount,
-        float $rate,
-        string $state = PaymentStates::STATE_CAPTURED,
-        int $method = self::PAYMENT_METHOD_DEFAULT,
-        bool $refund = false
-    ) {
-        $subject->addPayment(
-            Fixtures::createPayment($currency, $amount, $state)
-                ->setMethod($this->getPaymentMethodMock($method))
-                ->setExchangeRate($rate)
-                ->setRefund($refund)
-        );
+        $this->calculatorFactory->method('create')->willReturn($calculator);
     }
 }

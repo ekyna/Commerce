@@ -2,7 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -19,7 +20,7 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return string
      */
-    public function getName();
+    public function getName(): ?string;
 
     /**
      * Sets the name.
@@ -28,14 +29,14 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function setName($name);
+    public function setName(string $name): ShipmentRuleInterface;
 
     /**
      * Returns the methods.
      *
-     * @return ArrayCollection|ShipmentMethodInterface[]
+     * @return Collection|ShipmentMethodInterface[]
      */
-    public function getMethods();
+    public function getMethods(): Collection;
 
     /**
      * Adds the shipment method.
@@ -44,7 +45,7 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function addMethod(ShipmentMethodInterface $method);
+    public function addMethod(ShipmentMethodInterface $method): ShipmentRuleInterface;
 
     /**
      * Removes the shipment method.
@@ -53,14 +54,14 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function removeMethod(ShipmentMethodInterface $method);
+    public function removeMethod(ShipmentMethodInterface $method): ShipmentRuleInterface;
 
     /**
      * Returns the countries.
      *
-     * @return ArrayCollection|CountryInterface[]
+     * @return Collection|CountryInterface[]
      */
-    public function getCountries();
+    public function getCountries(): Collection;
 
     /**
      * Adds the country.
@@ -69,7 +70,7 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function addCountry(CountryInterface $country);
+    public function addCountry(CountryInterface $country): ShipmentRuleInterface;
 
     /**
      * Removes the country.
@@ -78,14 +79,14 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function removeCountry(CountryInterface $country);
+    public function removeCountry(CountryInterface $country): ShipmentRuleInterface;
 
     /**
      * Returns the customer groups.
      *
-     * @return ArrayCollection|ShipmentMethodInterface[]
+     * @return Collection|ShipmentMethodInterface[]
      */
-    public function getCustomerGroups();
+    public function getCustomerGroups(): Collection;
 
     /**
      * Adds the customer group.
@@ -94,7 +95,7 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function addCustomerGroup(CustomerGroupInterface $group);
+    public function addCustomerGroup(CustomerGroupInterface $group): ShipmentRuleInterface;
 
     /**
      * Removes the customer group.
@@ -103,14 +104,14 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function removeCustomerGroup(CustomerGroupInterface $group);
+    public function removeCustomerGroup(CustomerGroupInterface $group): ShipmentRuleInterface;
 
     /**
      * Returns the sale base total.
      *
      * @return float
      */
-    public function getBaseTotal();
+    public function getBaseTotal(): float;
 
     /**
      * Sets the sale base total.
@@ -119,62 +120,62 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function setBaseTotal($total);
+    public function setBaseTotal(float $total): ShipmentRuleInterface;
 
     /**
      * Returns the vat mode.
      *
      * @return string
      */
-    public function getVatMode();
+    public function getVatMode(): string;
 
     /**
      * Sets the vat mode.
      *
-     * @param string $vatMode
+     * @param string $mode
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function setVatMode($vatMode);
+    public function setVatMode(string $mode): ShipmentRuleInterface;
 
     /**
      * Returns the "start at" datetime.
      *
-     * @return \DateTime
+     * @return DateTime|null
      */
-    public function getStartAt();
+    public function getStartAt(): ?DateTime;
 
     /**
      * Sets the "start at" datetime.
      *
-     * @param \DateTime $date
+     * @param DateTime $date
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function setStartAt(\DateTime $date = null);
+    public function setStartAt(DateTime $date = null): ShipmentRuleInterface;
 
     /**
      * Returns the "end at" datetime.
      *
-     * @return \DateTime
+     * @return DateTime|null
      */
-    public function getEndAt();
+    public function getEndAt(): ?DateTime;
 
     /**
      * Sets the "end at" datetime.
      *
-     * @param \DateTime $date
+     * @param DateTime $date
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function setEndAt(\DateTime $date = null);
+    public function setEndAt(DateTime $date = null): ShipmentRuleInterface;
 
     /**
      * Returns the net price.
      *
      * @return float
      */
-    public function getNetPrice();
+    public function getNetPrice(): float;
 
     /**
      * Sets the net price.
@@ -183,5 +184,5 @@ interface ShipmentRuleInterface extends ResourceInterface
      *
      * @return $this|ShipmentRuleInterface
      */
-    public function setNetPrice($price);
+    public function setNetPrice(float $price): ShipmentRuleInterface;
 }

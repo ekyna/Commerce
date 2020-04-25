@@ -13,6 +13,7 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdater;
 use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -125,10 +126,10 @@ class PaymentFactoryTest extends TestCase
     public function provide_createPayment(): array
     {
         return [
-            'Case 1' => [Order::class, 'EUR', true,  100, 100, 'EUR'],
-            'Case 2' => [Order::class, 'EUR', false, 100, 100, 'EUR'],
-            'Case 3' => [Order::class, 'USD', true,   40,  40, 'EUR'],
-            'Case 4' => [Order::class, 'USD', false,  40,  32, 'USD'],
+            'Case 1' => [Order::class, Fixture::CURRENCY_EUR, true,  100, 100, Fixture::CURRENCY_EUR],
+            'Case 2' => [Order::class, Fixture::CURRENCY_EUR, false, 100, 100, Fixture::CURRENCY_EUR],
+            'Case 3' => [Order::class, Fixture::CURRENCY_USD, true,   40,  40, Fixture::CURRENCY_EUR],
+            'Case 4' => [Order::class, Fixture::CURRENCY_USD, false,  40,  32, Fixture::CURRENCY_USD],
         ];
     }
 

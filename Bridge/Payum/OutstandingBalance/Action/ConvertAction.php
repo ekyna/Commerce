@@ -72,8 +72,12 @@ class ConvertAction implements ActionInterface
      */
     public function supports($request)
     {
-        return $request instanceof Convert
-            && $request->getSource() instanceof PaymentInterface
-            && $request->getTo() == 'array';
+        if (!($request instanceof Convert && $request->getTo() === 'array')) {
+            return false;
+        }
+
+        $payment = $request->getSource();
+
+        return $payment instanceof PaymentInterface && !$payment->isRefund();
     }
 }

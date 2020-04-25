@@ -52,6 +52,13 @@ interface CountryProviderInterface
     public function getCountry(string $code = null): CountryInterface;
 
     /**
+     * Returns the default country.
+     *
+     * @return CountryInterface
+     */
+    public function getDefault(): CountryInterface;
+
+    /**
      * Returns the country repository.
      *
      * @return CountryRepositoryInterface

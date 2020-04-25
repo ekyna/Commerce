@@ -38,7 +38,7 @@ class CartListener extends AbstractSaleListener
      *
      * @param CartInterface $sale
      */
-    protected function handleInsert(SaleInterface $sale)
+    protected function handleInsert(SaleInterface $sale): bool
     {
         $changed = parent::handleInsert($sale);
 
@@ -52,7 +52,7 @@ class CartListener extends AbstractSaleListener
      *
      * @param CartInterface $sale
      */
-    protected function handleUpdate(SaleInterface $sale)
+    protected function handleUpdate(SaleInterface $sale): bool
     {
         $changed = parent::handleUpdate($sale);
 
@@ -68,7 +68,7 @@ class CartListener extends AbstractSaleListener
      *
      * @return bool
      */
-    protected function updateExpiresAt(CartInterface $cart)
+    protected function updateExpiresAt(CartInterface $cart): bool
     {
         $date = new \DateTime();
         $date->modify($this->expirationDelay);
@@ -80,7 +80,7 @@ class CartListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function updateState(SaleInterface $sale)
+    protected function updateState(SaleInterface $sale): bool
     {
         if (parent::updateState($sale)) {
             /** @var CartInterface $sale */
@@ -101,7 +101,7 @@ class CartListener extends AbstractSaleListener
      *
      * @return CartInterface
      */
-    protected function getSaleFromEvent(ResourceEventInterface $event)
+    protected function getSaleFromEvent(ResourceEventInterface $event): SaleInterface
     {
         $resource = $event->getResource();
 
@@ -115,7 +115,7 @@ class CartListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function scheduleContentChangeEvent(SaleInterface $sale)
+    protected function scheduleContentChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof CartInterface) {
             throw new InvalidArgumentException("Expected instance of CartInterface");
@@ -127,7 +127,7 @@ class CartListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function scheduleStateChangeEvent(SaleInterface $sale)
+    protected function scheduleStateChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof CartInterface) {
             throw new InvalidArgumentException("Expected instance of CartInterface");

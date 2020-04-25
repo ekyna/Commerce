@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Tests\Bridge\Symfony\Currency;
 
 use Ekyna\Component\Commerce\Bridge\Symfony\Currency\CachedExchangeRateProvider;
 use Ekyna\Component\Commerce\Common\Currency\ExchangeRateProviderInterface;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\CacheItem;
@@ -27,7 +28,7 @@ class CachedExchangeRateProviderTest extends TestCase
 
         $provider = new CachedExchangeRateProvider($cache);
 
-        $this->assertEquals(1.25, $provider->get('EUR', 'USD', $date));
+        $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
 
     public function testGet_withInversion(): void
@@ -44,7 +45,7 @@ class CachedExchangeRateProviderTest extends TestCase
 
         $provider = new CachedExchangeRateProvider($cache);
 
-        $this->assertEquals(0.8, $provider->get('USD', 'EUR', $date));
+        $this->assertEquals(0.8, $provider->get(Fixture::CURRENCY_USD, Fixture::CURRENCY_EUR, $date));
     }
 
     public function testGet_withFallback(): void
@@ -59,7 +60,11 @@ class CachedExchangeRateProviderTest extends TestCase
 
         // Fallback provider will return the exchange rate.
         $fallback = $this->createMock(ExchangeRateProviderInterface::class);
-        $fallback->expects($this->once())->method('get')->with('EUR', 'USD', $date)->willReturn(1.25);
+        $fallback
+            ->expects($this->once())
+            ->method('get')
+            ->with(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date)
+            ->willReturn(1.25);
 
         // Provider will save the exchange rate in cache
         $item = new CacheItem();
@@ -69,6 +74,6 @@ class CachedExchangeRateProviderTest extends TestCase
 
         $provider = new CachedExchangeRateProvider($cache, $fallback);
 
-        $this->assertEquals(1.25, $provider->get('EUR', 'USD', $date));
+        $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
 }

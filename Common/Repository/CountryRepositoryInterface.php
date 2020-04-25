@@ -13,34 +13,55 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface CountryRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
+     * Returns the default code.
+     *
+     * @return string
+     */
+    public function getDefaultCode(): string;
+
+    /**
+     * Sets the default code.
+     *
+     * @param string $code
+     */
+    public function setDefaultCode(string $code): void;
+
+    /**
+     * Sets the cached codes.
+     *
+     * @param array $codes
+     */
+    public function setCachedCodes(array $codes): void;
+
+    /**
      * Returns the default country.
      *
      * @return CountryInterface
      */
-    public function findDefault();
+    public function findDefault(): CountryInterface;
 
     /**
      * Finds a country by its code.
      *
      * @param string $code
      *
-     * @return CountryInterface
+     * @return CountryInterface|null
      */
-    public function findOneByCode($code);
+    public function findOneByCode(string $code): ?CountryInterface;
 
     /**
      * Finds the codes of the enabled countries.
      *
      * @return array|string[]
      */
-    public function findEnabledCodes();
+    public function findEnabledCodes(): array;
 
     /**
      * Finds all the country codes.
      *
      * @return array|string[]
      */
-    public function findAllCodes();
+    public function findAllCodes(): array;
 
     /**
      * Returns the country identifiers.
@@ -49,5 +70,5 @@ interface CountryRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return array
      */
-    public function getIdentifiers($cached = false);
+    public function getIdentifiers(bool $cached = false): array;
 }

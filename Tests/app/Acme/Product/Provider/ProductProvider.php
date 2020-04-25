@@ -5,9 +5,11 @@ namespace Acme\Product\Provider;
 use Acme\Product\Entity\Product;
 use Acme\Product\Repository\ProductRepository;
 use Ekyna\Component\Commerce\Exception\SubjectException;
-use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
+use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity as Identity;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface as Relative;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface;
+use Ekyna\Component\Commerce\Subject\Repository\SubjectRepositoryInterface;
 
 /**
  * Class ProductProvider
@@ -37,7 +39,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritDoc
      */
-    public function assign(SubjectRelativeInterface $relative, $subject)
+    public function assign(Relative $relative, Subject $subject): SubjectProviderInterface
     {
         return $this->transform($subject, $relative->getSubjectIdentity());
     }
@@ -45,7 +47,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritDoc
      */
-    public function resolve(SubjectRelativeInterface $relative)
+    public function resolve(Relative $relative): Subject
     {
         return $this->reverseTransform($relative->getSubjectIdentity());
     }
@@ -53,7 +55,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function transform($subject, SubjectIdentity $identity)
+    public function transform(Subject $subject, Identity $identity): SubjectProviderInterface
     {
         $this->assertSupportsSubject($subject);
 
@@ -73,7 +75,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function reverseTransform(SubjectIdentity $identity)
+    public function reverseTransform(Identity $identity): Subject
     {
         $this->assertSupportsIdentity($identity);
 
@@ -88,6 +90,7 @@ class ProductProvider implements SubjectProviderInterface
             return $product;
         }
 
+        /** @var Product $product */
         if (null === $product = $this->productRepository->find($productId)) {
             // TODO Clear identity data ?
             throw new SubjectException("Failed to resolve item subject.");
@@ -101,7 +104,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function supportsSubject($subject)
+    public function supportsSubject(Subject $subject): bool
     {
         return $subject instanceof Product;
     }
@@ -109,7 +112,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function supportsRelative(SubjectRelativeInterface $relative)
+    public function supportsRelative(Relative $relative): bool
     {
         return $relative->getSubjectIdentity()->getProvider() === self::NAME;
     }
@@ -117,7 +120,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function getRepository()
+    public function getRepository(): SubjectRepositoryInterface
     {
         return $this->productRepository;
     }
@@ -125,7 +128,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function getSubjectClass()
+    public function getSubjectClass(): string
     {
         return Product::class;
     }
@@ -133,7 +136,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritDoc
      */
-    public function getSearchRouteAndParameters($context)
+    public function getSearchRouteAndParameters(string $context): array
     {
         return [
             'route'      => 'acme_product_product_admin_search',
@@ -144,7 +147,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function getName()
+    public function getName(): string
     {
         return self::NAME;
     }
@@ -152,7 +155,7 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * @inheritdoc
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return 'Acme Product';
     }
@@ -160,11 +163,11 @@ class ProductProvider implements SubjectProviderInterface
     /**
      * Asserts that the subject relative is supported.
      *
-     * @param mixed $subject
+     * @param Subject $subject
      *
      * @throws SubjectException
      */
-    protected function assertSupportsSubject($subject)
+    protected function assertSupportsSubject(Subject $subject): void
     {
         if (!$this->supportsSubject($subject)) {
             throw new SubjectException('Unsupported subject.');
@@ -172,27 +175,13 @@ class ProductProvider implements SubjectProviderInterface
     }
 
     /**
-     * Asserts that the subject relative is supported.
-     *
-     * @param SubjectRelativeInterface $relative
-     *
-     * @throws SubjectException
-     */
-    protected function assertSupportsRelative(SubjectRelativeInterface $relative)
-    {
-        if (!$this->supportsRelative($relative)) {
-            throw new SubjectException('Unsupported subject relative.');
-        }
-    }
-
-    /**
      * Asserts that the subject identity is supported.
      *
-     * @param SubjectIdentity $identity
+     * @param Identity $identity
      *
      * @throws SubjectException
      */
-    protected function assertSupportsIdentity(SubjectIdentity $identity)
+    protected function assertSupportsIdentity(Identity $identity): void
     {
         if ($identity->getProvider() != static::NAME) {
             throw new SubjectException('Unsupported subject identity.');

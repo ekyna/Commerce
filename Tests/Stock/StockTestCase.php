@@ -2,12 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Tests\Stock;
 
+use Ekyna\Component\Commerce\Stock\Cache\StockAssignmentCacheInterface;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcherInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Overflow\OverflowHandlerInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
+use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -23,6 +25,11 @@ class StockTestCase extends TestCase
      * @var StockUnitResolverInterface|MockObject
      */
     private $stockUnitResolver;
+
+    /**
+     * @var StockUnitStateResolverInterface|MockObject
+     */
+    private $stockUnitStateResolver;
 
     /**
      * @var StockUnitCacheInterface|MockObject
@@ -45,6 +52,11 @@ class StockTestCase extends TestCase
     private $stockAssignmentManager;
 
     /**
+     * @var StockAssignmentManagerInterface|MockObject
+     */
+    private $stockAssignmentCache;
+
+    /**
      * @var StockAssignmentDispatcherInterface|MockObject
      */
     private $stockAssignmentDispatcher;
@@ -53,6 +65,7 @@ class StockTestCase extends TestCase
      * @var OverflowHandlerInterface|MockObject
      */
     private $stockOverflowHandler;
+
 
     /**
      * Returns the unit resolver mock.
@@ -66,6 +79,20 @@ class StockTestCase extends TestCase
         }
 
         return $this->stockUnitResolver = $this->createMock(StockUnitResolverInterface::class);
+    }
+
+    /**
+     * Returns the unit state resolver mock.
+     *
+     * @return StockUnitStateResolverInterface|MockObject
+     */
+    protected function getStockUnitStateResolverMock(): StockUnitStateResolverInterface
+    {
+        if (null !== $this->stockUnitStateResolver) {
+            return $this->stockUnitStateResolver;
+        }
+
+        return $this->stockUnitStateResolver = $this->createMock(StockUnitStateResolverInterface::class);
     }
 
     /**
@@ -136,6 +163,20 @@ class StockTestCase extends TestCase
         }
 
         return $this->stockAssignmentManager = $this->createMock(StockAssignmentManagerInterface::class);
+    }
+
+    /**
+     * Returns the stock assignment cache mock.
+     *
+     * @return StockAssignmentCacheInterface|MockObject
+     */
+    protected function getStockAssignmentCacheMock(): StockAssignmentCacheInterface
+    {
+        if (null !== $this->stockAssignmentCache) {
+            return $this->stockAssignmentCache;
+        }
+
+        return $this->stockAssignmentCache = $this->createMock(StockAssignmentCacheInterface::class);
     }
 
     /**

@@ -14,7 +14,7 @@ interface SaleItemAdjustmentInterface extends AdjustmentInterface
      *
      * @return SaleItemInterface
      */
-    public function getItem();
+    public function getItem(): ?SaleItemInterface;
 
     /**
      * Sets the sale item.
@@ -23,5 +23,5 @@ interface SaleItemAdjustmentInterface extends AdjustmentInterface
      *
      * @return $this|SaleItemAdjustmentInterface
      */
-    public function setItem(SaleItemInterface $item = null);
+    public function setItem(SaleItemInterface $item = null): SaleItemAdjustmentInterface;
 }

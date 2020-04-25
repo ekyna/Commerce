@@ -4,8 +4,8 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\Fixtures;
 
 use Doctrine\Common\DataFixtures\AbstractFixture as BaseFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\Mapping\ClassMetadata;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Yaml\Yaml;
 

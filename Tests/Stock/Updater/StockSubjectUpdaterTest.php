@@ -130,7 +130,6 @@ class StockSubjectUpdaterTest extends TestCase
         ];
 
         $subject = $this->createSubject(StockSubjectModes::MODE_AUTO);
-        $eda = new \DateTime('+1 day');
         yield 'Simple 3' => [
             [
                 'mode'      => StockSubjectModes::MODE_AUTO,
@@ -138,11 +137,11 @@ class StockSubjectUpdaterTest extends TestCase
                 'in'        => 5.0,
                 'available' => 0.0,
                 'virtual'   => 0.0,
-                'eda'       => $eda,
+                'eda'       => null,
             ],
             $subject,
             [
-                $this->createStockUnit(StockUnitStates::STATE_READY, 20, 10, 0, 20, 15, $eda),
+                $this->createStockUnit(StockUnitStates::STATE_READY, 20, 10, 0, 20, 15, new \DateTime('+1 day')),
             ],
         ];
 
@@ -226,6 +225,26 @@ class StockSubjectUpdaterTest extends TestCase
             $subject,
             [
                 $this->createStockUnit(StockUnitStates::STATE_PENDING, 0, 0, 0, 20, 0, $eda),
+            ],
+        ];
+
+        $subject = $this->createSubject(StockSubjectModes::MODE_JUST_IN_TIME);
+        $eda = new \DateTime('+15 day');
+        yield 'Simple 9' => [
+            [
+                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'     => StockSubjectStates::STATE_IN_STOCK,
+                'in'        => 10.0,
+                'available' => 0.0,
+                'virtual'   => 50.0,
+                'eda'       => $eda,
+            ],
+            $subject,
+            [
+                $this->createStockUnit(StockUnitStates::STATE_PENDING, 30, 0, 10, 20, 0, new \DateTime('+5 day')),
+                $this->createStockUnit(StockUnitStates::STATE_PENDING, 50, 0, 0, 50, 0, new \DateTime('+10 day')),
+                $this->createStockUnit(StockUnitStates::STATE_PENDING, 20, 0, 0, 50, 0, $eda),
+                $this->createStockUnit(StockUnitStates::STATE_PENDING, 0, 0, 0, 20, 0, new \DateTime('+20 day')),
             ],
         ];
 

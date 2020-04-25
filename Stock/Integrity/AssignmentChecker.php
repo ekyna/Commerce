@@ -12,17 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 class AssignmentChecker extends AbstractChecker
 {
     /**
-     * @var array
-     */
-    private $units;
-
-    /**
-     * @var array
-     */
-    private $assignments;
-
-
-    /**
      * @inheritDoc
      */
     public function getTitle(): string
@@ -88,8 +77,8 @@ class AssignmentChecker extends AbstractChecker
      */
     public function build(OutputInterface $output): void
     {
-        $this->assignments = [];
-        $this->units = [];
+        $assignments = [];
+        $units = [];
 
         $selectAssignments = $this->connection->prepare(<<<SQL
 SELECT a.id as a_id,
@@ -123,8 +112,8 @@ SQL
             while (false !== $data = $selectAssignments->fetch(\PDO::FETCH_ASSOC)) {
                 // Cache assignment change set
                 $aId = $data['a_id'];
-                if (!isset($this->assignments[$aId])) {
-                    $this->assignments[$aId] = [
+                if (!isset($assignments[$aId])) {
+                    $assignments[$aId] = [
                         'order'   => $orderId,
                         'item'    => $itemId,
                         'subject' => $subjectId,
@@ -132,12 +121,12 @@ SQL
                         'shipped' => [$data['a_shipped'], $data['a_shipped']],
                     ];
                 }
-                $assignment = &$this->assignments[$aId];
+                $assignment = &$assignments[$aId];
 
                 // Cache unit change set
                 $uId = $data['u_id'];
-                if (!isset($this->units[$uId])) {
-                    $this->units[$uId] = [
+                if (!isset($units[$uId])) {
+                    $units[$uId] = [
                         'order'   => $orderId,
                         'item'    => $itemId,
                         'subject' => $subjectId,
@@ -145,7 +134,7 @@ SQL
                         'shipped' => [$data['u_shipped'], $data['u_shipped']],
                     ];
                 }
-                $unit = &$this->units[$uId];
+                $unit = &$units[$uId];
 
                 // Shipped change
                 if (0 < $shippedDelta) {
@@ -218,8 +207,8 @@ SQL
 
         // Build actions
         $map = [
-            'assignment' => $this->assignments,
-            //'unit'       => $this->units,
+            'assignment' => $assignments,
+            //'unit'       => $units,
         ];
         foreach ($map as $name => $data) {
             foreach ($data as $id => $datum) {

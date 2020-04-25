@@ -10,7 +10,7 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface"
                      field="supplierOrder" inversed-by="attachments">
-            <join-column name="supplier_order__id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
+            <join-column name="supplier_order_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 
     </entity>

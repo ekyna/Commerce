@@ -11,37 +11,5 @@ use Ekyna\Component\Commerce\Common\Model;
  */
 abstract class AbstractSaleAdjustment extends AbstractAdjustment implements Model\SaleAdjustmentInterface
 {
-    /**
-     * @var Model\Amount[]
-     */
-    protected $results = [];
 
-
-    /**
-     * @inheritdoc
-     */
-    public function clearResults(): Model\SaleAdjustmentInterface
-    {
-        $this->results = [];
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getResult(string $currency): ?Model\Amount
-    {
-        return $this->results[$currency] ?? null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setResult(Model\Amount $result): Model\SaleAdjustmentInterface
-    {
-        $this->results[$result->getCurrency()] = $result;
-
-        return $this;
-    }
 }

@@ -2,8 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Provider;
 
-use Ekyna\Component\Commerce\Common\Context\Context;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 
 /**
@@ -14,11 +13,11 @@ use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 interface WarehouseProviderInterface
 {
     /**
-     * Returns the warehouse.
+     * Returns the warehouse for the given country.
      *
-     * @param Context|SaleInterface|null $context
+     * @param CountryInterface|null $country
      *
      * @return WarehouseInterface
      */
-    public function getWarehouse($context = null): WarehouseInterface;
+    public function getWarehouse(CountryInterface $country = null): WarehouseInterface;
 }

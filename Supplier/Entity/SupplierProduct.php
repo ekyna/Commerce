@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
+use DateTime;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
@@ -18,47 +19,22 @@ class SupplierProduct implements SupplierProductInterface
         TimestampableTrait;
 
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var Supplier
      */
     protected $supplier;
 
     /**
-     * @var string
+     * @var float
      */
-    protected $designation;
-
-    /**
-     * @var string
-     */
-    protected $reference;
+    protected $availableStock;
 
     /**
      * @var float
      */
-    protected $netPrice = 0;
+    protected $orderedStock;
 
     /**
-     * @var float
-     */
-    protected $weight = 0;
-
-    /**
-     * @var float
-     */
-    protected $availableStock = 0;
-
-    /**
-     * @var float
-     */
-    protected $orderedStock = 0;
-
-    /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $estimatedDateOfArrival;
 
@@ -68,7 +44,10 @@ class SupplierProduct implements SupplierProductInterface
      */
     public function __construct()
     {
-        $this->initializeSubjectIdentity();
+        $this->initializeSubjectRelative();
+
+        $this->availableStock = 0.;
+        $this->orderedStock = 0.;
     }
 
     /**
@@ -84,15 +63,7 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @inheritdoc
      */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSupplier()
+    public function getSupplier(): ?SupplierInterface
     {
         return $this->supplier;
     }
@@ -110,79 +81,7 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @inheritdoc
      */
-    public function getDesignation()
-    {
-        return $this->designation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setDesignation($designation)
-    {
-        $this->designation = $designation;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getReference()
-    {
-        return $this->reference;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setReference($reference)
-    {
-        $this->reference = $reference;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNetPrice()
-    {
-        return $this->netPrice;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNetPrice($price)
-    {
-        $this->netPrice = (float)$price;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getWeight()
-    {
-        return $this->weight;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setWeight($weight)
-    {
-        $this->weight = (float)$weight;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAvailableStock()
+    public function getAvailableStock(): float
     {
         return $this->availableStock;
     }
@@ -190,9 +89,9 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @inheritdoc
      */
-    public function setAvailableStock($stock)
+    public function setAvailableStock(float $stock): SupplierProductInterface
     {
-        $this->availableStock = (float)$stock;
+        $this->availableStock = $stock;
 
         return $this;
     }
@@ -200,7 +99,7 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @inheritdoc
      */
-    public function getOrderedStock()
+    public function getOrderedStock(): float
     {
         return $this->orderedStock;
     }
@@ -208,9 +107,9 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @inheritdoc
      */
-    public function setOrderedStock($stock)
+    public function setOrderedStock(float $stock): SupplierProductInterface
     {
-        $this->orderedStock = (float)$stock;
+        $this->orderedStock = $stock;
 
         return $this;
     }
@@ -218,7 +117,7 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @inheritdoc
      */
-    public function getEstimatedDateOfArrival()
+    public function getEstimatedDateOfArrival(): ?DateTime
     {
         return $this->estimatedDateOfArrival;
     }
@@ -226,7 +125,7 @@ class SupplierProduct implements SupplierProductInterface
     /**
      * @inheritdoc
      */
-    public function setEstimatedDateOfArrival(\DateTime $date = null)
+    public function setEstimatedDateOfArrival(DateTime $date = null): SupplierProductInterface
     {
         $this->estimatedDateOfArrival = $date;
 

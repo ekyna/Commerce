@@ -23,11 +23,6 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      */
     protected $currencyConverter;
 
-    /**
-     * @var string
-     */
-    protected $currency;
-
 
     /**
      * Constructor.
@@ -37,7 +32,6 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     public function __construct(CurrencyConverterInterface $converter)
     {
         $this->currencyConverter = $converter;
-        $this->currency          = $converter->getDefaultCurrency();
     }
 
     /**
@@ -323,7 +317,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         bool $credit,
         string $currency = null
     ): float {
-        $currency = $currency ?? $this->currency;
+        $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();
 
         $total = .0;
 

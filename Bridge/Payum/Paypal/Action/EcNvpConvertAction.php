@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action;
 
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\Money;
@@ -23,9 +24,9 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
     use GatewayAwareTrait;
 
     /**
-     * @var AmountCalculatorInterface
+     * @var AmountCalculatorFactory
      */
-    private $calculator;
+    private $calculatorFactory;
 
     /**
      * @var string
@@ -42,16 +43,21 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
      */
     private $line;
 
+    /**
+     * @var AmountCalculatorInterface
+     */
+    private $calculator;
+
 
     /**
      * Constructor.
      *
-     * @param AmountCalculatorInterface $calculator
-     * @param string                    $brandName
+     * @param AmountCalculatorFactory $calculatorFactory
+     * @param string                  $brandName
      */
-    public function __construct(AmountCalculatorInterface $calculator, $brandName = null)
+    public function __construct(AmountCalculatorFactory $calculatorFactory, $brandName = null)
     {
-        $this->calculator = $calculator;
+        $this->calculatorFactory = $calculatorFactory;
         $this->brandName = $brandName;
     }
 
@@ -102,7 +108,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
             return;
         }
 
-        $this->calculator->calculateSale($sale, $this->currency);
+        $this->getCalculator()->calculateSale($sale);
 
         $this->line = 0;
         $lineTotals = 0;
@@ -121,7 +127,8 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
         $details['PAYMENTREQUEST_0_ITEMAMT'] = $this->format($lineTotals);
 
         // Shipping
-        $details['PAYMENTREQUEST_0_SHIPPINGAMT'] = $this->format($sale->getShipmentResult($this->currency)->getTotal());
+        $result = $this->getCalculator()->calculateSaleShipment($sale);
+        $details['PAYMENTREQUEST_0_SHIPPINGAMT'] = $this->format($result->getTotal());
 
         // Taxes
         //$details['PAYMENTREQUEST_0_TAXAMT'] = $this->format($sale->getFinalResult()->getTax());
@@ -140,9 +147,10 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
         $total = 0;
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            $itemResult = $item->getResult($this->currency);
+            $itemResult = $this->getCalculator()->calculateSaleItem($item);
 
-            $details['L_PAYMENTREQUEST_0_NAME' . $this->line] = $item->getTotalQuantity() . 'x ' . $item->getDesignation();
+            $details['L_PAYMENTREQUEST_0_NAME' . $this->line] = $item->getTotalQuantity() . 'x '
+                . $item->getDesignation();
             $details['L_PAYMENTREQUEST_0_NUMBER' . $this->line] = $item->getReference();
             if (!empty($description = $item->getDescription())) {
                 $details['L_PAYMENTREQUEST_0_DESC' . $this->line] = $description;
@@ -173,7 +181,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
      */
     private function addDiscountDetails(array &$details, Model\SaleAdjustmentInterface $discount)
     {
-        $discountResult = $discount->getResult($this->currency);
+        $discountResult = $this->getCalculator()->calculateSaleDiscount($discount);
 
         $details['L_PAYMENTREQUEST_0_NAME' . $this->line] = $discount->getDesignation();
         $details['L_PAYMENTREQUEST_0_AMT' . $this->line] = '-' . $this->format($discountResult->getTotal());
@@ -194,6 +202,20 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
     private function format($amount)
     {
         return (string)Money::round($amount, $this->currency);
+    }
+
+    /**
+     * Returns the amount calculator.
+     *
+     * @return AmountCalculatorInterface
+     */
+    private function getCalculator(): AmountCalculatorInterface
+    {
+        if ($this->calculator) {
+            return $this->calculator;
+        }
+
+        return $this->calculator = $this->calculatorFactory->create($this->currency);
     }
 
     /**

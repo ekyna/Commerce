@@ -60,133 +60,157 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateOrdered(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    public function updateOrdered(StockUnitInterface $unit, float $quantity, bool $relative = true): void
     {
         if ($relative) {
-            $quantity = $stockUnit->getOrderedQuantity() + $quantity;
+            $quantity = $unit->getOrderedQuantity() + $quantity;
         }
         if (0 > $quantity) {
             throw new StockLogicException("Unexpected ordered quantity.");
         }
 
         // Prevent ordered quantity to be set as lower than the received quantity
-        if ($quantity < $stockUnit->getReceivedQuantity()) {
+        if ($quantity < $unit->getReceivedQuantity()) {
             throw new StockLogicException("The ordered quantity can't be lower than the received quantity.");
         }
 
-        $stockUnit->setOrderedQuantity($quantity);
+        $unit->setOrderedQuantity($quantity);
 
-        if ($this->overflowHandler->handle($stockUnit)) {
+        if ($this->overflowHandler->handle($unit)) {
             // Stock unit persistence has been made by assignment dispatcher.
             return;
         }
 
-        $this->unitManager->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($unit);
     }
 
     /**
      * @inheritdoc
      */
-    public function updateReceived(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    public function updateReceived(StockUnitInterface $unit, float $quantity, bool $relative = true): void
     {
         if ($relative) {
-            $quantity = $stockUnit->getReceivedQuantity() + $quantity;
+            $quantity = $unit->getReceivedQuantity() + $quantity;
         }
         if (0 > $quantity) {
             throw new StockLogicException("Unexpected received quantity.");
         }
 
         // Prevent received quantity to be set as greater than the ordered quantity
-        if ($quantity > $stockUnit->getOrderedQuantity()) {
+        if ($quantity > $unit->getOrderedQuantity()) {
             throw new StockLogicException("The received quantity can't be greater than the ordered quantity.");
         }
 
-        $stockUnit->setReceivedQuantity($quantity);
+        $unit->setReceivedQuantity($quantity);
 
-        $this->unitManager->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($unit);
     }
 
     /**
      * @inheritdoc
      */
-    public function updateAdjusted(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    public function updateAdjusted(StockUnitInterface $unit, float $quantity, bool $relative = true): void
     {
         if ($relative) {
-            $quantity = $stockUnit->getAdjustedQuantity() + $quantity;
+            $quantity = $unit->getAdjustedQuantity() + $quantity;
         }
 
-        if ($quantity + $stockUnit->getReceivedQuantity() < $stockUnit->getShippedQuantity()) {
+        if ($quantity + $unit->getReceivedQuantity() < $unit->getShippedQuantity()) {
             throw new StockLogicException("Unexpected adjusted quantity.");
         }
 
-        $stockUnit->setAdjustedQuantity($quantity);
+        $unit->setAdjustedQuantity($quantity);
 
-        if ($this->overflowHandler->handle($stockUnit)) {
+        if ($this->overflowHandler->handle($unit)) {
             // Stock unit persistence has been made by assignment dispatcher.
             return;
         }
 
-        $this->unitManager->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($unit);
     }
 
     /**
      * @inheritdoc
      */
-    public function updateSold(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    public function updateSold(StockUnitInterface $unit, float $quantity, bool $relative = true): void
     {
         if ($relative) {
-            $quantity = $stockUnit->getSoldQuantity() + $quantity;
+            $quantity = $unit->getSoldQuantity() + $quantity;
         }
         if (0 > $quantity) {
             throw new StockLogicException("Unexpected sold quantity.");
         }
 
         // Prevent sold quantity to be set as lower than the shipped quantity
-        if ($quantity < $stockUnit->getShippedQuantity()) {
+        if ($quantity < $unit->getShippedQuantity()) {
             throw new StockLogicException("The sold quantity can't be lower than the shipped quantity.");
         }
 
-        $stockUnit->setSoldQuantity($quantity);
+        $unit->setSoldQuantity($quantity);
 
         // TODO Use overflow handler ?
 
-        $this->unitManager->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($unit);
     }
 
     /**
      * @inheritdoc
      */
-    public function updateShipped(StockUnitInterface $stockUnit, $quantity, $relative = true)
+    public function updateShipped(StockUnitInterface $unit, float $quantity, bool $relative = true): void
     {
         if ($relative) {
-            $quantity = $stockUnit->getShippedQuantity() + $quantity;
+            $quantity = $unit->getShippedQuantity() + $quantity;
         }
         if (0 > $quantity) {
             throw new StockLogicException("Unexpected shipped quantity.");
         }
 
         // Prevent shipped quantity to be set as greater than the sold or received quantity
-        if ($quantity > $stockUnit->getSoldQuantity()) {
+        if ($quantity > $unit->getSoldQuantity()) {
             throw new StockLogicException("The shipped quantity can't be greater than the sold quantity.");
         }
-        if ($quantity > $stockUnit->getReceivedQuantity() + $stockUnit->getAdjustedQuantity()) {
+        if ($quantity > $unit->getReceivedQuantity() + $unit->getAdjustedQuantity()) {
             throw new StockLogicException("The shipped quantity can't be greater than the sum (received + adjusted) quantity.");
         }
 
-        $stockUnit->setShippedQuantity($quantity);
+        $unit->setShippedQuantity($quantity);
 
-        $this->unitManager->persistOrRemove($stockUnit);
+        $this->unitManager->persistOrRemove($unit);
     }
 
     /**
      * @inheritdoc
      */
-    public function updateEstimatedDateOfArrival(StockUnitInterface $stockUnit, \DateTime $date = null)
+    public function updateEstimatedDateOfArrival(StockUnitInterface $unit, \DateTime $date = null): void
     {
-        if ($date != $stockUnit->getEstimatedDateOfArrival()) {
-            $stockUnit->setEstimatedDateOfArrival($date);
+        if ($date != $unit->getEstimatedDateOfArrival()) {
+            $unit->setEstimatedDateOfArrival($date);
 
-            $this->persistenceHelper->persistAndRecompute($stockUnit, true);
+            $this->persistenceHelper->persistAndRecompute($unit, true);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateNetPrice(StockUnitInterface $unit, float $price): void
+    {
+        if ($price != $unit->getNetPrice()) {
+            $unit->setNetPrice($price);
+
+            $this->persistenceHelper->persistAndRecompute($unit, true);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateShippingPrice(StockUnitInterface $unit, float $price): void
+    {
+        if ($price != $unit->getShippingPrice()) {
+            $unit->setShippingPrice($price);
+
+            $this->persistenceHelper->persistAndRecompute($unit, true);
         }
     }
 }

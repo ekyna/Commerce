@@ -46,7 +46,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function update(StockSubjectInterface $subject)
+    public function update(StockSubjectInterface $subject): bool
     {
         // If subject stock is compound, do nothing.
         if ($subject->isStockCompound()) {
@@ -70,9 +70,9 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // The stock unit resolver uses the stock unit cache.
         $stockUnits = $this->stockUnitResolver->findNotClosed($subject);
         foreach ($stockUnits as $stockUnit) {
-            $sold += $stockUnit->getSoldQuantity();
+            $sold += $s =$stockUnit->getSoldQuantity();
             $shipped += $stockUnit->getShippedQuantity();
-            $adjusted += $stockUnit->getAdjustedQuantity();
+            $adjusted += $a = $stockUnit->getAdjustedQuantity();
 
             if ($stockUnit->getState() === StockUnitStates::STATE_NEW) {
                 continue;
@@ -81,6 +81,10 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $ordered += $o = $stockUnit->getOrderedQuantity();
             $received += $r = $stockUnit->getReceivedQuantity();
 
+            // Ignore EDA if stock unit his fully sold
+            if ($s >= $o + $a) {
+                continue;
+            }
             // Ignore EDA if stock unit his fully received
             if (0 < $o && 0 < $r && $r >= $o) {
                 continue;

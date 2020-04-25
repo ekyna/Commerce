@@ -8,8 +8,8 @@ use Ekyna\Component\Commerce\Common\Model\AdjustmentData;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 
 /**
  * Class AdjustmentBuilderTest
@@ -52,8 +52,8 @@ class AdjustmentBuilderTest extends TestCase
      */
     public function test_buildItemDiscount_withSingleItem()
     {
-        $item = Fixtures::createOrderItem();
-        $item->setOrder(Fixtures::createOrder());
+        $item = Fixture::orderItem();
+        $item->setOrder(Fixture::order());
 
         // Given the discount resolver will return a 7% discount adjustment data.
         $this

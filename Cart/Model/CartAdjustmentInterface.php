@@ -16,13 +16,14 @@ interface CartAdjustmentInterface extends SaleAdjustmentInterface
      *
      * @return CartInterface
      */
-    public function getCart();
+    public function getCart(): ?CartInterface;
 
     /**
      * Sets the cart.
      *
      * @param CartInterface $cart
+     *
      * @return $this|CartAdjustmentInterface
      */
-    public function setCart(CartInterface $cart = null);
+    public function setCart(CartInterface $cart = null): CartAdjustmentInterface;
 }

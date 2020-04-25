@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Context;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -30,6 +31,11 @@ class Context implements ContextInterface
     protected $deliveryCountry;
 
     /**
+     * @var CountryInterface
+     */
+    protected $shippingCountry;
+
+    /**
      * @var CurrencyInterface
      */
     protected $currency;
@@ -55,7 +61,7 @@ class Context implements ContextInterface
     protected $taxExempt;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $date;
 
@@ -72,14 +78,14 @@ class Context implements ContextInterface
     {
         $this->business = false;
         $this->taxExempt = false;
-        $this->date = new \DateTime();
+        $this->date = new DateTime();
         $this->admin = false;
     }
 
     /**
      * @inheritdoc
      */
-    public function getCustomerGroup()
+    public function getCustomerGroup(): ?CustomerGroupInterface
     {
         return $this->customerGroup;
     }
@@ -87,7 +93,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setCustomerGroup(CustomerGroupInterface $group)
+    public function setCustomerGroup(CustomerGroupInterface $group): ContextInterface
     {
         $this->customerGroup = $group;
 
@@ -97,7 +103,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function getInvoiceCountry()
+    public function getInvoiceCountry(): ?CountryInterface
     {
         return $this->invoiceCountry;
     }
@@ -105,7 +111,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setInvoiceCountry(CountryInterface $country)
+    public function setInvoiceCountry(CountryInterface $country): ContextInterface
     {
         $this->invoiceCountry = $country;
 
@@ -115,7 +121,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function getDeliveryCountry()
+    public function getDeliveryCountry(): ?CountryInterface
     {
         return $this->deliveryCountry;
     }
@@ -123,7 +129,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setDeliveryCountry(CountryInterface $country)
+    public function setDeliveryCountry(CountryInterface $country): ContextInterface
     {
         $this->deliveryCountry = $country;
 
@@ -133,7 +139,25 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function getCurrency()
+    public function getShippingCountry(): ?CountryInterface
+    {
+        return $this->shippingCountry;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setShippingCountry(CountryInterface $country): ContextInterface
+    {
+        $this->shippingCountry = $country;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCurrency(): ?CurrencyInterface
     {
         return $this->currency;
     }
@@ -141,7 +165,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setCurrency(CurrencyInterface $currency)
+    public function setCurrency(CurrencyInterface $currency): ContextInterface
     {
         $this->currency = $currency;
 
@@ -151,7 +175,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function getLocale()
+    public function getLocale(): ?string
     {
         return $this->locale;
     }
@@ -159,7 +183,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setLocale(string $locale)
+    public function setLocale(string $locale): ContextInterface
     {
         $this->locale = $locale;
 
@@ -169,15 +193,15 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function getVatDisplayMode()
+    public function getVatDisplayMode(): ?string
     {
-        return $this->vatDisplayMode ? $this->vatDisplayMode : $this->customerGroup->getVatDisplayMode();
+        return $this->vatDisplayMode;
     }
 
     /**
      * @inheritdoc
      */
-    public function setVatDisplayMode(string $mode)
+    public function setVatDisplayMode(string $mode): ContextInterface
     {
         $this->vatDisplayMode = $mode;
 
@@ -189,7 +213,7 @@ class Context implements ContextInterface
      *
      * @return bool
      */
-    public function isBusiness()
+    public function isBusiness(): bool
     {
         return $this->business;
     }
@@ -201,7 +225,7 @@ class Context implements ContextInterface
      *
      * @return Context
      */
-    public function setBusiness(bool $business)
+    public function setBusiness(bool $business): ContextInterface
     {
         $this->business = $business;
 
@@ -213,7 +237,7 @@ class Context implements ContextInterface
      *
      * @return bool
      */
-    public function isTaxExempt()
+    public function isTaxExempt(): bool
     {
         return $this->taxExempt;
     }
@@ -225,7 +249,7 @@ class Context implements ContextInterface
      *
      * @return Context
      */
-    public function setTaxExempt(bool $exempt)
+    public function setTaxExempt(bool $exempt): ContextInterface
     {
         $this->taxExempt = $exempt;
 
@@ -235,7 +259,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function getDate()
+    public function getDate(): DateTime
     {
         return $this->date;
     }
@@ -243,7 +267,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setDate(\DateTime $date)
+    public function setDate(DateTime $date): ContextInterface
     {
         $this->date = $date;
 
@@ -253,7 +277,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         return $this->admin;
     }
@@ -261,7 +285,7 @@ class Context implements ContextInterface
     /**
      * @inheritdoc
      */
-    public function setAdmin(bool $admin)
+    public function setAdmin(bool $admin): ContextInterface
     {
         $this->admin = $admin;
 
@@ -271,7 +295,7 @@ class Context implements ContextInterface
     /**
      * @inheritDoc
      */
-    public function isAtiDisplayMode()
+    public function isAtiDisplayMode(): bool
     {
         return $this->vatDisplayMode === VatDisplayModes::MODE_ATI;
     }

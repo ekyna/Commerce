@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Pricing\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Resource\Model as RM;
 
@@ -11,14 +11,30 @@ use Ekyna\Component\Resource\Model as RM;
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
+interface TaxRuleInterface extends RM\ResourceInterface
 {
+    /**
+     * Returns the code.
+     *
+     * @return string
+     */
+    public function getCode(): ?string;
+
+    /**
+     * Sets the code.
+     *
+     * @param string $code
+     *
+     * @return $this|TaxRuleInterface
+     */
+    public function setCode(string $code): TaxRuleInterface;
+
     /**
      * Returns the name.
      *
      * @return string
      */
-    public function getName();
+    public function getName(): ?string;
 
     /**
      * Sets the name.
@@ -27,14 +43,14 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function setName($name);
+    public function setName(string $name): TaxRuleInterface;
 
     /**
      * Returns the customer.
      *
      * @return bool
      */
-    public function isCustomer();
+    public function isCustomer(): bool;
 
     /**
      * Sets the customer.
@@ -43,14 +59,14 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function setCustomer($customer);
+    public function setCustomer(bool $customer): TaxRuleInterface;
 
     /**
      * Returns the business.
      *
      * @return bool
      */
-    public function isBusiness();
+    public function isBusiness(): bool;
 
     /**
      * Sets the business.
@@ -59,48 +75,48 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function setBusiness($business);
+    public function setBusiness(bool $business): TaxRuleInterface;
 
     /**
-     * Returns whether the tax rule has countries.
+     * Returns whether the tax rule has source countries.
      *
      * @return bool
      */
-    public function hasCountries();
+    public function hasSources(): bool;
 
     /**
-     * Returns the countries.
+     * Returns the source countries.
      *
-     * @return ArrayCollection|CountryInterface[]
+     * @return Collection|CountryInterface[]
      */
-    public function getCountries();
+    public function getSources(): Collection;
 
     /**
-     * Returns whether the tax rule has the given country.
+     * Returns whether the tax rule has the given source country.
      *
-     * @param CountryInterface $country
+     * @param CountryInterface $source
      *
      * @return bool
      */
-    public function hasCountry(CountryInterface $country);
+    public function hasSource(CountryInterface $source): bool;
 
     /**
-     * Adds the country.
+     * Adds the source country.
      *
-     * @param CountryInterface $country
+     * @param CountryInterface $source
      *
      * @return $this|TaxRuleInterface
      */
-    public function addCountry(CountryInterface $country);
+    public function addSource(CountryInterface $source): TaxRuleInterface;
 
     /**
-     * Removes the country.
+     * Removes the source country.
      *
-     * @param CountryInterface $country
+     * @param CountryInterface $source
      *
      * @return $this|TaxRuleInterface
      */
-    public function removeCountry(CountryInterface $country);
+    public function removeSource(CountryInterface $source): TaxRuleInterface;
 
     /**
      * Sets the countries.
@@ -109,21 +125,71 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function setCountries(array $countries);
+    public function setSources(array $countries): TaxRuleInterface;
+
+    /**
+     * Returns whether the tax rule has target countries.
+     *
+     * @return bool
+     */
+    public function hasTargets(): bool;
+
+    /**
+     * Returns the target countries.
+     *
+     * @return Collection|CountryInterface[]
+     */
+    public function getTargets(): Collection;
+
+    /**
+     * Returns whether the tax rule has the given target country.
+     *
+     * @param CountryInterface $target
+     *
+     * @return bool
+     */
+    public function hasTarget(CountryInterface $target): bool;
+
+    /**
+     * Adds the target country.
+     *
+     * @param CountryInterface $target
+     *
+     * @return $this|TaxRuleInterface
+     */
+    public function addTarget(CountryInterface $target): TaxRuleInterface;
+
+    /**
+     * Removes the target country.
+     *
+     * @param CountryInterface $target
+     *
+     * @return $this|TaxRuleInterface
+     */
+    public function removeTarget(CountryInterface $target): TaxRuleInterface;
+
+    /**
+     * Sets the countries.
+     *
+     * @param CountryInterface[] $countries
+     *
+     * @return $this|TaxRuleInterface
+     */
+    public function setTargets(array $countries): TaxRuleInterface;
 
     /**
      * Returns whether the tax rule has taxes.
      *
      * @return bool
      */
-    public function hasTaxes();
+    public function hasTaxes(): bool;
 
     /**
      * Returns the taxes.
      *
-     * @return ArrayCollection|TaxInterface[]
+     * @return Collection|TaxInterface[]
      */
-    public function getTaxes();
+    public function getTaxes(): Collection;
 
     /**
      * Returns whether the tax rule has the given tax.
@@ -132,7 +198,7 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return bool
      */
-    public function hasTax(TaxInterface $tax);
+    public function hasTax(TaxInterface $tax): bool;
 
     /**
      * Adds the tax.
@@ -141,7 +207,7 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function addTax(TaxInterface $tax);
+    public function addTax(TaxInterface $tax): TaxRuleInterface;
 
     /**
      * Removes the tax.
@@ -150,7 +216,7 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function removeTax(TaxInterface $tax);
+    public function removeTax(TaxInterface $tax): TaxRuleInterface;
 
     /**
      * Sets the taxes.
@@ -159,14 +225,14 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function setTaxes(array $taxes);
+    public function setTaxes(array $taxes): TaxRuleInterface;
 
     /**
      * Returns the notices.
      *
      * @return array
      */
-    public function getNotices();
+    public function getNotices(): array;
 
     /**
      * Sets the notices.
@@ -175,14 +241,14 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function setNotices(array $notices);
+    public function setNotices(array $notices): TaxRuleInterface;
 
     /**
      * Returns the priority.
      *
      * @return int
      */
-    public function getPriority();
+    public function getPriority(): int;
 
     /**
      * Sets the priority.
@@ -191,5 +257,5 @@ interface TaxRuleInterface extends RM\ResourceInterface, RM\SortableInterface
      *
      * @return $this|TaxRuleInterface
      */
-    public function setPriority($priority);
+    public function setPriority(int $priority): TaxRuleInterface;
 }

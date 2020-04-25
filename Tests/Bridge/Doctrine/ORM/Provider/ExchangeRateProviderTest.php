@@ -6,6 +6,7 @@ use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Statement;
 use Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Provider\ExchangeRateProvider;
 use Ekyna\Component\Commerce\Common\Currency\ExchangeRateProviderInterface;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +25,11 @@ class ExchangeRateProviderTest extends TestCase
         $find
             ->expects($this->at(0))
             ->method('execute')
-            ->with(['base' => 'EUR', 'quote' => 'USD', 'date' => '2020-01-01 12:00:00'])
+            ->with([
+                'base'  => Fixture::CURRENCY_EUR,
+                'quote' => Fixture::CURRENCY_USD,
+                'date'  => '2020-01-01 12:00:00',
+            ])
             ->willReturn(true);
 
         $find
@@ -36,7 +41,11 @@ class ExchangeRateProviderTest extends TestCase
         $find
             ->expects($this->at(2))
             ->method('execute')
-            ->with(['base' => 'USD', 'quote' => 'EUR', 'date' => '2020-01-01 12:00:00'])
+            ->with([
+                'base'  => Fixture::CURRENCY_USD,
+                'quote' => Fixture::CURRENCY_EUR,
+                'date'  => '2020-01-01 12:00:00',
+            ])
             ->willReturn(true);
 
         $find
@@ -54,7 +63,7 @@ class ExchangeRateProviderTest extends TestCase
 
         $provider = new ExchangeRateProvider($connection);
 
-        $this->assertEquals(null, $provider->get('EUR', 'USD', $date));
+        $this->assertEquals(null, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
 
     public function testGet_found(): void
@@ -66,7 +75,11 @@ class ExchangeRateProviderTest extends TestCase
         $find
             ->expects($this->once())
             ->method('execute')
-            ->with(['base' => 'EUR', 'quote' => 'USD', 'date' => '2020-01-01 12:00:00'])
+            ->with([
+                'base'  => Fixture::CURRENCY_EUR,
+                'quote' => Fixture::CURRENCY_USD,
+                'date'  => '2020-01-01 12:00:00',
+            ])
             ->willReturn(true);
 
         $find
@@ -84,7 +97,7 @@ class ExchangeRateProviderTest extends TestCase
 
         $provider = new ExchangeRateProvider($connection);
 
-        $this->assertEquals(1.25, $provider->get('EUR', 'USD', $date));
+        $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
 
     public function testGet_foundInvert(): void
@@ -96,7 +109,11 @@ class ExchangeRateProviderTest extends TestCase
         $find
             ->expects($this->at(0))
             ->method('execute')
-            ->with(['base' => 'USD', 'quote' => 'EUR', 'date' => '2020-01-01 12:00:00'])
+            ->with([
+                'base'  => Fixture::CURRENCY_USD,
+                'quote' => Fixture::CURRENCY_EUR,
+                'date'  => '2020-01-01 12:00:00',
+            ])
             ->willReturn(true);
 
         $find
@@ -108,7 +125,11 @@ class ExchangeRateProviderTest extends TestCase
         $find
             ->expects($this->at(2))
             ->method('execute')
-            ->with(['base' => 'EUR', 'quote' => 'USD', 'date' => '2020-01-01 12:00:00'])
+            ->with([
+                'base'  => Fixture::CURRENCY_EUR,
+                'quote' => Fixture::CURRENCY_USD,
+                'date'  => '2020-01-01 12:00:00',
+            ])
             ->willReturn(true);
 
         $find
@@ -126,7 +147,7 @@ class ExchangeRateProviderTest extends TestCase
 
         $provider = new ExchangeRateProvider($connection);
 
-        $this->assertEquals(0.8, $provider->get('USD', 'EUR', $date));
+        $this->assertEquals(0.8, $provider->get(Fixture::CURRENCY_USD, Fixture::CURRENCY_EUR, $date));
     }
 
     public function testGet_withFallback(): void
@@ -138,7 +159,11 @@ class ExchangeRateProviderTest extends TestCase
         $find
             ->expects($this->at(0))
             ->method('execute')
-            ->with(['base' => 'EUR', 'quote' => 'USD', 'date' => '2020-01-01 12:00:00'])
+            ->with([
+                'base'  => Fixture::CURRENCY_EUR,
+                'quote' => Fixture::CURRENCY_USD,
+                'date'  => '2020-01-01 12:00:00',
+            ])
             ->willReturn(true);
 
         $find
@@ -150,7 +175,11 @@ class ExchangeRateProviderTest extends TestCase
         $find
             ->expects($this->at(2))
             ->method('execute')
-            ->with(['base' => 'USD', 'quote' => 'EUR', 'date' => '2020-01-01 12:00:00'])
+            ->with([
+                'base'  => Fixture::CURRENCY_USD,
+                'quote' => Fixture::CURRENCY_EUR,
+                'date'  => '2020-01-01 12:00:00',
+            ])
             ->willReturn(true);
 
         $find
@@ -164,7 +193,12 @@ class ExchangeRateProviderTest extends TestCase
         $create
             ->expects($this->once())
             ->method('execute')
-            ->with(['base' => 'EUR', 'quote' => 'USD', 'date' => '2020-01-01 12:00:00', 'rate' => 1.25])
+            ->with([
+                'base'  => Fixture::CURRENCY_EUR,
+                'quote' => Fixture::CURRENCY_USD,
+                'date'  => '2020-01-01 12:00:00',
+                'rate'  => 1.25,
+            ])
             ->willReturn(true);
 
         $connection = $this->createMock(Connection::class);
@@ -184,11 +218,11 @@ class ExchangeRateProviderTest extends TestCase
         $fallback
             ->expects($this->once())
             ->method('get')
-            ->with('EUR', 'USD', $date)
+            ->with(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date)
             ->willReturn(1.25);
 
         $provider = new ExchangeRateProvider($connection, $fallback);
 
-        $this->assertEquals(1.25, $provider->get('EUR', 'USD', $date));
+        $this->assertEquals(1.25, $provider->get(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD, $date));
     }
 }

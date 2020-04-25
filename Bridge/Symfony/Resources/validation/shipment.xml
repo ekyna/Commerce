@@ -128,6 +128,9 @@
     </class>
 
     <class name="Ekyna\Component\Commerce\Shipment\Entity\ShipmentMethod">
+        <property name="taxGroup">
+            <constraint name="NotNull"/>
+        </property>
         <property name="prices">
             <constraint name="Valid"/>
         </property>

@@ -1,5 +1,5 @@
 {% block attributes %}
-{% spaceless %}
+{% apply spaceless %}
 {% for name, value in attr %}
     {% if name == 'confirm' %}
         data-confirm="{{ value|escape }}"
@@ -7,12 +7,12 @@
         {{ name }}{% if value is not empty %}="{{ value }}"{% endif %}
     {% endif %}
 {% endfor %}
-{% endspaceless %}
+{% endapply %}
 {% endblock attributes %}
 
 
 {% block lines_headers %}
-{% spaceless %}
+{% apply spaceless %}
     <th class="sale-detail-number">&nbsp;</th>
     <th class="sale-detail-designation">{{ view.translations.designation }}</th>
     <th>{{ view.translations.reference }}</th>
@@ -32,30 +32,30 @@
     {% if view.vars.show_margin -%}
     <th class="text-right">{{ view.translations.margin }}</th>
     {%- endif %}
-{% endspaceless %}
+{% endapply %}
 {% endblock lines_headers %}
 
 
 {% block line_quantity %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="sale-detail-quantity">
         <span id="{{ line.id }}_quantity">{{ line.quantity }}</span>
     </td>
-{% endspaceless %}
+{% endapply %}
 {% endblock line_quantity %}
 
 
 {% block line_taxes %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="text-right" id="{{ line.id }}_taxRates">
         {{- line.taxRates -}}
     </td>
-{% endspaceless %}
+{% endapply %}
 {% endblock line_taxes %}
 
 
 {% block line_discounts %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="text-right" id="{{ line.id }}_gross">
         {{- line.gross -}}
     </td>
@@ -65,12 +65,12 @@
     <td class="text-right" id="{{ line.id }}_discountAmount">
         {%- if line.discountAmount is not empty %}-{{- line.discountAmount -}}{% endif -%}
     </td>
-{% endspaceless %}
+{% endapply %}
 {% endblock line_discounts %}
 
 
 {% block line_public %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="text-right" id="{{ line.id }}_unit">
         {%- if line.unit is not null %}{{ line.unit }}{% endif -%}
     </td>
@@ -81,12 +81,12 @@
     {% if view.vars.show_margin -%}
     <td class="text-right" id="{{ line.id }}_margin">{{ line.margin }}</td>
     {%- endif %}
-{% endspaceless %}
+{% endapply %}
 {% endblock line_public %}
 
 
 {% block line_private %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="text-right" id="{{ line.id }}_unit">
         {%- if line.unit is not null %}{{ line.unit }}{% endif -%}
     </td>
@@ -96,12 +96,12 @@
     {% if view.vars.show_margin -%}
     <td class="text-right" id="{{ line.id }}_margin">{{ line.margin }}</td>
     {%- endif %}
-{% endspaceless %}
+{% endapply %}
 {% endblock line_private %}
 
 
 {% block line %}
-{% spaceless %}
+{% apply spaceless %}
     <tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
         <td class="sale-detail-number">{{ line.number }}</td>
         <td class="sale-detail-designation" id="{{ line.id }}_designation">
@@ -151,21 +151,21 @@
         {{ block('line') }}
     {%- endfor %}
     {# "line" variable has been overridden by childrens #}
-{% endspaceless %}
+{% endapply %}
 {% endblock line %}
 
 
 {% block line_information %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="sale-detail-information" colspan="{{ view.vars.columns_count - 1 }}">
         {{ line.vars.information|raw }}
     </td>
-{% endspaceless %}
+{% endapply %}
 {% endblock line_information %}
 
 
 {% block lines %}
-{% spaceless %}
+{% apply spaceless %}
     <thead>
         <tr>
             {{ block('lines_headers') }}
@@ -176,12 +176,12 @@
         {{ block('line') }}
     {%- endfor -%}
     </tbody>
-{% endspaceless %}
+{% endapply %}
 {% endblock lines %}
 
 
 {% block gross_totals %}
-{% spaceless %}
+{% apply spaceless %}
     <tbody>
         <tr>
             <th>&nbsp;</th>
@@ -202,12 +202,12 @@
             {%- if view.vars.show_margin %}<th>&nbsp;</th>{% endif -%}
         </tr>
     </tbody>
-{% endspaceless %}
+{% endapply %}
 {% endblock gross_totals %}
 
 
 {% block discount %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="sale-detail-number">{#{{ line.number }}#}</td>
     <td class="sale-detail-designation" id="{{ line.id }}_designation">
         <span>
@@ -222,12 +222,12 @@
     <td{% if view.vars.show_discounts %} colspan="4"{% endif %}>&nbsp;</td>
     <td class="text-right" id="{{ line.id }}_base">-{{ view.ati ? line.total : line.base }}</td>
     {%- if view.vars.show_margin %}<td>&nbsp;</td>{% endif -%}
-{% endspaceless %}
+{% endapply %}
 {% endblock discount %}
 
 
 {% block discounts %}
-{% spaceless %}
+{% apply spaceless %}
     <tbody>
     {% for line in view.discounts %}
         <tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
@@ -235,12 +235,12 @@
         </tr>
     {% endfor %}
     </tbody>
-{% endspaceless %}
+{% endapply %}
 {% endblock discounts %}
 
 
 {% block shipment %}
-{% spaceless %}
+{% apply spaceless %}
     <td class="sale-detail-number">{#{{ line.number }}#}</td>
     <td class="sale-detail-designation" id="{{ line.id }}_designation">
         <span>
@@ -255,12 +255,12 @@
     <td{% if view.vars.show_discounts %} colspan="4"{% endif %}>&nbsp;</td>
     <td class="text-right" id="{{ line.id }}_base">{{ view.ati ? line.total : line.base }}</td>
     {%- if view.vars.show_margin %}<td>&nbsp;</td>{% endif -%}
-{% endspaceless %}
+{% endapply %}
 {% endblock shipment %}
 
 
 {% block messages %}
-{% spaceless %}
+{% apply spaceless %}
     {% if view.messages is not empty %}
     <p>
         {%- for message in view.messages -%}
@@ -270,12 +270,12 @@
     {% else %}
         &nbsp;
     {% endif %}
-{% endspaceless %}
+{% endapply %}
 {% endblock messages %}
 
 
 {% block gran_totals %}
-{% spaceless %}
+{% apply spaceless %}
     <tbody>
     <tr>
         <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 3 : 2) }}"
@@ -303,12 +303,12 @@
     </tr>
     {%- endif %}
     </tbody>
-{% endspaceless %}
+{% endapply %}
 {% endblock gran_totals %}
 
 
 {% block taxes %}
-{% spaceless %}
+{% apply spaceless %}
     <table class="table table-striped sale-taxes table-alt-head">
         <thead>
         <tr>
@@ -325,35 +325,35 @@
         {% endfor %}
         </tbody>
     </table>
-{% endspaceless %}
+{% endapply %}
 {% endblock taxes %}
 
 
 {% block spacer %}
-{% spaceless %}
+{% apply spaceless %}
     <tbody>
     <tr class="sale-detail-spacer">
         <td colspan="{{ view.vars.columns_count }}">&nbsp;</td>
     </tr>
     </tbody>
-{% endspaceless %}
+{% endapply %}
 {% endblock spacer %}
 
 
 {% block alerts %}
-{% spaceless %}
+{% apply spaceless %}
     {%- for alert in view.alerts -%}
     <div class="alert alert-danger">
         <p>{{ alert|raw }}</p>
     </div>
     {%- endfor -%}
-{% endspaceless %}
+{% endapply %}
 {% endblock alerts %}
 
 
 
 {% block sale %}
-{% spaceless %}
+{% apply spaceless %}
     <div class="sale-view">
         <div class="table-responsive">
             <table class="table table-alt-head sale-detail">
@@ -385,5 +385,5 @@
 
         {{ block('alerts') }}
     </div>
-{% endspaceless %}
+{% endapply %}
 {% endblock sale %}

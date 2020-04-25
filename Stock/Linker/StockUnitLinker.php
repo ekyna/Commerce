@@ -3,11 +3,9 @@
 namespace Ekyna\Component\Commerce\Stock\Linker;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Util\Money;
-use Ekyna\Component\Commerce\Exception\StockLogicException;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
+use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -22,6 +20,11 @@ class StockUnitLinker implements StockUnitLinkerInterface
      * @var PersistenceHelperInterface
      */
     protected $persistenceHelper;
+
+    /**
+     * @var SupplierOrderCalculatorInterface
+     */
+    protected $calculator;
 
     /**
      * @var StockUnitUpdaterInterface
@@ -42,18 +45,21 @@ class StockUnitLinker implements StockUnitLinkerInterface
     /**
      * Constructor.
      *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockUnitUpdaterInterface  $stockUnitUpdater
-     * @param StockUnitResolverInterface $unitResolver
-     * @param CurrencyConverterInterface $currencyConverter
+     * @param PersistenceHelperInterface       $persistenceHelper
+     * @param SupplierOrderCalculatorInterface $calculator
+     * @param StockUnitUpdaterInterface        $stockUnitUpdater
+     * @param StockUnitResolverInterface       $unitResolver
+     * @param CurrencyConverterInterface       $currencyConverter
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
+        SupplierOrderCalculatorInterface $calculator,
         StockUnitUpdaterInterface $stockUnitUpdater,
         StockUnitResolverInterface $unitResolver,
         CurrencyConverterInterface $currencyConverter
     ) {
         $this->persistenceHelper = $persistenceHelper;
+        $this->calculator = $calculator;
         $this->stockUnitUpdater = $stockUnitUpdater;
         $this->unitResolver = $unitResolver;
         $this->currencyConverter = $currencyConverter;
@@ -62,58 +68,51 @@ class StockUnitLinker implements StockUnitLinkerInterface
     /**
      * @inheritdoc
      */
-    public function linkItem(SupplierOrderItemInterface $supplierOrderItem)
+    public function linkItem(SupplierOrderItemInterface $item): void
     {
-        if (!$supplierOrderItem->hasSubjectIdentity()) {
+        if (!$item->hasSubjectIdentity()) {
             return;
         }
 
         // Find 'unlinked' stock units ordered (+ Cached 'new' stock units look up)
-        if (null !== $stockUnit = $this->unitResolver->findLinkable($supplierOrderItem)) {
-            $stockUnit->setSupplierOrderItem($supplierOrderItem);
-        } else {
-            $stockUnit = $this->unitResolver->createBySubjectRelative($supplierOrderItem);
+        if (null === $unit = $this->unitResolver->findLinkable($item)) {
+            // Not found -> create a new stock unit
+            $unit = $this->unitResolver->createBySubjectRelative($item);
         }
 
-        $stockUnit
-            ->setSupplierOrderItem($supplierOrderItem)
-            ->setEstimatedDateOfArrival($supplierOrderItem->getOrder()->getEstimatedDateOfArrival());
+        $unit
+            ->setSupplierOrderItem($item)
+            ->setWarehouse($item->getOrder()->getWarehouse());
 
-        $this->updatePrice($stockUnit);
+        $this->stockUnitUpdater->updateOrdered($unit, $item->getQuantity(), false);
 
-        $this->stockUnitUpdater->updateOrdered($stockUnit, $supplierOrderItem->getQuantity(), false);
+        $this->updateData($item);
     }
 
     /**
      * @inheritdoc
      */
-    public function applyItem(SupplierOrderItemInterface $supplierOrderItem)
+    public function applyItem(SupplierOrderItemInterface $item): bool // TODO void
     {
-        if (!$supplierOrderItem->hasSubjectIdentity()) {
+        if (!$item->hasSubjectIdentity()) {
             return false;
         }
 
         // Supplier order item has been previously linked to a stock unit.
-        $stockUnit = $supplierOrderItem->getStockUnit();
+        $unit = $item->getStockUnit();
 
         $changed = false;
 
-        // Update net price if needed
-        if ($this->persistenceHelper->isChanged($supplierOrderItem, 'netPrice')) {
-            if ($this->updatePrice($stockUnit)) {
-                $this->persistenceHelper->persistAndRecompute($stockUnit, false);
+        // Update ordered quantity if needed
+        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
+            $cs = $this->persistenceHelper->getChangeSet($item, 'quantity');
+            if (0 != $cs[1] - $cs[0]) { // TODO Use packaging format
+                $this->stockUnitUpdater->updateOrdered($unit, $item->getQuantity(), false);
                 $changed = true;
             }
         }
 
-        // Update ordered quantity if needed
-        if ($this->persistenceHelper->isChanged($supplierOrderItem, 'quantity')) {
-            $cs = $this->persistenceHelper->getChangeSet($supplierOrderItem, 'quantity');
-            if (0 != $cs[1] - $cs[0]) { // TODO Use packaging format
-                $this->stockUnitUpdater->updateOrdered($stockUnit, $supplierOrderItem->getQuantity(), false);
-                $changed = true;
-            }
-        }
+        $this->updateData($item);
 
         return $changed;
     }
@@ -121,58 +120,48 @@ class StockUnitLinker implements StockUnitLinkerInterface
     /**
      * @inheritdoc
      */
-    public function unlinkItem(SupplierOrderItemInterface $supplierOrderItem)
+    public function unlinkItem(SupplierOrderItemInterface $item): void
     {
-        if (!$supplierOrderItem->hasSubjectIdentity()) {
+        if (!$item->hasSubjectIdentity()) {
             return;
         }
 
-        if (null === $stockUnit = $supplierOrderItem->getStockUnit()) {
+        if (null === $unit = $item->getStockUnit()) {
             return;
         }
 
-        // Unlink stock unit by setting supplier order item to null and ordered quantity to zero
-        $stockUnit
+        $unit
+            // Set supplier order item to null
             ->setSupplierOrderItem(null)
+            ->setWarehouse(null)
+            // Clear calculated data from supplier order item
             ->setNetPrice(0)
+            ->setShippingPrice(0)
             ->setEstimatedDateOfArrival(null);
 
-        $this->stockUnitUpdater->updateOrdered($stockUnit, 0, false);
+        // Set ordered quantity to zero
+        $this->stockUnitUpdater->updateOrdered($unit, 0, false);
     }
 
     /**
-     * Updates the stock unit price.
-     *
-     * @param StockUnitInterface $stockUnit
-     *
-     * @return bool Whether or not the net price has been updated.
-     *
-     * @throws \Ekyna\Component\Commerce\Exception\LogicException
+     * @inheritdoc
      */
-    private function updatePrice(StockUnitInterface $stockUnit)
+    public function updateData(SupplierOrderItemInterface $item): void
     {
-        $price = 0;
-
-        if (null !== $item = $stockUnit->getSupplierOrderItem()) {
-            if (null === $order = $item->getOrder()) {
-                throw new StockLogicException("Supplier order item's order must be set at this point.");
-            }
-
-            $currency = $order->getCurrency()->getCode();
-            $date = $order->getPaymentDate();
-            if ($date > new \DateTime()) {
-                $date = null;
-            }
-
-            $price = $this->currencyConverter->convert($item->getNetPrice(), $currency, null, $date);
+        if (!$item->hasSubjectIdentity()) {
+            return;
         }
 
-        if (0 !== Money::compare($stockUnit->getNetPrice(), $price, $this->currencyConverter->getDefaultCurrency())) {
-            $stockUnit->setNetPrice($price);
-
-            return true;
+        if (null === $unit = $item->getStockUnit()) {
+            return;
         }
 
-        return false;
+        $price = $this->calculator->calculateStockUnitNetPrice($item);
+        $shipping = $this->calculator->calculateStockUnitShippingPrice($item);
+        $eda = $item->getOrder()->getEstimatedDateOfArrival();
+
+        $this->stockUnitUpdater->updateNetPrice($unit, $price);
+        $this->stockUnitUpdater->updateShippingPrice($unit, $shipping);
+        $this->stockUnitUpdater->updateEstimatedDateOfArrival($unit, $eda);
     }
 }

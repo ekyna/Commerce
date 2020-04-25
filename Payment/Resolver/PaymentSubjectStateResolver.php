@@ -80,8 +80,9 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         if (!$subject->hasPayments()) {
             // CANCELED subject is invoiceable and is fully credited
             if (
-                $subject instanceof InvoiceSubjectInterface
-                && ($subject->getInvoiceState() === InvoiceStates::STATE_CREDITED)
+                $subject instanceof InvoiceSubjectInterface &&
+                $subject->isFullyInvoiced() &&
+                $subject->getInvoiceState() === InvoiceStates::STATE_CREDITED
             ) {
                 return PaymentStates::STATE_CANCELED;
             }
@@ -91,8 +92,8 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         }
 
         // This method uses the calculated sale's payment totals.
-        // Makes sure to update them before calling of this method.
-        // -> use SaleUpdater::updateTotals for example
+        // Makes sure to update them before calling this method.
+        // -> use SaleUpdater::updateTotals
 
         $currency = $subject->getCurrency()->getCode();
         [$total, $paid, $refunded, $deposit, $pending] = $this->paymentCalculator->getPaymentAmounts($subject, $currency);
@@ -112,11 +113,23 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
             $paid && (0 == $accepted) && (0 == $expired) &&
             (0 === Money::compare($paid - $refunded, $total, $currency))
         ) {
-            // REFUNDED Fully if refunded amount equals total
-            if (0 == $total || 0 === Money::compare($refunded, $total, $currency)) {
-                return PaymentStates::STATE_REFUNDED;
+            // If invoice subject and fully invoiced (ignoring credits)
+            if ($subject instanceof InvoiceSubjectInterface) {
+                if ($subject->isFullyInvoiced()) {
+                    // REFUNDED If refunded amount equals total
+                    if ((0 == $total) || (0 === Money::compare($refunded, $total, $currency))) {
+                        return PaymentStates::STATE_REFUNDED;
+                    }
+
+                    // COMPLETED
+                    return PaymentStates::STATE_COMPLETED;
+                }
+
+                // ACCEPTED
+                return PaymentStates::STATE_CAPTURED;
             }
 
+            // COMPLETED
             return PaymentStates::STATE_COMPLETED;
         }
 

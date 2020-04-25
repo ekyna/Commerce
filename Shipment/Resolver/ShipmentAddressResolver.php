@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Transformer\ShipmentAddressTransformer;
@@ -33,7 +34,7 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
     /**
      * @inheritDoc
      */
-    public function getCountryRepository()
+    public function getCountryRepository(): CountryRepositoryInterface
     {
         return $this->transformer->getCountryRepository();
     }
@@ -41,7 +42,7 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
     /**
      * @inheritDoc
      */
-    public function resolveSenderAddress(ShipmentInterface $shipment, bool $ignoreRelay = false)
+    public function resolveSenderAddress(ShipmentInterface $shipment, bool $ignoreRelay = false): AddressInterface
     {
         if (!$ignoreRelay && $shipment->isReturn() && null !== $address = $shipment->getRelayPoint()) {
             return $address;
@@ -61,9 +62,9 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
     /**
      * @inheritDoc
      */
-    public function resolveReceiverAddress(ShipmentInterface $shipment, bool $ignoreRelay = false)
+    public function resolveReceiverAddress(ShipmentInterface $shipment, bool $ignoreRelay = false): AddressInterface
     {
-        if (!$ignoreRelay && !$shipment->isReturn() && null !== $address = $shipment->getRelayPoint()) {
+        if (!$ignoreRelay && !$shipment->isReturn() && ($address = $shipment->getRelayPoint())) {
             return $address;
         }
 
@@ -83,7 +84,7 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
      *
      * @return AddressInterface $address
      */
-    abstract protected function getCompanyAddress();
+    abstract protected function getCompanyAddress(): AddressInterface;
 
     /**
      * Returns the delivery address of the shipment's sale.
@@ -93,7 +94,7 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
      * @return AddressInterface
      * @throws LogicException
      */
-    private function getSaleDeliveryAddress(ShipmentInterface $shipment)
+    private function getSaleDeliveryAddress(ShipmentInterface $shipment): AddressInterface
     {
         if (null === $sale = $shipment->getSale()) {
             throw new LogicException("Shipment's sale must be set at this point.");

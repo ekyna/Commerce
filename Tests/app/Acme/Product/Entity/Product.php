@@ -79,7 +79,7 @@ class Product implements Stock\StockSubjectInterface
     /**
      * Sets the stock composition.
      *
-     * @param Stock\StockComponent[] $components
+     * @param Stock\StockComponent[]|Stock\StockComponent[][] $components
      *
      * @return Product
      */

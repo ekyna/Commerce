@@ -108,4 +108,11 @@ interface InvoiceSubjectInterface
      * @return \DateTime|null
      */
     public function getInvoicedAt($latest = false);
+
+    /**
+     * Returns whether the sale has been fully invoiced (ignoring credits).
+     *
+     * @return bool
+     */
+    public function isFullyInvoiced(): bool;
 }

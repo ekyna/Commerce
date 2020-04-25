@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Shipment\Model;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
-use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Resource\Model as Resource;
 
 /**

@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Tests\Payment\Model;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Order\Entity\Order;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -60,7 +61,7 @@ class PaymentSubjectTraitTest extends TestCase
     ): SaleInterface {
         /** @var CurrencyInterface|MockObject $currency */
         $currency = $this->createMock(CurrencyInterface::class);
-        $currency->method('getCode')->willReturn('EUR');
+        $currency->method('getCode')->willReturn(Fixture::CURRENCY_EUR);
 
         return (new Order())
             ->setCurrency($currency)

@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Tests\Invoice\Calculator;
 
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculator;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 
 /**
@@ -31,57 +31,104 @@ class InvoiceSubjectCalculatorTest extends TestCase
     }
 
     /**
-     * @param bool   $expected
-     * @param mixed $element
+     * @param array $order
+     * @param array $result
      *
      * @dataProvider provide_isInvoiced
      */
-    public function test_isInvoiced(bool $expected, $element): void
+    public function test_isInvoiced(array $order, array $result): void
     {
-        $actual = $this->invoiceCalculator->isInvoiced($element);
+        Fixture::order($order);
 
-        $this->assertEquals($expected, $actual);
+        foreach ($result as $reference => $expected) {
+            /** @noinspection PhpParamsInspection */
+            $this->assertEquals($expected, $this->invoiceCalculator->isInvoiced(Fixture::get($reference)));
+        }
     }
 
     public function provide_isInvoiced(): \Generator
     {
-        // Item not invoiced
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(5)->setOrder($order);
-        yield [false, $orderItem];
+        yield 'Item not invoiced' => [
+            [
+                'items' => [
+                    ['_reference' => '#item', 'quantity' => 5],
+                ],
+            ],
+            ['#item' => false],
+        ];
 
-        // Item invoiced
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(5)->setOrder($order);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderItem)->setQuantity(5);
-        yield [true, $orderItem];
+        yield 'Item invoiced' => [
+            [
+                'items'    => [
+                    ['_reference' => '#item', 'quantity' => 5],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#item', 'quantity' => 5]]],
+                ],
+            ],
+            ['#item' => true],
+        ];
 
-        // Child item not invoiced
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(5)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(10)->setParent($orderItem);
-        yield [false, $childItem];
+        yield 'Child item not invoiced' => [
+            [
+                'items' => [
+                    [
+                        'quantity' => 5,
+                        'children' => [
+                            ['_reference' => '#item', 'quantity' => 10],
+                        ],
+                    ],
+                ],
+            ],
+            ['#item' => false],
+        ];
 
-        // Child item invoiced
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(5)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(10)->setParent($orderItem);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(5);
-        yield [true, $childItem];
+        yield 'Child item invoiced' => [
+            [
+                'items'    => [
+                    [
+                        'quantity' => 5,
+                        'children' => [
+                            ['_reference' => '#item', 'quantity' => 10],
+                        ],
+                    ],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#item', 'quantity' => 5]]],
+                ],
+            ],
+            ['#item' => true],
+        ];
 
-        // Adjustment not invoiced
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
-        yield [false, $orderAdjustment];
+        yield 'Adjustment not invoiced' => [
+            [
+                'discounts' => [
+                    [
+                        '_reference' => '#adjustment',
+                        'amount'     => 10,
+                    ],
+                ],
+                /*'invoices'    => [
+                    ['lines' => [['item' => '#item', 'quantity' => 5]]],
+                ],*/
+            ],
+            ['#adjustment' => false],
+        ];
 
-        // Adjustment invoiced
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
-        $invoice         = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderAdjustment)->setQuantity(1);
-        yield [true, $orderAdjustment];
+        yield 'Adjustment invoiced' => [
+            [
+                'discounts' => [
+                    [
+                        '_reference' => '#adjustment',
+                        'amount'     => 10,
+                    ],
+                ],
+                'invoices'    => [
+                    ['lines' => [['adjustment' => '#adjustment', 'quantity' => 1]]],
+                ],
+            ],
+            ['#adjustment' => true],
+        ];
     }
 
     /**
@@ -89,6 +136,8 @@ class InvoiceSubjectCalculatorTest extends TestCase
      * @param mixed $element
      *
      * @dataProvider provide_calculateInvoiceableQuantity
+     *
+     * @TODO Rework like test_isInvoiced
      */
     public function test_calculateInvoiceableQuantity(float $expected, object $element): void
     {
@@ -100,56 +149,101 @@ class InvoiceSubjectCalculatorTest extends TestCase
     public function provide_calculateInvoiceableQuantity(): \Generator
     {
         // Items
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
+        $orderItem = Fixture::orderItem([
+            'order'    => [],
+            'quantity' => 10,
+        ]);
         yield [10, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderItem)->setQuantity(5);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 10,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderItem,
+            'quantity' => 5,
+        ]);
         yield [5, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderItem)->setQuantity(10);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 10,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderItem,
+            'quantity' => 10, // TODO
+        ]);
         yield [0, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(2)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(5)->setParent($orderItem);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(5);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 2,
+        ]);
+        $childItem = Fixture::orderItem([
+            'quantity' => 5,
+        ])->setParent($orderItem);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 5,
+        ]);
         yield [5, $childItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(5)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(10)->setParent($orderItem);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(30);
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(10);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 5,
+        ]);
+        $childItem = Fixture::orderItem([
+            'quantity' => 10,
+        ])->setParent($orderItem);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 30,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 10,
+        ]);
         yield [10, $childItem];
 
         // Adjustments
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
+        $order = Fixture::order();
+        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
         yield [1, $orderAdjustment];
 
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
-        $invoice         = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderAdjustment)->setQuantity(1);
+        $order = Fixture::order();
+        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderAdjustment,
+            'quantity' => 1,
+        ]);
         yield [1, $orderAdjustment];
 
         // Shipment
-        $order = Fixtures::createOrder();
-        yield [1, $order];
+        yield [1, Fixture::order()];
 
-        $order   = Fixtures::createOrder();
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $order)->setQuantity(1);
+        $order = Fixture::order();
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $order,
+            'quantity' => 1,
+        ]);
         yield [0, $order];
     }
 
@@ -158,6 +252,8 @@ class InvoiceSubjectCalculatorTest extends TestCase
      * @param mixed $element
      *
      * @dataProvider provide_calculateInvoicedQuantity
+     *
+     * @TODO Rework like test_isInvoiced
      */
     public function test_calculateInvoicedQuantity(float $expected, object $element): void
     {
@@ -169,56 +265,102 @@ class InvoiceSubjectCalculatorTest extends TestCase
     public function provide_calculateInvoicedQuantity(): \Generator
     {
         // Items
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
+        $orderItem = Fixture::orderItem([
+            'order'    => [],
+            'quantity' => 10,
+        ]);
         yield [0, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderItem)->setQuantity(5);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 10,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderItem,
+            'quantity' => 5,
+        ]);
         yield [5, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderItem)->setQuantity(10);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 10,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderItem,
+            'quantity' => 10,
+        ]);
         yield [10, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(2)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(5)->setParent($orderItem);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(5);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 2,
+        ]);
+        $childItem = Fixture::orderItem([
+            'quantity' => 5,
+        ])->setParent($orderItem);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 5,
+        ]);
         yield [5, $childItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(5)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(10)->setParent($orderItem);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(30);
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(10);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 5,
+        ]);
+        $childItem = Fixture::orderItem([
+            'quantity' => 10,
+        ])->setParent($orderItem);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 30,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 10,
+        ]);
         yield [40, $childItem];
 
         // Adjustments
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
+        $order = Fixture::order();
+        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
         yield [0, $orderAdjustment];
 
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
-        $invoice         = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderAdjustment)->setQuantity(1);
+        $order = Fixture::order();
+        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderAdjustment,
+            'quantity' => 1,
+        ]);
         yield [1, $orderAdjustment];
 
         // Shipment
-        $order = Fixtures::createOrder();
+        $order = Fixture::order();
         yield [0, $order];
 
-        $order   = Fixtures::createOrder();
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $order)->setQuantity(1);
+        $order = Fixture::order();
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $order,
+            'quantity' => 1,
+        ]);
         yield [1, $order];
     }
 
@@ -227,6 +369,8 @@ class InvoiceSubjectCalculatorTest extends TestCase
      * @param mixed $element
      *
      * @dataProvider provide_calculateCreditedQuantity
+     *
+     * @TODO Rework like test_isInvoiced
      */
     public function test_calculateCreditedQuantity(float $expected, object $element): void
     {
@@ -238,125 +382,191 @@ class InvoiceSubjectCalculatorTest extends TestCase
     public function provide_calculateCreditedQuantity(): \Generator
     {
         // Items
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
+        $orderItem = Fixture::orderItem([
+            'order'    => [],
+            'quantity' => 10,
+        ]);
         yield [0, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderItem)->setQuantity(5);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 10,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderItem,
+            'quantity' => 5,
+        ]);
         yield [0, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderItem)->setQuantity(10);
-        $credit = Fixtures::createInvoice($order, true);
-        Fixtures::createInvoiceLine($credit, $orderItem)->setQuantity(5);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 10,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderItem,
+            'quantity' => 10,
+        ]);
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        Fixture::invoiceLine([
+            'invoice'  => $credit,
+            'target'   => $orderItem,
+            'quantity' => 5,
+        ]);
         yield [5, $orderItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(2)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(5)->setParent($orderItem);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(5);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 2,
+        ]);
+        $childItem = Fixture::orderItem([
+            'quantity' => 5,
+        ])->setParent($orderItem);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 5,
+        ]);
         yield [0, $childItem];
 
-        $order     = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(5)->setOrder($order);
-        $childItem = Fixtures::createOrderItem(10)->setParent($orderItem);
-        $invoice   = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(30);
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $childItem)->setQuantity(10);
-        $credit = Fixtures::createInvoice($order, true);
-        Fixtures::createInvoiceLine($credit, $childItem)->setQuantity(10);
+        $order = Fixture::order();
+        $orderItem = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 5,
+        ]);
+        $childItem = Fixture::orderItem([
+            'quantity' => 10,
+        ])->setParent($orderItem);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 30,
+        ]);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $childItem,
+            'quantity' => 10,
+        ]);
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        Fixture::invoiceLine([
+            'invoice'  => $credit,
+            'target'   => $childItem,
+            'quantity' => 10,
+        ]);
         yield [10, $childItem];
 
         // Adjustments
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
+        $order = Fixture::order();
+        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
         yield [0, $orderAdjustment];
 
-        $order           = Fixtures::createOrder();
-        $orderAdjustment = Fixtures::createOrderDiscountAdjustment(10)->setOrder($order);
-        $invoice         = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $orderAdjustment)->setQuantity(1);
-        $credit = Fixtures::createInvoice($order, true);
-        Fixtures::createInvoiceLine($credit, $orderAdjustment)->setQuantity(1);
+        $order = Fixture::order();
+        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $orderAdjustment,
+            'quantity' => 1,
+        ]);
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        Fixture::invoiceLine([
+            'invoice'  => $credit,
+            'target'   => $orderAdjustment,
+            'quantity' => 1,
+        ]);
         yield [1, $orderAdjustment];
 
         // Shipment
-        $order = Fixtures::createOrder();
+        $order = Fixture::order();
         yield [0, $order];
 
-        $order   = Fixtures::createOrder();
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $order)->setQuantity(1);
-        $credit = Fixtures::createInvoice($order, true);
-        Fixtures::createInvoiceLine($credit, $order)->setQuantity(1);
+        $order = Fixture::order();
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $order,
+            'quantity' => 1,
+        ]);
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        Fixture::invoiceLine([
+            'invoice'  => $credit,
+            'target'   => $order,
+            'quantity' => 1,
+        ]);
         yield [1, $order];
     }
 
     /**
-     * @param float  $expected
-     * @param mixed  $order
-     * @param string $currency
+     * @param array $order
+     * @param array $amounts
      *
      * @dataProvider provide_calculateInvoiceTotal
+     *
+     * @TODO Rework like test_isInvoiced
      */
-    public function test_calculateInvoiceTotal(float $expected, object $order, string $currency): void
+    public function test_calculateInvoiceTotal(array $order, array $amounts): void
     {
-        $actual = $this->invoiceCalculator->calculateInvoiceTotal($order, $currency);
-        $this->assertEquals($expected, $actual);
+        $order = Fixture::order($order);
+
+        foreach ($amounts as $currency => $expected) {
+            $actual = $this->invoiceCalculator->calculateInvoiceTotal($order, $currency);
+            $this->assertEquals($expected, $actual);
+        }
     }
 
     public function provide_calculateInvoiceTotal(): \Generator
     {
-        $order = Fixtures::createOrder('EUR');
+        yield 'Case 1' => [
+            [
+                'invoices' => [
+                    ['grand_total' => 100],
+                    ['grand_total' => 50],
+                ],
+            ],
+            [
+                Fixture::CURRENCY_EUR => 150,
+                Fixture::CURRENCY_USD => 187.50,
+            ],
+        ];
 
-        $invoice = Fixtures::createInvoice($order);
-        $invoice->setCurrency('EUR');
-        $invoice->setGrandTotal(100);
+        yield 'Case 2' => [
+            [
+                'currency' => Fixture::CURRENCY_USD,
+                'invoices' => [
+                    ['currency' => Fixture::CURRENCY_USD, 'grand_total' => 100],
+                    ['currency' => Fixture::CURRENCY_USD, 'grand_total' => 50],
+                    ['currency' => Fixture::CURRENCY_USD, 'grand_total' => 50, 'credit' => true],
+                ],
+            ],
+            [
+                Fixture::CURRENCY_EUR => 120,
+                Fixture::CURRENCY_USD => 150,
+            ],
+        ];
 
-        $invoice = Fixtures::createInvoice($order);
-        $invoice->setCurrency('EUR');
-        $invoice->setGrandTotal(50);
-
-        yield [150.00, $order, 'EUR'];
-        yield [187.50, $order, 'USD'];
-
-        $order = Fixtures::createOrder('USD');
-
-        $invoice = Fixtures::createInvoice($order);
-        $invoice->setCurrency('USD');
-        $invoice->setGrandTotal(100);
-
-        $invoice = Fixtures::createInvoice($order);
-        $invoice->setCurrency('USD');
-        $invoice->setGrandTotal(50);
-
-        $credit = Fixtures::createInvoice($order, true);
-        $credit->setCurrency('USD');
-        $credit->setGrandTotal(50);
-
-        yield [150.00, $order, 'USD'];
-        yield [120.00, $order, 'EUR'];
-
-        $order = Fixtures::createOrder('USD');
-        $order->setExchangeRate(1.12);
-
-        $invoice = Fixtures::createInvoice($order);
-        $invoice->setCurrency('USD');
-        $invoice->setGrandTotal(100);
-
-        $invoice = Fixtures::createInvoice($order);
-        $invoice->setCurrency('USD');
-        $invoice->setGrandTotal(50);
-
-        yield [133.93, $order, 'EUR'];
-        yield [150.00, $order, 'USD'];
+        yield 'Case 3' => [
+            [
+                'currency'      => Fixture::CURRENCY_USD,
+                'exchange_rate' => 1.12,
+                'invoices'      => [
+                    ['currency' => Fixture::CURRENCY_USD, 'grand_total' => 100],
+                    ['currency' => Fixture::CURRENCY_USD, 'grand_total' => 50],
+                ],
+            ],
+            [
+                Fixture::CURRENCY_EUR => 133.93,
+                Fixture::CURRENCY_USD => 150,
+            ],
+        ];
     }
 
     /**
@@ -365,6 +575,8 @@ class InvoiceSubjectCalculatorTest extends TestCase
      * @param string $currency
      *
      * @dataProvider provide_calculateCreditTotal
+     *
+     * @TODO Rework like test_isInvoiced
      */
     public function test_calculateCreditTotal(float $expected, object $order, string $currency): void
     {
@@ -374,49 +586,53 @@ class InvoiceSubjectCalculatorTest extends TestCase
 
     public function provide_calculateCreditTotal(): \Generator
     {
-        $order = Fixtures::createOrder('EUR');
+        $order = Fixture::order();
 
-        $credit = Fixtures::createInvoice($order, true);
-        $credit->setCurrency('EUR');
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        $credit->setCurrency(Fixture::CURRENCY_EUR);
         $credit->setGrandTotal(100);
 
-        $credit = Fixtures::createInvoice($order, true);
-        $credit->setCurrency('EUR');
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        $credit->setCurrency(Fixture::CURRENCY_EUR);
         $credit->setGrandTotal(50);
 
-        yield [150.00, $order, 'EUR'];
-        yield [187.50, $order, 'USD'];
+        yield [150.00, $order, Fixture::CURRENCY_EUR];
+        yield [187.50, $order, Fixture::CURRENCY_USD];
 
-        $order = Fixtures::createOrder('USD');
+        $order = Fixture::order([
+            'currency' => Fixture::CURRENCY_USD,
+        ]);
 
-        $credit = Fixtures::createInvoice($order, true);
-        $credit->setCurrency('USD');
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        $credit->setCurrency(Fixture::CURRENCY_USD);
         $credit->setGrandTotal(100);
 
-        $credit = Fixtures::createInvoice($order, true);
-        $credit->setCurrency('USD');
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        $credit->setCurrency(Fixture::CURRENCY_USD);
         $credit->setGrandTotal(50);
 
-        $invoice = Fixtures::createInvoice($order);
-        $invoice->setCurrency('USD');
+        $invoice = Fixture::invoice(['order' => $order]);
+        $invoice->setCurrency(Fixture::CURRENCY_USD);
         $invoice->setGrandTotal(50);
 
-        yield [150.00, $order, 'USD'];
-        yield [120.00, $order, 'EUR'];
+        yield [150.00, $order, Fixture::CURRENCY_USD];
+        yield [120.00, $order, Fixture::CURRENCY_EUR];
 
-        $order = Fixtures::createOrder('USD');
+        $order = Fixture::order([
+            'currency' => Fixture::CURRENCY_USD,
+        ]);
         $order->setExchangeRate(1.12);
 
-        $credit = Fixtures::createInvoice($order, true);
-        $credit->setCurrency('USD');
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        $credit->setCurrency(Fixture::CURRENCY_USD);
         $credit->setGrandTotal(100);
 
-        $credit = Fixtures::createInvoice($order, true);
-        $credit->setCurrency('USD');
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        $credit->setCurrency(Fixture::CURRENCY_USD);
         $credit->setGrandTotal(50);
 
-        yield [133.93, $order, 'EUR'];
-        yield [150.00, $order, 'USD'];
+        yield [133.93, $order, Fixture::CURRENCY_EUR];
+        yield [150.00, $order, Fixture::CURRENCY_USD];
     }
 
     /**
@@ -424,6 +640,8 @@ class InvoiceSubjectCalculatorTest extends TestCase
      * @param mixed $order
      *
      * @dataProvider provide_buildInvoiceQuantityMap
+     *
+     * @TODO Rework like test_isInvoiced
      */
     public function test_buildInvoiceQuantityMap(array $expected, object $order): void
     {
@@ -434,9 +652,15 @@ class InvoiceSubjectCalculatorTest extends TestCase
 
     public function provide_buildInvoiceQuantityMap(): \Generator
     {
-        $order = Fixtures::createOrder();
-        $item1 = Fixtures::createOrderItem(10)->setOrder($order);
-        Fixtures::setId($item1, 1);
+        Fixture::clear();
+
+        $order = Fixture::order([
+            'items' => [
+                [
+                    'quantity' => 10,
+                ],
+            ],
+        ]);
         yield [
             [
                 1 => [
@@ -448,26 +672,49 @@ class InvoiceSubjectCalculatorTest extends TestCase
             $order,
         ];
 
-        $order = Fixtures::createOrder();
+        Fixture::clear();
 
-        $item0 = Fixtures::createOrderItem(5)->setOrder($order);
-        Fixtures::setId($item0, 1);
+        $order = Fixture::order();
 
-        $item1 = Fixtures::createOrderItem(5)->setOrder($order)->setCompound(true);
-        Fixtures::setId($item1, 2);
+        $item0 = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 5,
+        ]);
 
-        $item2 = Fixtures::createOrderItem(10)->setParent($item1);
-        Fixtures::setId($item2, 3);
+        $item1 = Fixture::orderItem([
+            'order'    => $order,
+            'quantity' => 5,
+        ])->setCompound(true);
 
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $item0)->setQuantity(5);
-        Fixtures::createInvoiceLine($invoice, $item2)->setQuantity(30);
+        $item2 = Fixture::orderItem([
+            'quantity' => 10,
+        ])->setParent($item1);
 
-        $invoice = Fixtures::createInvoice($order);
-        Fixtures::createInvoiceLine($invoice, $item2)->setQuantity(10);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $item0,
+            'quantity' => 5,
+        ]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $item2,
+            'quantity' => 30,
+        ]);
 
-        $credit = Fixtures::createInvoice($order, true);
-        Fixtures::createInvoiceLine($credit, $item2)->setQuantity(10);
+        $invoice = Fixture::invoice(['order' => $order]);
+        Fixture::invoiceLine([
+            'invoice'  => $invoice,
+            'target'   => $item2,
+            'quantity' => 10,
+        ]);
+
+        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
+        Fixture::invoiceLine([
+            'invoice'  => $credit,
+            'target'   => $item2,
+            'quantity' => 10,
+        ]);
 
         yield [
             [

@@ -18,7 +18,7 @@ class QuoteItemAdjustment extends AbstractSaleItemAdjustment implements QuoteIte
     /**
      * @inheritDoc
      */
-    protected function assertSaleItemClass(SaleItemInterface $item)
+    protected function assertSaleItemClass(SaleItemInterface $item): void
     {
         if (!$item instanceof QuoteItemInterface) {
             throw new InvalidArgumentException("Expected instance of " . QuoteItemInterface::class);

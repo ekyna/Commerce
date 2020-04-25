@@ -10,6 +10,13 @@ namespace Ekyna\Component\Commerce\Common\Model;
 interface ExchangeSubjectInterface extends CurrencySubjectInterface
 {
     /**
+     * Returns the subject's base currency.
+     *
+     * @return string|null
+     */
+    public function getBaseCurrency(): ?string;
+
+    /**
      * Returns the exchange rate (DEFAULT/SUBJECT currencies pair).
      *
      * @return float|null

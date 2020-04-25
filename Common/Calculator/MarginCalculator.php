@@ -3,12 +3,18 @@
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
+use Ekyna\Component\Commerce\Common\Model\Margin;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as Item;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
+use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
 use Ekyna\Component\Commerce\Subject\Guesser\PurchaseCostGuesserInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
@@ -17,82 +23,179 @@ use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
  * Class MarginCalculator
  * @package Ekyna\Component\Commerce\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * TODO Factory / cache
  */
 class MarginCalculator implements MarginCalculatorInterface
 {
     /**
-     * @var AmountCalculatorInterface
+     * @var string
      */
-    private $amountCalculator;
+    protected $currency;
+
+    /**
+     * @var bool
+     */
+    protected $profit;
+
+    /**
+     * @var StatFilter
+     */
+    protected $filter;
+
+    /**
+     * @var AmountCalculatorFactory
+     */
+    protected $calculatorFactory;
+
+    /**
+     * @var InvoiceSubjectCalculatorInterface
+     */
+    protected $invoiceCalculator;
 
     /**
      * @var WeightCalculatorInterface
      */
-    private $weightCalculator;
+    protected $weightCalculator;
 
     /**
      * @var ShipmentPriceResolverInterface
      */
-    private $shipmentPriceResolver;
+    protected $shipmentPriceResolver;
 
     /**
      * @var ShipmentAddressResolverInterface
      */
-    private $shipmentAddressResolver;
+    protected $shipmentAddressResolver;
 
     /**
      * @var SubjectHelperInterface
      */
-    private $subjectHelper;
+    protected $subjectHelper;
 
     /**
      * @var CurrencyConverterInterface
      */
-    private $currencyConverter;
+    protected $currencyConverter;
 
     /**
      * @var PurchaseCostGuesserInterface
      */
-    private $purchaseCostGuesser;
+    protected $purchaseCostGuesser;
+
+    /**
+     * @var AmountCalculatorInterface
+     */
+    protected $amountCalculator;
+
+    /**
+     * @var Margin[]
+     */
+    private $cache;
 
 
     /**
      * Constructor.
      *
-     * @param AmountCalculatorInterface        $amountCalculator
-     * @param WeightCalculatorInterface        $weightCalculator
-     * @param ShipmentPriceResolverInterface   $shipmentPriceResolver
-     * @param ShipmentAddressResolverInterface $shipmentAddressResolver
-     * @param SubjectHelperInterface           $subjectHelper
-     * @param CurrencyConverterInterface       $currencyConverter
-     * @param PurchaseCostGuesserInterface     $purchaseCostGuesser
+     * @param string          $currency
+     * @param bool            $profit
+     * @param StatFilter|null $filter
      */
-    public function __construct(
-        AmountCalculatorInterface $amountCalculator,
-        WeightCalculatorInterface $weightCalculator,
-        ShipmentPriceResolverInterface $shipmentPriceResolver,
-        ShipmentAddressResolverInterface $shipmentAddressResolver,
-        SubjectHelperInterface $subjectHelper,
-        CurrencyConverterInterface $currencyConverter,
-        PurchaseCostGuesserInterface $purchaseCostGuesser
-    ) {
-        $this->amountCalculator = $amountCalculator;
+    public function __construct(string $currency, bool $profit, StatFilter $filter = null)
+    {
+        $this->currency = $currency;
+        $this->profit = $profit;
+        $this->filter = $filter;
+        $this->cache = [];
+    }
+
+    /**
+     * Sets the amount calculator factory.
+     *
+     * @param AmountCalculatorFactory $calculatorFactory
+     */
+    public function setCalculatorFactory(AmountCalculatorFactory $calculatorFactory): void
+    {
+        $this->calculatorFactory = $calculatorFactory;
+    }
+
+    /**
+     * Sets the invoice calculator.
+     *
+     * @param InvoiceSubjectCalculatorInterface $invoiceCalculator
+     */
+    public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $invoiceCalculator): void
+    {
+        $this->invoiceCalculator = $invoiceCalculator;
+    }
+
+    /**
+     * Sets the weight calculator.
+     *
+     * @param WeightCalculatorInterface $weightCalculator
+     */
+    public function setWeightCalculator(WeightCalculatorInterface $weightCalculator): void
+    {
         $this->weightCalculator = $weightCalculator;
+    }
+
+    /**
+     * Sets the shipment price resolver.
+     *
+     * @param ShipmentPriceResolverInterface $shipmentPriceResolver
+     */
+    public function setShipmentPriceResolver(ShipmentPriceResolverInterface $shipmentPriceResolver): void
+    {
         $this->shipmentPriceResolver = $shipmentPriceResolver;
+    }
+
+    /**
+     * Sets the shipment address resolver.
+     *
+     * @param ShipmentAddressResolverInterface $shipmentAddressResolver
+     */
+    public function setShipmentAddressResolver(ShipmentAddressResolverInterface $shipmentAddressResolver): void
+    {
         $this->shipmentAddressResolver = $shipmentAddressResolver;
+    }
+
+    /**
+     * Sets the subject helper.
+     *
+     * @param SubjectHelperInterface $subjectHelper
+     */
+    public function setSubjectHelper(SubjectHelperInterface $subjectHelper): void
+    {
         $this->subjectHelper = $subjectHelper;
+    }
+
+    /**
+     * Sets the currency converter.
+     *
+     * @param CurrencyConverterInterface $currencyConverter
+     */
+    public function setCurrencyConverter(CurrencyConverterInterface $currencyConverter): void
+    {
         $this->currencyConverter = $currencyConverter;
+    }
+
+    /**
+     * Sets the purchase cost guesser.
+     *
+     * @param PurchaseCostGuesserInterface $purchaseCostGuesser
+     */
+    public function setPurchaseCostGuesser(PurchaseCostGuesserInterface $purchaseCostGuesser): void
+    {
         $this->purchaseCostGuesser = $purchaseCostGuesser;
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateSale(Model\SaleInterface $sale, string $currency = null): ?Model\Margin
+    public function calculateSale(Sale $sale): ?Margin
     {
-        $currency = $currency ?? $this->amountCalculator->getDefaultCurrency();
-
-        if (null !== $margin = $sale->getMargin($currency)) {
+        $key = spl_object_hash($sale);
+        if ($margin = $this->get($key)) {
             return $margin;
         }
 
@@ -100,14 +203,19 @@ class MarginCalculator implements MarginCalculatorInterface
             return null;
         }
 
-        $this->amountCalculator->calculateSale($sale, $currency);
+        $margin = new Margin($this->currency);
+        $this->set($key, $margin);
 
-        $margin = new Model\Margin($currency);
+        $this->getAmountCalculator()->calculateSale($sale);
 
         $cancel = true;
         foreach ($sale->getItems() as $item) {
-            if (null !== $itemMargin = $this->calculateSaleItem($item, $currency)) {
-                $margin->merge($itemMargin);
+            if ($this->isItemSkipped($item)) {
+                continue;
+            }
+
+            if (null !== $result = $this->calculateSaleItem($item)) {
+                $margin->merge($result);
                 $cancel = false;
             }
         }
@@ -116,109 +224,127 @@ class MarginCalculator implements MarginCalculatorInterface
             return null;
         }
 
-        foreach ($sale->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
-            $margin->addSellingPrice(-$adjustment->getResult($currency)->getBase());
+        foreach ($sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT) as $adjustment) {
+            $result = $this->getAmountCalculator()->calculateSaleDiscount($adjustment);
+            $margin->addSellingPrice(-$result->getBase());
         }
 
-        $margin->merge($this->calculateSaleShipment($sale, $currency));
-
-        $sale->setMargin($margin);
+        if ($result = $this->calculateSaleShipment($sale)) {
+            $margin->merge($result);
+        }
 
         return $margin;
     }
 
     /**
-     * Calculates the sale item margin.
-     *
-     * @param Model\SaleItemInterface $item
-     * @param string                  $currency
-     *
-     * @return Model\Margin|null
+     * @inheritDoc
      */
-    private function calculateSaleItem(Model\SaleItemInterface $item, string $currency = null): ?Model\Margin
+    public function calculateSaleItem(Item $item): ?Margin
     {
-        $default = $this->amountCalculator->getDefaultCurrency();
-        $currency = $currency ?? $default;
-
-        if (null !== $margin = $item->getMargin($currency)) {
+        $key = spl_object_hash($item);
+        if ($margin = $this->get($key)) {
             return $margin;
         }
 
-        $margin = new Model\Margin($currency);
-
-        $result = $this->amountCalculator->calculateSaleItem($item, null, $currency);
-
-        $margin->addSellingPrice($result->getBase());
+        $margin = new Margin($this->currency);
+        $this->set($key, $margin);
 
         if (!$item->isCompound()) {
             if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
                 foreach ($item->getStockAssignments() as $assignment) {
-                    if (0 < $netPrice = $assignment->getStockUnit()->getNetPrice()) {
-                        $u = $assignment->getStockUnit();
-                        $c = $u->getCurrency() ?? $default;
-                        $cost = $this
-                            ->currencyConverter
-                            ->convert($netPrice, $c, $currency, $u->getExchangeDate());
-                        $margin->addPurchaseCost($assignment->getSoldQuantity() * $cost);
-                    } elseif (null !== $cost = $this->getPurchaseCost($item, $currency)) {
-                        $margin
-                            ->addPurchaseCost($cost * $assignment->getSoldQuantity())
-                            ->setAverage(true);
-                    } else {
-                        $margin->setAverage(true);
+                    if (null !== $cost = $this->getAssignmentCost($assignment)) {
+                        $margin->addPurchaseCost($cost * $assignment->getSoldQuantity());
+
+                        continue;
                     }
+
+                    if (null !== $cost = $this->getPurchaseCost($item)) {
+                        $margin->addPurchaseCost($cost * $assignment->getSoldQuantity());
+                    }
+
+                    $margin->setAverage(true);
                 }
-            } elseif (null !== $cost = $this->getPurchaseCost($item, $currency)) {
-                $margin
-                    ->addPurchaseCost($cost * $item->getTotalQuantity())
-                    ->setAverage(true);
             } else {
-                return null;
+                $sale = $item->getSale();
+                if ($sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
+                    $sold = $this->invoiceCalculator->calculateInvoicedQuantity($item)
+                        - $this->invoiceCalculator->calculateCreditedQuantity($item);
+                } else {
+                    $sold = $item->getTotalQuantity();
+                }
+
+                if (null !== $cost = $this->getPurchaseCost($item)) {
+                    $margin
+                        ->addPurchaseCost($cost * $sold)
+                        ->setAverage(true);
+                }
             }
         }
 
+        $result = $this->getAmountCalculator()->calculateSaleItem($item);
+        $margin->addSellingPrice($result->getBase());
+
         foreach ($item->getChildren() as $child) {
-            if (null !== $childMargin = $this->calculateSaleItem($child, $currency)) {
+            if ($this->isItemSkipped($item)) {
+                continue;
+            }
+
+            if (null !== $result = $this->calculateSaleItem($child)) {
                 if ($child->isPrivate()) {
-                    if (0 < $cost = $childMargin->getPurchaseCost()) {
-                        $margin->addPurchaseCost($childMargin->getPurchaseCost());
-                    } else {
+                    if (1 === bccomp($cost = $result->getPurchaseCost(), 0, 5)) {
+                        $margin->addPurchaseCost($cost);
+                    }
+                    if ($result->isAverage()) {
                         $margin->setAverage(true);
                     }
                 } else {
-                    $margin->merge($childMargin);
+                    $margin->merge($result);
                 }
-            } else {
-                $margin->setAverage(true);
             }
         }
-
-        $item->setMargin($margin);
 
         return $margin;
     }
 
     /**
-     * Calculates the sale shipment margin.
-     *
-     * @param Model\SaleInterface $sale
-     * @param string              $currency
-     *
-     * @return Model\Margin
+     * @inheritDoc
      */
-    private function calculateSaleShipment(Model\SaleInterface $sale, string $currency = null): Model\Margin
+    public function calculateSaleShipment(Sale $sale): ?Margin
     {
-        $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();
-        $base = $sale->getCurrency()->getCode();
+        if (!$this->profit) {
+            return null;
+        }
 
-        $rate = $this->currencyConverter->getSubjectExchangeRate($sale, $base, $currency);
-        $sellPrice = $this->currencyConverter->convertWithRate($sale->getShipmentAmount(), $rate, $currency);
+        $key = spl_object_hash($sale) . '_shipment';
+        if ($margin = $this->get($key)) {
+            return $margin;
+        }
 
-        $margin = new Model\Margin($currency, 0, $sellPrice);
+        if ($sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
+            $sold = $this->invoiceCalculator->calculateInvoicedQuantity($sale)
+                - $this->invoiceCalculator->calculateCreditedQuantity($sale);
+        } else {
+            $sold = 1;
+        }
+
+        $price = 0;
+        if (0 < $sold) {
+            $price = $this
+                ->currencyConverter
+                ->convertWithSubject($sale->getShipmentAmount(), $sale, $this->currency);
+        }
+
+        $base = $this->currencyConverter->getDefaultCurrency();
+
+        $margin = new Margin($this->currency, 0., $price);
+        $this->set($key, $margin);
 
         if ($sale instanceof ShipmentSubjectInterface && 0 < $sale->getShipments()->count()) {
             foreach ($sale->getShipments() as $shipment) {
-                $deliveryAddress = $this->shipmentAddressResolver->resolveReceiverAddress($shipment, true);
+                $deliveryAddress = $this
+                    ->shipmentAddressResolver
+                    ->resolveReceiverAddress($shipment, true);
+
                 $country = $deliveryAddress->getCountry();
                 $method = $shipment->getMethod();
 
@@ -234,7 +360,7 @@ class MarginCalculator implements MarginCalculatorInterface
                     if (null !== $price) {
                         $margin->addPurchaseCost(
                             $this->currencyConverter->convert(
-                                $price->getPrice(), $base, $currency, $shipment->getShippedAt()
+                                $price->getPrice(), $base, $this->currency, $shipment->getShippedAt()
                             )
                         );
                         continue;
@@ -245,6 +371,7 @@ class MarginCalculator implements MarginCalculatorInterface
             }
 
             return $margin;
+            // TODO Avg if partially shipped
         }
 
         $country = $sale->getDeliveryCountry();
@@ -258,7 +385,7 @@ class MarginCalculator implements MarginCalculatorInterface
 
             if (null !== $price) {
                 $margin->addPurchaseCost(
-                    $this->currencyConverter->convert($price->getPrice(), $base, $currency)
+                    $this->currencyConverter->convert($price->getPrice(), $base, $this->currency)
                 );
             } else {
                 $margin->setAverage(true);
@@ -271,24 +398,108 @@ class MarginCalculator implements MarginCalculatorInterface
     }
 
     /**
-     * Returns the sale item purchase cost.
+     * Returns the amount calculator.
      *
-     * @param Model\SaleItemInterface $item
-     * @param string                  $currency
+     * @return AmountCalculatorInterface
+     */
+    protected function getAmountCalculator(): AmountCalculatorInterface
+    {
+        if ($this->amountCalculator) {
+            return $this->amountCalculator;
+        }
+
+        return $this->amountCalculator = $this->calculatorFactory->create($this->currency, $this->profit);
+    }
+
+    /**
+     * Returns the stock assignment purchase cost.
+     *
+     * @param StockAssignmentInterface $assignment
      *
      * @return float|null
      */
-    private function getPurchaseCost(Model\SaleItemInterface $item, string $currency): ?float
+    protected function getAssignmentCost(StockAssignmentInterface $assignment): ?float
     {
-        /** @var \Ekyna\Component\Commerce\Subject\Model\SubjectInterface $subject */
+        $unit = $assignment->getStockUnit();
+
+        if (!$unit->getSupplierOrderItem()) {
+            return null;
+        }
+
+        $price = $unit->getNetPrice();
+        if ($this->profit) {
+            $price += $unit->getShippingPrice();
+        }
+
+        return $this
+            ->currencyConverter
+            ->convertWithSubject($price, $unit, $this->currency);
+    }
+
+    /**
+     * Returns whether the given item should be skipped regarding to the configured filter.
+     *
+     * @param Item $item
+     *
+     * @return bool
+     */
+    protected function isItemSkipped(Item $item): bool
+    {
+        if (!$this->filter) {
+            return false;
+        }
+
+        if (!$item->hasSubjectIdentity()) {
+            return false;
+        }
+
+        return $this->filter->hasSubject($item->getSubjectIdentity()) xor !$this->filter->isExcludeSubjects();
+    }
+
+    /**
+     * Returns the sale item purchase cost.
+     *
+     * @param Item $item
+     *
+     * @return float|null
+     */
+    protected function getPurchaseCost(Item $item): ?float
+    {
         if (null === $subject = $this->subjectHelper->resolve($item)) {
             return null;
         }
 
-        if (null !== $cost = $this->purchaseCostGuesser->guess($subject, $currency)) {
+        if (null !== $cost = $this->purchaseCostGuesser->guess($subject, $this->currency, $this->profit)) {
             return $cost;
         }
 
         return null;
+    }
+
+    /**
+     * Returns the cached margin if any.
+     *
+     * @param string $key
+     *
+     * @return Margin|null
+     */
+    protected function get(string $key): ?Margin
+    {
+        if (isset($this->cache[$key])) {
+            return $this->cache[$key];
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets the cached margin.
+     *
+     * @param string $key
+     * @param Margin $amount
+     */
+    protected function set(string $key, Margin $amount): void
+    {
+        $this->cache[$key] = $amount;
     }
 }

@@ -36,7 +36,7 @@ class ExchangeRateProvider extends AbstractExchangeRateProvider
     {
         parent::__construct($fallback);
 
-        $this->swap            = $swap;
+        $this->swap = $swap;
         $this->defaultCurrency = $defaultCurrency;
     }
 
@@ -67,7 +67,8 @@ class ExchangeRateProvider extends AbstractExchangeRateProvider
      */
     protected function find(string $base, string $quote, \DateTime $date): ?float
     {
-        if (!is_null($date) && (1 <= $date->diff(new \DateTime())->h)) {
+        $diff = $date->diff(new \DateTime());
+        if (0 < $diff->days || 0 < $diff->h) {
             try {
                 return (float)$this->swap->historical("$base/$quote", $date)->getValue();
             } catch (Exception $e) {

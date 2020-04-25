@@ -6,7 +6,7 @@ use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Stock\Repository\WarehouseRepositoryInterface;
 use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
@@ -39,6 +39,11 @@ class SupplierOrderListener extends AbstractListener
      */
     protected $currencyConverter;
 
+    /**
+     * @var WarehouseRepositoryInterface
+     */
+    protected $warehouseRepository;
+
 
     /**
      * Constructor.
@@ -47,17 +52,43 @@ class SupplierOrderListener extends AbstractListener
      * @param SupplierOrderCalculatorInterface $calculator
      * @param StateResolverInterface           $stateResolver
      * @param CurrencyConverterInterface       $currencyConverter
+     * @param WarehouseRepositoryInterface     $warehouseRepository
      */
     public function __construct(
         GeneratorInterface $numberGenerator,
         SupplierOrderCalculatorInterface $calculator,
         StateResolverInterface $stateResolver,
-        CurrencyConverterInterface $currencyConverter
+        CurrencyConverterInterface $currencyConverter,
+        WarehouseRepositoryInterface $warehouseRepository
     ) {
         $this->numberGenerator = $numberGenerator;
         $this->calculator = $calculator;
         $this->stateResolver = $stateResolver;
         $this->currencyConverter = $currencyConverter;
+        $this->warehouseRepository = $warehouseRepository;
+    }
+
+    /**
+     * Initialize event handler.
+     *
+     * @param ResourceEventInterface $event
+     */
+    public function onInitialize(ResourceEventInterface $event)
+    {
+        $order = $this->getSupplierOrderFromEvent($event);
+
+        if (null !== $supplier = $order->getSupplier()) {
+            if ($order->getCurrency() !== $supplier->getCurrency()) {
+                $order->setCurrency($supplier->getCurrency());
+            }
+            if (null === $order->getCarrier()) {
+                $order->setCarrier($supplier->getCarrier());
+            }
+        }
+
+        if (null === $order->getWarehouse()) {
+            $order->setWarehouse($this->warehouseRepository->findDefault());
+        }
     }
 
     /**
@@ -100,13 +131,6 @@ class SupplierOrderListener extends AbstractListener
         $changed |= $this->updateExchangeRate($order);
 
         if ($changed) {
-            if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
-                $order
-                    ->setEstimatedDateOfArrival(null)
-                    ->setPaymentDate(null)
-                    ->setForwarderDate(null)
-                    ->setCompletedAt(null);
-            }
             $this->persistenceHelper->persistAndRecompute($order, false);
         }
 
@@ -119,36 +143,19 @@ class SupplierOrderListener extends AbstractListener
                 // Delete stock unit (if exists) for each supplier order items.
                 foreach ($order->getItems() as $item) {
                     $this->stockUnitLinker->unlinkItem($item);
-                    //$this->deleteSupplierOrderItemStockUnit($item);
                 }
             } // Else if order state's has changed to a stockable state
             elseif (SupplierOrderStates::hasChangedToStockable($stateCs)) {
                 // Create stock unit (if not exists) for each supplier order items.
                 foreach ($order->getItems() as $item) {
                     $this->stockUnitLinker->linkItem($item);
-                    //$this->createSupplierOrderItemStockUnit($item);
                 }
             }
+
+            return;
         }
 
-        // If order's estimated date of arrival has changed and order's state is stockable
-        if (
-            $this->persistenceHelper->isChanged($order, 'estimatedDateOfArrival')
-            && SupplierOrderStates::isStockableState($order->getState())
-        ) {
-            // Update stock units estimated date of arrival
-            foreach ($order->getItems() as $item) {
-                if (!$item->hasSubjectIdentity()) {
-                    continue;
-                }
-
-                if (null === $stockUnit = $item->getStockUnit()) {
-                    throw new RuntimeException("Failed to retrieve stock unit.");
-                }
-
-                $this->stockUnitUpdater->updateEstimatedDateOfArrival($stockUnit, $order->getEstimatedDateOfArrival());
-            }
-        }
+        $this->updateStockUnits($order);
     }
 
     /**
@@ -165,27 +172,10 @@ class SupplierOrderListener extends AbstractListener
         $changed |= $this->updateTotals($order);
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($order);
+            $this->persistenceHelper->persistAndRecompute($order, false);
         }
-    }
 
-    /**
-     * Initialize event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInitialize(ResourceEventInterface $event)
-    {
-        $order = $this->getSupplierOrderFromEvent($event);
-
-        if (null !== $supplier = $order->getSupplier()) {
-            if ($order->getCurrency() !== $supplier->getCurrency()) {
-                $order->setCurrency($supplier->getCurrency());
-            }
-            if (null === $order->getCarrier()) {
-                $order->setCarrier($supplier->getCarrier());
-            }
-        }
+        $this->updateStockUnits($order);
     }
 
     /**
@@ -229,18 +219,17 @@ class SupplierOrderListener extends AbstractListener
     {
         $changed = $this->stateResolver->resolve($order);
 
-        // Ordered with EDA is validated
-        if (
-            ($order->getState() === SupplierOrderStates::STATE_ORDERED)
-            && $order->getEstimatedDateOfArrival()
-        ) {
-            $order->setState(SupplierOrderStates::STATE_VALIDATED);
-            $changed = true;
-        }
-        // If order state is 'completed' and 'competed at' date is not set
+        // If state is canceled, clear dates
+        if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
+            $order
+                ->setEstimatedDateOfArrival(null)
+                ->setPaymentDate(null)
+                ->setForwarderDate(null)
+                ->setCompletedAt(null);
+        } // If order state is 'completed' and 'competed at' date is not set
         elseif (
             ($order->getState() === SupplierOrderStates::STATE_COMPLETED)
-            && !$order->getCompletedAt()
+            && is_null($order->getCompletedAt())
         ) {
             // Set the 'completed at' date
             $order->setCompletedAt(new \DateTime());
@@ -331,6 +320,40 @@ class SupplierOrderListener extends AbstractListener
     }
 
     /**
+     * Updates the stock units.
+     *
+     * @param SupplierOrderInterface $order
+     */
+    protected function updateStockUnits(SupplierOrderInterface $order): void
+    {
+        if (!SupplierOrderStates::isStockableState($order->getState())) {
+            return;
+        }
+
+        $properties = [
+            'discountTotal',
+            'shippingCost',
+            'forwarderFee',
+            'customsTax',
+            'exchangeRate',
+            'estimatedDateOfArrival',
+        ];
+
+        if (!$this->persistenceHelper->isChanged($order, $properties)) {
+            return;
+        }
+
+        foreach ($order->getItems() as $item) {
+            if ($this->persistenceHelper->isChanged($order, ['quantity', 'netPrice'])) {
+                // Done by the supplier order item listener.
+                continue;
+            }
+
+            $this->stockUnitLinker->updateData($item);
+        }
+    }
+
+    /**
      * Returns the supplier order from the event.
      *
      * @param ResourceEventInterface $event
@@ -343,7 +366,7 @@ class SupplierOrderListener extends AbstractListener
         $order = $event->getResource();
 
         if (!$order instanceof SupplierOrderInterface) {
-            throw new InvalidArgumentException("Expected instance of SupplierOrderInterface.");
+            throw new InvalidArgumentException("Expected instance of " . SupplierOrderInterface::class);
         }
 
         return $order;

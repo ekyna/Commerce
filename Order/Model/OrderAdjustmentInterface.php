@@ -16,13 +16,14 @@ interface OrderAdjustmentInterface extends SaleAdjustmentInterface
      *
      * @return OrderInterface
      */
-    public function getOrder();
+    public function getOrder(): ?OrderInterface;
 
     /**
      * Sets the order.
      *
      * @param OrderInterface $order
+     *
      * @return $this|OrderAdjustmentInterface
      */
-    public function setOrder(OrderInterface $order = null);
+    public function setOrder(OrderInterface $order = null): OrderAdjustmentInterface;
 }

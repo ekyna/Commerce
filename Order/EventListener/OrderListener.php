@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
-use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleListener;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -16,6 +15,7 @@ use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
+use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
@@ -32,11 +32,6 @@ class OrderListener extends AbstractSaleListener
     protected $stockAssigner;
 
     /**
-     * @var MarginCalculatorInterface
-     */
-    protected $marginCalculator;
-
-    /**
      * @var OrderRepositoryInterface
      */
     protected $orderRepository;
@@ -51,25 +46,20 @@ class OrderListener extends AbstractSaleListener
      */
     protected $invoicePaymentResolver;
 
+    /**
+     * @var OrderUpdaterInterface
+     */
+    protected $orderUpdater;
+
 
     /**
      * Sets the stock assigner.
      *
      * @param StockUnitAssignerInterface $assigner
      */
-    public function setStockAssigner(StockUnitAssignerInterface $assigner)
+    public function setStockAssigner(StockUnitAssignerInterface $assigner): void
     {
         $this->stockAssigner = $assigner;
-    }
-
-    /**
-     * Sets the margin calculator.
-     *
-     * @param MarginCalculatorInterface $calculator
-     */
-    public function setMarginCalculator(MarginCalculatorInterface $calculator)
-    {
-        $this->marginCalculator = $calculator;
     }
 
     /**
@@ -77,7 +67,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderRepositoryInterface $repository
      */
-    public function setOrderRepository(OrderRepositoryInterface $repository)
+    public function setOrderRepository(OrderRepositoryInterface $repository): void
     {
         $this->orderRepository = $repository;
     }
@@ -87,7 +77,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param CouponRepositoryInterface $repository
      */
-    public function setCouponRepository(CouponRepositoryInterface $repository)
+    public function setCouponRepository(CouponRepositoryInterface $repository): void
     {
         $this->couponRepository = $repository;
     }
@@ -97,9 +87,19 @@ class OrderListener extends AbstractSaleListener
      *
      * @param InvoicePaymentResolverInterface $resolver
      */
-    public function setInvoicePaymentResolver(InvoicePaymentResolverInterface $resolver)
+    public function setInvoicePaymentResolver(InvoicePaymentResolverInterface $resolver): void
     {
         $this->invoicePaymentResolver = $resolver;
+    }
+
+    /**
+     * Sets the orderUpdater.
+     *
+     * @param OrderUpdaterInterface $orderUpdater
+     */
+    public function setOrderUpdater(OrderUpdaterInterface $orderUpdater): void
+    {
+        $this->orderUpdater = $orderUpdater;
     }
 
     /**
@@ -109,7 +109,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @throws IllegalOperationException
      */
-    public function onPrepare(ResourceEventInterface $event)
+    public function onPrepare(ResourceEventInterface $event): void
     {
         $order = $this->getSaleFromEvent($event);
 
@@ -123,7 +123,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    public function onPreDelete(ResourceEventInterface $event)
+    public function onPreDelete(ResourceEventInterface $event): void
     {
         parent::onPreDelete($event);
 
@@ -140,7 +140,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritDoc
      */
-    public function onPreUpdate(ResourceEventInterface $event)
+    public function onPreUpdate(ResourceEventInterface $event): void
     {
         $sale = $this->getSaleFromEvent($event);
 
@@ -156,7 +156,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    protected function handleInsert(SaleInterface $sale)
+    protected function handleInsert(SaleInterface $sale): bool
     {
         $changed = $this->fixCustomers($sale);
 
@@ -174,7 +174,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    protected function handleUpdate(SaleInterface $sale)
+    protected function handleUpdate(SaleInterface $sale): bool
     {
         $changed = $this->fixCustomers($sale);
 
@@ -194,7 +194,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @return bool
      */
-    public function handleReleasedChange(OrderInterface $order)
+    public function handleReleasedChange(OrderInterface $order): bool
     {
         if ($this->persistenceHelper->isChanged($order, 'sample')) {
             if ($order->isReleased() && !$order->isSample()) {
@@ -231,7 +231,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @return bool Whether the order has been changed.
      */
-    protected function setIsFirst(OrderInterface $order)
+    protected function setIsFirst(OrderInterface $order): bool
     {
         if ($customer = $order->getCustomer()) {
             if ($customer->hasParent()) {
@@ -261,7 +261,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @return bool
      */
-    protected function fixCustomers(OrderInterface $order)
+    protected function fixCustomers(OrderInterface $order): bool
     {
         $changed = false;
 
@@ -302,7 +302,7 @@ class OrderListener extends AbstractSaleListener
             return;
         }
 
-        list($old, $new) = $cs;
+        [$old, $new] = $cs;
 
         if ($old === $new) {
             return;
@@ -330,7 +330,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    protected function handleStateChange(SaleInterface $sale)
+    protected function handleStateChange(SaleInterface $sale): void
     {
         parent::handleStateChange($sale);
 
@@ -357,27 +357,15 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    protected function handleContentChange(SaleInterface $sale)
+    protected function handleContentChange(SaleInterface $sale): bool
     {
         $this->updateInvoicePaidTotal($sale);
 
         $changed = parent::handleContentChange($sale);
 
-        if (null !== $margin = $this->marginCalculator->calculateSale($sale)) {
-            $amount = $margin->getAmount();
-        } else {
-            $amount = 0;
-        }
+        $changed |= $this->orderUpdater->updateMarginTotals($sale);
 
-        if ($sale->getMarginTotal() != $amount) {
-            $sale->setMarginTotal($amount);
-            $changed = true;
-        }
-
-        if ($sale->getItemsCount() != $count = $sale->getItems()->count()) {
-            $sale->setItemsCount($count);
-            $changed = true;
-        }
+        $changed |= $this->orderUpdater->updateItemsCount($sale);
 
         return $changed;
     }
@@ -438,7 +426,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritDoc
      */
-    protected function isDiscountUpdateNeeded(SaleInterface $sale)
+    protected function isDiscountUpdateNeeded(SaleInterface $sale): bool
     {
         if ($this->persistenceHelper->isChanged($sale, 'sample')) {
             return true;
@@ -450,7 +438,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritDoc
      */
-    protected function isTaxationUpdateNeeded(SaleInterface $sale)
+    protected function isTaxationUpdateNeeded(SaleInterface $sale): bool
     {
         if ($this->persistenceHelper->isChanged($sale, 'sample')) {
             return true;
@@ -462,7 +450,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritDoc
      */
-    protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale)
+    protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale): bool
     {
         if ($this->persistenceHelper->isChanged($sale, 'sample')) {
             return true;
@@ -476,7 +464,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    protected function updateVatDisplayMode(SaleInterface $sale)
+    protected function updateVatDisplayMode(SaleInterface $sale): bool
     {
         // Vat display mode must not change if order has shipments or invoices.
         if ($sale->hasShipments() || $sale->hasInvoices()) {
@@ -491,7 +479,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    protected function updateState(SaleInterface $sale)
+    protected function updateState(SaleInterface $sale): bool
     {
         if (parent::updateState($sale)) {
             if (in_array($state = $sale->getState(), OrderStates::getStockableStates(), true)) {
@@ -522,7 +510,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param SaleItemInterface $item
      */
-    protected function assignSaleItemRecursively(SaleItemInterface $item)
+    protected function assignSaleItemRecursively(SaleItemInterface $item): void
     {
         $this->stockAssigner->assignSaleItem($item);
 
@@ -536,7 +524,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param SaleItemInterface $item
      */
-    protected function applySaleItemRecursively(SaleItemInterface $item)
+    protected function applySaleItemRecursively(SaleItemInterface $item): void
     {
         $this->stockAssigner->applySaleItem($item);
 
@@ -550,7 +538,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @param SaleItemInterface $item
      */
-    protected function detachSaleItemRecursively(SaleItemInterface $item)
+    protected function detachSaleItemRecursively(SaleItemInterface $item): void
     {
         $this->stockAssigner->detachSaleItem($item);
 
@@ -564,7 +552,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @return OrderInterface
      */
-    protected function getSaleFromEvent(ResourceEventInterface $event)
+    protected function getSaleFromEvent(ResourceEventInterface $event): SaleInterface
     {
         $resource = $event->getResource();
 
@@ -578,7 +566,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function scheduleContentChangeEvent(SaleInterface $sale)
+    protected function scheduleContentChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof OrderInterface) {
             throw new InvalidArgumentException("Expected instance of OrderInterface");
@@ -590,7 +578,7 @@ class OrderListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function scheduleStateChangeEvent(SaleInterface $sale)
+    protected function scheduleStateChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof OrderInterface) {
             throw new InvalidArgumentException("Expected instance of OrderInterface");

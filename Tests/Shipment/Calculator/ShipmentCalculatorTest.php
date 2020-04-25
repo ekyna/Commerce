@@ -1,16 +1,16 @@
 <?php
 
-namespace Ekyna\Component\Commerce\Tests\Shipment\Resolver;
+namespace Ekyna\Component\Commerce\Tests\Shipment\Calculator;
 
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculator;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class ShipmentCalculatorTest
- * @package Ekyna\Component\Commerce\Tests\Shipment
+ * @package Ekyna\Component\Commerce\Tests\Shipment\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class ShipmentCalculatorTest extends TestCase
@@ -56,12 +56,17 @@ class ShipmentCalculatorTest extends TestCase
      */
     public function test_calculate_available()
     {
-        $order = Fixtures::createOrder();
-        $orderItem = Fixtures::createOrderItem(10)->setOrder($order);
+        Fixture::shipmentItem([
+            'shipment' => [
+                'order' => $order = Fixture::order()
+            ],
+            'item'     => $orderItem = Fixture::orderItem([
+                'order'    => $order,
+                'quantity' => 10,
+            ]),
+        ]);
 
-        Fixtures::createShipmentItem(Fixtures::createShipment($order), $orderItem);
-
-        $subject = Fixtures::createSubject();
+        $subject = Fixture::subject();
 
         $this
             ->getSubjectHelperMock()
@@ -76,10 +81,27 @@ class ShipmentCalculatorTest extends TestCase
 //        $stockUnit->setSoldQuantity(20)->setShippedQuantity(10);
 //        $this->assertEquals(10, $this->shipmentCalculator->calculateAvailableQuantity($shipmentItem));
 
-        $suA = Fixtures::createStockUnit($subject, null, 20, 20, 5);
-        $saA = Fixtures::createStockAssignment($suA, $orderItem, 5);
-        $suB = Fixtures::createStockUnit($subject, null, 20, 0, 5);
-        $saB = Fixtures::createStockAssignment($suB, $orderItem, 5);
+        $suA = Fixture::stockUnit([
+            'subject'  => $subject,
+            'ordered'  => 20,
+            'received' => 20,
+            'sold'     => 5,
+        ]);
+        $saA = Fixture::stockAssignment([
+            'unit' => $suA,
+            'item' => $orderItem,
+            'sold' => 5,
+        ]);
+        $suB = Fixture::stockUnit([
+            'subject' => $subject,
+            'ordered' => 20,
+            'sold'    => 5,
+        ]);
+        $saB = Fixture::stockAssignment([
+            'unit' => $suB,
+            'item' => $orderItem,
+            'sold' => 5,
+        ]);
         $this->assertEquals(5, $this->shipmentCalculator->calculateAvailableQuantity($orderItem));
     }
 }

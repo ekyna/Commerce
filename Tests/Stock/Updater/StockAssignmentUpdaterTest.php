@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Tests\Stock\Updater;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockAssignmentUpdater;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
@@ -27,8 +27,8 @@ class StockAssignmentUpdaterTest extends StockTestCase
     protected function setUp(): void
     {
         $this->updater = new StockAssignmentUpdater(
-            $this->getPersistenceHelperMock(),
-            $this->getStockUnitUpdaterMock()
+            $this->getStockUnitUpdaterMock(),
+            $this->getStockAssignmentManagerMock()
         );
     }
 
@@ -47,8 +47,7 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withRelativeQuantityLowerThanZero_returnsZero(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 0, 0, 0, 0);
-        $assignment = Fixtures::createStockAssignment($unit);
+        $assignment = Fixture::stockAssignment(['unit' => []]);
 
         $this->assertAssignmentWontBePersisted();
         $this->assertStockUnitSoldQuantityWontBeUpdated();
@@ -64,8 +63,7 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withAbsoluteQuantityLowerThanZero_returnsZero(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 0, 0, 0, 0);
-        $assignment = Fixtures::createStockAssignment($unit);
+        $assignment = Fixture::stockAssignment(['unit' => []]);
 
         $this->assertAssignmentWontBePersisted();
         $this->assertStockUnitSoldQuantityWontBeUpdated();
@@ -81,8 +79,18 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withRelativeQuantityLowerThanShipped_returnsZero(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 5, 5, 5, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 5, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 5,
+            'received' => 5,
+            'sold'     => 5,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWontBePersisted();
         $this->assertStockUnitSoldQuantityWontBeUpdated();
@@ -98,8 +106,18 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withAbsoluteQuantityLowerThanShipped_returnsZero(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 5, 5, 5, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 5, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 5,
+            'received' => 5,
+            'sold'     => 5,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWontBePersisted();
         $this->assertStockUnitSoldQuantityWontBeUpdated();
@@ -115,8 +133,15 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withRelativeQuantityGreaterThanOrdered_returnsLimit(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 0, 5, 0);
-        $assignment = Fixtures::createStockAssignment($unit, null, 5, 0);
+        $unit = Fixture::stockUnit([
+            'ordered' => 10,
+            'sold'    => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, 5);
@@ -132,8 +157,15 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withAbsoluteQuantityGreaterThanOrdered_returnsLimit(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 0, 5, 0);
-        $assignment = Fixtures::createStockAssignment($unit, null, 5, 0);
+        $unit = Fixture::stockUnit([
+            'ordered' => 10,
+            'sold'    => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, 5);
@@ -149,8 +181,15 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withRelativeQuantityInbound_returnsQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 0, 5, 0);
-        $assignment = Fixtures::createStockAssignment($unit, null, 5, 0);
+        $unit = Fixture::stockUnit([
+            'ordered' => 10,
+            'sold'    => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, 4);
@@ -166,8 +205,15 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withAbsoluteQuantityInbound_returnsQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 0, 5, 0);
-        $assignment = Fixtures::createStockAssignment($unit, null, 5, 0);
+        $unit = Fixture::stockUnit([
+            'ordered' => 10,
+            'sold'    => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, 4);
@@ -183,8 +229,14 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withRelativeQuantityToZero_assignmentRemoved(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 0, 0, 5, 0);
-        $assignment = Fixtures::createStockAssignment($unit, Fixtures::createOrderItem(), 5, 0);
+        $unit = Fixture::stockUnit([
+            'sold' => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+        ]);
 
         $this->assertAssignmentWillBeDeleted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, -5);
@@ -199,8 +251,14 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withAbsoluteQuantityToZero_assignmentRemoved(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 0, 0, 5, 0);
-        $assignment = Fixtures::createStockAssignment($unit, Fixtures::createOrderItem(), 5, 0);
+        $unit = Fixture::stockUnit([
+            'sold' => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+            'item' => [],
+            'sold' => 5,
+        ]);
 
         $this->assertAssignmentWillBeDeleted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, -5);
@@ -215,8 +273,9 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeQuantityLowerThanZero_returnsZero(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 0, 0, 0, 0);
-        $assignment = Fixtures::createStockAssignment($unit);
+        $assignment = Fixture::stockAssignment([
+            'unit' => [],
+        ]);
 
         $this->assertAssignmentWontBePersisted();
         $this->assertStockUnitShippedQuantityWontBeUpdated();
@@ -232,8 +291,10 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withAbsoluteQuantityLowerThanZero_returnsZero(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 0, 0, 0, 0);
-        $assignment = Fixtures::createStockAssignment($unit);
+        $unit = Fixture::stockUnit();
+        $assignment = Fixture::stockAssignment([
+            'unit' => $unit,
+        ]);
 
         $this->assertAssignmentWontBePersisted();
         $this->assertStockUnitShippedQuantityWontBeUpdated();
@@ -249,8 +310,17 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeQuantityGreaterThanReceived_returnsLimit(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 9, 10, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 10, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 10,
+            'received' => 9,
+            'sold'     => 10,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit'    => $unit,
+            'sold'    => 10,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitShippedQuantityWillBeUpdated($unit, 4);
@@ -266,8 +336,17 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withAbsoluteQuantityGreaterThanReceived_returnsLimit(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 9, 10, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 10, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 10,
+            'received' => 9,
+            'sold'     => 10,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit'    => $unit,
+            'sold'    => 10,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitShippedQuantityWillBeUpdated($unit, 4);
@@ -283,8 +362,17 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeQuantityGreaterThanSold_returnsLimit(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 10, 9, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 9, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit'    => $unit,
+            'sold'    => 9,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitShippedQuantityWillBeUpdated($unit, 4);
@@ -300,8 +388,17 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withAbsoluteQuantityGreaterThanSold_returnsLimit(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 10, 9, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 9, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit'    => $unit,
+            'sold'    => 9,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitShippedQuantityWillBeUpdated($unit, 4);
@@ -317,8 +414,17 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeQuantityInbound_returnsQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 10, 10, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 10, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit'    => $unit,
+            'sold'    => 10,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitShippedQuantityWillBeUpdated($unit, 4);
@@ -334,8 +440,17 @@ class StockAssignmentUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withAbsoluteQuantityInbound_returnsQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, null, 10, 10, 10, 5);
-        $assignment = Fixtures::createStockAssignment($unit, null, 10, 5);
+        $unit = Fixture::stockUnit([
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 5,
+        ]);
+        $assignment = Fixture::stockAssignment([
+            'unit'    => $unit,
+            'sold'    => 10,
+            'shipped' => 5,
+        ]);
 
         $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitShippedQuantityWillBeUpdated($unit, 4);
@@ -352,9 +467,14 @@ class StockAssignmentUpdaterTest extends StockTestCase
     private function assertAssignmentWontBePersisted(): void
     {
         $this
-            ->getPersistenceHelperMock()
+            ->getStockAssignmentManagerMock()
             ->expects($this->never())
-            ->method('persistAndRecompute');
+            ->method('persist');
+
+        $this
+            ->getStockAssignmentManagerMock()
+            ->expects($this->never())
+            ->method('persist');
     }
 
     /**

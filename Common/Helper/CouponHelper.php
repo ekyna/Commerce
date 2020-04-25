@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Helper;
 
-use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Model\CouponInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\CouponRepositoryInterface;
@@ -22,24 +22,31 @@ class CouponHelper
     /**
      * @var CouponRepositoryInterface
      */
-    private $repository;
+    private $couponRepository;
 
     /**
-     * @var AmountCalculatorInterface
+     * @var AmountCalculatorFactory
      */
-    private $calculator;
+    private $calculatorFactory;
+
+    /**
+     * @var string
+     */
+    private $defaultCurrency;
 
 
     /**
      * Constructor.
      *
      * @param CouponRepositoryInterface $repository
-     * @param AmountCalculatorInterface $calculator
+     * @param AmountCalculatorFactory   $factory
+     * @param string                    $currency
      */
-    public function __construct(CouponRepositoryInterface $repository, AmountCalculatorInterface $calculator)
+    public function __construct(CouponRepositoryInterface $repository, AmountCalculatorFactory $factory, string $currency)
     {
-        $this->repository = $repository;
-        $this->calculator = $calculator;
+        $this->couponRepository = $repository;
+        $this->calculatorFactory = $factory;
+        $this->defaultCurrency = $currency;
     }
 
     /**
@@ -52,7 +59,7 @@ class CouponHelper
     public function set(SaleInterface $sale, string $code, bool $check = true): void
     {
         // Find coupon by its code
-        if (!$coupon = $this->repository->findOneByCode($code)) {
+        if (!$coupon = $this->couponRepository->findOneByCode($code)) {
             throw $this->createException("not_found");
         }
 
@@ -84,11 +91,15 @@ class CouponHelper
 
             // Check minimum gross total
             if (0 < $min = $coupon->getMinGross()) {
-                $currency = $this->calculator->getDefaultCurrency();
-                $gross = $this->calculator->calculateSale($sale, $currency)->getGross();
-                if (1 === Money::compare($min, $gross, $currency)) {
+                $gross = $this
+                    ->calculatorFactory
+                    ->create($this->defaultCurrency)
+                    ->calculateSale($sale)
+                    ->getGross();
+
+                if (1 === Money::compare($min, $gross, $this->defaultCurrency)) {
                     throw $this->createException("min_gross", [
-                        '%gross%' => $this->getFormatter()->currency($min, $currency),
+                        '%gross%' => $this->getFormatter()->currency($min, $this->defaultCurrency),
                     ]);
                 }
             }

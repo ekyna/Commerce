@@ -23,6 +23,17 @@ trait ExchangeSubjectTrait
 
 
     /**
+     * Returns the subject's base currency.
+     *
+     * @return string|null
+     */
+    public function getBaseCurrency(): ?string
+    {
+        // Most of the exchange rate subjects store amounts in default currency.
+        return null;
+    }
+
+    /**
      * Returns the exchange rate.
      *
      * @return float|null

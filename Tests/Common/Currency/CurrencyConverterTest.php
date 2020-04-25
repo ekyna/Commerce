@@ -7,7 +7,7 @@ use Ekyna\Component\Commerce\Common\Currency\ExchangeRateProviderInterface;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectTrait;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -37,7 +37,7 @@ class CurrencyConverterTest extends TestCase
             ->method('get')
             ->will($this->returnCallback([$this, 'fakeRate']));
 
-        $this->converter = new CurrencyConverter($this->provider, 'EUR');
+        $this->converter = new CurrencyConverter($this->provider, Fixture::CURRENCY_EUR);
     }
 
     public function fakeRate(string $base, string $quote, \DateTime $date = null): float
@@ -84,7 +84,7 @@ class CurrencyConverterTest extends TestCase
     public function provideTestConvertWithRate(): \Generator
     {
         yield [12, [10, 1.2]];
-        yield [-12, [-10, 1.2, 'EUR']];
+        yield [-12, [-10, 1.2, Fixture::CURRENCY_EUR]];
         yield [112, [100, 1.123456789, 'JPY']];
         yield [121.9326, [98.76543, 1.2345678, 'CLF']];
         yield [88.75255, [79, 1.12345, null, false]];
@@ -105,17 +105,17 @@ class CurrencyConverterTest extends TestCase
 
     public function provideTestConvert(): \Generator
     {
-        yield [12.34, [12.34, 'EUR']];
-        yield [13.87, [12.3456, 'EUR', 'USD']];
-        yield [1506, [12.3456, 'EUR', 'JPY']];
+        yield [12.34, [12.34, Fixture::CURRENCY_EUR]];
+        yield [13.87, [12.3456, Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD]];
+        yield [1506, [12.3456, Fixture::CURRENCY_EUR, 'JPY']];
     }
 
     public function testGetRate(): void
     {
-        $this->assertEquals(1.12346, $this->converter->getRate('EUR', 'USD'));
-        $this->assertEquals(0.89011, $this->converter->getRate('USD', 'EUR'));
-        $this->assertEquals(121.98765, $this->converter->getRate('EUR', 'JPY'));
-        $this->assertEquals(0.00819, $this->converter->getRate('JPY', 'EUR'));
+        $this->assertEquals(1.12346, $this->converter->getRate(Fixture::CURRENCY_EUR, Fixture::CURRENCY_USD));
+        $this->assertEquals(0.89011, $this->converter->getRate(Fixture::CURRENCY_USD, Fixture::CURRENCY_EUR));
+        $this->assertEquals(121.98765, $this->converter->getRate(Fixture::CURRENCY_EUR, 'JPY'));
+        $this->assertEquals(0.00819, $this->converter->getRate('JPY', Fixture::CURRENCY_EUR));
     }
 
     /**
@@ -134,21 +134,21 @@ class CurrencyConverterTest extends TestCase
     public function provideTestGetSubjectExchangeRate(): \Generator
     {
         // Quote EUR
-        yield [1.0, [$this->createSubject('EUR')]];
+        yield [1.0, [$this->createSubject(Fixture::CURRENCY_EUR)]];
         // Quote EUR, ignore subject exchange rate
-        yield [1.0, [$this->createSubject('EUR', 0.12346)]];
+        yield [1.0, [$this->createSubject(Fixture::CURRENCY_EUR, 0.12346)]];
         // Subject does not have exchange rate, use exchange rate provider
-        yield [1.12346, [$this->createSubject('USD')]];
+        yield [1.12346, [$this->createSubject(Fixture::CURRENCY_USD)]];
         // Quote EUR
-        yield [1.0, [$this->createSubject('USD'), null, 'EUR']];
+        yield [1.0, [$this->createSubject(Fixture::CURRENCY_USD), null, Fixture::CURRENCY_EUR]];
         // Quote USD , use subject exchange rate
-        yield [1.13468, [$this->createSubject('USD', 1.13468)]];
+        yield [1.13468, [$this->createSubject(Fixture::CURRENCY_USD, 1.13468)]];
         // Quote EUR, use inverted subject exchange rate
-        yield [0.88131, [$this->createSubject('USD', 1.13468), 'USD', 'EUR']];
+        yield [0.88131, [$this->createSubject(Fixture::CURRENCY_USD, 1.13468), Fixture::CURRENCY_USD, Fixture::CURRENCY_EUR]];
         // Quote USD, use exchange rate provider with date
-        yield [1.13579, [$this->createSubject('USD', null, new \DateTime('2020-01-01'))]];
+        yield [1.13579, [$this->createSubject(Fixture::CURRENCY_USD, null, new \DateTime('2020-01-01'))]];
         // Quote JPY, ignore subject exchange rate, use exchange rate provider with date
-        yield [122.43219, [$this->createSubject('USD', 1.13468, new \DateTime('2020-01-01')), null, 'JPY']];
+        yield [122.43219, [$this->createSubject(Fixture::CURRENCY_USD, 1.13468, new \DateTime('2020-01-01')), null, 'JPY']];
     }
 
     /**
@@ -167,19 +167,17 @@ class CurrencyConverterTest extends TestCase
     public function provideTestConvertWithSubject(): \Generator
     {
         // Quote EUR
-        yield [123.45, [123.45, $this->createSubject('EUR')]];
+        yield [123.45, [123.45, $this->createSubject(Fixture::CURRENCY_EUR)]];
         // Quote USD
-        yield [138.69, [123.45, $this->createSubject('USD')]];
+        yield [138.69, [123.45, $this->createSubject(Fixture::CURRENCY_USD)]];
         // Quote USD, dot round
-        yield [138.691137, [123.45, $this->createSubject('USD'), null, false, false]];
-//        // Quote USD, invert
-//        yield [109.88, [123.45, $this->createSubject('USD'), null, true, true]];
+        yield [138.691137, [123.45, $this->createSubject(Fixture::CURRENCY_USD), null, false]];
         // Quote EUR
-        yield [123.45, [123.45, $this->createSubject('USD'), 'EUR']];
+        yield [123.45, [123.45, $this->createSubject(Fixture::CURRENCY_USD), Fixture::CURRENCY_EUR]];
         // Quote USD, use subject exchange rate
-        yield [154.46, [123.45, $this->createSubject('USD', 1.25123)]];
+        yield [154.46, [123.45, $this->createSubject(Fixture::CURRENCY_USD, 1.25123)]];
         // Quote USD, Use exchange rate provider with date
-        yield [140.21, [123.45, $this->createSubject('USD', null, new \DateTime('2020-01-01'))]];
+        yield [140.21, [123.45, $this->createSubject(Fixture::CURRENCY_USD, null, new \DateTime('2020-01-01'))]];
     }
 
     public function testSetSubjectExchangeRate_withoutCurrency(): void
@@ -205,13 +203,13 @@ class CurrencyConverterTest extends TestCase
     public function provideTestSetSubjectExchangeRate(): \Generator
     {
         // Default currency -> change to 1.0
-        yield [true, 1.0, $this->createSubject('EUR')];
+        yield [true, 1.0, $this->createSubject(Fixture::CURRENCY_EUR)];
         // USD -> changed to exchange provider's current rate
-        yield [true, 1.12346, $this->createSubject('USD')];
+        yield [true, 1.12346, $this->createSubject(Fixture::CURRENCY_USD)];
         // USD -> changed to exchange provider's rate using date
-        yield [true, 1.13579, $this->createSubject('USD', null, new \DateTime('2020-01-01'))];
+        yield [true, 1.13579, $this->createSubject(Fixture::CURRENCY_USD, null, new \DateTime('2020-01-01'))];
         // USD -> not changed to exchange provider's rate using date
-        yield [false, 1.13579, $this->createSubject('USD', 1.13579)];
+        yield [false, 1.13579, $this->createSubject(Fixture::CURRENCY_USD, 1.13579)];
     }
 
     private function createSubject(string $currency = null, float $rate = null, \DateTime $date = null): ExchangeSubjectInterface
@@ -219,7 +217,7 @@ class CurrencyConverterTest extends TestCase
         $subject = new class implements ExchangeSubjectInterface { use ExchangeSubjectTrait; };
 
         if ($currency) {
-            $subject->setCurrency(Fixtures::getCurrencyByCode($currency));
+            $subject->setCurrency(Fixture::currency($currency));
         }
 
         return $subject

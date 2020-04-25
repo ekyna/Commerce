@@ -19,7 +19,7 @@ class TicketRepository extends ResourceRepository implements TicketRepositoryInt
     /**
      * @inheritDoc
      */
-    public function findOpened(int $limit = 4)
+    public function findOpened(int $limit = 10): array
     {
         $qb = $this->createQueryBuilder('t');
 
@@ -36,7 +36,24 @@ class TicketRepository extends ResourceRepository implements TicketRepositoryInt
     /**
      * @inheritDoc
      */
-    public function findByCustomer(CustomerInterface $customer, bool $admin)
+    public function findNotClosed(int $limit = 10): array
+    {
+        $qb = $this->createQueryBuilder('t');
+
+        return $qb
+            ->andWhere($qb->expr()->neq('t.state', ':state'))
+            ->addOrderBy('t.updatedAt', 'ASC')
+            ->getQuery()
+            ->setParameters([
+                'state' => TicketStates::STATE_CLOSED,
+            ])
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findByCustomer(CustomerInterface $customer, bool $admin): array
     {
         $qb = $this->createQueryBuilder('t');
         $qb
@@ -61,7 +78,7 @@ class TicketRepository extends ResourceRepository implements TicketRepositoryInt
     /**
      * @inheritDoc
      */
-    public function findByOrder(OrderInterface $order, bool $admin)
+    public function findByOrder(OrderInterface $order, bool $admin): array
     {
         $qb = $this->createQueryBuilder('t');
         $qb
@@ -86,10 +103,9 @@ class TicketRepository extends ResourceRepository implements TicketRepositoryInt
     /**
      * @inheritDoc
      */
-    public function findByQuote(QuoteInterface $quote, bool $admin)
+    public function findByQuote(QuoteInterface $quote, bool $admin): array
     {
         $qb = $this->createQueryBuilder('t');
-
         $qb
             ->andWhere($qb->expr()->isMemberOf(':quote', 't.quotes'))
             ->addOrderBy('t.createdAt', 'DESC');

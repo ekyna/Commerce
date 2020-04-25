@@ -45,8 +45,6 @@ class SupplierDeliveryListener extends AbstractListener
      * Pre delete event handler.
      *
      * @param ResourceEventInterface $event
-     *
-     * @throws Exception\IllegalOperationException
      */
     public function onPreDelete(ResourceEventInterface $event)
     {

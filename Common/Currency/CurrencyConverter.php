@@ -71,21 +71,22 @@ class CurrencyConverter implements CurrencyConverterInterface
         string $base = null,
         string $quote = null
     ): float {
+        $default = $this->defaultCurrency;
         $currency = $subject->getCurrency()->getCode();
 
-        $base  = strtoupper($base ?? $this->defaultCurrency);
+        $base  = strtoupper($base ?? $subject->getBaseCurrency() ?? $default);
         $quote = strtoupper($quote ?? $currency);
 
         if ($base === $quote) {
             return 1.0;
         }
 
-        if ($rate = $subject->getExchangeRate()) {
-            if (($base === $this->defaultCurrency) && ($quote === $currency)) {
+        if (0 < $rate = $subject->getExchangeRate()) {
+            if (($base === $default) && ($quote === $currency)) {
                 return $rate;
             }
 
-            if (($base === $currency) && ($quote === $this->defaultCurrency)) {
+            if (($base === $currency) && ($quote === $default)) {
                 return round(1 / $rate, 5);
             }
         }
@@ -100,20 +101,15 @@ class CurrencyConverter implements CurrencyConverterInterface
         float $amount,
         ExchangeSubjectInterface $subject,
         string $quote = null,
-        bool $round = true,
-        bool $invert = false // TODO Remove as not used
+        bool $round = true
     ): float {
-        if ($invert) {
-            trigger_error('Invert parameter should not be used.', E_USER_DEPRECATED);
-        }
-
         if (is_null($quote)) {
             $quote = $subject->getCurrency()->getCode();
         }
 
-        $rate = $this->getSubjectExchangeRate($subject, $this->defaultCurrency, $quote);
+        $rate = $this->getSubjectExchangeRate($subject, null, $quote);
 
-        return $this->convertWithRate($amount, $invert ? round(1 / $rate, 5) : $rate, $quote, $round);
+        return $this->convertWithRate($amount, $rate, $quote, $round);
     }
 
     /**

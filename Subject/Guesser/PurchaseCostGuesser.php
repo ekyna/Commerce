@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Subject\Guesser;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
@@ -61,75 +62,167 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
     /**
      * @inheritdoc
      */
-    public function guess(SubjectInterface $subject, $quoteCurrency = null)
+    public function guess(SubjectInterface $subject, string $quote = null, bool $shipping = false): ?float
     {
+        if (is_null($quote)) {
+            $quote = $this->currencyConverter->getDefaultCurrency();
+        }
+
         // By assignable stock units (avg)
-        if ($subject instanceof StockSubjectInterface) {
-            $class = $subject::getStockUnitClass();
-
-            /** @var StockUnitRepositoryInterface $repository */
-            $repository = $this->entityManager->getRepository($class);
-
-            $defaultCurrency = $this->currencyConverter->getDefaultCurrency();
-            if (is_null($quoteCurrency)) {
-                $quoteCurrency = $defaultCurrency;
-            }
-
-            $units = $repository->findAssignableBySubject($subject);
-
-            if (!empty($units)) {
-                $cost = $count = 0;
-
-                foreach ($units as $unit) {
-                    if (0 < $netPrice = $unit->getNetPrice()) {
-                        if (!is_null($rate = $unit->getExchangeRate()) && $quoteCurrency === $defaultCurrency) {
-                            $cost += $this->currencyConverter->convertWithRate($netPrice, 1 / $rate);
-                        } else {
-                            $c = $unit->getCurrency() ?? $defaultCurrency;
-                            $cost += $this->currencyConverter->convert($netPrice, $c, $quoteCurrency); // TODO date
-                        }
-                        $count++;
-                    }
-                }
-
-                if (1 < $count) {
-                    $cost = round($cost / $count, 5);
-                }
-
-                if (0 < $cost) {
-                    return $cost;
-                }
-            }
-        }
-
-        // By latest supplier order item
-        $item = $this->supplierOrderItemRepository->findLatestOrderedBySubject($subject);
-        if (null !== $item && 0 < $netPrice = $item->getNetPrice()) {
-            $c = $item->getOrder()->getCurrency()->getCode();
-
-            return $this->currencyConverter->convert($netPrice, $c, $quoteCurrency);
-        }
-
-        // By supplier products (avg)
-        $products = $this->supplierProductRepository->findBySubject($subject);
-        if (!empty($products)) {
-            $cost = $count = 0;
-
-            foreach ($products as $product) {
-                if (0 < $netPrice = $product->getNetPrice()) {
-                    $c = $product->getSupplier()->getCurrency()->getCode();
-                    $cost += $this->currencyConverter->convert($netPrice, $c, $quoteCurrency);
-                    $count++;
-                }
-            }
-
-            if (1 < $count) {
-                $cost = round($cost / $count, 5);
-            }
-
+        if (null !== $cost = $this->getStockUnitsAveragePrice($subject, $quote, $shipping)) {
             return $cost;
         }
 
-        return null;
+        // By latest supplier order item
+        if (null !== $cost = $this->getLatestSupplierOrderItemPrice($subject, $quote)) {
+            return $cost;
+        }
+
+        // By supplier products (avg)
+        return $this->getSupplierProductAverageCost($subject, $quote);
+    }
+
+    /**
+     * Returns the subject assignable stock units average cost price.
+     *
+     * @param SubjectInterface $subject  The subject
+     * @param string           $quote    The quote currency
+     * @param bool             $shipping Whether to include shipping cost
+     *
+     * @return float|null
+     */
+    private function getStockUnitsAveragePrice(SubjectInterface $subject, string $quote, bool $shipping): ?float
+    {
+        if (!$subject instanceof StockSubjectInterface) {
+            return null;
+        }
+
+        $class = $subject::getStockUnitClass();
+
+        /** @var StockUnitRepositoryInterface $repository */
+        $repository = $this->entityManager->getRepository($class);
+
+        $units = $repository->findAssignableBySubject($subject);
+
+        if (empty($units)) {
+            return null;
+        }
+
+        $cost = $count = 0;
+
+        $base = $this->currencyConverter->getDefaultCurrency();
+
+        foreach ($units as $unit) {
+            $price = $unit->getNetPrice();
+            if ($shipping) {
+                $price += $unit->getShippingPrice();
+            }
+
+            if (1 !== bccomp($price, 0, 5)) {
+                continue;
+            }
+
+            $count++;
+
+            if (null !== $order = $unit->getSupplierOrder()) {
+                // Convert with order's exchange rate
+                $rate = $this->currencyConverter->getSubjectExchangeRate($order, $base, $quote);
+
+                $cost += $this->currencyConverter->convertWithRate($price, $rate, $quote, false);
+
+                continue;
+            }
+
+            $cost += $this->currencyConverter->convert($price, $base, $quote);
+        }
+
+        return $this->average($cost, $count, $quote);
+    }
+
+        // TODO By NOT assignable stock units (+ period like last 6 months)
+
+    /**
+     * Returns the latest supplier order item cost price.
+     *
+     * @param SubjectInterface $subject The subject
+     * @param string           $quote   The quote currency
+     *
+     * @return float|null
+     */
+    private function getLatestSupplierOrderItemPrice(SubjectInterface $subject, string $quote): ?float
+    {
+        $item = $this->supplierOrderItemRepository->findLatestOrderedBySubject($subject);
+
+        if (null === $item) {
+            return null;
+        }
+
+        $cost = $item->getNetPrice();
+
+        if (1 !== bccomp($cost, 0, 5)) {
+            return null;
+        }
+
+        $base = $item->getOrder()->getCurrency()->getCode();
+
+        // Convert with current exchange rate
+        return $this->currencyConverter->convert($cost, $base, $quote);
+    }
+
+    /**
+     * Returns the supplier product average cost price.
+     *
+     * @param SubjectInterface $subject The subject
+     * @param string           $quote   The quote currency
+     *
+     * @return float|null
+     */
+    private function getSupplierProductAverageCost(SubjectInterface $subject, string $quote): ?float
+    {
+        $products = $this->supplierProductRepository->findBySubject($subject);
+
+        if (empty($products)) {
+            return null;
+        }
+
+        $cost = $count = 0;
+        foreach ($products as $product) {
+            $price = $product->getNetPrice();
+
+            if (1 !== bccomp($price, 0, 5)) {
+                continue;
+            }
+
+            $count++;
+
+            $base = $product->getSupplier()->getCurrency()->getCode();
+
+            // Convert with current exchange rate
+            $cost += $this->currencyConverter->convert($price, $base, $quote);
+        }
+
+        return $this->average($cost, $count, $quote);
+    }
+
+    /**
+     * Returns the average cost price average.
+     *
+     * @param float  $total
+     * @param int    $count
+     * @param string $currency
+     *
+     * @return float|null
+     */
+    private function average(float $total, int $count, string $currency): ?float
+    {
+        if (1 !== bccomp($total, 0, 5)) {
+            return null;
+        }
+
+        if (1 < $count) {
+            $total = round($total / $count, 5);
+        }
+
+        return Money::round($total, $currency);
     }
 }

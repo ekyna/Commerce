@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class ShipmentSubjectStateResolverTest\Resolver
- * @package Ekyna\Component\Commerce\Tests\Shipment
+ * @package Ekyna\Component\Commerce\Tests\Shipment\Resolver
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 class ShipmentSubjectStateResolverTest extends TestCase

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
+use DateTime;
 use Ekyna\Component\Commerce\Stock\Model;
 
 /**
@@ -24,7 +25,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @var float
      */
-    protected $quantity = 0;
+    protected $quantity;
 
     /**
      * @var string
@@ -37,10 +38,19 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     protected $note;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $createdAt;
 
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->quantity = 0.;
+        $this->createdAt = new DateTime();
+    }
 
     /**
      * @inheritdoc
@@ -136,7 +146,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritDoc
      */
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
     }
@@ -144,7 +154,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritDoc
      */
-    public function setCreatedAt(\DateTime $createdAt): Model\StockAdjustmentInterface
+    public function setCreatedAt(DateTime $createdAt): Model\StockAdjustmentInterface
     {
         $this->createdAt = $createdAt;
 

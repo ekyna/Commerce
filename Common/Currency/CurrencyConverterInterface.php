@@ -48,8 +48,7 @@ interface CurrencyConverterInterface
      * @param float                    $amount  The amount to convert (default currency)
      * @param ExchangeSubjectInterface $subject The subject
      * @param string                   $quote   The quote currency ISO 4217 code
-     * @param bool                     $round   Whether the round the result regarding to the currency
-     * @param bool                     $invert  Whether to use inverted exchange rate
+     * @param bool                     $round   Whether the round the result regarding to the quote currency
      *
      * @return float
      */
@@ -57,8 +56,7 @@ interface CurrencyConverterInterface
         float $amount,
         ExchangeSubjectInterface $subject,
         string $quote = null,
-        bool $round = true,
-        bool $invert = false
+        bool $round = true
     ): float;
 
     /**

@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 
 /**
@@ -14,46 +15,36 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 interface ShipmentPriceResolverInterface
 {
     /**
-     * Returns whether the sale has free shipping.
-     *
-     * @param SaleInterface           $sale
-     * @param ShipmentMethodInterface $method
-     *
-     * @return bool
-     */
-    public function hasFreeShipping(SaleInterface $sale, ShipmentMethodInterface $method = null);
-
-    /**
      * Returns the resolved shipment prices by sale.
      *
      * @param SaleInterface $sale
      * @param bool          $availableOnly
      *
-     * @return array|\Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice[]
+     * @return array|ResolvedShipmentPrice[]
      */
-    public function getAvailablePricesBySale(SaleInterface $sale, $availableOnly = true);
+    public function getAvailablePricesBySale(SaleInterface $sale, bool $availableOnly = true): array;
 
     /**
      * Returns the shipment price by sale.
      *
      * @param SaleInterface $sale
      *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice|null
+     * @return ResolvedShipmentPrice|null
      */
-    public function getPriceBySale(SaleInterface $sale);
+    public function getPriceBySale(SaleInterface $sale): ?ResolvedShipmentPrice;
 
     /**
-     * Returns the shipment price by country, method and weight.
+     * Returns the shipment price WITHOUT TAXES by country, method and weight.
      *
      * @param CountryInterface        $country
      * @param ShipmentMethodInterface $method
      * @param float                   $weight The weight in Kg.
      *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice|null
+     * @return ResolvedShipmentPrice|null
      */
     public function getPriceByCountryAndMethodAndWeight(
         CountryInterface $country,
         ShipmentMethodInterface $method,
-        $weight
-    );
+        float $weight
+    ): ?ResolvedShipmentPrice;
 }

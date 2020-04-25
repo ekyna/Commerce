@@ -1,0 +1,38 @@
+fr_fr:
+    name: Ventes en France
+    priority: 1024
+    customer: true
+    business: true
+    sources: [FR]
+    targets: [FR]
+    taxes: [fr_normal, fr_intermediate, fr_reduced, fr_super_reduced]
+    notices: []
+fr_eu_b2b:
+    name: Ventes intracommunautaires B2B
+    priority: 768
+    customer: false
+    business: true
+    sources: [FR]
+    targets: [AT, BE, BG, CY, CZ, DE, DK, EE, ES, FI, GR, HR, HU, IE, IT, LT, LU, LV, MT, NL, PL, PT, RO, SI, SE, SK]
+    taxes: []
+    notices:
+        - Exonération de TVA - Article 262 ter-I du code général des impôts
+fr_eu_b2c:
+    name: Ventes intracommunautaires B2C
+    priority: 512
+    customer: true
+    business: false
+    sources: [FR]
+    targets: [AT, BE, BG, CY, CZ, DE, DK, EE, ES, FI, GR, HR, HU, IE, IT, LT, LU, LV, MT, NL, PL, PT, RO, SI, SE, SK]
+    taxes: [fr_normal, fr_intermediate, fr_reduced, fr_super_reduced]
+    notices: []
+fr_world:
+    name: Ventes à l'étranger
+    priority: 256
+    customer: true
+    business: true
+    sources: [FR]
+    targets: []
+    taxes: []
+    notices:
+         - Exonération de TVA - Article 262 1° du code général des impôts

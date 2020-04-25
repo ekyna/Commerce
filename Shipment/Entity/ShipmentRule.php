@@ -2,9 +2,12 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentRuleInterface;
 
@@ -51,12 +54,12 @@ class ShipmentRule implements ShipmentRuleInterface
     protected $vatMode;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $startAt;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $endAt;
 
@@ -74,10 +77,16 @@ class ShipmentRule implements ShipmentRuleInterface
         $this->methods = new ArrayCollection();
         $this->countries = new ArrayCollection();
         $this->customerGroups = new ArrayCollection();
+
+        $this->baseTotal = 0.;
+        $this->vatMode = VatDisplayModes::MODE_NET;
+        $this->netPrice = 0.;
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
     public function __toString()
     {
@@ -95,7 +104,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -103,7 +112,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function setName($name)
+    public function setName(string $name): ShipmentRuleInterface
     {
         $this->name = $name;
 
@@ -113,7 +122,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getMethods()
+    public function getMethods(): Collection
     {
         return $this->methods;
     }
@@ -121,7 +130,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function addMethod(ShipmentMethodInterface $method)
+    public function addMethod(ShipmentMethodInterface $method): ShipmentRuleInterface
     {
         if (!$this->methods->contains($method)) {
             $this->methods->add($method);
@@ -133,19 +142,19 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function removeMethod(ShipmentMethodInterface $method)
+    public function removeMethod(ShipmentMethodInterface $method): ShipmentRuleInterface
     {
         if ($this->methods->contains($method)) {
             $this->methods->removeElement($method);
         }
 
         return $this;
-    }    
+    }
 
     /**
      * @inheritdoc
      */
-    public function getCountries()
+    public function getCountries(): Collection
     {
         return $this->countries;
     }
@@ -153,7 +162,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function addCountry(CountryInterface $country)
+    public function addCountry(CountryInterface $country): ShipmentRuleInterface
     {
         if (!$this->countries->contains($country)) {
             $this->countries->add($country);
@@ -165,19 +174,19 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function removeCountry(CountryInterface $country)
+    public function removeCountry(CountryInterface $country): ShipmentRuleInterface
     {
         if ($this->countries->contains($country)) {
             $this->countries->removeElement($country);
         }
 
         return $this;
-    }    
+    }
 
     /**
      * @inheritdoc
      */
-    public function getCustomerGroups()
+    public function getCustomerGroups(): Collection
     {
         return $this->customerGroups;
     }
@@ -185,7 +194,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function addCustomerGroup(CustomerGroupInterface $group)
+    public function addCustomerGroup(CustomerGroupInterface $group): ShipmentRuleInterface
     {
         if (!$this->customerGroups->contains($group)) {
             $this->customerGroups->add($group);
@@ -197,7 +206,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function removeCustomerGroup(CustomerGroupInterface $group)
+    public function removeCustomerGroup(CustomerGroupInterface $group): ShipmentRuleInterface
     {
         if ($this->customerGroups->contains($group)) {
             $this->customerGroups->removeElement($group);
@@ -209,7 +218,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getBaseTotal()
+    public function getBaseTotal(): float
     {
         return $this->baseTotal;
     }
@@ -217,9 +226,9 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function setBaseTotal($total)
+    public function setBaseTotal(float $total): ShipmentRuleInterface
     {
-        $this->baseTotal = (float)$total;
+        $this->baseTotal = $total;
 
         return $this;
     }
@@ -227,7 +236,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getVatMode()
+    public function getVatMode(): string
     {
         return $this->vatMode;
     }
@@ -235,9 +244,9 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function setVatMode($vatMode)
+    public function setVatMode(string $mode): ShipmentRuleInterface
     {
-        $this->vatMode = $vatMode;
+        $this->vatMode = $mode;
 
         return $this;
     }
@@ -245,7 +254,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getStartAt()
+    public function getStartAt(): ?DateTime
     {
         return $this->startAt;
     }
@@ -253,7 +262,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function setStartAt(\DateTime $date = null)
+    public function setStartAt(DateTime $date = null): ShipmentRuleInterface
     {
         $this->startAt = $date;
 
@@ -263,7 +272,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getEndAt()
+    public function getEndAt(): ?DateTime
     {
         return $this->endAt;
     }
@@ -271,7 +280,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function setEndAt(\DateTime $date = null)
+    public function setEndAt(DateTime $date = null): ShipmentRuleInterface
     {
         $this->endAt = $date;
 
@@ -281,7 +290,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function getNetPrice()
+    public function getNetPrice(): float
     {
         return $this->netPrice;
     }
@@ -289,7 +298,7 @@ class ShipmentRule implements ShipmentRuleInterface
     /**
      * @inheritdoc
      */
-    public function setNetPrice($price)
+    public function setNetPrice(float $price): ShipmentRuleInterface
     {
         $this->netPrice = $price;
 

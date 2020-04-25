@@ -4,7 +4,10 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
@@ -24,14 +27,19 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $id;
 
     /**
-     * @var array
+     * @var Model\WarehouseInterface
      */
-    protected $geocodes;
+    protected $warehouse;
 
     /**
      * @var SupplierOrderItemInterface
      */
     protected $supplierOrderItem;
+
+    /**
+     * @var array
+     */
+    protected $geocodes;
 
     /**
      * The estimated date of arrival (for ordered quantity).
@@ -41,44 +49,51 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $estimatedDateOfArrival;
 
     /**
+     *  (default currency)
+     * @var float
+     */
+    protected $netPrice;
+
+    /**
+     *  (default currency)
+     * @var float
+     */
+    protected $shippingPrice;
+
+    /**
      * The quantity ordered to supplier.
      *
      * @var float
      */
-    protected $orderedQuantity = 0;
+    protected $orderedQuantity;
 
     /**
      * The quantity received by supplier.
      *
      * @var float
      */
-    protected $receivedQuantity = 0;
+    protected $receivedQuantity;
 
     /**
      * The quantity adjusted by administrators.
      *
      * @var float
      */
-    protected $adjustedQuantity = 0;
+    protected $adjustedQuantity;
 
     /**
      * The quantity sold from sales.
      *
      * @var float
      */
-    protected $soldQuantity = 0;
+    protected $soldQuantity;
 
     /**
      * The quantity shipped through sales.
      *
      * @var float
      */
-    protected $shippedQuantity = 0;
-
-    /**
-     * @var float
-     */
-    protected $netPrice = 0;
+    protected $shippedQuantity;
 
     /**
      * @var \DateTime
@@ -108,6 +123,13 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     {
         $this->state = Model\StockUnitStates::STATE_NEW;
         $this->geocodes = [];
+        $this->netPrice = 0.;
+        $this->shippingPrice = 0.;
+        $this->orderedQuantity = 0.;
+        $this->receivedQuantity = 0.;
+        $this->adjustedQuantity = 0.;
+        $this->soldQuantity = 0.;
+        $this->shippedQuantity = 0.;
         $this->createdAt = new \DateTime();
         $this->stockAssignments = new ArrayCollection();
         $this->stockAdjustments = new ArrayCollection();
@@ -137,6 +159,56 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         return $this->id;
     }
 
+    /**
+     * Returns the warehouse.
+     *
+     * @return Model\WarehouseInterface
+     */
+    public function getWarehouse(): ?Model\WarehouseInterface
+    {
+        return $this->warehouse;
+    }
+
+    /**
+     * Sets the warehouse.
+     *
+     * @param Model\WarehouseInterface $warehouse
+     *
+     * @return $this|Model\StockUnitInterface
+     */
+    public function setWarehouse(Model\WarehouseInterface $warehouse): Model\StockUnitInterface
+    {
+        $this->warehouse = $warehouse;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSupplierOrderItem(): ?SupplierOrderItemInterface
+    {
+        return $this->supplierOrderItem;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null): Model\StockUnitInterface
+    {
+        if ($item !== $this->supplierOrderItem) {
+            if ($previous = $this->supplierOrderItem) {
+                $this->supplierOrderItem = null;
+                $previous->setStockUnit(null);
+            }
+
+            if ($this->supplierOrderItem = $item) {
+                $this->supplierOrderItem->setStockUnit($this);
+            }
+        }
+
+        return $this;
+    }
 
     /**
      * @inheritDoc
@@ -197,33 +269,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getSupplierOrderItem(): ?SupplierOrderItemInterface
-    {
-        return $this->supplierOrderItem;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null): Model\StockUnitInterface
-    {
-        if ($item !== $this->supplierOrderItem) {
-            if ($previous = $this->supplierOrderItem) {
-                $this->supplierOrderItem = null;
-                $previous->setStockUnit(null);
-            }
-
-            if ($this->supplierOrderItem = $item) {
-                $this->supplierOrderItem->setStockUnit($this);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getEstimatedDateOfArrival(): ?\DateTime
     {
         return $this->estimatedDateOfArrival;
@@ -235,6 +280,42 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function setEstimatedDateOfArrival(\DateTime $date = null): Model\StockUnitInterface
     {
         $this->estimatedDateOfArrival = $date;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNetPrice(): float
+    {
+        return $this->netPrice;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setNetPrice(float $price): Model\StockUnitInterface
+    {
+        $this->netPrice = $price;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getShippingPrice(): float
+    {
+        return $this->shippingPrice;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setShippingPrice(float $price): Model\StockUnitInterface
+    {
+        $this->shippingPrice = $price;
 
         return $this;
     }
@@ -325,24 +406,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function setShippedQuantity(float $quantity): Model\StockUnitInterface
     {
         $this->shippedQuantity = $quantity;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getNetPrice(): float
-    {
-        return $this->netPrice;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setNetPrice(float $price): Model\StockUnitInterface
-    {
-        $this->netPrice = $price;
 
         return $this;
     }
@@ -526,10 +589,10 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getCurrency(): ?string
+    public function getCurrency(): ?CurrencyInterface
     {
         if ($this->supplierOrderItem) {
-            return $this->supplierOrderItem->getOrder()->getCurrency()->getCode();
+            return $this->supplierOrderItem->getOrder()->getCurrency();
         }
 
         return null;
@@ -557,5 +620,38 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         }
 
         return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBaseCurrency(): ?string
+    {
+        // Stock unit price are in default currency
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setCurrency(CurrencyInterface $currency)
+    {
+        throw new LogicException("Set currency on associated supplier order.");
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setExchangeRate(float $rate = null): ExchangeSubjectInterface
+    {
+        throw new LogicException("Set exchange rate on associated supplier order.");
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setExchangeDate(\DateTime $date = null): ExchangeSubjectInterface
+    {
+        throw new LogicException("Set exchange rate on associated supplier order.");
     }
 }

@@ -296,7 +296,7 @@
         <property name="items">
             <constraint name="Valid"/>
         </property>
-        <!--<property name="payments">
+        <!-- TODO (?) <property name="payments">
             <constraint name="Valid" />
         </property>-->
         <property name="createdAt">
@@ -350,6 +350,7 @@
                     <value>Default</value>
                     <value>Calculation</value>
                 </option>
+                <option name="message">ekyna_commerce.sale_item.designation_is_required</option>
             </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
@@ -366,6 +367,7 @@
                     <value>Default</value>
                     <value>Calculation</value>
                 </option>
+                <option name="message">ekyna_commerce.sale_item.reference_is_required</option>
             </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
@@ -376,14 +378,14 @@
                 </option>
             </constraint>
         </property>
-        <!--<property name="taxGroup">
+        <property name="taxGroup">
             <constraint name="NotNull">
                 <option name="groups">
                     <value>Default</value>
                     <value>Calculation</value>
                 </option>
             </constraint>
-        </property>-->
+        </property>
         <property name="netPrice">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
@@ -391,6 +393,7 @@
                     <value>Default</value>
                     <value>Calculation</value>
                 </option>
+                <option name="message">ekyna_commerce.sale_item.net_price_is_required</option>
             </constraint>
         </property>
         <property name="weight">
@@ -400,6 +403,7 @@
                     <value>Default</value>
                     <value>Calculation</value>
                 </option>
+                <option name="message">ekyna_commerce.sale_item.weight_is_required</option>
             </constraint>
         </property>
         <property name="quantity">

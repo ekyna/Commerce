@@ -9,10 +9,12 @@
             table="commerce_tax">
 
         <indexes>
+            <index columns="code" name="idx_commerce_tax_code"/>
             <index columns="name" name="idx_commerce_tax_name"/>
         </indexes>
 
         <unique-constraints>
+            <unique-constraint columns="code" name="unique_commerce_tax_code"/>
             <unique-constraint columns="name" name="unique_commerce_tax_name"/>
         </unique-constraints>
 
@@ -20,12 +22,17 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="code" column="code" type="string" length="32" nullable="true"/>
         <field name="name" column="name" type="string" length="64"/>
-        <field name="rate" column="rate" type="decimal" precision="5" scale="3"/>
+        <field name="rate" column="rate" type="decimal" precision="5" scale="3"/><!-- TODO lower scale (1 should be enough) -->
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="country">
             <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
+
+        <!--<many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\State" field="state">
+            <join-column name="state_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>-->
 
     </entity>
 

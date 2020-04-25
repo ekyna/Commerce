@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Subject\Entity;
 
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+
 /**
  * Class SubjectIdentity
  * @package Ekyna\Component\Commerce\Subject\Entity
@@ -20,7 +22,7 @@ final class SubjectIdentity
     private $identifier;
 
     /**
-     * @var mixed
+     * @var SubjectInterface
      */
     private $subject;
 
@@ -74,7 +76,7 @@ final class SubjectIdentity
      *
      * @return string
      */
-    public function getProvider()
+    public function getProvider(): ?string
     {
         return $this->provider;
     }
@@ -86,9 +88,9 @@ final class SubjectIdentity
      *
      * @return SubjectIdentity
      */
-    public function setProvider($provider)
+    public function setProvider(string $provider = null): SubjectIdentity
     {
-        $this->provider = (string)$provider;
+        $this->provider = $provider;
 
         return $this;
     }
@@ -98,7 +100,7 @@ final class SubjectIdentity
      *
      * @return string
      */
-    public function getIdentifier()
+    public function getIdentifier(): ?string
     {
         return $this->identifier;
     }
@@ -110,9 +112,9 @@ final class SubjectIdentity
      *
      * @return SubjectIdentity
      */
-    public function setIdentifier($identifier)
+    public function setIdentifier(string $identifier = null): SubjectIdentity
     {
-        $this->identifier = (string)$identifier;
+        $this->identifier = $identifier;
 
         return $this;
     }
@@ -120,9 +122,9 @@ final class SubjectIdentity
     /**
      * Returns the subject.
      *
-     * @return mixed
+     * @return SubjectInterface
      */
-    public function getSubject()
+    public function getSubject(): ?SubjectInterface
     {
         return $this->subject;
     }
@@ -130,11 +132,11 @@ final class SubjectIdentity
     /**
      * Sets the subject.
      *
-     * @param mixed $subject
+     * @param SubjectInterface $subject
      *
      * @return SubjectIdentity
      */
-    public function setSubject($subject = null)
+    public function setSubject(SubjectInterface $subject = null): SubjectIdentity
     {
         $this->subject = $subject;
 

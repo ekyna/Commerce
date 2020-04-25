@@ -23,14 +23,19 @@ class ResolvedTaxesCache
      * Returns the taxes for the given tax group, country and business flag.
      *
      * @param TaxGroupInterface $taxGroup
-     * @param CountryInterface  $country
+     * @param CountryInterface  $source
+     * @param CountryInterface  $target
      * @param bool              $business
      *
      * @return TaxInterface[]|null
      */
-    public function get(TaxGroupInterface $taxGroup, CountryInterface $country, $business = false): ?array
-    {
-        $key = $this->buildKey($taxGroup, $country, $business);
+    public function get(
+        TaxGroupInterface $taxGroup,
+        CountryInterface $source,
+        CountryInterface $target,
+        bool $business = false
+    ): ?array {
+        $key = $this->buildKey($taxGroup, $source, $target, $business);
 
         if (isset($this->taxes[$key])) {
             return $this->taxes[$key];
@@ -43,13 +48,19 @@ class ResolvedTaxesCache
      * Caches the taxes for the given tax group, country and business flag.
      *
      * @param TaxGroupInterface $taxGroup
-     * @param CountryInterface  $country
+     * @param CountryInterface  $source
+     * @param CountryInterface  $target
      * @param bool              $business
      * @param array             $taxes
      */
-    public function set(TaxGroupInterface $taxGroup, CountryInterface $country, bool $business, array $taxes): void
-    {
-        $key = $this->buildKey($taxGroup, $country, $business);
+    public function set(
+        TaxGroupInterface $taxGroup,
+        CountryInterface $source,
+        CountryInterface $target,
+        bool $business,
+        array $taxes
+    ): void {
+        $key = $this->buildKey($taxGroup, $source, $target, $business);
 
         $this->taxes[$key] = $taxes;
     }
@@ -58,13 +69,18 @@ class ResolvedTaxesCache
      * Builds the cache key.
      *
      * @param TaxGroupInterface $taxGroup
-     * @param CountryInterface  $country
+     * @param CountryInterface  $source
+     * @param CountryInterface  $target
      * @param bool              $business
      *
      * @return string
      */
-    private function buildKey(TaxGroupInterface $taxGroup, CountryInterface $country, bool $business = false): string
-    {
-        return sprintf('%s-%s-%s', $taxGroup->getId(), $country->getId(), (int)$business);
+    private function buildKey(
+        TaxGroupInterface $taxGroup,
+        CountryInterface $source,
+        CountryInterface $target,
+        bool $business = false
+    ): string {
+        return sprintf('%s-%s-%s-%s', $taxGroup->getId(), $source->getId(), $target->getId(), (int)$business);
     }
 }

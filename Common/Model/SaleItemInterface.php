@@ -3,21 +3,15 @@
 namespace Ekyna\Component\Commerce\Common\Model;
 
 use Doctrine\Common\Collections\Collection;
-use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
-use Ekyna\Component\Resource\Model as ResourceModel;
+use Ekyna\Component\Resource\Model\SortableInterface;
 
 /**
  * Interface SaleItemInterface
  * @package Ekyna\Component\Commerce\Common\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface SaleItemInterface extends
-    ResourceModel\ResourceInterface,
-    ResourceModel\SortableInterface,
-    SubjectRelativeInterface,
-    TaxableInterface,
-    AdjustableInterface
+interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface, AdjustableInterface
 {
     /**
      * Sets the sale.
@@ -100,22 +94,6 @@ interface SaleItemInterface extends
     public function getChildren();
 
     /**
-     * Returns the designation.
-     *
-     * @return string
-     */
-    public function getDesignation();
-
-    /**
-     * Sets the designation.
-     *
-     * @param string $designation
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setDesignation($designation);
-
-    /**
      * Returns the description.
      *
      * @return string
@@ -130,54 +108,6 @@ interface SaleItemInterface extends
      * @return $this|SaleItemInterface
      */
     public function setDescription($description);
-
-    /**
-     * Returns the reference.
-     *
-     * @return string
-     */
-    public function getReference();
-
-    /**
-     * Sets the reference.
-     *
-     * @param string $reference
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setReference($reference);
-
-    /**
-     * Returns the net price.
-     *
-     * @return float
-     */
-    public function getNetPrice();
-
-    /**
-     * Sets the net price.
-     *
-     * @param float $netPrice
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setNetPrice($netPrice);
-
-    /**
-     * Returns the weight (kilograms).
-     *
-     * @return float
-     */
-    public function getWeight();
-
-    /**
-     * Sets the weight (kilograms).
-     *
-     * @param float $weight
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setWeight($weight);
 
     /**
      * Returns the quantity.
@@ -197,6 +127,8 @@ interface SaleItemInterface extends
 
     /**
      * Returns whether the item is compound.
+     *
+     * A compound item price/stock is determined by composition (children item).
      *
      * @return bool
      */
@@ -330,55 +262,6 @@ interface SaleItemInterface extends
      * @return float
      */
     public function getTotalQuantity();
-
-    /**
-     * Clears the results.
-     *
-     * @return $this|SaleItemInterface
-     *
-     * @internal Usage reserved to calculator.
-     */
-    public function clearResults(): SaleItemInterface;
-
-    /**
-     * Sets the result.
-     *
-     * @param Amount $result
-     *
-     * @return $this|SaleItemInterface
-     *
-     * @internal Usage reserved to calculator.
-     */
-    public function setResult(Amount $result): SaleItemInterface;
-
-    /**
-     * Returns the result for the given currency.
-     *
-     * @param string $currency
-     *
-     * @return Amount
-     *
-     * @internal Usage reserved to view builder.
-     */
-    public function getResult(string $currency): ?Amount;
-
-    /**
-     * Sets the margin.
-     *
-     * @param Margin $margin
-     *
-     * @return $this|SaleItemInterface
-     */
-    public function setMargin(Margin $margin): SaleItemInterface;
-
-    /**
-     * Returns the margin for the given currency.
-     *
-     * @param string $currency
-     *
-     * @return Margin
-     */
-    public function getMargin(string $currency): ?Margin;
 
     /**
      * Returns whether the item is the last one (by position).

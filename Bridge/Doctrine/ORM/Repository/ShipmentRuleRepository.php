@@ -3,11 +3,13 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Types;
-use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Doctrine\ORM\Query;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentRuleInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentRuleRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
@@ -24,12 +26,12 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
     protected $contextProvider;
 
     /**
-     * @var AmountCalculatorInterface
+     * @var AmountCalculatorFactory
      */
-    protected $amountCalculator;
+    protected $calculatorFactory;
 
     /**
-     * @var \Doctrine\ORM\Query
+     * @var Query
      */
     protected $findOneBySaleQuery;
 
@@ -39,7 +41,7 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
      *
      * @param ContextProviderInterface $provider
      */
-    public function setContextProvider(ContextProviderInterface $provider)
+    public function setContextProvider(ContextProviderInterface $provider): void
     {
         $this->contextProvider = $provider;
     }
@@ -47,17 +49,17 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
     /**
      * Sets the amount calculator.
      *
-     * @param AmountCalculatorInterface $calculator
+     * @param AmountCalculatorFactory $factory
      */
-    public function setAmountCalculator(AmountCalculatorInterface $calculator)
+    public function setCalculatorFactory(AmountCalculatorFactory $factory): void
     {
-        $this->amountCalculator = $calculator;
+        $this->calculatorFactory = $factory;
     }
 
     /**
      * @inheritdoc
      */
-    public function findOneBySale(SaleInterface $sale, ShipmentMethodInterface $method = null)
+    public function findOneBySale(SaleInterface $sale, ShipmentMethodInterface $method = null): ?ShipmentRuleInterface
     {
         // Use sale's shipment method if not passed
         if (null === $method) {
@@ -69,7 +71,7 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
 
         $context = $this->contextProvider->getContext($sale);
 
-        $result = $this->amountCalculator->calculateSaleItems($sale);
+        $result = $this->calculatorFactory->create()->calculateSaleItems($sale);
 
         $parameters = [
             'net_mode' => VatDisplayModes::MODE_NET,
@@ -91,9 +93,9 @@ class ShipmentRuleRepository extends ResourceRepository implements ShipmentRuleR
     /**
      * Returns the "find one by sale" query.
      *
-     * @return \Doctrine\ORM\Query
+     * @return Query
      */
-    protected function getFindOneBySaleQuery()
+    protected function getFindOneBySaleQuery(): Query
     {
         if (null !== $this->findOneBySaleQuery) {
             return $this->findOneBySaleQuery;

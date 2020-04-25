@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
-use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
@@ -39,18 +38,15 @@ class ShipmentPrice implements ShipmentPriceInterface
      */
     protected $netPrice;
 
-    /**
-     * (non-mapped)
-     * @var TaxInterface[]
-     */
-    protected $taxes = [];
 
     /**
-     * (non-mapped)
-     * @var bool
+     * Constructor.
      */
-    protected $free = false;
-
+    public function __construct()
+    {
+        $this->weight = 0.;
+        $this->netPrice = 0.;
+    }
 
     /**
      * Returns the string representation.
@@ -75,7 +71,7 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function getZone()
+    public function getZone(): ?ShipmentZoneInterface
     {
         return $this->zone;
     }
@@ -83,9 +79,18 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function setZone(ShipmentZoneInterface $zone = null)
+    public function setZone(ShipmentZoneInterface $zone = null): ShipmentPriceInterface
     {
-        $this->zone = $zone;
+        if ($zone !== $this->zone) {
+            if ($previous = $this->zone) {
+                $this->zone = null;
+                $previous->removePrice($this);
+            }
+
+            if ($this->zone = $zone) {
+                $this->zone->addPrice($this);
+            }
+        }
 
         return $this;
     }
@@ -93,7 +98,7 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function getMethod()
+    public function getMethod(): ?ShipmentMethodInterface
     {
         return $this->method;
     }
@@ -101,9 +106,18 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function setMethod(ShipmentMethodInterface $method = null)
+    public function setMethod(ShipmentMethodInterface $method = null): ShipmentPriceInterface
     {
-        $this->method = $method;
+        if ($method !== $this->method) {
+            if ($previous = $this->method) {
+                $this->method = null;
+                $previous->removePrice($this);
+            }
+
+            if ($this->method = $method) {
+                $this->method->addPrice($this);
+            }
+        }
 
         return $this;
     }
@@ -111,7 +125,7 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function getWeight()
+    public function getWeight(): float
     {
         return $this->weight;
     }
@@ -119,9 +133,9 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function setWeight($weight)
+    public function setWeight(float $weight): ShipmentPriceInterface
     {
-        $this->weight = (float)$weight;
+        $this->weight = $weight;
 
         return $this;
     }
@@ -129,7 +143,7 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function getNetPrice()
+    public function getNetPrice(): float
     {
         return $this->netPrice;
     }
@@ -137,45 +151,9 @@ class ShipmentPrice implements ShipmentPriceInterface
     /**
      * @inheritdoc
      */
-    public function setNetPrice($price)
+    public function setNetPrice(float $price): ShipmentPriceInterface
     {
-        $this->netPrice = (float)$price;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTaxes()
-    {
-        return $this->taxes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setTaxes(array $taxes)
-    {
-        $this->taxes = $taxes;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isFree()
-    {
-        return $this->free;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setFree($free)
-    {
-        $this->free = (bool)$free;
+        $this->netPrice = $price;
 
         return $this;
     }

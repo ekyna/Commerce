@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Bridge\Payum\Action;
 use Ekyna\Component\Commerce\Bridge\Payum\CreditBalance as Credit;
 use Ekyna\Component\Commerce\Bridge\Payum\Offline as Offline;
 use Ekyna\Component\Commerce\Bridge\Payum\OutstandingBalance as Outstanding;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -103,7 +104,7 @@ class PayumBuilderPass implements CompilerPassInterface
         if (class_exists('Payum\Paypal\ExpressCheckout\Nvp\PaypalExpressCheckoutGatewayFactory')) {
             // Convert action
             $definition = new Definition('Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action\EcNvpConvertAction');
-            $definition->setArgument(0, new Reference('ekyna_commerce.common.amount_calculator'));
+            $definition->setArgument(0, new Reference(AmountCalculatorFactory::class));
             if ($container->has('ekyna_setting.manager') && class_exists('Ekyna\Bundle\AdminBundle\Settings\GeneralSettingsSchema')) {
                 $definition->setArgument(1, new Expression(
                     "service('ekyna_setting.manager').getParameter('general.site_name')"

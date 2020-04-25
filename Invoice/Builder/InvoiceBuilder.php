@@ -225,11 +225,11 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
         $available,
         $expected = null
     ) {
-        $line = null;
-
         if (0 >= $available) {
-            return $line;
+            return null;
         }
+
+        $line = null;
 
         // Existing line lookup
         foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {

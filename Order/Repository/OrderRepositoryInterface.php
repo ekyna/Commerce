@@ -68,6 +68,13 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function findDueOrders();
 
     /**
+     * Finds orders having revenue total or margin total set to null.
+     *
+     * @return int[]
+     */
+    public function findWithNullRevenueOrMargin(): array;
+
+    /**
      * Returns the regular (payment term less) due.
      *
      * @return float

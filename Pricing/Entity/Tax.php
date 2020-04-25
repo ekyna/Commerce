@@ -24,6 +24,11 @@ class Tax implements TaxInterface
     /**
      * @var string
      */
+    protected $code;
+
+    /**
+     * @var string
+     */
     protected $name;
 
     /**
@@ -52,7 +57,7 @@ class Tax implements TaxInterface
      */
     public function __construct()
     {
-        $this->rate = 0;
+        $this->rate = 0.;
         $this->taxRules = new ArrayCollection();
     }
 
@@ -77,7 +82,25 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function getName()
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCode(string $code): TaxInterface
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -85,7 +108,7 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function setName($name)
+    public function setName(string $name): TaxInterface
     {
         $this->name = $name;
 
@@ -95,7 +118,7 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function getRate()
+    public function getRate(): float
     {
         return $this->rate;
     }
@@ -103,7 +126,7 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function setRate($rate)
+    public function setRate(float $rate): TaxInterface
     {
         $this->rate = $rate;
 
@@ -113,7 +136,7 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function getCountry()
+    public function getCountry(): ?CountryInterface
     {
         return $this->country;
     }
@@ -121,7 +144,7 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function setCountry(CountryInterface $country)
+    public function setCountry(CountryInterface $country): TaxInterface
     {
         $this->country = $country;
 
@@ -131,7 +154,7 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function getState()
+    public function getState(): ?StateInterface
     {
         return $this->state;
     }
@@ -139,7 +162,7 @@ class Tax implements TaxInterface
     /**
      * @inheritdoc
      */
-    public function setState(StateInterface $state = null)
+    public function setState(StateInterface $state = null): TaxInterface
     {
         $this->state = $state;
 

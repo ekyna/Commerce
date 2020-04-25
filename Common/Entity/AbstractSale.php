@@ -163,26 +163,6 @@ abstract class AbstractSale implements Common\SaleInterface
     protected $items;
 
     /**
-     * @var Common\Amount[]
-     */
-    protected $grossResults = [];
-
-    /**
-     * @var Common\Amount[]
-     */
-    protected $shipmentResults = [];
-
-    /**
-     * @var Common\Amount[]
-     */
-    protected $finalResults = [];
-
-    /**
-     * @var Common\Margin[]
-     */
-    protected $margins = [];
-
-    /**
      * @var ContextInterface
      */
     private $context;
@@ -193,16 +173,16 @@ abstract class AbstractSale implements Common\SaleInterface
      */
     public function __construct()
     {
-        $this->sameAddress  = true;
+        $this->sameAddress = true;
         $this->autoDiscount = true;
-        $this->taxExempt    = false;
+        $this->taxExempt = false;
 
         $this->netTotal = 0;
 
         $this->createdAt = new \DateTime();
 
         $this->attachments = new ArrayCollection();
-        $this->items       = new ArrayCollection();
+        $this->items = new ArrayCollection();
 
         $this->initializeAdjustments();
         $this->initializeNotifications();
@@ -660,100 +640,6 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setCouponData(array $data = null): Common\SaleInterface
     {
         $this->couponData = $data;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function clearResults(): Common\SaleInterface
-    {
-        foreach ($this->items as $item) {
-            $item->clearResults();
-        }
-
-        /** @var Common\SaleAdjustmentInterface $adjustment */
-        foreach ($this->adjustments as $adjustment) {
-            $adjustment->clearResults();
-        }
-
-        $this->grossResults    = [];
-        $this->shipmentResults = [];
-        $this->finalResults    = [];
-        $this->margins         = [];
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getGrossResult(string $currency): ?Common\Amount
-    {
-        return $this->grossResults[$currency] ?? null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setGrossResult(Common\Amount $result): Common\SaleInterface
-    {
-        $this->grossResults[$result->getCurrency()] = $result;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShipmentResult(string $currency): ?Common\Amount
-    {
-        return $this->shipmentResults[$currency] ?? null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setShipmentResult(Common\Amount $result): Common\SaleInterface
-    {
-        $this->shipmentResults[$result->getCurrency()] = $result;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFinalResult(string $currency): ?Common\Amount
-    {
-        return $this->finalResults[$currency] ?? null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setFinalResult(Common\Amount $result): Common\SaleInterface
-    {
-        $this->finalResults[$result->getCurrency()] = $result;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMargin(string $currency): ?Common\Margin
-    {
-        return $this->margins[$currency] ?? null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setMargin(Common\Margin $margin): Common\SaleInterface
-    {
-        $this->margins[$margin->getCurrency()] = $margin;
 
         return $this;
     }

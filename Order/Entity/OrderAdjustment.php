@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Order\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAdjustment;
+use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderAdjustmentInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 
@@ -22,15 +24,7 @@ class OrderAdjustment extends AbstractSaleAdjustment implements OrderAdjustmentI
     /**
      * @inheritDoc
      */
-    public function getSale()
-    {
-        return $this->getOrder();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOrder()
+    public function getSale(): ?SaleInterface
     {
         return $this->order;
     }
@@ -38,7 +32,15 @@ class OrderAdjustment extends AbstractSaleAdjustment implements OrderAdjustmentI
     /**
      * @inheritdoc
      */
-    public function setOrder(OrderInterface $order = null)
+    public function getOrder(): ?OrderInterface
+    {
+        return $this->order;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOrder(OrderInterface $order = null): OrderAdjustmentInterface
     {
         if ($order !== $this->order) {
             if ($previous = $this->order) {
@@ -57,7 +59,7 @@ class OrderAdjustment extends AbstractSaleAdjustment implements OrderAdjustmentI
     /**
      * @inheritdoc
      */
-    public function getAdjustable()
+    public function getAdjustable(): ?AdjustableInterface
     {
         return $this->order;
     }

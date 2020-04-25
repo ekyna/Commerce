@@ -109,6 +109,14 @@ class CountryProvider implements CountryProviderInterface
     /**
      * @inheritDoc
      */
+    public function getDefault(): CountryInterface
+    {
+        return $this->countryRepository->findDefault();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getCountryRepository(): CountryRepositoryInterface
     {
         return $this->countryRepository;

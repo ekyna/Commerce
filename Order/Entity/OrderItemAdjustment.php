@@ -18,7 +18,7 @@ class OrderItemAdjustment extends AbstractSaleItemAdjustment implements OrderIte
     /**
      * @inheritDoc
      */
-    protected function assertSaleItemClass(SaleItemInterface $item)
+    protected function assertSaleItemClass(SaleItemInterface $item): void
     {
         if (!$item instanceof OrderItemInterface) {
             throw new InvalidArgumentException("Expected instance of " . OrderItemInterface::class);

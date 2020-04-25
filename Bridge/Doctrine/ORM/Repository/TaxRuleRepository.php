@@ -2,7 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 
@@ -14,95 +17,137 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 class TaxRuleRepository extends ResourceRepository implements TaxRuleRepositoryInterface
 {
     /**
-     * @var \Doctrine\ORM\Query
+     * @var Query
      */
-    private $byCountryAndCustomerQuery;
+    private $byCodeQuery;
 
     /**
-     * @var \Doctrine\ORM\Query
+     * @var Query
      */
-    private $byCountryAndBusinessQuery;
-
+    private $forCustomerQuery;
 
     /**
-     * @inheritdoc
+     * @var Query
      */
-    public function findOneByCountryForCustomer(
-        CountryInterface $country
-    ) {
-        return $this
-            ->getByCountryAndCustomerQuery()
-            ->setParameter('country', $country)
-            ->getOneOrNullResult();
-    }
+    private $forBusinessQuery;
 
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function findOneByCountryForBusiness(
-        CountryInterface $country
-    ) {
-        return $this
-            ->getByCountryAndBusinessQuery()
-            ->setParameter('country', $country)
-            ->getOneOrNullResult();
-    }
-
-    /**
-     * Returns the "find one by country and customer" query.
-     *
-     * @return \Doctrine\ORM\Query
-     */
-    private function getByCountryAndCustomerQuery()
+    public function findOneByCode(string $code): ?TaxRuleInterface
     {
-        if (null === $this->byCountryAndCustomerQuery) {
+        return $this
+            ->getByCodeQuery()
+            ->setParameter('code', $code)
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findOneForCustomer(CountryInterface $source, CountryInterface $target): ?TaxRuleInterface
+    {
+        return $this
+            ->getForCustomerQuery()
+            ->setParameter('source', $source)
+            ->setParameter('target', $target)
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findOneForBusiness(CountryInterface $source, CountryInterface $target): ?TaxRuleInterface
+    {
+        return $this
+            ->getForBusinessQuery()
+            ->setParameter('source', $source)
+            ->setParameter('target', $target)
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Returns the "find one by code" query.
+     *
+     * @return Query
+     */
+    private function getByCodeQuery(): Query
+    {
+        if ($this->byCodeQuery) {
+            return $this->byCodeQuery;
+        }
+
+        $qb = $this->createQueryBuilder('r');
+
+        return $this->byCodeQuery = $qb
+            ->andWhere($qb->expr()->eq('r.code', ':code'))
+            ->getQuery()
+            ->useQueryCache(true);
+    }
+
+    /**
+     * Returns the "find one for customer" query.
+     *
+     * @return Query
+     */
+    private function getForCustomerQuery()
+    {
+        if (null === $this->forCustomerQuery) {
             $qb = $this->getBaseQueryBuilder();
 
-            $this->byCountryAndCustomerQuery = $qb
+            $this->forCustomerQuery = $qb
                 ->andWhere($qb->expr()->eq('r.customer', ':customer'))
                 ->getQuery()
+                ->useQueryCache(true)
                 ->setParameter('customer', true)
                 ->setMaxResults(1);
         }
 
-        return $this->byCountryAndCustomerQuery;
+        return $this->forCustomerQuery;
     }
 
     /**
-     * Returns the "find one by country and business" query.
+     * Returns the "find one for business" query.
      *
-     * @return \Doctrine\ORM\Query
+     * @return Query
      */
-    private function getByCountryAndBusinessQuery()
+    private function getForBusinessQuery(): Query
     {
-        if (null === $this->byCountryAndBusinessQuery) {
+        if (null === $this->forBusinessQuery) {
             $qb = $this->getBaseQueryBuilder();
 
-            $this->byCountryAndBusinessQuery = $qb
+            $this->forBusinessQuery = $qb
                 ->andWhere($qb->expr()->eq('r.business', ':business'))
                 ->getQuery()
+                ->useQueryCache(true)
                 ->setParameter('business', true)
                 ->setMaxResults(1);
         }
 
-        return $this->byCountryAndBusinessQuery;
+        return $this->forBusinessQuery;
     }
 
     /**
      * Returns the base query builder.
      *
-     * @return \Doctrine\ORM\QueryBuilder
+     * @return QueryBuilder
      */
-    private function getBaseQueryBuilder()
+    private function getBaseQueryBuilder(): QueryBuilder
     {
         $qb = $this->getQueryBuilder('r', 'r.id');
 
         return $qb
             ->andWhere(
                 $qb->expr()->orX(
-                    $qb->expr()->isMemberOf(':country', 'r.countries'),
-                    'r.countries IS EMPTY'
+                    $qb->expr()->isMemberOf(':source', 'r.sources'),
+                    'r.sources IS EMPTY'
+                )
+            )
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->isMemberOf(':target', 'r.targets'),
+                    'r.targets IS EMPTY'
                 )
             )
             ->addOrderBy('r.priority', 'DESC');

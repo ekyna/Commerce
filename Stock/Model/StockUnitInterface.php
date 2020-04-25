@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
@@ -13,7 +14,7 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
+interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, ExchangeSubjectInterface
 {
     /**
      * Sets the subject.
@@ -30,6 +31,38 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return StockSubjectInterface|null
      */
     public function getSubject(): ?StockSubjectInterface;
+
+    /**
+     * Returns the warehouse.
+     *
+     * @return WarehouseInterface
+     */
+    public function getWarehouse(): ?WarehouseInterface;
+
+    /**
+     * Sets the warehouse.
+     *
+     * @param WarehouseInterface $warehouse
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setWarehouse(WarehouseInterface $warehouse): StockUnitInterface;
+
+    /**
+     * Returns the supplier order item.
+     *
+     * @return SupplierOrderItemInterface
+     */
+    public function getSupplierOrderItem(): ?SupplierOrderItemInterface;
+
+    /**
+     * Sets the supplier order item.
+     *
+     * @param SupplierOrderItemInterface|null $item
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null): StockUnitInterface;
 
     /**
      * Returns the geocodes.
@@ -75,22 +108,6 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
     public function setGeocodes(array $codes): StockUnitInterface;
 
     /**
-     * Returns the supplier order item.
-     *
-     * @return SupplierOrderItemInterface
-     */
-    public function getSupplierOrderItem(): ?SupplierOrderItemInterface;
-
-    /**
-     * Sets the supplier order item.
-     *
-     * @param SupplierOrderItemInterface|null $item
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setSupplierOrderItem(SupplierOrderItemInterface $item = null);
-
-    /**
      * Returns the estimated date of arrival.
      *
      * @return \DateTime|null
@@ -105,6 +122,38 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return $this|StockUnitInterface
      */
     public function setEstimatedDateOfArrival(\DateTime $date = null);
+
+    /**
+     * Returns the net price (default currency).
+     *
+     * @return float
+     */
+    public function getNetPrice(): float;
+
+    /**
+     * Sets the net price (default currency).
+     *
+     * @param float $price
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setNetPrice(float $price): StockUnitInterface;
+
+    /**
+     * Returns the shipping price (default currency).
+     *
+     * @return float
+     */
+    public function getShippingPrice(): float;
+
+    /**
+     * Sets the shipping price (default currency).
+     *
+     * @param float $price
+     *
+     * @return StockUnitInterface
+     */
+    public function setShippingPrice(float $price): StockUnitInterface;
 
     /**
      * Returns the ordered quantity.
@@ -185,22 +234,6 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      * @return $this|StockUnitInterface
      */
     public function setShippedQuantity(float $quantity): StockUnitInterface;
-
-    /**
-     * Returns the net price.
-     *
-     * @return float
-     */
-    public function getNetPrice(): float;
-
-    /**
-     * Sets the net price.
-     *
-     * @param float $price
-     *
-     * @return $this|StockUnitInterface
-     */
-    public function setNetPrice(float $price): StockUnitInterface;
 
     /**
      * Returns the "created at" date.
@@ -337,24 +370,4 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface
      */
     public function getSupplierOrder(): ?SupplierOrderInterface;
 
-    /**
-     * Returns the currency code.
-     *
-     * @return string|null
-     */
-    public function getCurrency(): ?string;
-
-    /**
-     * Returns the exchange rate.
-     *
-     * @return float|null
-     */
-    public function getExchangeRate(): ?float;
-
-    /**
-     * Returns the exchange date.
-     *
-     * @return \DateTime|null
-     */
-    public function getExchangeDate(): ?\DateTime;
 }

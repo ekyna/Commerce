@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Stock\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Stock\Event\StockUnitEvents;
 use Ekyna\Component\Commerce\Stock\Event\SubjectStockUnitEvent;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
@@ -106,6 +107,10 @@ abstract class AbstractStockUnitListener
             }
 
             $this->scheduleSubjectStockUnitChangeEvent($stockUnit);
+        }
+
+        if ($this->persistenceHelper->isChanged($stockUnit, ['netPrice', 'shippingPrice'])) {
+            $this->persistenceHelper->scheduleEvent(StockUnitEvents::COST_CHANGE, $stockUnit);
         }
     }
 

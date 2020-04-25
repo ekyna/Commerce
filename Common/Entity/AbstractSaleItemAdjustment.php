@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 
@@ -21,7 +22,7 @@ abstract class AbstractSaleItemAdjustment extends AbstractAdjustment implements 
     /**
      * @inheritdoc
      */
-    public function getItem()
+    public function getItem(): ?SaleItemInterface
     {
         return $this->item;
     }
@@ -29,7 +30,7 @@ abstract class AbstractSaleItemAdjustment extends AbstractAdjustment implements 
     /**
      * @inheritdoc
      */
-    public function setItem(SaleItemInterface $item = null)
+    public function setItem(SaleItemInterface $item = null): SaleItemAdjustmentInterface
     {
         $item && $this->assertSaleItemClass($item);
 
@@ -50,7 +51,7 @@ abstract class AbstractSaleItemAdjustment extends AbstractAdjustment implements 
     /**
      * @inheritdoc
      */
-    public function getAdjustable()
+    public function getAdjustable(): ?AdjustableInterface
     {
         return $this->item;
     }
@@ -60,5 +61,5 @@ abstract class AbstractSaleItemAdjustment extends AbstractAdjustment implements 
      *
      * @param SaleItemInterface $item
      */
-    abstract protected function assertSaleItemClass(SaleItemInterface $item);
+    abstract protected function assertSaleItemClass(SaleItemInterface $item): void;
 }

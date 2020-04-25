@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Tests\Stock\Cache;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCache;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
@@ -20,7 +20,7 @@ class StockUnitCacheTest extends StockTestCase
      */
     public function test_add_withoutSubject_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit();
+        $unit = Fixture::stockUnit();
 
         $this->expectException(LogicException::class);
 
@@ -36,7 +36,7 @@ class StockUnitCacheTest extends StockTestCase
      */
     public function test_add(): void
     {
-        $unit = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unit = Fixture::stockUnit(['subject' => []]);
 
         $cache = $this->createStockUnitCache();
         $cache->add($unit);
@@ -50,8 +50,8 @@ class StockUnitCacheTest extends StockTestCase
      */
     public function test_isAdded(): void
     {
-        $unitA = Fixtures::createStockUnit(Fixtures::createSubject());
-        $unitB = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unitA = Fixture::stockUnit(['subject' => []]);
+        $unitB = Fixture::stockUnit(['subject' => []]);
 
         $cache = $this->createStockUnitCache();
         $cache->add($unitA);
@@ -65,7 +65,7 @@ class StockUnitCacheTest extends StockTestCase
      */
     public function test_remove(): void
     {
-        $unit = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unit = Fixture::stockUnit(['subject' => []]);
 
         $cache = $this->createStockUnitCache([$unit]);
 
@@ -82,8 +82,8 @@ class StockUnitCacheTest extends StockTestCase
      */
     public function test_isRemoved(): void
     {
-        $unitA = Fixtures::createStockUnit(Fixtures::createSubject());
-        $unitB = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unitA = Fixture::stockUnit(['subject' => []]);
+        $unitB = Fixture::stockUnit(['subject' => []]);
 
         $cache = $this->createStockUnitCache();
         $cache->remove($unitA);
@@ -97,10 +97,10 @@ class StockUnitCacheTest extends StockTestCase
      */
     public function test_findAddedBySubject(): void
     {
-        $unitA = Fixtures::createStockUnit($subjectA = Fixtures::createSubject());
-        $unitB = Fixtures::createStockUnit($subjectB = Fixtures::createSubject());
-        $unitC = Fixtures::createStockUnit($subjectA);
-        $unitD = Fixtures::createStockUnit($subjectB);
+        $unitA = Fixture::stockUnit(['subject' => $subjectA = Fixture::subject()]);
+        $unitB = Fixture::stockUnit(['subject' => $subjectB = Fixture::subject()]);
+        $unitC = Fixture::stockUnit(['subject' => $subjectA]);
+        $unitD = Fixture::stockUnit(['subject' => $subjectB]);
 
         $cache = $this->createStockUnitCache();
         $cache->add($unitA);
@@ -117,8 +117,8 @@ class StockUnitCacheTest extends StockTestCase
      */
     public function test_onEventQueueClose(): void
     {
-        $unitA = Fixtures::createStockUnit(Fixtures::createSubject());
-        $unitB = Fixtures::createStockUnit(Fixtures::createSubject());
+        $unitA = Fixture::stockUnit(['subject' => []]);
+        $unitB = Fixture::stockUnit(['subject' => []]);
 
         $cache = $this->createStockUnitCache([$unitA, $unitB]);
 

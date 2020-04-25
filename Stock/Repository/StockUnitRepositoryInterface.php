@@ -19,7 +19,7 @@ interface StockUnitRepositoryInterface extends StockUnitFinderInterface, Resourc
      *
      * @return StockUnitInterface[]
      */
-    public function findInStock();
+    public function findInStock(): array;
 
     /**
      * Returns the latest closed stock units.
@@ -29,5 +29,5 @@ interface StockUnitRepositoryInterface extends StockUnitFinderInterface, Resourc
      *
      * @return StockUnitInterface[]
      */
-    public function findLatestClosedBySubject(StockSubjectInterface $subject, $limit = 3);
+    public function findLatestClosedBySubject(StockSubjectInterface $subject, int $limit = 3): array;
 }

@@ -27,7 +27,7 @@ class ResolvedShipmentPrice
     /**
      * @var float[]
      */
-    private $taxes = [];
+    private $taxes;
 
 
     /**
@@ -37,11 +37,12 @@ class ResolvedShipmentPrice
      * @param float                   $weight
      * @param float                   $price
      */
-    public function __construct(ShipmentMethodInterface $method, float $weight, float $price = 0)
+    public function __construct(ShipmentMethodInterface $method, float $weight, float $price = 0.)
     {
         $this->method = $method;
         $this->weight = $weight;
         $this->price = $price;
+        $this->taxes = [];
     }
 
     /**
@@ -49,7 +50,7 @@ class ResolvedShipmentPrice
      *
      * @return ShipmentMethodInterface
      */
-    public function getMethod()
+    public function getMethod(): ShipmentMethodInterface
     {
         return $this->method;
     }
@@ -59,7 +60,7 @@ class ResolvedShipmentPrice
      *
      * @return float
      */
-    public function getWeight()
+    public function getWeight(): float
     {
         return $this->weight;
     }
@@ -71,7 +72,7 @@ class ResolvedShipmentPrice
      *
      * @return ResolvedShipmentPrice
      */
-    public function setPrice($price)
+    public function setPrice(float $price): self
     {
         $this->price = $price;
 
@@ -83,7 +84,7 @@ class ResolvedShipmentPrice
      *
      * @return float
      */
-    public function getPrice()
+    public function getPrice(): float
     {
         return $this->price;
     }
@@ -95,7 +96,7 @@ class ResolvedShipmentPrice
      *
      * @return ResolvedShipmentPrice
      */
-    public function setTaxes(array $taxes)
+    public function setTaxes(array $taxes): self
     {
         $this->taxes = $taxes;
 
@@ -107,7 +108,7 @@ class ResolvedShipmentPrice
      *
      * @return float[]
      */
-    public function getTaxes()
+    public function getTaxes(): array
     {
         return $this->taxes;
     }
@@ -117,7 +118,7 @@ class ResolvedShipmentPrice
      *
      * @return bool
      */
-    public function isFree()
+    public function isFree(): bool
     {
         return 0 === bccomp($this->price, 0, 3);
     }

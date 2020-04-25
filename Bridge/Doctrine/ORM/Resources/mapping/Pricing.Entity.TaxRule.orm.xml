@@ -2,7 +2,6 @@
 <doctrine-mapping
         xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
@@ -11,11 +10,12 @@
             table="commerce_tax_rule">
 
         <indexes>
+            <index columns="code" name="idx_commerce_tax_rule_code"/>
             <index columns="name" name="idx_commerce_tax_rule_name"/>
-            <index columns="position" name="idx_commerce_tax_rule_position"/>
         </indexes>
 
         <unique-constraints>
+            <unique-constraint columns="code" name="unique_commerce_tax_rule_code"/>
             <unique-constraint columns="name" name="unique_commerce_tax_rule_name"/>
         </unique-constraints>
 
@@ -23,21 +23,28 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="code" column="code" type="string" length="32" nullable="true"/>
         <field name="name" column="name" type="string" length="64"/>
-
         <field name="customer" column="customer" type="boolean"/>
         <field name="business" column="business" type="boolean"/>
-
         <field name="notices" column="notices" type="json_array"/>
-
         <field name="priority" column="priority" type="smallint"/>
-        <field name="position" column="position" type="smallint">
-            <gedmo:sortable-position/>
-        </field>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country"
-                      field="countries">
-            <join-table name="commerce_tax_rule_country"><!-- TODO plural -->
+                      field="sources">
+            <join-table name="commerce_tax_rules_source_countries">
+                <join-columns>
+                    <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="country_id" referenced-column-name="id" on-delete="RESTRICT"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country"
+                      field="targets">
+            <join-table name="commerce_tax_rules_target_countries">
                 <join-columns>
                     <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>
@@ -49,7 +56,7 @@
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\Tax"
                       field="taxes">
-            <join-table name="commerce_tax_rule_tax"><!-- TODO plural -->
+            <join-table name="commerce_tax_rules_taxes">
                 <join-columns>
                     <join-column name="tax_rule_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>

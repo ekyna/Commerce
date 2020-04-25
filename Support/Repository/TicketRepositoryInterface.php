@@ -22,7 +22,16 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return TicketInterface[]
      */
-    public function findOpened(int $limit = 4);
+    public function findOpened(int $limit = 10): array;
+
+    /**
+     * Finds the oldest not closed tickets.
+     *
+     * @param int $limit
+     *
+     * @return TicketInterface[]
+     */
+    public function findNotClosed(int $limit = 10): array;
 
     /**
      * Finds tickets by customer.
@@ -32,7 +41,7 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return TicketInterface[]
      */
-    public function findByCustomer(CustomerInterface $customer, bool $admin);
+    public function findByCustomer(CustomerInterface $customer, bool $admin): array;
 
     /**
      * Finds tickets by order.
@@ -42,7 +51,7 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return TicketInterface[]
      */
-    public function findByOrder(OrderInterface $order, bool $admin);
+    public function findByOrder(OrderInterface $order, bool $admin): array;
 
     /**
      * Finds tickets by quote.
@@ -52,5 +61,5 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return TicketInterface[]
      */
-    public function findByQuote(QuoteInterface $quote, bool $admin);
+    public function findByQuote(QuoteInterface $quote, bool $admin): array;
 }

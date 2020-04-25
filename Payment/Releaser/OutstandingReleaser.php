@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -21,6 +22,11 @@ class OutstandingReleaser implements ReleaserInterface
     private $persistenceHelper;
 
     /**
+     * @var PaymentUpdaterInterface
+     */
+    private $paymentUpdater;
+
+    /**
      * @var string
      */
     private $defaultCurrency;
@@ -30,11 +36,16 @@ class OutstandingReleaser implements ReleaserInterface
      * Constructor.
      *
      * @param PersistenceHelperInterface $persistenceHelper
+     * @param PaymentUpdaterInterface    $paymentUpdater
      * @param string                     $defaultCurrency
      */
-    public function __construct(PersistenceHelperInterface $persistenceHelper, string $defaultCurrency)
-    {
+    public function __construct(
+        PersistenceHelperInterface $persistenceHelper,
+        PaymentUpdaterInterface $paymentUpdater,
+        string $defaultCurrency
+    ) {
         $this->persistenceHelper = $persistenceHelper;
+        $this->paymentUpdater = $paymentUpdater;
         $this->defaultCurrency = $defaultCurrency;
     }
 
@@ -49,7 +60,7 @@ class OutstandingReleaser implements ReleaserInterface
             + $sale->getOutstandingExpired()
             + $sale->getOutstandingAccepted();
 
-        if ($sale instanceof InvoiceSubjectInterface && $sale->hasInvoices()) {
+        if ($sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
             $overpaidAmount -= $sale->getInvoiceTotal() - $sale->getCreditTotal();
         } else {
             $overpaidAmount -= $sale->getGrandTotal();
@@ -81,21 +92,29 @@ class OutstandingReleaser implements ReleaserInterface
 
             // If the payment amount is less than or equal the overpaid amount
             $amount = $payment->getRealAmount();
-            // TODO convert payment amount using sale's exchange rate
-            if (0 <= Money::compare($overpaidAmount, $amount, $this->defaultCurrency)) {
+            if (-1 !== Money::compare($overpaidAmount, $amount, $this->defaultCurrency)) {
                 // Cancel the payment
                 $payment->setState(PaymentStates::STATE_CANCELED);
 
                 $this->persistenceHelper->persistAndRecompute($payment, true);
-
                 $changed = true;
 
                 $overpaidAmount = Money::round($overpaidAmount - $amount, $this->defaultCurrency);
+            } else {
+                $amount -= $overpaidAmount;
 
-                // Break if the sale is no longer overpaid
-                if (0 >= $overpaidAmount) {
-                    break;
+                if ($this->paymentUpdater->updateRealAmount($payment, $amount)) {
+                    $this->persistenceHelper->persistAndRecompute($payment, true);
+
+                    $changed = true;
+
+                    $overpaidAmount = 0;
                 }
+            }
+
+            // Break if the sale is no longer overpaid
+            if (0 >= $overpaidAmount) {
+                break;
             }
         }
 

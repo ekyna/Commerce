@@ -48,6 +48,7 @@ class SupplierOrderItemListener extends AbstractListener
      * Update event handler.
      *
      * @param ResourceEventInterface $event
+     *
      * @throws IllegalOperationException
      */
     public function onUpdate(ResourceEventInterface $event)
@@ -63,32 +64,12 @@ class SupplierOrderItemListener extends AbstractListener
             }
         }
 
-        $changed = $this->synchronizeWithProduct($item);
-        if ($changed) {
+        if ($changed = $this->synchronizeWithProduct($item)) {
             $this->persistenceHelper->persistAndRecompute($item, false);
         }
 
-        // TODO These tests are made in the supplier order listener and should not be done twice...
-        $order = $item->getOrder();
-        if ($this->persistenceHelper->isChanged($order, 'state')) {
-            $stateCs = $this->persistenceHelper->getChangeSet($order, 'state');
-
-            // If order just did a stockable state transition
-            if (
-                SupplierOrderStates::hasChangedFromStockable($stateCs) ||
-                SupplierOrderStates::hasChangedToStockable($stateCs)
-            ) {
-                // Abort (handled by the supplier order listener)
-                return;
-            }
-        }
-
-        if (SupplierOrderStates::isStockableState($order->getState())) {
-            // Updates the ordered quantity and price
-            if ($this->stockUnitLinker->applyItem($item)) {
-                // Dispatch supplier order content change event
-                $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
-            }
+        if ($changed || $this->persistenceHelper->isChanged($item, ['quantity', 'netPrice'])) {
+            $this->stockUnitLinker->updateData($item);
         }
     }
 
@@ -103,8 +84,6 @@ class SupplierOrderItemListener extends AbstractListener
 
         $this->assertDeletable($item);
 
-        // TODO If not made by the supplierOrderListener ?
-        //$this->deleteSupplierOrderItemStockUnit($item);
         $this->stockUnitLinker->unlinkItem($item);
 
         // Supplier order has been set to null by the removeItem method.
@@ -192,6 +171,15 @@ class SupplierOrderItemListener extends AbstractListener
             if (is_null($item->getNetPrice())) {
                 $item->setNetPrice($product->getNetPrice());
             }
+            if (is_null($item->getWeight())) {
+                $item->setWeight($product->getWeight());
+            }
+            if (is_null($item->getTaxGroup())) {
+                $item->setTaxGroup($product->getTaxGroup());
+            }
+            /* TODO if (is_null($item->getUnit())) {
+                $item->setUnit($product->getUnit());
+            }*/
         } elseif ($item->hasSubjectIdentity()) {
             throw new LogicException(
                 'Breaking synchronization between supplier order item and supplier product is not supported.'

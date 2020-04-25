@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Payment\Calculator;
 
-use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
@@ -21,9 +21,9 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 class PaymentCalculator implements PaymentCalculatorInterface
 {
     /**
-     * @var AmountCalculatorInterface
+     * @var AmountCalculatorFactory
      */
-    protected $amountCalculator;
+    protected $calculatorFactory;
 
     /**
      * @var CurrencyConverterInterface
@@ -39,16 +39,16 @@ class PaymentCalculator implements PaymentCalculatorInterface
     /**
      * Constructor.
      *
-     * @param AmountCalculatorInterface  $amountCalculator
+     * @param AmountCalculatorFactory    $calculatorFactory
      * @param CurrencyConverterInterface $currencyConverter
      */
     public function __construct(
-        AmountCalculatorInterface $amountCalculator,
+        AmountCalculatorFactory $calculatorFactory,
         CurrencyConverterInterface $currencyConverter
     ) {
-        $this->amountCalculator  = $amountCalculator;
+        $this->calculatorFactory = $calculatorFactory;
         $this->currencyConverter = $currencyConverter;
-        $this->currency          = $currencyConverter->getDefaultCurrency();
+        $this->currency = $currencyConverter->getDefaultCurrency();
     }
 
     /**
@@ -64,23 +64,23 @@ class PaymentCalculator implements PaymentCalculatorInterface
             } else {
                 $total = $subject->getGrandTotal();
             }
-            $paid     = $subject->getPaidTotal();
+            $paid = $subject->getPaidTotal();
             $refunded = $subject->getRefundedTotal();
-            $deposit  = $subject->getDepositTotal();
-            $pending  = $subject->getPendingTotal();
+            $deposit = $subject->getDepositTotal();
+            $pending = $subject->getPendingTotal();
         } elseif ($subject instanceof SaleInterface) {
-            if ($subject instanceof InvoiceSubjectInterface && $subject->hasInvoices()) {
+            if ($subject instanceof InvoiceSubjectInterface && $subject->isFullyInvoiced()) {
                 // TODO Use invoice calculator ?
                 $total = $this->currencyConverter->convertWithSubject(
                     $subject->getInvoiceTotal() - $subject->getCreditTotal(), $subject, $currency
                 );
             } else {
-                $total = $this->amountCalculator->calculateSale($subject, $currency)->getTotal();
+                $total = $this->calculatorFactory->create($currency)->calculateSale($subject)->getTotal();
             }
-            $paid     = $this->calculatePaidTotal($subject, $currency);
+            $paid = $this->calculatePaidTotal($subject, $currency);
             $refunded = $this->calculateRefundedTotal($subject, $currency);
-            $deposit  = $this->currencyConverter->convertWithSubject($subject->getDepositTotal(), $subject, $currency);
-            $pending  = $this->calculateOfflinePendingTotal($subject, $currency);
+            $deposit = $this->currencyConverter->convertWithSubject($subject->getDepositTotal(), $subject, $currency);
+            $pending = $this->calculateOfflinePendingTotal($subject, $currency);
         } else {
             throw new UnexpectedValueException();
         }
@@ -275,10 +275,10 @@ class PaymentCalculator implements PaymentCalculatorInterface
             if (0 <= Money::compare($paid, $deposit, $currency)) {
                 // If paid greater than or equal deposit
                 $total -= $deposit;
-                $paid  -= $deposit;
+                $paid -= $deposit;
             } elseif (0 <= Money::compare($pending, $deposit, $currency)) {
                 // If pending greater than or equal deposit
-                $total   -= $deposit;
+                $total -= $deposit;
                 $pending -= $deposit;
             } else {
                 // Else pay deposit
@@ -287,7 +287,7 @@ class PaymentCalculator implements PaymentCalculatorInterface
         }
 
         $amount = 0;
-        $p      = Money::compare($total, $paid + $pending + $outstanding, $currency);
+        $p = Money::compare($total, $paid + $pending + $outstanding, $currency);
 
         // If (paid total + pending total + accepted outstanding) is lower than total
         if (1 === $p) {

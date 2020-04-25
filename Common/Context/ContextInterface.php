@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Context;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -16,9 +17,9 @@ interface ContextInterface
     /**
      * Returns the customer group.
      *
-     * @return CustomerGroupInterface
+     * @return CustomerGroupInterface|null
      */
-    public function getCustomerGroup();
+    public function getCustomerGroup(): ?CustomerGroupInterface;
 
     /**
      * Sets the customer group.
@@ -27,14 +28,14 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setCustomerGroup(CustomerGroupInterface $group);
+    public function setCustomerGroup(CustomerGroupInterface $group): ContextInterface;
 
     /**
      * Returns the invoice country.
      *
-     * @return CountryInterface
+     * @return CountryInterface|null
      */
-    public function getInvoiceCountry();
+    public function getInvoiceCountry(): ?CountryInterface;
 
     /**
      * Sets the invoice country.
@@ -43,14 +44,14 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setInvoiceCountry(CountryInterface $country);
+    public function setInvoiceCountry(CountryInterface $country): ContextInterface;
 
     /**
      * Returns the delivery country.
      *
-     * @return CountryInterface
+     * @return CountryInterface|null
      */
-    public function getDeliveryCountry();
+    public function getDeliveryCountry(): ?CountryInterface;
 
     /**
      * Sets the delivery country.
@@ -59,14 +60,30 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setDeliveryCountry(CountryInterface $country);
+    public function setDeliveryCountry(CountryInterface $country): ContextInterface;
+
+    /**
+     * Returns the shipping country.
+     *
+     * @return CountryInterface|null
+     */
+    public function getShippingCountry(): ?CountryInterface;
+
+    /**
+     * Sets the shipping country.
+     *
+     * @param CountryInterface $country
+     *
+     * @return $this|ContextInterface
+     */
+    public function setShippingCountry(CountryInterface $country): ContextInterface;
 
     /**
      * Returns the currency.
      *
-     * @return CurrencyInterface
+     * @return CurrencyInterface|null
      */
-    public function getCurrency();
+    public function getCurrency(): ?CurrencyInterface;
 
     /**
      * Sets the currency.
@@ -75,14 +92,14 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setCurrency(CurrencyInterface $currency);
+    public function setCurrency(CurrencyInterface $currency): ContextInterface;
 
     /**
      * Returns the locale.
      *
      * @return string
      */
-    public function getLocale();
+    public function getLocale(): ?string;
 
     /**
      * Sets the locale.
@@ -91,14 +108,14 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setLocale(string $locale);
+    public function setLocale(string $locale): ContextInterface;
 
     /**
      * Returns the VAT display mode.
      *
      * @return string
      */
-    public function getVatDisplayMode();
+    public function getVatDisplayMode(): ?string;
 
     /**
      * Sets the VAT display mode.
@@ -107,14 +124,14 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setVatDisplayMode(string $mode);
+    public function setVatDisplayMode(string $mode): ContextInterface;
 
     /**
      * Returns whether the context is business.
      *
      * @return bool
      */
-    public function isBusiness();
+    public function isBusiness(): bool;
 
     /**
      * Sets whether the context is business.
@@ -123,14 +140,14 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setBusiness(bool $business);
+    public function setBusiness(bool $business): ContextInterface;
 
     /**
      * Returns the whether the context is tax exempt.
      *
      * @return bool
      */
-    public function isTaxExempt();
+    public function isTaxExempt(): bool;
 
     /**
      * Sets whether the context is tax exempt.
@@ -139,30 +156,30 @@ interface ContextInterface
      *
      * @return $this|ContextInterface
      */
-    public function setTaxExempt(bool $exempt);
+    public function setTaxExempt(bool $exempt): ContextInterface;
 
     /**
      * Returns the date.
      *
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getDate();
+    public function getDate(): DateTime;
 
     /**
      * Sets the date.
      *
-     * @param \DateTime $date
+     * @param DateTime $date
      *
      * @return $this|ContextInterface
      */
-    public function setDate(\DateTime $date);
+    public function setDate(DateTime $date): ContextInterface;
 
     /**
      * Returns whether the user is an admin.
      *
      * @return bool
      */
-    public function isAdmin();
+    public function isAdmin(): bool;
 
     /**
      * Sets whether the user is an admin.
@@ -171,12 +188,12 @@ interface ContextInterface
      *
      * @return Context
      */
-    public function setAdmin(bool $admin);
+    public function setAdmin(bool $admin): ContextInterface;
 
     /**
      * Returns whether prices should be displayed "all taxes included".
      *
      * @return bool
      */
-    public function isAtiDisplayMode();
+    public function isAtiDisplayMode(): bool;
 }

@@ -36,7 +36,7 @@ class QuoteListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    public function onInitialize(ResourceEventInterface $event)
+    public function onInitialize(ResourceEventInterface $event): void
     {
         parent::onInitialize($event);
 
@@ -53,7 +53,7 @@ class QuoteListener extends AbstractSaleListener
      *
      * @param QuoteInterface $sale
      */
-    protected function handleInsert(SaleInterface $sale)
+    protected function handleInsert(SaleInterface $sale): bool
     {
         $changed = parent::handleInsert($sale);
 
@@ -67,7 +67,7 @@ class QuoteListener extends AbstractSaleListener
      *
      * @param QuoteInterface $sale
      */
-    protected function handleUpdate(SaleInterface $sale)
+    protected function handleUpdate(SaleInterface $sale): bool
     {
         $changed = parent::handleUpdate($sale);
 
@@ -81,7 +81,7 @@ class QuoteListener extends AbstractSaleListener
      *
      * @return bool
      */
-    protected function handleEditable(QuoteInterface $quote)
+    protected function handleEditable(QuoteInterface $quote): bool
     {
         if (!$quote->isEditable()) {
             return false;
@@ -110,7 +110,7 @@ class QuoteListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function updateState(SaleInterface $sale)
+    protected function updateState(SaleInterface $sale): bool
     {
         if (parent::updateState($sale)) {
             /** @var QuoteInterface $sale */
@@ -131,7 +131,7 @@ class QuoteListener extends AbstractSaleListener
      *
      * @return QuoteInterface
      */
-    protected function getSaleFromEvent(ResourceEventInterface $event)
+    protected function getSaleFromEvent(ResourceEventInterface $event): SaleInterface
     {
         $resource = $event->getResource();
 
@@ -145,7 +145,7 @@ class QuoteListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function scheduleContentChangeEvent(SaleInterface $sale)
+    protected function scheduleContentChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof QuoteInterface) {
             throw new InvalidArgumentException("Expected instance of QuoteInterface");
@@ -157,7 +157,7 @@ class QuoteListener extends AbstractSaleListener
     /**
      * @inheritdoc
      */
-    protected function scheduleStateChangeEvent(SaleInterface $sale)
+    protected function scheduleStateChangeEvent(SaleInterface $sale): void
     {
         if (!$sale instanceof QuoteInterface) {
             throw new InvalidArgumentException("Expected instance of QuoteInterface");

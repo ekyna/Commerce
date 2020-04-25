@@ -18,7 +18,7 @@ interface WeightCalculatorInterface
      *
      * @return float
      */
-    public function calculateShipment(Model\ShipmentInterface $shipment);
+    public function calculateShipment(Model\ShipmentInterface $shipment): float;
 
     /**
      * Calculate the shipment item total weight.
@@ -27,5 +27,5 @@ interface WeightCalculatorInterface
      *
      * @return float
      */
-    public function calculateShipmentItem(Model\ShipmentItemInterface $item);
+    public function calculateShipmentItem(Model\ShipmentItemInterface $item): float;
 }

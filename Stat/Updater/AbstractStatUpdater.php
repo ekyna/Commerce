@@ -32,7 +32,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateStockStat()
+    public function updateStockStat(): bool
     {
         $date = new \DateTime();
 
@@ -56,7 +56,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateDayOrderStat(\DateTime $date, $force = false)
+    public function updateDayOrderStat(\DateTime $date, bool $force = false): bool
     {
         if (null === $stat = $this->getOrderStatRepository()->findOneByDay($date)) {
             $stat = $this->createOrderStat();
@@ -81,7 +81,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateMonthOrderStat(\DateTime $date, $force = false)
+    public function updateMonthOrderStat(\DateTime $date, bool $force = false): bool
     {
         if (null === $stat = $this->getOrderStatRepository()->findOneByMonth($date)) {
             $stat = $this->createOrderStat();
@@ -106,7 +106,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateYearOrderStat(\DateTime $date, $force = false)
+    public function updateYearOrderStat(\DateTime $date, bool $force = false): bool
     {
         if (null === $stat = $this->getOrderStatRepository()->findOneByYear($date)) {
             $stat = $this->createOrderStat();
@@ -133,28 +133,28 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
      *
      * @param object $object
      */
-    abstract protected function persist($object);
+    abstract protected function persist($object): void;
 
     /**
      * Returns the stock stat repository.
      *
      * @return Repository\StockStatRepositoryInterface
      */
-    abstract protected function getStockStatRepository();
+    abstract protected function getStockStatRepository(): Repository\StockStatRepositoryInterface;
 
     /**
      * Returns the order stat repository.
      *
      * @return Repository\OrderStatRepositoryInterface
      */
-    abstract protected function getOrderStatRepository();
+    abstract protected function getOrderStatRepository(): Repository\OrderStatRepositoryInterface;
 
     /**
      * Returns a new stock stat entity.
      *
      * @return Entity\StockStat
      */
-    protected function createStockStat()
+    protected function createStockStat(): Entity\StockStat
     {
         return new Entity\StockStat();
     }
@@ -164,7 +164,7 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
      *
      * @return Entity\OrderStat
      */
-    protected function createOrderStat()
+    protected function createOrderStat(): Entity\OrderStat
     {
         return new Entity\OrderStat();
     }

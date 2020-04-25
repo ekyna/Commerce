@@ -15,11 +15,27 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
 interface TaxInterface extends AdjustmentDataInterface, ResourceInterface
 {
     /**
+     * Returns the code.
+     *
+     * @return string
+     */
+    public function getCode(): ?string;
+
+    /**
+     * Sets the code.
+     *
+     * @param string $code
+     *
+     * @return $this|TaxInterface
+     */
+    public function setCode(string $code): TaxInterface;
+
+    /**
      * Returns the name.
      *
      * @return string
      */
-    public function getName();
+    public function getName(): ?string;
 
     /**
      * Sets the name.
@@ -28,14 +44,14 @@ interface TaxInterface extends AdjustmentDataInterface, ResourceInterface
      *
      * @return $this|TaxInterface
      */
-    public function setName($name);
+    public function setName(string $name): TaxInterface;
 
     /**
      * Returns the rate.
      *
      * @return float
      */
-    public function getRate();
+    public function getRate(): float;
 
     /**
      * Sets the rate.
@@ -44,14 +60,14 @@ interface TaxInterface extends AdjustmentDataInterface, ResourceInterface
      *
      * @return $this|TaxInterface
      */
-    public function setRate($rate);
+    public function setRate(float $rate): TaxInterface;
 
     /**
      * Returns the country.
      *
      * @return CountryInterface
      */
-    public function getCountry();
+    public function getCountry(): ?CountryInterface;
 
     /**
      * Sets the country.
@@ -60,14 +76,14 @@ interface TaxInterface extends AdjustmentDataInterface, ResourceInterface
      *
      * @return $this|TaxInterface
      */
-    public function setCountry(CountryInterface $country);
+    public function setCountry(CountryInterface $country): TaxInterface;
 
     /**
      * Returns the state.
      *
      * @return StateInterface
      */
-    public function getState();
+    public function getState(): ?StateInterface;
 
     /**
      * Sets the state.
@@ -76,5 +92,5 @@ interface TaxInterface extends AdjustmentDataInterface, ResourceInterface
      *
      * @return $this|TaxInterface
      */
-    public function setState(StateInterface $state = null);
+    public function setState(StateInterface $state = null): TaxInterface;
 }

@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use Ekyna\Component\Commerce\Common\Util\Money;
+
 /**
  * Class Margin
  * @package Ekyna\Component\Commerce\Common\Model
@@ -38,7 +40,7 @@ class Margin
      * @param float  $price
      * @param bool   $average
      */
-    public function __construct(string $currency, float $cost = 0, float $price = 0, bool $average = false)
+    public function __construct(string $currency, float $cost = 0., float $price = 0., bool $average = false)
     {
         $this->currency = $currency;
         $this->purchaseCost = $cost;
@@ -107,7 +109,7 @@ class Margin
      */
     public function getAmount(): float
     {
-        return $this->sellingPrice - $this->purchaseCost;
+        return Money::round($this->sellingPrice - $this->purchaseCost, $this->currency);
     }
 
     /**

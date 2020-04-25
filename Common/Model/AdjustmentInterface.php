@@ -16,76 +16,80 @@ interface AdjustmentInterface extends ResourceModel\ResourceInterface, ResourceM
      *
      * @return string
      */
-    public function getDesignation();
+    public function getDesignation(): ?string;
 
     /**
      * Sets the designation.
      *
      * @param string $designation
+     *
      * @return $this|AdjustmentInterface
      */
-    public function setDesignation($designation);
+    public function setDesignation(string $designation): AdjustmentInterface;
 
     /**
      * Returns the type.
      *
      * @return string
      */
-    public function getType();
+    public function getType(): string;
 
     /**
      * Sets the type.
      *
      * @param string $type
+     *
      * @return $this|AdjustmentInterface
      */
-    public function setType($type);
+    public function setType(string $type): AdjustmentInterface;
 
     /**
      * Returns the mode.
      *
      * @return string
      */
-    public function getMode();
+    public function getMode(): string;
 
     /**
      * Sets the mode.
      *
      * @param string $mode
+     *
      * @return $this|AdjustmentInterface
      */
-    public function setMode($mode);
+    public function setMode(string $mode): AdjustmentInterface;
 
     /**
      * Returns the amount.
      *
      * @return float
      */
-    public function getAmount();
+    public function getAmount(): ?float;
 
     /**
      * Sets the amount.
      *
      * @param float $amount
+     *
      * @return $this|AdjustmentInterface
      */
-    public function setAmount($amount);
+    public function setAmount(float $amount): AdjustmentInterface;
 
     /**
      * Returns the immutable.
      *
-     * @return boolean
+     * @return bool
      */
-    public function isImmutable();
+    public function isImmutable(): bool;
 
     /**
      * Sets the immutable.
      *
-     * @param boolean $immutable
+     * @param bool $immutable
      *
      * @return $this|AdjustmentInterface
      */
-    public function setImmutable($immutable);
+    public function setImmutable(bool $immutable): AdjustmentInterface;
 
     /**
      * Returns the source.
@@ -110,12 +114,12 @@ interface AdjustmentInterface extends ResourceModel\ResourceInterface, ResourceM
      *
      * @return bool
      */
-    public function equals(AdjustmentInterface $adjustment);
+    public function equals(AdjustmentInterface $adjustment): bool;
 
     /**
      * Returns the adjustable.
      *
      * @return AdjustableInterface
      */
-    public function getAdjustable();
+    public function getAdjustable(): ?AdjustableInterface;
 }

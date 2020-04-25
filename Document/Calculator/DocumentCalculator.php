@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Document\Calculator;
 
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model;
@@ -16,9 +18,14 @@ use Ekyna\Component\Commerce\Exception\LogicException;
 class DocumentCalculator implements DocumentCalculatorInterface
 {
     /**
-     * @var AmountCalculatorInterface
+     * @var AmountCalculatorFactory
      */
-    protected $calculator;
+    protected $calculatorFactory;
+
+    /**
+     * @var CurrencyConverterInterface
+     */
+    protected $currencyConverter;
 
     /**
      * @var string
@@ -35,15 +42,22 @@ class DocumentCalculator implements DocumentCalculatorInterface
      */
     protected $changed;
 
+    /**
+     * @var AmountCalculatorInterface
+     */
+    protected $calculator;
+
 
     /**
      * Constructor.
      *
-     * @param AmountCalculatorInterface $calculator
+     * @param AmountCalculatorFactory    $calculatorFactory
+     * @param CurrencyConverterInterface $currencyConverter
      */
-    public function __construct(AmountCalculatorInterface $calculator)
+    public function __construct(AmountCalculatorFactory $calculatorFactory, CurrencyConverterInterface $currencyConverter)
     {
-        $this->calculator = $calculator;
+        $this->calculatorFactory = $calculatorFactory;
+        $this->currencyConverter = $currencyConverter;
     }
 
     /**
@@ -57,13 +71,20 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
+        $this->calculator = $this->calculatorFactory->create($this->currency, false);
+
         $this->calculateDocument($document);
 
         if ($this->changed) {
-            $converter = $this->calculator->getCurrencyConverter();
-            $quote = $converter->getDefaultCurrency();
-            $rate = $converter->getSubjectExchangeRate($document->getSale(), $document->getCurrency(), $quote);
-            $total = $converter->convertWithRate($document->getGrandTotal(), $rate, $quote);
+            $quote = $this->currencyConverter->getDefaultCurrency();
+
+            $rate = $this
+                ->currencyConverter
+                ->getSubjectExchangeRate($document->getSale(), $document->getCurrency(), $quote);
+
+            $total = $this
+                ->currencyConverter
+                ->convertWithRate($document->getGrandTotal(), $rate, $quote);
 
             if ($this->compareAmount($document->getRealGrandTotal(), $total)) {
                 $document->setRealGrandTotal($total);
@@ -165,7 +186,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
-        $result = $this->calculator->calculateSaleItem($item, $line->getQuantity(), $this->currency, false);
+        $result = $this->calculator->calculateSaleItem($item, $line->getQuantity());
 
         $this->syncLine($line, $result);
 
@@ -202,7 +223,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
-        $result = $this->calculator->calculateSaleDiscount($adjustment, $gross, $final, $this->currency, false);
+        $result = $this->calculator->calculateSaleDiscount($adjustment, $gross, $final);
 
         $this->syncLine($line, $result);
     }
@@ -227,11 +248,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
 
         $sale = $line->getDocument()->getSale();
 
-        $result = $this->calculator->calculateSaleShipment($sale, $final, $this->currency, false);
-
-        if (null === $result) {
-            throw new LogicException("Unexpected document shipment line.");
-        }
+        $result = $this->calculator->calculateSaleShipment($sale, $final);
 
         $this->syncLine($line, $result);
 

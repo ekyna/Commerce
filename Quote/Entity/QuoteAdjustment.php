@@ -3,6 +3,8 @@
 namespace Ekyna\Component\Commerce\Quote\Entity;
 
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAdjustment;
+use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteAdjustmentInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 
@@ -22,15 +24,7 @@ class QuoteAdjustment extends AbstractSaleAdjustment implements QuoteAdjustmentI
     /**
      * @inheritDoc
      */
-    public function getSale()
-    {
-        return $this->getQuote();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQuote()
+    public function getSale(): ?SaleInterface
     {
         return $this->quote;
     }
@@ -38,7 +32,15 @@ class QuoteAdjustment extends AbstractSaleAdjustment implements QuoteAdjustmentI
     /**
      * @inheritdoc
      */
-    public function setQuote(QuoteInterface $quote = null)
+    public function getQuote(): QuoteInterface
+    {
+        return $this->quote;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setQuote(QuoteInterface $quote = null): QuoteAdjustmentInterface
     {
         if ($quote !== $this->quote) {
             if ($previous = $this->quote) {
@@ -57,7 +59,7 @@ class QuoteAdjustment extends AbstractSaleAdjustment implements QuoteAdjustmentI
     /**
      * @inheritdoc
      */
-    public function getAdjustable()
+    public function getAdjustable(): ?AdjustableInterface
     {
         return $this->quote;
     }

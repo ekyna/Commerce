@@ -60,7 +60,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false)
+    public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool
     {
         $data = $sale->isAutoDiscount() && !$sale->isSample() ? $this->discountResolver->resolveSale($sale) : [];
 
@@ -70,7 +70,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildDiscountAdjustmentsForSaleItems($parent, $persistence = false)
+    public function buildDiscountAdjustmentsForSaleItems($parent, bool$persistence = false): bool
     {
         if ($parent instanceof Model\SaleInterface) {
             $children = $parent->getItems();
@@ -96,7 +96,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
+    public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool
     {
         $sale = $item->getSale();
 
@@ -108,12 +108,12 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, $persistence = false)
+    public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool
     {
         $data = [];
 
         // For now, we assume that sale's taxation adjustments are only related to shipment.
-        if (!($sale->isTaxExempt() || $sale->isSample()) && null !== $taxable = $sale->getShipmentMethod()) {
+        if (!($sale->isTaxExempt() || $sale->isSample()) && !is_null($taxable = $sale->getShipmentMethod())) {
             // Resolve taxes
             $data = $this->taxResolver->resolveTaxes($taxable, $sale);
         }
@@ -124,7 +124,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildTaxationAdjustmentsForSaleItems($parent, $persistence = false)
+    public function buildTaxationAdjustmentsForSaleItems($parent, bool $persistence = false): bool
     {
         if ($parent instanceof Model\SaleInterface) {
             $children = $parent->getItems();
@@ -150,7 +150,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, $persistence = false)
+    public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool
     {
         $data = [];
 

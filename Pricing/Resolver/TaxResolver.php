@@ -2,15 +2,16 @@
 
 namespace Ekyna\Component\Commerce\Pricing\Resolver;
 
+use Ekyna\Component\Commerce\Common\Context\ContextInterface as Context;
 use Ekyna\Component\Commerce\Common\Country\CountryProviderInterface;
-use Ekyna\Component\Commerce\Common\Model\CountryInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
-use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
-use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface as Country;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface as Taxable;
+use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface as TaxRule;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
+use Ekyna\Component\Commerce\Stock\Provider\WarehouseProviderInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface as SupplierOrder;
 
 /**
  * Class TaxResolver
@@ -25,12 +26,17 @@ class TaxResolver implements TaxResolverInterface
     protected $countryProvider;
 
     /**
+     * @var WarehouseProviderInterface
+     */
+    protected $warehouseProvider;
+
+    /**
      * @var TaxRuleRepositoryInterface
      */
     protected $taxRuleRepository;
 
     /**
-     * @var array
+     * @var ResolvedTaxesCache
      */
     protected $cache;
 
@@ -39,26 +45,36 @@ class TaxResolver implements TaxResolverInterface
      * Constructor.
      *
      * @param CountryProviderInterface   $countryProvider
+     * @param WarehouseProviderInterface $warehouseProvider
      * @param TaxRuleRepositoryInterface $taxRuleRepository
      */
     public function __construct(
         CountryProviderInterface $countryProvider,
+        WarehouseProviderInterface $warehouseProvider,
         TaxRuleRepositoryInterface $taxRuleRepository
     ) {
         $this->countryProvider = $countryProvider;
+        $this->warehouseProvider = $warehouseProvider;
         $this->taxRuleRepository = $taxRuleRepository;
 
-        $this->cache = new ResolvedTaxesCache();
+        $this->setCache();
     }
 
     /**
-     * @inheritdoc
-     *
-     * @see https://ec.europa.eu/taxation_customs/business/vat/eu-vat-rules-topic/where-tax_fr
+     * @inheritDoc
      */
-    public function resolveTaxes(TaxableInterface $taxable, $target = null): array
+    public function setCache(ResolvedTaxesCache $cache = null): void
     {
-        // TODO @param ContextInterface $context (instead of $target)
+        $this->cache = $cache ?? new ResolvedTaxesCache();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function resolveTaxes(Taxable $taxable, $context): array
+    {
+        /** @see https://ec.europa.eu/taxation_customs/business/vat/eu-vat-rules-topic/where-tax_fr */
+        /** @see https://en.wikipedia.org/wiki/International_taxation#Taxation_systems */
 
         // Abort if taxable does not have tax group
         if (null === $taxGroup = $taxable->getTaxGroup()) {
@@ -70,18 +86,145 @@ class TaxResolver implements TaxResolverInterface
             return [];
         }
 
-        $country = $this->resolveTargetCountry($target);
-        $business = $target instanceof VatNumberSubjectInterface
-            ? $target->isBusiness()
-            : false;
+        // Resolve source and target countries
+        $source = $this->resolveSourceCountry($context);
+        $target = $this->resolveTargetCountry($context);
+        // Resolve whether it is for business
+        $business = $this->resolveBusiness($context);
 
         // Use cached resolved taxes if any
-        if (null !== $taxes = $this->cache->get($taxGroup, $country, $business)) {
+        if (null !== $taxes = $this->cache->get($taxGroup, $source, $target, $business)) {
             return $taxes;
         }
 
-        // Abort if no matching tax rule
-        if (null === $taxRule = $this->resolveTaxRule($country, $business)) {
+        // Do resolution
+        $taxes = $this->resolve($taxable, $source, $target, $business);
+
+        // Caches the resolved taxes
+        $this->cache->set($taxGroup, $target, $source, $business, $taxes);
+
+        return $taxes;
+    }
+
+    /**
+     * Resolves the sale tax rule.
+     *
+     * @param Sale $sale
+     *
+     * @return TaxRule|null
+     */
+    public function resolveSaleTaxRule(Sale $sale): ?TaxRule
+    {
+        return $this->resolveTaxRule(
+            $this->resolveSourceCountry($sale),
+            $this->resolveTargetCountry($sale),
+            $sale->isBusiness()
+        );
+    }
+
+    /**
+     * Resolves the target country.
+     *
+     * @param Context|Sale|SupplierOrder|null $context
+     *
+     * @return Country
+     */
+    protected function resolveSourceCountry($context): Country
+    {
+        if (is_null($context)) {
+            return $this->countryProvider->getCountryRepository()->findDefault();
+        }
+
+        if ($context instanceof Context) {
+            return $context->getShippingCountry();
+        }
+
+        if ($context instanceof Sale) {
+            return $this->resolveSaleSourceCountry($context);
+        }
+
+        if ($context instanceof SupplierOrder) {
+            return $context->getSupplier()->getAddress()->getCountry();
+        }
+
+        throw new UnexpectedTypeException($context, [
+            Context::class,
+            Sale::class,
+            SupplierOrder::class,
+            'null',
+        ]);
+    }
+
+    /**
+     * Resolves the target country.
+     *
+     * @param Context|Sale|SupplierOrder|null $context
+     *
+     * @return Country
+     */
+    protected function resolveTargetCountry($context): Country
+    {
+        if (is_null($context)) {
+            return $this->countryProvider->getCountry();
+        }
+
+        if ($context instanceof Context) {
+            return $context->getDeliveryCountry();
+        }
+
+        if ($context instanceof Sale) {
+            return $this->resolveSaleTargetCountry($context);
+        }
+
+        if ($context instanceof SupplierOrder) {
+            return $context->getWarehouse()->getCountry();
+        }
+
+        throw new UnexpectedTypeException($context, [Context::class, Sale::class, SupplierOrder::class, 'null']);
+    }
+
+    /**
+     * Resolves whether the given context is for business.
+     *
+     * @param Context|Sale|SupplierOrder|null $context
+     *
+     * @return bool
+     */
+    protected function resolveBusiness($context): bool
+    {
+        if (is_null($context)) {
+            return false;
+        }
+
+        if ($context instanceof Context) {
+            return $context->isBusiness();
+        }
+
+        if ($context instanceof Sale) {
+            return $context->isBusiness();
+        }
+
+        if ($context instanceof SupplierOrder) {
+            return true;
+        }
+
+        throw new UnexpectedTypeException($context, [Context::class, Sale::class, SupplierOrder::class, 'null']);
+    }
+
+    /**
+     * Performs the taxes resolution.
+     *
+     * @param Taxable $taxable
+     * @param Country $source
+     * @param Country $target
+     * @param bool    $business
+     *
+     * @return array
+     */
+    protected function resolve(Taxable $taxable, Country $source, Country $target, bool $business): array
+    {
+        // Abort if no matching tax rul
+        if (null === $taxRule = $this->resolveTaxRule($source, $target, $business)) {
             return [];
         }
 
@@ -90,127 +233,71 @@ class TaxResolver implements TaxResolverInterface
             return [];
         }
 
-        // Resolves the taxes
-        $applicableTaxes = $taxRule->getTaxes()->toArray();
-        $resolvedTaxes = [];
-        foreach ($taxGroup->getTaxes() as $tax) {
-            if (in_array($tax, $applicableTaxes, true)) {
-                $resolvedTaxes[] = $tax;
+        $resolved = [];
+
+        $applicable = $taxRule->getTaxes()->toArray();
+
+        foreach ($taxable->getTaxGroup()->getTaxes() as $tax) {
+            if (in_array($tax, $applicable, true)) {
+                $resolved[] = $tax;
             }
         }
 
-        // Caches the resolved taxes
-        $this->cache->set($taxGroup, $country, $business, $resolvedTaxes);
-
-        return $resolvedTaxes;
-    }
-
-    /**
-     * Resolves the sale tax rule.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return TaxRuleInterface|null
-     */
-    public function resolveSaleTaxRule(SaleInterface $sale): ?TaxRuleInterface
-    {
-        return $this->resolveTaxRule($this->resolveTargetCountry($sale), $sale->isBusiness());
-    }
-
-    /**
-     * Resolves the target country.
-     *
-     * @param mixed $target
-     *
-     * @return CountryInterface
-     */
-    protected function resolveTargetCountry($target): CountryInterface
-    {
-        if (null === $target) {
-            return $this->countryProvider->getCountry();
-        }
-
-        if ($target instanceof CountryInterface) {
-            return $target;
-        }
-
-        if ($target instanceof SaleInterface) {
-            $country = $this->resolveSaleTargetCountry($target);
-        } elseif ($target instanceof CustomerInterface) {
-            $country = $this->resolveCustomerTargetCountry($target);
-        } elseif(is_string($target) && 2 == strlen($target)) {
-            $country = $this->getCountryByCode($target);
-        } else {
-            throw new InvalidArgumentException("Unexpected taxation target.");
-        }
-
-        return $country ?: $this->countryProvider->getCountry();
+        return $resolved;
     }
 
     /**
      * Resolves the tax rule for the given sale.
      *
-     * @param CountryInterface $country
-     * @param bool             $business
+     * @param Country $target
+     * @param Country $source
+     * @param bool    $business
      *
-     * @return TaxRuleInterface|null
+     * @return TaxRule|null
      */
-    protected function resolveTaxRule(CountryInterface $country, $business = false): ?TaxRuleInterface
+    protected function resolveTaxRule(Country $source, Country $target, bool $business): ?TaxRule
     {
         if ($business) {
-            return $this->taxRuleRepository->findOneByCountryForBusiness($country);
+            return $this->taxRuleRepository->findOneForBusiness($source, $target);
         }
 
-        return $this->taxRuleRepository->findOneByCountryForCustomer($country);
+        return $this->taxRuleRepository->findOneForCustomer($source, $target);
     }
 
     /**
      * Resolves the sales's taxation target country.
      *
-     * @param SaleInterface $sale
+     * @param Sale $sale
      *
-     * @return CountryInterface|null
+     * @return Country
      */
-    protected function resolveSaleTargetCountry(SaleInterface $sale): ?CountryInterface
+    protected function resolveSaleSourceCountry(Sale $sale): Country
+    {
+        return $this
+            ->warehouseProvider
+            ->getWarehouse($sale->getDeliveryCountry())
+            ->getCountry();
+    }
+
+    /**
+     * Resolves the sales's taxation target country.
+     *
+     * @param Sale $sale
+     *
+     * @return Country
+     */
+    protected function resolveSaleTargetCountry(Sale $sale): Country
     {
         // Get the country from the sale's delivery address
-        if (null !== $country = $sale->getDeliveryCountry()) {
+        if ($country = $sale->getDeliveryCountry()) {
             return $country;
         }
 
         // If none, resolves the customer's taxation target address
-        if (null !== $customer = $sale->getCustomer()) {
-            return $this->resolveCustomerTargetCountry($customer);
-        }
-
-        return null;
-    }
-
-    /**
-     * Resolves the customer's taxation target country.
-     *
-     * @param CustomerInterface $customer
-     *
-     * @return CountryInterface|null
-     */
-    protected function resolveCustomerTargetCountry(CustomerInterface $customer): ?CountryInterface
-    {
-        if (null !== $address = $customer->getDefaultDeliveryAddress()) {
+        if (($customer = $sale->getCustomer()) && ($address = $customer->getDefaultDeliveryAddress())) {
             return $address->getCountry();
         }
 
-        return null;
-    }
-
-    /**
-     * Returns the country by its code.
-     *
-     * @param string $code
-     *
-     * @return CountryInterface|null
-     */
-    protected function getCountryByCode(string $code): ?CountryInterface
-    {
-        return $this->countryProvider->getCountry($code);
+        return $this->countryProvider->getCountry();
     }
 }

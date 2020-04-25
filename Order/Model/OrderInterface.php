@@ -81,11 +81,27 @@ interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface,
     public function setCompletedAt(\DateTime $completedAt = null);
 
     /**
+     * Returns the revenue total.
+     *
+     * @return float
+     */
+    public function getRevenueTotal(): ?float;
+
+    /**
+     * Sets the revenue total.
+     *
+     * @param float $amount
+     *
+     * @return $this|OrderInterface
+     */
+    public function setRevenueTotal(float $amount = null): OrderInterface;
+
+    /**
      * Returns the margin total.
      *
      * @return float
      */
-    public function getMarginTotal();
+    public function getMarginTotal(): ?float;
 
     /**
      * Sets the margin total.
@@ -94,14 +110,14 @@ interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface,
      *
      * @return $this|OrderInterface
      */
-    public function setMarginTotal($amount);
+    public function setMarginTotal(float $amount = null): OrderInterface;
 
     /**
      * Returns the items count.
      *
      * @return int
      */
-    public function getItemsCount();
+    public function getItemsCount(): int;
 
     /**
      * Sets the items count.
@@ -110,5 +126,5 @@ interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface,
      *
      * @return $this|OrderInterface
      */
-    public function setItemsCount($count);
+    public function setItemsCount(int $count): OrderInterface;
 }

@@ -3,7 +3,10 @@
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
 use Ekyna\Component\Commerce\Exception\SubjectException;
-use Ekyna\Component\Commerce\Subject;
+use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity as Identity;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface as Relative;
+use Ekyna\Component\Commerce\Subject\Repository\SubjectRepositoryInterface;
 
 /**
  * Interface SubjectProviderInterface
@@ -12,8 +15,6 @@ use Ekyna\Component\Commerce\Subject;
  */
 interface SubjectProviderInterface
 {
-    const DATA_KEY = 'provider';
-
     const CONTEXT_ITEM     = 'item';     // Sale item subject
     const CONTEXT_SALE     = 'sale';     // Sale item search
     const CONTEXT_ACCOUNT  = 'account';  // Sale item search from customer account
@@ -25,25 +26,25 @@ interface SubjectProviderInterface
      *
      * This method must set the relative subject fields (provider and identifier) for next resolutions.
      *
-     * @param Subject\Model\SubjectRelativeInterface $relative
-     * @param object                                 $subject
+     * @param Relative $relative
+     * @param Subject  $subject
      *
      * @return SubjectProviderInterface
      */
-    public function assign(Subject\Model\SubjectRelativeInterface $relative, $subject);
+    public function assign(Relative $relative, Subject $subject): SubjectProviderInterface;
 
     /**
      * Returns the subject from the relative.
      *
      * This method should set the subject into the relative for future resolutions.
      *
-     * @param Subject\Model\SubjectRelativeInterface $relative
+     * @param Relative $relative
+     *
+     * @return Subject
      *
      * @throws SubjectException
-     *
-     * @return object
      */
-    public function resolve(Subject\Model\SubjectRelativeInterface $relative);
+    public function resolve(Relative $relative): Subject;
 
     /**
      * Transforms the subject into the identity.
@@ -51,57 +52,57 @@ interface SubjectProviderInterface
      * This method must set the subject identity fields (provider and identifier) and
      * set the subject into the identity prior to next reverse transformations.
      *
-     * @param mixed                          $subject
-     * @param Subject\Entity\SubjectIdentity $identity
+     * @param Subject  $subject
+     * @param Identity $identity
      *
      * @return SubjectProviderInterface
      */
-    public function transform($subject, Subject\Entity\SubjectIdentity $identity);
+    public function transform(Subject $subject, Identity $identity): SubjectProviderInterface;
 
     /**
      * Reverse transform the identity into the subject.
      *
      * This method must set the subject into the identity prior to next reverse transformations.
      *
-     * @param Subject\Entity\SubjectIdentity $identity
+     * @param Identity $identity
+     *
+     * @return Subject
      *
      * @throws SubjectException
-     *
-     * @return object
      */
-    public function reverseTransform(Subject\Entity\SubjectIdentity $identity);
+    public function reverseTransform(Identity $identity): Subject;
 
     /**
      * Returns whether the resolver supports the relative or not.
      *
-     * @param Subject\Model\SubjectRelativeInterface $relative
+     * @param Relative $relative
      *
-     * @return boolean
+     * @return bool
      */
-    public function supportsRelative(Subject\Model\SubjectRelativeInterface $relative);
+    public function supportsRelative(Relative $relative): bool;
 
     /**
      * Returns whether the provider supports the subject or not.
      *
-     * @param mixed $subject
+     * @param Subject $subject
      *
      * @return bool
      */
-    public function supportsSubject($subject);
+    public function supportsSubject(Subject $subject): bool;
 
     /**
      * Returns the subject repository.
      *
-     * @return Subject\Repository\SubjectRepositoryInterface
+     * @return SubjectRepositoryInterface
      */
-    public function getRepository();
+    public function getRepository(): SubjectRepositoryInterface;
 
     /**
      * Returns the subject class.
      *
      * @return string
      */
-    public function getSubjectClass();
+    public function getSubjectClass(): string;
 
     /**
      * Returns the search url for the given context.
@@ -115,19 +116,19 @@ interface SubjectProviderInterface
      *
      * @return array
      */
-    public function getSearchRouteAndParameters($context);
+    public function getSearchRouteAndParameters(string $context): array;
 
     /**
      * Returns the provider name.
      *
      * @return string
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * Returns the subject type label.
      *
      * @return string
      */
-    public function getLabel();
+    public function getLabel(): string;
 }

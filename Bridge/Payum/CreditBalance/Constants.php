@@ -13,6 +13,7 @@ abstract class Constants
 
     const FIELD_BALANCE = 'balance';
     const FIELD_AMOUNT  = 'amount';
+    const FIELD_REFUND  = 'refund';
     const FIELD_STATUS  = 'status';
 
     const STATUS_CAPTURED   = 'captured';

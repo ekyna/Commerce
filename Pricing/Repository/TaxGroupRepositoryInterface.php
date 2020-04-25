@@ -18,4 +18,13 @@ interface TaxGroupRepositoryInterface extends ResourceRepositoryInterface
      * @return TaxGroupInterface
      */
     public function findDefault(): TaxGroupInterface;
+
+    /**
+     * Returns the tax group by its code.
+     *
+     * @param string $code
+     *
+     * @return TaxGroupInterface|null
+     */
+    public function findOneByCode(string $code): ?TaxGroupInterface;
 }

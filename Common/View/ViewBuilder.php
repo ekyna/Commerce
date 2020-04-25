@@ -2,8 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Common\View;
 
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
@@ -25,14 +28,19 @@ class ViewBuilder
     private $registry;
 
     /**
-     * @var AmountCalculatorInterface
+     * @var AmountCalculatorFactory
      */
-    private $amountCalculator;
+    private $amountCalculatorFactory;
 
     /**
-     * @var MarginCalculatorInterface
+     * @var CurrencyConverterInterface
      */
-    private $marginCalculator;
+    private $currencyConverter;
+
+    /**
+     * @var MarginCalculatorFactory
+     */
+    private $marginCalculatorFactory;
 
     /**
      * @var FormatterFactory
@@ -79,28 +87,41 @@ class ViewBuilder
      */
     private $formatter;
 
+    /**
+     * @var AmountCalculatorInterface
+     */
+    private $amountCalculator;
+
+    /**
+     * @var MarginCalculatorInterface
+     */
+    private $marginCalculator;
+
 
     /**
      * Constructor.
      *
-     * @param ViewTypeRegistryInterface $registry
-     * @param AmountCalculatorInterface $amountCalculator
-     * @param MarginCalculatorInterface $marginCalculator
-     * @param FormatterFactory          $formatterFactory
-     * @param string                    $defaultTemplate
-     * @param string                    $editableTemplate
+     * @param ViewTypeRegistryInterface  $registry
+     * @param AmountCalculatorFactory    $amountCalculatorFactory
+     * @param MarginCalculatorFactory    $marginCalculatorFactory
+     * @param CurrencyConverterInterface $currencyConverter
+     * @param FormatterFactory           $formatterFactory
+     * @param string                     $defaultTemplate
+     * @param string                     $editableTemplate
      */
     public function __construct(
         ViewTypeRegistryInterface $registry,
-        AmountCalculatorInterface $amountCalculator,
-        MarginCalculatorInterface $marginCalculator,
+        AmountCalculatorFactory $amountCalculatorFactory,
+        MarginCalculatorFactory $marginCalculatorFactory,
+        CurrencyConverterInterface $currencyConverter,
         FormatterFactory $formatterFactory,
         $defaultTemplate = '@Commerce/Sale/view.html.twig',
         $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
         $this->registry = $registry;
-        $this->amountCalculator = $amountCalculator;
-        $this->marginCalculator = $marginCalculator;
+        $this->amountCalculatorFactory = $amountCalculatorFactory;
+        $this->marginCalculatorFactory = $marginCalculatorFactory;
+        $this->currencyConverter = $currencyConverter;
         $this->formatterFactory = $formatterFactory;
         $this->defaultTemplate = $defaultTemplate;
         $this->editableTemplate = $editableTemplate;
@@ -120,10 +141,11 @@ class ViewBuilder
 
         $c = $this->view->getCurrency();
 
-        $this->amountCalculator->calculateSale($sale, $c);
+        $this->amountCalculator = $this->amountCalculatorFactory->create($c);
+        $this->marginCalculator = $this->marginCalculatorFactory->create($c);
 
         // Gross total view
-        $grossResult = $sale->getGrossResult($c);
+        $grossResult = $this->amountCalculator->calculateSale($sale, true);
         $this->view->setGross(new TotalView(
             $this->currency($grossResult->getGross($this->view->isAti())),
             $this->currency($grossResult->getDiscount($this->view->isAti())),
@@ -131,20 +153,17 @@ class ViewBuilder
         ));
 
         // Final total view
-        $finalResult = $sale->getFinalResult($c);
+        $finalResult = $this->amountCalculator->calculateSale($sale);
         $this->view->setFinal(new TotalView(
             $this->currency($finalResult->getBase()),
             $this->currency($finalResult->getTax()),
             $this->currency($finalResult->getTotal())
         ));
 
-        if ($this->options['private'] && null !== $margin = $this->marginCalculator->calculateSale($sale)) {
+        if ($this->options['private'] && $margin = $this->marginCalculator->calculateSale($sale)) {
             $prefix = $margin->isAverage() ? '~' : '';
 
-            $amount = $this
-                ->amountCalculator
-                ->getCurrencyConverter()
-                ->convertWithSubject($margin->getAmount(), $sale, $c);
+            $amount = $this->currencyConverter->convertWithSubject($margin->getAmount(), $sale, $c);
 
             $this->view->setMargin(new MarginView(
                 $this->currency($amount, $prefix),
@@ -239,7 +258,7 @@ class ViewBuilder
             return;
         }
 
-        $amounts = $this->amountCalculator->calculateSale($sale, $this->view->getCurrency());
+        $amounts = $this->amountCalculator->calculateSale($sale);
 
         foreach ($amounts->getTaxAdjustments() as $tax) {
             $this->view->addTax(new TaxView(
@@ -307,7 +326,7 @@ class ViewBuilder
 
         $view->addClass('level-' . $level);
 
-        $result = $item->getResult($this->view->getCurrency());
+        $result = $this->amountCalculator->calculateSaleItem($item);
 
         $unit = $gross = $discountRates = $discountAmount = $base = $taxRates = $taxAmount = $total = null;
 
@@ -339,8 +358,8 @@ class ViewBuilder
         }
 
         if (
-            $this->options['private'] ||
-            !($item->isConfigurable() && $item->isCompound() && !$item->hasPrivateChildren())
+            $this->options['private']
+            || !($item->isConfigurable() && $item->isCompound() && !$item->hasPrivateChildren())
         ) {
             $view->setReference($item->getReference());
         }
@@ -374,7 +393,7 @@ class ViewBuilder
         }
 
         if ($this->view->vars['show_margin'] && !($item->isCompound() && !$item->hasPrivateChildren())) {
-            if (null !== $margin = $item->getMargin($this->view->getCurrency())) {
+            if ($margin = $this->marginCalculator->calculateSaleItem($item)) {
                 $view->setMargin(
                     $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '')
                 );
@@ -422,7 +441,7 @@ class ViewBuilder
             }
         }
 
-        $result = $adjustment->getResult($this->view->getCurrency());
+        $result = $this->amountCalculator->calculateSaleDiscount($adjustment);
 
         $view
             ->setDesignation($designation)
@@ -469,7 +488,7 @@ class ViewBuilder
         // Shipment weight
         $designation .= ' (' . $this->number($sale->getShipmentWeight() ?? $sale->getWeightTotal()) . ' kg)';
 
-        $result = $sale->getShipmentResult($this->view->getCurrency());
+        $result = $this->amountCalculator->calculateSaleShipment($sale);
 
         $view
             ->setDesignation($designation)
@@ -579,7 +598,7 @@ class ViewBuilder
                 'editable'   => false,
                 'taxes_view' => true,
                 'locale'     => \Locale::getDefault(),
-                'currency'   => $this->amountCalculator->getDefaultCurrency(),
+                'currency'   => $this->currencyConverter->getDefaultCurrency(),
                 'ati'        => false,
                 'export'     => false,
                 'discounts'  => null,

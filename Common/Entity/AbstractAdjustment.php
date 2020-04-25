@@ -81,7 +81,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getDesignation()
+    public function getDesignation(): ?string
     {
         return $this->designation;
     }
@@ -89,7 +89,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setDesignation($designation)
+    public function setDesignation(string $designation): Model\AdjustmentInterface
     {
         $this->designation = $designation;
 
@@ -99,7 +99,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
@@ -107,7 +107,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setType($type)
+    public function setType(string $type): Model\AdjustmentInterface
     {
         $this->type = $type;
 
@@ -117,7 +117,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getMode()
+    public function getMode(): string
     {
         return $this->mode;
     }
@@ -125,7 +125,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setMode($mode)
+    public function setMode(string $mode): Model\AdjustmentInterface
     {
         $this->mode = $mode;
 
@@ -135,7 +135,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getAmount()
+    public function getAmount(): ?float
     {
         return $this->amount;
     }
@@ -143,7 +143,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setAmount($amount)
+    public function setAmount(float $amount): Model\AdjustmentInterface
     {
         $this->amount = $amount;
 
@@ -153,7 +153,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function isImmutable()
+    public function isImmutable(): bool
     {
         return $this->immutable;
     }
@@ -161,9 +161,9 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setImmutable($immutable)
+    public function setImmutable(bool $immutable): Model\AdjustmentInterface
     {
-        $this->immutable = (bool)$immutable;
+        $this->immutable = $immutable;
 
         return $this;
     }
@@ -189,7 +189,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function equals(Model\AdjustmentInterface $adjustment)
+    public function equals(Model\AdjustmentInterface $adjustment): bool
     {
         // TODO unique hash (other data may vary)
 
@@ -204,5 +204,5 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    abstract public function getAdjustable();
+    abstract public function getAdjustable(): ?Model\AdjustableInterface;
 }

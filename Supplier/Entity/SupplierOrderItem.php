@@ -16,11 +16,6 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     use SubjectRelativeTrait;
 
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var Model\SupplierOrderInterface
      */
     protected $order;
@@ -36,24 +31,9 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     protected $stockUnit;
 
     /**
-     * @var string
-     */
-    protected $designation;
-
-    /**
-     * @var string
-     */
-    protected $reference;
-
-    /**
      * @var float
      */
-    protected $quantity = 1;
-
-    /**
-     * @var float
-     */
-    protected $netPrice = 0;
+    protected $quantity;
 
 
     /**
@@ -61,23 +41,19 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
      */
     public function __construct()
     {
-        $this->initializeSubjectIdentity();
+        $this->initializeSubjectRelative();
+
+        $this->quantity = 1.;
     }
 
     /**
-     * @inheritdoc
+     * Returns the string representation.
+     *
+     * @return string
      */
     public function __toString()
     {
         return $this->designation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
-    {
-        return $this->id;
     }
 
     /**
@@ -155,43 +131,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     /**
      * @inheritdoc
      */
-    public function getDesignation(): ?string
-    {
-        return $this->designation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setDesignation(string $designation): Model\SupplierOrderItemInterface
-    {
-        $this->designation = $designation;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getReference(): ?string
-    {
-        return $this->reference;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setReference(string $reference): Model\SupplierOrderItemInterface
-    {
-        $this->reference = $reference;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQuantity(): ?float
+    public function getQuantity(): float
     {
         return $this->quantity;
     }
@@ -202,24 +142,6 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     public function setQuantity(float $quantity): Model\SupplierOrderItemInterface
     {
         $this->quantity = (float)$quantity;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNetPrice(): ?float
-    {
-        return $this->netPrice;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNetPrice(float $price = null): Model\SupplierOrderItemInterface
-    {
-        $this->netPrice = $price;
 
         return $this;
     }

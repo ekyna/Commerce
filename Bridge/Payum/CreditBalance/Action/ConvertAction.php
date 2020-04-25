@@ -44,6 +44,7 @@ class ConvertAction implements ActionInterface
 
         $details->defaults(array(
             Constants::FIELD_STATUS  => null,
+            Constants::FIELD_REFUND  => $payment->isRefund(),
             Constants::FIELD_AMOUNT  => $payment->getRealAmount(),     // Using default currency
             Constants::FIELD_BALANCE => $customer->getCreditBalance(), // Using default currency
         ));
@@ -58,6 +59,6 @@ class ConvertAction implements ActionInterface
     {
         return $request instanceof Convert
             && $request->getSource() instanceof PaymentInterface
-            && $request->getTo() == 'array';
+            && $request->getTo() === 'array';
     }
 }

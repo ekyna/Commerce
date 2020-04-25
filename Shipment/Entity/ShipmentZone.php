@@ -158,8 +158,8 @@ class ShipmentZone implements ShipmentZoneInterface
     public function addPrice(ShipmentPriceInterface $price)
     {
         if (!$this->hasPrice($price)) {
-            $price->setZone($this);
             $this->prices->add($price);
+            $price->setZone($this);
         }
 
         return $this;
@@ -171,8 +171,8 @@ class ShipmentZone implements ShipmentZoneInterface
     public function removePrice(ShipmentPriceInterface $price)
     {
         if ($this->hasPrice($price)) {
-            $price->setZone(null);
             $this->prices->removeElement($price);
+            $price->setZone(null);
         }
 
         return $this;

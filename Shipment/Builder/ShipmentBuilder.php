@@ -217,11 +217,11 @@ class ShipmentBuilder implements ShipmentBuilderInterface
      */
     private function findOrCreateItem(ShipmentInterface $shipment, SaleItemInterface $saleItem, $expected, $available = null)
     {
-        $item = null;
-
         if (0 >= $expected) {
-            return $item;
+            return null;
         }
+
+        $item = null;
 
         // Existing item lookup
         foreach ($shipment->getItems() as $i) {

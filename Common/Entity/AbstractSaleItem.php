@@ -4,9 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Common\Model\Margin;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
@@ -19,13 +17,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
 {
     use Model\AdjustableTrait,
         SubjectRelativeTrait,
-        TaxableTrait,
         SortableTrait;
-
-    /**
-     * @var int
-     */
-    protected $id;
 
     /**
      * @var Model\SaleItemInterface
@@ -40,27 +32,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     /**
      * @var string
      */
-    protected $designation;
-
-    /**
-     * @var string
-     */
     protected $description;
-
-    /**
-     * @var string
-     */
-    protected $reference;
-
-    /**
-     * @var float
-     */
-    protected $netPrice = 0;
-
-    /**
-     * @var float
-     */
-    protected $weight = 0;
 
     /**
      * @var float
@@ -92,16 +64,6 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
      */
     protected $data = [];
 
-    /**
-     * @var Model\Amount[]
-     */
-    protected $results = [];
-
-    /**
-     * @var Model\Margin[]
-     */
-    protected $margins = [];
-
 
     /**
      * Constructor.
@@ -109,7 +71,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     public function __construct()
     {
         $this->initializeAdjustments();
-        $this->initializeSubjectIdentity();
+        $this->initializeSubjectRelative();
 
         $this->children = new ArrayCollection();
     }
@@ -122,14 +84,6 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     public function __toString()
     {
         return $this->getDesignation();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
-    {
-        return $this->id;
     }
 
     /**
@@ -271,23 +225,6 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getDesignation()
-    {
-        return $this->designation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setDesignation($designation)
-    {
-        $this->designation = $designation;
-
-        return $this;
-    }
 
     /**
      * @inheritdoc
@@ -303,60 +240,6 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     public function setDescription($description)
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getReference()
-    {
-        return $this->reference;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setReference($reference)
-    {
-        $this->reference = $reference;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNetPrice()
-    {
-        return $this->netPrice;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setNetPrice($netPrice)
-    {
-        $this->netPrice = (float)$netPrice;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getWeight()
-    {
-        return $this->weight;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setWeight($weight)
-    {
-        $this->weight = (float)$weight;
 
         return $this;
     }
@@ -575,57 +458,6 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     public function getTotalQuantity()
     {
         return $this->getQuantity() * $this->getParentsQuantity();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function clearResults(): Model\SaleItemInterface
-    {
-        foreach ($this->children as $child) {
-            $child->clearResults();
-        }
-
-        $this->results = [];
-        $this->margins = [];
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setResult(Model\Amount $result): Model\SaleItemInterface
-    {
-        $this->results[$result->getCurrency()] = $result;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getResult(string $currency): ?Model\Amount
-    {
-        return $this->results[$currency] ?? null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setMargin(Margin $margin): Model\SaleItemInterface
-    {
-        $this->margins[$margin->getCurrency()] = $margin;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMargin(string $currency): ?Margin
-    {
-        return $this->margins[$currency] ?? null;
     }
 
     /**

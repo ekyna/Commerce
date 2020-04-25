@@ -16,7 +16,7 @@ interface QuoteAdjustmentInterface extends SaleAdjustmentInterface
      *
      * @return QuoteInterface
      */
-    public function getQuote();
+    public function getQuote(): ?QuoteInterface;
 
     /**
      * Sets the quote.
@@ -25,5 +25,5 @@ interface QuoteAdjustmentInterface extends SaleAdjustmentInterface
      *
      * @return $this|QuoteAdjustmentInterface
      */
-    public function setQuote(QuoteInterface $quote = null);
+    public function setQuote(QuoteInterface $quote = null): QuoteAdjustmentInterface;
 }

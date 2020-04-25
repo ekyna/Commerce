@@ -55,6 +55,14 @@ class Warehouse extends AbstractAddress implements WarehouseInterface
     /**
      * @inheritDoc
      */
+    public function __toString()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getId()
     {
         return $this->id;

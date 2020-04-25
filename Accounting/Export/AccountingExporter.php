@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Accounting\Export;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingInterface;
 use Ekyna\Component\Commerce\Accounting\Model\AccountingTypes;
 use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface;
-use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
@@ -54,9 +54,9 @@ class AccountingExporter implements AccountingExporterInterface
     protected $currencyConverter;
 
     /**
-     * @var AmountCalculatorInterface
+     * @var AmountCalculatorFactory
      */
-    protected $amountCalculator;
+    protected $calculatorFactory;
 
     /**
      * @var DocumentCalculatorInterface
@@ -111,7 +111,7 @@ class AccountingExporter implements AccountingExporterInterface
      * @param PaymentRepositoryInterface      $paymentRepository
      * @param AccountingRepositoryInterface   $accountingRepository
      * @param CurrencyConverterInterface      $currencyConverter
-     * @param AmountCalculatorInterface       $amountCalculator
+     * @param AmountCalculatorFactory         $calculatorFactory
      * @param DocumentCalculatorInterface     $invoiceCalculator
      * @param InvoicePaymentResolverInterface $invoicePaymentResolver
      * @param TaxResolverInterface            $taxResolver
@@ -122,20 +122,20 @@ class AccountingExporter implements AccountingExporterInterface
         PaymentRepositoryInterface $paymentRepository,
         AccountingRepositoryInterface $accountingRepository,
         CurrencyConverterInterface $currencyConverter,
-        AmountCalculatorInterface $amountCalculator,
+        AmountCalculatorFactory $calculatorFactory,
         DocumentCalculatorInterface $invoiceCalculator,
         InvoicePaymentResolverInterface $invoicePaymentResolver,
         TaxResolverInterface $taxResolver,
         array $config
     ) {
-        $this->invoiceRepository      = $invoiceRepository;
-        $this->paymentRepository      = $paymentRepository;
-        $this->accountingRepository   = $accountingRepository;
-        $this->currencyConverter      = $currencyConverter;
-        $this->amountCalculator       = $amountCalculator;
-        $this->invoiceCalculator      = $invoiceCalculator;
+        $this->invoiceRepository = $invoiceRepository;
+        $this->paymentRepository = $paymentRepository;
+        $this->accountingRepository = $accountingRepository;
+        $this->currencyConverter = $currencyConverter;
+        $this->calculatorFactory = $calculatorFactory;
+        $this->invoiceCalculator = $invoiceCalculator;
         $this->invoicePaymentResolver = $invoicePaymentResolver;
-        $this->taxResolver            = $taxResolver;
+        $this->taxResolver = $taxResolver;
 
         $this->currency = $this->currencyConverter->getDefaultCurrency();
 
@@ -273,7 +273,7 @@ class AccountingExporter implements AccountingExporterInterface
             }
 
             $amount = (string)$this->round($payment->getRealAmount());
-            $date   = $payment->getSale()->getCreatedAt();
+            $date = $payment->getSale()->getCreatedAt();
 
             if ($payment->isRefund()) {
                 // Payment debit
@@ -375,8 +375,8 @@ class AccountingExporter implements AccountingExporterInterface
      */
     protected function writeInvoiceGoodsLines(): void
     {
-        $sale    = $this->invoice->getSale();
-        $date    = $sale->getCreatedAt();
+        $sale = $this->invoice->getSale();
+        $date = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
         /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[] $discounts */
         $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
@@ -418,9 +418,8 @@ class AccountingExporter implements AccountingExporterInterface
                     if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
                         $amount -= $this->round($amount * $adjustment->getAmount() / 100);
                     } else {
-                        $this->amountCalculator->calculateSale($sale, $this->currency);
-                        $gross  = $sale->getGrossResult($this->currency)->getBase();
-                        $amount -= $this->round($base * $adjustment->getAmount() / $gross);
+                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
+                        $amount -= $this->round($base * $adjustment->getAmount() / $gross->getBase());
                     }
                 }
             }
@@ -454,8 +453,8 @@ class AccountingExporter implements AccountingExporterInterface
 
         $amount = $this->round($amount);
 
-        $sale    = $this->invoice->getSale();
-        $date    = $sale->getCreatedAt();
+        $sale = $this->invoice->getSale();
+        $date = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
 
         $account = $this->getShipmentAccountNumber($taxRule, $this->invoice->getNumber());
@@ -506,29 +505,27 @@ class AccountingExporter implements AccountingExporterInterface
     protected function writePaymentExchange(PaymentInterface $payment, string $number, \DateTime $date): void
     {
         $sale = $payment->getSale();
-        $pc   = $payment->getCurrency()->getCode();
-        $sc   = $sale->getCurrency()->getCode();
+        $pc = $payment->getCurrency()->getCode();
+        $sc = $sale->getCurrency()->getCode();
 
         if ($this->currency !== $pc) { // If payment currency is not default
             $currency = $pc;
-            $rate     = $this->currencyConverter->getSubjectExchangeRate($payment, $currency, $this->currency);
+            $rate = $this->currencyConverter->getSubjectExchangeRate($payment, $currency, $this->currency);
 
             $amount = $payment->getAmount();
 
-            $this->amountCalculator->calculateSale($sale, $currency);
-            $grandTotal = $sale->getFinalResult($currency)->getTotal();
+            $grandTotal = $this->calculatorFactory->create($currency)->calculateSale($sale)->getTotal();
 
             if ($this->currency === $sc) {  // If sale currency is default
                 $amount = $this->currencyConverter->convertWithRate($amount, $rate, $this->currency);
             }
         } elseif ($this->currency !== $sc) {  // If sale currency is not default
             $currency = $sc;
-            $rate     = $this->currencyConverter->getSubjectExchangeRate($sale, $currency, $this->currency);
+            $rate = $this->currencyConverter->getSubjectExchangeRate($sale, $currency, $this->currency);
 
             $amount = $payment->getAmount();
 
-            $this->amountCalculator->calculateSale($sale, $currency);
-            $grandTotal = $sale->getFinalResult($currency)->getTotal();
+            $grandTotal = $this->calculatorFactory->create($currency)->calculateSale($sale)->getTotal();
 
             if ($this->currency === $pc) {  // If payment currency is default
                 $grandTotal = $this->currencyConverter->convertWithRate($grandTotal, $rate, $this->currency);
@@ -537,8 +534,7 @@ class AccountingExporter implements AccountingExporterInterface
             return;
         }
 
-        $this->amountCalculator->calculateSale($sale, $this->currency);
-        $realGrandTotal = $sale->getFinalResult($this->currency)->getTotal();
+        $realGrandTotal = $this->calculatorFactory->create($this->currency)->calculateSale($sale)->getTotal();
 
         // Diff = Payment amount DC - (Sale total DC * Payment amount FC / Sale total FC)
         // (DC: default currency, FC: foreign currency)
@@ -554,7 +550,7 @@ class AccountingExporter implements AccountingExporterInterface
         } else {
             // Loss
             $account = $this->getExchangeAccountNumber(false);
-            $diff    = -$diff;
+            $diff = -$diff;
         }
 
         if (null === $account) {

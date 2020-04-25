@@ -18,7 +18,7 @@ class CartItemAdjustment extends AbstractSaleItemAdjustment implements CartItemA
     /**
      * @inheritDoc
      */
-    protected function assertSaleItemClass(SaleItemInterface $item)
+    protected function assertSaleItemClass(SaleItemInterface $item): void
     {
         if (!$item instanceof CartItemInterface) {
             throw new InvalidArgumentException("Expected instance of " . CartItemInterface::class);

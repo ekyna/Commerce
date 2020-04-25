@@ -9,10 +9,12 @@
             table="commerce_tax_group">
 
         <indexes>
+            <index columns="code" name="idx_commerce_tax_group_code"/>
             <index columns="name" name="idx_commerce_tax_group_name"/>
         </indexes>
 
         <unique-constraints>
+            <unique-constraint columns="code" name="unique_commerce_tax_group_code"/>
             <unique-constraint columns="name" name="unique_commerce_tax_group_name"/>
         </unique-constraints>
 
@@ -20,12 +22,13 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="code" column="code" type="string" length="32" nullable="true"/>
         <field name="name" column="name" type="string" length="64"/>
         <field name="default" column="is_default" type="boolean"/>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Pricing\Entity\Tax"
                       field="taxes">
-            <join-table name="commerce_tax_group_tax"><!-- TODO plural -->
+            <join-table name="commerce_tax_groups_taxes">
                 <join-columns>
                     <join-column name="tax_group_id" referenced-column-name="id" on-delete="CASCADE"/>
                 </join-columns>

@@ -14,6 +14,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -152,14 +153,14 @@ class InvoicePaymentResolverTest extends TestCase
         // --- USD ---
 
         $this->buildData([
-            'currency'      => 'USD',
+            'currency'      => Fixture::CURRENCY_USD,
             'exchange_rate' => 1.25,
             'invoices'      => [
-                ['total' => 500, 'real_total' => 400, 'date' => '-3 days', 'currency' => 'USD'],
+                ['total' => 500, 'real_total' => 400, 'date' => '-3 days', 'currency' => Fixture::CURRENCY_USD],
             ],
             'payments'      => [
-                ['amount' => 300, 'date' => '-1 days', 'currency' => 'USD'],
-                ['amount' => 200, 'date' => 'now', 'currency' => 'USD'],
+                ['amount' => 300, 'date' => '-1 days', 'currency' => Fixture::CURRENCY_USD],
+                ['amount' => 200, 'date' => 'now', 'currency' => Fixture::CURRENCY_USD],
             ],
         ]);
         yield from $this->buildResult([
@@ -170,7 +171,7 @@ class InvoicePaymentResolverTest extends TestCase
     public function test_resolve_withUnexpectedPaymentCurrency()
     {
         $sale = $this->createMock(OrderInterface::class);
-        $sale->method('getCurrency')->willReturn($this->mockCurrency('USD'));
+        $sale->method('getCurrency')->willReturn($this->mockCurrency(Fixture::CURRENCY_USD));
         $sale->method('getExchangeRate')->willReturn(1.25);
         $sale->method('getExchangeDate')->willReturn(new \DateTime());
 
@@ -180,7 +181,7 @@ class InvoicePaymentResolverTest extends TestCase
                 300,
                 240,
                 'now',
-                'USD',
+                Fixture::CURRENCY_USD,
                 false
             ),
         ]));
@@ -190,7 +191,7 @@ class InvoicePaymentResolverTest extends TestCase
                 $sale,
                 200,
                 'now',
-                'GBP',
+                Fixture::CURRENCY_GBP,
                 PaymentStates::STATE_CAPTURED,
                 false
             ),

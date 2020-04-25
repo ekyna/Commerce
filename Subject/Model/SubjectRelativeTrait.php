@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Subject\Model;
 
+use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 
 /**
@@ -13,6 +14,33 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
  */
 trait SubjectRelativeTrait
 {
+    use TaxableTrait;
+
+    /**
+     * @var int
+     */
+    protected $id;
+
+    /**
+     * @var string
+     */
+    protected $designation;
+
+    /**
+     * @var string
+     */
+    protected $reference;
+
+    /**
+     * @var float
+     */
+    protected $netPrice;
+
+    /**
+     * @var float
+     */
+    protected $weight;
+
     /**
      * @var SubjectIdentity
      */
@@ -20,11 +48,117 @@ trait SubjectRelativeTrait
 
 
     /**
-     * Initializes the subject identity.
+     * Initializes the subject relative.
      */
-    protected function initializeSubjectIdentity()
+    protected function initializeSubjectRelative(): void
     {
+        $this->netPrice = 0.;
+        $this->weight = 0.;
         $this->subjectIdentity = new SubjectIdentity();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Returns the designation.
+     *
+     * @return string
+     */
+    public function getDesignation(): ?string
+    {
+        return $this->designation;
+    }
+
+    /**
+     * Sets the designation.
+     *
+     * @param string $designation
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setDesignation(string $designation): SubjectRelativeInterface
+    {
+        $this->designation = $designation;
+
+        return $this;
+    }
+
+    /**
+     * Returns the reference.
+     *
+     * @return string
+     */
+    public function getReference(): ?string
+    {
+        return $this->reference;
+    }
+
+    /**
+     * Sets the reference.
+     *
+     * @param string $reference
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setReference(string $reference): SubjectRelativeInterface
+    {
+        $this->reference = $reference;
+
+        return $this;
+    }
+
+    /**
+     * Returns the net price.
+     *
+     * @return float
+     */
+    public function getNetPrice(): float
+    {
+        return $this->netPrice;
+    }
+
+    /**
+     * Sets the net price.
+     *
+     * @param float $price
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setNetPrice(float $price): SubjectRelativeInterface
+    {
+        $this->netPrice = $price;
+
+        return $this;
+    }
+
+    /**
+     * Returns the weight (kilograms).
+     *
+     * @return float
+     */
+    public function getWeight(): float
+    {
+        return $this->weight;
+    }
+
+    /**
+     * Sets the weight (kilograms).
+     *
+     * @param float $weight
+     *
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setWeight(float $weight): SubjectRelativeInterface
+    {
+        $this->weight = (float)$weight;
+
+        return $this;
     }
 
     /**
@@ -34,7 +168,7 @@ trait SubjectRelativeTrait
      *
      * @return bool
      */
-    public function hasSubjectIdentity()
+    public function hasSubjectIdentity(): bool
     {
         return $this->subjectIdentity->hasIdentity();
     }
@@ -46,7 +180,7 @@ trait SubjectRelativeTrait
      *
      * @internal
      */
-    public function getSubjectIdentity()
+    public function getSubjectIdentity(): SubjectIdentity
     {
         return $this->subjectIdentity;
     }
@@ -60,7 +194,7 @@ trait SubjectRelativeTrait
      *
      * @internal
      */
-    public function setSubjectIdentity(SubjectIdentity $identity)
+    public function setSubjectIdentity(SubjectIdentity $identity): SubjectRelativeInterface
     {
         $this->subjectIdentity = $identity;
 
@@ -74,7 +208,7 @@ trait SubjectRelativeTrait
      *
      * @internal
      */
-    public function clearSubjectIdentity()
+    public function clearSubjectIdentity(): SubjectRelativeInterface
     {
         $this->subjectIdentity->clear();
 

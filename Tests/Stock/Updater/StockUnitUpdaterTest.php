@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Tests\Stock\Updater;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdater;
-use Ekyna\Component\Commerce\Tests\Fixtures\Fixtures;
+use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
 /**
@@ -44,12 +44,27 @@ class StockUnitUpdaterTest extends StockTestCase
         $this->updater = null;
     }
 
+    public function test_updateOrdered(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
+
+        $this->expectStockUnitWillBePersistedOrRemoved($unit);
+
+        $this->updater->updateOrdered($unit, 11, false);
+
+        $this->assertEquals(11, $unit->getOrderedQuantity());
+    }
+
     /**
      * @covers StockUnitUpdater::updateOrdered()
      */
     public function test_updateOrdered_withAbsoluteNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem());
+        $unit = Fixture::stockUnit(['item' => []]);
 
         $this->expectException(StockLogicException::class);
 
@@ -61,7 +76,10 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateOrdered_withRelativeNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 9);
+        $unit = Fixture::stockUnit([
+            'item'    => [],
+            'ordered' => 9,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -73,7 +91,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateOrdered_withAbsoluteQuantityLowerThanReceived_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -85,7 +107,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateOrdered_withRelativeQuantityLowerThanReceived_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -97,7 +123,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateOrdered_withAbsoluteQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -111,7 +141,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateOrdered_withRelativeQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -125,7 +159,10 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateOrdered_withZeroAbsoluteQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10);
+        $unit = Fixture::stockUnit([
+            'item'    => [],
+            'ordered' => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -139,7 +176,10 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateOrdered_withZeroRelativeQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10);
+        $unit = Fixture::stockUnit([
+            'item'    => [],
+            'ordered' => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -153,7 +193,7 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateReceived_withAbsoluteNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem());
+        $unit = Fixture::stockUnit(['item' => []]);
 
         $this->expectException(StockLogicException::class);
 
@@ -165,7 +205,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateReceived_withRelativeNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -177,7 +221,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateReceived_withAbsoluteQuantityGreaterThanOrdered_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -189,7 +237,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateReceived_withRelativeQuantityGreaterThanOrdered_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -199,9 +251,49 @@ class StockUnitUpdaterTest extends StockTestCase
     /**
      * @covers StockUnitUpdater::updateReceived()
      */
+    public function test_updateReceived_withAbsoluteQuantityLowerThanShippedLockedAdjusted_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'adjusted' => 10,
+            'sold'     => 5,
+            'shipped'  => 5,
+            'locked'   => 5,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateReceived($unit, 9, false);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateReceived()
+     */
+    public function test_updateReceived_withRelativeQuantityLowerThanShippedLockedAdjusted_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'adjusted' => 10,
+            'sold'     => 5,
+            'shipped'  => 5,
+            'locked'   => 5,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateReceived($unit, -1, true);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateReceived()
+     */
     public function test_updateReceived_withAbsoluteQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -215,7 +307,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateReceived_withRelativeQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -225,11 +321,106 @@ class StockUnitUpdaterTest extends StockTestCase
     }
 
     /**
+     * @covers StockUnitUpdater::updateAdjusted()
+     */
+    public function test_updateAdjusted_withAbsoluteNegativeQuantity_throwsException(): void
+    {
+        $unit = Fixture::stockUnit(['item' => []]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateAdjusted($unit, -1, false);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateAdjusted()
+     */
+    public function test_updateAdjusted_withRelativeNegativeQuantity_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'adjusted' => 10,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateAdjusted($unit, -11, true);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateAdjusted()
+     */
+    public function test_updateAdjusted_withAbsoluteQuantityLowerThanShippedLockedReceived_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'adjusted' => 10,
+            'shipped'  => 5,
+            'locked'   => 5,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateAdjusted($unit, 9, false);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateAdjusted()
+     */
+    public function test_updateAdjusted_withRelativeQuantityLowerThanShippedLockedReceived_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'adjusted' => 10,
+            'shipped'  => 5,
+            'locked'   => 5,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateAdjusted($unit, -1, true);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateAdjusted()
+     */
+    public function test_updateAdjusted_withAbsoluteQuantity(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'adjusted' => 10,
+        ]);
+
+        $this->expectStockUnitWillBePersistedOrRemoved($unit);
+
+        $this->updater->updateAdjusted($unit, 9, false);
+
+        $this->assertEquals(9, $unit->getAdjustedQuantity());
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateAdjusted()
+     */
+    public function test_updateAdjusted_withRelativeQuantity(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'adjusted' => 10,
+        ]);
+
+        $this->expectStockUnitWillBePersistedOrRemoved($unit);
+
+        $this->updater->updateAdjusted($unit, -1, true);
+
+        $this->assertEquals(9, $unit->getAdjustedQuantity());
+    }
+
+    /**
      * @covers StockUnitUpdater::updateSold()
      */
     public function test_updateSold_withAbsoluteNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem());
+        $unit = Fixture::stockUnit(['item' => []]);
 
         $this->expectException(StockLogicException::class);
 
@@ -241,7 +432,10 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withRelativeNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 0, 10);
+        $unit = Fixture::stockUnit([
+            'item' => [],
+            'sold' => 10,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -251,9 +445,16 @@ class StockUnitUpdaterTest extends StockTestCase
     /**
      * @covers StockUnitUpdater::updateSold()
      */
-    public function test_updateSold_withAbsoluteQuantityLowerThanShipped_throwsException(): void
+    public function test_updateSold_withAbsoluteQuantityLowerThanShippedLocked_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 0, 0, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 5,
+            'locked'   => 5,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -263,9 +464,16 @@ class StockUnitUpdaterTest extends StockTestCase
     /**
      * @covers StockUnitUpdater::updateSold()
      */
-    public function test_updateSold_withRelativeQuantityLowerThanShipped_throwsException(): void
+    public function test_updateSold_withRelativeQuantityLowerThanShippedLocked_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 0, 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 5,
+            'locked'   => 5,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -277,7 +485,10 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withAbsoluteQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10);
+        $unit = Fixture::stockUnit([
+            'item'    => [],
+            'ordered' => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -291,7 +502,11 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateSold_withRelativeQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 0, 10);
+        $unit = Fixture::stockUnit([
+            'item'    => [],
+            'ordered' => 10,
+            'sold'    => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -305,7 +520,7 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withAbsoluteNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem());
+        $unit = Fixture::stockUnit(['item' => []]);
 
         $this->expectException(StockLogicException::class);
 
@@ -317,7 +532,13 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeNegativeQuantity_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10, 10, 9);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 9,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -329,7 +550,12 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withAbsoluteQuantityGreaterThanSold_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10, 9);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 9,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -339,13 +565,20 @@ class StockUnitUpdaterTest extends StockTestCase
     /**
      * @covers StockUnitUpdater::updateShipped()
      */
-    public function test_updateShipped_withAbsoluteQuantityGreaterThanReceived_throwsException(): void
+    public function test_updateShipped_withAbsoluteQuantityGreaterThanReceivedAdjustedLocked_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 9, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 5,
+            'adjusted' => 5,
+            'sold'     => 10,
+            'locked'   => 5,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
-        $this->updater->updateShipped($unit, 10, false);
+        $this->updater->updateShipped($unit, 11, false);
     }
 
     /**
@@ -353,7 +586,12 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeQuantityGreaterThanSold_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 0, 9, 9);
+        $unit = Fixture::stockUnit([
+            'item'    => [],
+            'ordered' => 10,
+            'sold'    => 9,
+            'shipped' => 9,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -365,7 +603,13 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeQuantityLowerThanReceived_throwsException(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 9, 10, 9);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 9,
+            'sold'     => 10,
+            'shipped'  => 9,
+        ]);
 
         $this->expectException(StockLogicException::class);
 
@@ -377,7 +621,12 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withAbsoluteQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10, 10);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -391,7 +640,13 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateShipped_withRelativeQuantity(): void
     {
-        $unit = Fixtures::createStockUnit(null, Fixtures::createSupplierOrderItem(), 10, 10, 10, 9);
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'shipped'  => 9,
+        ]);
 
         $this->expectStockUnitWillBePersistedOrRemoved($unit);
 
@@ -405,7 +660,7 @@ class StockUnitUpdaterTest extends StockTestCase
      */
     public function test_updateEstimatedDateOfArrival_withDifferentDate(): void
     {
-        $unit = Fixtures::createStockUnit();
+        $unit = Fixture::stockUnit();
 
         $this
             ->getPersistenceHelperMock()
@@ -423,7 +678,7 @@ class StockUnitUpdaterTest extends StockTestCase
     {
         $eda = new \DateTime();
 
-        $unit = Fixtures::createStockUnit();
+        $unit = Fixture::stockUnit();
         $unit->setEstimatedDateOfArrival($eda);
 
         $this

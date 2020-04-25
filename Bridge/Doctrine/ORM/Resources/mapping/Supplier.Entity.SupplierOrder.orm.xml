@@ -85,12 +85,16 @@
             <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier">
+            <join-column name="supplier_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+        </many-to-one>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierCarrier" field="carrier">
             <join-column name="carrier_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier">
-            <join-column name="supplier_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
+        <many-to-one target-entity="Ekyna\Component\Commerce\Stock\Model\WarehouseInterface" field="warehouse">
+            <join-column name="warehouse_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
     </mapped-superclass>

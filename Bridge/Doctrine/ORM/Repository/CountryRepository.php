@@ -45,10 +45,9 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
      */
     private $cache = [];
 
+
     /**
-     * Returns the defaultCode.
-     *
-     * @return string
+     * @inheritDoc
      */
     public function getDefaultCode(): string
     {
@@ -56,21 +55,17 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     }
 
     /**
-     * Sets the default code.
-     *
-     * @param string $code
+     * @inheritDoc
      */
-    public function setDefaultCode(string $code)
+    public function setDefaultCode(string $code): void
     {
         $this->defaultCode = strtoupper($code);
     }
 
     /**
-     * Sets the cached codes.
-     *
-     * @param array $codes
+     * @inheritDoc
      */
-    public function setCachedCodes($codes)
+    public function setCachedCodes(array $codes): void
     {
         $this->cachedCodes = $codes;
     }
@@ -78,7 +73,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     /**
      * @inheritDoc
      */
-    public function findDefault()
+    public function findDefault(): CountryInterface
     {
         if (null !== $this->defaultCountry) {
             return $this->defaultCountry;
@@ -94,7 +89,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     /**
      * @inheritDoc
      */
-    public function findOneByCode($code)
+    public function findOneByCode(string $code): ?CountryInterface
     {
         $code = strtoupper($code);
 
@@ -113,7 +108,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     /**
      * @inheritDoc
      */
-    public function findEnabledCodes()
+    public function findEnabledCodes(): array
     {
         if (null !== $this->enabledCodes) {
             return $this->enabledCodes;
@@ -135,7 +130,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     /**
      * @inheritDoc
      */
-    public function findAllCodes()
+    public function findAllCodes(): array
     {
         if (null !== $this->allCodes) {
             return $this->allCodes;
@@ -155,7 +150,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
     /**
      * @inheritDoc
      */
-    public function getIdentifiers($cached = false)
+    public function getIdentifiers(bool $cached = false): array
     {
         $qb = $this->createQueryBuilder('c');
         $qb
@@ -176,7 +171,7 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
      *
      * @param OnClearEventArgs $event
      */
-    public function onClear(OnClearEventArgs $event)
+    public function onClear(OnClearEventArgs $event): void
     {
         if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
             $this->defaultCountry = null;

@@ -134,7 +134,7 @@ interface SaleUpdaterInterface
      *
      * @return bool Whether the sale has been changed or not.
      */
-    public function updateAmountsTotal(SaleInterface $sale): bool;
+    public function updateAmountTotals(SaleInterface $sale): bool;
 
     /**
      * Updates the payment totals total.
@@ -143,7 +143,7 @@ interface SaleUpdaterInterface
      *
      * @return bool Whether the sale has been changed or not.
      */
-    public function updatePaymentTotal(SaleInterface $sale): bool;
+    public function updatePaymentTotals(SaleInterface $sale): bool;
 
     /**
      * Updates the sale invoice total.
@@ -152,5 +152,5 @@ interface SaleUpdaterInterface
      *
      * @return bool Whether the sale has been changed or not.
      */
-    public function updateInvoiceTotal(SaleInterface $sale): bool;
+    public function updateInvoiceTotals(SaleInterface $sale): bool;
 }

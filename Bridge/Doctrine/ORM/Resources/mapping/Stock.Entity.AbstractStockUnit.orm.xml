@@ -20,7 +20,12 @@
 
         <field name="state" column="state" type="string" length="16" nullable="false"/>
         <field name="geocodes" column="geocodes" type="simple_array" nullable="true"/>
-        <field name="netPrice" column="net_price" type="decimal" precision="15" scale="5" nullable="true"/>
+        <field name="netPrice" column="net_price" type="decimal" precision="15" scale="5" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="shippingPrice" column="shipping_price" type="decimal" precision="15" scale="5" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
 
         <field name="orderedQuantity" column="ordered_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
@@ -33,6 +38,10 @@
             <gedmo:timestampable on="create"/>
         </field>
         <field name="closedAt" column="closed_at" type="datetime" nullable="true"/>
+
+        <many-to-one field="warehouse" target-entity="Ekyna\Component\Commerce\Stock\Model\WarehouseInterface">
+            <join-column name="warehouse_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem"
                     field="supplierOrderItem" inversed-by="stockUnit">

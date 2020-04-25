@@ -2,9 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Subject;
 
+use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface as SubjectProvider;
 use Ekyna\Component\Commerce\Exception\SubjectException;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
  * Interface SubjectHelperInterface
@@ -20,7 +21,7 @@ interface SubjectHelperInterface
      *
      * @return bool
      */
-    public function hasSubject(SubjectRelativeInterface $relative);
+    public function hasSubject(SubjectRelativeInterface $relative): bool;
 
     /**
      * Resolves the subject from the relative.
@@ -28,23 +29,21 @@ interface SubjectHelperInterface
      * @param SubjectRelativeInterface $relative
      * @param bool                     $throw
      *
-     * @throws SubjectException
+     * @return SubjectInterface
      *
-     * @return object
-     * @TODO @return SubjectInterface
+     * @throws SubjectException
      */
-    public function resolve(SubjectRelativeInterface $relative, $throw = true);
+    public function resolve(SubjectRelativeInterface $relative, $throw = true): ?SubjectInterface;
 
     /**
      * Assigns the subject to the relative.
      *
      * @param SubjectRelativeInterface $relative
-     * @param mixed                    $subject
-     * @TODO @param SubjectInterface $subject
+     * @param SubjectInterface         $subject
      *
-     * @return Provider\SubjectProviderInterface
+     * @return SubjectProvider
      */
-    public function assign(SubjectRelativeInterface $relative, $subject);
+    public function assign(SubjectRelativeInterface $relative, SubjectInterface $subject): SubjectProvider;
 
     /**
      * Finds the subject by its provider and identifier.
@@ -54,7 +53,7 @@ interface SubjectHelperInterface
      *
      * @return Model\SubjectInterface|null
      */
-    public function find($provider, $identifier);
+    public function find($provider, $identifier): ?SubjectInterface;
 
     /**
      * Returns the subject 'add to cart' url.

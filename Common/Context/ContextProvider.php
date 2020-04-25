@@ -18,6 +18,7 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
+use Ekyna\Component\Commerce\Stock\Provider\WarehouseProviderInterface;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -59,6 +60,11 @@ class ContextProvider implements ContextProviderInterface
     protected $countryProvider;
 
     /**
+     * @var WarehouseProviderInterface
+     */
+    protected $warehouseProvider;
+
+    /**
      * @var CustomerGroupRepositoryInterface
      */
     protected $customerGroupRepository;
@@ -88,6 +94,7 @@ class ContextProvider implements ContextProviderInterface
      * @param LocaleProviderInterface          $localProvider
      * @param CurrencyProviderInterface        $currencyProvider
      * @param CountryProviderInterface         $countryProvider
+     * @param WarehouseProviderInterface       $warehouseProvider
      * @param CustomerGroupRepositoryInterface $customerGroupRepository
      * @param string                           $defaultVatDisplayMode
      * @param string                           $contextClass
@@ -99,6 +106,7 @@ class ContextProvider implements ContextProviderInterface
         LocaleProviderInterface $localProvider,
         CurrencyProviderInterface $currencyProvider,
         CountryProviderInterface $countryProvider,
+        WarehouseProviderInterface $warehouseProvider,
         CustomerGroupRepositoryInterface $customerGroupRepository,
         $defaultVatDisplayMode = VatDisplayModes::MODE_ATI,
         $contextClass = Context::class
@@ -109,6 +117,7 @@ class ContextProvider implements ContextProviderInterface
         $this->localProvider = $localProvider;
         $this->currencyProvider = $currencyProvider;
         $this->countryProvider = $countryProvider;
+        $this->warehouseProvider = $warehouseProvider;
         $this->customerGroupRepository = $customerGroupRepository;
         $this->defaultVatDisplayMode = $defaultVatDisplayMode;
         $this->contextClass = $contextClass;
@@ -160,7 +169,7 @@ class ContextProvider implements ContextProviderInterface
     public function getContext(SaleInterface $sale = null): ContextInterface
     {
         if ($sale) {
-            // TODO Check if up to date
+            // TODO Check if up to date (compare context date with sale 'updated at' date ?)
             if (null !== $context = $sale->getContext()) {
                 return $context;
             }
@@ -193,16 +202,6 @@ class ContextProvider implements ContextProviderInterface
                 "Expected instance of " . ContextInterface::class . " or " . SaleInterface::class
             );
         }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function clearContext(): ContextProviderInterface
-    {
-        $this->context = null;
 
         return $this;
     }
@@ -263,6 +262,14 @@ class ContextProvider implements ContextProviderInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function onClear(): void
+    {
+        $this->context = null;
     }
 
     /**
@@ -372,18 +379,29 @@ class ContextProvider implements ContextProviderInterface
         if (null === $context->getCustomerGroup()) {
             $context->setCustomerGroup($this->customerGroupRepository->findDefault());
         }
+
         if (null === $context->getInvoiceCountry()) {
             $context->setInvoiceCountry($this->countryProvider->getCountry());
         }
-        if (null === $context->getDeliveryCountry()) {
+
+        if (null === $delivery = $context->getDeliveryCountry()) {
             $context->setDeliveryCountry($this->countryProvider->getCountry());
         }
+
+        if (null === $context->getShippingCountry()) {
+            $context->setShippingCountry(
+                $this->warehouseProvider->getWarehouse($context->getDeliveryCountry())->getCountry()
+            );
+        }
+
         if (null === $context->getCurrency()) {
             $context->setCurrency($this->currencyProvider->getCurrency());
         }
+
         if (null === $context->getLocale()) {
             $context->setLocale($this->localProvider->getCurrentLocale());
         }
+
         if (null === $context->getVatDisplayMode()) {
             if (null !== $mode = $context->getCustomerGroup()->getVatDisplayMode()) {
                 $context->setVatDisplayMode($mode);

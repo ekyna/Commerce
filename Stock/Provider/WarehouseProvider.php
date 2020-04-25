@@ -2,9 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Provider;
 
-use Ekyna\Component\Commerce\Common\Context\Context;
-use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 use Ekyna\Component\Commerce\Stock\Repository\WarehouseRepositoryInterface;
 
@@ -16,11 +14,6 @@ use Ekyna\Component\Commerce\Stock\Repository\WarehouseRepositoryInterface;
 class WarehouseProvider implements WarehouseProviderInterface
 {
     /**
-     * @var ContextProviderInterface
-     */
-    protected $contextProvider;
-
-    /**
      * @var WarehouseRepositoryInterface
      */
     protected $warehouseRepository;
@@ -29,36 +22,24 @@ class WarehouseProvider implements WarehouseProviderInterface
     /**
      * Constructor.
      *
-     * @param ContextProviderInterface     $contextProvider
      * @param WarehouseRepositoryInterface $warehouseRepository
      */
-    public function __construct(
-        ContextProviderInterface $contextProvider,
-        WarehouseRepositoryInterface $warehouseRepository
-    ) {
-        $this->contextProvider = $contextProvider;
+    public function __construct(WarehouseRepositoryInterface $warehouseRepository)
+    {
         $this->warehouseRepository = $warehouseRepository;
     }
 
     /**
      * @inheritDoc
      */
-    public function getWarehouse($context = null): WarehouseInterface
+    public function getWarehouse(CountryInterface $country = null): WarehouseInterface
     {
-        if ($context instanceof SaleInterface) {
-            $context = $this->contextProvider->getContext($context);
-        }
+        if ($country) {
+            $warehouse = $this->warehouseRepository->findOneByCountry($country);
 
-        if (!$context instanceof Context) {
-            $context = $this->contextProvider->getContext();
-        }
-
-        $warehouse = $this
-            ->warehouseRepository
-            ->findOneByCountry($context->getDeliveryCountry());
-
-        if (null !== $warehouse) {
-            return $warehouse;
+            if ($warehouse) {
+                return $warehouse;
+            }
         }
 
         return $this->warehouseRepository->findDefault();

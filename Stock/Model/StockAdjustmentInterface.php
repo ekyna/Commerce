@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use DateTime;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -78,16 +79,16 @@ interface StockAdjustmentInterface extends ResourceInterface
     /**
      * Returns the "created at" date time.
      *
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getCreatedAt(): \DateTime;
+    public function getCreatedAt(): DateTime;
 
     /**
      * Sets the "created at" date time.
      *
-     * @param \DateTime $createdAt
+     * @param DateTime $createdAt
      *
      * @return $this|StockAdjustmentInterface
      */
-    public function setCreatedAt(\DateTime $createdAt): StockAdjustmentInterface;
+    public function setCreatedAt(DateTime $createdAt): StockAdjustmentInterface;
 }

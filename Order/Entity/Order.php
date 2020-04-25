@@ -49,6 +49,11 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @var float
      */
+    protected $revenueTotal;
+
+    /**
+     * @var float
+     */
     protected $marginTotal;
 
     /**
@@ -73,7 +78,7 @@ class Order extends AbstractSale implements Model\OrderInterface
         $this->released = false;
         $this->first = false;
 
-        $this->marginTotal = 0;
+        $this->marginTotal = null;
         $this->itemsCount = 0;
     }
 
@@ -548,6 +553,14 @@ class Order extends AbstractSale implements Model\OrderInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isFullyInvoiced(): bool
+    {
+        return -1 !== bccomp($this->invoiceTotal, $this->grandTotal, 3);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getCompletedAt()
@@ -568,17 +581,17 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function getMarginTotal()
+    public function getRevenueTotal(): ?float
     {
-        return $this->marginTotal;
+        return $this->revenueTotal;
     }
 
     /**
      * @inheritdoc
      */
-    public function setMarginTotal($amount)
+    public function setRevenueTotal(float $amount = null): Model\OrderInterface
     {
-        $this->marginTotal = (float)$amount;
+        $this->revenueTotal = $amount;
 
         return $this;
     }
@@ -586,7 +599,25 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function getItemsCount()
+    public function getMarginTotal(): ?float
+    {
+        return $this->marginTotal;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setMarginTotal(float $amount = null): Model\OrderInterface
+    {
+        $this->marginTotal = $amount;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getItemsCount(): int
     {
         return $this->itemsCount;
     }
@@ -594,9 +625,9 @@ class Order extends AbstractSale implements Model\OrderInterface
     /**
      * @inheritdoc
      */
-    public function setItemsCount($count)
+    public function setItemsCount(int $count): Model\OrderInterface
     {
-        $this->itemsCount = (int)$count;
+        $this->itemsCount = $count;
 
         return $this;
     }

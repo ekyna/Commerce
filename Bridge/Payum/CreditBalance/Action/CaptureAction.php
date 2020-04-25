@@ -17,7 +17,7 @@ use Payum\Core\Request\Capture;
 class CaptureAction implements ActionInterface
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param Capture $request
      */
@@ -32,6 +32,16 @@ class CaptureAction implements ActionInterface
         }
         if (!isset($model[Constants::FIELD_AMOUNT], $model[Constants::FIELD_BALANCE])) {
             throw new RuntimeException("Payment has not been converted.");
+        }
+
+        if ($model[Constants::FIELD_REFUND]) {
+            if ($model[Constants::FIELD_AMOUNT] >= $model[Constants::FIELD_BALANCE]) {
+                $model[Constants::FIELD_STATUS] = Constants::STATUS_CAPTURED;
+            } else {
+                $model[Constants::FIELD_STATUS] = Constants::STATUS_FAILED;
+            }
+
+            return;
         }
 
         if ($model[Constants::FIELD_AMOUNT] <= $model[Constants::FIELD_BALANCE]) {

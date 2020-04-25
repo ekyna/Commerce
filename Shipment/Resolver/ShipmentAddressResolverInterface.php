@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
@@ -15,9 +16,9 @@ interface ShipmentAddressResolverInterface
     /**
      * Returns the country repository.
      *
-     * @return \Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface
+     * @return CountryRepositoryInterface
      */
-    public function getCountryRepository();
+    public function getCountryRepository(): CountryRepositoryInterface;
 
     /**
      * Resolves the shipment sender address.
@@ -27,7 +28,7 @@ interface ShipmentAddressResolverInterface
      *
      * @return AddressInterface
      */
-    public function resolveSenderAddress(ShipmentInterface $shipment, bool $ignoreRelay = false);
+    public function resolveSenderAddress(ShipmentInterface $shipment, bool $ignoreRelay = false): AddressInterface;
 
     /**
      * Resolves the shipment receiver address.
@@ -37,5 +38,5 @@ interface ShipmentAddressResolverInterface
      *
      * @return AddressInterface
      */
-    public function resolveReceiverAddress(ShipmentInterface $shipment, bool $ignoreRelay = false);
+    public function resolveReceiverAddress(ShipmentInterface $shipment, bool $ignoreRelay = false): AddressInterface;
 }

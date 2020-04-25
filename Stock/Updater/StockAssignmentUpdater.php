@@ -42,7 +42,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateSold(StockAssignmentInterface $assignment, $quantity, $relative = true)
+    public function updateSold(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float
     {
         // TODO use Packaging format
 
@@ -71,7 +71,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         }
         // No update
         if (0 == $quantity) {
-            return 0;
+            return 0.;
         }
 
         // Assignment update
@@ -106,7 +106,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
     /**
      * @inheritdoc
      */
-    public function updateShipped(StockAssignmentInterface $assignment, $quantity, $relative = true)
+    public function updateShipped(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float
     {
         // TODO use Packaging format
 
@@ -131,7 +131,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         }
         // No update
         if (0 == $quantity) {
-            return 0;
+            return 0.;
         }
 
         // Stock unit update

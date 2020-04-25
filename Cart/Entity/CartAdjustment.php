@@ -5,6 +5,8 @@ namespace Ekyna\Component\Commerce\Cart\Entity;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleAdjustment;
 use Ekyna\Component\Commerce\Cart\Model\CartAdjustmentInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
+use Ekyna\Component\Commerce\Common\Model\AdjustableInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 
 /**
  * Class CartAdjustment
@@ -22,15 +24,7 @@ class CartAdjustment extends AbstractSaleAdjustment implements CartAdjustmentInt
     /**
      * @inheritdoc
      */
-    public function getSale()
-    {
-        return $this->getCart();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCart()
+    public function getSale(): ?SaleInterface
     {
         return $this->cart;
     }
@@ -38,7 +32,15 @@ class CartAdjustment extends AbstractSaleAdjustment implements CartAdjustmentInt
     /**
      * @inheritdoc
      */
-    public function setCart(CartInterface $cart = null)
+    public function getCart(): ?CartInterface
+    {
+        return $this->cart;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCart(CartInterface $cart = null): CartAdjustmentInterface
     {
         if ($cart !== $this->cart) {
             if ($previous = $this->cart) {
@@ -57,7 +59,7 @@ class CartAdjustment extends AbstractSaleAdjustment implements CartAdjustmentInt
     /**
      * @inheritdoc
      */
-    public function getAdjustable()
+    public function getAdjustable(): AdjustableInterface
     {
         return $this->cart;
     }

@@ -14,10 +14,11 @@ interface PurchaseCostGuesserInterface
     /**
      * Guess the purchase cost for the given subject.
      *
-     * @param SubjectInterface $subject
-     * @param string           $quoteCurrency
+     * @param SubjectInterface $subject  The subject
+     * @param string           $quote    The quote currency
+     * @param bool             $shipping Whether to include shipping cost
      *
      * @return float|null
      */
-    public function guess(SubjectInterface $subject, $quoteCurrency);
+    public function guess(SubjectInterface $subject, string $quote, bool $shipping = false): ?float;
 }
