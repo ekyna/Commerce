@@ -29,14 +29,18 @@ class TaxGroupRepository extends ResourceRepository implements TaxGroupRepositor
     /**
      * @inheritdoc
      */
-    public function findDefault(): TaxGroupInterface
+    public function findDefault(bool $throwException = true): ?TaxGroupInterface
     {
         if (null !== $this->defaultTaxGroup) {
             return $this->defaultTaxGroup;
         }
 
         if (null === $this->defaultTaxGroup = $this->findOneBy(['default' => true])) {
-            throw new RuntimeException('Default tax group not found.');
+            if ($throwException) {
+                throw new RuntimeException('Default tax group not found.');
+            }
+
+            return null;
         }
 
         return $this->defaultTaxGroup;

@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Order;
 
+use Doctrine\DBAL\Exception\ConnectionException;
+use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Order\Invalidator\OrderMarginInvalidator as BaseInvalidator;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -57,7 +59,7 @@ class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberI
         $qb = $this->entityManager->createQueryBuilder();
         $ex = $qb->expr();
 
-        $result = $qb
+        $query = $qb
             ->select(<<<EOL
             IFNULL(
                 IDENTITY(i1.order),
@@ -85,9 +87,20 @@ class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberI
             ->leftJoin('i4.parent', 'i5')
             ->leftJoin('i5.parent', 'i6')
             ->where($ex->in('IDENTITY(a.stockUnit)', ':unitIds'))
-            ->getQuery()
-            ->setParameter('unitIds', $this->unitIds)
-            ->getScalarResult();
+            ->getQuery();
+
+        try {
+            $result = $query
+                ->setParameter('unitIds', $this->unitIds)
+                ->getScalarResult();
+        } catch (\Exception $e) {
+            // Fail silently if connection failed or table is not found.
+            if ($e instanceof ConnectionException || $e instanceof TableNotFoundException) {
+                return;
+            }
+
+            throw $e;
+        }
 
         if (empty($orderIds = array_column($result, 'order_id'))) {
             return;

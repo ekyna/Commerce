@@ -30,15 +30,7 @@ class WarehouseRepository extends ResourceRepository implements WarehouseReposit
             return $this->defaultWarehouse;
         }
 
-        $qb = $this->createQueryBuilder('w');
-
-        $warehouse = $qb
-            ->andWhere($qb->expr()->eq('w.default', true))
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        if (!$warehouse) {
+        if (null === $this->defaultWarehouse = $this->findOneBy(['default' => true])) {
             if ($throwException) {
                 throw new RuntimeException('Default warehouse not found.');
             }
@@ -46,7 +38,7 @@ class WarehouseRepository extends ResourceRepository implements WarehouseReposit
             return null;
         }
 
-        return $this->defaultWarehouse = $warehouse;
+        return $this->defaultWarehouse;
     }
 
     /**

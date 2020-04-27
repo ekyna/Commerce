@@ -15,9 +15,11 @@ interface TaxGroupRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Returns the default tax group.
      *
+     * @param bool $throwException Whether to throw exception if not found.
+     *
      * @return TaxGroupInterface
      */
-    public function findDefault(): TaxGroupInterface;
+    public function findDefault(bool $throwException = true): ?TaxGroupInterface;
 
     /**
      * Returns the tax group by its code.

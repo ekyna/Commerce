@@ -9,7 +9,7 @@ use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Pricing\Entity\Tax;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxRule;
@@ -21,7 +21,6 @@ use Ekyna\Component\Commerce\Pricing\Repository\TaxRepositoryInterface;
 use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 use Ekyna\Component\Commerce\Stock\Entity\Warehouse;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierTemplateRepositoryInterface;
-use RuntimeException;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Yaml\Yaml;
 
@@ -144,7 +143,7 @@ class Installer
         $countryNames = Intl::getRegionBundle()->getCountryNames();
 
         if (!isset($countryNames[$code])) {
-            throw new InvalidArgumentException("Invalid default country code '$code'.");
+            throw new Exception\InvalidArgumentException("Invalid default country code '$code'.");
         }
 
         asort($countryNames);
@@ -164,7 +163,7 @@ class Installer
         $currencyNames = Intl::getCurrencyBundle()->getCurrencyNames();
 
         if (!isset($currencyNames[$code])) {
-            throw new InvalidArgumentException("Invalid default currency code '$code'.");
+            throw new Exception\InvalidArgumentException("Invalid default currency code '$code'.");
         }
 
         asort($currencyNames);
@@ -179,12 +178,12 @@ class Installer
     {
         $path = __DIR__ . '/data/taxes.yml';
         if (!(file_exists($path) && is_readable($path))) {
-            throw new RuntimeException("File $path does not exist.");
+            throw new Exception\RuntimeException("File $path does not exist.");
         }
 
         $data = Yaml::parse(file_get_contents($path));
         if (!is_array($data) || empty($data)) {
-            throw new RuntimeException("File $path is invalid or empty.");
+            throw new Exception\RuntimeException("File $path is invalid or empty.");
         }
 
         foreach ($data as $code => $datum) {
@@ -230,7 +229,7 @@ class Installer
 
         $country = $this->countryRepository->findOneByCode($data['country']);
         if (null === $country) {
-            throw new RuntimeException("Country {$data['country']} not found.");
+            throw new Exception\RuntimeException("Country {$data['country']} not found.");
         }
         if ($tax->getCountry() !== $country) {
             $tax->setCountry($country);
@@ -247,12 +246,12 @@ class Installer
     {
         $path = __DIR__ . '/data/tax_groups.yml';
         if (!(file_exists($path) && is_readable($path))) {
-            throw new RuntimeException("File $path does not exist.");
+            throw new Exception\RuntimeException("File $path does not exist.");
         }
 
         $data = Yaml::parse(file_get_contents($path));
         if (!is_array($data) || empty($data)) {
-            throw new RuntimeException("File $path is invalid or empty.");
+            throw new Exception\RuntimeException("File $path is invalid or empty.");
         }
 
         foreach ($data as $code => $datum) {
@@ -286,7 +285,7 @@ class Installer
     {
         $changed = false;
 
-        if ($data['default'] && !$this->taxGroupRepository->findDefault()) {
+        if ($data['default'] && !$this->taxGroupRepository->findDefault(false)) {
             $group->setDefault(true);
             $changed = true;
         }
@@ -300,7 +299,7 @@ class Installer
         if (!empty($data['taxes'])) {
             $taxes = $this->taxRepository->findBy(['code' => $data['taxes']]);
             if (count($taxes) !== count($data['taxes'])) {
-                throw new RuntimeException("Failed to fetch all taxes.");
+                throw new Exception\RuntimeException("Failed to fetch all taxes.");
             }
         }
         if (count($taxes) !== count(array_intersect($taxes, $group->getTaxes()->toArray()))) {
@@ -318,12 +317,12 @@ class Installer
     {
         $path = __DIR__ . '/data/tax_rules.yml';
         if (!(file_exists($path) && is_readable($path))) {
-            throw new RuntimeException("File $path does not exist.");
+            throw new Exception\RuntimeException("File $path does not exist.");
         }
 
         $data = Yaml::parse(file_get_contents($path));
         if (!is_array($data) || empty($data)) {
-            throw new RuntimeException("File $path is invalid or empty.");
+            throw new Exception\RuntimeException("File $path is invalid or empty.");
         }
 
         foreach ($data as $code => $datum) {
@@ -376,7 +375,7 @@ class Installer
         if (!empty($data['sources'])) {
             $sources = $this->countryRepository->findBy(['code' => $data['sources']]);
             if (count($sources) !== count($data['sources'])) {
-                throw new RuntimeException("Failed to fetch all source countries.");
+                throw new Exception\RuntimeException("Failed to fetch all source countries.");
             }
         }
         if (count($sources) !== count(array_intersect($sources, $rule->getSources()->toArray()))) {
@@ -388,7 +387,7 @@ class Installer
         if (!empty($data['targets'])) {
             $targets = $this->countryRepository->findBy(['code' => $data['targets']]);
             if (count($targets) !== count($data['targets'])) {
-                throw new RuntimeException("Failed to fetch all target countries.");
+                throw new Exception\RuntimeException("Failed to fetch all target countries.");
             }
         }
         if (count($targets) !== count(array_intersect($targets, $rule->getTargets()->toArray()))) {
@@ -400,7 +399,7 @@ class Installer
         if (!empty($data['taxes'])) {
             $taxes = $this->taxRepository->findBy(['code' => $data['taxes']]);
             if (count($taxes) !== count($data['taxes'])) {
-                throw new RuntimeException("Failed to fetch all taxes.");
+                throw new Exception\RuntimeException("Failed to fetch all taxes.");
             }
         }
         if (count($taxes) !== count(array_intersect($taxes, $rule->getTaxes()->toArray()))) {
