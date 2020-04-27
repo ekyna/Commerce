@@ -71,7 +71,7 @@ class TaxResolver implements TaxResolverInterface
     /**
      * @inheritDoc
      */
-    public function resolveTaxes(Taxable $taxable, $context): array
+    public function resolveTaxes(Taxable $taxable, $context = null): array
     {
         /** @see https://ec.europa.eu/taxation_customs/business/vat/eu-vat-rules-topic/where-tax_fr */
         /** @see https://en.wikipedia.org/wiki/International_taxation#Taxation_systems */
@@ -165,7 +165,7 @@ class TaxResolver implements TaxResolverInterface
     protected function resolveTargetCountry($context): Country
     {
         if (is_null($context)) {
-            return $this->countryProvider->getCountry();
+            return $this->countryProvider->getDefault();
         }
 
         if ($context instanceof Context) {

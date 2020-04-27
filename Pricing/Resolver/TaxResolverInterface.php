@@ -31,7 +31,7 @@ interface TaxResolverInterface
      *
      * @return Tax[]
      */
-    public function resolveTaxes(Taxable $taxable, $context): array;
+    public function resolveTaxes(Taxable $taxable, $context = null): array;
 
     /**
      * Resolves the sale tax rule.
