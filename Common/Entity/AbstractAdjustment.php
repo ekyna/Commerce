@@ -89,7 +89,7 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function setDesignation(string $designation): Model\AdjustmentInterface
+    public function setDesignation(string $designation = null): Model\AdjustmentInterface
     {
         $this->designation = $designation;
 

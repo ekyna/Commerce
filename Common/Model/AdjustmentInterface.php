@@ -25,7 +25,7 @@ interface AdjustmentInterface extends ResourceModel\ResourceInterface, ResourceM
      *
      * @return $this|AdjustmentInterface
      */
-    public function setDesignation(string $designation): AdjustmentInterface;
+    public function setDesignation(string $designation = null): AdjustmentInterface;
 
     /**
      * Returns the type.
