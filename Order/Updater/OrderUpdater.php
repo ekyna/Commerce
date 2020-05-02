@@ -59,7 +59,7 @@ class OrderUpdater implements OrderUpdaterInterface
         $count = $this->calculateItemsCount($order->getItems());
 
         if ($count !== $order->getItemsCount()) {
-            $order->setRevenueTotal($count);
+            $order->setItemsCount($count);
 
             return true;
         }
