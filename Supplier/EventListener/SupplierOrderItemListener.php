@@ -70,6 +70,8 @@ class SupplierOrderItemListener extends AbstractListener
 
         if ($changed || $this->persistenceHelper->isChanged($item, ['quantity', 'netPrice'])) {
             $this->stockUnitLinker->updateData($item);
+
+            $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
         }
     }
 
