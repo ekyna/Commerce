@@ -160,9 +160,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * Returns the warehouse.
-     *
-     * @return Model\WarehouseInterface
+     * @inheritDoc
      */
     public function getWarehouse(): ?Model\WarehouseInterface
     {
@@ -170,13 +168,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     }
 
     /**
-     * Sets the warehouse.
-     *
-     * @param Model\WarehouseInterface $warehouse
-     *
-     * @return $this|Model\StockUnitInterface
+     * @inheritDoc
      */
-    public function setWarehouse(Model\WarehouseInterface $warehouse): Model\StockUnitInterface
+    public function setWarehouse(Model\WarehouseInterface $warehouse = null): Model\StockUnitInterface
     {
         $this->warehouse = $warehouse;
 

@@ -108,6 +108,7 @@ final class SupplierOrderStates
         return [
             static::STATE_NEW,
             static::STATE_ORDERED,
+            static::STATE_VALIDATED,
         ];
     }
 

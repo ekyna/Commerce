@@ -42,11 +42,11 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, E
     /**
      * Sets the warehouse.
      *
-     * @param WarehouseInterface $warehouse
+     * @param WarehouseInterface|null $warehouse
      *
      * @return $this|StockUnitInterface
      */
-    public function setWarehouse(WarehouseInterface $warehouse): StockUnitInterface;
+    public function setWarehouse(WarehouseInterface $warehouse = null): StockUnitInterface;
 
     /**
      * Returns the supplier order item.

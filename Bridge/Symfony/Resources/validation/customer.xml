@@ -59,8 +59,7 @@
             </constraint>
         </property>
         <property name="phone">
-            <!-- TODO Use MisdPhoneNumberBundle's constraint when multiple types handled -->
-            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\PhoneNumber">
+            <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
                 <option name="type">
                     <value>fixed_line</value>
                     <value>voip</value>
@@ -73,8 +72,7 @@
             </constraint>
         </property>
         <property name="mobile">
-            <!-- TODO Use MisdPhoneNumberBundle's constraint when multiple types handled -->
-            <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\PhoneNumber">
+            <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
                 <option name="type">mobile</option>
                 <option name="groups">
                     <value>Default</value>

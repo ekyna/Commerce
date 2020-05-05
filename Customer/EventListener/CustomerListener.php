@@ -106,7 +106,9 @@ class CustomerListener
             $changed |= $this->updateFromParent($customer);
         }
 
-        $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
+        if ($this->persistenceHelper->isChanged($customer, 'vatNumber')) {
+            $changed |= $this->pricingUpdater->updateVatNumberSubject($customer);
+        }
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($customer, false);
