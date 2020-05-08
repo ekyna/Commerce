@@ -29,7 +29,7 @@
 
         <field name="revenueTotal" column="revenue_total" type="decimal" precision="15" scale="5" nullable="true"/>
         <field name="marginTotal" column="margin_total" type="decimal" precision="15" scale="5" nullable="true"/>
-        <field name="itemsCount" column="items_count" type="smallint"/>
+        <field name="itemsCount" column="items_count" type="integer"/>
         <field name="shipmentState" column="shipment_state" type="string" length="16"/>
         <field name="invoiceTotal" column="invoice_total" type="decimal" precision="15" scale="5"/>
         <field name="creditTotal" column="credit_total" type="decimal" precision="15" scale="5"/>

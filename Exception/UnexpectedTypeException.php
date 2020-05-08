@@ -23,6 +23,8 @@ class UnexpectedTypeException extends \UnexpectedValueException implements Comme
 
         if (1 === $length = count($types)) {
             $types = reset($types);
+        } elseif (2 === $length) {
+            $types = implode(' or ', $types);
         } else {
             $types = implode(', ', array_slice($types, 0, $length - 2)) . ' or ' . $types[$length - 1];
         }
