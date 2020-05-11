@@ -9,11 +9,11 @@ use Ekyna\Component\Commerce\Tests\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
- * Class ShipmentCalculatorTest
+ * Class ShipmentSubjectCalculatorTest
  * @package Ekyna\Component\Commerce\Tests\Shipment\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentCalculatorTest extends TestCase
+class ShipmentSubjectCalculatorTest extends TestCase
 {
     /**
      * @var ShipmentSubjectCalculator

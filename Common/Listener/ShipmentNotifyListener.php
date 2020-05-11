@@ -84,6 +84,23 @@ class ShipmentNotifyListener extends AbstractNotifyListener
             return;
         }
 
+        // Abort if sale has notification of type 'SHIPMENT_READY' with same shipment number
+        if ($this->hasNotification($order, NotificationTypes::SHIPMENT_READY, $shipment->getNumber())) {
+            return;
+        }
+
+        // If shipment is 'READY' (in store gateway)
+        if ($shipment->getState() === ShipmentStates::STATE_READY) {
+            // Abort if shipment state has not changed for 'READY'
+            if (!$this->didStateChangeTo($shipment, ShipmentStates::STATE_READY)) {
+                return;
+            }
+
+            $this->notify(NotificationTypes::SHIPMENT_READY, $shipment);
+
+            return;
+        }
+
         // Abort if shipment state has not changed for 'SHIPPED'
         if (!$this->didStateChangeTo($shipment, ShipmentStates::STATE_SHIPPED)) {
             return;
@@ -94,7 +111,7 @@ class ShipmentNotifyListener extends AbstractNotifyListener
             return;
         }
         // Abort if sale has notification of type 'SHIPMENT_PARTIAL' with same shipment number
-        if ($this->hasNotification($order, NotificationTypes::SHIPMENT_SHIPPED, $shipment->getNumber())) {
+        if ($this->hasNotification($order, NotificationTypes::SHIPMENT_PARTIAL, $shipment->getNumber())) {
             return;
         }
 

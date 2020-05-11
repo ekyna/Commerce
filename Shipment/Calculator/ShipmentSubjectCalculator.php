@@ -125,7 +125,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     ) {
         // TODO Return zero if not shippable (?)
 
-        // Quantity = Sold - Shipped - Returned (ignoring current)
+        // Quantity = Sold - Shipped (ignoring current) + Returned
 
         // TODO Packaging format
         $quantity = $saleItem->getTotalQuantity();
@@ -173,7 +173,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
                 continue;
             }
 
-            if ($shipment->isReturn() || $shipment->getState() !== Shipment\ShipmentStates::STATE_SHIPPED) {
+            if ($shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment)) {
                 continue;
             }
 
@@ -208,7 +208,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
                 continue;
             }
 
-            if (!$shipment->isReturn() || $shipment->getState() !== Shipment\ShipmentStates::STATE_RETURNED) {
+            if (!$shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment)) {
                 continue;
             }
 

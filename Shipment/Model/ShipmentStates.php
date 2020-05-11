@@ -184,9 +184,10 @@ final class ShipmentStates
     {
         return [
             self::STATE_READY,
-            self::STATE_PARTIAL, // This is a sale state
             self::STATE_SHIPPED,
             self::STATE_RETURNED,
+            // Sale states
+            self::STATE_PARTIAL,
             self::STATE_COMPLETED,
         ];
     }
