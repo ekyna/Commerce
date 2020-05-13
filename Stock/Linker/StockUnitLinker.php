@@ -92,7 +92,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
     /**
      * @inheritdoc
      */
-    public function applyItem(SupplierOrderItemInterface $item): bool // TODO void
+    public function applyItem(SupplierOrderItemInterface $item): bool
     {
         if (!$item->hasSubjectIdentity()) {
             return false;
