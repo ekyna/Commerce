@@ -809,6 +809,10 @@ abstract class AbstractSaleListener
                 $sale->setCompany($customer->getCompany());
                 $changed = true;
             }
+            if (0 == strlen($sale->getCompanyNumber()) && 0 < strlen($customer->getCompanyNumber())) {
+                $sale->setCompanyNumber($customer->getCompanyNumber());
+                $changed = true;
+            }
 
             // Vat data
             $changed |= $this->updateVatData($sale);

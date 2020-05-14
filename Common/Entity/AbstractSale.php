@@ -60,6 +60,11 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @var string
      */
+    protected $companyNumber;
+
+    /**
+     * @var string
+     */
     protected $email;
 
     /**
@@ -258,6 +263,24 @@ abstract class AbstractSale implements Common\SaleInterface
     public function setCompany($company)
     {
         $this->company = $company;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCompanyNumber(): ?string
+    {
+        return $this->companyNumber;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCompanyNumber(string $number = null): Common\SaleInterface
+    {
+        $this->companyNumber = $number;
 
         return $this;
     }

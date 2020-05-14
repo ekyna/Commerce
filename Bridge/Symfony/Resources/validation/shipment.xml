@@ -160,18 +160,15 @@
             <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
-            <!-- TODO <constraint name="LessThan">
+            <constraint name="LessThan">
                 <option name="value">10000</option>
-            </constraint>-->
+            </constraint>
         </property>
         <property name="netPrice">
             <constraint name="NotBlank"/>
-            <constraint name="GreaterThan">
+            <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
             </constraint>
-            <!-- TODO <constraint name="LessThan">
-                <option name="value">10000</option>
-            </constraint>-->
         </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\ShipmentPrice"/>
     </class>

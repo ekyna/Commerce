@@ -12,6 +12,7 @@
         <field name="number" column="number" type="string" length="16"/>
 
         <field name="company" column="company" type="string" length="64" nullable="true"/>
+        <field name="companyNumber" column="company_number" type="string" length="32" nullable="true"/>
         <field name="email" column="email" type="string" length="255" nullable="true"/>
 
         <field name="sameAddress" column="same_address" type="boolean"/>

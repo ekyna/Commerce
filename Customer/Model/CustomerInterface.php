@@ -43,6 +43,22 @@ interface CustomerInterface extends
     public function setCompany($company);
 
     /**
+     * Returns the company number.
+     *
+     * @return string
+     */
+    public function getCompanyNumber(): ?string;
+
+    /**
+     * Sets the company number.
+     *
+     * @param string $number
+     *
+     * @return $this|CustomerInterface
+     */
+    public function setCompanyNumber(string $number = null): CustomerInterface;
+
+    /**
      * Returns the email.
      *
      * @return string
@@ -461,22 +477,6 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function setDescription($description);
-
-    /**
-     * Returns the company number.
-     *
-     * @return string
-     */
-    public function getCompanyNumber(): ?string;
-
-    /**
-     * Sets the company number.
-     *
-     * @param string $number
-     *
-     * @return $this|CustomerInterface
-     */
-    public function setCompanyNumber(string $number = null): CustomerInterface;
 
     /**
      * Sets the locale

@@ -45,6 +45,11 @@ class Customer implements Model\CustomerInterface
     /**
      * @var string
      */
+    protected $companyNumber;
+
+    /**
+     * @var string
+     */
     protected $email;
 
     /**
@@ -153,18 +158,12 @@ class Customer implements Model\CustomerInterface
      */
     protected $description;
 
-    /**
-     * @var string
-     */
-    protected $companyNumber;
-
 
     /**
      * Constructor.
      */
     public function __construct()
     {
-        $this->newsletter = false;
         $this->documentTypes = [];
         $this->loyaltyPoints = 0;
         $this->creditBalance = 0;
@@ -226,6 +225,24 @@ class Customer implements Model\CustomerInterface
     public function setCompany($company)
     {
         $this->company = $company;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCompanyNumber(): ?string
+    {
+        return $this->companyNumber;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCompanyNumber(string $number = null): Model\CustomerInterface
+    {
+        $this->companyNumber = $number;
 
         return $this;
     }
@@ -731,24 +748,6 @@ class Customer implements Model\CustomerInterface
     public function setDescription($description)
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCompanyNumber(): ?string
-    {
-        return $this->companyNumber;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setCompanyNumber(string $number = null): Model\CustomerInterface
-    {
-        $this->companyNumber = $number;
 
         return $this;
     }

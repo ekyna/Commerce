@@ -84,6 +84,22 @@ interface SaleInterface extends
     public function setCompany($company);
 
     /**
+     * Returns the company number.
+     *
+     * @return string
+     */
+    public function getCompanyNumber(): ?string;
+
+    /**
+     * Sets the company number.
+     *
+     * @param string $number
+     *
+     * @return $this|SaleInterface
+     */
+    public function setCompanyNumber(string $number = null): SaleInterface;
+
+    /**
      * Returns the email.
      *
      * @return string
