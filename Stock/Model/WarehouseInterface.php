@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
@@ -73,6 +72,22 @@ interface WarehouseInterface extends ResourceInterface, AddressInterface, IsDefa
      * @return $this|WarehouseInterface
      */
     public function setOffice(bool $office): WarehouseInterface;
+
+    /**
+     * Returns whether the warehouse is enabled.
+     *
+     * @return bool
+     */
+    public function isEnabled(): bool;
+
+    /**
+     * Sets whether the warehouse is enabled.
+     *
+     * @param bool $enabled
+     *
+     * @return Warehouse
+     */
+    public function setEnabled(bool $enabled): WarehouseInterface;
 
     /**
      * Returns the priority.

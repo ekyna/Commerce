@@ -50,10 +50,12 @@ class WarehouseRepository extends ResourceRepository implements WarehouseReposit
 
         return $qb
             ->andWhere($qb->expr()->isMemberOf(':country', 'w.countries'))
+            ->andWhere($qb->expr()->eq('w.enabled', ':enabled'))
             ->addOrderBy('w.priority', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->setParameter('country', $country)
+            ->setParameter('enabled', true)
             ->getOneOrNullResult();
     }
 }

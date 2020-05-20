@@ -24,6 +24,7 @@
         <field name="name" column="name" type="string" length="64" nullable="false"/>
         <field name="office" column="is_office" type="boolean" nullable="false"/>
         <field name="default" column="is_default" type="boolean" nullable="false"/>
+        <field name="enabled" column="is_enabled" type="boolean" nullable="false"/>
         <field name="priority" column="priority" type="integer" nullable="false"/>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country" field="countries">

@@ -39,6 +39,11 @@ class Warehouse extends AbstractAddress implements WarehouseInterface
     protected $office = false;
 
     /**
+     * @var bool
+     */
+    protected $enabled = false;
+
+    /**
      * @var int
      */
     protected $priority = 0;
@@ -132,6 +137,24 @@ class Warehouse extends AbstractAddress implements WarehouseInterface
     public function setOffice(bool $office): WarehouseInterface
     {
         $this->office = $office;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setEnabled(bool $enabled): WarehouseInterface
+    {
+        $this->enabled = $enabled;
 
         return $this;
     }
