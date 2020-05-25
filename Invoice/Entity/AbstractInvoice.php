@@ -7,7 +7,6 @@ use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
-use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -50,9 +49,9 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     protected $dueDate;
 
     /**
-     * @var PaymentMethodInterface
+     * @var bool
      */
-    protected $paymentMethod;
+    protected $ignoreStock;
 
 
     /**
@@ -66,6 +65,7 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
         $this->credit        = false;
         $this->paidTotal     = 0;
         $this->realPaidTotal = 0;
+        $this->ignoreStock   = false;
         $this->createdAt     = new \DateTime();
     }
 
@@ -175,6 +175,24 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     public function setDueDate(\DateTime $dueDate = null): Invoice\InvoiceInterface
     {
         $this->dueDate = $dueDate;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isIgnoreStock(): bool
+    {
+        return $this->ignoreStock;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setIgnoreStock(bool $ignoreStock): Invoice\InvoiceInterface
+    {
+        $this->ignoreStock = $ignoreStock;
 
         return $this;
     }

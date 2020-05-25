@@ -24,7 +24,7 @@ class OrderInvoiceLineListener extends AbstractInvoiceLineListener
         parent::preventForbiddenChange($line);
 
         if (!$line instanceof OrderInvoiceLineInterface) {
-            throw new Exception\InvalidArgumentException("Expected instance of OrderInvoiceLineInterface");
+            throw new Exception\UnexpectedTypeException($line, OrderInvoiceLineInterface::class);
         }
 
         if ($this->persistenceHelper->isChanged($line, 'orderItem')) {
@@ -51,7 +51,7 @@ class OrderInvoiceLineListener extends AbstractInvoiceLineListener
         $resource = $event->getResource();
 
         if (!$resource instanceof OrderInvoiceLineInterface) {
-            throw new Exception\InvalidArgumentException("Expected instance of OrderInvoiceLineInterface");
+            throw new Exception\UnexpectedTypeException($resource, OrderInvoiceLineInterface::class);
         }
 
         return $resource;

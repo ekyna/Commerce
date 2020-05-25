@@ -74,7 +74,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
         $id = spl_object_id($invoice);
 
         if (!isset($this->cache[$id])) {
-            $this->buildInvoicePayments($invoice->getSale());
+            $this->build($invoice->getSale());
         }
 
         return $this->cache[$id];
@@ -115,7 +115,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      *
      * @param SaleInterface $sale
      */
-    private function buildInvoicePayments(SaleInterface $sale): void
+    private function build(SaleInterface $sale): void
     {
         $this->buildPaymentList($sale);
         /** @var IM\InvoiceSubjectInterface $sale */
@@ -128,7 +128,10 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
 
         // First pass: payment <-> invoices combination exact match lookup
         foreach ($this->payments as $p => &$payment) {
-            foreach (Combination::generateAssoc($this->invoices) as $combination) {
+            $invoices = array_filter($this->invoices, function ($i) use ($payment) {
+                return $payment['refund'] === $i['credit'];
+            });
+            foreach (Combination::generateAssoc($invoices) as $combination) {
                 $sum = array_sum(array_map(function ($i) {
                     return $i['total'];
                 }, $combination));
@@ -137,33 +140,103 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                     continue;
                 }
 
-                $this->buildInvoicePayment(array_keys($combination), [$p]);
+                $this->buildPaymentsResults(array_keys($combination), [$p]);
 
                 continue 2;
             }
         }
 
-        if (empty($this->payments)) {
-            return;
+        // Second pass: invoice <-> payments combination exact match lookup
+        foreach ($this->invoices as $i => &$invoice) {
+            // Skip paid invoices
+            if (0 >= $invoice['total']) {
+                continue;
+            }
+
+            $payments = array_filter($this->payments, function ($p) use ($invoice) {
+                return $invoice['credit'] === $p['refund'];
+            });
+            foreach (Combination::generateAssoc($payments) as $combination) {
+                $sum = array_sum(array_map(function ($p) {
+                    return $p['amount'];
+                }, $combination));
+
+                if (0 !== Money::compare($sum, $invoice['total'], $this->currency)) {
+                    continue;
+                }
+
+                $this->buildPaymentsResults([$i], array_keys($combination));
+
+                continue 2;
+            }
         }
 
-        // Second pass: fills invoices with payments by creation date
+        // Third pass: fills invoices with payments by creation date
         foreach ($this->invoices as $i => &$invoice) {
-            foreach ($this->payments as $p => &$payment) {
-                $this->buildInvoicePayment([$i], [$p]);
+            // Skip paid invoices
+            if (0 >= $invoice['total']) {
+                continue;
+            }
 
-                unset($payment);
+            foreach (array_keys($this->payments) as $p) {
+                $this->buildPaymentsResults([$i], [$p]);
+
+                if (!isset($this->invoices[$i])) {
+                    break;
+                }
+            }
+        }
+
+        // Third pass: cancel invoices with credits (and vice versa)
+        foreach ($this->invoices as $i => &$invoice) {
+            // Skip paid invoices
+            if (0 >= $invoice['total']) {
+                continue;
+            }
+
+            // Filter others invoices, credits for invoice (and vice versa)
+            $others = array_filter($this->invoices, function ($i) use ($invoice) {
+                return $invoice['invoice'] !== $i['invoice']
+                    && $invoice['credit'] !== $i['credit'];
+            });
+
+            foreach (Combination::generateAssoc($others) as $combination) {
+                $sum = array_sum(array_map(function ($i) {
+                    return $i['total'];
+                }, $combination));
+
+                if (0 !== Money::compare($sum, $invoice['total'], $this->currency)) {
+                    continue;
+                }
+
+                $this->buildInvoiceResults([$i], array_keys($combination));
+
+                continue 2;
+            }
+        }
+
+        // Fourth pass: fills invoices with credits (and vice versa) by creation date
+        foreach ($this->invoices as $i => &$invoice) {
+            // Skip paid invoices/credits
+            if (0 >= $invoice['total']) {
+                continue;
+            }
+
+            // Filter others invoices, credits for invoice (and vice versa)
+            $others = array_filter($this->invoices, function ($i) use ($invoice) {
+                return $invoice['invoice'] !== $i['invoice']
+                    && $invoice['credit'] !== $i['credit'];
+            });
+
+            foreach (array_keys($others) as $p) {
+                $this->buildInvoiceResults([$i], [$p]);
 
                 if (!isset($this->invoices[$i])) {
                     break;
                 }
             }
 
-            unset($invoice);
-
-            if (empty($this->payments)) {
-                break;
-            }
+            unset($this->invoices[$i]);
         }
     }
 
@@ -171,7 +244,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      * @param array $is The invoices keys
      * @param array $ps The payments keys
      */
-    private function buildInvoicePayment(array $is, array $ps)
+    private function buildPaymentsResults(array $is, array $ps)
     {
         foreach ($is as $i) {
             $oid = spl_object_id($this->invoices[$i]['invoice']);
@@ -217,6 +290,60 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 }
 
                 $this->cache[$oid][] = $result;
+            }
+        }
+    }
+
+    private function buildInvoiceResults(array $is, array $os): void
+    {
+        foreach ($is as $i) {
+            $iOid = spl_object_id($this->invoices[$i]['invoice']);
+
+            foreach ($os as $o) {
+                $oOid = spl_object_id($this->invoices[$o]['invoice']);
+
+                // Browse credits for invoices
+                if ($this->invoices[$i]['credit'] xor !$this->invoices[$o]['credit']) {
+                    continue;
+                }
+
+                $c = Money::compare($this->invoices[$i]['total'], $this->invoices[$o]['total'], $this->currency);
+
+                if (0 === $c) { // Equal
+                    $total = $this->invoices[$o]['total'];
+                    $real = $this->invoices[$o]['real_total'];
+                } elseif (1 === $c) { // invoice > other
+                    $total = $this->invoices[$o]['total'];
+                    $real = $this->invoices[$o]['real_total'];
+                } else { // other > invoice
+                    $total = $this->invoices[$i]['total'];
+                    $real = $this->invoices[$i]['real_total'];
+                }
+
+                $iResult = new IM\InvoicePayment();
+                $iResult->setInvoice($this->invoices[$o]['invoice']);
+                $iResult->setAmount($total);
+                $iResult->setRealAmount($real);
+
+                $oResult = new IM\InvoicePayment();
+                $oResult->setInvoice($this->invoices[$i]['invoice']);
+                $oResult->setAmount($total);
+                $oResult->setRealAmount($real);
+
+                $this->invoices[$o]['total']      -= $total;
+                $this->invoices[$o]['real_total'] -= $real;
+                $this->invoices[$i]['total']      -= $total;
+                $this->invoices[$i]['real_total'] -= $real;
+
+                if (0 === Money::compare(0, $this->invoices[$i]['total'], $this->currency)) {
+                    unset($this->invoices[$i]);
+                }
+                if (0 === Money::compare(0, $this->invoices[$o]['total'], $this->currency)) {
+                    unset($this->invoices[$o]);
+                }
+
+                $this->cache[$iOid][] = $iResult;
+                $this->cache[$oOid][] = $oResult;
             }
         }
     }

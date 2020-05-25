@@ -31,6 +31,17 @@ class InvoiceValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, Invoice::class);
         }
 
+        // At least one line or item
+        if (0 === count($invoice->getLines()) && 0 === count($invoice->getItems())) {
+            $this
+                ->context
+                ->buildViolation($constraint->at_least_one_line_or_item)
+                ->atPath('items')
+                ->addViolation();
+
+            return;
+        }
+
         try {
             $this->checkHierarchyIntegrity($invoice);
         } catch (ValidationFailedException $e) {

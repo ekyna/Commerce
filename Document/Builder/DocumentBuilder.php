@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumber;
@@ -162,8 +163,11 @@ class DocumentBuilder implements DocumentBuilderInterface
                     ->setSaleItem($item)
                     ->setDesignation($item->getDesignation())
                     ->setDescription($item->getDescription())
-                    ->setReference($item->getReference())
-                    ->setQuantity($item->getTotalQuantity());
+                    ->setReference($item->getReference());
+
+                if ($document instanceof InvoiceInterface && is_null($document->getId())) {
+                    $line->setQuantity($item->getTotalQuantity());
+                }
             }
         }
 

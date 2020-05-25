@@ -76,7 +76,7 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => [300, 300], 1 => [200, 200]], // #0
+            0 => [[300, 300, 0], [200, 200, 1]], // #0
         ]);
 
         $this->buildData([
@@ -91,8 +91,8 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [1 => [200, 200]],                  // #1
-            1 => [0 => [300, 300], 2 => [200, 200]], // #2
+            0 => [[200, 200, 1]],                // #1
+            1 => [[300, 300, 0], [200, 200, 2]], // #2
         ]);
 
         $this->buildData([
@@ -107,9 +107,9 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => [100, 100]], // #3
-            1 => [0 => [200, 200]], // #4
-            2 => [1 => [50, 50]],   // #5
+            0 => [[100, 100, 0]], // #3
+            1 => [[200, 200, 0]], // #4
+            2 => [[50, 50, 1]],   // #5
         ]);
 
         $this->buildData([
@@ -123,9 +123,9 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => [75, 75]], // #6
-            1 => [],              // #7
-            2 => [0 => [25, 25]], // #8
+            0 => [[75, 75, 0]], // #6
+            1 => [],            // #7
+            2 => [[25, 25, 0]], // #8
         ]);
 
 
@@ -143,11 +143,25 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => [20, 20]], // #9
-            1 => [1 => [90, 90]], // #10
-            2 => [0 => [70, 70]], // #11
-            3 => [1 => [80, 80]], // #12
-            4 => [1 => [60, 60]], // #13
+            0 => [[20, 20, 1]], // #9
+            1 => [[90, 90, 1]], // #10
+            2 => [[70, 70, 0]], // #11
+            3 => [[80, 80, 1]], // #12
+            4 => [[60, 60, 1]], // #13
+        ]);
+
+
+        $this->buildData([
+            'invoices' => [
+                ['total' => 500, 'date' => '-3 days'],
+                ['total' => 300, 'date' => '-2 days', 'credit' => true],
+            ],
+            'payments' => [
+                ['amount' => 200, 'date' => 'now'],
+            ],
+        ]);
+        yield from $this->buildResult([
+            0 => [[200, 200, 0], [300, 300, 0, true]], // #14
         ]);
 
         // --- USD ---
@@ -164,7 +178,7 @@ class InvoicePaymentResolverTest extends TestCase
             ],
         ]);
         yield from $this->buildResult([
-            0 => [0 => [300, 240], 1 => [200, 160]], // #14
+            0 => [[300, 240, 0], [200, 160, 1]], // #15
         ]);
     }
 
@@ -193,6 +207,7 @@ class InvoicePaymentResolverTest extends TestCase
                 'now',
                 Fixture::CURRENCY_GBP,
                 PaymentStates::STATE_CAPTURED,
+                false,
                 false
             ),
         ]));
@@ -258,6 +273,7 @@ class InvoicePaymentResolverTest extends TestCase
                 'currency'    => self::DEFAULT_CURRENCY,
                 'state'       => PaymentStates::STATE_CAPTURED,
                 'outstanding' => false,
+                'refund'      => false,
             ], $datum);
 
             $this->payments[] = $this->mockPayment(
@@ -266,7 +282,8 @@ class InvoicePaymentResolverTest extends TestCase
                 $datum['date'],
                 $datum['currency'],
                 $datum['state'],
-                $datum['outstanding']
+                $datum['outstanding'],
+                $datum['refund']
             );
         }
 
@@ -274,23 +291,27 @@ class InvoicePaymentResolverTest extends TestCase
     }
 
     /**
-     * @param array $map
+     * @param array $map <invoice index> => [[float <amount>, float <realAmount>, int <payment index>, bool <invoice>]]
      *
-     * @return \Generator <invoice index> => [<payment index> => [<amount>, <realAmount>]]
+     * @return \Generator
      */
     private function buildResult(array $map): \Generator
     {
         foreach ($map as $i => $m) {
             yield [
                 $this->invoices[$i],
-                array_map(function ($p, $amounts) {
+                array_map(function ($amounts) {
                     $ip = new InvoicePayment();
-                    $ip->setPayment($this->payments[$p]);
                     $ip->setAmount($amounts[0]);
                     $ip->setRealAmount($amounts[1]);
+                    if (isset($amounts[3]) && $amounts[3]) {
+                        $ip->setInvoice($this->invoices[$amounts[2]]);
+                    } else {
+                        $ip->setPayment($this->payments[$amounts[2]]);
+                    }
 
                     return $ip;
-                }, array_keys($m), $m),
+                }, $m),
             ];
         }
     }
@@ -344,6 +365,7 @@ class InvoicePaymentResolverTest extends TestCase
      * @param string        $currency
      * @param string        $state
      * @param bool          $outstanding
+     * @param bool          $refund
      *
      * @return PaymentInterface|MockObject
      * @throws \Exception
@@ -354,7 +376,8 @@ class InvoicePaymentResolverTest extends TestCase
         string $date,
         string $currency,
         string $state,
-        bool $outstanding
+        bool $outstanding,
+        bool $refund
     ): PaymentInterface {
         $method = $this->createMock(PaymentMethodInterface::class);
         $method->method('isOutstanding')->willReturn($outstanding);
@@ -363,6 +386,7 @@ class InvoicePaymentResolverTest extends TestCase
         $payment->method('getSale')->willReturn($sale);
         $payment->method('getMethod')->willReturn($method);
         $payment->method('getState')->willReturn($state);
+        $payment->method('isRefund')->willReturn($refund);
         $payment->method('getAmount')->willReturn($amount);
         $payment->method('getCompletedAt')->willReturn(new \DateTime($date));
         $payment->method('getCurrency')->willReturn($this->mockCurrency($currency));

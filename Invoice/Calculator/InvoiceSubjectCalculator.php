@@ -103,9 +103,10 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                 return 0;
             }
 
-            // Quantity = Total - Invoiced (ignoring current invoice)
+            // Quantity = Total - Invoiced (ignoring current invoice) - Credited
             $quantity = $subject->getTotalQuantity()
-                - $this->calculateInvoicedQuantity($subject, $ignore);
+                - $this->calculateInvoicedQuantity($subject, $ignore)
+                + $this->calculateCreditedQuantity($subject);
 
             return max(0, $quantity);
         }
@@ -127,10 +128,13 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                 return 0;
             }
 
-            $invoiced = $this->calculateInvoicedQuantity($subject, $ignore);
+            // Quantity = 1 - Invoiced (ignoring current invoice) - Credited
+            $quantity = 1
+                - $this->calculateInvoicedQuantity($subject, $ignore)
+                + $this->calculateCreditedQuantity($subject);
 
             // Shipment must be invoiced once
-            return min(1, max(0, 1 - $invoiced));
+            return min(1, max(0, $quantity));
         }
 
         throw new UnexpectedTypeException($subject, [

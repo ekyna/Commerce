@@ -35,13 +35,17 @@ class InvoiceNormalizer extends AbstractResourceNormalizer
                 'comment'     => $invoice->getComment(),
             ]);
         } elseif ($this->contextHasGroup(['Summary'], $context)) {
+            $lines = [];
+            foreach ($invoice->getLines() as $line) {
+                $lines[] = $this->normalizeObject($line, $format, $context);
+            }
             $items = [];
-
-            foreach ($invoice->getLines() as $item) {
+            foreach ($invoice->getItems() as $item) {
                 $items[] = $this->normalizeObject($item, $format, $context);
             }
 
             $data = array_replace($data, [
+                'lines'       => $lines,
                 'items'       => $items,
                 'description' => $invoice->getDescription(),
                 'comment'     => $invoice->getComment(),

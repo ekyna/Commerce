@@ -102,6 +102,22 @@ interface InvoiceInterface extends
     public function setDueDate(\DateTime $dueDate = null): InvoiceInterface;
 
     /**
+     * Returns whether to ignore stock (credit only, won't impact sold quantities if true).
+     *
+     * @return bool
+     */
+    public function isIgnoreStock(): bool;
+
+    /**
+     * Sets whether to ignore stock (credit only, won't impact sold quantities if true).
+     *
+     * @param bool $ignoreStock
+     *
+     * @return InvoiceInterface
+     */
+    public function setIgnoreStock(bool $ignoreStock): InvoiceInterface;
+
+    /**
      * Returns whether this invoice is paid.
      *
      * @return bool

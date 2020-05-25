@@ -170,8 +170,11 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             $line = parent::buildDiscountLine($adjustment, $invoice);
             $line
                 ->setAvailable($available)
-                ->setExpected($expected)
-                ->setQuantity(1);
+                ->setExpected($expected);
+
+            if (is_null($invoice->getId())) {
+                $line->setQuantity(max(1, $expected));
+            }
         }
 
         return $line;
@@ -202,8 +205,11 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             $line = parent::buildShipmentLine($invoice);
             $line
                 ->setAvailable($available)
-                ->setExpected($expected)
-                ->setQuantity(max(1, $available));
+                ->setExpected($expected);
+
+            if (is_null($invoice->getId())) {
+                $line->setQuantity(min(1, $expected));
+            }
         }
 
         return $line;

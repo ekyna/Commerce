@@ -26,7 +26,7 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
     /**
      * Constructor.
      *
-     * @param InvoiceSubjectCalculatorInterface  $invoiceCalculator
+     * @param InvoiceSubjectCalculatorInterface $invoiceCalculator
      */
     public function __construct(InvoiceSubjectCalculatorInterface $invoiceCalculator)
     {
@@ -71,16 +71,19 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
             // TODO Use packaging format
             // If invoiced greater than zero
             if (0 < $q['invoiced']) {
-                // If total equals invoiced, item is fully invoiced
-                if (0 === bccomp($q['total'], $q['invoiced'], 3)) {
-                    $invoicedCount++;
-
+                // If invoiced is greater or equals total
+                if (0 <= bccomp($q['invoiced'], $q['total'], 3)) {
                     // If invoiced equals credited, item is fully credited
                     if (0 === bccomp($q['invoiced'], $q['credited'], 3)) {
                         $creditedCount++;
+                        continue;
                     }
 
-                    continue;
+                    // If total equals invoiced - credit, item is fully invoiced
+                    if (0 === bccomp($q['total'], $q['invoiced'] - $q['credited'], 3)) {
+                        $invoicedCount++;
+                        continue;
+                    }
                 }
 
                 // Item is partially invoiced

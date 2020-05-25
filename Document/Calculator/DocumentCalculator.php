@@ -2,8 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Document\Calculator;
 
-use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
+use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Common\Util\Money;
@@ -54,8 +54,10 @@ class DocumentCalculator implements DocumentCalculatorInterface
      * @param AmountCalculatorFactory    $calculatorFactory
      * @param CurrencyConverterInterface $currencyConverter
      */
-    public function __construct(AmountCalculatorFactory $calculatorFactory, CurrencyConverterInterface $currencyConverter)
-    {
+    public function __construct(
+        AmountCalculatorFactory $calculatorFactory,
+        CurrencyConverterInterface $currencyConverter
+    ) {
         $this->calculatorFactory = $calculatorFactory;
         $this->currencyConverter = $currencyConverter;
     }
@@ -71,6 +73,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
+        // TODO $this->currency is not set
         $this->calculator = $this->calculatorFactory->create($this->currency, false);
 
         $this->calculateDocument($document);
@@ -159,6 +162,10 @@ class DocumentCalculator implements DocumentCalculatorInterface
             }
         }
 
+        foreach ($document->getItems() as $item) {
+            $gross->merge($this->calculateItem($item));
+        }
+
         $gross->copyGrossToUnit();
 
         return $gross;
@@ -195,6 +202,39 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Calculates the item.
+     *
+     * @param Model\DocumentItemInterface $item
+     *
+     * @return Common\Amount
+     */
+    protected function calculateItem(Model\DocumentItemInterface $item): Common\Amount
+    {
+        $base = $item->getGross();
+        $discounts = [];
+        foreach ($item->getDiscountRates() as $name => $rate) {
+            $amount = Money::round($base * $rate / 100, $this->currency);
+            $base -= $amount;
+            $discounts[] = new Common\Adjustment($name, $amount, $rate);
+        }
+
+        $base = $item->getBase();
+        $taxes = [];
+        foreach ($item->getTaxRates() as $name => $rate) {
+            $amount = Money::round($base * (1 + $rate / 100), $this->currency) - Money::round($base, $this->currency);
+            $taxes[] = new Common\Adjustment($name, $amount, $rate);
+        }
+
+        $amount = new Common\Amount(
+            $this->currency, $item->getUnit(), $item->getGross(),
+            $item->getDiscount(), $item->getBase(), $item->getTax(),
+            $item->getTotal(), $discounts, $taxes
+        );
+
+        return $amount;
     }
 
     /**

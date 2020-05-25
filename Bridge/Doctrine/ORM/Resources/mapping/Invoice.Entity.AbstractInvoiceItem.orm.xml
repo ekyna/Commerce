@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoiceItem">
+
+        <field name="designation" column="designation" type="string" length="255"/>
+        <field name="description" column="description" type="string" length="255" nullable="true"/>
+        <field name="reference" column="reference" type="string" length="32"/>
+        <field name="unit" column="unit" type="decimal" precision="13" scale="3"/>
+        <field name="quantity" column="quantity" type="decimal" precision="10" scale="3"/>
+        <field name="gross" column="gross" type="decimal" precision="13" scale="3"/>
+        <field name="discount" column="discount" type="decimal" precision="13" scale="3"/>
+        <field name="discountRates" column="discount_rates" type="json_array"/>
+        <field name="base" column="base" type="decimal" precision="13" scale="3"/>
+        <field name="tax" column="tax" type="decimal" precision="13" scale="3"/>
+        <field name="taxRates" column="tax_rates" type="json_array"/>
+        <field name="total" column="total" type="decimal" precision="13" scale="3"/>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

@@ -45,6 +45,9 @@
 
         <field name="comment" column="comment" type="text" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
+        <field name="ignoreStock" column="ignore_stock" type="boolean">
+            <options><option name="default">0</option></options>
+        </field>
 
         <field name="dueDate" type="datetime" column="due_date" nullable="true"/>
         <field name="createdAt" type="datetime" column="created_at">

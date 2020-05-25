@@ -11,8 +11,8 @@ use Symfony\Component\Validator\Constraint;
  */
 class Invoice extends Constraint
 {
-    public $hierarchy_integrity = 'ekyna_commerce.invoice.hierarchy_integrity';
-    public $null_credit_method  = 'ekyna_commerce.invoice.null_credit_method';
+    public $hierarchy_integrity       = 'ekyna_commerce.invoice.hierarchy_integrity';
+    public $at_least_one_line_or_item = 'ekyna_commerce.invoice.at_least_one_line_or_item';
 
 
     /**

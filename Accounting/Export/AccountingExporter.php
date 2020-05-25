@@ -316,19 +316,20 @@ class AccountingExporter implements AccountingExporterInterface
             // Invoice case
             $unpaid = $this->invoice->getGrandTotal();
 
-            $payments = $this->invoicePaymentResolver->resolve($this->invoice);
+            $invoicePayments = $this->invoicePaymentResolver->resolve($this->invoice);
 
             // Payments
-            foreach ($payments as $payment) {
-                $account = $this->getPaymentAccountNumber(
-                    $payment->getPayment()->getMethod(),
-                    $payment->getPayment()->getNumber()
-                );
+            foreach ($invoicePayments as $invoicePayment) {
+                if (!$payment = $invoicePayment->getPayment()) {
+                    continue;
+                }
 
-                $amount = $this->round($payment->getAmount());
+                $account = $this->getPaymentAccountNumber($payment->getMethod(), $payment->getNumber());
+
+                $amount = $this->round($invoicePayment->getAmount());
                 $unpaid -= $amount;
 
-                if ($payment->getPayment()->isRefund()) {
+                if ($invoicePayment->getPayment()->isRefund()) {
                     $this->writer->debit($account, (string)$amount, $date);
                     $this->balance += $amount;
                 } else {

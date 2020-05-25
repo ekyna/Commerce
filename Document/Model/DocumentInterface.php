@@ -203,6 +203,56 @@ interface DocumentInterface extends LocalizedInterface
     public function setLines(Collection $lines): DocumentInterface;
 
     /**
+     * Returns whether the document has items.
+     *
+     * @return bool
+     */
+    public function hasItems(): bool;
+
+    /**
+     * Returns whether the document has the given item.
+     *
+     * @param DocumentItemInterface $item
+     *
+     * @return bool
+     */
+    public function hasItem(DocumentItemInterface $item): bool;
+
+    /**
+     * Adds the item.
+     *
+     * @param DocumentItemInterface $item
+     *
+     * @return $this|DocumentInterface
+     */
+    public function addItem(DocumentItemInterface $item): DocumentInterface;
+
+    /**
+     * Removes the item.
+     *
+     * @param DocumentItemInterface $item
+     *
+     * @return $this|DocumentInterface
+     */
+    public function removeItem(DocumentItemInterface$item): DocumentInterface;
+
+    /**
+     * Sets the items.
+     *
+     * @param Collection $items
+     *
+     * @return $this|DocumentInterface
+     */
+    public function setItems(Collection $items): DocumentInterface;
+
+    /**
+     * Returns the items.
+     *
+     * @return Collection|DocumentItemInterface[]
+     */
+    public function getItems(): Collection;
+
+    /**
      * Returns the comment.
      *
      * @return string

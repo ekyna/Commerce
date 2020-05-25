@@ -308,8 +308,15 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function assignInvoiceLine(InvoiceLineInterface $line): void
     {
+        $invoice = $line->getInvoice();
+
         // Abort if not credit
-        if (!$line->getInvoice()->isCredit()) {
+        if (!$invoice->isCredit()) {
+            return;
+        }
+
+        // Abort if stock ignored
+        if ($invoice->isIgnoreStock()) {
             return;
         }
 
@@ -341,8 +348,15 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     public function applyInvoiceLine(InvoiceLineInterface $line): void
     {
+        $invoice = $line->getInvoice();
+
         // Abort if not credit
-        if (!$line->getInvoice()->isCredit()) {
+        if (!$invoice->isCredit()) {
+            return;
+        }
+
+        // Abort if stock ignored
+        if ($invoice->isIgnoreStock()) {
             return;
         }
 
@@ -390,7 +404,14 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         if (null === $invoice = $line->getInvoice()) {
             $invoice = $this->persistenceHelper->getChangeSet($line, 'invoice')[0];
         }
+
+        // Abort if not credit
         if (!$invoice->isCredit()) {
+            return;
+        }
+
+        // Abort if stock ignored
+        if ($invoice->isIgnoreStock()) {
             return;
         }
 

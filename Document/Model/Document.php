@@ -51,9 +51,14 @@ class Document implements DocumentInterface
     protected $relayPoint;
 
     /**
-     * @var ArrayCollection|DocumentLineInterface[]
+     * @var Collection|DocumentLineInterface[]
      */
     protected $lines;
+
+    /**
+     * @var Collection|DocumentItemInterface[]
+     */
+    protected $items;
 
     /**
      * @var string
@@ -123,6 +128,7 @@ class Document implements DocumentInterface
         $this->grandTotal = 0;
         $this->realGrandTotal = 0;
         $this->lines = new ArrayCollection();
+        $this->items = new ArrayCollection();
     }
 
     /**
@@ -365,6 +371,76 @@ class Document implements DocumentInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasItems(): bool
+    {
+        return 0 < $this->items->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasItem(DocumentItemInterface $item): bool
+    {
+        return $this->items->contains($item);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addItem(DocumentItemInterface $item): DocumentInterface
+    {
+        if (!$this->hasItem($item)) {
+            $this->items->add($item);
+            $item->setDocument($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeItem(DocumentItemInterface$item): DocumentInterface
+    {
+        if ($this->hasItem($item)) {
+            $this->items->removeElement($item);
+            $item->setDocument(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setItems(Collection $items): DocumentInterface
+    {
+        foreach ($this->items as $item) {
+            if (!$items->contains($item)) {
+                $this->removeItem($item);
+            }
+        }
+
+        $this->items = new ArrayCollection();
+
+        foreach ($items as $item) {
+            $this->addItem($item);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getItems(): Collection
+    {
+        return $this->items;
     }
 
     /**
