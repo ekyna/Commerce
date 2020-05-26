@@ -6,7 +6,6 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumber;
@@ -40,7 +39,7 @@ class DocumentBuilder implements DocumentBuilderInterface
      */
     public function __construct(LocaleProviderInterface $localeProvider, PhoneNumberUtil $phoneNumberUtil = null)
     {
-        $this->localeProvider = $localeProvider;
+        $this->localeProvider  = $localeProvider;
         $this->phoneNumberUtil = $phoneNumberUtil ?: PhoneNumberUtil::getInstance();
     }
 
@@ -163,11 +162,8 @@ class DocumentBuilder implements DocumentBuilderInterface
                     ->setSaleItem($item)
                     ->setDesignation($item->getDesignation())
                     ->setDescription($item->getDescription())
-                    ->setReference($item->getReference());
-
-                if ($document instanceof InvoiceInterface && is_null($document->getId())) {
-                    $line->setQuantity($item->getTotalQuantity());
-                }
+                    ->setReference($item->getReference())
+                    ->setQuantity($item->getTotalQuantity());
             }
         }
 
@@ -222,7 +218,7 @@ class DocumentBuilder implements DocumentBuilderInterface
 
         // Existing line lookup
         $shipmentLines = $document->getLinesByType(Document\DocumentLineTypes::TYPE_SHIPMENT);
-        $line = !empty($shipmentLines) ? current($shipmentLines) : null;
+        $line          = !empty($shipmentLines) ? current($shipmentLines) : null;
 
         // Not found, create it
         if (null === $line) {
