@@ -86,7 +86,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         Common\SaleItemInterface $saleItem,
         Shipment\ShipmentInterface $ignore = null
     ) {
-        /** @var Common\SaleItemInterface $saleItem */
         if (!$this->hasStockableSubject($saleItem)) {
             return INF;
         }
@@ -128,7 +127,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         // Quantity = Sold - Shipped (ignoring current) + Returned
 
         // TODO Packaging format
-        $quantity = $saleItem->getTotalQuantity();
+        $quantity = max($saleItem->getTotalQuantity(), $this->invoiceCalculator->calculateInvoicedQuantity($saleItem));
         $quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
         $quantity -= $this->calculateShippedQuantity($saleItem, $ignore);
         $quantity += $this->calculateReturnedQuantity($saleItem);
@@ -276,7 +275,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 
         $esd = null;
         foreach ($list->getEntries() as $entry) {
-            /** @var Common\SaleItemInterface $saleItem */
             $saleItem = $entry->getSaleItem();
 
             if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
@@ -339,7 +337,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
-                'total'    => $item->getTotalQuantity(),
+                'total'    => max($item->getTotalQuantity(), $this->invoiceCalculator->calculateInvoicedQuantity($item)),
                 'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
@@ -368,7 +366,10 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 
         // Not for compound item with only public children
         if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
-            $quantity = $saleItem->getTotalQuantity();
+            $quantity = max(
+                $saleItem->getTotalQuantity(),
+                $this->invoiceCalculator->calculateInvoicedQuantity($saleItem)
+            );
 
             foreach ($shipments as $shipment) {
                 foreach ($shipment->getItems() as $item) {
