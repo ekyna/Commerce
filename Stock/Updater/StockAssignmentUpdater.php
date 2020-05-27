@@ -2,8 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 
@@ -78,20 +76,13 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         $result = $assignment->getSoldQuantity() + $quantity;
         $assignment->setSoldQuantity($result);
         if (0 == $result) {
-            $prevent  = false;
             $saleItem = $assignment->getSaleItem();
-            $sale     = $saleItem->getSale();
 
-            if ($sale instanceof ShipmentSubjectInterface && $sale->hasShipments()) {
-                $prevent = true;
-            } elseif ($sale instanceof InvoiceSubjectInterface && $sale->hasInvoices()) {
-                $prevent = true;
-            }
-
-            if ($prevent) {
+            // Don't remove if sale item has only one assignment
+            if (1 >= count($saleItem->getStockAssignments())) {
                 $this->assignmentManager->persist($assignment);
             } else {
-                $this->assignmentManager->remove($assignment);
+                $this->assignmentManager->remove($assignment, true);
             }
         } else {
             $this->assignmentManager->persist($assignment);

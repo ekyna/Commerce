@@ -430,8 +430,15 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             $quantity -= $this->assignmentUpdater->updateSold($assignment, $quantity, true);
         }
 
+        // Create assignments for remaining quantity
+        if (0 < $quantity) {
+            $this->createAssignmentsForQuantity($line->getSaleItem(), $quantity);
+
+            return;
+        }
+
         // Remaining quantity
-        if (0 != $quantity) {
+        if (0 > $quantity) {
             throw new StockLogicException(sprintf(
                 'Failed to detach invoice line "%s".',
                 $line->getDesignation()

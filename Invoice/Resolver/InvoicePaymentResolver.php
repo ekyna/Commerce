@@ -131,7 +131,19 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             $invoices = array_filter($this->invoices, function ($i) use ($payment) {
                 return $payment['refund'] === $i['credit'];
             });
-            foreach (Combination::generateAssoc($invoices) as $combination) {
+
+            $sum = array_sum(array_map(function ($i) {
+                return $i['total'];
+            }, $invoices));
+
+            // If payment amount is greater or equals invoices sum
+            if (1 === Money::compare($payment['amount'], $sum, $this->currency)) {
+                $this->buildPaymentsResults(array_keys($invoices), [$p]);
+                continue;
+            }
+
+            $combinations = Combination::generateAssoc($invoices);
+            foreach ($combinations as $combination) {
                 $sum = array_sum(array_map(function ($i) {
                     return $i['total'];
                 }, $combination));
@@ -156,7 +168,19 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             $payments = array_filter($this->payments, function ($p) use ($invoice) {
                 return $invoice['credit'] === $p['refund'];
             });
-            foreach (Combination::generateAssoc($payments) as $combination) {
+
+            $sum = array_sum(array_map(function ($i) {
+                return $i['amount'];
+            }, $payments));
+
+            // If invoice total is greater or equals payments sum
+            if (1 === Money::compare($invoice['total'], $sum, $this->currency)) {
+                $this->buildPaymentsResults([$i], array_keys($payments));
+                continue;
+            }
+
+            $combinations = Combination::generateAssoc($payments);
+            foreach ($combinations as $combination) {
                 $sum = array_sum(array_map(function ($p) {
                     return $p['amount'];
                 }, $combination));
@@ -200,7 +224,18 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                     && $invoice['credit'] !== $i['credit'];
             });
 
-            foreach (Combination::generateAssoc($others) as $combination) {
+            $sum = array_sum(array_map(function ($i) {
+                return $i['total'];
+            }, $others));
+
+            // If invoice total is greater or equals others sum
+            if (1 === Money::compare($invoice['total'], $sum, $this->currency)) {
+                $this->buildPaymentsResults([$i], array_keys($others));
+                continue;
+            }
+
+            $combinations = Combination::generateAssoc($others);
+            foreach ($combinations as $combination) {
                 $sum = array_sum(array_map(function ($i) {
                     return $i['total'];
                 }, $combination));
