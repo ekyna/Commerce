@@ -87,6 +87,49 @@ class SubjectHelper implements SubjectHelperInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function sync(SubjectRelativeInterface $relative): bool
+    {
+        if (!$this->hasSubject($relative)) {
+            return false;
+        }
+
+        if (!$subject = $this->resolve($relative, false)) {
+            return false;
+        }
+
+        $changed = false;
+
+        if ($subject->getDesignation() !== $relative->getDesignation()) {
+            $relative->setDesignation($subject->getDesignation());
+            $changed = true;
+        }
+
+        if ($subject->getReference() !== $relative->getReference()) {
+            $relative->setReference($subject->getReference());
+            $changed = true;
+        }
+
+        if ($subject->getNetPrice() !== $relative->getNetPrice()) {
+            $relative->setNetPrice($subject->getNetPrice());
+            $changed = true;
+        }
+
+        if ($subject->getWeight() !== $relative->getWeight()) {
+            $relative->setWeight($subject->getWeight());
+            $changed = true;
+        }
+
+        if ($subject->getTaxGroup() !== $relative->getTaxGroup()) {
+            $relative->setTaxGroup($subject->getTaxGroup());
+            $changed = true;
+        }
+
+        return $changed;
+    }
+
+    /**
      * @inheritdoc
      */
     public function generateAddToCartUrl($subject, bool $path = true): ?string

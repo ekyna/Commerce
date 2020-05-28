@@ -15,10 +15,11 @@ interface InvoicePaymentResolverInterface
      * Resolves the invoice's payments.
      *
      * @param Model\InvoiceInterface $invoice
+     * @param bool                   $invoices
      *
      * @return Model\InvoicePayment[]
      */
-    public function resolve(Model\InvoiceInterface $invoice): array;
+    public function resolve(Model\InvoiceInterface $invoice, bool $invoices): array;
 
     /**
      * Returns the invoice's paid total.

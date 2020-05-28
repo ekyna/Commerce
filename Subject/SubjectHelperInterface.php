@@ -56,6 +56,15 @@ interface SubjectHelperInterface
     public function find($provider, $identifier): ?SubjectInterface;
 
     /**
+     * Syncs the relative with it's subject data.
+     *
+     * @param SubjectRelativeInterface $relative
+     *
+     * @return bool Whether the relative has been changed.
+     */
+    public function sync(SubjectRelativeInterface $relative): bool;
+
+    /**
      * Returns the subject 'add to cart' url.
      *
      * @param SubjectRelativeInterface|SubjectInterface $subject

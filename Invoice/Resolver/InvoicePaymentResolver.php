@@ -69,7 +69,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      *
      * @return IM\InvoicePayment[]
      */
-    public function resolve(IM\InvoiceInterface $invoice): array
+    public function resolve(IM\InvoiceInterface $invoice, bool $invoices = true): array
     {
         $id = spl_object_id($invoice);
 
@@ -77,7 +77,13 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             $this->build($invoice->getSale());
         }
 
-        return $this->cache[$id];
+        if ($invoices) {
+            return $this->cache[$id];
+        }
+
+        return array_filter($this->cache[$id], function(IM\InvoicePayment $p) {
+            return null !== $p->getPayment();
+        });
     }
 
     /**
@@ -230,7 +236,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
 
             // If invoice total is greater or equals others sum
             if (1 === Money::compare($invoice['total'], $sum, $this->currency)) {
-                $this->buildPaymentsResults([$i], array_keys($others));
+                $this->buildInvoiceResults([$i], array_keys($others));
                 continue;
             }
 
@@ -285,6 +291,10 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             $oid = spl_object_id($this->invoices[$i]['invoice']);
 
             foreach ($ps as $p) {
+                if (!isset($this->invoices[$i])) {
+                    break;
+                }
+
                 // Browse payments for invoices, and refunds for credits
                 if ($this->invoices[$i]['credit'] xor $this->payments[$p]['refund']) {
                     continue;
@@ -298,33 +308,32 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 $c = Money::compare($this->invoices[$i]['total'], $this->payments[$p]['amount'], $this->currency);
 
                 if (0 === $c) { // Equal
-                    $result->setAmount($this->payments[$p]['amount']);
-                    $result->setRealAmount($this->payments[$p]['real_amount']);
-                    $this->invoices[$i]['total']       = 0;
-                    $this->invoices[$i]['real_total']  = 0;
-                    $this->payments[$p]['amount']      = 0;
-                    $this->payments[$p]['real_amount'] = 0;
-                    unset($this->invoices[$i]);
-                    unset($this->payments[$p]);
+                    $amount = $this->payments[$p]['amount'];
+                    $real = $this->payments[$p]['real_amount'];
                 } elseif (1 === $c) { // invoice > payment
-                    $result->setAmount($this->payments[$p]['amount']);
-                    $result->setRealAmount($this->payments[$p]['real_amount']);
-                    $this->invoices[$i]['total']       -= $this->payments[$p]['amount'];
-                    $this->invoices[$i]['real_total']  -= $this->payments[$p]['real_amount'];
-                    $this->payments[$p]['amount']      = 0;
-                    $this->payments[$p]['real_amount'] = 0;
-                    unset($this->payments[$p]);
+                    $amount = $this->payments[$p]['amount'];
+                    $real = $this->payments[$p]['real_amount'];
                 } else { // payment > invoice
-                    $result->setAmount($this->invoices[$i]['total']);
-                    $result->setRealAmount($this->invoices[$i]['real_total']);
-                    $this->payments[$p]['amount']      -= $this->invoices[$i]['total'];
-                    $this->payments[$p]['real_amount'] -= $this->invoices[$i]['real_total'];
-                    $this->invoices[$i]['total']       = 0;
-                    $this->invoices[$i]['real_total']  = 0;
-                    unset($this->invoices[$i]);
+                    $amount = $this->invoices[$i]['total'];
+                    $real = $this->invoices[$i]['real_total'];
                 }
 
+                $result->setAmount($amount);
+                $result->setRealAmount($real);
+
+                $this->invoices[$i]['total']       -= $amount;
+                $this->invoices[$i]['real_total']  -= $real;
+                $this->payments[$p]['amount']      -= $amount;
+                $this->payments[$p]['real_amount'] -= $real;
+
                 $this->cache[$oid][] = $result;
+
+                if (0 === Money::compare(0, $this->invoices[$i]['total'], $this->currency)) {
+                    unset($this->invoices[$i]);
+                }
+                if (0 === Money::compare(0, $this->payments[$p]['amount'], $this->currency)) {
+                    unset($this->payments[$p]);
+                }
             }
         }
     }
@@ -335,6 +344,10 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             $iOid = spl_object_id($this->invoices[$i]['invoice']);
 
             foreach ($os as $o) {
+                if (!isset($this->invoices[$i])) {
+                    break;
+                }
+
                 $oOid = spl_object_id($this->invoices[$o]['invoice']);
 
                 // Browse credits for invoices
