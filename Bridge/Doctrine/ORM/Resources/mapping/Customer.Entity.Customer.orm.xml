@@ -67,7 +67,7 @@
         </one-to-one>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
-                     mapped-by="parent" field="children">
+                     mapped-by="parent" field="children" fetch="EXTRA_LAZY">
             <cascade>
                 <cascade-persist/>
             </cascade>
@@ -75,6 +75,14 @@
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface"
                      mapped-by="customer" field="addresses" orphan-removal="true">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Customer\Entity\CustomerContact"
+                     mapped-by="customer" field="contacts" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>

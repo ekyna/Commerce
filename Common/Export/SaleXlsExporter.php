@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Export;
 
-use Ekyna\Bundle\CommerceBundle\Service\Common\AddressRenderer;
+use Ekyna\Bundle\CommerceBundle\Service\Common\CommonRenderer;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -77,9 +77,9 @@ class SaleXlsExporter implements SaleExporterInterface
     private $viewBuilder;
 
     /**
-     * @var AddressRenderer
+     * @var CommonRenderer
      */
-    private $addressRenderer;
+    private $commonRenderer;
 
     /**
      * @var TranslatorInterface
@@ -106,17 +106,17 @@ class SaleXlsExporter implements SaleExporterInterface
      * Constructor.
      *
      * @param View\ViewBuilder    $viewBuilder
-     * @param AddressRenderer     $addressRenderer
+     * @param CommonRenderer      $commonRenderer
      * @param TranslatorInterface $translator
      */
     public function __construct(
         View\ViewBuilder $viewBuilder,
-        AddressRenderer $addressRenderer,
+        CommonRenderer $commonRenderer,
         TranslatorInterface $translator
     ) {
-        $this->viewBuilder = $viewBuilder;
-        $this->addressRenderer = $addressRenderer;
-        $this->translator = $translator;
+        $this->viewBuilder    = $viewBuilder;
+        $this->commonRenderer = $commonRenderer;
+        $this->translator     = $translator;
     }
 
     /**
@@ -196,7 +196,7 @@ class SaleXlsExporter implements SaleExporterInterface
 
         $this->row();
 
-        $address = $this->addressRenderer->renderAddress($sale->getInvoiceAddress());
+        $address = $this->commonRenderer->renderAddress($sale->getInvoiceAddress());
         $address = strip_tags(str_replace('<br>', "\n", $address));
         $address = preg_replace("~\n+~", "\n", $address);
 
@@ -205,7 +205,7 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->cell($address);
 
         if (!$sale->isSameAddress()) {
-            $address = $this->addressRenderer->renderAddress($sale->getDeliveryAddress());
+            $address = $this->commonRenderer->renderAddress($sale->getDeliveryAddress());
             $address = strip_tags(str_replace('<br>', "\n", $address));
             $address = preg_replace("~\n+~", "\n", $address);
         }

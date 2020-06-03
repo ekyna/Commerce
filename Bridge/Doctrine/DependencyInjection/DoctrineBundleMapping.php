@@ -69,6 +69,7 @@ class DoctrineBundleMapping
             Customer\Model\CustomerInterface::class         => Customer\Entity\Customer::class,
             Customer\Model\CustomerGroupInterface::class    => Customer\Entity\CustomerGroup::class,
             Customer\Model\CustomerAddressInterface::class  => Customer\Entity\CustomerAddress::class,
+            Customer\Model\CustomerContactInterface::class  => Customer\Entity\CustomerContact::class,
             Newsletter\Model\AudienceInterface::class       => Newsletter\Entity\Audience::class,
             Newsletter\Model\MemberInterface::class         => Newsletter\Entity\Member::class,
             Order\Model\OrderInterface::class               => Order\Entity\Order::class,

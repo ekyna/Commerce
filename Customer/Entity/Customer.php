@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model as Model;
+use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Resource\Model as RM;
@@ -73,7 +74,7 @@ class Customer implements Model\CustomerInterface
     protected $parent;
 
     /**
-     * @var ArrayCollection|Model\CustomerInterface[]
+     * @var Collection|Model\CustomerInterface[]
      */
     protected $children;
 
@@ -83,9 +84,14 @@ class Customer implements Model\CustomerInterface
     protected $customerGroup;
 
     /**
-     * @var ArrayCollection|Model\CustomerAddressInterface[]
+     * @var Collection|Model\CustomerAddressInterface[]
      */
     protected $addresses;
+
+    /**
+     * @var Collection|Model\CustomerAddressInterface[]
+     */
+    protected $contacts;
 
     /**
      * @var Payment\PaymentMethodInterface
@@ -93,7 +99,7 @@ class Customer implements Model\CustomerInterface
     protected $defaultPaymentMethod;
 
     /**
-     * @var ArrayCollection|Payment\PaymentMethodInterface[]
+     * @var Collection|Payment\PaymentMethodInterface[]
      */
     protected $paymentMethods;
 
@@ -168,7 +174,7 @@ class Customer implements Model\CustomerInterface
         $this->loyaltyPoints = 0;
         $this->creditBalance = 0;
         $this->outstandingLimit = 0;
-        $this->outstandingOverflow = true;
+        $this->outstandingOverflow = false;
         $this->outstandingBalance = 0;
 
         $this->state = Model\CustomerStates::STATE_NEW;
@@ -473,6 +479,48 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
+    public function getContacts()
+    {
+        return $this->contacts;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasContact(CustomerContact $contact)
+    {
+        return $this->contacts->contains($contact);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addContact(CustomerContact $contact)
+    {
+        if (!$this->hasContact($contact)) {
+            $this->contacts->add($contact);
+            $contact->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeContact(CustomerContact $contact)
+    {
+        if ($this->hasContact($contact)) {
+            $this->contacts->removeElement($contact);
+            $contact->setCustomer(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getDefaultPaymentMethod(): ?Payment\PaymentMethodInterface
     {
         return $this->defaultPaymentMethod;
@@ -621,7 +669,15 @@ class Customer implements Model\CustomerInterface
      */
     public function setDocumentTypes(array $types): Model\CustomerInterface
     {
-        $this->documentTypes = array_unique($types);
+        $this->documentTypes = [];
+
+        foreach (array_unique($types) as $type) {
+            if (DocumentTypes::isValid($type, false)) {
+                continue;
+            }
+
+            $this->documentTypes[] = $type;
+        }
 
         return $this;
     }

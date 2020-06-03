@@ -29,9 +29,9 @@ class CustomerLogo implements UploadableInterface
     /**
      * Returns the id.
      *
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -39,7 +39,7 @@ class CustomerLogo implements UploadableInterface
     /**
      * Returns the customer.
      *
-     * @return CustomerInterface
+     * @return CustomerInterface|null
      */
     public function getCustomer(): ?CustomerInterface
     {

@@ -29,7 +29,7 @@ final class NotificationTypes
      *
      * @return array
      */
-    static public function getTypes()
+    static public function getTypes(): array
     {
         return [
             static::MANUAL,
@@ -54,7 +54,7 @@ final class NotificationTypes
      *
      * @return bool
      */
-    static public function isValidType($type, $throw = true)
+    static public function isValid(string $type, bool $throw = true): bool
     {
         if (in_array($type, static::getTypes(), true)) {
             return true;

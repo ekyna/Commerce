@@ -54,6 +54,27 @@ final class DocumentTypes
     }
 
     /**
+     * Returns whether the given type is valid or not.
+     *
+     * @param string $type
+     * @param bool   $throw
+     *
+     * @return bool
+     */
+    static public function isValid(string $type, bool $throw = true): bool
+    {
+        if (in_array($type, static::getTypes(), true)) {
+            return true;
+        }
+
+        if ($throw) {
+            throw new InvalidArgumentException('Invalid document type.');
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the sale document types.
      *
      * @return array

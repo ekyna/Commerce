@@ -65,7 +65,7 @@ trait NotifiableTrait
     public function hasNotifications($type = null)
     {
         if (null !== $type) {
-            NotificationTypes::isValidType($type);
+            NotificationTypes::isValid($type);
 
             return $this->getNotifications($type)->count();
         }
@@ -83,7 +83,7 @@ trait NotifiableTrait
     public function getNotifications($type = null)
     {
         if (null !== $type) {
-            NotificationTypes::isValidType($type);
+            NotificationTypes::isValid($type);
 
             return $this
                 ->notifications

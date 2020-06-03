@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Customer\Entity\CustomerContact"
+            table="commerce_customer_contact">
+
+        <unique-constraints>
+            <unique-constraint columns="customer_id,email" name="unique_commerce_customer_contact"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="email" column="email" type="string" length="255"/>
+        <field name="phone" column="phone" type="phone_number" nullable="true"/>
+        <field name="notifications" column="notifications" type="simple_array" nullable="true"/>
+
+        <field name="createdAt" type="datetime" column="created_at">
+            <gedmo:timestampable on="create"/>
+        </field>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
+
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface"
+                    field="customer" inversed-by="contacts">
+            <join-column name="customer_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
+        </many-to-one>
+
+    </mapped-superclass>
+
+</doctrine-mapping>

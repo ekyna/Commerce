@@ -16,6 +16,7 @@ class Recipient
     const TYPE_ADMINISTRATOR = 'administrator';
     const TYPE_IN_CHARGE     = 'in_charge';
     const TYPE_CUSTOMER      = 'customer';
+    const TYPE_CONTACT       = 'contact';
     const TYPE_SALESMAN      = 'salesman';
     const TYPE_ACCOUNTABLE   = 'accountable';
     const TYPE_SUPPLIER      = 'supplier';
@@ -34,6 +35,7 @@ class Recipient
             self::TYPE_ADMINISTRATOR,
             self::TYPE_IN_CHARGE,
             self::TYPE_CUSTOMER,
+            self::TYPE_CONTACT,
             self::TYPE_SALESMAN,
             self::TYPE_ACCOUNTABLE,
             self::TYPE_SUPPLIER,
@@ -69,45 +71,17 @@ class Recipient
      * @param string        $type
      * @param UserInterface $user
      */
-    public function __construct($email = null, $name = null, $type = null, UserInterface $user = null)
-    {
+    public function __construct(
+        string $email = null,
+        string $name = null,
+        string $type = null,
+        UserInterface $user = null
+    ) {
         $this->email = $email;
-        $this->name = $name;
-        $this->type = $type;
-        $this->user = $user;
+        $this->name  = $name;
+        $this->type  = $type;
+        $this->user  = $user;
     }
-
-//    /**
-//     * Returns the string representation.
-//     *
-//     * @return string
-//     */
-//    public function __toString()
-//    {
-//        return $this->getChoiceLabel();
-//    }
-//
-//    /**
-//     * Returns the choice label.
-//     *
-//     * @return string
-//     */
-//    public function getChoiceLabel()
-//    {
-//        $label = '';
-//
-//        if (!empty($this->type)) {
-//            $label = '[' . $this->type . '] ';
-//        }
-//
-//        if (!empty($this->name)) {
-//            $label .= sprintf('%s &lt;%s&gt;', $this->name, $this->email);
-//        } else {
-//            $label .= $this->email;
-//        }
-//
-//        return $label;
-//    }
 
     /**
      * Sets the email.
@@ -116,7 +90,7 @@ class Recipient
      *
      * @return Recipient
      */
-    public function setEmail($email)
+    public function setEmail(string $email = null): Recipient
     {
         $this->email = $email;
 
@@ -126,9 +100,9 @@ class Recipient
     /**
      * Returns the email.
      *
-     * @return string
+     * @return string|null
      */
-    public function getEmail()
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -140,7 +114,7 @@ class Recipient
      *
      * @return Recipient
      */
-    public function setName($name)
+    public function setName(string $name = null): Recipient
     {
         $this->name = $name;
 
@@ -150,9 +124,9 @@ class Recipient
     /**
      * Returns the name.
      *
-     * @return string
+     * @return string|null
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -164,7 +138,7 @@ class Recipient
      *
      * @return Recipient
      */
-    public function setType($type)
+    public function setType(string $type = null): Recipient
     {
         $this->type = $type;
 
@@ -174,9 +148,9 @@ class Recipient
     /**
      * Returns the role.
      *
-     * @return string
+     * @return string|null
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -184,9 +158,9 @@ class Recipient
     /**
      * Returns the user.
      *
-     * @return UserInterface
+     * @return UserInterface|null
      */
-    public function getUser()
+    public function getUser(): ?UserInterface
     {
         return $this->user;
     }
@@ -198,7 +172,7 @@ class Recipient
      *
      * @return Recipient
      */
-    public function setUser($user)
+    public function setUser(UserInterface $user = null): Recipient
     {
         $this->user = $user;
 

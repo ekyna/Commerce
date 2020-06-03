@@ -106,6 +106,16 @@ class Notify
     private $includeForm;
 
     /**
+     * @var string
+     */
+    private $buttonLabel;
+
+    /**
+     * @var string
+     */
+    private $buttonUrl;
+
+    /**
      * @var bool
      */
     private $error;
@@ -187,7 +197,7 @@ class Notify
      */
     public function setType(string $type): self
     {
-        NotificationTypes::isValidType($type);
+        NotificationTypes::isValid($type);
 
         $this->type = $type;
 
@@ -742,6 +752,54 @@ class Notify
     public function setIncludeForm(bool $include): self
     {
         $this->includeForm = $include;
+
+        return $this;
+    }
+
+    /**
+     * Returns the button label.
+     *
+     * @return string
+     */
+    public function getButtonLabel(): ?string
+    {
+        return $this->buttonLabel;
+    }
+
+    /**
+     * Sets the button label.
+     *
+     * @param string $label
+     *
+     * @return Notify
+     */
+    public function setButtonLabel(string $label = null): Notify
+    {
+        $this->buttonLabel = $label;
+
+        return $this;
+    }
+
+    /**
+     * Returns the button url.
+     *
+     * @return string
+     */
+    public function getButtonUrl(): ?string
+    {
+        return $this->buttonUrl;
+    }
+
+    /**
+     * Sets the button url.
+     *
+     * @param string $url
+     *
+     * @return Notify
+     */
+    public function setButtonUrl(string $url = null): Notify
+    {
+        $this->buttonUrl = $url;
 
         return $this;
     }

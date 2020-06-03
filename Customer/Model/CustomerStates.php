@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Customer\Model;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
 /**
  * Class CustomerStates
  * @package Ekyna\Component\Commerce\Customer\Event
@@ -19,7 +21,7 @@ final class CustomerStates
      *
      * @return array
      */
-    static public function getStates()
+    static public function getStates(): array
     {
         return [
             static::STATE_NEW,
@@ -29,15 +31,24 @@ final class CustomerStates
     }
 
     /**
-     * Returns whether the given line type is valid or not.
+     * Returns whether the given state is valid or not.
      *
-     * @param string $type
+     * @param string $state
+     * @param bool   $throw
      *
      * @return bool
      */
-    static public function isValidType($type)
+    static public function isValid(string $state, bool $throw = true): bool
     {
-        return in_array($type, static::getStates(), true);
+        if (in_array($state, static::getStates(), true)) {
+            return true;
+        }
+
+        if ($throw) {
+            throw new InvalidArgumentException('Invalid notification type.');
+        }
+
+        return false;
     }
 
     /**

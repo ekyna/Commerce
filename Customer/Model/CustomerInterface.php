@@ -2,9 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Customer\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Customer\Entity\CustomerContact;
 use Ekyna\Component\Commerce\Customer\Entity\CustomerLogo;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
@@ -148,7 +148,7 @@ interface CustomerInterface extends
     /**
      * Returns the children.
      *
-     * @return ArrayCollection|CustomerInterface[]
+     * @return Collection|CustomerInterface[]
      */
     public function getChildren();
 
@@ -205,7 +205,7 @@ interface CustomerInterface extends
     /**
      * Returns the addresses.
      *
-     * @return ArrayCollection|CustomerAddressInterface[]
+     * @return Collection|CustomerAddressInterface[]
      */
     public function getAddresses();
 
@@ -237,6 +237,40 @@ interface CustomerInterface extends
     public function removeAddress(CustomerAddressInterface $address);
 
     /**
+     * Returns the contacts.
+     *
+     * @return Collection|CustomerContact[]
+     */
+    public function getContacts();
+
+    /**
+     * Returns whether the customer has the contact or not.
+     *
+     * @param CustomerContact $contact
+     *
+     * @return bool
+     */
+    public function hasContact(CustomerContact $contact);
+
+    /**
+     * Adds the contact.
+     *
+     * @param CustomerContact $contact
+     *
+     * @return $this|CustomerInterface
+     */
+    public function addContact(CustomerContact $contact);
+
+    /**
+     * Removes the contact.
+     *
+     * @param CustomerContact $contact
+     *
+     * @return $this|CustomerInterface
+     */
+    public function removeContact(CustomerContact $contact);
+
+    /**
      * Returns the default payment method.
      *
      * @return Payment\PaymentMethodInterface
@@ -255,7 +289,7 @@ interface CustomerInterface extends
     /**
      * Returns the payment methods.
      *
-     * @return ArrayCollection|Payment\PaymentMethodInterface[]
+     * @return Collection|Payment\PaymentMethodInterface[]
      */
     public function getPaymentMethods(): Collection;
 
