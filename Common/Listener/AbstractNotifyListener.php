@@ -78,12 +78,7 @@ abstract class AbstractNotifyListener
         // Create
         $notify = $this->builder->create($type, $resource);
 
-        // Build
-        if (!$this->builder->build($notify)) {
-            return;
-        }
-
-        // Enqueue
-        $this->queue->add($notify);
+        // Schedule
+        $this->queue->schedule($notify);
     }
 }

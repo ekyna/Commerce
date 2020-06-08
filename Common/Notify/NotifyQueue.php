@@ -12,43 +12,31 @@ use Ekyna\Component\Commerce\Common\Model\Notify;
 class NotifyQueue
 {
     /**
-     * @var array|Notify[]
+     * @var Notify[]
      */
-    private $queue;
+    private $scheduled;
+
+    /**
+     * @var Notify[]
+     */
+    private $queued;
+
+    /**
+     * @var NotifyBuilder
+     */
+    private $builder;
 
 
     /**
      * Constructor.
-     */
-    public function __construct()
-    {
-        $this->clear();
-    }
-
-    /**
-     * Returns all the queued notify objects.
      *
-     * @return array|Notify[]
+     * @param NotifyBuilder $builder
      */
-    public function all()
+    public function __construct(NotifyBuilder $builder)
     {
-        $queue = $this->queue;
-
-        return $queue;
-    }
-
-    /**
-     * Flushes (and clears) the queue.
-     *
-     * @return array|Notify[]
-     */
-    public function flush()
-    {
-        $queue = $this->queue;
+        $this->builder = $builder;
 
         $this->clear();
-
-        return $queue;
     }
 
     /**
@@ -56,24 +44,75 @@ class NotifyQueue
      *
      * @return NotifyQueue
      */
-    public function clear()
+    public function clear(): self
     {
-        $this->queue = [];
+        $this->scheduled = [];
+        $this->queued = [];
 
         return $this;
     }
 
     /**
-     * Adds the notify.
+     * Schedules the notification.
      *
      * @param Notify $notify
      *
-     * @return NotifyQueue
+     * @return $this
      */
-    public function add(Notify $notify)
+    public function schedule(Notify $notify): self
     {
-        $this->queue[] = $notify;
+        $this->scheduled[] = $notify;
 
         return $this;
+    }
+
+    /**
+     * Enqueue the notification.
+     *
+     * @param Notify $notify
+     *
+     * @return $this
+     */
+    public function enqueue(Notify $notify): self
+    {
+        $this->queued[] = $notify;
+
+        return $this;
+    }
+
+    /**
+     * Builds the scheduled notifications, and flushes (and clears) the queued notifications.
+     *
+     * @return Notify[]
+     */
+    public function flush(): array
+    {
+        $this->build();
+
+        $queue = $this->queued;
+
+        $this->clear();
+
+        return $queue;
+    }
+
+    /**
+     * Builds the scheduled notifications.
+     */
+    private function build(): void
+    {
+        if (empty($this->scheduled)) {
+            return;
+        }
+
+        foreach ($this->scheduled as $notify) {
+            if (!$this->builder->build($notify)) {
+                continue;
+            }
+
+            $this->enqueue($notify);
+        }
+
+        $this->scheduled = [];
     }
 }
