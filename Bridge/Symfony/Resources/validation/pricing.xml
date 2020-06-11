@@ -58,6 +58,9 @@
                 <option name="value">0</option>
             </constraint>
         </property>
+        <property name="mentions">
+            <constraint name="Valid"/>
+        </property>
         <property name="notices">
             <constraint name="All">
                 <constraint name="NotBlank"/>

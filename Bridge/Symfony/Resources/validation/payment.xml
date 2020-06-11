@@ -128,14 +128,8 @@
         <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
             <option name="fields">name</option>
         </constraint>
-        <property name="mentionTypes">
-            <constraint name="Choice">
-                <option name="callback">
-                    <value>Ekyna\Component\Commerce\Document\Model\DocumentTypes</value>
-                    <value>getSaleAndInvoiceTypes</value>
-                </option>
-                <option name="multiple">true</option>
-            </constraint>
+        <property name="mentions">
+            <constraint name="Valid"/>
         </property>
     </class>
 

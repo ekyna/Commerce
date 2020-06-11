@@ -152,6 +152,33 @@
         </property>
     </class>
 
+    <!-- Mention -->
+
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMention">
+        <property name="documentTypes">
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Document\Model\DocumentTypes</value>
+                    <value>getTypes</value>
+                </option>
+                <option name="multiple">true</option>
+            </constraint>
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+        <property name="translations">
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+        </property>
+    </class>
+    <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMentionTranslation">
+        <property name="content">
+            <constraint name="NotBlank"/>
+        </property>
+    </class>
+
     <!-- Message -->
 
     <class name="Ekyna\Component\Commerce\Common\Entity\AbstractMessage">
