@@ -4,7 +4,9 @@ namespace Ekyna\Component\Commerce\Payment\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model\MentionSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\MethodInterface;
+use Ekyna\Component\Commerce\Payment\Entity\PaymentMethodMention;
 use Ekyna\Component\Commerce\Payment\Entity\PaymentMethodTranslation;
 
 /**
@@ -15,7 +17,7 @@ use Ekyna\Component\Commerce\Payment\Entity\PaymentMethodTranslation;
  * @method PaymentMethodTranslation translate($locale = null, $create = false)
  * @method Collection|PaymentMethodTranslation[] getTranslations()
  */
-interface PaymentMethodInterface extends MethodInterface
+interface PaymentMethodInterface extends MethodInterface, MentionSubjectInterface
 {
     /**
      * Returns whether this method has authorized currencies.
@@ -91,22 +93,6 @@ interface PaymentMethodInterface extends MethodInterface
     public function setPrivate(bool $private): PaymentMethodInterface;
 
     /**
-     * Returns the mention types filtering.
-     *
-     * @return array
-     */
-    public function getMentionTypes(): ?array;
-
-    /**
-     * Sets the mention types filtering.
-     *
-     * @param array $types
-     *
-     * @return PaymentMethodInterface
-     */
-    public function setMentionTypes(array $types = null): PaymentMethodInterface;
-
-    /**
      * Returns whether or not the method requires manual management of payments state.
      *
      * @return bool
@@ -128,18 +114,38 @@ interface PaymentMethodInterface extends MethodInterface
     public function isOutstanding(): bool;
 
     /**
+     * Returns whether this method has the given mention.
+     *
+     * @param PaymentMethodMention $mention
+     *
+     * @return bool
+     */
+    public function hasMention(PaymentMethodMention $mention): bool;
+
+    /**
+     * Adds the mention.
+     *
+     * @param PaymentMethodMention $mention
+     *
+     * @return $this|PaymentMethodInterface
+     */
+    public function addMention(PaymentMethodMention $mention): PaymentMethodInterface;
+
+    /**
+     * Removes the mention.
+     *
+     * @param PaymentMethodMention $mention
+     *
+     * @return $this|PaymentMethodInterface
+     */
+    public function removeMention(PaymentMethodMention $mention): PaymentMethodInterface;
+
+    /**
      * Returns the order notice.
      *
      * @return string|null
      */
     public function getNotice(): ?string;
-
-    /**
-     * Returns the document mention.
-     *
-     * @return string|null
-     */
-    public function getMention(): ?string;
 
     /**
      * Returns the document footer.

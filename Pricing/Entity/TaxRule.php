@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Pricing\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Model\MentionSubjectTrait;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 
@@ -15,6 +16,8 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
  */
 class TaxRule implements TaxRuleInterface
 {
+    use MentionSubjectTrait;
+
     /**
      * @var int
      */
@@ -73,11 +76,13 @@ class TaxRule implements TaxRuleInterface
     {
         $this->customer = false;
         $this->business = false;
-        $this->sources = new ArrayCollection();
-        $this->targets = new ArrayCollection();
-        $this->taxes = new ArrayCollection();
-        $this->notices = [];
+        $this->sources  = new ArrayCollection();
+        $this->targets  = new ArrayCollection();
+        $this->taxes    = new ArrayCollection();
+        $this->notices  = [];
         $this->priority = 0;
+
+        $this->initializeMentions();
     }
 
     /**
@@ -375,19 +380,35 @@ class TaxRule implements TaxRuleInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getNotices(): array
+    public function hasMention(TaxRuleMention $mention): bool
     {
-        return $this->notices;
+        return $this->mentions->contains($mention);
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function setNotices(array $notices): TaxRuleInterface
+    public function addMention(TaxRuleMention $mention): TaxRuleInterface
     {
-        $this->notices = $notices;
+        if (!$this->hasMention($mention)) {
+            $this->mentions->add($mention);
+            $mention->setTaxRule($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeMention(TaxRuleMention $mention): TaxRuleInterface
+    {
+        if ($this->hasMention($mention)) {
+            $this->mentions->removeElement($mention);
+            $mention->setTaxRule(null);
+        }
 
         return $this;
     }

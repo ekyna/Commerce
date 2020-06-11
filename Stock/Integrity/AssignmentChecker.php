@@ -43,7 +43,7 @@ class AssignmentChecker extends AbstractChecker
             throw new \RuntimeException("Released non sample order #{$result['order_id']}");
         } else {
             // Regular case
-            $result['sold_sum'] = $result['item_sum'] - $result['credit_sum'];
+            $result['sold_sum'] = max($result['item_sum'], $result['invoice_sum']) - $result['credit_sum'];
         }
 
         // Shipped sum must be greater than or equal to zero
@@ -281,6 +281,13 @@ SELECT
         IFNULL(i5.quantity, 1) *
         IFNULL(i6.quantity, 1)
     ) AS item_sum,
+    IFNULL((
+        SELECT SUM(line.quantity)
+        FROM commerce_order_invoice_line AS line
+        JOIN commerce_order_invoice AS invoice ON invoice.id=line.invoice_id
+        WHERE line.order_item_id=i1.id
+          AND invoice.credit=0
+    ), 0) AS invoice_sum,
     IFNULL((
         SELECT SUM(line.quantity)
         FROM commerce_order_invoice_line AS line

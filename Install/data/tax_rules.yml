@@ -6,7 +6,7 @@ fr_fr:
     sources: [FR]
     targets: [FR]
     taxes: [fr_normal, fr_intermediate, fr_reduced, fr_super_reduced]
-    notices: []
+    mentions: []
 fr_eu_b2b:
     name: Ventes intracommunautaires B2B
     priority: 768
@@ -15,8 +15,8 @@ fr_eu_b2b:
     sources: [FR]
     targets: [AT, BE, BG, CY, CZ, DE, DK, EE, ES, FI, GR, HR, HU, IE, IT, LT, LU, LV, MT, NL, PL, PT, RO, SI, SE, SK]
     taxes: []
-    notices:
-        - Exonération de TVA - Article 262 ter-I du code général des impôts
+    mentions:
+        fr: Exonération de TVA - Article 262 ter-I du code général des impôts
 fr_eu_b2c:
     name: Ventes intracommunautaires B2C
     priority: 512
@@ -25,7 +25,7 @@ fr_eu_b2c:
     sources: [FR]
     targets: [AT, BE, BG, CY, CZ, DE, DK, EE, ES, FI, GR, HR, HU, IE, IT, LT, LU, LV, MT, NL, PL, PT, RO, SI, SE, SK]
     taxes: [fr_normal, fr_intermediate, fr_reduced, fr_super_reduced]
-    notices: []
+    mentions: []
 fr_world:
     name: Ventes à l'étranger
     priority: 256
@@ -34,5 +34,5 @@ fr_world:
     sources: [FR]
     targets: []
     taxes: []
-    notices:
-         - Exonération de TVA - Article 262 1° du code général des impôts
+    mentions:
+         fr: Exonération de TVA - Article 262 1° du code général des impôts

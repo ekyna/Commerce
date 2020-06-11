@@ -4,6 +4,8 @@ namespace Ekyna\Component\Commerce\Pricing\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Common\Model\MentionSubjectInterface;
+use Ekyna\Component\Commerce\Pricing\Entity\TaxRuleMention;
 use Ekyna\Component\Resource\Model as RM;
 
 /**
@@ -11,7 +13,7 @@ use Ekyna\Component\Resource\Model as RM;
  * @package Ekyna\Component\Commerce\Pricing\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface TaxRuleInterface extends RM\ResourceInterface
+interface TaxRuleInterface extends RM\ResourceInterface, MentionSubjectInterface
 {
     /**
      * Returns the code.
@@ -228,20 +230,31 @@ interface TaxRuleInterface extends RM\ResourceInterface
     public function setTaxes(array $taxes): TaxRuleInterface;
 
     /**
-     * Returns the notices.
+     * Returns whether this tax rule has the given mention.
      *
-     * @return array
+     * @param TaxRuleMention $mention
+     *
+     * @return bool
      */
-    public function getNotices(): array;
+    public function hasMention(TaxRuleMention $mention): bool;
 
     /**
-     * Sets the notices.
+     * Adds the mention.
      *
-     * @param array $notices
+     * @param TaxRuleMention $mention
      *
      * @return $this|TaxRuleInterface
      */
-    public function setNotices(array $notices): TaxRuleInterface;
+    public function addMention(TaxRuleMention $mention): TaxRuleInterface;
+
+    /**
+     * Removes the mention.
+     *
+     * @param TaxRuleMention $mention
+     *
+     * @return $this|TaxRuleInterface
+     */
+    public function removeMention(TaxRuleMention $mention): TaxRuleInterface;
 
     /**
      * Returns the priority.

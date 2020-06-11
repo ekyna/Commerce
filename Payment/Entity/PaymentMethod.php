@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractMethod;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Commerce\Common\Model\MentionSubjectTrait;
 use Ekyna\Component\Commerce\Common\Model\MessageInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
@@ -20,6 +21,8 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
  */
 class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
 {
+    use MentionSubjectTrait;
+
     /**
      * @var ArrayCollection|CurrencyInterface[]
      */
@@ -35,11 +38,6 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
      */
     protected $private;
 
-    /**
-     * @var string[]
-     */
-    protected $mentionTypes;
-
 
     /**
      * Constructor.
@@ -48,9 +46,11 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     {
         parent::__construct();
 
-        $this->currencies = new ArrayCollection();
+        $this->initializeMentions();
+
+        $this->currencies      = new ArrayCollection();
         $this->defaultCurrency = true;
-        $this->private = false;
+        $this->private         = false;
     }
 
     /**
@@ -140,24 +140,6 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    public function getMentionTypes(): ?array
-    {
-        return $this->mentionTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setMentionTypes(array $types = null): PaymentMethodInterface
-    {
-        $this->mentionTypes = $types;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function isManual(): bool
     {
         return false; // TODO Method should be abstract
@@ -177,6 +159,40 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     public function isOutstanding(): bool
     {
         return false; // TODO Method should be abstract
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasMention(PaymentMethodMention $mention): bool
+    {
+        return $this->mentions->contains($mention);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addMention(PaymentMethodMention $mention): PaymentMethodInterface
+    {
+        if (!$this->hasMention($mention)) {
+            $this->mentions->add($mention);
+            $mention->setMethod($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeMention(PaymentMethodMention $mention): PaymentMethodInterface
+    {
+        if ($this->hasMention($mention)) {
+            $this->mentions->removeElement($mention);
+            $mention->setMethod(null);
+        }
+
+        return $this;
     }
 
     /**
@@ -203,14 +219,6 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     public function getNotice(): ?string
     {
         return $this->translate()->getNotice();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMention(): ?string
-    {
-        return $this->translate()->getMention();
     }
 
     /**

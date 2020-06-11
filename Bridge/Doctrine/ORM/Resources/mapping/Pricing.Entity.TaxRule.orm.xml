@@ -27,8 +27,17 @@
         <field name="name" column="name" type="string" length="64"/>
         <field name="customer" column="customer" type="boolean"/>
         <field name="business" column="business" type="boolean"/>
-        <field name="notices" column="notices" type="json_array"/>
         <field name="priority" column="priority" type="smallint"/>
+
+        <one-to-many target-entity="\Ekyna\Component\Commerce\Pricing\Entity\TaxRuleMention"
+                     mapped-by="taxRule" field="mentions">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+            <order-by>
+                <order-by-field name="position"/>
+            </order-by>
+        </one-to-many>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Country"
                       field="sources">

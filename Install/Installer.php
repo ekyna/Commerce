@@ -2,25 +2,23 @@
 
 namespace Ekyna\Component\Commerce\Install;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ManagerRegistry;
 use Ekyna\Component\Commerce\Common\Entity\Country;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
-use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
-use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
+use Ekyna\Component\Commerce\Customer\Entity\CustomerGroup;
+use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Pricing\Entity\Tax;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxGroup;
 use Ekyna\Component\Commerce\Pricing\Entity\TaxRule;
+use Ekyna\Component\Commerce\Pricing\Entity\TaxRuleMention;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
-use Ekyna\Component\Commerce\Pricing\Repository\TaxGroupRepositoryInterface;
-use Ekyna\Component\Commerce\Pricing\Repository\TaxRepositoryInterface;
-use Ekyna\Component\Commerce\Pricing\Repository\TaxRuleRepositoryInterface;
 use Ekyna\Component\Commerce\Stock\Entity\Warehouse;
-use Ekyna\Component\Commerce\Supplier\Repository\SupplierTemplateRepositoryInterface;
+use Ekyna\Component\Commerce\Supplier\Entity\SupplierTemplate;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Yaml\Yaml;
 
@@ -32,39 +30,9 @@ use Symfony\Component\Yaml\Yaml;
 class Installer
 {
     /**
-     * @var ObjectManager
+     * @var ManagerRegistry
      */
-    private $manager;
-
-    /**
-     * @var CustomerGroupRepositoryInterface
-     */
-    private $customerGroupRepository;
-
-    /**
-     * @var CountryRepositoryInterface
-     */
-    private $countryRepository;
-
-    /**
-     * @var SupplierTemplateRepositoryInterface
-     */
-    private $supplierTemplateRepository;
-
-    /**
-     * @var TaxRepositoryInterface
-     */
-    private $taxRepository;
-
-    /**
-     * @var TaxGroupRepositoryInterface
-     */
-    private $taxGroupRepository;
-
-    /**
-     * @var TaxRuleRepositoryInterface
-     */
-    private $taxRuleRepository;
+    private $registry;
 
     /**
      * @var callable
@@ -75,26 +43,14 @@ class Installer
     /**
      * Constructor.
      *
-     * @param ObjectManager                       $manager
-     * @param CustomerGroupRepositoryInterface    $customerRepository
-     * @param CountryRepositoryInterface          $countryRepository
-     * @param SupplierTemplateRepositoryInterface $supplierTemplateRepository
-     * @param mixed                               $logger
+     * @param ManagerRegistry $registry
+     * @param mixed           $logger
      */
     public function __construct(
-        ObjectManager $manager,
-        CustomerGroupRepositoryInterface $customerRepository,
-        CountryRepositoryInterface $countryRepository,
-        SupplierTemplateRepositoryInterface $supplierTemplateRepository,
+        ManagerRegistry $registry,
         $logger = null
     ) {
-        $this->manager = $manager;
-        $this->customerGroupRepository = $customerRepository;
-        $this->countryRepository = $countryRepository;
-        $this->supplierTemplateRepository = $supplierTemplateRepository;
-        $this->taxRepository = $this->manager->getRepository(Tax::class);
-        $this->taxGroupRepository = $this->manager->getRepository(TaxGroup::class);
-        $this->taxRuleRepository = $this->manager->getRepository(TaxRule::class);
+        $this->registry = $registry;
 
         if (in_array('Symfony\Component\Console\Output\OutputInterface', class_implements($logger))) {
             $this->log = function ($name, $result) use ($logger) {
@@ -176,6 +132,9 @@ class Installer
      */
     public function installTaxes(): void
     {
+        $manager    = $this->registry->getManagerForClass(Tax::class);
+        $repository = $this->registry->getRepository(Tax::class);
+
         $path = __DIR__ . '/data/taxes.yml';
         if (!(file_exists($path) && is_readable($path))) {
             throw new Exception\RuntimeException("File $path does not exist.");
@@ -187,13 +146,13 @@ class Installer
         }
 
         foreach ($data as $code => $datum) {
-            if (null === $tax = $this->taxRepository->findOneByCode($code)) {
+            if (null === $tax = $repository->findOneByCode($code)) {
                 $tax = new Tax();
                 $tax->setCode($code);
             }
 
             if ($this->updateTax($tax, $datum)) {
-                $this->manager->persist($tax);
+                $manager->persist($tax);
                 $result = $tax->getId() ? 'updated' : 'created';
             } else {
                 $result = 'skipped';
@@ -202,7 +161,7 @@ class Installer
             call_user_func($this->log, $datum['name'], $result);
         }
 
-        $this->manager->flush();
+        $manager->flush();
     }
 
     /**
@@ -227,7 +186,7 @@ class Installer
             $changed = true;
         }
 
-        $country = $this->countryRepository->findOneByCode($data['country']);
+        $country = $this->registry->getRepository(Country::class)->findOneByCode($data['country']);
         if (null === $country) {
             throw new Exception\RuntimeException("Country {$data['country']} not found.");
         }
@@ -244,6 +203,9 @@ class Installer
      */
     public function installTaxGroups(): void
     {
+        $manager    = $this->registry->getManagerForClass(TaxGroup::class);
+        $repository = $this->registry->getRepository(TaxGroup::class);
+
         $path = __DIR__ . '/data/tax_groups.yml';
         if (!(file_exists($path) && is_readable($path))) {
             throw new Exception\RuntimeException("File $path does not exist.");
@@ -255,13 +217,13 @@ class Installer
         }
 
         foreach ($data as $code => $datum) {
-            if (null === $taxGroup = $this->taxGroupRepository->findOneByCode($code)) {
+            if (null === $taxGroup = $repository->findOneByCode($code)) {
                 $taxGroup = new TaxGroup();
                 $taxGroup->setCode($code);
             }
 
             if ($this->updateTaxGroup($taxGroup, $datum)) {
-                $this->manager->persist($taxGroup);
+                $manager->persist($taxGroup);
                 $result = $taxGroup->getId() ? 'updated' : 'created';
             } else {
                 $result = 'skipped';
@@ -270,7 +232,7 @@ class Installer
             call_user_func($this->log, $datum['name'], $result);
         }
 
-        $this->manager->flush();
+        $manager->flush();
     }
 
     /**
@@ -285,7 +247,10 @@ class Installer
     {
         $changed = false;
 
-        if ($data['default'] && !$this->taxGroupRepository->findDefault(false)) {
+        $taxGroupRepository = $this->registry->getRepository(TaxGroup::class);
+        $taxRepository      = $this->registry->getRepository(Tax::class);
+
+        if ($data['default'] && !$taxGroupRepository->findDefault(false)) {
             $group->setDefault(true);
             $changed = true;
         }
@@ -297,7 +262,7 @@ class Installer
 
         $taxes = [];
         if (!empty($data['taxes'])) {
-            $taxes = $this->taxRepository->findBy(['code' => $data['taxes']]);
+            $taxes = $taxRepository->findBy(['code' => $data['taxes']]);
             if (count($taxes) !== count($data['taxes'])) {
                 throw new Exception\RuntimeException("Failed to fetch all taxes.");
             }
@@ -315,6 +280,9 @@ class Installer
      */
     public function installTaxRules(): void
     {
+        $manager    = $this->registry->getManagerForClass(TaxRule::class);
+        $repository = $this->registry->getRepository(TaxRule::class);
+
         $path = __DIR__ . '/data/tax_rules.yml';
         if (!(file_exists($path) && is_readable($path))) {
             throw new Exception\RuntimeException("File $path does not exist.");
@@ -326,13 +294,13 @@ class Installer
         }
 
         foreach ($data as $code => $datum) {
-            if (null === $taxRule = $this->taxRuleRepository->findOneByCode($code)) {
+            if (null === $taxRule = $repository->findOneByCode($code)) {
                 $taxRule = new TaxRule();
                 $taxRule->setCode($code);
             }
 
             if ($this->updateTaxRule($taxRule, $datum)) {
-                $this->manager->persist($taxRule);
+                $manager->persist($taxRule);
                 $result = $taxRule->getId() ? 'updated' : 'created';
             } else {
                 $result = 'skipped';
@@ -341,7 +309,7 @@ class Installer
             call_user_func($this->log, $datum['name'], $result);
         }
 
-        $this->manager->flush();
+        $manager->flush();
     }
 
     /**
@@ -371,9 +339,11 @@ class Installer
             $changed = true;
         }
 
+        $countryRepository = $this->registry->getRepository(Country::class);
+
         $sources = [];
         if (!empty($data['sources'])) {
-            $sources = $this->countryRepository->findBy(['code' => $data['sources']]);
+            $sources = $countryRepository->findBy(['code' => $data['sources']]);
             if (count($sources) !== count($data['sources'])) {
                 throw new Exception\RuntimeException("Failed to fetch all source countries.");
             }
@@ -385,7 +355,7 @@ class Installer
 
         $targets = [];
         if (!empty($data['targets'])) {
-            $targets = $this->countryRepository->findBy(['code' => $data['targets']]);
+            $targets = $countryRepository->findBy(['code' => $data['targets']]);
             if (count($targets) !== count($data['targets'])) {
                 throw new Exception\RuntimeException("Failed to fetch all target countries.");
             }
@@ -395,9 +365,11 @@ class Installer
             $changed = true;
         }
 
+        $taxRepository = $this->registry->getRepository(Tax::class);
+
         $taxes = [];
         if (!empty($data['taxes'])) {
-            $taxes = $this->taxRepository->findBy(['code' => $data['taxes']]);
+            $taxes = $taxRepository->findBy(['code' => $data['taxes']]);
             if (count($taxes) !== count($data['taxes'])) {
                 throw new Exception\RuntimeException("Failed to fetch all taxes.");
             }
@@ -407,8 +379,19 @@ class Installer
             $changed = true;
         }
 
-        if ($rule->getNotices() !== $data['notices']) {
-            $rule->setNotices($data['notices']);
+        if (!empty($data['mentions']) && $rule->getMentions()->isEmpty()) {
+            /** @var TaxRuleMention $mention */
+            $mention = $this->registry->getRepository(TaxRuleMention::class)->createNew();
+            $mention
+                ->addDocumentType(DocumentTypes::TYPE_INVOICE)
+                ->addDocumentType(DocumentTypes::TYPE_PROFORMA);
+
+            foreach ($data['mentions'] as $locale => $content) {
+                $mention->translate($locale)->setContent($content);
+            }
+
+            $rule->addMention($mention);
+
             $changed = true;
         }
 
@@ -425,7 +408,10 @@ class Installer
      */
     public function installCustomerGroups()
     {
-        $groups = (array)$this->customerGroupRepository->findBy([], [], 1)->getIterator();
+        $manager    = $this->registry->getManagerForClass(CustomerGroup::class);
+        $repository = $this->registry->getRepository(CustomerGroup::class);
+
+        $groups = $repository->findBy([], [], 1);
         if (!empty($groups)) {
             call_user_func($this->log, 'All', 'skipped');
 
@@ -447,9 +433,9 @@ class Installer
 
         foreach ($groups as $name => $config) {
             $result = 'already exists';
-            if (null === $this->customerGroupRepository->findOneBy(['name' => $name])) {
+            if (null === $repository->findOneBy(['name' => $name])) {
                 /** @var \Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface $customerGroup */
-                $customerGroup = $this->customerGroupRepository->createNew();
+                $customerGroup = $repository->createNew();
                 $customerGroup
                     ->setName($name)
                     ->setDefault($config['default'])
@@ -458,7 +444,7 @@ class Installer
                     ->translate()
                     ->setTitle($name);
 
-                $this->manager->persist($customerGroup);
+                $manager->persist($customerGroup);
 
                 $result = 'done';
             }
@@ -466,7 +452,7 @@ class Installer
             call_user_func($this->log, $name, $result);
         }
 
-        $this->manager->flush();
+        $manager->flush();
     }
 
     /**
@@ -474,8 +460,10 @@ class Installer
      */
     public function installDefaultWarehouse()
     {
+        $manager = $this->registry->getManagerForClass(CustomerGroup::class);
+
         /** @var \Ekyna\Component\Commerce\Stock\Repository\WarehouseRepositoryInterface $warehouseRepository */
-        $warehouseRepository = $this->manager->getRepository(Warehouse::class);
+        $warehouseRepository = $this->registry->getRepository(Warehouse::class);
 
         if ($warehouse = $warehouseRepository->findDefault(false)) {
             call_user_func($this->log, 'Default', 'already exists');
@@ -483,7 +471,7 @@ class Installer
             return;
         }
 
-        $country = $this->countryRepository->findDefault();
+        $country = $this->registry->getRepository(Country::class)->findDefault();
 
         /** @var \Ekyna\Component\Commerce\Stock\Model\WarehouseInterface $warehouse */
         $warehouse = $warehouseRepository->createNew();
@@ -497,8 +485,8 @@ class Installer
             ->setPostalCode('12345')
             ->setCountry($country);
 
-        $this->manager->persist($warehouse);
-        $this->manager->flush();
+        $manager->persist($warehouse);
+        $manager->flush();
 
         call_user_func($this->log, 'Default', 'done');
     }
@@ -508,7 +496,10 @@ class Installer
      */
     public function installSupplierTemplates()
     {
-        if (0 < $this->supplierTemplateRepository->findBy([], [], 1)->count()) {
+        $manager    = $this->registry->getManagerForClass(SupplierTemplate::class);
+        $repository = $this->registry->getRepository(SupplierTemplate::class);
+
+        if (0 < count($repository->findBy([], [], 1))) {
             call_user_func($this->log, 'All', 'skipped');
 
             return;
@@ -518,7 +509,7 @@ class Installer
 
         foreach ($data as $datum) {
             /** @var \Ekyna\Component\Commerce\Supplier\Model\SupplierTemplateInterface $template */
-            $template = $this->supplierTemplateRepository->createNew();
+            $template = $repository->createNew();
             $template->setTitle($datum['title']);
 
             foreach ($datum['translations'] as $locale => $trans) {
@@ -528,12 +519,12 @@ class Installer
                     ->setMessage($trans['message']);
             }
 
-            $this->manager->persist($template);
+            $manager->persist($template);
 
             call_user_func($this->log, $datum['title'], 'done');
         }
 
-        $this->manager->flush();
+        $manager->flush();
     }
 
     /**
@@ -545,8 +536,9 @@ class Installer
      */
     private function generate($class, array $names, $defaultCode)
     {
+        $manager = $this->registry->getManagerForClass($class);
         /** @var \Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface $repository */
-        $repository = $this->manager->getRepository($class);
+        $repository = $this->registry->getRepository($class);
 
         foreach ($names as $code => $name) {
             $result = 'already exists';
@@ -558,13 +550,13 @@ class Installer
                     ->setCode($code)
                     ->setEnabled($defaultCode === $code);
 
-                $this->manager->persist($entity);
+                $manager->persist($entity);
 
                 $result = 'done';
             }
             call_user_func($this->log, $name, $result);
         }
 
-        $this->manager->flush();
+        $manager->flush();
     }
 }

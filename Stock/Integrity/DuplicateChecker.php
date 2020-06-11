@@ -78,7 +78,8 @@ WHERE EXISTS(
     GROUP BY a1.order_item_id
     HAVING 1 < COUNT(a1.id)
 )
-AND a2.sold_quantity = 0;
+AND a2.sold_quantity = 0
+GROUP BY a2.order_item_id;
 SQL;
     }
 }

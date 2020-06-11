@@ -31,13 +31,22 @@
                 <option name="default">0</option>
             </options>
         </field>
-        <field name="mentionTypes" column="mention_types" type="simple_array" nullable="true"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Payment\Entity\PaymentMessage"
                      mapped-by="method" field="messages">
             <cascade>
                 <cascade-all/>
             </cascade>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Payment\Entity\PaymentMethodMention"
+                     mapped-by="method" field="mentions">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+            <order-by>
+                <order-by-field name="position"/>
+            </order-by>
         </one-to-many>
 
         <many-to-many target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currencies">
