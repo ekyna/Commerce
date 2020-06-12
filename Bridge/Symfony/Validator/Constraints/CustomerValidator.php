@@ -30,9 +30,6 @@ class CustomerValidator extends ConstraintValidator
             throw new InvalidArgumentException('Expected instance of Customer (validation constraint)');
         }
 
-        /* @var CustomerInterface $customer */
-        /* @var Customer $constraint */
-
         if ($customer->hasParent()) {
             // Prevent hierarchy overflow
             if ($customer->hasChildren() || $customer->getParent()->hasParent()) {

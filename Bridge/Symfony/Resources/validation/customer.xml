@@ -184,6 +184,9 @@
             </constraint>
         </property>
         <property name="notifications">
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
             <constraint name="Choice">
                 <option name="multiple">true</option>
                 <option name="callback">
@@ -198,6 +201,7 @@
                 <value>email</value>
             </option>
         </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\CustomerContact"/>
     </class>
 
     <class name="Ekyna\Component\Commerce\Customer\Entity\CustomerGroup">

@@ -29,11 +29,6 @@ class CustomerContact implements CustomerContactInterface
     private $customer;
 
     /**
-     * @var string[]
-     */
-    private $notifications;
-
-    /**
      * @var string
      */
     private $email;
@@ -42,6 +37,16 @@ class CustomerContact implements CustomerContactInterface
      * @var string
      */
     private $phone;
+
+    /**
+     * @var string[]
+     */
+    private $notifications;
+
+    /**
+     * @var string
+     */
+    private $description;
 
 
     /**
@@ -117,7 +122,7 @@ class CustomerContact implements CustomerContactInterface
     /**
      * @inheritDoc
      */
-    public function setPhone(string $phone): CustomerContactInterface
+    public function setPhone(string $phone = null): CustomerContactInterface
     {
         $this->phone = $phone;
 
@@ -146,6 +151,24 @@ class CustomerContact implements CustomerContactInterface
 
             $this->notifications[] = $notification;
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setDescription(string $description = null): CustomerContactInterface
+    {
+        $this->description = $description;
 
         return $this;
     }

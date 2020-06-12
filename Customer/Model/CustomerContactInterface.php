@@ -76,4 +76,20 @@ interface CustomerContactInterface extends ResourceInterface, IdentityInterface,
      * @return CustomerContactInterface
      */
     public function setNotifications(array $notifications = []): CustomerContactInterface;
+
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription(): ?string;
+
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     *
+     * @return CustomerContactInterface
+     */
+    public function setDescription(string $description = null): CustomerContactInterface;
 }
