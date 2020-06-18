@@ -28,11 +28,24 @@
         </field>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
 
-        <field name="orderedQuantity" column="ordered_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="receivedQuantity" column="received_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="adjustedQuantity" column="adjusted_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="soldQuantity" column="sold_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
-        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false"/>
+        <field name="orderedQuantity" column="ordered_quantity" type="decimal" precision="10" scale="3" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="receivedQuantity" column="received_quantity" type="decimal" precision="10" scale="3" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="adjustedQuantity" column="adjusted_quantity" type="decimal" precision="10" scale="3" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="soldQuantity" column="sold_quantity" type="decimal" precision="10" scale="3" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="shippedQuantity" column="shipped_quantity" type="decimal" precision="10" scale="3" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
+        <field name="lockedQuantity" column="locked_quantity" type="decimal" precision="10" scale="3" nullable="false">
+            <options><option name="default">0</option></options>
+        </field>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Tests\Stock\Manager;
 
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManager;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Tests\Fixture;
@@ -35,12 +36,39 @@ class StockAssignmentManagerTest extends StockTestCase
         $this->manager = null;
     }
 
-    public function test_persist(): void
+    /** @dataProvider provide_persist */
+    public function test_persist(array $assignment, bool $expected): void
     {
+        $assignment = Fixture::stockAssignment($assignment);
 
+        $this->assertPersistence($assignment, [
+            'remove'   => false,
+            'order'    => $expected ? $this->once() : $this->never(),
+            'schedule' => false,
+        ]);
+
+        $this->manager->persist($assignment);
     }
 
-    /** @dataProvider provide_test_remove */
+    public function provide_persist(): \Generator
+    {
+        yield 'Empty' => [
+            [
+                '_id'  => null,
+            ],
+            false,
+        ];
+
+        yield 'Not empty' => [
+            [
+                '_id'  => null,
+                'sold' => 10.,
+            ],
+            true,
+        ];
+    }
+
+    /** @dataProvider provide_remove */
     public function test_remove(array $assignment, array $result): void
     {
         $assignment = Fixture::stockAssignment($assignment);
@@ -51,33 +79,23 @@ class StockAssignmentManagerTest extends StockTestCase
 
         $this->assertPersistence($assignment, [
             'remove'   => true,
-            'order'    => $result['expected'] ? $this->once() : $this->never(),
+            'order'    => $result['removed'] ? $this->once() : $this->never(),
             'schedule' => false,
         ]);
 
-        $this->assertCaching($assignment, !$result['expected']);
-
-//        $this
-//            ->getPersistenceHelperMock()
-//            ->expects($result['expected'] ? $this->once() : $this->never())
-//            ->method('remove')
-//            ->with($assignment, false);
-//
-//        $this
-//            ->getStockAssignmentCacheMock()
-//            ->expects($result['expected'] ? $this->never() : $this->once())
-//            ->method('remove')
-//            ->with($assignment);
+        if ($result['cached']) {
+            $this->assertCached($assignment, !$result['removed']);
+        }
 
         $this->manager->remove($assignment, $result['hard']);
 
-        if ($result['expected']) {
+        if ($result['removed']) {
             $this->assertNull($assignment->getSaleItem());
             $this->assertNull($assignment->getStockUnit());
         }
     }
 
-    public function provide_test_remove(): \Generator
+    public function provide_remove(): \Generator
     {
         // If sale is in a stockable state,
         // Any item MUST have at least one assignment.
@@ -86,30 +104,95 @@ class StockAssignmentManagerTest extends StockTestCase
         // If sale is not accepted
         //     -> remove if empty
 
-        yield [
+        yield 'Non stockable sale' => [
             [
+                '_id'  => null,
                 'unit' => [
                     'item' => [
-                        '_reference' => '#item',
-                        'order'      => [],
+                        'order' => [],
                     ],
                 ],
-                'item' => '#item',
+                'item' => [
+                    'order' => [],
+                ],
             ],
             [
                 'hard'      => false,
                 'exception' => null,
-                'expected'  => true,
+                'removed'   => true,
+                'cached'    => false,
+            ],
+        ];
+
+        yield 'Only one assignment' => [
+            [
+                '_id'  => null,
+                'unit' => [
+                    'item' => [
+                        'order' => [],
+                    ],
+                ],
+                'item' => [
+                    'order' => ['state' => OrderStates::STATE_ACCEPTED],
+                ],
+            ],
+            [
+                'hard'      => false,
+                'exception' => null,
+                'removed'   => false,
+                'cached'    => false,
+            ],
+        ];
+
+        yield 'Multiple assignments' => [
+            [
+                '_id'  => null,
+                'unit' => [
+                    'item' => [
+                        'order' => [],
+                    ],
+                ],
+                'item' => [
+                    'order'       => ['state' => OrderStates::STATE_ACCEPTED],
+                    'assignments' => [[]],
+                ],
+            ],
+            [
+                'hard'      => false,
+                'exception' => null,
+                'removed'   => true,
+                'cached'    => false,
+            ],
+        ];
+
+        yield 'Multiple assignments, with ID' => [
+            [
+                '_id'  => true,
+                'unit' => [
+                    'item' => [
+                        'order' => [],
+                    ],
+                ],
+                'item' => [
+                    'order'       => ['state' => OrderStates::STATE_ACCEPTED],
+                    'assignments' => [[]],
+                ],
+            ],
+            [
+                'hard'      => false,
+                'exception' => null,
+                'removed'   => false,
+                'cached'    => true,
             ],
         ];
     }
 
-    protected function assertCaching(StockAssignmentInterface $assignment, bool $isDone): void
+    protected function assertCached(StockAssignmentInterface $assignment, bool $isDone): void
     {
         $this
             ->getStockAssignmentCacheMock()
             ->expects($isDone ? $this->once() : $this->never())
-            ->method('remove')
+            ->method('addRemoved')
             ->with($assignment);
     }
 
@@ -201,7 +284,7 @@ class StockAssignmentManagerTest extends StockTestCase
             ->withConsecutive(
                 [$as1, false],
                 [$as2, false],
-                );
+            );
 
         $this->manager->onEventQueueClose();
     }

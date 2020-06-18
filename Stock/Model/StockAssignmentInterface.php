@@ -77,6 +77,22 @@ interface StockAssignmentInterface extends ResourceInterface
     public function setShippedQuantity(float $quantity): StockAssignmentInterface;
 
     /**
+     * Returns the locked quantity.
+     *
+     * @return float
+     */
+    public function getLockedQuantity(): float;
+
+    /**
+     * Sets the locked quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockAssignmentInterface
+     */
+    public function setLockedQuantity(float $quantity): StockAssignmentInterface;
+
+    /**
      * Returns the shippable quantity.
      *
      * @return float
@@ -84,11 +100,19 @@ interface StockAssignmentInterface extends ResourceInterface
     public function getShippableQuantity(): float;
 
     /**
+     * Returns the releasable quantity.
+     *
+     * @return float
+     */
+    public function getReleasableQuantity(): float;
+
+    /**
      * Returns whether or not the assignment is fully shipped.
      *
      * @return bool
      */
     public function isFullyShipped(): bool;
+
 
     /**
      * Returns whether or not the assignment is fully shippable.

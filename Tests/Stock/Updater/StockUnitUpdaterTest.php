@@ -656,6 +656,146 @@ class StockUnitUpdaterTest extends StockTestCase
     }
 
     /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withAbsoluteNegativeQuantity_throwsException(): void
+    {
+        $unit = Fixture::stockUnit(['item' => []]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateLocked($unit, -1, false);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withRelativeNegativeQuantity_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'locked'   => 9,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateLocked($unit, -10, true);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withAbsoluteQuantityGreaterThanSold_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 9,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateLocked($unit, 10, false);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withAbsoluteQuantityGreaterThanReceivedAdjustedShipped_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 5,
+            'adjusted' => 5,
+            'sold'     => 10,
+            'shipped'  => 5,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateLocked($unit, 11, false);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withRelativeQuantityGreaterThanSold_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'    => [],
+            'ordered' => 10,
+            'sold'    => 9,
+            'locked'  => 9,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateLocked($unit, 1, true);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withRelativeQuantityLowerThanReceived_throwsException(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 9,
+            'sold'     => 10,
+            'locked'   => 9,
+        ]);
+
+        $this->expectException(StockLogicException::class);
+
+        $this->updater->updateLocked($unit, 1, true);
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withAbsoluteQuantity(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+        ]);
+
+        $this->expectStockUnitWillBePersistedOrRemoved($unit);
+
+        $this->updater->updateLocked($unit, 10, false);
+
+        $this->assertEquals(10, $unit->getLockedQuantity());
+    }
+
+    /**
+     * @covers StockUnitUpdater::updateLocked()
+     */
+    public function test_updateLocked_withRelativeQuantity(): void
+    {
+        $unit = Fixture::stockUnit([
+            'item'     => [],
+            'ordered'  => 10,
+            'received' => 10,
+            'sold'     => 10,
+            'locked'   => 9,
+        ]);
+
+        $this->expectStockUnitWillBePersistedOrRemoved($unit);
+
+        $this->updater->updateLocked($unit, 1, true);
+
+        $this->assertEquals(10, $unit->getLockedQuantity());
+    }
+
+    /**
      * @covers StockUnitUpdater::updateEstimatedDateOfArrival()
      */
     public function test_updateEstimatedDateOfArrival_withDifferentDate(): void

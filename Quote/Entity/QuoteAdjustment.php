@@ -32,7 +32,7 @@ class QuoteAdjustment extends AbstractSaleAdjustment implements QuoteAdjustmentI
     /**
      * @inheritdoc
      */
-    public function getQuote(): QuoteInterface
+    public function getQuote(): ?QuoteInterface
     {
         return $this->quote;
     }

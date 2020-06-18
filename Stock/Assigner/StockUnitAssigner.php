@@ -4,9 +4,11 @@ namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
@@ -195,11 +197,36 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         $quantity = $item->getQuantity();
         $return   = $item->getShipment()->isReturn();
 
-        foreach ($assignments as $assignment) {
+        if ($item->getShipment()->getState() === ShipmentStates::STATE_PREPARATION) {
             if ($return) {
-                $quantity += $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+                // Nothing to do
+                return;
             } else {
-                $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+                // Credit locked quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return -$this->assignmentUpdater->updateLocked($assignment, $quantity, true);
+                };
+            }
+        } else {
+            if ($return) {
+                // Debit shipped quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+                };
+            } else {
+                // Debit shipped quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+                };
+            }
+        }
+
+        // Call on assignments
+        foreach ($assignments as $assignment) {
+            $quantity += $callable($assignment, $quantity);
+
+            if (0 == $quantity) {
+                break;
             }
         }
 
@@ -222,30 +249,104 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return;
         }
 
-        // Resolve quantity change
-        if (!$this->persistenceHelper->isChanged($item, 'quantity')) {
-            return;
-        }
-        [$old, $new] = $this->persistenceHelper->getChangeSet($item, 'quantity');
-        if (0 == $quantity = $new - $old) {
-            return;
-        }
-
         // TODO sort assignments ? (reverse for debit)
         // TODO Use packaging format
 
-        $return = $item->getShipment()->isReturn();
+        $shipment = $item->getShipment();
 
-        // Update assignments
-        foreach ($assignments as $assignment) {
-            if ($return) {
-                $quantity += $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+        if (!ShipmentStates::isStockableState($shipment)) {
+            throw new LogicException("Shipment must be in a stockable state.");
+        }
+
+        $return = $shipment->isReturn();
+        $quantity = 0;
+        $quantityCs = $this->persistenceHelper->getChangeSet($item, 'quantity');
+
+        // If shipment state changed
+        if (!empty($stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state'))) {
+            // Old quantity
+            $quantity = !empty($quantityCs) ? $quantityCs[0] : $item->getQuantity();
+
+            if (ShipmentStates::hasChangedFromPreparation($stateCs, true)) {
+                if ($return) {
+                    // Nothing to do
+                    return;
+                } else {
+                    // Debit locked quantity
+                    $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                        return $this->assignmentUpdater->updateLocked($assignment, -$quantity, true);
+                    };
+                }
+            } elseif (ShipmentStates::hasChangedToPreparation($stateCs, true)) {
+                if ($return) {
+                    // Credit shipped quantity
+                    $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                        return -$this->assignmentUpdater->updateShipped($assignment, +$quantity, true);
+                    };
+                } else {
+                    // Debit shipped quantity
+                    $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                        return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+                    };
+                }
             } else {
-                $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+                throw new LogicException("Unexpected shipment state change.");
             }
 
-            if (0 == $quantity) {
+            // Call on assignments
+            foreach ($assignments as $assignment) {
+                $quantity += $callable($assignment, $quantity);
+
+                if (0 == $quantity) {
+                    break;
+                }
+            }
+
+            // New quantity
+            $quantity = !empty($quantityCs) ? $quantityCs[1] : $item->getQuantity();
+        }
+
+        // If quantity change
+        elseif (!empty($quantityCs)) {
+            $quantity = $quantityCs[1] - $quantityCs[0];
+        }
+
+        // Abort if zero quantity changed
+        if (0 == $quantity) {
+            return;
+        }
+
+        // Update assignments
+        if (ShipmentStates::STATE_PREPARATION === $shipment->getState()) {
+            if ($return) {
+                // Nothing to do
                 return;
+            } else {
+                // Credit locked quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return -$this->assignmentUpdater->updateLocked($assignment, $quantity, true);
+                };
+            }
+        } else {
+            if ($return) {
+                // Debit shipped quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+                };
+            } else {
+                // Credit shipped quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+                };
+            }
+        }
+
+        // Call on assignments
+        foreach ($assignments as $assignment) {
+            $quantity += $callable($assignment, $quantity);
+
+            if (0 == $quantity) {
+                break;
             }
         }
 
@@ -284,13 +385,42 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         $return = $shipment->isReturn();
+        if ($this->persistenceHelper->isChanged($shipment, 'state')) {
+            $state = $this->persistenceHelper->getChangeSet($shipment, 'state')[0];
+        } else {
+            $state = $shipment->getState();
+        }
 
-        // Update assignments
-        foreach ($assignments as $assignment) {
+        if (ShipmentStates::STATE_PREPARATION === $state) {
             if ($return) {
-                $quantity -= $this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+                // Nothing to do
+                return;
             } else {
-                $quantity += $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+                // Debit locked quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return $this->assignmentUpdater->updateLocked($assignment, -$quantity, true);
+                };
+            }
+        } else {
+            if ($return) {
+                // Credit shipped quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+                };
+            } else {
+                // Debit shipped quantity
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+                };
+            }
+        }
+
+        // Call on assignments
+        foreach ($assignments as $assignment) {
+            $quantity += $callable($assignment, $quantity);
+
+            if (0 == $quantity) {
+                break;
             }
         }
 

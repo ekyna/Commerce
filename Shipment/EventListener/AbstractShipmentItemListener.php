@@ -82,23 +82,24 @@ abstract class AbstractShipmentItemListener
             // If shipment just did a stockable state transition
             if (
                 Model\ShipmentStates::hasChangedFromStockable($stateCs) ||
-                Model\ShipmentStates::hasChangedToStockable($stateCs)
+                Model\ShipmentStates::hasChangedToStockable($stateCs) ||
+                Model\ShipmentStates::hasChangedFromPreparation($stateCs, true) ||
+                Model\ShipmentStates::hasChangedToPreparation($stateCs, true)
             ) {
                 // Abort (done by the shipment listener)
                 return;
             }
         }
 
-        // If shipment is in a stockable state and quantity has changed
-        if (
-            Model\ShipmentStates::isStockableState($shipment->getState()) &&
-            $this->persistenceHelper->isChanged($item, 'quantity')
-        ) {
-            // Apply shipment item to stock units
-            $this->stockUnitAssigner->applyShipmentItem($item);
-
-            $this->scheduleShipmentContentChangeEvent($shipment);
+        // Abort if shipment is not in a stockable state
+        if (!Model\ShipmentStates::isStockableState($shipment->getState())) {
+            return;
         }
+
+        // Apply shipment item to stock units
+        $this->stockUnitAssigner->applyShipmentItem($item);
+
+        $this->scheduleShipmentContentChangeEvent($shipment);
     }
 
     /**

@@ -194,7 +194,7 @@ class OrderListener extends AbstractSaleListener
      *
      * @return bool
      */
-    public function handleReleasedChange(OrderInterface $order): bool
+    protected function handleReleasedChange(OrderInterface $order): bool
     {
         if ($this->persistenceHelper->isChanged($order, 'sample')) {
             if ($order->isReleased() && !$order->isSample()) {

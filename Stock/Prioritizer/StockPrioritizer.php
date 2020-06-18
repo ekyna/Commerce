@@ -9,10 +9,12 @@ use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
+use Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcherInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
-use Ekyna\Component\Commerce\Stock\Model as Stock;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 
 /**
@@ -48,6 +50,11 @@ class StockPrioritizer implements StockPrioritizerInterface
     protected $assignmentManager;
 
     /**
+     * @var StockAssignmentDispatcherInterface
+     */
+    protected $assignmentDispatcher;
+
+    /**
      * @var StockLoggerInterface
      */
     protected $logger;
@@ -56,12 +63,13 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * Constructor.
      *
-     * @param StockUnitResolverInterface      $unitResolver
-     * @param StockUnitAssignerInterface      $unitAssigner
-     * @param StockUnitManagerInterface       $unitManager
-     * @param StockUnitCacheInterface         $unitCache
-     * @param StockAssignmentManagerInterface $assignmentManager
-     * @param StockLoggerInterface            $logger
+     * @param StockUnitResolverInterface         $unitResolver
+     * @param StockUnitAssignerInterface         $unitAssigner
+     * @param StockUnitManagerInterface          $unitManager
+     * @param StockUnitCacheInterface            $unitCache
+     * @param StockAssignmentManagerInterface    $assignmentManager
+     * @param StockAssignmentDispatcherInterface $assignmentDispatcher
+     * @param StockLoggerInterface               $logger
      */
     public function __construct(
         StockUnitResolverInterface $unitResolver,
@@ -69,14 +77,16 @@ class StockPrioritizer implements StockPrioritizerInterface
         StockUnitManagerInterface $unitManager,
         StockUnitCacheInterface $unitCache,
         StockAssignmentManagerInterface $assignmentManager,
+        StockAssignmentDispatcherInterface $assignmentDispatcher,
         StockLoggerInterface $logger
     ) {
-        $this->unitResolver      = $unitResolver;
-        $this->unitAssigner      = $unitAssigner;
-        $this->unitManager       = $unitManager;
-        $this->unitCache         = $unitCache;
-        $this->assignmentManager = $assignmentManager;
-        $this->logger            = $logger;
+        $this->unitResolver         = $unitResolver;
+        $this->unitAssigner         = $unitAssigner;
+        $this->unitManager          = $unitManager;
+        $this->unitCache            = $unitCache;
+        $this->assignmentManager    = $assignmentManager;
+        $this->assignmentDispatcher = $assignmentDispatcher;
+        $this->logger               = $logger;
     }
 
     /**
@@ -112,7 +122,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             }
         }
 
-        if (!$item instanceof Stock\StockAssignmentsInterface) {
+        if (!$item instanceof StockAssignmentsInterface) {
             return false;
         }
 
@@ -167,7 +177,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             $changed |= $this->prioritizeSaleItem($child, $quantity ? $quantity * $child->getQuantity() : null, false);
         }
 
-        if (!$item instanceof Stock\StockAssignmentsInterface) {
+        if (!$item instanceof StockAssignmentsInterface) {
             return $changed;
         }
 
@@ -217,12 +227,12 @@ class StockPrioritizer implements StockPrioritizerInterface
     /**
      * Prioritize the stock assignment.
      *
-     * @param Stock\StockAssignmentInterface $assignment
-     * @param float                          $quantity
+     * @param Assignment $assignment
+     * @param float      $quantity
      *
      * @return bool Whether the assignment has been prioritized.
      */
-    protected function prioritizeAssignment(Stock\StockAssignmentInterface $assignment, float $quantity = null)
+    protected function prioritizeAssignment(Assignment $assignment, float $quantity = null)
     {
         if ($assignment->isFullyShipped() || $assignment->isFullyShippable()) {
             return false;
@@ -262,7 +272,10 @@ class StockPrioritizer implements StockPrioritizerInterface
                     }
 
                     // Move assignment to the source unit
-                    $diff -= $this->moveAssignment($a, $sourceUnit, min($qty, $diff));
+                    $diff -= $this->assignmentDispatcher->moveAssignment($a, $sourceUnit, min($qty, $diff));
+
+                    $this->unitManager->persistOrRemove($targetUnit);
+                    $this->unitManager->persistOrRemove($sourceUnit);
 
                     if (0 >= $diff) {
                         break;
@@ -272,9 +285,10 @@ class StockPrioritizer implements StockPrioritizerInterface
 
             // Move assignment to the target unit using reservable quantity first.
             $delta    = min($quantity, $targetUnit->getReservableQuantity());
-            $quantity -= $this->moveAssignment($assignment, $targetUnit, $delta);
+            $quantity -= $this->assignmentDispatcher->moveAssignment($assignment, $targetUnit, $delta);
 
-            // TODO Validate units ?
+            $this->unitManager->persistOrRemove($sourceUnit);
+            $this->unitManager->persistOrRemove($targetUnit);
 
             $changed = true;
             if (0 >= $quantity || $assignment->isFullyShippable()) {
@@ -283,97 +297,5 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         return $changed;
-    }
-
-    /**
-     * Move the given assignment to the given unit for the given sold quantity.
-     *
-     * @param Stock\StockAssignmentInterface $assignment
-     * @param Stock\StockUnitInterface       $targetUnit
-     * @param float                          $quantity
-     *
-     * @return float The quantity moved
-     */
-    protected function moveAssignment(
-        Stock\StockAssignmentInterface $assignment,
-        Stock\StockUnitInterface $targetUnit,
-        $quantity
-    ) {
-        /**
-         * TODO Refactor with:
-         * @see \Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcher::moveAssignments()
-         */
-
-        // Don't move shipped quantity
-        $quantity = min($quantity, $assignment->getSoldQuantity() - $assignment->getShippedQuantity());
-        if (0 >= $quantity) { // TODO Packaging format
-            return 0;
-        }
-
-        $sourceUnit = $assignment->getStockUnit();
-        $saleItem   = $assignment->getSaleItem();
-
-        // Debit source unit's sold quantity
-        $this->logger->unitSold($sourceUnit, -$quantity);
-        $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $quantity);
-
-        // Credit target unit
-        $this->logger->unitSold($targetUnit, $quantity);
-        $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $quantity);
-
-        // Merge assignment lookup
-        $merge = null;
-        foreach ($targetUnit->getStockAssignments() as $m) {
-            if ($m->getSaleItem() === $saleItem) {
-                $merge = $m;
-                break;
-            }
-        }
-
-        if ($quantity == $assignment->getSoldQuantity()) {
-            if (null !== $merge) {
-                // Credit quantity to mergeable assignment
-                $this->logger->assignmentSold($merge, $quantity);
-                $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
-                $this->assignmentManager->persist($merge);
-
-                // Debit quantity from source assignment
-                $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
-                $assignment->setSoldQuantity(0);
-                $this->assignmentManager->remove($assignment, true);
-            } else {
-                // Move source assignment to target unit
-                $this->logger->assignmentUnit($assignment, $targetUnit);
-                $assignment->setStockUnit($targetUnit);
-                $this->assignmentManager->persist($assignment);
-            }
-        } else {
-            // Debit quantity from source assignment
-            $this->logger->assignmentSold($assignment, -$quantity);
-            $assignment->setSoldQuantity($assignment->getSoldQuantity() - $quantity);
-            $this->assignmentManager->persist($assignment);
-
-            if (null !== $merge) {
-                // Credit quantity to mergeable assignment
-                $this->logger->assignmentSold($merge, $quantity);
-                $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
-                $this->assignmentManager->persist($merge);
-            } else {
-                // Credit quantity to new assignment
-                $create = $this->assignmentManager->create($saleItem, $targetUnit);
-                $this->logger->assignmentSold($create, $quantity, false);
-                $create
-                    ->setSoldQuantity($quantity)
-                    ->setSaleItem($saleItem)
-                    ->setStockUnit($targetUnit);
-
-                $this->assignmentManager->persist($create);
-            }
-        }
-
-        $this->unitManager->persistOrRemove($sourceUnit); // TODO Without event scheduling ?
-        $this->unitManager->persistOrRemove($targetUnit); // TODO Without event scheduling ?
-
-        return $quantity;
     }
 }

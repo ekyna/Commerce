@@ -363,7 +363,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         Shipment\RemainingList $list,
         array $shipments
     ) {
-
         // Not for compound item with only public children
         if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
             $quantity = max(

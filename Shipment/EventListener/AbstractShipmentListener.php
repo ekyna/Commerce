@@ -171,6 +171,22 @@ abstract class AbstractShipmentListener
                         $this->stockUnitAssigner->detachShipmentItem($item);
                     }
                 }
+            } // Else if shipment state has changed from preparation to stockable (or vice versa)
+            elseif (
+                ShipmentStates::hasChangedFromPreparation($stateCs, true)
+                || ShipmentStates::hasChangedToPreparation($stateCs, true)
+            ) {
+                // For each shipment item
+                foreach ($shipment->getItems() as $item) {
+                    // If not scheduled for update
+                    if (
+                        !$this->persistenceHelper->isScheduledForInsert($item)
+                        && !$this->persistenceHelper->isScheduledForRemove($item)
+                    ) {
+                        // Debit sale item stock units shipped quantity through assignments
+                        $this->stockUnitAssigner->applyShipmentItem($item);
+                    }
+                }
             }
         }
 
@@ -189,6 +205,8 @@ abstract class AbstractShipmentListener
     public function onDelete(ResourceEventInterface $event)
     {
         $shipment = $this->getShipmentFromEvent($event);
+
+        $this->preventForbiddenChange($shipment);
 
         $sale = $this->getSaleFromShipment($shipment);
 
@@ -289,8 +307,8 @@ abstract class AbstractShipmentListener
     {
         $changed = false;
 
-        $state = $shipment->getState();
-        $shippedAt = $shipment->getShippedAt();
+        $state       = $shipment->getState();
+        $shippedAt   = $shipment->getShippedAt();
         $completedAt = $shipment->getCompletedAt();
 
         if (in_array($state, [ShipmentStates::STATE_SHIPPED, ShipmentStates::STATE_COMPLETED], true)) {
@@ -327,7 +345,7 @@ abstract class AbstractShipmentListener
     protected function preventForbiddenChange(ShipmentInterface $shipment)
     {
         if ($this->persistenceHelper->isChanged($shipment, 'return')) {
-            list($old, $new) = $this->persistenceHelper->getChangeSet($shipment, 'return');
+            [$old, $new] = $this->persistenceHelper->getChangeSet($shipment, 'return');
             if ($old != $new) {
                 throw new RuntimeException("Changing the shipment type is not yet supported.");
             }

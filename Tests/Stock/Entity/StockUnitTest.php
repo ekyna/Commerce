@@ -140,6 +140,16 @@ class StockUnitTest extends TestCase
         $this->assertSame(10., $unit->getShippedQuantity());
     }
 
+    public function test_lockedQuantity(): void
+    {
+        $unit = new StockUnit();
+
+        $this->assertSame(0., $unit->getLockedQuantity());
+
+        $unit->setLockedQuantity(10);
+        $this->assertSame(10., $unit->getLockedQuantity());
+    }
+
     public function test_netPriceQuantity(): void
     {
         $unit = new StockUnit();
@@ -287,6 +297,37 @@ class StockUnitTest extends TestCase
         $unit->setAdjustedQuantity(10);
         $unit->setSoldQuantity(15);
         $this->assertSame(5., $unit->getReservableQuantity());
+    }
+
+    public function test_getReleasableQuantity(): void
+    {
+        $unit = new StockUnit();
+        $this->assertSame(0., $unit->getReleasableQuantity());
+
+        $unit = new StockUnit();
+        $unit->setSoldQuantity(10);
+        $this->assertSame(10., $unit->getReleasableQuantity());
+
+        $unit = new StockUnit();
+        $unit->setSoldQuantity(10);
+        $unit->setShippedQuantity(10);
+        $this->assertSame(0., $unit->getReleasableQuantity());
+
+        $unit = new StockUnit();
+        $unit->setSoldQuantity(10);
+        $unit->setShippedQuantity(5);
+        $this->assertSame(5., $unit->getReleasableQuantity());
+
+        $unit = new StockUnit();
+        $unit->setSoldQuantity(10);
+        $unit->setLockedQuantity(5);
+        $this->assertSame(5., $unit->getReleasableQuantity());
+
+        $unit = new StockUnit();
+        $unit->setSoldQuantity(10);
+        $unit->setShippedQuantity(4);
+        $unit->setLockedQuantity(4);
+        $this->assertSame(2., $unit->getReleasableQuantity());
     }
 
     public function test_getShippableQuantity(): void

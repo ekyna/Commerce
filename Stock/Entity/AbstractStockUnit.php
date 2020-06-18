@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
@@ -44,7 +45,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * The estimated date of arrival (for ordered quantity).
      *
-     * @var \DateTime
+     * @var DateTime
      */
     protected $estimatedDateOfArrival;
 
@@ -96,12 +97,19 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     protected $shippedQuantity;
 
     /**
-     * @var \DateTime
+     * The quantity locked through preparations.
+     *
+     * @var float
+     */
+    protected $lockedQuantity;
+
+    /**
+     * @var DateTime
      */
     protected $createdAt;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $closedAt;
 
@@ -130,7 +138,8 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         $this->adjustedQuantity = 0.;
         $this->soldQuantity = 0.;
         $this->shippedQuantity = 0.;
-        $this->createdAt = new \DateTime();
+        $this->lockedQuantity = 0.;
+        $this->createdAt = new DateTime();
         $this->stockAssignments = new ArrayCollection();
         $this->stockAdjustments = new ArrayCollection();
     }
@@ -263,7 +272,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getEstimatedDateOfArrival(): ?\DateTime
+    public function getEstimatedDateOfArrival(): ?DateTime
     {
         return $this->estimatedDateOfArrival;
     }
@@ -271,7 +280,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setEstimatedDateOfArrival(\DateTime $date = null): Model\StockUnitInterface
+    public function setEstimatedDateOfArrival(DateTime $date = null): Model\StockUnitInterface
     {
         $this->estimatedDateOfArrival = $date;
 
@@ -407,7 +416,25 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getCreatedAt(): \DateTime
+    public function getLockedQuantity(): float
+    {
+        return $this->lockedQuantity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setLockedQuantity(float $quantity): Model\StockUnitInterface
+    {
+        $this->lockedQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
     }
@@ -415,7 +442,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setCreatedAt(\DateTime $date): Model\StockUnitInterface
+    public function setCreatedAt(DateTime $date): Model\StockUnitInterface
     {
         $this->createdAt = $date;
 
@@ -425,7 +452,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getClosedAt(): ?\DateTime
+    public function getClosedAt(): ?DateTime
     {
         return $this->closedAt;
     }
@@ -433,7 +460,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setClosedAt(\DateTime $date = null): Model\StockUnitInterface
+    public function setClosedAt(DateTime $date = null): Model\StockUnitInterface
     {
         $this->closedAt = $date;
 
@@ -530,10 +557,10 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function isEmpty(): bool
     {
         return null === $this->supplierOrderItem
-            && 0 == $this->stockAssignments->count()
+            && $this->stockAssignments->isEmpty()
             && 0 == $this->orderedQuantity
-            && 0 == $this->soldQuantity
-            && 0 == $this->adjustedQuantity;
+            && 0 == $this->adjustedQuantity
+            && 0 == $this->soldQuantity;
     }
 
     /**
@@ -553,9 +580,15 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
             return INF;
         }
 
-        $result = $this->orderedQuantity + $this->adjustedQuantity - $this->soldQuantity;
+        return max($this->orderedQuantity + $this->adjustedQuantity - $this->soldQuantity, 0);
+    }
 
-        return max($result, 0);
+    /**
+     * @inheritDoc
+     */
+    public function getReleasableQuantity(): float
+    {
+        return max($this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity, 0);
     }
 
     /**
@@ -563,9 +596,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      */
     public function getShippableQuantity(): float
     {
-        $result = $this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity;
-
-        return max($result, 0);
+        return max($this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity - $this->lockedQuantity, 0);
     }
 
     /**
@@ -607,7 +638,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function getExchangeDate(): ?\DateTime
+    public function getExchangeDate(): ?DateTime
     {
         if ($this->supplierOrderItem) {
             return $this->supplierOrderItem->getOrder()->getExchangeDate();
@@ -644,7 +675,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     /**
      * @inheritDoc
      */
-    public function setExchangeDate(\DateTime $date = null): ExchangeSubjectInterface
+    public function setExchangeDate(DateTime $date = null): ExchangeSubjectInterface
     {
         throw new LogicException("Set exchange rate on associated supplier order.");
     }

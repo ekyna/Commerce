@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
 
 /**
  * Interface StockAssignmentUpdaterInterface
@@ -14,22 +14,33 @@ interface StockAssignmentUpdaterInterface
     /**
      * Updates the assignment's sold quantity.
      *
-     * @param StockAssignmentInterface $assignment
-     * @param float                    $quantity
-     * @param bool                     $relative
+     * @param Assignment $assignment
+     * @param float      $quantity
+     * @param bool       $relative
      *
-     * @return float The resulting updated quantity (relative or absolute).
+     * @return float The resulting updated quantity (relative).
      */
-    public function updateSold(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float;
+    public function updateSold(Assignment $assignment, float $quantity, bool $relative = true): float;
 
     /**
      * Updates the assignment's shipped quantity.
      *
-     * @param StockAssignmentInterface $assignment
-     * @param float                    $quantity
-     * @param bool                     $relative
+     * @param Assignment $assignment
+     * @param float      $quantity
+     * @param bool       $relative
      *
-     * @return float The resulting updated quantity (relative or absolute).
+     * @return float The resulting updated quantity (relative).
      */
-    public function updateShipped(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float;
+    public function updateShipped(Assignment $assignment, float $quantity, bool $relative = true): float;
+
+    /**
+     * Updates the assignment's locked quantity.
+     *
+     * @param Assignment $assignment
+     * @param float      $quantity
+     * @param bool       $relative
+     *
+     * @return float The resulting updated quantity (relative).
+     */
+    public function updateLocked(Assignment $assignment, float $quantity, bool $relative = true): float;
 }

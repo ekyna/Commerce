@@ -22,7 +22,7 @@ class StockAssignmentCache implements StockAssignmentCacheInterface
     /**
      * @inheritDoc
      */
-    public function remove(StockAssignmentInterface $assignment): void
+    public function addRemoved(StockAssignmentInterface $assignment): void
     {
         $key = $this->buildKey($assignment->getStockUnit(), $assignment->getSaleItem());
 
@@ -74,6 +74,6 @@ class StockAssignmentCache implements StockAssignmentCacheInterface
      */
     private function buildKey(StockUnitInterface $unit, SaleItemInterface $item): ?string
     {
-        return sprintf("%s-%s", $unit->getId(), $item->getId());
+        return sprintf("%s-%s", spl_object_hash($unit), spl_object_hash($item));
     }
 }

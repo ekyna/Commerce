@@ -28,7 +28,7 @@ interface StockAssignmentDispatcherInterface
     public function moveAssignments(
         StockUnitInterface $sourceUnit,
         StockUnitInterface $targetUnit,
-        $quantity,
-        $direction = SORT_DESC
+        float $quantity,
+        int $direction = SORT_DESC
     ): float;
 }

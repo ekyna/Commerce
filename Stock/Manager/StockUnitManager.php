@@ -50,7 +50,7 @@ class StockUnitManager implements StockUnitManagerInterface
     /**
      * @inheritdoc
      */
-    public function persistOrRemove(StockUnitInterface $stockUnit)
+    public function persistOrRemove(StockUnitInterface $stockUnit): void
     {
         // Resolve the stock unit's state
         $this->stateResolver->resolve($stockUnit);

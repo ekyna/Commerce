@@ -3,7 +3,7 @@
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
 
 /**
  * Class StockAssignmentUpdater
@@ -38,87 +38,72 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function updateSold(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float
+    public function updateSold(Assignment $assignment, float $quantity, bool $relative = true): float
     {
         // TODO use Packaging format
 
-        $stockUnit = $assignment->getStockUnit();
+        $unit = $assignment->getStockUnit();
 
         if (!$relative) {
+            // Turn into relative quantity
             $quantity -= $assignment->getSoldQuantity();
         }
 
         // Positive update
         if (0 < $quantity) {
             // Sold quantity can't be greater than stock unit ordered + adjusted
-            if ($quantity > $limit = $stockUnit->getReservableQuantity()) {
-                $quantity = $limit;
-            }
-        } // Negative update
+            $quantity = min($quantity, $unit->getReservableQuantity());
+        }
+        // Negative update
         elseif (0 > $quantity) {
             // Sold quantity can't be lower than shipped quantity or zero
-            $limit = max(
+            $quantity = max(
+                $quantity,
                 $assignment->getShippedQuantity() - $assignment->getSoldQuantity(),
-                $stockUnit->getShippedQuantity() - $stockUnit->getSoldQuantity()
+                $unit->getShippedQuantity() - $unit->getSoldQuantity()
             );
-            if ($quantity < $limit) {
-                $quantity = $limit;
-            }
         }
+
         // No update
         if (0 == $quantity) {
             return 0.;
         }
 
-        // Assignment update
-        $result = $assignment->getSoldQuantity() + $quantity;
-        $assignment->setSoldQuantity($result);
-        if (0 == $result) {
-            $saleItem = $assignment->getSaleItem();
-
-            // Don't remove if sale item has only one assignment
-            if (1 >= count($saleItem->getStockAssignments())) {
-                $this->assignmentManager->persist($assignment);
-            } else {
-                $this->assignmentManager->remove($assignment, true);
-            }
-        } else {
-            $this->assignmentManager->persist($assignment);
-        }
-
         // Stock unit update
-        $this->stockUnitUpdater->updateSold($stockUnit, $quantity, true);
+        $this->stockUnitUpdater->updateSold($unit, $quantity, true);
+
+        // Assignment update
+        $assignment->setSoldQuantity($assignment->getSoldQuantity() + $quantity);
+        $this->assignmentManager->persist($assignment);
 
         return $quantity;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function updateShipped(StockAssignmentInterface $assignment, float $quantity, bool $relative = true): float
+    public function updateShipped(Assignment $assignment, float $quantity, bool $relative = true): float
     {
         // TODO use Packaging format
 
-        $stockUnit = $assignment->getStockUnit();
+        $unit = $assignment->getStockUnit();
 
         if (!$relative) {
+            // Turn into relative quantity
             $quantity -= $assignment->getShippedQuantity();
         }
 
         // Positive update
         if (0 < $quantity) {
             // Shipped quantity can't be greater than received or sold quantity
-            if ($quantity > $limit = $assignment->getShippableQuantity()) {
-                $quantity = $limit;
-            }
-        } // Negative update
+            $quantity = min($quantity, $assignment->getShippableQuantity());
+        }
+        // Negative update
         elseif (0 > $quantity) {
             // Shipped quantity can't be lower than zero
-            if ($quantity < $limit = max(-$assignment->getShippedQuantity(), -$stockUnit->getShippedQuantity())) {
-                $quantity = $limit;
-            }
+            $quantity = max($quantity, -$assignment->getShippedQuantity(), -$unit->getShippedQuantity());
         }
         // No update
         if (0 == $quantity) {
@@ -126,10 +111,49 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateShipped($stockUnit, $quantity, true);
+        $this->stockUnitUpdater->updateShipped($unit, $quantity, true);
 
         // Assignment update
         $assignment->setShippedQuantity($assignment->getShippedQuantity() + $quantity);
+        $this->assignmentManager->persist($assignment);
+
+        return $quantity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function updateLocked(Assignment $assignment, float $quantity, bool $relative = true): float
+    {
+        // TODO use Packaging format
+
+        $unit = $assignment->getStockUnit();
+
+        if (!$relative) {
+            // Turn into relative quantity
+            $quantity -= $assignment->getLockedQuantity();
+        }
+
+        // Positive update
+        if (0 < $quantity) {
+            // Shipped quantity can't be greater than received or sold quantity
+            $quantity = min($quantity, $assignment->getShippableQuantity());
+        }
+        // Negative update
+        elseif (0 > $quantity) {
+            // Shipped quantity can't be lower than zero
+            $quantity = max($quantity, -$assignment->getLockedQuantity(), -$unit->getLockedQuantity());
+        }
+        // No update
+        if (0 == $quantity) {
+            return 0.;
+        }
+
+        // Stock unit update
+        $this->stockUnitUpdater->updateLocked($unit, $quantity, true);
+
+        // Assignment update
+        $assignment->setLockedQuantity($assignment->getLockedQuantity() + $quantity);
         $this->assignmentManager->persist($assignment);
 
         return $quantity;

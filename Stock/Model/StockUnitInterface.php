@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Model;
 
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
@@ -110,18 +111,18 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, E
     /**
      * Returns the estimated date of arrival.
      *
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getEstimatedDateOfArrival(): ?\DateTime;
+    public function getEstimatedDateOfArrival(): ?DateTime;
 
     /**
      * Sets the estimated date of arrival.
      *
-     * @param \DateTime|null $date
+     * @param DateTime|null $date
      *
      * @return $this|StockUnitInterface
      */
-    public function setEstimatedDateOfArrival(\DateTime $date = null);
+    public function setEstimatedDateOfArrival(DateTime $date = null);
 
     /**
      * Returns the net price (default currency).
@@ -236,36 +237,52 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, E
     public function setShippedQuantity(float $quantity): StockUnitInterface;
 
     /**
+     * Returns the locked quantity.
+     *
+     * @return float
+     */
+    public function getLockedQuantity(): float;
+
+    /**
+     * Sets the locked quantity.
+     *
+     * @param float $quantity
+     *
+     * @return $this|StockUnitInterface
+     */
+    public function setLockedQuantity(float $quantity): StockUnitInterface;
+
+    /**
      * Returns the "created at" date.
      *
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getCreatedAt(): \DateTime;
+    public function getCreatedAt(): DateTime;
 
     /**
      * Sets the "created at" date.
      *
-     * @param \DateTime $date
+     * @param DateTime $date
      *
      * @return $this|StockUnitInterface
      */
-    public function setCreatedAt(\DateTime $date): StockUnitInterface;
+    public function setCreatedAt(DateTime $date): StockUnitInterface;
 
     /**
      * Returns the "closed at" date time.
      *
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getClosedAt(): ?\DateTime;
+    public function getClosedAt(): ?DateTime;
 
     /**
      * Sets the "closed at" at date time.
      *
-     * @param \DateTime|null $date
+     * @param DateTime|null $date
      *
      * @return $this|StockUnitInterface
      */
-    public function setClosedAt(\DateTime $date = null): StockUnitInterface;
+    public function setClosedAt(DateTime $date = null): StockUnitInterface;
 
     /**
      * Returns whether the stock unit has the given stock assignment.
@@ -357,6 +374,13 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, E
     public function getReservableQuantity(): float;
 
     /**
+     * Returns the releasable stock quantity.
+     *
+     * @return float
+     */
+    public function getReleasableQuantity(): float;
+
+    /**
      * Returns the shippable stock quantity.
      *
      * @return float
@@ -369,5 +393,4 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, E
      * @return SupplierOrderInterface|null
      */
     public function getSupplierOrder(): ?SupplierOrderInterface;
-
 }

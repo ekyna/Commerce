@@ -16,5 +16,5 @@ interface StockUnitManagerInterface
      *
      * @param StockUnitInterface $stockUnit
      */
-    public function persistOrRemove(StockUnitInterface $stockUnit);
+    public function persistOrRemove(StockUnitInterface $stockUnit): void;
 }

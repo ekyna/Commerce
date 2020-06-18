@@ -33,7 +33,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
         FormatterFactory $formatterFactory,
         CurrencyConverterInterface $currencyConverter
     ) {
-        $this->formatterFactory = $formatterFactory;
+        $this->formatterFactory  = $formatterFactory;
         $this->currencyConverter = $currencyConverter;
     }
 
@@ -65,7 +65,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
                 }
             }
 
-            $default = $this->currencyConverter->getDefaultCurrency();
+            $default  = $this->currencyConverter->getDefaultCurrency();
             $currency = ($c = $unit->getCurrency()) ? $c->getCode() : $default;
 
             $price = $formatter->currency($unit->getNetPrice(), $default);
@@ -84,6 +84,7 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
                 'adjusted'    => $formatter->number($unit->getAdjustedQuantity()),
                 'sold'        => $formatter->number($unit->getSoldQuantity()),
                 'shipped'     => $formatter->number($unit->getShippedQuantity()),
+                'locked'      => $formatter->number($unit->getLockedQuantity()),
                 'eda'         => $eda,
                 'net_price'   => $price,
                 'adjustments' => $adjustments,

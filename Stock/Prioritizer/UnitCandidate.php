@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Combination;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
@@ -27,18 +26,11 @@ class UnitCandidate
         $releasable = 0;
         $map = [];
         foreach ($unit->getStockAssignments() as $a) {
-            // Ignore assignments from the same sale (Should be impossible)
-            /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface $s */
             if ($sale === $s = $a->getSaleItem()->getSale()) {
                 continue;
             }
 
-            // Ignore assignments from preparation sales
-            if ($s->getShipmentState() === ShipmentStates::STATE_PREPARATION) {
-                continue;
-            }
-
-            if (0 < $d = $a->getSoldQuantity() - $a->getShippedQuantity()) {
+            if (0 < $d = $a->getReleasableQuantity()) {
                 $releasable += $d;
                 $map[$a->getId()] = $d;
             }
@@ -91,6 +83,7 @@ class UnitCandidate
      * @var float
      */
     private $combinationQty;
+
 
     /**
      * Returns the best assignments combination for the given quantity.

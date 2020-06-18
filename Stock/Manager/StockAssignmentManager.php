@@ -4,6 +4,8 @@ namespace Ekyna\Component\Commerce\Stock\Manager;
 
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Stock\Cache\StockAssignmentCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -57,7 +59,7 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
     public function persist(StockAssignmentInterface $assignment): void
     {
         // Do not persist
-        if (is_null($assignment->getId()) && $assignment->isEmpty()) {
+        if ($assignment->isEmpty()) {
             $this->remove($assignment);
 
             return;
@@ -71,13 +73,20 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
      */
     public function remove(StockAssignmentInterface $assignment, bool $hard = false): void
     {
-        $assignment
-            ->setSoldQuantity(0)
-            ->setShippedQuantity(0);
+        if (!$assignment->isEmpty()) {
+            throw new LogicException("Assignment must be empty to be removed.");
+        }
 
-        if ($assignment->getId() && !$hard) {
-            $this->assignmentCache->remove($assignment);
-            return;
+        if (!$hard) {
+            if ($this->isRemovalPrevented($assignment)) {
+                return;
+            }
+
+            if (!is_null($assignment->getId())) {
+                $this->assignmentCache->addRemoved($assignment);
+
+                return;
+            }
         }
 
         $assignment
@@ -85,6 +94,30 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
             ->setStockUnit(null);
 
         $this->persistenceHelper->remove($assignment, false);
+    }
+
+    /**
+     * Returns whether the assignment should not be removed.
+     *
+     * @param StockAssignmentInterface $assignment
+     *
+     * @return bool
+     */
+    private function isRemovalPrevented(StockAssignmentInterface $assignment): bool
+    {
+        if (!$item = $assignment->getSaleItem()) {
+            return false;
+        }
+
+        if (!$sale = $item->getSale()) {
+            return false;
+        }
+
+        if (!OrderStates::isStockableState($sale->getState())) {
+            return false;
+        }
+
+        return 1 >= $item->getStockAssignments()->count();
     }
 
     /**

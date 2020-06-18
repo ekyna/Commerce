@@ -24,13 +24,28 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @var float
      */
-    protected $soldQuantity = 0;
+    protected $soldQuantity;
 
     /**
      * @var float
      */
-    protected $shippedQuantity = 0;
+    protected $shippedQuantity;
 
+    /**
+     * @var float
+     */
+    protected $lockedQuantity;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->soldQuantity = 0.;
+        $this->shippedQuantity = 0.;
+        $this->lockedQuantity = 0.;
+    }
 
     /**
      * @inheritdoc
@@ -106,16 +121,47 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
+    public function getLockedQuantity(): float
+    {
+        return $this->lockedQuantity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLockedQuantity(float $quantity): Stock\StockAssignmentInterface
+    {
+        $this->lockedQuantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getShippableQuantity(): float
     {
         if (!$this->stockUnit) {
             return 0;
         }
 
-        $quantity = $this->soldQuantity - $this->shippedQuantity;
-        if (0 > $quantity) $quantity = 0;
+        return min(
+            max(0, $this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity),
+            $this->stockUnit->getShippableQuantity()
+        );
+    }
 
-        return min($quantity, $this->stockUnit->getShippableQuantity());
+    /**
+     * @inheritdoc
+     */
+    public function getReleasableQuantity(): float
+    {
+        if (!$unit = $this->stockUnit) {
+            return 0.;
+        }
+
+        // Sold - Shipped - Locked
+        return max(0, $this->soldQuantity - $this->shippedQuantity - $this->lockedQuantity);
     }
 
     /**
@@ -123,6 +169,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
      */
     public function isFullyShipped(): bool
     {
+        // TODO Use packaging format
         return 0 === bccomp($this->soldQuantity, $this->shippedQuantity, 5);
     }
 
@@ -131,8 +178,8 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
      */
     public function isFullyShippable(): bool
     {
-        //return $this->getShippableQuantity() >= $this->soldQuantity - $this->shippedQuantity;
-        return 0 <= bccomp($this->getShippableQuantity(), $this->soldQuantity - $this->shippedQuantity, 5);
+        // TODO Use packaging format
+        return 0 <= bccomp($this->getShippableQuantity() + $this->lockedQuantity, $this->soldQuantity - $this->shippedQuantity, 5);
     }
 
     /**
@@ -141,6 +188,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     public function isEmpty(): bool
     {
         return 0 == $this->soldQuantity
-            && 0 == $this->shippedQuantity;
+            && 0 == $this->shippedQuantity
+            && 0 == $this->lockedQuantity;
     }
 }

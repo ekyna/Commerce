@@ -238,7 +238,7 @@ class StockAssignmentUpdaterTest extends StockTestCase
             'sold' => 5,
         ]);
 
-        $this->assertAssignmentWillBeDeleted($assignment);
+        $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, -5);
 
         $return = $this->updater->updateSold($assignment, -5, true);
@@ -260,7 +260,7 @@ class StockAssignmentUpdaterTest extends StockTestCase
             'sold' => 5,
         ]);
 
-        $this->assertAssignmentWillBeDeleted($assignment);
+        $this->assertAssignmentWillBePersisted($assignment);
         $this->assertStockUnitSoldQuantityWillBeUpdated($unit, -5);
 
         $return = $this->updater->updateSold($assignment, 0, false);
@@ -470,11 +470,6 @@ class StockAssignmentUpdaterTest extends StockTestCase
             ->getStockAssignmentManagerMock()
             ->expects($this->never())
             ->method('persist');
-
-        $this
-            ->getStockAssignmentManagerMock()
-            ->expects($this->never())
-            ->method('persist');
     }
 
     /**
@@ -485,24 +480,10 @@ class StockAssignmentUpdaterTest extends StockTestCase
     private function assertAssignmentWillBePersisted(StockAssignmentInterface $assignment): void
     {
         $this
-            ->getPersistenceHelperMock()
+            ->getStockAssignmentManagerMock()
             ->expects($this->once())
-            ->method('persistAndRecompute')
-            ->with($assignment, false);
-    }
-
-    /**
-     * Asserts that the assignment will be deleted.
-     *
-     * @param StockAssignmentInterface $assignment
-     */
-    private function assertAssignmentWillBeDeleted(StockAssignmentInterface $assignment): void
-    {
-        $this
-            ->getPersistenceHelperMock()
-            ->expects($this->once())
-            ->method('remove')
-            ->with($assignment, false);
+            ->method('persist')
+            ->with($assignment);
     }
 
     /**

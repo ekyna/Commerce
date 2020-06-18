@@ -21,7 +21,7 @@ class StockAssignmentCacheTest extends StockTestCase
 
         $assignment = Fixture::stockAssignment(['unit' => [], 'item' => []]);
 
-        $cache->remove($assignment);
+        $cache->addRemoved($assignment);
 
         $this->assertRemovedCacheLength($cache, 1);
     }
@@ -35,11 +35,11 @@ class StockAssignmentCacheTest extends StockTestCase
 
         $cache = $this->createStockAssignmentCache();
 
-        $cache->remove(Fixture::stockAssignment(['unit' => [], 'item' => []]));
-        $cache->remove(Fixture::stockAssignment(['unit' => [], 'item' => []]));
-        $cache->remove($expected);
-        $cache->remove(Fixture::stockAssignment(['unit' => [], 'item' => []]));
-        $cache->remove(Fixture::stockAssignment(['unit' => [], 'item' => []]));
+        $cache->addRemoved(Fixture::stockAssignment(['unit' => [], 'item' => []]));
+        $cache->addRemoved(Fixture::stockAssignment(['unit' => [], 'item' => []]));
+        $cache->addRemoved($expected);
+        $cache->addRemoved(Fixture::stockAssignment(['unit' => [], 'item' => []]));
+        $cache->addRemoved(Fixture::stockAssignment(['unit' => [], 'item' => []]));
 
         $this->assertSame($expected, $cache->findRemoved($unit, $item));
     }
@@ -86,7 +86,7 @@ class StockAssignmentCacheTest extends StockTestCase
         $cache = new StockAssignmentCache();
 
         foreach ($removedAssignments as $assignment) {
-            $cache->remove($assignment);
+            $cache->addRemoved($assignment);
         }
 
         return $cache;

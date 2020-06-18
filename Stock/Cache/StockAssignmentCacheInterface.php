@@ -18,7 +18,7 @@ interface StockAssignmentCacheInterface
      *
      * @param StockAssignmentInterface $assignment
      */
-    public function remove(StockAssignmentInterface $assignment): void;
+    public function addRemoved(StockAssignmentInterface $assignment): void;
 
     /**
      * Finds a stock assignment by stock unit and sale item.

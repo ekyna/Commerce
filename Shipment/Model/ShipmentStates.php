@@ -12,8 +12,8 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 final class ShipmentStates
 {
     // Common
-    const STATE_NEW         = 'new';
-    const STATE_CANCELED    = 'canceled';
+    const STATE_NEW      = 'new';
+    const STATE_CANCELED = 'canceled';
 
     // Shipment
     const STATE_PREPARATION = 'preparation';
@@ -21,13 +21,13 @@ final class ShipmentStates
     const STATE_SHIPPED     = 'shipped';
 
     // Return
-    const STATE_PENDING     = 'pending';
-    const STATE_RETURNED    = 'returned';
+    const STATE_PENDING  = 'pending';
+    const STATE_RETURNED = 'returned';
 
     // For sale
-    const STATE_NONE        = 'none';
-    const STATE_PARTIAL     = 'partial';
-    const STATE_COMPLETED   = 'completed';
+    const STATE_NONE      = 'none';
+    const STATE_PARTIAL   = 'partial';
+    const STATE_COMPLETED = 'completed';
 
 
     /**
@@ -155,9 +155,7 @@ final class ShipmentStates
      */
     public static function hasChangedToDeletable(array $cs): bool
     {
-        return self::assertValidChangeSet($cs)
-            && !self::isDeletableState($cs[0])
-            && self::isDeletableState($cs[1]);
+        return self::hasChangedTo($cs, self::getDeletableStates());
     }
 
     /**
@@ -170,9 +168,7 @@ final class ShipmentStates
      */
     public static function hasChangedFromDeletable(array $cs): bool
     {
-        return self::assertValidChangeSet($cs)
-            && self::isDeletableState($cs[0])
-            && !self::isDeletableState($cs[1]);
+        return self::hasChangedFrom($cs, self::getDeletableStates());
     }
 
     /**
@@ -183,6 +179,7 @@ final class ShipmentStates
     public static function getStockableStates(): array
     {
         return [
+            self::STATE_PREPARATION,
             self::STATE_READY,
             self::STATE_SHIPPED,
             self::STATE_RETURNED,
@@ -216,9 +213,7 @@ final class ShipmentStates
      */
     public static function hasChangedToStockable(array $cs): bool
     {
-        return self::assertValidChangeSet($cs)
-            && !self::isStockableState($cs[0])
-            && self::isStockableState($cs[1]);
+        return self::hasChangedTo($cs, self::getStockableStates());
     }
 
     /**
@@ -231,9 +226,83 @@ final class ShipmentStates
      */
     public static function hasChangedFromStockable(array $cs): bool
     {
+        return self::hasChangedFrom($cs, self::getStockableStates());
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from a non preparation state to the preparation state.
+     *
+     * @param array $cs            The persistence change set
+     * @param bool  $fromStockable Whether to check if it changed from a stockable state
+     *
+     * @return bool
+     */
+    public static function hasChangedToPreparation(array $cs, bool $fromStockable = false): bool
+    {
+        if (self::hasChangedTo($cs, [self::STATE_PREPARATION])) {
+            if ($fromStockable) {
+                return self::isStockableState($cs[0]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from the preparation state to a non preparation state.
+     *
+     * @param array $cs          The persistence change set
+     * @param bool  $toStockable Whether to check if it changed to a stockable state
+     *
+     * @return bool
+     */
+    public static function hasChangedFromPreparation(array $cs, bool $toStockable = false): bool
+    {
+        if (self::hasChangedFrom($cs, [self::STATE_PREPARATION])) {
+            if ($toStockable) {
+                return self::isStockableState($cs[1]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * to any of the given states, from any other state.
+     *
+     * @param array $cs     The persistence change set
+     * @param array $states The states to check
+     *
+     * @return bool
+     */
+    private static function hasChangedTo(array $cs, array $states): bool
+    {
         return self::assertValidChangeSet($cs)
-            && self::isStockableState($cs[0])
-            && !self::isStockableState($cs[1]);
+            && !in_array($cs[0], $states, true)
+            && in_array($cs[1], $states, true);
+    }
+
+    /**
+     * Returns whether or not the state has changed
+     * from any of the given states, to any other states.
+     *
+     * @param array $cs     The persistence change set
+     * @param array $states The states to check
+     *
+     * @return bool
+     */
+    private static function hasChangedFrom(array $cs, array $states): bool
+    {
+        return self::assertValidChangeSet($cs)
+            && in_array($cs[0], $states, true)
+            && !in_array($cs[1], $states, true);
     }
 
     /**
@@ -268,15 +337,15 @@ final class ShipmentStates
     private static function assertValidChangeSet(array $cs): bool
     {
         if (
-            array_key_exists(0, $cs) &&
-            array_key_exists(1, $cs) &&
-            (is_null($cs[0]) || self::isValidState($cs[0])) &&
-            (is_null($cs[1]) || self::isValidState($cs[1]))
+            array_key_exists(0, $cs)
+            && array_key_exists(1, $cs)
+            && (is_null($cs[0]) || self::isValidState($cs[0]))
+            && (is_null($cs[1]) || self::isValidState($cs[1]))
         ) {
             return true;
         }
 
-        throw new InvalidArgumentException("Unexpected order state change set.");
+        throw new InvalidArgumentException("Unexpected shipment state change set.");
     }
 
     /**

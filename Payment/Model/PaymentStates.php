@@ -263,7 +263,7 @@ final class PaymentStates
             return true;
         }
 
-        throw new InvalidArgumentException("Unexpected order state change set.");
+        throw new InvalidArgumentException("Unexpected payment state change set.");
     }
 
     /**

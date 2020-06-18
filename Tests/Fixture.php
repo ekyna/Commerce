@@ -243,7 +243,6 @@ class Fixture
      *     'sources'  => [],
      *     'targets'  => [],
      *     'taxes'    => [],
-     *     'notices'  => [],
      *     'priority' => 0,
      * ]
      *
@@ -270,7 +269,6 @@ class Fixture
             'sources'  => [],
             'targets'  => [],
             'taxes'    => [],
-            'notices'  => [],
             'priority' => 0,
         ], $data);
 
@@ -279,7 +277,6 @@ class Fixture
             ->setName($data['name'])
             ->setCustomer($data['customer'])
             ->setBusiness($data['business'])
-            ->setNotices($data['notices'])
             ->setPriority($data['priority']);
 
         foreach ($data['sources'] as $country) {
@@ -679,8 +676,8 @@ class Fixture
             ->setReceivedQuantity($data['received'])
             ->setAdjustedQuantity($data['adjusted'])
             ->setSoldQuantity($data['sold'])
-            ->setShippedQuantity($data['shipped']);
-            // TODO ->setLockedQuantity($data['locked']);
+            ->setShippedQuantity($data['shipped'])
+            ->setLockedQuantity($data['locked']);
 
         if (null !== $datum = $data['eda']) {
             $unit->setEstimatedDateOfArrival(self::date($datum));
@@ -741,8 +738,8 @@ class Fixture
 
         $assignment
             ->setSoldQuantity($data['sold'])
-            ->setShippedQuantity($data['shipped']);
-            // TODO ->setLockedQuantity($data['locked']);
+            ->setShippedQuantity($data['shipped'])
+            ->setLockedQuantity($data['locked']);
 
         return $assignment;
     }
@@ -1389,6 +1386,7 @@ class Fixture
 
         $order
             ->setCurrency(self::currency($data['currency']))
+            ->setState($data['state'])
             ->setVatValid($data['vat_valid'])
             ->setVatNumber($data['vat_number'])
             ->setWeightTotal($data['weight_total'])

@@ -73,17 +73,15 @@ class StockAdjustment implements Model\StockAdjustmentInterface
      */
     public function setStockUnit(Model\StockUnitInterface $stockUnit = null): Model\StockAdjustmentInterface
     {
-        if ($this->stockUnit === $stockUnit) {
-            return $this;
-        }
+        if ($stockUnit !== $this->stockUnit) {
+            if ($previous = $this->stockUnit) {
+                $this->stockUnit = null;
+                $previous->removeStockAdjustment($this);
+            }
 
-        if ($previous = $this->stockUnit) {
-            $this->stockUnit = null;
-            $previous->removeStockAdjustment($this);
-        }
-
-        if ($this->stockUnit = $stockUnit) {
-            $this->stockUnit->addStockAdjustment($this);
+            if ($this->stockUnit = $stockUnit) {
+                $this->stockUnit->addStockAdjustment($this);
+            }
         }
 
         return $this;

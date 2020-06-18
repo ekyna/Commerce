@@ -34,7 +34,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         if ($subject->hasItems()) {
             // Sample sale case
             if ($subject->isSample()) {
-                // COMPLETED If fully returned
+                // COMPLETED If fully returned or released
                 if ($subject->isReleased() || ShipmentStates::STATE_RETURNED === $shipmentState) {
                     return OrderStates::STATE_COMPLETED;
                 }

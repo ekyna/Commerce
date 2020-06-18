@@ -32,14 +32,16 @@ class StockAssignmentNormalizer extends AbstractResourceNormalizer
             $data = array_replace($data, [
                 'sold'    => $formatter->number($assignment->getSoldQuantity()),
                 'shipped' => $formatter->number($assignment->getShippedQuantity()),
+                'locked'  => $formatter->number($assignment->getLockedQuantity()),
+                'ready'   => $assignment->isFullyShipped() || $assignment->isFullyShippable(),
             ]);
 
             if ($this->contextHasGroup('StockView', $context)) {
-                $sale = $assignment->getSaleItem()->getSale();
-                $data['order_id'] = $sale->getId();
+                $sale                = $assignment->getSaleItem()->getSale();
+                $data['order_id']    = $sale->getId();
                 $data['preparation'] =
-                    $sale instanceof ShipmentSubjectInterface &&
-                    $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION;
+                    $sale instanceof ShipmentSubjectInterface
+                    && $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION;
             }
 
             if ($this->contextHasGroup('StockAssignment', $context)) {

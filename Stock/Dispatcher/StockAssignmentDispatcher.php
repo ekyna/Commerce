@@ -3,13 +3,11 @@
 namespace Ekyna\Component\Commerce\Stock\Dispatcher;
 
 use Ekyna\Component\Commerce\Exception\StockLogicException;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
 
 /**
  * Class StockAssignmentDispatcher
@@ -55,10 +53,10 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
      * @inheritdoc
      */
     public function moveAssignments(
-        StockUnitInterface $sourceUnit,
-        StockUnitInterface $targetUnit,
-        $quantity,
-        $direction = SORT_DESC
+        Unit $sourceUnit,
+        Unit $targetUnit,
+        float $quantity,
+        int $direction = SORT_DESC
     ): float {
         if (0 >= $quantity) {
             throw new StockLogicException("Quantity must be greater than zero.");
@@ -77,89 +75,11 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
 
         $moved = 0;
 
-        /**
-         * TODO Use combination to move the less assignments:
-         * @see \Ekyna\Component\Commerce\Stock\Prioritizer\UnitCandidate::getCombination()
-         */
         $sourceAssignments = $this->sortAssignments($sourceUnit->getStockAssignments()->toArray(), $direction);
-        /** @var StockAssignmentInterface[] $targetAssignments */
-        $targetAssignments = $targetUnit->getStockAssignments()->toArray();
 
         foreach ($sourceAssignments as $assignment) {
-            /**
-             * TODO Refactor with:
-             * @see \Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizer::moveAssignment()
-             */
-
-            $saleItem = $assignment->getSaleItem();
-
-            // Don't move assignments of preparation sales.
-            $sale = $saleItem->getSale();
-            if (
-                $sale instanceof ShipmentSubjectInterface &&
-                $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION
-            ) {
+            if (0 == $delta = $this->moveAssignment($assignment, $targetUnit, $quantity)) {
                 continue;
-            }
-
-            // Don't move shipped quantity
-            $delta = min($quantity, $assignment->getSoldQuantity() - $assignment->getShippedQuantity());
-            if (0 >= $delta) {
-                continue;
-            }
-
-            // Add quantity to target unit
-            $this->logger->unitSold($targetUnit, $delta);
-            $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $delta);
-
-            // Remove quantity from source unit
-            $this->logger->unitSold($sourceUnit, -$delta);
-            $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $delta);
-
-            // Look for a target assignment with the same sale item
-            $merge = null;
-            foreach ($targetAssignments as $m) {
-                if ($m->getSaleItem() === $saleItem) {
-                    $merge = $m;
-                    break;
-                }
-            }
-
-            if ($delta == $assignment->getSoldQuantity()) {
-                if (null !== $merge) {
-                    // Credit quantity to mergeable assignment
-                    $this->logger->assignmentSold($merge, $delta);
-                    $merge->setSoldQuantity($merge->getSoldQuantity() + $delta);
-                    $this->assignmentManager->persist($merge);
-
-                    // Debit quantity from source assignment
-                    $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
-                    $assignment->setSoldQuantity(0);
-                    $this->assignmentManager->remove($assignment, true);
-                } else {
-                    // Move source assignment to target unit
-                    $this->logger->assignmentUnit($assignment, $targetUnit);
-                    $assignment->setStockUnit($targetUnit);
-                    $this->assignmentManager->persist($assignment);
-                }
-            } else {
-                // Debit quantity from source assignment
-                $this->logger->assignmentSold($assignment, -$delta);
-                $assignment->setSoldQuantity($assignment->getSoldQuantity() - $delta);
-                $this->assignmentManager->persist($assignment);
-
-                if (null !== $merge) {
-                    // Credit quantity to mergeable assignment
-                    $this->logger->assignmentSold($merge, $delta);
-                    $merge->setSoldQuantity($merge->getSoldQuantity() + $delta);
-                    $this->assignmentManager->persist($merge);
-                } else {
-                    // Credit quantity to new assignment
-                    $create = $this->assignmentManager->create($saleItem, $targetUnit);
-                    $this->logger->assignmentSold($create, $delta, false);
-                    $create->setSoldQuantity($delta);
-                    $this->assignmentManager->persist($create);
-                }
             }
 
             $moved += $delta;
@@ -176,16 +96,93 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
     }
 
     /**
+     * Move the given assignment to the given unit for the given sold quantity.
+     *
+     * @param Assignment $assignment
+     * @param Unit       $targetUnit
+     * @param float                          $quantity
+     *
+     * @return float The quantity moved
+     */
+    public function moveAssignment(Assignment $assignment, Unit $targetUnit, float $quantity): float
+    {
+        // Don't move shipped/locked quantity
+        $quantity = min($quantity, $assignment->getReleasableQuantity());
+        if (0 >= $quantity) { // TODO Packaging format
+            return 0;
+        }
+
+        $sourceUnit = $assignment->getStockUnit();
+        $saleItem = $assignment->getSaleItem();
+
+        // Debit source unit's sold quantity
+        $this->logger->unitSold($sourceUnit, -$quantity);
+        $sourceUnit->setSoldQuantity($sourceUnit->getSoldQuantity() - $quantity);
+
+        // Credit target unit's sold quantity
+        $this->logger->unitSold($targetUnit, $quantity);
+        $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $quantity);
+
+        // Look for a target assignment with the same sale item
+        $merge = null;
+        foreach ($targetUnit->getStockAssignments() as $m) {
+            if ($m->getSaleItem() === $saleItem) {
+                $merge = $m;
+                break;
+            }
+        }
+
+        if ($quantity == $assignment->getSoldQuantity()) {
+            if (null !== $merge) {
+                // Credit quantity to mergeable assignment
+                $this->logger->assignmentSold($merge, $quantity);
+                $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
+                $this->assignmentManager->persist($merge);
+
+                // Debit quantity from source assignment
+                $this->logger->assignmentSold($assignment, 0, false); // TODO log removal ?
+                $assignment->setSoldQuantity(0);
+                $this->assignmentManager->remove($assignment, true);
+            } else {
+                // Move source assignment to target unit
+                $this->logger->assignmentUnit($assignment, $targetUnit);
+                $assignment->setStockUnit($targetUnit);
+                $this->assignmentManager->persist($assignment);
+            }
+        } else {
+            // Debit quantity from source assignment
+            $this->logger->assignmentSold($assignment, -$quantity);
+            $assignment->setSoldQuantity($assignment->getSoldQuantity() - $quantity);
+            $this->assignmentManager->persist($assignment);
+
+            if (null !== $merge) {
+                // Credit quantity to mergeable assignment
+                $this->logger->assignmentSold($merge, $quantity);
+                $merge->setSoldQuantity($merge->getSoldQuantity() + $quantity);
+                $this->assignmentManager->persist($merge);
+            } else {
+                // Credit quantity to new assignment
+                $create = $this->assignmentManager->create($saleItem, $targetUnit);
+                $this->logger->assignmentSold($create, $quantity, false);
+                $create->setSoldQuantity($quantity);
+                $this->assignmentManager->persist($create);
+            }
+        }
+
+        return $quantity;
+    }
+
+    /**
      * Sort assignments from the most recent to the most ancient.
      *
-     * @param StockAssignmentInterface[] $assignments
-     * @param int                        $direction
+     * @param Assignment[] $assignments
+     * @param int          $direction
      *
-     * @return StockAssignmentInterface[]
+     * @return Assignment[]
      */
     private function sortAssignments(array $assignments, $direction = SORT_DESC): array
     {
-        usort($assignments, function (StockAssignmentInterface $a, StockAssignmentInterface $b) use ($direction) {
+        usort($assignments, function (Assignment $a, Assignment $b) use ($direction) {
             $aDate = $a->getSaleItem()->getSale()->getCreatedAt();
             $bDate = $b->getSaleItem()->getSale()->getCreatedAt();
 
