@@ -79,7 +79,7 @@ class DueDateResolver implements DueDateResolverInterface
                 }
 
                 // Use invoice creation date if sale if fully or partially shipped
-                if (Shipment\ShipmentStates::isStockableState($sale->getShipmentState())) {
+                if (Shipment\ShipmentStates::isStockableState($sale->getShipmentState(), false)) {
                     $from = $invoice->getCreatedAt();
                 }
 

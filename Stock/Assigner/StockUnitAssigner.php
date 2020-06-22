@@ -254,7 +254,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         $shipment = $item->getShipment();
 
-        if (!ShipmentStates::isStockableState($shipment)) {
+        if (!ShipmentStates::isStockableState($shipment, true)) {
             throw new LogicException("Shipment must be in a stockable state.");
         }
 

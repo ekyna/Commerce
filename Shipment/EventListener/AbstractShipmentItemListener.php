@@ -59,7 +59,7 @@ abstract class AbstractShipmentItemListener
         $this->scheduleShipmentContentChangeEvent($shipment);
 
         // If shipment state is stockable
-        if (Model\ShipmentStates::isStockableState($shipment->getState())) {
+        if (Model\ShipmentStates::isStockableState($shipment, true)) {
             // Assign shipment item to stock units
             $this->stockUnitAssigner->assignShipmentItem($item);
         }
@@ -81,8 +81,8 @@ abstract class AbstractShipmentItemListener
         if (!empty($stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state'))) {
             // If shipment just did a stockable state transition
             if (
-                Model\ShipmentStates::hasChangedFromStockable($stateCs) ||
-                Model\ShipmentStates::hasChangedToStockable($stateCs) ||
+                Model\ShipmentStates::hasChangedFromStockable($stateCs, true) ||
+                Model\ShipmentStates::hasChangedToStockable($stateCs, true) ||
                 Model\ShipmentStates::hasChangedFromPreparation($stateCs, true) ||
                 Model\ShipmentStates::hasChangedToPreparation($stateCs, true)
             ) {
@@ -92,7 +92,7 @@ abstract class AbstractShipmentItemListener
         }
 
         // Abort if shipment is not in a stockable state
-        if (!Model\ShipmentStates::isStockableState($shipment->getState())) {
+        if (!Model\ShipmentStates::isStockableState($shipment, true)) {
             return;
         }
 
@@ -118,15 +118,15 @@ abstract class AbstractShipmentItemListener
 
         // If shipment state has changed to stockable
         $stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state');
-        if (!empty($stateCs) && Model\ShipmentStates::hasChangedToStockable($stateCs)) {
+        if (!empty($stateCs) && Model\ShipmentStates::hasChangedToStockable($stateCs, true)) {
             // Abort (item was not assigned)
             return;
         }
 
         // If shipment is (or was) in a stockable state
         if (
-            Model\ShipmentStates::isStockableState($shipment->getState()) ||
-            (!empty($stateCs) && Model\ShipmentStates::hasChangedFromStockable($stateCs))
+            Model\ShipmentStates::isStockableState($shipment, true) ||
+            (!empty($stateCs) && Model\ShipmentStates::hasChangedFromStockable($stateCs, true))
         ) {
             // Detach shipment item to stock units
             $this->stockUnitAssigner->detachShipmentItem($item);

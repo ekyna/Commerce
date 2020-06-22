@@ -99,7 +99,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 
         if (
             null !== $ignore && null !== $ignore->getId() && !$ignore->isReturn() &&
-            Shipment\ShipmentStates::isStockableState($ignore->getState())
+            Shipment\ShipmentStates::isStockableState($ignore, true)
         ) {
             foreach ($ignore->getItems() as $item) {
                 if ($item->getSaleItem() === $saleItem) {
@@ -172,7 +172,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
                 continue;
             }
 
-            if ($shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment)) {
+            if ($shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment, false)) {
                 continue;
             }
 
@@ -207,7 +207,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
                 continue;
             }
 
-            if (!$shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment)) {
+            if (!$shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment, false)) {
                 continue;
             }
 
@@ -254,7 +254,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
                     return false;
                 }
 
-                if (!Shipment\ShipmentStates::isStockableState($s->getState())) {
+                if (!Shipment\ShipmentStates::isStockableState($s, false)) {
                     return false;
                 }
 

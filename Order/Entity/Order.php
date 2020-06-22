@@ -647,7 +647,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         // A sample order needs at least and received return to be release ready.
         foreach ($this->getShipments() as $shipment) {
-            if ($shipment->isReturn() && Shipment\ShipmentStates::isStockableState($shipment->getState())) {
+            if ($shipment->isReturn() && Shipment\ShipmentStates::isStockableState($shipment, false)) {
                 return true;
             }
         }

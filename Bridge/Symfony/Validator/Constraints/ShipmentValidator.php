@@ -55,7 +55,7 @@ class ShipmentValidator extends ConstraintValidator
         /**
          * Shipment can't have a stockable state if order is not in a stockable state
          */
-        if (ShipmentStates::isStockableState($shipment->getState())) {
+        if (ShipmentStates::isStockableState($shipment, false)) {
             // Only orders are supported.
             if (!$sale instanceof OrderInterface) {
                 throw new UnexpectedTypeException($sale, OrderInterface::class);

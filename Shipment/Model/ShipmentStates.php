@@ -174,12 +174,13 @@ final class ShipmentStates
     /**
      * Returns the stockable states.
      *
+     * @param bool $withPreparation
+     *
      * @return array
      */
-    public static function getStockableStates(): array
+    public static function getStockableStates(bool $withPreparation): array
     {
-        return [
-            self::STATE_PREPARATION,
+        $states = [
             self::STATE_READY,
             self::STATE_SHIPPED,
             self::STATE_RETURNED,
@@ -187,20 +188,27 @@ final class ShipmentStates
             self::STATE_PARTIAL,
             self::STATE_COMPLETED,
         ];
+
+        if ($withPreparation) {
+            $states[] = self::STATE_PREPARATION;
+        }
+
+        return $states;
     }
 
     /**
      * Returns whether the given state is a stockable state.
      *
      * @param ShipmentInterface|string $state
+     * @param bool                     $withPreparation
      *
      * @return bool
      */
-    public static function isStockableState($state): bool
+    public static function isStockableState($state, bool $withPreparation): bool
     {
         $state = self::stateFormShipment($state);
 
-        return in_array($state, self::getStockableStates(), true);
+        return in_array($state, self::getStockableStates($withPreparation), true);
     }
 
     /**
@@ -208,12 +216,13 @@ final class ShipmentStates
      * from a non stockable state to a stockable state.
      *
      * @param array $cs The persistence change set
+     * @param bool  $withPreparation
      *
      * @return bool
      */
-    public static function hasChangedToStockable(array $cs): bool
+    public static function hasChangedToStockable(array $cs, bool $withPreparation): bool
     {
-        return self::hasChangedTo($cs, self::getStockableStates());
+        return self::hasChangedTo($cs, self::getStockableStates($withPreparation));
     }
 
     /**
@@ -221,12 +230,13 @@ final class ShipmentStates
      * from a stockable state to a non stockable state.
      *
      * @param array $cs The persistence change set
+     * @param bool  $withPreparation
      *
      * @return bool
      */
-    public static function hasChangedFromStockable(array $cs): bool
+    public static function hasChangedFromStockable(array $cs, bool $withPreparation): bool
     {
-        return self::hasChangedFrom($cs, self::getStockableStates());
+        return self::hasChangedFrom($cs, self::getStockableStates($withPreparation));
     }
 
     /**
@@ -238,11 +248,11 @@ final class ShipmentStates
      *
      * @return bool
      */
-    public static function hasChangedToPreparation(array $cs, bool $fromStockable = false): bool
+    public static function hasChangedToPreparation(array $cs, bool $fromStockable): bool
     {
         if (self::hasChangedTo($cs, [self::STATE_PREPARATION])) {
             if ($fromStockable) {
-                return self::isStockableState($cs[0]);
+                return self::isStockableState($cs[0], false);
             }
 
             return true;
@@ -260,11 +270,11 @@ final class ShipmentStates
      *
      * @return bool
      */
-    public static function hasChangedFromPreparation(array $cs, bool $toStockable = false): bool
+    public static function hasChangedFromPreparation(array $cs, bool $toStockable): bool
     {
         if (self::hasChangedFrom($cs, [self::STATE_PREPARATION])) {
             if ($toStockable) {
-                return self::isStockableState($cs[1]);
+                return self::isStockableState($cs[1], false);
             }
 
             return true;

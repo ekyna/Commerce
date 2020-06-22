@@ -134,7 +134,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             return;
         }
 
-        if (!in_array($sale->getShipmentState(), ShipmentStates::getStockableStates(), true)) {
+        if (!in_array($sale->getShipmentState(), ShipmentStates::getStockableStates(false), true)) {
             $sale->setShipmentState(ShipmentStates::STATE_CANCELED);
         }
 

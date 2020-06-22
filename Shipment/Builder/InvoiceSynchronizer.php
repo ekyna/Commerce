@@ -79,7 +79,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         if (
             $sale->isSample() ||
             $this->persistenceHelper->isScheduledForRemove($shipment) ||
-            !Shipment\ShipmentStates::isStockableState($shipment->getState())
+            !Shipment\ShipmentStates::isStockableState($shipment, false)
         ) {
             if ($invoice) {
                 $this->removeInvoice($invoice);

@@ -152,7 +152,7 @@ abstract class AbstractShipmentListener
             $stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state');
 
             // If shipment state has changed from non stockable to stockable
-            if (ShipmentStates::hasChangedToStockable($stateCs)) {
+            if (ShipmentStates::hasChangedToStockable($stateCs, true)) {
                 // For each shipment item
                 foreach ($shipment->getItems() as $item) {
                     // If not scheduled for insert
@@ -161,8 +161,9 @@ abstract class AbstractShipmentListener
                         $this->stockUnitAssigner->assignShipmentItem($item);
                     }
                 }
-            } // Else if shipment state has changed from stockable to non stockable
-            elseif (ShipmentStates::hasChangedFromStockable($stateCs)) {
+            }
+            // Else if shipment state has changed from stockable to non stockable
+            elseif (ShipmentStates::hasChangedFromStockable($stateCs, true)) {
                 // For each shipment item
                 foreach ($shipment->getItems() as $item) {
                     // If not scheduled for remove
@@ -171,7 +172,8 @@ abstract class AbstractShipmentListener
                         $this->stockUnitAssigner->detachShipmentItem($item);
                     }
                 }
-            } // Else if shipment state has changed from preparation to stockable (or vice versa)
+            }
+            // Else if shipment state has changed from preparation to stockable (or vice versa)
             elseif (
                 ShipmentStates::hasChangedFromPreparation($stateCs, true)
                 || ShipmentStates::hasChangedToPreparation($stateCs, true)
@@ -272,7 +274,7 @@ abstract class AbstractShipmentListener
      */
     private function preLoadSale(SaleInterface $sale)
     {
-        /** @var \Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface $sale */
+        /** @var ShipmentSubjectInterface $sale */
         $sale->getShipments()->toArray();
         /** @var \Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface $sale */
         $sale->getInvoices()->toArray();
