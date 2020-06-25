@@ -17,7 +17,6 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockAssignmentUpdaterInterface;
-use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -46,11 +45,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     protected $unitResolver;
 
     /**
-     * @var StockUnitUpdaterInterface
-     */
-    protected $unitUpdater;
-
-    /**
      * @var StockAssignmentManagerInterface
      */
     protected $assignmentManager;
@@ -72,7 +66,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      * @param PersistenceHelperInterface      $persistenceHelper
      * @param SubjectHelperInterface          $subjectHelper
      * @param StockUnitResolverInterface      $unitResolver
-     * @param StockUnitUpdaterInterface       $unitUpdater
      * @param StockAssignmentManagerInterface $assignmentManager
      * @param StockAssignmentUpdaterInterface $assignmentUpdater
      * @param SaleFactoryInterface            $saleFactory
@@ -81,7 +74,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         PersistenceHelperInterface $persistenceHelper,
         SubjectHelperInterface $subjectHelper,
         StockUnitResolverInterface $unitResolver,
-        StockUnitUpdaterInterface $unitUpdater,
         StockAssignmentManagerInterface $assignmentManager,
         StockAssignmentUpdaterInterface $assignmentUpdater,
         SaleFactoryInterface $saleFactory
@@ -89,7 +81,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         $this->persistenceHelper = $persistenceHelper;
         $this->subjectHelper     = $subjectHelper;
         $this->unitResolver      = $unitResolver;
-        $this->unitUpdater       = $unitUpdater;
         $this->assignmentManager = $assignmentManager;
         $this->assignmentUpdater = $assignmentUpdater;
         $this->saleFactory       = $saleFactory;
@@ -177,7 +168,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         // Remove stock assignments and schedule events
         foreach ($assignments as $assignment) {
-            $this->removeAssignment($assignment);
+            $this->assignmentUpdater->updateSold($assignment, 0, false);
         }
     }
 
@@ -203,19 +194,19 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                 return;
             } else {
                 // Credit locked quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return -$this->assignmentUpdater->updateLocked($assignment, $quantity, true);
                 };
             }
         } else {
             if ($return) {
                 // Debit shipped quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
                 };
             } else {
                 // Debit shipped quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
                 };
             }
@@ -258,8 +249,8 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             throw new LogicException("Shipment must be in a stockable state.");
         }
 
-        $return = $shipment->isReturn();
-        $quantity = 0;
+        $return     = $shipment->isReturn();
+        $quantity   = 0;
         $quantityCs = $this->persistenceHelper->getChangeSet($item, 'quantity');
 
         // If shipment state changed
@@ -273,19 +264,19 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                     return;
                 } else {
                     // Debit locked quantity
-                    $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                         return $this->assignmentUpdater->updateLocked($assignment, -$quantity, true);
                     };
                 }
             } elseif (ShipmentStates::hasChangedToPreparation($stateCs, true)) {
                 if ($return) {
                     // Credit shipped quantity
-                    $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                         return -$this->assignmentUpdater->updateShipped($assignment, +$quantity, true);
                     };
                 } else {
                     // Debit shipped quantity
-                    $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                         return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
                     };
                 }
@@ -304,9 +295,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
             // New quantity
             $quantity = !empty($quantityCs) ? $quantityCs[1] : $item->getQuantity();
-        }
-
-        // If quantity change
+        } // If quantity change
         elseif (!empty($quantityCs)) {
             $quantity = $quantityCs[1] - $quantityCs[0];
         }
@@ -323,19 +312,19 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                 return;
             } else {
                 // Credit locked quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return -$this->assignmentUpdater->updateLocked($assignment, $quantity, true);
                 };
             }
         } else {
             if ($return) {
                 // Debit shipped quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
                 };
             } else {
                 // Credit shipped quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
                 };
             }
@@ -397,19 +386,19 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                 return;
             } else {
                 // Debit locked quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return $this->assignmentUpdater->updateLocked($assignment, -$quantity, true);
                 };
             }
         } else {
             if ($return) {
                 // Credit shipped quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
                 };
             } else {
                 // Debit shipped quantity
-                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
                     return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
                 };
             }
@@ -632,21 +621,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     }
 
     /**
-     * Removes a single assignment.
-     *
-     * @param StockAssignmentInterface $assignment
-     */
-    protected function removeAssignment(StockAssignmentInterface $assignment): void
-    {
-        $unit = $assignment->getStockUnit();
-        $sold = $assignment->getSoldQuantity();
-
-        $this->assignmentManager->remove($assignment, true);
-
-        $this->unitUpdater->updateSold($unit, -$sold, true);
-    }
-
-    /**
      * Creates the sale item assignments for the given quantity.
      *
      * @param SaleItemInterface $item
@@ -674,10 +648,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
             if (0 == $quantity) {
                 return;
-            }
-
-            if ($assignment->isEmpty()) {
-                $this->assignmentManager->remove($assignment);
             }
         }
 

@@ -342,7 +342,8 @@ class OrderListener extends AbstractSaleListener
                 foreach ($sale->getItems() as $item) {
                     $this->assignSaleItemRecursively($item);
                 }
-            } // If order state has changed from stockable to non stockable
+            }
+            // If order state has changed from stockable to non stockable
             elseif (OrderStates::hasChangedFromStockable($stateCs)) {
                 foreach ($sale->getItems() as $item) {
                     $this->detachSaleItemRecursively($item);
