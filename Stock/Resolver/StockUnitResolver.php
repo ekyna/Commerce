@@ -52,8 +52,8 @@ class StockUnitResolver implements StockUnitResolverInterface
         StockUnitCacheInterface $unitCache,
         PersistenceHelperInterface $persistenceHelper
     ) {
-        $this->subjectHelper = $subjectHelper;
-        $this->unitCache = $unitCache;
+        $this->subjectHelper     = $subjectHelper;
+        $this->unitCache         = $unitCache;
         $this->persistenceHelper = $persistenceHelper;
 
         $this->repositoryCache = [];
@@ -195,10 +195,14 @@ class StockUnitResolver implements StockUnitResolverInterface
         $filter = new class implements FilterInterface {
             public function filter(StockUnitInterface $unit): bool
             {
+                // - Not closed
                 // - Not linked to a supplier order
                 // - Sold lower than ordered
-                return is_null($unit->getSupplierOrderItem())
-                    || ($unit->getSoldQuantity() < $unit->getOrderedQuantity() + $unit->getAdjustedQuantity());
+                return $unit->getState() !== StockUnitStates::STATE_CLOSED
+                    && (
+                        is_null($unit->getSupplierOrderItem())
+                        || ($unit->getSoldQuantity() < $unit->getOrderedQuantity() + $unit->getAdjustedQuantity())
+                    );
             }
         };
 
@@ -254,7 +258,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     ): array {
         $filtered = [];
 
-        $addedUnits = $this->unitCache->findAddedBySubject($subject);
+        $addedUnits   = $this->unitCache->findAddedBySubject($subject);
         $removedUnits = $this->unitCache->findRemovedBySubject($subject);
 
         // Loop through fetched units
