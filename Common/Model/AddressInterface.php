@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use libphonenumber\PhoneNumber;
+
 /**
  * Interface AddressInterface
  * @package Ekyna\Component\Commerce\Common\Model
@@ -14,7 +16,7 @@ interface AddressInterface extends IdentityInterface
      *
      * @return string
      */
-    public function getCompany();
+    public function getCompany(): ?string;
 
     /**
      * Sets the company.
@@ -23,14 +25,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setCompany($company);
+    public function setCompany(string $company = null): AddressInterface;
 
     /**
      * Returns the street.
      *
      * @return string
      */
-    public function getStreet();
+    public function getStreet(): ?string;
 
     /**
      * Sets the street.
@@ -39,14 +41,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setStreet($street);
+    public function setStreet(string $street): AddressInterface;
 
     /**
      * Returns the complement.
      *
      * @return string
      */
-    public function getComplement();
+    public function getComplement(): ?string;
 
     /**
      * Sets the complement.
@@ -55,14 +57,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setComplement($complement);
+    public function setComplement(string $complement = null): AddressInterface;
 
     /**
      * Returns the supplement.
      *
      * @return string
      */
-    public function getSupplement();
+    public function getSupplement(): ?string;
 
     /**
      * Sets the supplement.
@@ -71,14 +73,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setSupplement($supplement);
+    public function setSupplement(string $supplement = null): AddressInterface;
 
     /**
      * Returns the extra.
      *
      * @return string
      */
-    public function getExtra();
+    public function getExtra(): ?string;
 
     /**
      * Sets the extra.
@@ -87,14 +89,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setExtra($extra);
+    public function setExtra(string $extra = null): AddressInterface;
 
     /**
      * Returns the postalCode.
      *
      * @return string
      */
-    public function getPostalCode();
+    public function getPostalCode(): ?string;
 
     /**
      * Sets the postalCode.
@@ -103,14 +105,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setPostalCode($postalCode);
+    public function setPostalCode(string $postalCode): AddressInterface;
 
     /**
      * Returns the city.
      *
      * @return string
      */
-    public function getCity();
+    public function getCity(): ?string;
 
     /**
      * Sets the city.
@@ -119,14 +121,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setCity($city);
+    public function setCity(string $city): AddressInterface;
 
     /**
      * Returns the country.
      *
      * @return CountryInterface
      */
-    public function getCountry();
+    public function getCountry(): ?CountryInterface;
 
     /**
      * Sets the country.
@@ -135,14 +137,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setCountry(CountryInterface $country);
+    public function setCountry(CountryInterface $country): AddressInterface;
 
     /**
      * Returns the state.
      *
      * @return StateInterface
      */
-    public function getState();
+    public function getState(): ?StateInterface;
 
     /**
      * Sets the state.
@@ -151,46 +153,46 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setState(StateInterface $state = null);
+    public function setState(StateInterface $state = null): AddressInterface;
 
     /**
      * Returns the phone.
      *
-     * @return \libphonenumber\PhoneNumber|string
+     * @return PhoneNumber|null
      */
-    public function getPhone();
+    public function getPhone(): ?PhoneNumber;
 
     /**
      * Sets the phone.
      *
-     * @param mixed $phone
+     * @param PhoneNumber $phone
      *
      * @return $this|AddressInterface
      */
-    public function setPhone($phone);
+    public function setPhone(PhoneNumber $phone = null);
 
     /**
      * Returns the mobile.
      *
-     * @return \libphonenumber\PhoneNumber|string
+     * @return PhoneNumber|null
      */
-    public function getMobile();
+    public function getMobile(): ?PhoneNumber;
 
     /**
      * Sets the mobile.
      *
-     * @param string $mobile
+     * @param PhoneNumber $mobile
      *
      * @return $this|AddressInterface
      */
-    public function setMobile($mobile);
+    public function setMobile(PhoneNumber $mobile = null);
 
     /**
      * Returns the digicode 1.
      *
      * @return string
      */
-    public function getDigicode1();
+    public function getDigicode1(): ?string;
 
     /**
      * Sets the digicode 1.
@@ -199,14 +201,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setDigicode1($digicode1);
+    public function setDigicode1(string $digicode1 = null): AddressInterface;
 
     /**
      * Returns the digicode 2.
      *
      * @return string
      */
-    public function getDigicode2();
+    public function getDigicode2(): ?string;
 
     /**
      * Sets the digicode 2.
@@ -215,14 +217,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setDigicode2($digicode2);
+    public function setDigicode2(string $digicode2 = null): AddressInterface;
 
     /**
      * Returns the intercom.
      *
      * @return string
      */
-    public function getIntercom();
+    public function getIntercom(): ?string;
 
     /**
      * Sets the intercom.
@@ -231,14 +233,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setIntercom($intercom);
+    public function setIntercom(string $intercom = null): AddressInterface;
 
     /**
      * Returns the longitude.
      *
      * @return float
      */
-    public function getLongitude();
+    public function getLongitude(): ?float;
 
     /**
      * Sets the longitude.
@@ -247,14 +249,14 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setLongitude($longitude);
+    public function setLongitude(float $longitude = null): AddressInterface;
 
     /**
      * Returns the latitude.
      *
      * @return float
      */
-    public function getLatitude();
+    public function getLatitude(): ?float;
 
     /**
      * Sets the latitude.
@@ -263,12 +265,12 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setLatitude($latitude);
+    public function setLatitude(float $latitude): AddressInterface;
 
     /**
      * Returns whether this address can be considered as empty.
      *
      * @return bool
      */
-    public function isEmpty();
+    public function isEmpty(): bool;
 }

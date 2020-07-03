@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Common\Listener;
 
 use Ekyna\Component\Commerce\Common\Notify\NotifyBuilder;
 use Ekyna\Component\Commerce\Common\Notify\NotifyQueue;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceTrackerInterface;
 
 /**
@@ -42,19 +43,19 @@ abstract class AbstractNotifyListener
         NotifyBuilder $builder
     ) {
         $this->tracker = $tracker;
-        $this->queue = $queue;
+        $this->queue   = $queue;
         $this->builder = $builder;
     }
 
     /**
      * Returns whether the state of the given resource changed to the given state.
      *
-     * @param object $resource
-     * @param string $state
+     * @param ResourceInterface $resource
+     * @param string            $state
      *
      * @return bool
      */
-    protected function didStateChangeTo($resource, $state)
+    protected function didStateChangeTo(ResourceInterface $resource, string $state): bool
     {
         if (empty($stateCs = $this->tracker->getChangeSet($resource, 'state'))) {
             return false;
@@ -70,10 +71,10 @@ abstract class AbstractNotifyListener
     /**
      * Creates, build and enqueue a notify instance.
      *
-     * @param string $type
-     * @param object $resource
+     * @param string            $type
+     * @param ResourceInterface $resource
      */
-    protected function notify($type, $resource)
+    protected function notify(string $type, ResourceInterface $resource): void
     {
         // Create
         $notify = $this->builder->create($type, $resource);

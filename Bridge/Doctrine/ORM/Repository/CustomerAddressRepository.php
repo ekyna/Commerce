@@ -17,7 +17,7 @@ class CustomerAddressRepository extends ResourceRepository implements CustomerAd
     /**
      * @inheritdoc
      */
-    public function findByCustomerAndParents(CustomerInterface $customer)
+    public function findByCustomerAndParents(CustomerInterface $customer): array
     {
         $qb = $this->getCollectionQueryBuilder('a', 'a.id');
 
@@ -42,7 +42,7 @@ class CustomerAddressRepository extends ResourceRepository implements CustomerAd
     /**
      * @inheritdoc
      */
-    public function findByCustomer(CustomerInterface $customer, CustomerAddressInterface $exclude = null)
+    public function findByCustomer(CustomerInterface $customer, CustomerAddressInterface $exclude = null): array
     {
         $qb = $this->getCollectionQueryBuilder('a', 'a.id');
         $qb

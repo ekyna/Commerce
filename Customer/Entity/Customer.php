@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -11,6 +12,7 @@ use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Resource\Model as RM;
+use libphonenumber\PhoneNumber;
 
 /**
  * Class Customer
@@ -54,12 +56,12 @@ class Customer implements Model\CustomerInterface
     protected $email;
 
     /**
-     * @var string
+     * @var PhoneNumber
      */
     protected $phone;
 
     /**
-     * @var string
+     * @var PhoneNumber
      */
     protected $mobile;
 
@@ -183,7 +185,7 @@ class Customer implements Model\CustomerInterface
         $this->addresses = new ArrayCollection();
         $this->paymentMethods = new ArrayCollection();
 
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new DateTime();
     }
 
     /**
@@ -201,10 +203,10 @@ class Customer implements Model\CustomerInterface
                 $sign = '◊'; //'&diams;';
             }
 
-            return trim(sprintf('%s [%s] %s %s', $sign, $this->company, $this->lastName, $this->firstName));
+            return trim(sprintf('%s [%s] %s %s', $sign, $this->company, $this->firstName, $this->lastName));
         }
 
-        return sprintf('%s %s', $this->lastName, $this->firstName);
+        return sprintf('%s %s', $this->firstName, $this->lastName);
     }
 
     /**
@@ -220,7 +222,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getCompany()
+    public function getCompany(): ?string
     {
         return $this->company;
     }
@@ -228,7 +230,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setCompany($company)
+    public function setCompany(string $company = null): Model\CustomerInterface
     {
         $this->company = $company;
 
@@ -256,7 +258,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getEmail()
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -264,7 +266,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setEmail($email)
+    public function setEmail(string $email = null): Model\CustomerInterface
     {
         $this->email = $email;
 
@@ -274,7 +276,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getPhone()
+    public function getPhone(): ?PhoneNumber
     {
         return $this->phone;
     }
@@ -282,7 +284,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setPhone($phone)
+    public function setPhone(PhoneNumber $phone = null): Model\CustomerInterface
     {
         $this->phone = $phone;
 
@@ -292,7 +294,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getMobile()
+    public function getMobile(): ?PhoneNumber
     {
         return $this->mobile;
     }
@@ -300,7 +302,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setMobile($mobile)
+    public function setMobile(PhoneNumber $mobile = null): Model\CustomerInterface
     {
         $this->mobile = $mobile;
 
@@ -308,23 +310,17 @@ class Customer implements Model\CustomerInterface
     }
 
     /**
-     * Returns the birthday.
-     *
-     * @return \DateTime
+     * @inheritdoc
      */
-    public function getBirthday()
+    public function getBirthday(): ?DateTime
     {
         return $this->birthday;
     }
 
     /**
-     * Sets the birthday.
-     *
-     * @param \DateTime $birthday
-     *
-     * @return Customer
+     * @inheritdoc
      */
-    public function setBirthday(\DateTime $birthday = null)
+    public function setBirthday(DateTime $birthday = null): Model\CustomerInterface
     {
         $this->birthday = $birthday;
 
@@ -334,7 +330,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function hasParent()
+    public function hasParent(): bool
     {
         return null !== $this->parent;
     }
@@ -342,7 +338,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getParent()
+    public function getParent(): ?Model\CustomerInterface
     {
         return $this->parent;
     }
@@ -350,7 +346,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setParent(Model\CustomerInterface $parent = null)
+    public function setParent(Model\CustomerInterface $parent = null): Model\CustomerInterface
     {
         if ($parent !== $this->parent) {
             if ($previous = $this->parent) {
@@ -369,7 +365,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getChildren()
+    public function getChildren(): Collection
     {
         return $this->children;
     }
@@ -377,7 +373,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function hasChild(Model\CustomerInterface $child)
+    public function hasChild(Model\CustomerInterface $child): bool
     {
         return $this->children->contains($child);
     }
@@ -385,7 +381,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function addChild(Model\CustomerInterface $child)
+    public function addChild(Model\CustomerInterface $child): Model\CustomerInterface
     {
         if (!$this->hasChild($child)) {
             $this->children->add($child);
@@ -398,7 +394,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function removeChild(Model\CustomerInterface $child)
+    public function removeChild(Model\CustomerInterface $child): Model\CustomerInterface
     {
         if ($this->hasChild($child)) {
             $this->children->removeElement($child);
@@ -411,15 +407,15 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function hasChildren()
+    public function hasChildren(): bool
     {
-        return 0 < $this->children->count();
+        return !$this->children->isEmpty();
     }
 
     /**
      * @inheritdoc
      */
-    public function getCustomerGroup()
+    public function getCustomerGroup(): ?Model\CustomerGroupInterface
     {
         return $this->customerGroup;
     }
@@ -427,7 +423,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setCustomerGroup(Model\CustomerGroupInterface $group = null)
+    public function setCustomerGroup(Model\CustomerGroupInterface $group = null): Model\CustomerInterface
     {
         $this->customerGroup = $group;
 
@@ -437,7 +433,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getAddresses()
+    public function getAddresses(): Collection
     {
         return $this->addresses;
     }
@@ -445,7 +441,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function hasAddress(Model\CustomerAddressInterface $address)
+    public function hasAddress(Model\CustomerAddressInterface $address): bool
     {
         return $this->addresses->contains($address);
     }
@@ -453,7 +449,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function addAddress(Model\CustomerAddressInterface $address)
+    public function addAddress(Model\CustomerAddressInterface $address): Model\CustomerInterface
     {
         if (!$this->hasAddress($address)) {
             $this->addresses->add($address);
@@ -466,7 +462,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function removeAddress(Model\CustomerAddressInterface $address)
+    public function removeAddress(Model\CustomerAddressInterface $address): Model\CustomerInterface
     {
         if ($this->hasAddress($address)) {
             $this->addresses->removeElement($address);
@@ -479,7 +475,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getContacts()
+    public function getContacts(): Collection
     {
         return $this->contacts;
     }
@@ -487,7 +483,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function hasContact(CustomerContact $contact)
+    public function hasContact(CustomerContact $contact): bool
     {
         return $this->contacts->contains($contact);
     }
@@ -495,7 +491,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function addContact(CustomerContact $contact)
+    public function addContact(CustomerContact $contact): Model\CustomerInterface
     {
         if (!$this->hasContact($contact)) {
             $this->contacts->add($contact);
@@ -508,7 +504,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function removeContact(CustomerContact $contact)
+    public function removeContact(CustomerContact $contact): Model\CustomerInterface
     {
         if ($this->hasContact($contact)) {
             $this->contacts->removeElement($contact);
@@ -587,14 +583,14 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritDoc
      */
-    public function setBrandLogo(CustomerLogo $brandLogo = null): Model\CustomerInterface
+    public function setBrandLogo(CustomerLogo $logo = null): Model\CustomerInterface
     {
-        if ($brandLogo !== $this->brandLogo) {
+        if ($logo !== $this->brandLogo) {
             if ($this->brandLogo) {
                 $this->brandLogo->setCustomer(null);
             }
 
-            $this->brandLogo = $brandLogo;
+            $this->brandLogo = $logo;
 
             $this->brandLogo->setCustomer($this);
         }
@@ -703,7 +699,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getCreditBalance()
+    public function getCreditBalance(): float
     {
         return $this->creditBalance;
     }
@@ -711,9 +707,9 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setCreditBalance($creditBalance)
+    public function setCreditBalance(float $creditBalance): Model\CustomerInterface
     {
-        $this->creditBalance = (float)$creditBalance;
+        $this->creditBalance = $creditBalance;
 
         return $this;
     }
@@ -721,7 +717,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getOutstandingLimit()
+    public function getOutstandingLimit(): float
     {
         return $this->outstandingLimit;
     }
@@ -729,9 +725,9 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setOutstandingLimit($limit)
+    public function setOutstandingLimit(float $limit): Model\CustomerInterface
     {
-        $this->outstandingLimit = (float)$limit;
+        $this->outstandingLimit = $limit;
 
         return $this;
     }
@@ -757,7 +753,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getOutstandingBalance()
+    public function getOutstandingBalance(): float
     {
         return $this->outstandingBalance;
     }
@@ -765,9 +761,9 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setOutstandingBalance($amount)
+    public function setOutstandingBalance(float $amount): Model\CustomerInterface
     {
-        $this->outstandingBalance = (float)$amount;
+        $this->outstandingBalance = $amount;
 
         return $this;
     }
@@ -775,7 +771,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getState()
+    public function getState(): string
     {
         return $this->state;
     }
@@ -783,7 +779,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setState($state)
+    public function setState(string $state): Model\CustomerInterface
     {
         $this->state = $state;
 
@@ -793,7 +789,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -801,7 +797,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function setDescription($description)
+    public function setDescription(string $description = null): Model\CustomerInterface
     {
         $this->description = $description;
 
@@ -811,7 +807,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getDefaultInvoiceAddress($allowParentAddress = false)
+    public function getDefaultInvoiceAddress(bool $allowParentAddress = false): ?Model\CustomerAddressInterface
     {
         if ($allowParentAddress && $this->hasParent()) {
             if (null !== $address = $this->parent->getDefaultInvoiceAddress($allowParentAddress)) {
@@ -829,7 +825,7 @@ class Customer implements Model\CustomerInterface
     /**
      * @inheritdoc
      */
-    public function getDefaultDeliveryAddress($allowParentAddress = false)
+    public function getDefaultDeliveryAddress(bool $allowParentAddress = false): ?Model\CustomerAddressInterface
     {
         if ($allowParentAddress && $this->hasParent()) {
             if (null !== $address = $this->parent->getDefaultDeliveryAddress($allowParentAddress)) {
@@ -851,7 +847,7 @@ class Customer implements Model\CustomerInterface
      *
      * @return Model\CustomerAddressInterface|null
      */
-    protected function findOneAddressBy($expression)
+    private function findOneAddressBy($expression): ?Model\CustomerAddressInterface
     {
         if (0 < $this->addresses->count()) {
             $criteria = Criteria::create()

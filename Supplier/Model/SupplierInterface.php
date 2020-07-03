@@ -5,9 +5,7 @@ namespace Ekyna\Component\Commerce\Supplier\Model;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
-use Ekyna\Component\Resource\Model\LocalizedInterface;
-use Ekyna\Component\Resource\Model\ResourceInterface;
-use Ekyna\Component\Resource\Model\TimestampableInterface;
+use Ekyna\Component\Resource\Model as Resource;
 
 /**
  * Class SupplierInterface
@@ -15,10 +13,10 @@ use Ekyna\Component\Resource\Model\TimestampableInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 interface SupplierInterface extends
-    ResourceInterface,
+    Resource\ResourceInterface,
     IdentityInterface,
-    TimestampableInterface,
-    LocalizedInterface
+    Resource\TimestampableInterface,
+    Resource\LocalizedInterface
 {
     /**
      * Returns the name.
@@ -155,5 +153,5 @@ interface SupplierInterface extends
      *
      * @return $this|SupplierInterface
      */
-    public function setLocale(string $locale);
+    public function setLocale(string $locale = null): Resource\LocalizedInterface;
 }

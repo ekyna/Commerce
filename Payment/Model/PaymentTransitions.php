@@ -2,19 +2,52 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
+use DateTime;
+use Ekyna\Component\Commerce\Bridge\Payum\Request as Commerce;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Payum\Core\Request as Payum;
+
 /**
  * Class PaymentTransitions
  * @package Ekyna\Component\Commerce\Payment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class PaymentTransitions
+final class PaymentTransitions
 {
-    const TRANSITION_CANCEL = 'cancel';
-    const TRANSITION_HANG   = 'hang';
-    const TRANSITION_ACCEPT = 'accept';
-    const TRANSITION_REJECT = 'reject';
-    const TRANSITION_REFUND = 'refund';
+    const TRANSITION_CANCEL    = 'cancel';
+    const TRANSITION_HANG      = 'hang';
+    const TRANSITION_AUTHORIZE = 'authorize';
+    const TRANSITION_ACCEPT    = 'accept';
+    const TRANSITION_REJECT    = 'reject';
+    const TRANSITION_REFUND    = 'refund';
 
+
+    /**
+     * Returns the payum request class for the given transition.
+     *
+     * @param string $transition
+     *
+     * @return string
+     */
+    static public function getRequestClass(string $transition): string
+    {
+        switch ($transition) {
+            case self::TRANSITION_CANCEL:
+                return Payum\Cancel::class;
+            case self::TRANSITION_HANG:
+                return Commerce\Hang::class;
+            case self::TRANSITION_AUTHORIZE:
+                return Payum\Authorize::class;
+            case self::TRANSITION_ACCEPT:
+                return Commerce\Accept::class;
+            case self::TRANSITION_REJECT:
+                return Commerce\Reject::class;
+            case self::TRANSITION_REFUND:
+                return Payum\Refund::class;
+        }
+
+        throw new InvalidArgumentException("Unexpected payment transition");
+    }
 
     /**
      * Returns the available payment transitions.
@@ -23,80 +56,67 @@ class PaymentTransitions
      * @param bool             $admin
      *
      * @return array
+     *
+     * @see \Ekyna\Bundle\CommerceBundle\Service\Payment\PaymentHelper::getTransitions
      */
-    static function getAvailableTransitions(PaymentInterface $payment, $admin = false)
+    static function getAvailableTransitions(PaymentInterface $payment, bool $admin = false): array
     {
-        // TODO use payum to select gateway's supported requests/actions.
-
         $transitions = [];
 
         $method = $payment->getMethod();
-        $state = $payment->getState();
+        $state  = $payment->getState();
 
-        if ($admin) {
-            if ($method->isManual()) {
-                switch ($state) {
-                    case PaymentStates::STATE_PENDING:
-                        $transitions[] = static::TRANSITION_CANCEL;
-                        $transitions[] = static::TRANSITION_ACCEPT;
-                        break;
-                    case PaymentStates::STATE_CAPTURED:
-                        $transitions[] = static::TRANSITION_CANCEL;
-                        $transitions[] = static::TRANSITION_HANG;
-                        if (!$payment->isRefund()) {
-                            $transitions[] = static::TRANSITION_REFUND;
-                        }
-                        break;
-                    case PaymentStates::STATE_NEW:
-                    case PaymentStates::STATE_REFUNDED:
-                        $transitions[] = static::TRANSITION_CANCEL;
-                        $transitions[] = static::TRANSITION_HANG;
-                        $transitions[] = static::TRANSITION_ACCEPT;
-                        break;
-                    case PaymentStates::STATE_CANCELED:
-                        $transitions[] = static::TRANSITION_HANG;
-                        $transitions[] = static::TRANSITION_ACCEPT;
-                        break;
-                }
-            } elseif ($method->isCredit()) {
-                if (in_array($state, [PaymentStates::STATE_CAPTURED, PaymentStates::STATE_REFUNDED], true)) {
-                    $transitions[] = static::TRANSITION_CANCEL;
-                } else {
-                    $transitions[] = static::TRANSITION_ACCEPT;
-                }
-            }elseif ($method->isOutstanding()) {
-                if ($state === PaymentStates::STATE_CAPTURED) {
-                    $transitions[] = static::TRANSITION_CANCEL;
-                } else {
-                    $transitions[] = static::TRANSITION_ACCEPT;
-                }
-            } else {
-                if (!$payment->isRefund() && ($state === PaymentStates::STATE_CAPTURED)) {
-                    $transitions[] = static::TRANSITION_REFUND;
-                }
-                if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
-                    $transitions[] = static::TRANSITION_CANCEL;
-                }
-            }
-        } else {
+        if (!$admin) {
             if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
                 $transitions[] = static::TRANSITION_CANCEL;
             }
+
+            return $transitions;
+        }
+
+        if ($method->isManual()) {
+            $transitions = [
+                PaymentStates::STATE_CANCELED   => static::TRANSITION_CANCEL,
+                PaymentStates::STATE_PENDING    => static::TRANSITION_HANG,
+                PaymentStates::STATE_AUTHORIZED => static::TRANSITION_AUTHORIZE,
+                PaymentStates::STATE_CAPTURED   => static::TRANSITION_ACCEPT,
+                PaymentStates::STATE_FAILED     => static::TRANSITION_REJECT,
+            ];
+            unset($transitions[$state]);
+
+            return $transitions;
+        }
+
+        if ($method->isCredit()) {
+            if ($state !== PaymentStates::STATE_CANCELED) {
+                $transitions[] = static::TRANSITION_CANCEL;
+            }
+            if ($state !== PaymentStates::STATE_CAPTURED) {
+                $transitions[] = static::TRANSITION_ACCEPT;
+            }
+
+            return $transitions;
+        }
+
+        if ($method->isOutstanding()) {
+            if ($state !== PaymentStates::STATE_CANCELED) {
+                $transitions[] = static::TRANSITION_CANCEL;
+            }
+            if ($state !== PaymentStates::STATE_CAPTURED) {
+                $transitions[] = static::TRANSITION_ACCEPT;
+            }
+
+            return $transitions;
+        }
+
+        if (!$payment->isRefund() && ($state === PaymentStates::STATE_CAPTURED)) {
+            $transitions[] = static::TRANSITION_REFUND;
+        }
+        if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
+            $transitions[] = static::TRANSITION_CANCEL;
         }
 
         return $transitions;
-    }
-
-    /**
-     * Returns whether the payment can be canceled by the user.
-     *
-     * @param PaymentInterface $payment
-     *
-     * @return bool
-     */
-    static public function isUserCancellable(PaymentInterface $payment)
-    {
-        return in_array(static::TRANSITION_CANCEL, static::getAvailableTransitions($payment), true);
     }
 
     /**

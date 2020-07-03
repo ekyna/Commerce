@@ -13,10 +13,12 @@ abstract class Constants
 
     const FIELD_STATUS = 'status';
 
-    const STATUS_PENDING  = 'pending';
-    const STATUS_CAPTURED = 'captured';
-    const STATUS_REFUND   = 'refund';
-    const STATUS_CANCELED = 'canceled';
+    const STATUS_PENDING    = 'pending';
+    const STATUS_AUTHORIZED = 'authorized';
+    const STATUS_CAPTURED   = 'captured';
+    const STATUS_FAILED     = 'failed';
+    const STATUS_REFUND     = 'refund';
+    const STATUS_CANCELED   = 'canceled';
 
     final private function __construct()
     {

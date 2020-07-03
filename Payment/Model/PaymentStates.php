@@ -82,10 +82,10 @@ final class PaymentStates
     {
         return [
             self::STATE_PENDING,
-            self::STATE_CAPTURED,
             self::STATE_AUTHORIZED,
-            self::STATE_FAILED,
+            self::STATE_CAPTURED,
             self::STATE_REFUNDED,
+            self::STATE_FAILED,
         ];
     }
 

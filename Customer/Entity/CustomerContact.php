@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
 use Ekyna\Component\Commerce\Customer\Model\CustomerContactInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
+use libphonenumber\PhoneNumber;
 
 /**
  * Class CustomerContact
@@ -35,6 +36,11 @@ class CustomerContact implements CustomerContactInterface
 
     /**
      * @var string
+     */
+    private $title;
+
+    /**
+     * @var PhoneNumber
      */
     private $phone;
 
@@ -114,7 +120,25 @@ class CustomerContact implements CustomerContactInterface
     /**
      * @inheritDoc
      */
-    public function getPhone(): ?string
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setTitle(string $title = null): CustomerContactInterface
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPhone(): ?PhoneNumber
     {
         return $this->phone;
     }
@@ -122,7 +146,7 @@ class CustomerContact implements CustomerContactInterface
     /**
      * @inheritDoc
      */
-    public function setPhone(string $phone = null): CustomerContactInterface
+    public function setPhone(PhoneNumber $phone = null): CustomerContactInterface
     {
         $this->phone = $phone;
 

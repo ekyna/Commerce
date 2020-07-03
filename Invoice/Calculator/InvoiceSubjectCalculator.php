@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 
 /**
  * Class InvoiceSubjectCalculator
@@ -23,6 +24,11 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      */
     protected $currencyConverter;
 
+    /**
+     * @var ShipmentSubjectCalculatorInterface
+     */
+    protected $shipmentCalculator;
+
 
     /**
      * Constructor.
@@ -32,6 +38,16 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     public function __construct(CurrencyConverterInterface $converter)
     {
         $this->currencyConverter = $converter;
+    }
+
+    /**
+     * Sets the shipment calculator.
+     *
+     * @param ShipmentSubjectCalculatorInterface $shipmentCalculator
+     */
+    public function setShipmentCalculator(ShipmentSubjectCalculatorInterface $shipmentCalculator): void
+    {
+        $this->shipmentCalculator = $shipmentCalculator;
     }
 
     /**
@@ -359,9 +375,11 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
-                'total' => $item->getTotalQuantity(),
+                'total'    => $item->getTotalQuantity(),
                 'invoiced' => $this->calculateInvoicedQuantity($item),
                 'credited' => $this->calculateCreditedQuantity($item),
+                'shipped'  => $this->shipmentCalculator->calculateShippedQuantity($item),
+                'returned' => $this->shipmentCalculator->calculateReturnedQuantity($item),
             ];
         }
 

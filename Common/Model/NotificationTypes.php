@@ -11,17 +11,18 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class NotificationTypes
 {
-    const MANUAL           = 'manual';
-    const CART_REMIND      = 'cart_remind';
-    const ORDER_ACCEPTED   = 'order_accepted';
-    const QUOTE_REMIND     = 'quote_remind';
-    const PAYMENT_CAPTURED = 'payment_captured';
-    const PAYMENT_EXPIRED  = 'payment_expired';
-    const SHIPMENT_READY   = 'shipment_ready';
-    const SHIPMENT_SHIPPED = 'shipment_shipped';
-    const SHIPMENT_PARTIAL = 'shipment_partial';
-    const RETURN_PENDING   = 'return_pending';
-    const RETURN_RECEIVED  = 'return_received';
+    const MANUAL             = 'manual';
+    const CART_REMIND        = 'cart_remind';
+    const ORDER_ACCEPTED     = 'order_accepted';
+    const QUOTE_REMIND       = 'quote_remind';
+    const PAYMENT_AUTHORIZED = 'payment_authorized';
+    const PAYMENT_CAPTURED   = 'payment_captured';
+    const PAYMENT_EXPIRED    = 'payment_expired';
+    const SHIPMENT_READY     = 'shipment_ready';
+    const SHIPMENT_SHIPPED   = 'shipment_shipped';
+    const SHIPMENT_PARTIAL   = 'shipment_partial';
+    const RETURN_PENDING     = 'return_pending';
+    const RETURN_RECEIVED    = 'return_received';
 
 
     /**
@@ -36,6 +37,7 @@ final class NotificationTypes
             static::CART_REMIND,
             static::ORDER_ACCEPTED,
             static::QUOTE_REMIND,
+            static::PAYMENT_AUTHORIZED,
             static::PAYMENT_CAPTURED,
             static::PAYMENT_EXPIRED,
             static::SHIPMENT_READY,

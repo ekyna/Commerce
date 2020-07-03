@@ -19,7 +19,7 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return bool
      */
-    public function isShipped(Common\SaleItemInterface $saleItem);
+    public function isShipped(Common\SaleItemInterface $saleItem): bool;
 
     /**
      * Calculate the shipment item available quantity.
@@ -29,7 +29,10 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return float
      */
-    public function calculateAvailableQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
+    public function calculateAvailableQuantity(
+        Common\SaleItemInterface $saleItem,
+        Shipment\ShipmentInterface $ignore = null
+    ): float;
 
     /**
      * Calculates the shipment item shippable quantity.
@@ -39,7 +42,10 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return float
      */
-    public function calculateShippableQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
+    public function calculateShippableQuantity(
+        Common\SaleItemInterface $saleItem,
+        Shipment\ShipmentInterface $ignore = null
+    ): float;
 
     /**
      * Calculates the shipment item returnable quantity.
@@ -49,7 +55,10 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return float
      */
-    public function calculateReturnableQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
+    public function calculateReturnableQuantity(
+        Common\SaleItemInterface $saleItem,
+        Shipment\ShipmentInterface $ignore = null
+    ): float;
 
     /**
      * Calculates the shipped quantity for the given sale item.
@@ -59,7 +68,10 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return float
      */
-    public function calculateShippedQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
+    public function calculateShippedQuantity(
+        Common\SaleItemInterface $saleItem,
+        Shipment\ShipmentInterface $ignore = null
+    ): float;
 
     /**
      * Calculates the returned quantity for the given sale item.
@@ -69,7 +81,10 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return float
      */
-    public function calculateReturnedQuantity(Common\SaleItemInterface $saleItem, Shipment\ShipmentInterface $ignore = null);
+    public function calculateReturnedQuantity(
+        Common\SaleItemInterface $saleItem,
+        Shipment\ShipmentInterface $ignore = null
+    ): float;
 
     /**
      * Builds the shipment quantity map.
@@ -86,7 +101,7 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return array
      */
-    public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject);
+    public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject): array;
 
     /**
      * Builds the remaining sale items list.
@@ -95,5 +110,5 @@ interface ShipmentSubjectCalculatorInterface
      *
      * @return Shipment\RemainingList
      */
-    public function buildRemainingList(Shipment\ShipmentInterface $shipment);
+    public function buildRemainingList(Shipment\ShipmentInterface $shipment): Shipment\RemainingList;
 }

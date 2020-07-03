@@ -18,7 +18,7 @@ class PaymentNotifyListener extends AbstractNotifyListener
      *
      * @param OrderPaymentInterface $payment
      */
-    public function postPersist(OrderPaymentInterface $payment)
+    public function postPersist(OrderPaymentInterface $payment): void
     {
         $this->watch($payment);
     }
@@ -28,7 +28,7 @@ class PaymentNotifyListener extends AbstractNotifyListener
      *
      * @param OrderPaymentInterface $payment
      */
-    public function postUpdate(OrderPaymentInterface $payment)
+    public function postUpdate(OrderPaymentInterface $payment): void
     {
         $this->watch($payment);
     }
@@ -38,8 +38,13 @@ class PaymentNotifyListener extends AbstractNotifyListener
      *
      * @param OrderPaymentInterface $payment
      */
-    protected function watch(OrderPaymentInterface $payment)
+    protected function watch(OrderPaymentInterface $payment): void
     {
+        // Abort if payment is refund
+        if ($payment->isRefund()) {
+            return;
+        }
+
         $order = $payment->getOrder();
 
         // Abort if notify disabled or sample order
@@ -52,15 +57,40 @@ class PaymentNotifyListener extends AbstractNotifyListener
             return;
         }
 
-        // Abort if payment state has not changed for 'CAPTURED'
-        if (!$this->didStateChangeTo($payment, PaymentStates::STATE_CAPTURED)) {
+        // If payment state has changed for 'AUTHORIZED'
+        if ($this->didStateChangeTo($payment, PaymentStates::STATE_AUTHORIZED)) {
+            $this->notifyState($payment, NotificationTypes::PAYMENT_AUTHORIZED, PaymentStates::STATE_AUTHORIZED);
+
             return;
         }
 
-        // Abort if sale has notification of type 'PAYMENT_CAPTURED' with same payment number
+        // If payment state has changed for 'CAPTURED'
+        if ($this->didStateChangeTo($payment, PaymentStates::STATE_CAPTURED)) {
+            $this->notifyState($payment, NotificationTypes::PAYMENT_CAPTURED, PaymentStates::STATE_CAPTURED);
+        }
+    }
+
+    /**
+     * Sends the payment notification.
+     *
+     * @param OrderPaymentInterface $payment
+     * @param string                $type
+     * @param string                $state
+     */
+    protected function notifyState(OrderPaymentInterface $payment, string $type, string $state): void
+    {
+        $order = $payment->getOrder();
+
+        // Abort if no custom message is defined
+        $message = $payment->getMethod()->getMessageByState($state);
+        if (empty($message->translate($order->getLocale())->getContent())) {
+            return;
+        }
+
+        // Abort if sale has notification of the same type with same payment number
         /** @var \Ekyna\Component\Commerce\Order\Model\OrderNotificationInterface $n */
         foreach ($order->getNotifications() as $n) {
-            if ($n->getType() !== NotificationTypes::PAYMENT_CAPTURED) {
+            if ($n->getType() !== $type) {
                 continue;
             }
 
@@ -69,6 +99,6 @@ class PaymentNotifyListener extends AbstractNotifyListener
             }
         }
 
-        $this->notify(NotificationTypes::PAYMENT_CAPTURED, $payment);
+        $this->notify($type, $payment);
     }
 }

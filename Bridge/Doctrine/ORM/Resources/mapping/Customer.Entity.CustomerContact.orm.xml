@@ -19,8 +19,9 @@
         </id>
 
         <field name="email" column="email" type="string" length="255"/>
+        <field name="title" column="title" type="string" length="32" nullable="true"/>
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
-        <field name="notifications" column="notifications" type="simple_array"/>
+        <field name="notifications" column="notifications" type="simple_array" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">

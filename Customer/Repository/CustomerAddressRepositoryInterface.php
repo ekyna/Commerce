@@ -20,7 +20,7 @@ interface CustomerAddressRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return CustomerAddressInterface[]
      */
-    public function findByCustomerAndParents(CustomerInterface $customer);
+    public function findByCustomerAndParents(CustomerInterface $customer): array;
 
     /**
      * Returns the customer addresses.
@@ -30,5 +30,5 @@ interface CustomerAddressRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return CustomerAddressInterface[]
      */
-    public function findByCustomer(CustomerInterface $customer, CustomerAddressInterface $exclude = null);
+    public function findByCustomer(CustomerInterface $customer, CustomerAddressInterface $exclude = null): array;
 }

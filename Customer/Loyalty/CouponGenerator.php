@@ -77,7 +77,7 @@ class CouponGenerator
      */
     public function generate(): array
     {
-        $config = $this->features->getConfig(Features::LOYALTY)['coupons'];
+        $config = $this->features->getConfig(Features::LOYALTY . '.coupons');
 
         if (empty($config)) {
             return [];

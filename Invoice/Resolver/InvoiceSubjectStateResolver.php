@@ -84,6 +84,12 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
                         $invoicedCount++;
                         continue;
                     }
+
+                    // If shipped and credited, and shipped - returns equals invoiced - credit, item is fully invoiced
+                    if (0 < $q['credited'] && 0 === bccomp($q['shipped'] - $q['returned'], $q['invoiced'] - $q['credited'], 3)) {
+                        $invoicedCount++;
+                        continue;
+                    }
                 }
 
                 // Item is partially invoiced

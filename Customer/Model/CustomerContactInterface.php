@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Customer\Model;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 use Ekyna\Component\Resource\Model\TimestampableInterface;
+use libphonenumber\PhoneNumber;
 
 /**
  * Interface CustomerContactInterface
@@ -46,20 +47,36 @@ interface CustomerContactInterface extends ResourceInterface, IdentityInterface,
     public function setEmail(string $email): CustomerContactInterface;
 
     /**
-     * Returns the phone.
+     * Returns the title.
      *
      * @return string|null
      */
-    public function getPhone(): ?string;
+    public function getTitle(): ?string;
+
+    /**
+     * Sets the title.
+     *
+     * @param string $title
+     *
+     * @return CustomerContactInterface
+     */
+    public function setTitle(string $title = null): CustomerContactInterface;
+
+    /**
+     * Returns the phone.
+     *
+     * @return PhoneNumber|null
+     */
+    public function getPhone(): ?PhoneNumber;
 
     /**
      * Sets the phone.
      *
-     * @param string $phone
+     * @param PhoneNumber $phone
      *
      * @return CustomerContactInterface
      */
-    public function setPhone(string $phone): CustomerContactInterface;
+    public function setPhone(PhoneNumber $phone = null): CustomerContactInterface;
 
     /**
      * Returns the notifications.

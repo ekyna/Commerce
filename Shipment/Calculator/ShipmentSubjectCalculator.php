@@ -18,12 +18,12 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @var SubjectHelperInterface
      */
-    private $subjectHelper;
+    protected $subjectHelper;
 
     /**
      * @var InvoiceSubjectCalculatorInterface
      */
-    private $invoiceCalculator;
+    protected $invoiceCalculator;
 
 
     /**
@@ -41,7 +41,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
      *
      * @param InvoiceSubjectCalculatorInterface $calculator
      */
-    public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $calculator)
+    public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $calculator): void
     {
         $this->invoiceCalculator = $calculator;
     }
@@ -49,7 +49,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function isShipped(Common\SaleItemInterface $saleItem)
+    public function isShipped(Common\SaleItemInterface $saleItem): bool
     {
         // If compound with only public children
         if ($saleItem->isCompound() && !$saleItem->hasPrivateChildren()) {
@@ -85,7 +85,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     public function calculateAvailableQuantity(
         Common\SaleItemInterface $saleItem,
         Shipment\ShipmentInterface $ignore = null
-    ) {
+    ): float {
         if (!$this->hasStockableSubject($saleItem)) {
             return INF;
         }
@@ -121,7 +121,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     public function calculateShippableQuantity(
         Common\SaleItemInterface $saleItem,
         Shipment\ShipmentInterface $ignore = null
-    ) {
+    ): float {
         // TODO Return zero if not shippable (?)
 
         // Quantity = Sold - Shipped (ignoring current) + Returned
@@ -141,7 +141,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     public function calculateReturnableQuantity(
         Common\SaleItemInterface $saleItem,
         Shipment\ShipmentInterface $ignore = null
-    ) {
+    ): float {
         // Quantity = Shipped - Returned (ignoring current)
 
         // TODO Packaging format
@@ -157,7 +157,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     public function calculateShippedQuantity(
         Common\SaleItemInterface $saleItem,
         Shipment\ShipmentInterface $ignore = null
-    ) {
+    ): float {
         $sale = $saleItem->getSale();
 
         if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
@@ -192,7 +192,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     public function calculateReturnedQuantity(
         Common\SaleItemInterface $saleItem,
         Shipment\ShipmentInterface $ignore = null
-    ) {
+    ): float {
         $sale = $saleItem->getSale();
 
         if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
@@ -224,7 +224,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject)
+    public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject): array
     {
         $quantities = [];
 
@@ -240,7 +240,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function buildRemainingList(Shipment\ShipmentInterface $shipment)
+    public function buildRemainingList(Shipment\ShipmentInterface $shipment): Shipment\RemainingList
     {
         $sale = $shipment->getSale();
 
@@ -332,7 +332,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
      * @param Common\SaleItemInterface $item
      * @param array                    $quantities
      */
-    private function buildSaleItemQuantities(Common\SaleItemInterface $item, array &$quantities)
+    private function buildSaleItemQuantities(Common\SaleItemInterface $item, array &$quantities): void
     {
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
@@ -362,7 +362,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         Common\SaleItemInterface $saleItem,
         Shipment\RemainingList $list,
         array $shipments
-    ) {
+    ): void {
         // Not for compound item with only public children
         if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
             $quantity = max(
@@ -402,7 +402,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
      *
      * @return bool
      */
-    private function hasStockableSubject(Common\SaleItemInterface $saleItem)
+    private function hasStockableSubject(Common\SaleItemInterface $saleItem): bool
     {
         if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
             return false;

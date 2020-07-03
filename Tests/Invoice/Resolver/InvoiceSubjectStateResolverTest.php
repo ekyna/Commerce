@@ -28,6 +28,7 @@ class InvoiceSubjectStateResolverTest extends TestCase
      */
     private $resolver;
 
+
     protected function setUp(): void
     {
         $this->calculator = $this->createMock(InvoiceSubjectCalculatorInterface::class);

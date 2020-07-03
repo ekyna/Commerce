@@ -3,22 +3,22 @@
 namespace Ekyna\Component\Commerce\Bridge\Payum\Offline\Action;
 
 use Ekyna\Component\Commerce\Bridge\Payum\Offline\Constants;
+use Ekyna\Component\Commerce\Bridge\Payum\Request\Reject;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Core\Request\Refund;
 
 /**
- * Class RefundAction
+ * Class RejectAction
  * @package Ekyna\Component\Commerce\Bridge\Payum\Offline\Action
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class RefundAction implements ActionInterface
+class RejectAction implements ActionInterface
 {
     /**
      * {@inheritDoc}
      *
-     * @param Refund $request
+     * @param Reject $request
      */
     public function execute($request)
     {
@@ -26,7 +26,7 @@ class RefundAction implements ActionInterface
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $model[Constants::FIELD_STATUS] = Constants::STATUS_REFUND;
+        $model[Constants::FIELD_STATUS] = Constants::STATUS_FAILED;
     }
 
     /**
@@ -34,7 +34,7 @@ class RefundAction implements ActionInterface
      */
     public function supports($request)
     {
-        return $request instanceof Refund
+        return $request instanceof Reject
             && $request->getModel() instanceof \ArrayAccess;
     }
 }

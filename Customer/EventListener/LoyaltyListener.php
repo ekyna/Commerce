@@ -63,7 +63,7 @@ class LoyaltyListener
             return;
         }
 
-        $points = (int)$this->features->getConfig(Features::LOYALTY)['credit']['birthday'];
+        $points = (int)$this->features->getConfig(Features::LOYALTY . '.credit.birthday');
 
         if (0 >= $points) {
             return;
@@ -85,7 +85,7 @@ class LoyaltyListener
             return;
         }
 
-        $points = (int)$this->features->getConfig(Features::LOYALTY)['credit']['newsletter'];
+        $points = (int)$this->features->getConfig(Features::LOYALTY . '.credit.newsletter');
 
         if (0 >= $points) {
             return;
@@ -119,7 +119,7 @@ class LoyaltyListener
 
         $points = floor(
             ($order->getGrandTotal() - $calculator->calculateSaleShipment($order)->getTotal()) *
-            (float)$this->features->getConfig(Features::LOYALTY)['credit_rate']
+            (float)$this->features->getConfig(Features::LOYALTY. '.credit_rate')
         );
 
         if (0 >= $points) {

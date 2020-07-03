@@ -17,6 +17,7 @@ class Features
     public const LOYALTY          = 'loyalty';
     public const SUPPORT          = 'support';
     public const CUSTOMER_GRAPHIC = 'customer_graphic';
+    public const CUSTOMER_CONTACT = 'customer_contact';
 
     private const DEFAULTS = [
         self::BIRTHDAY   => [
@@ -63,6 +64,10 @@ class Features
         self::CUSTOMER_GRAPHIC => [
             'enabled' => false,
         ],
+        self::CUSTOMER_CONTACT => [
+            'enabled' => false,
+            'account' => false,
+        ],
     ];
 
     /**
@@ -92,7 +97,7 @@ class Features
      */
     public function isEnabled(string $feature): bool
     {
-        return $this->getConfig($feature)['enabled'];
+        return $this->getConfig($feature . '.enabled');
     }
 
     /**
@@ -100,14 +105,30 @@ class Features
      *
      * @param string $feature
      *
-     * @return array
+     * @return mixed
      */
-    public function getConfig(string $feature): array
+    public function getConfig(string $feature)
     {
-        if (!isset($this->config[$feature])) {
-            throw new LogicException("Unknown feature '$feature'.");
+        $paths = explode('.', $feature);
+
+        if (1 === count($paths)) {
+            $paths[] = 'enabled';
         }
 
-        return $this->config[$feature];
+        $config = $this->config;
+
+        while ($path = array_shift($paths)) {
+            if (!isset($config[$path])) {
+                throw new LogicException("Unknown feature '$feature'.");
+            }
+
+            $config = $config[$path];
+        }
+
+        if (!isset($config)) {
+            throw new LogicException("Unexpected feature '$feature'.");
+        }
+
+        return $config;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Model;
 
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -10,7 +11,7 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermSubjectInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShippableInterface;
-use Ekyna\Component\Resource\Model as ResourceModel;
+use Ekyna\Component\Resource\Model as Resource;
 
 /**
  * Interface SaleInterface
@@ -21,9 +22,9 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  * @method Collection|SaleNotificationInterface[] getNotifications($type = null)
  */
 interface SaleInterface extends
-    ResourceModel\ResourceInterface,
-    ResourceModel\TimestampableInterface,
-    ResourceModel\LocalizedInterface,
+    Resource\ResourceInterface,
+    Resource\TimestampableInterface,
+    Resource\LocalizedInterface,
     IdentityInterface,
     AdjustableInterface,
     NotifiableInterface,
@@ -395,18 +396,18 @@ interface SaleInterface extends
     /**
      * Returns the "accepted at" datetime.
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getAcceptedAt();
 
     /**
      * Sets the "accepted at" datetime.
      *
-     * @param \DateTime $acceptedAt
+     * @param DateTime $acceptedAt
      *
      * @return $this|SaleInterface
      */
-    public function setAcceptedAt(\DateTime $acceptedAt = null);
+    public function setAcceptedAt(DateTime $acceptedAt = null);
 
     /**
      * Returns the source.
@@ -431,7 +432,7 @@ interface SaleInterface extends
      *
      * @return $this|SaleInterface
      */
-    public function setLocale(?string $locale);
+    public function setLocale(string $locale = null): Resource\LocalizedInterface;
 
     /**
      * Returns whether the order has attachments or not.

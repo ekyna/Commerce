@@ -69,7 +69,9 @@ class Supplier implements SupplierInterface
 
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
     public function __toString()
     {

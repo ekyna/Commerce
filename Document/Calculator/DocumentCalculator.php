@@ -35,11 +35,6 @@ class DocumentCalculator implements DocumentCalculatorInterface
     /**
      * @var bool
      */
-    protected $synchronize;
-
-    /**
-     * @var bool
-     */
     protected $changed;
 
     /**
@@ -73,6 +68,8 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
+        $this->currency = $currency ?? $document->getCurrency();
+
         // TODO $this->currency is not set
         $this->calculator = $this->calculatorFactory->create($this->currency, false);
 
@@ -101,20 +98,12 @@ class DocumentCalculator implements DocumentCalculatorInterface
      * Calculates the document.
      *
      * @param Model\DocumentInterface $document
-     * @param string                  $currency
-     * @param bool                    $synchronize
      *
      * @return Result
      * @throws LogicException
      */
-    protected function calculateDocument(
-        Model\DocumentInterface $document,
-        string $currency = null,
-        bool $synchronize = true
-    ): Result {
-        $this->currency = $currency ?? $document->getCurrency();
-        $this->synchronize = $synchronize;
-
+    protected function calculateDocument(Model\DocumentInterface $document): Result
+    {
         // Goods lines / Gross result
         $gross = $this->calculateGoodLines($document);
 
@@ -303,10 +292,6 @@ class DocumentCalculator implements DocumentCalculatorInterface
      */
     protected function syncDocument(Model\DocumentInterface $document, Result $result): void
     {
-        if (!$this->synchronize) {
-            return;
-        }
-
         $gross = $result->getGross();
         $final = $result->getFinal();
 
@@ -363,10 +348,6 @@ class DocumentCalculator implements DocumentCalculatorInterface
      */
     protected function syncLine(Model\DocumentLineInterface $line, Common\Amount $result): void
     {
-        if (!$this->synchronize) {
-            return;
-        }
-
         // Unit
         if ($this->compareAmount($line->getUnit(), $result->getUnit())) {
             $line->setUnit($result->getUnit());

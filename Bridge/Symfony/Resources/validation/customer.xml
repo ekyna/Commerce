@@ -183,10 +183,12 @@
                 <option name="max">255</option>
             </constraint>
         </property>
-        <property name="notifications">
-            <constraint name="Count">
-                <option name="min">1</option>
+        <property name="title">
+            <constraint name="Length">
+                <option name="max">32</option>
             </constraint>
+        </property>
+        <property name="notifications">
             <constraint name="Choice">
                 <option name="multiple">true</option>
                 <option name="callback">

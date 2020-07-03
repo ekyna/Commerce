@@ -26,7 +26,7 @@ class AuthorizeAction implements ActionInterface
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $model[Constants::FIELD_STATUS] = Constants::STATUS_PENDING;
+        $model[Constants::FIELD_STATUS] = Constants::STATUS_AUTHORIZED;
     }
 
     /**

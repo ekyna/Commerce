@@ -110,7 +110,7 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
 
         // COMPLETED paid total equals grand total and no accepted/expired outstanding
         if (
-            $paid && (0 == $accepted) && (0 == $expired) &&
+            $paid && !$accepted && !$expired &&
             (0 === Money::compare($paid - $refunded, $total, $currency))
         ) {
             // If invoice subject and fully invoiced (ignoring credits)
@@ -143,7 +143,7 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         }
 
         // DEPOSIT paid total is greater than deposit total
-        if ($paid && 0 < $deposit) {
+        if ($paid && $deposit) {
             if (0 <= Money::compare($paid, $deposit, $currency)) {
                 return PaymentStates::STATE_DEPOSIT;
             }
@@ -152,6 +152,13 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         // OUTSTANDING expired total is greater than zero
         if (0 < $expired) {
             return PaymentStates::STATE_OUTSTANDING;
+        }
+
+        // PENDING pending total is greater than deposit total
+        if (!$paid && $pending && $deposit) {
+            if (0 <= Money::compare($pending, $deposit, $currency)) {
+                return PaymentStates::STATE_PENDING;
+            }
         }
 
         // PENDING total is greater than zero

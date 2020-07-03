@@ -2,13 +2,15 @@
 
 namespace Ekyna\Component\Commerce\Customer\Model;
 
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Entity\CustomerContact;
 use Ekyna\Component\Commerce\Customer\Entity\CustomerLogo;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
-use Ekyna\Component\Resource\Model as RM;
+use Ekyna\Component\Resource\Model as Resource;
+use libphonenumber\PhoneNumber;
 
 /**
  * Interface CustomerInterface
@@ -16,9 +18,9 @@ use Ekyna\Component\Resource\Model as RM;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
 interface CustomerInterface extends
-    RM\ResourceInterface,
-    RM\LocalizedInterface,
-    RM\TimestampableInterface,
+    Resource\ResourceInterface,
+    Resource\LocalizedInterface,
+    Resource\TimestampableInterface,
     Common\IdentityInterface,
     Common\KeySubjectInterface,
     Common\NumberSubjectInterface,
@@ -31,7 +33,7 @@ interface CustomerInterface extends
      *
      * @return string
      */
-    public function getCompany();
+    public function getCompany(): ?string;
 
     /**
      * Sets the company.
@@ -40,7 +42,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setCompany($company);
+    public function setCompany(string $company = null): CustomerInterface;
 
     /**
      * Returns the company number.
@@ -63,7 +65,7 @@ interface CustomerInterface extends
      *
      * @return string
      */
-    public function getEmail();
+    public function getEmail(): ?string;
 
     /**
      * Sets the email.
@@ -72,69 +74,69 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setEmail($email);
+    public function setEmail(string $email = null): CustomerInterface;
 
     /**
      * Returns the phone.
      *
-     * @return \libphonenumber\PhoneNumber|string
+     * @return PhoneNumber
      */
-    public function getPhone();
+    public function getPhone(): ?PhoneNumber;
 
     /**
      * Sets the phone.
      *
-     * @param string $phone
+     * @param PhoneNumber $phone
      *
      * @return $this|CustomerInterface
      */
-    public function setPhone($phone);
+    public function setPhone(PhoneNumber $phone = null): CustomerInterface;
 
     /**
      * Returns the mobile.
      *
-     * @return \libphonenumber\PhoneNumber|string
+     * @return PhoneNumber
      */
-    public function getMobile();
+    public function getMobile(): ?PhoneNumber;
 
     /**
      * Sets the mobile.
      *
-     * @param string $mobile
+     * @param PhoneNumber $mobile
      *
      * @return $this|CustomerInterface
      */
-    public function setMobile($mobile);
+    public function setMobile(PhoneNumber $mobile = null): CustomerInterface;
 
     /**
      * Returns the birthday.
      *
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getBirthday();
+    public function getBirthday(): ?DateTime;
 
     /**
      * Sets the birthday.
      *
-     * @param \DateTime $birthday
+     * @param DateTime $birthday
      *
      * @return $this|CustomerInterface
      */
-    public function setBirthday(\DateTime $birthday = null);
+    public function setBirthday(DateTime $birthday = null): CustomerInterface;
 
     /**
      * Returns whether the customer has a parent or not.
      *
      * @return bool
      */
-    public function hasParent();
+    public function hasParent(): bool;
 
     /**
      * Returns the parent.
      *
      * @return CustomerInterface
      */
-    public function getParent();
+    public function getParent(): ?CustomerInterface;
 
     /**
      * Sets the parent.
@@ -143,14 +145,14 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setParent(CustomerInterface $parent = null);
+    public function setParent(CustomerInterface $parent = null): CustomerInterface;
 
     /**
      * Returns the children.
      *
      * @return Collection|CustomerInterface[]
      */
-    public function getChildren();
+    public function getChildren(): Collection;
 
     /**
      * Returns whether the customer has the child or not.
@@ -159,7 +161,7 @@ interface CustomerInterface extends
      *
      * @return bool
      */
-    public function hasChild(CustomerInterface $child);
+    public function hasChild(CustomerInterface $child): bool;
 
     /**
      * Adds the child.
@@ -168,7 +170,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function addChild(CustomerInterface $child);
+    public function addChild(CustomerInterface $child): CustomerInterface;
 
     /**
      * Removes the child.
@@ -177,21 +179,21 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function removeChild(CustomerInterface $child);
+    public function removeChild(CustomerInterface $child): CustomerInterface;
 
     /**
      * Returns whether the customer has children or not.
      *
      * @return bool
      */
-    public function hasChildren();
+    public function hasChildren(): bool;
 
     /**
      * Returns the customer group.
      *
      * @return CustomerGroupInterface
      */
-    public function getCustomerGroup();
+    public function getCustomerGroup(): ?CustomerGroupInterface;
 
     /**
      * Sets the customer group.
@@ -200,14 +202,14 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setCustomerGroup(CustomerGroupInterface $group = null);
+    public function setCustomerGroup(CustomerGroupInterface $group = null): CustomerInterface;
 
     /**
      * Returns the addresses.
      *
      * @return Collection|CustomerAddressInterface[]
      */
-    public function getAddresses();
+    public function getAddresses(): Collection;
 
     /**
      * Returns whether the customer has the address or not.
@@ -216,7 +218,7 @@ interface CustomerInterface extends
      *
      * @return bool
      */
-    public function hasAddress(CustomerAddressInterface $address);
+    public function hasAddress(CustomerAddressInterface $address): bool;
 
     /**
      * Adds the address.
@@ -225,7 +227,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function addAddress(CustomerAddressInterface $address);
+    public function addAddress(CustomerAddressInterface $address): CustomerInterface;
 
     /**
      * Removes the address.
@@ -234,14 +236,14 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function removeAddress(CustomerAddressInterface $address);
+    public function removeAddress(CustomerAddressInterface $address): CustomerInterface;
 
     /**
      * Returns the contacts.
      *
      * @return Collection|CustomerContact[]
      */
-    public function getContacts();
+    public function getContacts(): Collection;
 
     /**
      * Returns whether the customer has the contact or not.
@@ -250,7 +252,7 @@ interface CustomerInterface extends
      *
      * @return bool
      */
-    public function hasContact(CustomerContact $contact);
+    public function hasContact(CustomerContact $contact): bool;
 
     /**
      * Adds the contact.
@@ -259,7 +261,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function addContact(CustomerContact $contact);
+    public function addContact(CustomerContact $contact): CustomerInterface;
 
     /**
      * Removes the contact.
@@ -268,7 +270,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function removeContact(CustomerContact $contact);
+    public function removeContact(CustomerContact $contact): CustomerInterface;
 
     /**
      * Returns the default payment method.
@@ -421,7 +423,7 @@ interface CustomerInterface extends
      *
      * @return float
      */
-    public function getCreditBalance();
+    public function getCreditBalance(): float;
 
     /**
      * Sets the credit balance.
@@ -430,14 +432,14 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setCreditBalance($creditBalance);
+    public function setCreditBalance(float $creditBalance): CustomerInterface;
 
     /**
      * Returns the outstanding limit.
      *
      * @return float
      */
-    public function getOutstandingLimit();
+    public function getOutstandingLimit(): float;
 
     /**
      * Sets the outstanding limit.
@@ -446,7 +448,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setOutstandingLimit($limit);
+    public function setOutstandingLimit(float $limit): CustomerInterface;
 
     /**
      * Returns whether outstanding overflow is allowed (by setting custom limit on sales).
@@ -469,7 +471,7 @@ interface CustomerInterface extends
      *
      * @return float
      */
-    public function getOutstandingBalance();
+    public function getOutstandingBalance(): float;
 
     /**
      * Sets the outstanding balance.
@@ -478,14 +480,14 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setOutstandingBalance($amount);
+    public function setOutstandingBalance(float $amount): CustomerInterface;
 
     /**
      * Returns the state.
      *
      * @return string
      */
-    public function getState();
+    public function getState(): string;
 
     /**
      * Sets the state.
@@ -494,14 +496,14 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setState($state);
+    public function setState(string $state): CustomerInterface;
 
     /**
      * Returns the description.
      *
      * @return string
      */
-    public function getDescription();
+    public function getDescription(): ?string;
 
     /**
      * Sets the description.
@@ -510,7 +512,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setDescription($description);
+    public function setDescription(string $description = null): CustomerInterface;
 
     /**
      * Sets the locale
@@ -519,7 +521,7 @@ interface CustomerInterface extends
      *
      * @return $this|CustomerInterface
      */
-    public function setLocale(?string $locale);
+    public function setLocale(string $locale = null): Resource\LocalizedInterface;
 
     /**
      * Returns the default invoice address.
@@ -528,7 +530,7 @@ interface CustomerInterface extends
      *
      * @return CustomerAddressInterface|null
      */
-    public function getDefaultInvoiceAddress($allowParentAddress = false);
+    public function getDefaultInvoiceAddress(bool $allowParentAddress = false): ?CustomerAddressInterface;
 
     /**
      * Returns the default delivery address.
@@ -537,5 +539,5 @@ interface CustomerInterface extends
      *
      * @return CustomerAddressInterface|null
      */
-    public function getDefaultDeliveryAddress($allowParentAddress = false);
+    public function getDefaultDeliveryAddress(bool $allowParentAddress = false): ?CustomerAddressInterface;
 }

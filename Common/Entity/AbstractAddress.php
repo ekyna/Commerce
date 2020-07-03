@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model;
+use libphonenumber\PhoneNumber;
 
 /**
  * Class AbstractAddress
@@ -59,12 +60,12 @@ abstract class AbstractAddress implements Model\AddressInterface
     protected $state;
 
     /**
-     * @var string
+     * @var PhoneNumber
      */
     protected $phone;
 
     /**
-     * @var string
+     * @var PhoneNumber
      */
     protected $mobile;
 
@@ -107,7 +108,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getCompany()
+    public function getCompany(): ?string
     {
         return $this->company;
     }
@@ -115,7 +116,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setCompany($company)
+    public function setCompany(string $company = null): Model\AddressInterface
     {
         $this->company = $company;
 
@@ -125,7 +126,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getStreet()
+    public function getStreet(): ?string
     {
         return $this->street;
     }
@@ -133,7 +134,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setStreet($street)
+    public function setStreet(string $street): Model\AddressInterface
     {
         $this->street = $street;
 
@@ -143,7 +144,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getComplement()
+    public function getComplement(): ?string
     {
         return $this->complement;
     }
@@ -151,7 +152,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setComplement($complement)
+    public function setComplement(string $complement = null): Model\AddressInterface
     {
         $this->complement = $complement;
 
@@ -161,7 +162,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getSupplement()
+    public function getSupplement(): ?string
     {
         return $this->supplement;
     }
@@ -169,7 +170,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setSupplement($supplement)
+    public function setSupplement(string $supplement = null): Model\AddressInterface
     {
         $this->supplement = $supplement;
 
@@ -179,7 +180,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getExtra()
+    public function getExtra(): ?string
     {
         return $this->extra;
     }
@@ -187,7 +188,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setExtra($extra)
+    public function setExtra(string $extra = null): Model\AddressInterface
     {
         $this->extra = $extra;
 
@@ -197,7 +198,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getPostalCode()
+    public function getPostalCode(): ?string
     {
         return $this->postalCode;
     }
@@ -205,7 +206,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setPostalCode($postalCode)
+    public function setPostalCode(string $postalCode): Model\AddressInterface
     {
         $this->postalCode = $postalCode;
 
@@ -215,7 +216,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getCity()
+    public function getCity(): ?string
     {
         return $this->city;
     }
@@ -223,7 +224,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setCity($city)
+    public function setCity(string $city): Model\AddressInterface
     {
         $this->city = $city;
 
@@ -233,7 +234,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getCountry()
+    public function getCountry(): ?Model\CountryInterface
     {
         return $this->country;
     }
@@ -241,7 +242,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setCountry(Model\CountryInterface $country = null)
+    public function setCountry(Model\CountryInterface $country = null): Model\AddressInterface
     {
         $this->country = $country;
 
@@ -251,7 +252,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getState()
+    public function getState(): ?Model\StateInterface
     {
         return $this->state;
     }
@@ -259,7 +260,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setState(Model\StateInterface $state = null)
+    public function setState(Model\StateInterface $state = null): Model\AddressInterface
     {
         $this->state = $state;
 
@@ -269,7 +270,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getDigicode1()
+    public function getDigicode1(): ?string
     {
         return $this->digicode1;
     }
@@ -277,7 +278,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setDigicode1($digicode1)
+    public function setDigicode1(string $digicode1 = null): Model\AddressInterface
     {
         $this->digicode1 = $digicode1;
 
@@ -287,7 +288,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getDigicode2()
+    public function getDigicode2(): ?string
     {
         return $this->digicode2;
     }
@@ -295,7 +296,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setDigicode2($digicode2)
+    public function setDigicode2(string $digicode2 = null): Model\AddressInterface
     {
         $this->digicode2 = $digicode2;
 
@@ -305,7 +306,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getIntercom()
+    public function getIntercom(): ?string
     {
         return $this->intercom;
     }
@@ -313,7 +314,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setIntercom($intercom)
+    public function setIntercom(string $intercom = null): Model\AddressInterface
     {
         $this->intercom = $intercom;
 
@@ -323,7 +324,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getPhone()
+    public function getPhone(): ?PhoneNumber
     {
         return $this->phone;
     }
@@ -331,7 +332,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setPhone($phone)
+    public function setPhone(PhoneNumber $phone = null)
     {
         $this->phone = $phone;
 
@@ -341,7 +342,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getMobile()
+    public function getMobile(): ?PhoneNumber
     {
         return $this->mobile;
     }
@@ -349,7 +350,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setMobile($mobile)
+    public function setMobile(PhoneNumber $mobile = null)
     {
         $this->mobile = $mobile;
 
@@ -359,7 +360,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getLongitude()
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
@@ -367,7 +368,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setLongitude($longitude)
+    public function setLongitude(float $longitude = null): Model\AddressInterface
     {
         $this->longitude = $longitude;
 
@@ -377,7 +378,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function getLatitude()
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
@@ -385,7 +386,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setLatitude($latitude)
+    public function setLatitude(float $latitude): Model\AddressInterface
     {
         $this->latitude = $latitude;
 
@@ -395,7 +396,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return empty($this->street) && empty($this->postalCode) && empty($this->city) && is_null($this->country);
     }

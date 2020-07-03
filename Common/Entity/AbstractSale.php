@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
@@ -148,7 +149,7 @@ abstract class AbstractSale implements Common\SaleInterface
     protected $documentComment;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $acceptedAt;
 
@@ -184,7 +185,7 @@ abstract class AbstractSale implements Common\SaleInterface
 
         $this->netTotal = 0;
 
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new DateTime();
 
         $this->attachments = new ArrayCollection();
         $this->items = new ArrayCollection();
@@ -542,7 +543,7 @@ abstract class AbstractSale implements Common\SaleInterface
     /**
      * @inheritdoc
      */
-    public function setAcceptedAt(\DateTime $acceptedAt = null)
+    public function setAcceptedAt(DateTime $acceptedAt = null)
     {
         $this->acceptedAt = $acceptedAt;
 
