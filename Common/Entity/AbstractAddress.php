@@ -386,7 +386,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setLatitude(float $latitude): Model\AddressInterface
+    public function setLatitude(float $latitude = null): Model\AddressInterface
     {
         $this->latitude = $latitude;
 
