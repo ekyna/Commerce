@@ -119,8 +119,6 @@ class SupplierOrderItemListener extends AbstractListener
 
         // Clear association
         $item->setOrder(null);
-        /* @see SupplierDeliveryListener::onDelete */
-        //$order->getItems()->removeElement($item);
 
         // Trigger the supplier order update
         if (!$this->persistenceHelper->isScheduledForRemove($order)) {
