@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
  * @package Ekyna\Component\Commerce\Order\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderPaymentInterface|null findOneByKey($key)
+ * @method OrderPaymentInterface findOneByKey(string $key)
  */
 interface OrderPaymentRepositoryInterface extends PaymentRepositoryInterface
 {

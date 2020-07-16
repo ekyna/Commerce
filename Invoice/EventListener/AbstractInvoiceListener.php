@@ -136,20 +136,7 @@ abstract class AbstractInvoiceListener
 
         $this->preventForbiddenChange($invoice);
 
-        // Generate number and key
-        $changed = $this->generateNumber($invoice);
-
-        // Updates the invoice data
-        $changed |= $this->invoiceBuilder->update($invoice);
-
-        // Updates the totals
-        $changed |= $this->updateTotals($invoice);
-
-        if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($invoice, false);
-
-            $this->scheduleSaleContentChangeEvent($this->getSaleFromInvoice($invoice));
-        }
+        $this->scheduleSaleContentChangeEvent($this->getSaleFromInvoice($invoice));
     }
 
     /**

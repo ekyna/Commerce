@@ -10,7 +10,7 @@ use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
  * @package Ekyna\Component\Commerce\Quote\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method QuotePaymentInterface|null findOneByKey($key)
+ * @method QuotePaymentInterface findOneByKey(string $key)
  */
 interface QuotePaymentRepositoryInterface extends PaymentRepositoryInterface
 {

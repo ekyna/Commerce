@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method CartPaymentInterface|null findOneByKey($key)
+ * @method CartPaymentInterface|null findOneByKey(string $key)
  */
 class CartPaymentRepository extends AbstractPaymentRepository implements CartPaymentRepositoryInterface
 {

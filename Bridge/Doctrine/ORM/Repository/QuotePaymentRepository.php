@@ -11,7 +11,7 @@ use Ekyna\Component\Commerce\Quote\Repository\QuotePaymentRepositoryInterface;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method QuotePaymentInterface|null findOneByKey($key)
+ * @method QuotePaymentInterface findOneByKey(string $key)
  */
 class QuotePaymentRepository extends AbstractPaymentRepository implements QuotePaymentRepositoryInterface
 {

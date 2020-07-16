@@ -69,7 +69,7 @@ abstract class OutstandingWatcher implements WatcherInterface
         }
 
         $result = false;
-        $payments = $paymentRepository->findByMethodAndStates($method, $states, $fromDate);
+        $payments = $paymentRepository->findByMethodAndStates($method, $states, true, $fromDate);
 
         foreach ($payments as $payment) {
             $sale = $payment->getSale();

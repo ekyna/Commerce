@@ -16,7 +16,7 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderPaymentInterface|null findOneByKey($key)
+ * @method OrderPaymentInterface|null findOneByKey(string $key)
  */
 class OrderPaymentRepository extends AbstractPaymentRepository implements OrderPaymentRepositoryInterface
 {

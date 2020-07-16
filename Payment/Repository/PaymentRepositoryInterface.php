@@ -20,18 +20,24 @@ interface PaymentRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return PaymentInterface|null
      */
-    public function findOneByKey($key);
+    public function findOneByKey(string $key): ?PaymentInterface;
 
     /**
      * Finds payments by method and states and optionally from date.
      *
      * @param PaymentMethodInterface $method
      * @param array                  $states
+     * @param bool                   $filter TRUE for payments, FALSE for refunds, NULL for all
      * @param \DateTime              $fromDate
      *
      * @return PaymentInterface[]
      */
-    public function findByMethodAndStates(PaymentMethodInterface $method, array $states, \DateTime $fromDate = null);
+    public function findByMethodAndStates(
+        PaymentMethodInterface $method,
+        array $states,
+        bool $filter = null,
+        \DateTime $fromDate = null
+    ): array;
 
     /**
      * Finds payments (and refunds) by month.
@@ -41,5 +47,5 @@ interface PaymentRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return PaymentInterface[]
      */
-    public function findByMonth(\DateTime $date, array $states);
+    public function findByMonth(\DateTime $date, array $states): array;
 }

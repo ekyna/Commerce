@@ -69,8 +69,6 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         $this->currency = $currency ?? $document->getCurrency();
-
-        // TODO $this->currency is not set
         $this->calculator = $this->calculatorFactory->create($this->currency, false);
 
         $this->calculateDocument($document);

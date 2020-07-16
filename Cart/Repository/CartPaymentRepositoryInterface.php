@@ -10,7 +10,7 @@ use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
  * @package Ekyna\Component\Commerce\Cart\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method CartPaymentInterface|null findOneByKey($key)
+ * @method CartPaymentInterface findOneByKey(string $key)
  */
 interface CartPaymentRepositoryInterface extends PaymentRepositoryInterface
 {

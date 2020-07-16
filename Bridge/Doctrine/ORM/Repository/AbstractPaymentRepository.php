@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\DBAL\Types\Types;
+use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
@@ -16,69 +17,54 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;
 abstract class AbstractPaymentRepository extends ResourceRepository implements PaymentRepositoryInterface
 {
     /**
-     * @var \Doctrine\ORM\Query
-     */
-    private $byMethodAndStatesFromDateQuery;
-
-
-    /**
      * @inheritDoc
      */
-    public function findOneByKey($key)
+    public function findOneByKey(string $key): ?PaymentInterface
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->findOneBy(['key' => $key]);
     }
 
     /**
      * @inheritDoc
      */
-    public function findByMethodAndStates(PaymentMethodInterface $method, array $states, \DateTime $fromDate = null)
-    {
+    public function findByMethodAndStates(
+        PaymentMethodInterface $method,
+        array $states,
+        bool $filter = null,
+        \DateTime $fromDate = null
+    ): array {
         foreach ($states as $state) {
             PaymentStates::isValidState($state);
         }
 
-        if (null === $fromDate) {
-            $fromDate = new \DateTime();
-            $fromDate->modify('-200 years'); // At least ! xD
-        }
-
-        return $this
-            ->getByMethodAndStatesFromDateQuery()
-            ->setParameter('method', $method)
-            ->setParameter('date', $fromDate, Types::DATE_MUTABLE)
-            ->setParameter('states', $states)
-            ->getResult();
-    }
-
-    /**
-     * Returns the "find by method and states from date" query.
-     *
-     * @return \Doctrine\ORM\Query
-     */
-    private function getByMethodAndStatesFromDateQuery()
-    {
-        if (null !== $this->byMethodAndStatesFromDateQuery) {
-            return $this->byMethodAndStatesFromDateQuery;
-        }
-
         $qb = $this->createQueryBuilder('p');
-
-        $query = $qb
+        $qb
             ->andWhere($qb->expr()->eq('p.method', ':method'))
             ->andWhere($qb->expr()->in('p.state', ':states'))
-            ->andWhere($qb->expr()->gte('p.createdAt', ':date'))
-            ->addOrderBy('p.createdAt', 'ASC')
-            ->getQuery()
-            ->useQueryCache(true);
+            ->setParameter('method', $method)
+            ->setParameter('states', $states)
+            ->addOrderBy('p.createdAt', 'ASC');
 
-        return $this->byMethodAndStatesFromDateQuery = $query;
+        if (!is_null($filter)) {
+            $qb
+                ->andWhere($qb->expr()->eq('p.refund', ':refund'))
+                ->setParameter('refund', !$filter);
+        }
+
+        if (!is_null($fromDate)) {
+            $qb
+                ->andWhere($qb->expr()->gte('p.createdAt', ':date'))
+                ->setParameter('date', $fromDate, Types::DATE_MUTABLE);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
      * @inheritDoc
      */
-    public function findByMonth(\DateTime $date, array $states)
+    public function findByMonth(\DateTime $date, array $states): array
     {
         foreach ($states as $state) {
             PaymentStates::isValidState($state);
