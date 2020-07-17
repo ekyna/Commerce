@@ -499,6 +499,22 @@ interface CustomerInterface extends
     public function setState(string $state): CustomerInterface;
 
     /**
+     * Returns the notifications.
+     *
+     * @return string[]
+     */
+    public function getNotifications(): array;
+
+    /**
+     * Sets the notifications.
+     *
+     * @param string[] $notifications
+     *
+     * @return CustomerInterface
+     */
+    public function setNotifications(array $notifications = []): CustomerInterface;
+
+    /**
      * Returns the description.
      *
      * @return string

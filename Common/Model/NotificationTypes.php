@@ -19,10 +19,13 @@ final class NotificationTypes
     const PAYMENT_CAPTURED   = 'payment_captured';
     const PAYMENT_EXPIRED    = 'payment_expired';
     const SHIPMENT_READY     = 'shipment_ready';
-    const SHIPMENT_SHIPPED   = 'shipment_shipped';
+    const SHIPMENT_COMPLETE  = 'shipment_complete';
     const SHIPMENT_PARTIAL   = 'shipment_partial';
+    const INVOICE_COMPLETE   = 'invoice_complete';
+    const INVOICE_PARTIAL    = 'invoice_partial';
     const RETURN_PENDING     = 'return_pending';
     const RETURN_RECEIVED    = 'return_received';
+
 
 
     /**
@@ -41,8 +44,10 @@ final class NotificationTypes
             static::PAYMENT_CAPTURED,
             static::PAYMENT_EXPIRED,
             static::SHIPMENT_READY,
-            static::SHIPMENT_SHIPPED,
+            static::SHIPMENT_COMPLETE,
             static::SHIPMENT_PARTIAL,
+            static::INVOICE_COMPLETE,
+            static::INVOICE_PARTIAL,
             static::RETURN_PENDING,
             static::RETURN_RECEIVED,
         ];

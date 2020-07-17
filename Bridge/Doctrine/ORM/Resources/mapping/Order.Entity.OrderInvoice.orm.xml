@@ -16,6 +16,10 @@
             <unique-constraint columns="number" name="unique_commerce_order_invoice_number"/>
         </unique-constraints>
 
+        <entity-listeners>
+            <entity-listener class="Ekyna\Component\Commerce\Common\Listener\InvoiceNotifyListener"/>
+        </entity-listeners>
+
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>

@@ -130,6 +130,15 @@
         <!-- TODO <property name="brandColor">
             <constraint name="Url"/>
         </property>-->
+        <property name="notifications">
+            <constraint name="Choice">
+                <option name="multiple">true</option>
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Common\Model\NotificationTypes</value>
+                    <value>getTypes</value>
+                </option>
+            </constraint>
+        </property>
         <property name="documentTypes">
             <constraint name="Choice">
                 <option name="multiple">true</option>

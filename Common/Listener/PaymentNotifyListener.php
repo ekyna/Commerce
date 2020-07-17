@@ -88,15 +88,8 @@ class PaymentNotifyListener extends AbstractNotifyListener
         }
 
         // Abort if sale has notification of the same type with same payment number
-        /** @var \Ekyna\Component\Commerce\Order\Model\OrderNotificationInterface $n */
-        foreach ($order->getNotifications() as $n) {
-            if ($n->getType() !== $type) {
-                continue;
-            }
-
-            if ($n->hasData('payment') && $n->getData('payment') === $payment->getNumber()) {
-                return;
-            }
+        if ($this->hasNotification($order, $type, 'payment', $payment->getNumber())) {
+            return;
         }
 
         $this->notify($type, $payment);

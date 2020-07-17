@@ -118,6 +118,11 @@ class Notify
     /**
      * @var bool
      */
+    private $unsafe;
+
+    /**
+     * @var bool
+     */
     private $error;
 
     /**
@@ -149,6 +154,7 @@ class Notify
 
         $this->includeView = static::VIEW_NONE;
         $this->includeForm = false;
+        $this->unsafe = false;
         $this->error = false;
         $this->report = '';
         $this->test = false;
@@ -800,6 +806,30 @@ class Notify
     public function setButtonUrl(string $url = null): Notify
     {
         $this->buttonUrl = $url;
+
+        return $this;
+    }
+
+    /**
+     * Returns the unsafe.
+     *
+     * @return bool
+     */
+    public function isUnsafe(): bool
+    {
+        return $this->unsafe;
+    }
+
+    /**
+     * Sets the unsafe.
+     *
+     * @param bool $unsafe
+     *
+     * @return Notify
+     */
+    public function setUnsafe(bool $unsafe): Notify
+    {
+        $this->unsafe = $unsafe;
 
         return $this;
     }

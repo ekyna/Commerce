@@ -162,6 +162,11 @@ class Customer implements Model\CustomerInterface
     protected $state;
 
     /**
+     * @var string[]
+     */
+    private $notifications;
+
+    /**
      * @var string
      */
     protected $description;
@@ -180,6 +185,22 @@ class Customer implements Model\CustomerInterface
         $this->outstandingBalance = 0;
 
         $this->state = Model\CustomerStates::STATE_NEW;
+
+        $this->notifications = [
+            Common\NotificationTypes::CART_REMIND,
+            Common\NotificationTypes::ORDER_ACCEPTED,
+            Common\NotificationTypes::QUOTE_REMIND,
+            Common\NotificationTypes::PAYMENT_AUTHORIZED,
+            Common\NotificationTypes::PAYMENT_CAPTURED,
+            Common\NotificationTypes::PAYMENT_EXPIRED,
+            Common\NotificationTypes::SHIPMENT_READY,
+            Common\NotificationTypes::SHIPMENT_COMPLETE,
+            Common\NotificationTypes::SHIPMENT_PARTIAL,
+            Common\NotificationTypes::INVOICE_COMPLETE,
+            Common\NotificationTypes::INVOICE_PARTIAL,
+            Common\NotificationTypes::RETURN_PENDING,
+            Common\NotificationTypes::RETURN_RECEIVED,
+        ];
 
         $this->children = new ArrayCollection();
         $this->addresses = new ArrayCollection();
@@ -782,6 +803,32 @@ class Customer implements Model\CustomerInterface
     public function setState(string $state): Model\CustomerInterface
     {
         $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNotifications(): array
+    {
+        return $this->notifications;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setNotifications(array $notifications = []): Model\CustomerInterface
+    {
+        $this->notifications = [];
+
+        foreach (array_unique($notifications) as $notification) {
+            if (!Common\NotificationTypes::isValid($notification, false)) {
+                continue;
+            }
+
+            $this->notifications[] = $notification;
+        }
 
         return $this;
     }

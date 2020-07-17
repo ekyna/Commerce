@@ -72,7 +72,7 @@ class CustomerListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $customer = $this->getCustomerFromEvent($event);
 
@@ -94,7 +94,7 @@ class CustomerListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $customer = $this->getCustomerFromEvent($event);
 
@@ -125,7 +125,7 @@ class CustomerListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onParentChange(ResourceEventInterface $event)
+    public function onParentChange(ResourceEventInterface $event): void
     {
         $customer = $this->getCustomerFromEvent($event);
 
@@ -141,7 +141,7 @@ class CustomerListener
      *
      * @return bool
      */
-    protected function updateFromParent(CustomerInterface $customer)
+    protected function updateFromParent(CustomerInterface $customer): bool
     {
         if (!$customer->hasParent()) {
             // Make sure default invoice and delivery address exists.
@@ -258,7 +258,7 @@ class CustomerListener
      *
      * @param CustomerInterface $customer
      */
-    protected function scheduleParentChangeEvents(CustomerInterface $customer)
+    protected function scheduleParentChangeEvents(CustomerInterface $customer): void
     {
         if (!$customer->hasChildren()) {
             return;
@@ -277,7 +277,7 @@ class CustomerListener
      * @return CustomerInterface
      * @throws InvalidArgumentException
      */
-    protected function getCustomerFromEvent(ResourceEventInterface $event)
+    protected function getCustomerFromEvent(ResourceEventInterface $event): CustomerInterface
     {
         $resource = $event->getResource();
 
@@ -295,7 +295,7 @@ class CustomerListener
      *
      * @return bool Whether the customer number has been generated.
      */
-    private function generateNumber(CustomerInterface $customer)
+    private function generateNumber(CustomerInterface $customer): bool
     {
         if (!empty($customer->getNumber())) {
             return false;
@@ -313,7 +313,7 @@ class CustomerListener
      *
      * @return bool Whether the customer key has been generated.
      */
-    private function generateKey(CustomerInterface $customer)
+    private function generateKey(CustomerInterface $customer): bool
     {
         if (!empty($customer->getKey())) {
             return false;

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Listener;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Notify\NotifyBuilder;
 use Ekyna\Component\Commerce\Common\Notify\NotifyQueue;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -63,6 +64,31 @@ abstract class AbstractNotifyListener
 
         if ($stateCs[1] === $state && $stateCs[0] !== $state) {
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the sale has a notification with the given type and key number.
+     *
+     * @param SaleInterface $sale
+     * @param string        $type
+     * @param string        $key
+     * @param string        $number
+     *
+     * @return bool
+     */
+    protected function hasNotification(SaleInterface $sale, string $type, string $key, string $number): bool
+    {
+        foreach ($sale->getNotifications() as $n) {
+            if ($n->getType() !== $type) {
+                continue;
+            }
+
+            if ($n->hasData($key) && $n->getData($key) === $number) {
+                return true;
+            }
         }
 
         return false;
