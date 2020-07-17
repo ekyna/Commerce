@@ -55,11 +55,15 @@ class NotifyBuilder
      *
      * @return bool Whether the notify has been successfully built.
      */
-    public function build(Notify $notify)
+    public function build(Notify $notify): bool
     {
         $event = new NotifyEvent($notify);
 
         $this->eventDispatcher->dispatch(NotifyEvents::BUILD, $event);
+
+        if ($notify->getRecipients()->isEmpty()) {
+            return false;
+        }
 
         return !$event->isAbort();
     }
