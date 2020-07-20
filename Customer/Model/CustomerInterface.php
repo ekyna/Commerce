@@ -25,6 +25,7 @@ interface CustomerInterface extends
     Common\KeySubjectInterface,
     Common\NumberSubjectInterface,
     Common\CurrencySubjectInterface,
+    NotificationsInterface,
     Payment\PaymentTermSubjectInterface,
     VatNumberSubjectInterface
 {
@@ -497,22 +498,6 @@ interface CustomerInterface extends
      * @return $this|CustomerInterface
      */
     public function setState(string $state): CustomerInterface;
-
-    /**
-     * Returns the notifications.
-     *
-     * @return string[]
-     */
-    public function getNotifications(): array;
-
-    /**
-     * Sets the notifications.
-     *
-     * @param string[] $notifications
-     *
-     * @return CustomerInterface
-     */
-    public function setNotifications(array $notifications = []): CustomerInterface;
 
     /**
      * Returns the description.

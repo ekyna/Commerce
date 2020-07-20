@@ -3,9 +3,9 @@
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\IdentityTrait;
-use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
 use Ekyna\Component\Commerce\Customer\Model\CustomerContactInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Customer\Model\NotificationsTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 use libphonenumber\PhoneNumber;
 
@@ -17,6 +17,7 @@ use libphonenumber\PhoneNumber;
 class CustomerContact implements CustomerContactInterface
 {
     use IdentityTrait,
+        NotificationsTrait,
         TimestampableTrait;
 
     /**
@@ -43,11 +44,6 @@ class CustomerContact implements CustomerContactInterface
      * @var PhoneNumber
      */
     private $phone;
-
-    /**
-     * @var string[]
-     */
-    private $notifications;
 
     /**
      * @var string
@@ -149,32 +145,6 @@ class CustomerContact implements CustomerContactInterface
     public function setPhone(PhoneNumber $phone = null): CustomerContactInterface
     {
         $this->phone = $phone;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getNotifications(): array
-    {
-        return $this->notifications;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setNotifications(array $notifications = []): CustomerContactInterface
-    {
-        $this->notifications = [];
-
-        foreach (array_unique($notifications) as $notification) {
-            if (!NotificationTypes::isValid($notification, false)) {
-                continue;
-            }
-
-            $this->notifications[] = $notification;
-        }
 
         return $this;
     }

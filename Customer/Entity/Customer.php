@@ -26,6 +26,7 @@ class Customer implements Model\CustomerInterface
         Common\NumberSubjectTrait,
         Common\CurrencySubjectTrait,
         Payment\PaymentTermSubjectTrait,
+        Model\NotificationsTrait,
         VatNumberSubjectTrait,
         RM\LocalizedTrait,
         RM\TimestampableTrait;
@@ -66,7 +67,7 @@ class Customer implements Model\CustomerInterface
     protected $mobile;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $birthday;
 
@@ -160,11 +161,6 @@ class Customer implements Model\CustomerInterface
      * @var string
      */
     protected $state;
-
-    /**
-     * @var string[]
-     */
-    private $notifications;
 
     /**
      * @var string
@@ -803,32 +799,6 @@ class Customer implements Model\CustomerInterface
     public function setState(string $state): Model\CustomerInterface
     {
         $this->state = $state;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getNotifications(): array
-    {
-        return $this->notifications;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setNotifications(array $notifications = []): Model\CustomerInterface
-    {
-        $this->notifications = [];
-
-        foreach (array_unique($notifications) as $notification) {
-            if (!Common\NotificationTypes::isValid($notification, false)) {
-                continue;
-            }
-
-            $this->notifications[] = $notification;
-        }
 
         return $this;
     }

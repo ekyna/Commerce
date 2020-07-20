@@ -12,7 +12,8 @@ use libphonenumber\PhoneNumber;
  * @package Ekyna\Component\Commerce\Customer\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface CustomerContactInterface extends ResourceInterface, IdentityInterface, TimestampableInterface
+interface CustomerContactInterface
+    extends ResourceInterface, IdentityInterface, NotificationsInterface, TimestampableInterface
 {
     /**
      * Returns the customer.
@@ -77,22 +78,6 @@ interface CustomerContactInterface extends ResourceInterface, IdentityInterface,
      * @return CustomerContactInterface
      */
     public function setPhone(PhoneNumber $phone = null): CustomerContactInterface;
-
-    /**
-     * Returns the notifications.
-     *
-     * @return string[]
-     */
-    public function getNotifications(): array;
-
-    /**
-     * Sets the notifications.
-     *
-     * @param string[] $notifications
-     *
-     * @return CustomerContactInterface
-     */
-    public function setNotifications(array $notifications = []): CustomerContactInterface;
 
     /**
      * Returns the description.
