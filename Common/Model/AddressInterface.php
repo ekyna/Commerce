@@ -41,7 +41,7 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setStreet(string $street): AddressInterface;
+    public function setStreet(string $street = null): AddressInterface;
 
     /**
      * Returns the complement.
@@ -105,7 +105,7 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setPostalCode(string $postalCode): AddressInterface;
+    public function setPostalCode(string $postalCode = null): AddressInterface;
 
     /**
      * Returns the city.
@@ -121,7 +121,7 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setCity(string $city): AddressInterface;
+    public function setCity(string $city = null): AddressInterface;
 
     /**
      * Returns the country.
@@ -137,7 +137,7 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setCountry(CountryInterface $country): AddressInterface;
+    public function setCountry(CountryInterface $country = null): AddressInterface;
 
     /**
      * Returns the state.
@@ -265,7 +265,7 @@ interface AddressInterface extends IdentityInterface
      *
      * @return $this|AddressInterface
      */
-    public function setLatitude(float $latitude): AddressInterface;
+    public function setLatitude(float $latitude = null): AddressInterface;
 
     /**
      * Returns whether this address can be considered as empty.

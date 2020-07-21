@@ -134,7 +134,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setStreet(string $street): Model\AddressInterface
+    public function setStreet(string $street = null): Model\AddressInterface
     {
         $this->street = $street;
 
@@ -206,7 +206,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setPostalCode(string $postalCode): Model\AddressInterface
+    public function setPostalCode(string $postalCode = null): Model\AddressInterface
     {
         $this->postalCode = $postalCode;
 
@@ -224,7 +224,7 @@ abstract class AbstractAddress implements Model\AddressInterface
     /**
      * @inheritDoc
      */
-    public function setCity(string $city): Model\AddressInterface
+    public function setCity(string $city = null): Model\AddressInterface
     {
         $this->city = $city;
 
