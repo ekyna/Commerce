@@ -250,6 +250,13 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
     public function getLevel();
 
     /**
+     * Returns the root item.
+     *
+     * @return SaleItemInterface|null
+     */
+    public function getRoot(): ?SaleItemInterface;
+
+    /**
      * Returns the parents total quantity.
      *
      * @return float

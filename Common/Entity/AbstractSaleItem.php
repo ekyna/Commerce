@@ -440,6 +440,20 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     /**
      * @inheritdoc
      */
+    public function getRoot(): ?Model\SaleItemInterface
+    {
+        $item = $this;
+
+        while ($parent = $item->getParent()) {
+            $item = $parent;
+        }
+
+        return $item;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getParentsQuantity()
     {
         $modifier = 1;
