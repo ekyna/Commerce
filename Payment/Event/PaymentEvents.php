@@ -9,10 +9,11 @@ namespace Ekyna\Component\Commerce\Payment\Event;
  */
 final class PaymentEvents
 {
+    const AUTHORIZE = 'ekyna_commerce.payment.authorize';
     const CAPTURE   = 'ekyna_commerce.payment.capture';
+    const PAYOUT    = 'ekyna_commerce.payment.payout';
     const CANCEL    = 'ekyna_commerce.payment.cancel';
     const HANG      = 'ekyna_commerce.payment.hang';
-    const AUTHORIZE = 'ekyna_commerce.payment.authorize';
     const ACCEPT    = 'ekyna_commerce.payment.accept';
     const REFUND    = 'ekyna_commerce.payment.refund';
     const REJECT    = 'ekyna_commerce.payment.reject';

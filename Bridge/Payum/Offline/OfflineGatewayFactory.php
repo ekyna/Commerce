@@ -37,23 +37,25 @@ class OfflineGatewayFactory extends GatewayFactory
             'payum.factory_title'          => 'Offline',
             'payum.action.accept'          => new Action\AcceptAction(),
             'payum.action.cancel'          => new Action\CancelAction(),
-            'payum.action.capture'         => new Action\CaptureAction(),
             'payum.action.convert_payment' => new Action\ConvertAction(),
-            'payum.action.hang'            => new Action\HangAction(),
             'payum.action.reject'          => new Action\RejectAction(),
             'payum.action.status'          => new Action\StatusAction(),
             'payum.action.sync'            => new Action\SyncAction(),
         ]);
 
-        $defaultOptions = ['authorize' => false,];
+        $defaultOptions = ['factor' => false,];
 
         $config->defaults($defaultOptions);
 
         $config['payum.default_options'] = $defaultOptions;
 
-        if ($config['authorize']) {
+        if ($config['factor']) {
+            $config['payum.action.capture'] = new Action\CaptureAction(['factor' => true]);
             $config['payum.action.authorize_payment'] = new Action\AuthorizeAction();
+            $config['payum.action.payout'] = new Action\PayoutAction();
         } else {
+            $config['payum.action.capture'] = new Action\CaptureAction();
+            $config['payum.action.hang'] = new Action\HangAction();
             unset($config['payum.action.authorize_payment']);
         }
     }

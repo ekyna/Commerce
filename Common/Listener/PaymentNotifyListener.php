@@ -57,6 +57,13 @@ class PaymentNotifyListener extends AbstractNotifyListener
             return;
         }
 
+        // If payment state has changed for 'PAYEDOUT'
+        if ($this->didStateChangeTo($payment, PaymentStates::STATE_PAYEDOUT)) {
+            $this->notifyState($payment, NotificationTypes::PAYMENT_PAYEDOUT, PaymentStates::STATE_PAYEDOUT);
+
+            return;
+        }
+
         // If payment state has changed for 'AUTHORIZED'
         if ($this->didStateChangeTo($payment, PaymentStates::STATE_AUTHORIZED)) {
             $this->notifyState($payment, NotificationTypes::PAYMENT_AUTHORIZED, PaymentStates::STATE_AUTHORIZED);
@@ -83,7 +90,7 @@ class PaymentNotifyListener extends AbstractNotifyListener
 
         // Abort if no custom message is defined
         $message = $payment->getMethod()->getMessageByState($state);
-        if (empty($message->translate($order->getLocale())->getContent())) {
+        if (!$message || empty($message->translate($order->getLocale())->getContent())) {
             return;
         }
 

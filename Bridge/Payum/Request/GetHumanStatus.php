@@ -145,7 +145,7 @@ class GetHumanStatus extends BaseGetStatus
      */
     public function isPayedout()
     {
-        // TODO: Implement isPayedout() method.
+        return $this->status === PaymentStates::STATE_PAYEDOUT;
     }
 
     /**
@@ -153,7 +153,7 @@ class GetHumanStatus extends BaseGetStatus
      */
     public function markPayedout()
     {
-        // TODO: Implement markPayedout() method.
+        $this->status = PaymentStates::STATE_PAYEDOUT;
     }
 
     /**

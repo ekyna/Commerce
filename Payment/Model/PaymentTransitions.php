@@ -18,6 +18,7 @@ final class PaymentTransitions
     const TRANSITION_HANG      = 'hang';
     const TRANSITION_AUTHORIZE = 'authorize';
     const TRANSITION_ACCEPT    = 'accept';
+    const TRANSITION_PAYOUT    = 'payout';
     const TRANSITION_REJECT    = 'reject';
     const TRANSITION_REFUND    = 'refund';
 
@@ -40,6 +41,8 @@ final class PaymentTransitions
                 return Payum\Authorize::class;
             case self::TRANSITION_ACCEPT:
                 return Commerce\Accept::class;
+            case self::TRANSITION_PAYOUT:
+                return Payum\Payout::class;
             case self::TRANSITION_REJECT:
                 return Commerce\Reject::class;
             case self::TRANSITION_REFUND:
@@ -79,6 +82,7 @@ final class PaymentTransitions
                 PaymentStates::STATE_CANCELED   => static::TRANSITION_CANCEL,
                 PaymentStates::STATE_PENDING    => static::TRANSITION_HANG,
                 PaymentStates::STATE_AUTHORIZED => static::TRANSITION_AUTHORIZE,
+                PaymentStates::STATE_PAYEDOUT   => static::TRANSITION_PAYOUT,
                 PaymentStates::STATE_CAPTURED   => static::TRANSITION_ACCEPT,
                 PaymentStates::STATE_FAILED     => static::TRANSITION_REJECT,
             ];

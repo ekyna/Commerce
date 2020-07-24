@@ -17,6 +17,7 @@ final class NotificationTypes
     const QUOTE_REMIND       = 'quote_remind';
     const PAYMENT_AUTHORIZED = 'payment_authorized';
     const PAYMENT_CAPTURED   = 'payment_captured';
+    const PAYMENT_PAYEDOUT   = 'payment_payedout';
     const PAYMENT_EXPIRED    = 'payment_expired';
     const SHIPMENT_READY     = 'shipment_ready';
     const SHIPMENT_COMPLETE  = 'shipment_complete';
@@ -42,6 +43,7 @@ final class NotificationTypes
             static::QUOTE_REMIND,
             static::PAYMENT_AUTHORIZED,
             static::PAYMENT_CAPTURED,
+            static::PAYMENT_PAYEDOUT,
             static::PAYMENT_EXPIRED,
             static::SHIPMENT_READY,
             static::SHIPMENT_COMPLETE,

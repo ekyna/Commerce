@@ -16,6 +16,7 @@ abstract class Constants
     const STATUS_PENDING    = 'pending';
     const STATUS_AUTHORIZED = 'authorized';
     const STATUS_CAPTURED   = 'captured';
+    const STATUS_PAYEDOUT   = 'payedout';
     const STATUS_FAILED     = 'failed';
     const STATUS_REFUND     = 'refund';
     const STATUS_CANCELED   = 'canceled';

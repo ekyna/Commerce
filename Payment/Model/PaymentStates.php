@@ -18,6 +18,7 @@ final class PaymentStates
     const STATE_CANCELED   = 'canceled';
     const STATE_REFUNDED   = 'refunded';
     const STATE_AUTHORIZED = 'authorized';
+    const STATE_PAYEDOUT   = 'payedout';
     const STATE_SUSPENDED  = 'suspended';
     const STATE_EXPIRED    = 'expired';
     const STATE_UNKNOWN    = 'unknown';
@@ -43,6 +44,7 @@ final class PaymentStates
             self::STATE_CANCELED,
             self::STATE_REFUNDED,
             self::STATE_AUTHORIZED,
+            self::STATE_PAYEDOUT,
             self::STATE_SUSPENDED,
             self::STATE_EXPIRED,
             self::STATE_UNKNOWN,
@@ -84,6 +86,7 @@ final class PaymentStates
             self::STATE_PENDING,
             self::STATE_AUTHORIZED,
             self::STATE_CAPTURED,
+            self::STATE_PAYEDOUT,
             self::STATE_REFUNDED,
             self::STATE_FAILED,
         ];
@@ -144,6 +147,7 @@ final class PaymentStates
             return [
                 self::STATE_CAPTURED,
                 self::STATE_AUTHORIZED,
+                self::STATE_PAYEDOUT,
                 self::STATE_REFUNDED,
             ];
         }
@@ -151,6 +155,7 @@ final class PaymentStates
         return [
             self::STATE_CAPTURED,
             self::STATE_AUTHORIZED,
+            self::STATE_PAYEDOUT,
         ];
     }
 

@@ -50,6 +50,12 @@ class StatusAction implements ActionInterface
             return;
         }
 
+        if (Constants::STATUS_PAYEDOUT == $model[Constants::FIELD_STATUS]) {
+            $request->markPayedout();
+
+            return;
+        }
+
         if (Constants::STATUS_FAILED == $model[Constants::FIELD_STATUS]) {
             $request->markFailed();
 

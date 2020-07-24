@@ -88,8 +88,9 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             // ACCEPTED If payment state is accepted, outstanding or pending
             $acceptedStates = [
                 PaymentStates::STATE_COMPLETED,
-                PaymentStates::STATE_CAPTURED,
                 PaymentStates::STATE_AUTHORIZED,
+                PaymentStates::STATE_CAPTURED,
+                PaymentStates::STATE_PAYEDOUT,
                 PaymentStates::STATE_OUTSTANDING,
                 PaymentStates::STATE_PENDING,
             ];

@@ -28,8 +28,9 @@ class QuoteStateResolver extends AbstractSaleStateResolver implements StateResol
 
             // ACCEPTED If payment state is accepted or pending
             $acceptedStates = [
-                PaymentStates::STATE_CAPTURED,
                 PaymentStates::STATE_AUTHORIZED,
+                PaymentStates::STATE_CAPTURED,
+                PaymentStates::STATE_PAYEDOUT,
                 PaymentStates::STATE_PENDING,
                 PaymentStates::STATE_DEPOSIT,
                 PaymentStates::STATE_COMPLETED,
