@@ -105,7 +105,7 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
         }
 
         // If all fully invoiced
-        if ($invoicedCount === $itemsCount) {
+        if ($invoicedCount + $creditedCount === $itemsCount) {
             return InvoiceStates::STATE_COMPLETED;
         }
 
