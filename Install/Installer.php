@@ -412,8 +412,8 @@ class Installer
         $repository = $this->registry->getRepository(CustomerGroup::class);
 
         /** @var \Doctrine\ORM\Tools\Pagination\Paginator $groups */
-        $group = $repository->findOneBy([]);
-        if ($group) {
+        $groups = $repository->findBy([], null, 1);
+        if (0 < $groups->count()) {
             call_user_func($this->log, 'All', 'skipped');
 
             return;
