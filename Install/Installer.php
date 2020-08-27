@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Install;
 
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use Ekyna\Component\Commerce\Common\Entity\Country;
 use Ekyna\Component\Commerce\Common\Entity\Currency;
@@ -411,9 +412,8 @@ class Installer
         $manager    = $this->registry->getManagerForClass(CustomerGroup::class);
         $repository = $this->registry->getRepository(CustomerGroup::class);
 
-        /** @var \Doctrine\ORM\Tools\Pagination\Paginator $groups */
         $groups = $repository->findBy([], null, 1);
-        if (0 < $groups->count()) {
+        if ((is_array($groups) && empty($groups)) || ($groups instanceof Paginator && 0 < $groups->count())) {
             call_user_func($this->log, 'All', 'skipped');
 
             return;
