@@ -2,15 +2,9 @@
 
 namespace Ekyna\Component\Commerce\Bridge\Mailchimp;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Ekyna\Component\Commerce\Newsletter\EventListener\ListenerGatewayToggler;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\MemberStatuses;
-use Ekyna\Component\Commerce\Newsletter\Repository\AudienceRepositoryInterface;
-use Ekyna\Component\Commerce\Newsletter\Repository\MemberRepositoryInterface;
-use Ekyna\Component\Commerce\Newsletter\Webhook\HandlerInterface;
-use Psr\Log\LoggerInterface;
+use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionStatus;
+use Ekyna\Component\Commerce\Newsletter\Webhook\AbstractHandler;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,57 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
  * @package Ekyna\Component\Commerce\Bridge\Mailchimp
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class Handler implements HandlerInterface
+class Handler extends AbstractHandler
 {
-    /**
-     * @var AudienceRepositoryInterface
-     */
-    private $audienceRepository;
-
-    /**
-     * @var MemberRepositoryInterface
-     */
-    private $memberRepository;
-
-    /**
-     * @var ListenerGatewayToggler
-     */
-    private $gatewayToggler;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $manager;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-
-    /**
-     * Constructor.
-     *
-     * @param AudienceRepositoryInterface $audienceRepository
-     * @param MemberRepositoryInterface   $memberRepository
-     * @param ListenerGatewayToggler      $gatewayToggler
-     * @param EntityManagerInterface      $manager
-     * @param LoggerInterface             $logger
-     */
-    public function __construct(
-        AudienceRepositoryInterface $audienceRepository,
-        MemberRepositoryInterface $memberRepository,
-        ListenerGatewayToggler $gatewayToggler,
-        EntityManagerInterface $manager,
-        LoggerInterface $logger
-    ) {
-        $this->audienceRepository = $audienceRepository;
-        $this->memberRepository   = $memberRepository;
-        $this->gatewayToggler    = $gatewayToggler;
-        $this->manager            = $manager;
-        $this->logger             = $logger;
-    }
-
     /**
      * @inheritDoc
      */
@@ -98,6 +43,7 @@ class Handler implements HandlerInterface
 
         if (empty($type) || empty($data) || empty($key) || !array_key_exists('list_id', $data)) {
             $this->logger->error(sprintf('[%s] %s Unexpected data', Constants::NAME, $type), $data);
+
             return new Response('Unexpected data', Response::HTTP_NOT_FOUND);
         }
 
@@ -107,11 +53,13 @@ class Handler implements HandlerInterface
 
         if (!$audience) {
             $this->logger->error(sprintf('[%s] %s Unknown list', Constants::NAME, $type), $data);
+
             return new Response('Unknown list', Response::HTTP_NOT_FOUND);
         }
 
         if ($audience->getKey() !== $key) {
             $this->logger->error(sprintf('[%s] %s Forbidden access', Constants::NAME, $type), $data);
+
             return new Response('Forbidden access', Response::HTTP_FORBIDDEN);
         }
 
@@ -136,7 +84,6 @@ class Handler implements HandlerInterface
                 break;
             default:
                 return new Response('Unexpected webhook type', Response::HTTP_NOT_FOUND);
-                break;
         }
 
         return new JsonResponse([
@@ -149,23 +96,28 @@ class Handler implements HandlerInterface
      * Subscribe event handler.
      *
      * @param AudienceInterface $audience
-     * @param array $data
+     * @param array             $data
      */
-    public function onSubscribe(AudienceInterface $audience, array $data): void
+    private function onSubscribe(AudienceInterface $audience, array $data): void
     {
-        $member = $this->memberRepository->findOneByAudienceAndEmail($audience, $data['email']);
+        $member = $this->memberRepository->findOneByEmail($data['email']);
 
         if (null === $member) {
-            /** @var MemberInterface $member */
             $member = $this->memberRepository->createNew();
-            $member
-                ->setAudience($audience)
-                ->setIdentifier($data['web_id'])
-                ->setEmail($data['email'])
-                ->setAttributes($data['merges']);
+            $member->setEmail($data['email']);
         }
 
-        $member->setStatus(MemberStatuses::SUBSCRIBED);
+        if (!$subscription = $member->getSubscription($audience)) {
+            $subscription = $this->subscriptionRepository->createNew();
+            $subscription
+                ->setAudience($audience)
+                ->setMember($member);
+        }
+
+        $subscription
+            ->setIdentifier($data['web_id'])
+            ->setStatus(SubscriptionStatus::SUBSCRIBED)
+            ->setAttributes($data['merges']);
 
         $this->persist($member);
     }
@@ -174,19 +126,25 @@ class Handler implements HandlerInterface
      * Unsubscribe event handler.
      *
      * @param AudienceInterface $audience
-     * @param array $data
+     * @param array             $data
      */
-    public function onUnsubscribe(AudienceInterface $audience, array $data): void
+    private function onUnsubscribe(AudienceInterface $audience, array $data): void
     {
-        $member = $this
-            ->memberRepository
-            ->findOneByAudienceAndEmail($audience, $data['email']);
+        $member = $this->memberRepository->findOneByEmail($data['email']);
 
         if (!$member) {
             return;
         }
 
-        $member->setStatus(MemberStatuses::UNSUBSCRIBED);
+        if (!$subscription = $member->getSubscription($audience)) {
+            return;
+        }
+
+        if (SubscriptionStatus::UNSUBSCRIBED === $subscription->getStatus()) {
+            return;
+        }
+
+        $subscription->setStatus(SubscriptionStatus::UNSUBSCRIBED);
 
         $this->persist($member);
     }
@@ -195,19 +153,21 @@ class Handler implements HandlerInterface
      * Profile update event handler.
      *
      * @param AudienceInterface $audience
-     * @param array $data
+     * @param array             $data
      */
-    public function onProfileUpdate(AudienceInterface $audience, array $data): void
+    private function onProfileUpdate(AudienceInterface $audience, array $data): void
     {
-        $member = $this
-            ->memberRepository
-            ->findOneByAudienceAndEmail($audience, $data['email']);
+        $member = $this->memberRepository->findOneByEmail($data['email']);
 
         if (!$member) {
             return;
         }
 
-        $member
+        if (!$subscription = $member->getSubscription($audience)) {
+            return;
+        }
+
+        $subscription
             ->setIdentifier($data['web_id'])
             ->setAttributes($data['merges']);
 
@@ -218,38 +178,61 @@ class Handler implements HandlerInterface
      * Email update event event handler.
      *
      * @param AudienceInterface $audience
-     * @param array $data
+     * @param array             $data
      */
-    public function onEmailUpdate(AudienceInterface $audience, array $data): void
+    private function onEmailUpdate(AudienceInterface $audience, array $data): void
     {
-        $member = $this
-            ->memberRepository
-            ->findOneByAudienceAndEmail($audience, $data['old_email']);
+        if (!$oldMember = $this->memberRepository->findOneByEmail($data['old_email'])) {
+            return;
+        }
 
-        $member
-            ->setIdentifier(Api::subscriberHash($data['new_email']))
-            ->setEmail($data['new_email']);
+        if (!$oldSubscription = $oldMember->getSubscription($audience)) {
+            return;
+        }
 
-        $this->persist($member);
+        $oldMember->removeSubscription($oldSubscription);
+
+        $this->manager->remove($oldSubscription);
+        $this->manager->persist($oldMember);
+
+        if (!$newMember = $this->memberRepository->findOneByEmail($data['new_email'])) {
+            $newMember = $this->memberRepository->createNew();
+            $newMember->setEmail($data['new_email']);
+        }
+
+        if (!$newSubscription = $newMember->getSubscription($audience)) {
+            $newSubscription = $this->subscriptionRepository->createNew();
+            $newSubscription
+                ->setAudience($audience)
+                ->setMember($newMember);
+        }
+
+        $newSubscription
+            ->setStatus($oldSubscription->getStatus())
+            ->setAttributes($oldSubscription->getAttributes());
+
+        $this->persist($newMember);
     }
 
     /**
      * Cleaned email event handler.
      *
      * @param AudienceInterface $audience
-     * @param array $data
+     * @param array             $data
      */
-    public function onCleaned(AudienceInterface $audience, array $data): void
+    private function onCleaned(AudienceInterface $audience, array $data): void
     {
-        $member = $this
-            ->memberRepository
-            ->findOneByAudienceAndEmail($audience, $data['email']);
+        $member = $this->memberRepository->findOneByEmail($data['email']);
 
         if (!$member) {
             return;
         }
 
-        $member->setStatus(MemberStatuses::UNSUBSCRIBED);
+        if (!$subscription = $member->getSubscription($audience)) {
+            return;
+        }
+
+        $subscription->setStatus(SubscriptionStatus::UNSUBSCRIBED);
 
         $this->persist($member);
     }
@@ -258,27 +241,11 @@ class Handler implements HandlerInterface
      * Campaign event handler.
      *
      * @param AudienceInterface $audience
-     * @param array $data
+     * @param array             $data
      */
-    public function onCampaign(AudienceInterface $audience, array $data): void
+    private function onCampaign(AudienceInterface $audience, array $data): void
     {
 
-    }
-
-    /**
-     * Persists the member.
-     *
-     * @param MemberInterface $member
-     */
-    private function persist(MemberInterface $member): void
-    {
-        $this->gatewayToggler->disable();
-
-        $this->manager->persist($member);
-        $this->manager->flush();
-        $this->manager->clear();
-
-        $this->gatewayToggler->enable();
     }
 
     /**

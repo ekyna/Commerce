@@ -4,13 +4,14 @@ namespace Ekyna\Component\Commerce\Newsletter\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use libphonenumber\PhoneNumber;
 
 /**
- * Class Subscription
+ * Class NewsletterSubscription
  * @package Ekyna\Component\Commerce\Newsletter\Model
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class Subscription
+class NewsletterSubscription
 {
     /**
      * @var string
@@ -31,6 +32,13 @@ class Subscription
      * @var \DateTime|null
      */
     private $birthday;
+
+    /**
+     * @var PhoneNumber
+     *
+     * @TODO
+     */
+    //private $mobile;
 
     /**
      * @var Collection|AudienceInterface[]
@@ -61,9 +69,9 @@ class Subscription
      *
      * @param string $email
      *
-     * @return Subscription
+     * @return NewsletterSubscription
      */
-    public function setEmail(string $email): Subscription
+    public function setEmail(string $email): NewsletterSubscription
     {
         $this->email = $email;
 
@@ -85,9 +93,9 @@ class Subscription
      *
      * @param string|null $firstName
      *
-     * @return Subscription
+     * @return NewsletterSubscription
      */
-    public function setFirstName(?string $firstName): Subscription
+    public function setFirstName(?string $firstName): NewsletterSubscription
     {
         $this->firstName = $firstName;
 
@@ -109,9 +117,9 @@ class Subscription
      *
      * @param string|null $lastName
      *
-     * @return Subscription
+     * @return NewsletterSubscription
      */
-    public function setLastName(?string $lastName): Subscription
+    public function setLastName(?string $lastName): NewsletterSubscription
     {
         $this->lastName = $lastName;
 
@@ -133,9 +141,9 @@ class Subscription
      *
      * @param \DateTime|null $birthday
      *
-     * @return Subscription
+     * @return NewsletterSubscription
      */
-    public function setBirthday(?\DateTime $birthday): Subscription
+    public function setBirthday(?\DateTime $birthday): NewsletterSubscription
     {
         $this->birthday = $birthday;
 
@@ -157,9 +165,9 @@ class Subscription
      *
      * @param AudienceInterface $audience
      *
-     * @return Subscription
+     * @return NewsletterSubscription
      */
-    public function addAudience(AudienceInterface $audience): Subscription
+    public function addAudience(AudienceInterface $audience): NewsletterSubscription
     {
         if (!$this->audiences->contains($audience)) {
             $this->audiences->add($audience);
@@ -173,9 +181,9 @@ class Subscription
      *
      * @param AudienceInterface $audience
      *
-     * @return Subscription
+     * @return NewsletterSubscription
      */
-    public function removeAudience(AudienceInterface $audience): Subscription
+    public function removeAudience(AudienceInterface $audience): NewsletterSubscription
     {
         if ($this->audiences->contains($audience)) {
             $this->audiences->removeElement($audience);

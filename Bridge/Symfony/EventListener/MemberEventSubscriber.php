@@ -19,13 +19,10 @@ class MemberEventSubscriber extends MemberListener implements EventSubscriberInt
     public static function getSubscribedEvents(): array
     {
         return [
-            MemberEvents::INITIALIZE => ['onInitialize', 0],
-            MemberEvents::PRE_CREATE => ['onPreCreate', 0],
-            MemberEvents::PRE_UPDATE => ['onPreUpdate', 0],
-            MemberEvents::PRE_DELETE => ['onPreDelete', 0],
-            MemberEvents::INSERT     => ['onInsert', 0],
-            MemberEvents::UPDATE     => ['onUpdate', 0],
-            MemberEvents::DELETE     => ['onDelete', 0],
+            MemberEvents::PRE_CREATE          => ['onPreCreate', 0],
+            MemberEvents::INSERT              => ['onInsert', 0],
+            MemberEvents::UPDATE              => ['onUpdate', 0],
+            MemberEvents::SUBSCRIPTION_CHANGE => ['onSubscriptionChange', 0],
         ];
     }
 }

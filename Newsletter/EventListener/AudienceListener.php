@@ -126,6 +126,7 @@ class AudienceListener implements ListenerInterface
             ->getGateway($audience->getGateway(), GatewayInterface::INSERT_AUDIENCE)
             ->insertAudience($audience);
 
+        $this->persistenceHelper->persistAndRecompute($audience);
     }
 
     /**
@@ -137,6 +138,12 @@ class AudienceListener implements ListenerInterface
     {
         $audience = $this->getAudienceFromEvent($event);
 
+        $changeSet = $this->persistenceHelper->getChangeSet($audience);
+
+        if (isset($changeSet['gateway'])) {
+            throw new IllegalOperationException("Changing audience gateway is not supported.");
+        }
+
         $this->audienceUpdater->fixDefault($audience);
 
         if (!$this->enabled) {
@@ -145,8 +152,9 @@ class AudienceListener implements ListenerInterface
 
         $this
             ->getGateway($audience->getGateway(), GatewayInterface::UPDATE_AUDIENCE)
-            ->updateAudience($audience, $this->persistenceHelper->getChangeSet($audience));
+            ->updateAudience($audience, $changeSet);
 
+        $this->persistenceHelper->persistAndRecompute($audience);
     }
 
     /**

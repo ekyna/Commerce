@@ -3,17 +3,16 @@
 namespace Ekyna\Component\Commerce\Bridge\Mailchimp;
 
 use Ekyna\Component\Commerce\Exception\NewsletterException;
-use Ekyna\Component\Commerce\Newsletter\Gateway\GatewayInterface;
+use Ekyna\Component\Commerce\Newsletter\Gateway\AbstractGateway;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\Subscription;
+use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionInterface;
 
 /**
  * Class Gateway
  * @package Ekyna\Component\Commerce\Bridge\Mailchimp
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class Gateway implements GatewayInterface
+class Gateway extends AbstractGateway
 {
     /**
      * @var Api
@@ -34,53 +33,58 @@ class Gateway implements GatewayInterface
     /**
      * @inheritDoc
      */
-    public function insertAudience(AudienceInterface $audience): bool
+    public function insertAudience(AudienceInterface $audience): void
     {
-        throw new NewsletterException("Unsupported operation");
+        throw new NewsletterException("Creating audience through MailChimp API is not supported");
     }
 
     /**
      * @inheritDoc
      */
-    public function updateAudience(AudienceInterface $audience, array $changeSet): bool
+    public function updateAudience(AudienceInterface $audience, array $changeSet): void
     {
+        $this->checkAudience($audience);
+
         $map = $this->buildPatchMap($changeSet, [
             'name' => null,
         ]);
 
         if (empty($map)) {
-            return false;
+            return;
         }
 
         $result = $this->api->patch("lists/{$audience->getIdentifier()}", $map);
 
-        if (!$this->api->success()) {
-            $this->api->logError($result);
-
-            throw new NewsletterException('Failed to update audience (' . $this->api->getLastError() . ')');
+        if ($this->api->success()) {
+            return;
         }
 
-        return true;
+        $this->api->logError($result);
+
+        throw new NewsletterException(
+            "Failed to update audience throught MailChimp API ({$this->api->getLastError()})"
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function deleteAudience(AudienceInterface $audience): bool
+    public function deleteAudience(AudienceInterface $audience): void
     {
-        throw new NewsletterException("Unsupported operation");
+        throw new NewsletterException("Deleting audience through MailChimp API is not supported");
     }
 
     /**
      * @inheritDoc
      */
-    public function createMember(MemberInterface $member, Subscription $source = null): void
+    public function createSubscription(SubscriptionInterface $subscription, object $source = null): void
     {
+        $member = $subscription->getMember();
         if (!$source && $member->getCustomer()) {
             $source = $member->getCustomer();
         }
 
-        $attributes = $member->getAttributes();
+        $attributes = $subscription->getAttributes();
 
         if (empty($member->getEmail())) {
             $member->setEmail($source->getEmail());
@@ -98,94 +102,111 @@ class Gateway implements GatewayInterface
             $attributes['BIRTHDAY'] = $birthday->format('m/d');
         }
 
-        $member->setAttributes($attributes);
+        $subscription->setAttributes($attributes);
     }
 
     /**
      * @inheritDoc
      */
-    public function insertMember(MemberInterface $member): bool
+    public function insertSubscription(SubscriptionInterface $subscription): void
     {
-        $audienceId = $member->getAudience()->getIdentifier();
+        $audience = $subscription->getAudience();
+        if (empty($audience->getIdentifier())) {
+            throw new NewsletterException("Create list first.");
+        }
+
+        $member     = $subscription->getMember();
+        $audienceId = $audience->getIdentifier();
 
         $data = [
             'email_address' => $member->getEmail(),
-            'status'        => $member->getStatus(),
+            'status'        => $subscription->getStatus(),
         ];
 
-        if (!empty($attributes = $member->getAttributes())) {
+        if (!empty($attributes = $subscription->getAttributes())) {
             $data['merge_fields'] = $attributes;
         }
 
         $result = $this->api->post("lists/$audienceId/members", $data);
 
-        if (!$this->api->success()) {
-            $this->api->logError($result);
+        if ($this->api->success()) {
+            $subscription->setIdentifier($result['web_id']);
 
-            throw new NewsletterException('Failed to create member (' . $this->api->getLastError() . ')');
+            return;
         }
 
-        $member->setIdentifier($result['web_id']);
+        $this->api->logError($result);
 
-        return true;
+        throw new NewsletterException(
+            'Failed to create member through MailChimp API (' . $this->api->getLastError() . ')'
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function updateMember(MemberInterface $member, array $changeSet): bool
-    {
-        $return = false;
+    public function updateSubscription(
+        SubscriptionInterface $subscription,
+        array $subscriptionChanges,
+        array $memberChanges
+    ): void {
+        $this->checkSubscription($subscription);
 
-        // Changing email is not allowed
-        if (isset($changeSet['email'])) {
-            // Restore previous
-            $member->setEmail($changeSet['email'][0]);
-            $return = true;
-        }
+        $member = $subscription->getMember();
+        $email = $member->getEmail();
 
-        $map = $this->buildPatchMap($changeSet, [
+        $map = $this->buildPatchMap($subscriptionChanges, [
             'status'     => null,
             'attributes' => 'merge_fields',
         ]);
 
-        if (empty($map)) {
-            return $return;
+        // Changing email is not allowed
+        if (isset($changeSet['email'])) {
+            // Restore previous
+            $email = $changeSet['email'][0];
+            $map['emailAddress'] = $member->getEmail();
         }
 
-        $map['emailAddress'] = $member->getEmail();
+        if (empty($map)) {
+            return;
+        }
 
-        $audienceId = $member->getAudience()->getIdentifier();
-        $hash       = $this->api->subscriberHash($member->getEmail());
+        $audienceId = $subscription->getAudience()->getIdentifier();
+        $hash       = $this->api->subscriberHash($email);
 
         $result = $this->api->patch("lists/$audienceId/members/$hash", $map);
 
-        if (!$this->api->success()) {
-            $this->api->logError($result);
-
-            throw new NewsletterException('Failed to update member (' . $this->api->getLastError() . ')');
+        if ($this->api->success()) {
+            return;
         }
 
-        return $return;
+        $this->api->logError($result);
+
+        throw new NewsletterException(
+            'Failed to update member through MailChimp API (' . $this->api->getLastError() . ')'
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function deleteMember(MemberInterface $member): bool
+    public function deleteSubscription(SubscriptionInterface $subscription): void
     {
-        $audienceId = $member->getAudience()->getIdentifier();
+        $this->checkSubscription($subscription);
+
+        $member     = $subscription->getMember();
+        $audienceId = $subscription->getAudience()->getIdentifier();
         $hash       = $this->api->subscriberHash($member->getEmail());
 
         $result = $this->api->delete("lists/$audienceId/members/$hash");
 
-        if (!$this->api->success()) {
-            $this->api->logError($result);
-
-            throw new NewsletterException('Failed to delete member (' . $this->api->getLastError() . ')');
+        if ($this->api->success()) {
+            return;
         }
 
-        return false;
+        $this->api->logError($result);
+
+        throw new NewsletterException('Failed to delete member (' . $this->api->getLastError() . ')');
     }
 
     /**
@@ -195,10 +216,10 @@ class Gateway implements GatewayInterface
     {
         return in_array($action, [
             self::UPDATE_AUDIENCE,
-            self::CREATE_MEMBER,
-            self::INSERT_MEMBER,
-            self::UPDATE_MEMBER,
-            self::DELETE_MEMBER,
+            self::CREATE_SUBSCRIPTION,
+            self::INSERT_SUBSCRIPTION,
+            self::UPDATE_SUBSCRIPTION,
+            self::DELETE_SUBSCRIPTION,
         ], true);
     }
 

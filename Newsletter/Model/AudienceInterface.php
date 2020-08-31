@@ -66,22 +66,6 @@ interface AudienceInterface extends TranslatableInterface, KeySubjectInterface, 
     public function setName(string $name): AudienceInterface;
 
     /**
-     * Returns whether the webhook is configured.
-     *
-     * @return bool
-     */
-    public function isWebhook(): bool;
-
-    /**
-     * Sets whether the webhook is configured.
-     *
-     * @param bool $webhook
-     *
-     * @return AudienceInterface
-     */
-    public function setWebhook(bool $webhook): AudienceInterface;
-
-    /**
      * Returns the public.
      *
      * @return bool

@@ -111,6 +111,23 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
     /**
      * @inheritDoc
      */
+    public function findByGateway(string $gateway): array
+    {
+        $qb = $this->createQueryBuilder('a');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('a.gateway', ':gateway'))
+            ->andWhere($qb->expr()->isNotNull('a.identifier'))
+            ->getQuery()
+            ->setParameters([
+                'gateway' => $gateway,
+            ])
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findOneByGatewayAndIdentifier(string $gateway, string $identifier): ?AudienceInterface
     {
         return $this
@@ -120,25 +137,6 @@ class AudienceRepository extends TranslatableResourceRepository implements Audie
                 'identifier' => $identifier,
             ])
             ->getOneOrNullResult();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function findByGatewayWithWebhookNotConfigured(string $gateway): array
-    {
-        $qb = $this->createQueryBuilder('a');
-
-        return $qb
-            ->andWhere($qb->expr()->eq('a.gateway', ':gateway'))
-            ->andWhere($qb->expr()->eq('a.webhook', ':webhook'))
-            ->andWhere($qb->expr()->isNotNull('a.identifier'))
-            ->getQuery()
-            ->setParameters([
-                'gateway' => $gateway,
-                'webhook' => false,
-            ])
-            ->getResult();
     }
 
     /**

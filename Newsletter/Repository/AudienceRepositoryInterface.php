@@ -10,6 +10,8 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
  * Interface AudienceRepositoryInterface
  * @package Ekyna\Component\Commerce\Newsletter\Repository
  * @author  Étienne Dauvergne <contact@ekyna.com>
+ *
+ * @method AudienceInterface createNew()
  */
 interface AudienceRepositoryInterface extends ResourceRepositoryInterface
 {
@@ -51,6 +53,15 @@ interface AudienceRepositoryInterface extends ResourceRepositoryInterface
     public function findOneByKey(string $key): ?AudienceInterface;
 
     /**
+     * Finds audiences by gateway.
+     *
+     * @param string $gateway
+     *
+     * @return AudienceInterface[]
+     */
+    public function findByGateway(string $gateway): array;
+
+    /**
      * Finds one audience by its identifier.
      *
      * @param string $gateway
@@ -59,15 +70,6 @@ interface AudienceRepositoryInterface extends ResourceRepositoryInterface
      * @return AudienceInterface|null
      */
     public function findOneByGatewayAndIdentifier(string $gateway, string $identifier): ?AudienceInterface;
-
-    /**
-     * Finds audiences by gateway with webhook not configured.
-     *
-     * @param string $gateway
-     *
-     * @return AudienceInterface[]
-     */
-    public function findByGatewayWithWebhookNotConfigured(string $gateway): array;
 
     /**
      * Finds audiences by gateway excluding given identifiers.

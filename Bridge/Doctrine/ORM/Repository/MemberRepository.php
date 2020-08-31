@@ -18,138 +18,36 @@ class MemberRepository extends ResourceRepository implements MemberRepositoryInt
     /**
      * @var Query
      */
-    private $findOneByGatewayAndIdentifierQuery;
-
-    /**
-     * @var Query
-     */
-    private $findOneByGatewayAndEmailQuery;
-
-    /**
-     * @var Query
-     */
-    private $findOneByAudienceAndEmailQuery;
+    private $findOneByEmailQuery;
 
 
     /**
      * @inheritDoc
      */
-    public function findOneByGatewayAndIdentifier(string $gateway, string $identifier): ?MemberInterface
+    public function findOneByEmail(string $email): ?MemberInterface
     {
         return $this
-            ->getFindOneByGatewayAndIdentifier()
-            ->setParameters([
-                'gateway'    => $gateway,
-                'identifier' => $identifier,
-            ])
+            ->getFindOneByEmailQuery()
+            ->setParameter('email', $email)
             ->getOneOrNullResult();
     }
 
     /**
-     * @inheritDoc
-     */
-    public function findOneByGatewayAndEmail(string $gateway, string $email): ?MemberInterface
-    {
-        return $this
-            ->getFindOneByGatewayAndEmailQuery()
-            ->setParameters([
-                'gateway' => $gateway,
-                'email'   => $email,
-            ])
-            ->getOneOrNullResult();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function findOneByAudienceAndEmail(AudienceInterface $audience, string $email): ?MemberInterface
-    {
-        return $this
-            ->getFindOneByAudienceAndEmailQuery()
-            ->setParameters([
-                'audience' => $audience,
-                'email'    => $email,
-            ])
-            ->getOneOrNullResult();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function findByGatewayAndExcludingIds(string $gateway, array $identifiers): array
-    {
-        if (empty($identifiers)) {
-            return [];
-        }
-
-        $qb = $this->createQueryBuilder('m');
-
-        return $qb
-            ->join('m.audience', 'a')
-            ->andWhere($qb->expr()->eq('a.gateway', ':gateway'))
-            ->andWhere($qb->expr()->notIn('m.identifier', ':identifiers'))
-            ->getQuery()
-            ->setParameters([
-                'gateway'     => $gateway,
-                'identifiers' => $identifiers,
-            ])
-            ->getResult();
-    }
-
-    /**
+     * Returns the "find one by email" query.
+     *
      * @return Query
      */
-    private function getFindOneByGatewayAndIdentifier(): Query
+    private function getFindOneByEmailQuery(): Query
     {
-        if ($this->findOneByGatewayAndIdentifierQuery) {
-            return $this->findOneByGatewayAndIdentifierQuery;
+        if ($this->findOneByEmailQuery) {
+            return $this->findOneByEmailQuery;
         }
 
         $qb = $this->createQueryBuilder('m');
 
-        return $this->findOneByGatewayAndIdentifierQuery = $qb
-            ->join('m.audience', 'a')
-            ->andWhere($qb->expr()->eq('a.gateway', ':gateway'))
-            ->andWhere($qb->expr()->eq('m.identifier', ':identifier'))
-            ->getQuery()
-            ->useQueryCache(true);
-    }
-
-    /**
-     * @return Query
-     */
-    private function getFindOneByGatewayAndEmailQuery(): Query
-    {
-        if ($this->findOneByGatewayAndEmailQuery) {
-            return $this->findOneByGatewayAndEmailQuery;
-        }
-
-        $qb = $this->createQueryBuilder('m');
-
-        return $this->findOneByGatewayAndEmailQuery = $qb
-            ->join('m.audience', 'a')
-            ->andWhere($qb->expr()->eq('a.gateway', ':gateway'))
+        return $this->findOneByEmailQuery = $qb
             ->andWhere($qb->expr()->eq('m.email', ':email'))
             ->getQuery()
-            ->useQueryCache(true);
-    }
-
-    /**
-     * @return Query
-     */
-    private function getFindOneByAudienceAndEmailQuery(): Query
-    {
-        if ($this->findOneByAudienceAndEmailQuery) {
-            return $this->findOneByAudienceAndEmailQuery;
-        }
-
-        $qb = $this->createQueryBuilder('m');
-
-        return $this->findOneByAudienceAndEmailQuery = $qb
-            ->join('m.audience', 'a')
-            ->andWhere($qb->expr()->eq('m.audience', ':audience'))
-            ->andWhere($qb->expr()->eq('m.email', ':email'))
-            ->getQuery()
-            ->useQueryCache(true);
+            ->setMaxResults(1);
     }
 }

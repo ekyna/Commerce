@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Bridge\Mailchimp;
  * @package Ekyna\Component\Commerce\Bridge\Mailchimp
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class Constants
+final class Constants
 {
     public const NAME = 'MailChimp';
 

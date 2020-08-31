@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Newsletter\Model;
 
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Newsletter\Entity\Member;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -15,36 +16,39 @@ use Ekyna\Component\Resource\Model\TimestampableInterface;
 interface MemberInterface extends ResourceInterface, TimestampableInterface
 {
     /**
-     * Returns the audience.
+     * Returns the identifiers.
      *
-     * @return AudienceInterface
+     * @return string[]
      */
-    public function getAudience(): ?AudienceInterface;
+    public function getIdentifiers(): array;
 
     /**
-     * Sets the audience.
+     * Returns whether a identifier is set for the given gateway.
      *
-     * @param AudienceInterface $audience
+     * @param string $gateway
      *
-     * @return $this|MemberInterface
+     * @return bool
      */
-    public function setAudience(AudienceInterface $audience): MemberInterface;
+    public function hasIdentifier(string $gateway): bool;
 
     /**
-     * Returns the identifier.
+     * Returns the identifier for the given gateway.
      *
-     * @return string
+     * @param string $gateway
+     *
+     * @return string|null
      */
-    public function getIdentifier(): ?string;
+    public function getIdentifier(string $gateway): ?string;
 
     /**
-     * Sets the identifier
+     * Sets the identifier for the given gateway
      *
-     * @param string $identifier
+     * @param string      $gateway
+     * @param string|null $identifier
      *
      * @return Member
      */
-    public function setIdentifier(string $identifier): MemberInterface;
+    public function setIdentifier(string $gateway, string $identifier = null): MemberInterface;
 
     /**
      * Returns the customer.
@@ -56,7 +60,7 @@ interface MemberInterface extends ResourceInterface, TimestampableInterface
     /**
      * Sets the customer.
      *
-     * @param CustomerInterface $customer
+     * @param CustomerInterface|null $customer
      *
      * @return $this|MemberInterface
      */
@@ -79,6 +83,49 @@ interface MemberInterface extends ResourceInterface, TimestampableInterface
     public function setEmail(string $email): MemberInterface;
 
     /**
+     * Returns whether the member has the given subscription.
+     *
+     * @param SubscriptionInterface $subscription
+     *
+     * @return bool
+     */
+    public function hasSubscription(SubscriptionInterface $subscription): bool;
+
+    /**
+     * Adds the subscription.
+     *
+     * @param SubscriptionInterface $subscription
+     *
+     * @return $this|MemberInterface
+     */
+    public function addSubscription(SubscriptionInterface $subscription): MemberInterface;
+
+    /**
+     * Removes the subscription.
+     *
+     * @param SubscriptionInterface $subscription
+     *
+     * @return $this|MemberInterface
+     */
+    public function removeSubscription(SubscriptionInterface $subscription): MemberInterface;
+
+    /**
+     * Returns the subscription for the given audience.
+     *
+     * @param AudienceInterface $audience
+     *
+     * @return SubscriptionInterface|null
+     */
+    public function getSubscription(AudienceInterface $audience): ?SubscriptionInterface;
+
+    /**
+     * Returns the subscriptions.
+     *
+     * @return Collection|SubscriptionInterface[]
+     */
+    public function getSubscriptions(): Collection;
+
+    /**
      * Returns the status.
      *
      * @return string
@@ -93,20 +140,4 @@ interface MemberInterface extends ResourceInterface, TimestampableInterface
      * @return $this|MemberInterface
      */
     public function setStatus(string $status): MemberInterface;
-
-    /**
-     * Returns the attributes.
-     *
-     * @return array
-     */
-    public function getAttributes(): array;
-
-    /**
-     * Sets the attributes.
-     *
-     * @param array $attributes
-     *
-     * @return $this|MemberInterface
-     */
-    public function setAttributes(array $attributes): MemberInterface;
 }

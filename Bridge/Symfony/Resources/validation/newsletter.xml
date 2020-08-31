@@ -12,6 +12,12 @@
                 <option name="max">32</option>
             </constraint>
         </property>
+        <property name="key">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
         <property name="identifier">
             <constraint name="Length">
                 <option name="max">32</option>
@@ -26,9 +32,6 @@
     </class>
 
     <class name="Ekyna\Component\Commerce\Newsletter\Entity\Member">
-        <property name="audience">
-            <constraint name="NotNull"/>
-        </property>
         <property name="key">
             <constraint name="NotBlank"/>
             <constraint name="Length">
@@ -40,6 +43,40 @@
             <constraint name="Email"/>
             <constraint name="Length">
                 <option name="max">255</option>
+            </constraint>
+        </property>
+        <property name="identifiers">
+            <constraint name="All">
+                <constraint name="NotBlank"/>
+                <constraint name="Length">
+                    <option name="max">32</option>
+                </constraint>
+            </constraint>
+        </property>
+        <property name="status">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Newsletter\Model\MemberStatuses</value>
+                    <value>getConstants</value>
+                </option>
+            </constraint>
+        </property>
+        <property name="subscriptions">
+            <constraint name="Valid"/>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Newsletter\Entity\Subscription">
+        <property name="audience">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="member">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="identifier">
+            <constraint name="Length">
+                <option name="max">32</option>
             </constraint>
         </property>
         <property name="status">

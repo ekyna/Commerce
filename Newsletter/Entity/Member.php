@@ -2,10 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Newsletter\Entity;
 
+use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\MemberStatuses;
+use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionInterface;
+use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionStatus;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -23,14 +27,9 @@ class Member implements MemberInterface
     protected $id;
 
     /**
-     * @var AudienceInterface
+     * @var string[]
      */
-    protected $audience;
-
-    /**
-     * @var string
-     */
-    protected $identifier;
+    protected $identifiers;
 
     /**
      * @var CustomerInterface
@@ -43,14 +42,14 @@ class Member implements MemberInterface
     protected $email;
 
     /**
+     * @var Collection|Subscription[]
+     */
+    protected $subscriptions;
+
+    /**
      * @var string
      */
     protected $status;
-
-    /**
-     * @var array
-     */
-    protected $attributes;
 
 
     /**
@@ -58,13 +57,16 @@ class Member implements MemberInterface
      */
     public function __construct()
     {
-        $this->status = MemberStatuses::UNSUBSCRIBED;
-        $this->attributes = [];
-        $this->createdAt = new \DateTime();
+        $this->identifiers = [];
+        $this->createdAt     = new DateTime();
+        $this->subscriptions = new ArrayCollection();
+        $this->status        = SubscriptionStatus::UNSUBSCRIBED;
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
     public function __toString()
     {
@@ -82,35 +84,37 @@ class Member implements MemberInterface
     /**
      * @inheritDoc
      */
-    public function getAudience(): ?AudienceInterface
+    public function getIdentifiers(): array
     {
-        return $this->audience;
+        return $this->identifiers;
     }
 
     /**
      * @inheritDoc
      */
-    public function setAudience(AudienceInterface $audience): MemberInterface
+    public function hasIdentifier(string $gateway): bool
     {
-        $this->audience = $audience;
-
-        return $this;
+        return isset($this->identifiers[$gateway]);
     }
 
     /**
      * @inheritDoc
      */
-    public function getIdentifier(): ?string
+    public function getIdentifier(string $gateway): ?string
     {
-        return $this->identifier;
+        return $this->identifiers[$gateway] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public function setIdentifier(string $identifier): MemberInterface
+    public function setIdentifier(string $gateway, string $identifier = null): MemberInterface
     {
-        $this->identifier = $identifier;
+        if (is_null($identifier)) {
+            unset($this->identifiers[$gateway]);
+        } else {
+            $this->identifiers[$gateway] = $identifier;
+        }
 
         return $this;
     }
@@ -154,6 +158,62 @@ class Member implements MemberInterface
     /**
      * @inheritDoc
      */
+    public function hasSubscription(SubscriptionInterface $subscription): bool
+    {
+        return $this->subscriptions->contains($subscription);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addSubscription(SubscriptionInterface $subscription): MemberInterface
+    {
+        if (!$this->hasSubscription($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setMember($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeSubscription(SubscriptionInterface $subscription): MemberInterface
+    {
+        if ($this->hasSubscription($subscription)) {
+            $this->subscriptions->removeElement($subscription);
+            $subscription->setMember(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSubscription(AudienceInterface $audience): ?SubscriptionInterface
+    {
+        foreach ($this->subscriptions as $subscription) {
+            if ($subscription->getAudience() === $audience) {
+                return $subscription;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getStatus(): string
     {
         return $this->status;
@@ -165,24 +225,6 @@ class Member implements MemberInterface
     public function setStatus(string $status): MemberInterface
     {
         $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAttributes(): array
-    {
-        return $this->attributes;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setAttributes(array $attributes): MemberInterface
-    {
-        $this->attributes = $attributes;
 
         return $this;
     }

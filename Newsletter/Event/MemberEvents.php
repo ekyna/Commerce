@@ -26,6 +26,8 @@ final class MemberEvents
     const PRE_DELETE  = 'ekyna_commerce.member.pre_delete';
     const POST_DELETE = 'ekyna_commerce.member.post_delete';
 
+    const SUBSCRIPTION_CHANGE = 'ekyna_commerce.member.subscription_change';
+
 
     /**
      * Disabled constructor.

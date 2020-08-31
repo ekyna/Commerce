@@ -3,8 +3,7 @@
 namespace Ekyna\Component\Commerce\Newsletter\Gateway;
 
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\Subscription;
+use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionInterface;
 
 /**
  * Interface GatewayInterface
@@ -13,79 +12,71 @@ use Ekyna\Component\Commerce\Newsletter\Model\Subscription;
  */
 interface GatewayInterface
 {
-    public const INSERT_AUDIENCE = 'insert audience';
-    public const UPDATE_AUDIENCE = 'update audience';
-    public const DELETE_AUDIENCE = 'delete audience';
-
-    public const CREATE_MEMBER = 'create member';
-    public const INSERT_MEMBER = 'insert member';
-    public const UPDATE_MEMBER = 'update member';
-    public const DELETE_MEMBER = 'delete member';
+    public const INSERT_AUDIENCE     = 'insert_audience';
+    public const UPDATE_AUDIENCE     = 'update_audience';
+    public const DELETE_AUDIENCE     = 'delete_audience';
+    public const CREATE_SUBSCRIPTION = 'create_subscription';
+    public const INSERT_SUBSCRIPTION = 'insert_subscription';
+    public const UPDATE_SUBSCRIPTION = 'update_subscription';
+    public const DELETE_SUBSCRIPTION = 'delete_subscription';
 
 
     /**
      * Inserts the given audience.
      *
      * @param AudienceInterface $audience
-     *
-     * @return bool
      */
-    public function insertAudience(AudienceInterface $audience): bool;
+    public function insertAudience(AudienceInterface $audience): void;
 
     /**
      * Updates the given audience.
      *
      * @param AudienceInterface $audience
      * @param array             $changeSet
-     *
-     * @return bool
      */
-    public function updateAudience(AudienceInterface $audience, array $changeSet): bool;
+    public function updateAudience(AudienceInterface $audience, array $changeSet): void;
 
     /**
      * Deletes the given audience.
      *
      * @param AudienceInterface $audience
-     *
-     * @return bool
      */
-    public function deleteAudience(AudienceInterface $audience): bool;
+    public function deleteAudience(AudienceInterface $audience): void;
 
     /**
-     * Creates the member from the given source.
+     * Creates the given subscription.
      *
-     * @param MemberInterface   $member
-     * @param Subscription|null $source
+     * @param SubscriptionInterface $subscription
+     * @param object|null           $source
      */
-    public function createMember(MemberInterface $member, Subscription $source = null): void;
+    public function createSubscription(SubscriptionInterface $subscription, object $source = null): void;
 
     /**
-     * Inserts the given member.
+     * Inserts the given subscription.
      *
-     * @param MemberInterface $member
-     *
-     * @return bool
+     * @param SubscriptionInterface $subscription
      */
-    public function insertMember(MemberInterface $member): bool;
+    public function insertSubscription(SubscriptionInterface $subscription): void;
 
     /**
-     * Updates the given member.
+     * Updates the given subscription.
      *
-     * @param MemberInterface $member
-     * @param array           $changeSet
-     *
-     * @return bool
+     * @param SubscriptionInterface $subscription
+     * @param array                 $subscriptionChanges
+     * @param array                 $memberChanges
      */
-    public function updateMember(MemberInterface $member, array $changeSet): bool;
+    public function updateSubscription(
+        SubscriptionInterface $subscription,
+        array $subscriptionChanges,
+        array $memberChanges
+    ): void;
 
     /**
-     * Deletes the given member.
+     * Deletes the given subscription.
      *
-     * @param MemberInterface $member
-     *
-     * @return bool
+     * @param SubscriptionInterface $subscription
      */
-    public function deleteMember(MemberInterface $member): bool;
+    public function deleteSubscription(SubscriptionInterface $subscription): void;
 
     /**
      * Returns whether this gateway supports the given action.

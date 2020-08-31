@@ -5,13 +5,10 @@ namespace Ekyna\Component\Commerce\Newsletter\EventListener;
 use Ekyna\Component\Commerce\Customer\Event\CustomerEvents;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Exception\NewsletterException;
-use Ekyna\Component\Commerce\Newsletter\Gateway\GatewayInterface;
-use Ekyna\Component\Commerce\Newsletter\Gateway\GatewayRegistry;
+use Ekyna\Component\Commerce\Newsletter\Event\SubscriptionEvents;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
-use Ekyna\Component\Commerce\Newsletter\Model\MemberStatuses;
+use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionStatus;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
-use Ekyna\Component\Resource\Event\ResourceEvent;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Model\IsEnabledTrait;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -40,11 +37,6 @@ class MemberListener implements ListenerInterface
      */
     private $dispatcher;
 
-    /**
-     * @var GatewayRegistry
-     */
-    private $gatewayRegistry;
-
 
     /**
      * Constructor.
@@ -52,18 +44,15 @@ class MemberListener implements ListenerInterface
      * @param PersistenceHelperInterface       $persistenceHelper
      * @param CustomerRepositoryInterface      $customerRepository
      * @param ResourceEventDispatcherInterface $dispatcher
-     * @param GatewayRegistry                  $gatewayRegistry
      */
     public function __construct(
         PersistenceHelperInterface $persistenceHelper,
         CustomerRepositoryInterface $customerRepository,
-        ResourceEventDispatcherInterface $dispatcher,
-        GatewayRegistry $gatewayRegistry
+        ResourceEventDispatcherInterface $dispatcher
     ) {
         $this->persistenceHelper  = $persistenceHelper;
         $this->customerRepository = $customerRepository;
         $this->dispatcher         = $dispatcher;
-        $this->gatewayRegistry    = $gatewayRegistry;
     }
 
     /**
@@ -85,31 +74,7 @@ class MemberListener implements ListenerInterface
     {
         $member = $this->getMemberFromEvent($event);
 
-        $this->getGateway($member->getAudience()->getGateway(), GatewayInterface::INSERT_MEMBER);
-    }
-
-    /**
-     * Pre update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onPreUpdate(ResourceEventInterface $event): void
-    {
-        $member = $this->getMemberFromEvent($event);
-
-        $this->getGateway($member->getAudience()->getGateway(), GatewayInterface::UPDATE_MEMBER);
-    }
-
-    /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onPreDelete(ResourceEventInterface $event): void
-    {
-        $member = $this->getMemberFromEvent($event);
-
-        $this->getGateway($member->getAudience()->getGateway(), GatewayInterface::DELETE_MEMBER);
+        $this->setCustomer($member);
     }
 
     /**
@@ -122,16 +87,6 @@ class MemberListener implements ListenerInterface
         $member = $this->getMemberFromEvent($event);
 
         $this->setCustomer($member);
-
-        if (!$this->enabled) {
-            return;
-        }
-
-        $gateway = $this->getGateway($member->getAudience()->getGateway(), GatewayInterface::INSERT_MEMBER);
-
-        if ($gateway->insertMember($member)) {
-            $this->persistenceHelper->persistAndRecompute($member, false);
-        }
     }
 
     /**
@@ -143,37 +98,48 @@ class MemberListener implements ListenerInterface
     {
         $member = $this->getMemberFromEvent($event);
 
-        if ($this->persistenceHelper->isChanged($member, 'email')) {
-            $this->setCustomer($member->setCustomer(null));
+        if (!$this->persistenceHelper->isChanged($member, 'email')) {
+            return;
         }
+
+        $this->setCustomer($member->setCustomer(null));
 
         if (!$this->enabled) {
             return;
         }
 
-        $gateway = $this->getGateway($member->getAudience()->getGateway(), GatewayInterface::UPDATE_MEMBER);
-
-        if ($gateway->updateMember($member, $this->persistenceHelper->getChangeSet($member))) {
-            $this->persistenceHelper->persistAndRecompute($member, false);
+        // Emails has changed -> Schedule subscriptions change events
+        foreach ($member->getSubscriptions() as $subscription) {
+            $this->persistenceHelper->scheduleEvent(SubscriptionEvents::UPDATE, $subscription);
         }
     }
 
     /**
-     * Delete event handler.
+     * Update event handler.
      *
      * @param ResourceEventInterface $event
      */
-    public function onDelete(ResourceEventInterface $event): void
+    public function onSubscriptionChange(ResourceEventInterface $event): void
     {
-        if (!$this->enabled) {
+        $member = $this->getMemberFromEvent($event);
+
+        $status = SubscriptionStatus::UNSUBSCRIBED;
+        foreach ($member->getSubscriptions() as $subscription) {
+            if (SubscriptionStatus::SUBSCRIBED !== $subscription->getStatus()) {
+                continue;
+            }
+
+            $status = SubscriptionStatus::SUBSCRIBED;
+            break;
+        }
+
+        if ($status === $member->getStatus()) {
             return;
         }
 
-        $member = $this->getMemberFromEvent($event);
+        $member->setStatus($status);
 
-        $this
-            ->getGateway($member->getAudience()->getGateway(), GatewayInterface::DELETE_MEMBER)
-            ->deleteMember($member);
+        $this->persistenceHelper->persistAndRecompute($member, false);
     }
 
     /**
@@ -195,41 +161,13 @@ class MemberListener implements ListenerInterface
 
         $member->setCustomer($customer);
 
-        $gateway = $this->gatewayRegistry->get($member->getAudience()->getGateway());
-        if ($gateway->supports(GatewayInterface::CREATE_MEMBER)) {
-            $gateway->createMember($member);
-        }
-
         $this->persistenceHelper->persistAndRecompute($member, false);
 
-        if ($member->getStatus() === MemberStatuses::SUBSCRIBED) {
-            $event = new ResourceEvent();
-            $event->setResource($customer);
-            $this->dispatcher->dispatch(CustomerEvents::NEWSLETTER_SUBSCRIBE, $event);
-        }
-    }
-
-    /**
-     * Returns the gateway.
-     *
-     * @param string $name   The gateway name
-     * @param string $action The gateway action
-     *
-     * @return GatewayInterface
-     *
-     * @throws NewsletterException If the action is not supported by this gateway
-     */
-    protected function getGateway(string $name, string $action)
-    {
-        $gateway = $this->gatewayRegistry->get($name);
-
-        if (!$gateway->supports($action)) {
-            throw new NewsletterException(
-                "Can't $action with gateway '$name'. Please use their website."
-            );
+        if ($member->getStatus() !== SubscriptionStatus::SUBSCRIBED) {
+            return;
         }
 
-        return $gateway;
+        $this->persistenceHelper->scheduleEvent(CustomerEvents::NEWSLETTER_SUBSCRIBE, $customer);
     }
 
     /**

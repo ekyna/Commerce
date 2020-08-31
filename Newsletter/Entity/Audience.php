@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Newsletter\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\KeySubjectTrait;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
@@ -23,7 +24,7 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         KeySubjectTrait;
 
     /**
-     * @var string
+     * @var int
      */
     protected $id;
 
@@ -50,11 +51,6 @@ class Audience extends AbstractTranslatable implements AudienceInterface
     /**
      * @var bool
      */
-    protected $webhook;
-
-    /**
-     * @var bool
-     */
     protected $public;
 
     /**
@@ -70,14 +66,15 @@ class Audience extends AbstractTranslatable implements AudienceInterface
     {
         parent::__construct();
 
-        $this->webhook   = false;
         $this->public    = false;
         $this->default   = false;
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new DateTime();
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
     public function __toString()
     {
@@ -87,7 +84,7 @@ class Audience extends AbstractTranslatable implements AudienceInterface
     /**
      * @inheritDoc
      */
-    public function getId(): string
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -142,24 +139,6 @@ class Audience extends AbstractTranslatable implements AudienceInterface
     public function setName(string $name): AudienceInterface
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isWebhook(): bool
-    {
-        return $this->webhook;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setWebhook(bool $webhook): AudienceInterface
-    {
-        $this->webhook = $webhook;
 
         return $this;
     }

@@ -188,6 +188,7 @@ class Customer implements Model\CustomerInterface
             Common\NotificationTypes::QUOTE_REMIND,
             Common\NotificationTypes::PAYMENT_AUTHORIZED,
             Common\NotificationTypes::PAYMENT_CAPTURED,
+            Common\NotificationTypes::PAYMENT_PAYEDOUT,
             Common\NotificationTypes::PAYMENT_EXPIRED,
             Common\NotificationTypes::SHIPMENT_READY,
             Common\NotificationTypes::SHIPMENT_COMPLETE,

@@ -11,17 +11,16 @@
             table="commerce_newsletter_member">
 
         <unique-constraints>
-            <unique-constraint columns="email,audience_id" name="unique_commerce_newsletter_member"/>
+            <unique-constraint columns="email" name="unique_commerce_newsletter_member"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="identifier" column="identifier" type="string" length="32"/>
         <field name="email" column="email" type="string" length="255"/>
+        <field name="identifiers" column="identifiers" type="json"/>
         <field name="status" column="status" type="string" length="16"/>
-        <field name="attributes" column="attributes" type="json" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
@@ -30,9 +29,14 @@
             <gedmo:timestampable on="update"/>
         </field>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface" field="audience">
-            <join-column name="audience_id" referenced-column-name="id" nullable="false" on-delete="RESTRICT"/>
-        </many-to-one>
+        <one-to-many target-entity="Ekyna\Component\Commerce\Newsletter\Entity\Subscription"
+                     field="subscriptions" mapped-by="member">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-many>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="customer">
             <join-column name="customer_id" referenced-column-name="id" nullable="true" on-delete="SET NULL"/>
         </many-to-one>

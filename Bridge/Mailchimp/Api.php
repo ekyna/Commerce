@@ -36,14 +36,14 @@ class Api extends MailChimp
     /**
      * Returns the audiences.
      *
-     * @param int $count
+     * @param int $limit
      * @param int $offset
      *
      * @return array
      */
-    public function getAudiences(int $count = 10, int $offset = 0): array
+    public function getAudiences(int $limit = 10, int $offset = 0): array
     {
-        $results = $this->get("lists", ['count' => $count, 'offset' => $offset]);
+        $results = $this->get("lists", ['count' => $limit, 'offset' => $offset]);
 
         if (!$this->success()) {
             $this->logError($results);

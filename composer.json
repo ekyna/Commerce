@@ -42,7 +42,8 @@
         "florianv/swap": "For currency exchange rates",
         "barbieswimcrew/zip-code-validator": "For zip code validation",
         "odolbeau/phone-number-bundle": "For phone number validation and formatting",
-        "drewm/mailchimp-api": "For mailchimp newsletter"
+        "drewm/mailchimp-api": "For mailchimp newsletter gateway",
+        "sendinblue/api-v3-sdk": "For sendinblue newsletter gateway"
     },
     "autoload": {
         "psr-4": {

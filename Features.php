@@ -28,6 +28,9 @@ class Features
             'mailchimp' => [
                 'api_key' => null,
             ],
+            'sendinblue' => [
+                'api_key' => null,
+            ],
         ],
         self::COUPON     => [
             'enabled' => false,
