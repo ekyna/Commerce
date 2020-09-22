@@ -11,14 +11,15 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class AccountingTypes
 {
-    const TYPE_GOOD     = 'good';
-    //const TYPE_SERVICE  = 'service';
-    const TYPE_SHIPPING = 'shipping';
-    const TYPE_TAX      = 'tax';
-    const TYPE_PAYMENT  = 'payment';
-    const TYPE_UNPAID   = 'unpaid';
-    const TYPE_EX_GAIN  = 'exchange_gain';
-    const TYPE_EX_LOSS  = 'exchange_loss';
+    const TYPE_GOOD       = 'good';
+    //const TYPE_SERVICE    = 'service';
+    const TYPE_SHIPPING   = 'shipping';
+    const TYPE_TAX        = 'tax';
+    const TYPE_PAYMENT    = 'payment';
+    const TYPE_UNPAID     = 'unpaid';
+    const TYPE_EX_GAIN    = 'exchange_gain';
+    const TYPE_EX_LOSS    = 'exchange_loss';
+    const TYPE_ADJUSTMENT = 'adjustment';
 
 
     /**
@@ -26,7 +27,7 @@ final class AccountingTypes
      *
      * @return array
      */
-    static public function getTypes()
+    static public function getTypes(): array
     {
         return [
             static::TYPE_GOOD,
@@ -37,6 +38,7 @@ final class AccountingTypes
             static::TYPE_UNPAID,
             static::TYPE_EX_GAIN,
             static::TYPE_EX_LOSS,
+            static::TYPE_ADJUSTMENT,
         ];
     }
 
@@ -48,7 +50,7 @@ final class AccountingTypes
      *
      * @return bool
      */
-    static public function isValidType($type, $throw = true)
+    static public function isValidType(string $type, bool $throw = true): bool
     {
         if (in_array($type, static::getTypes(), true)) {
             return true;
@@ -60,7 +62,7 @@ final class AccountingTypes
 
         return false;
     }
-    
+
     /**
      * Disabled constructor.
      */

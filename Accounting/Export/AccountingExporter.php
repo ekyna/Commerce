@@ -211,8 +211,6 @@ class AccountingExporter implements AccountingExporterInterface
         $this->writer = new AccountingWriter();
         $this->writer->open($path);
 
-        $WRONG_BALANCES = [];
-
         $invoices = $this->invoiceRepository->findByMonth($month);
 
         while (false !== $this->invoice = current($invoices)) {
@@ -231,10 +229,7 @@ class AccountingExporter implements AccountingExporterInterface
             $this->writeInvoiceGoodsLines();
             $this->writeInvoiceShipmentLine();
             $this->writeInvoiceTaxesLine();
-
-            if (0 !== $this->compare($this->balance, 0)) {
-                $WRONG_BALANCES[] = $this->invoice->getNumber();
-            }
+            $this->writeInvoiceItemsLines();
 
             next($invoices);
         }
@@ -372,7 +367,7 @@ class AccountingExporter implements AccountingExporterInterface
     }
 
     /**
-     * Writes the invoice's goods line.
+     * Writes the invoice's goods lines.
      */
     protected function writeInvoiceGoodsLines(): void
     {
@@ -430,6 +425,71 @@ class AccountingExporter implements AccountingExporterInterface
             }
 
             $account = $this->getGoodAccountNumber($taxRule, (float)$rate, $this->invoice->getNumber());
+
+            if ($this->invoice->isCredit()) {
+                $this->writer->credit($account, (string)$amount, $date);
+                $this->balance -= $amount;
+            } else {
+                $this->writer->debit($account, (string)$amount, $date);
+                $this->balance += $amount;
+            }
+        }
+    }
+
+    /**
+     * Writes the invoice's goods items.
+     */
+    protected function writeInvoiceItemsLines(): void
+    {
+        $sale = $this->invoice->getSale();
+        $date = $sale->getCreatedAt();
+        $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
+        /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[] $discounts */
+        $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+
+        // Gather amounts by tax rates
+        $amounts = [];
+        foreach ($this->invoice->getItems() as $item) {
+            $rates = $item->getTaxRates();
+            if (empty($rates)) {
+                $rate = 0;
+            } elseif (1 === count($rates)) {
+                $rate = current($rates);
+            } else {
+                throw new LogicException("Multiple tax rates on goods lines are not yet supported."); // TODO
+            }
+
+            $amount = $item->getBase();
+
+            if (!isset($amounts[(string)$rate])) {
+                $amounts[(string)$rate] = 0;
+            }
+
+            $amounts[(string)$rate] += $this->round($amount);
+        }
+
+        // Writes each tax rates's amount
+        foreach ($amounts as $rate => $amount) {
+            $amount = $this->round($amount);
+
+            // Apply sale's discounts
+            if (!empty($discounts)) {
+                $base = $amount;
+                foreach ($discounts as $adjustment) {
+                    if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
+                    } else {
+                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
+                        $amount -= $this->round($base * $adjustment->getAmount() / $gross->getBase());
+                    }
+                }
+            }
+
+            if (0 === $this->compare($amount, 0)) {
+                continue; // next tax rate
+            }
+
+            $account = $this->getAdjustmentAccountNumber($taxRule, (float)$rate, $this->invoice->getNumber());
 
             if ($this->invoice->isCredit()) {
                 $this->writer->credit($account, (string)$amount, $date);
@@ -794,5 +854,46 @@ class AccountingExporter implements AccountingExporterInterface
         }
 
         return null;
+    }
+
+    /**
+     * Return the adjustment account number for the given tax rule and tax rate.
+     *
+     * @param TaxRuleInterface $rule
+     * @param float            $rate
+     * @param string           $origin
+     *
+     * @return string
+     */
+    protected function getAdjustmentAccountNumber(TaxRuleInterface $rule, float $rate, string $origin): string
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->getType() !== AccountingTypes::TYPE_ADJUSTMENT) {
+                continue;
+            }
+
+            if ($account->getTaxRule() !== $rule) {
+                continue;
+            }
+
+            if (is_null($account->getTax())) {
+                if ($rate == 0) {
+                    return $account->getNumber();
+                }
+
+                continue;
+            }
+
+            if (0 === bccomp($account->getTax()->getRate(), $rate, 5)) {
+                return $account->getNumber();
+            }
+        }
+
+        throw new LogicException(sprintf(
+            "No adjustment account number configured for tax rule '%s' and tax rate %s (%s)",
+            $rule->getName(),
+            $rate,
+            $origin
+        ));
     }
 }
