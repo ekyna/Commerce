@@ -44,13 +44,14 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
      *
      * @return Availability
      */
-    public function getAvailability(StockSubjectInterface $subject, bool $root = true, bool $short = false)
-    {
+    public function getAvailability(
+        StockSubjectInterface $subject,
+        bool $root = true,
+        bool $short = false
+    ): Availability {
         $minQty = $aQty = $rQty = 0;
         $maxQty = INF;
         $minMsg = $maxMsg = $aMsg = $rMsg = null;
-
-        $formatter = $this->getFormatter();
 
         if ($root && $subject->isQuoteOnly()) {
             $maxQty = 0;
@@ -59,7 +60,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             // Minimum quantity/message
             if ($root && (0 < $minQty = $subject->getMinimumOrderQuantity())) {
                 $minMsg = $this->translate('min_quantity', [
-                    '%min%' => $formatter->number($minQty),
+                    '%min%' => $this->getFormatter()->number($minQty),
                 ], $short);
             }
 
@@ -67,25 +68,25 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
                 $aQty = INF;
                 $aMsg = $this->translate('available', [], $short);
-            } elseif (0 < $aQty = $subject->getAvailableStock()) {
+            } elseif ($minQty <= $aQty = $subject->getAvailableStock()) {
                 $maxQty = $aQty;
                 $aMsg = $this->translate('in_stock', [
-                    '%qty%' => $formatter->number($aQty),
+                    '%qty%' => $this->formatQuantity($aQty),
                 ], $short);
             } else {
                 $maxQty = 0;
             }
 
             // Resupply quantity/message
-            if ((0 < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
+            if ((0 < $vQty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
                 $today = new \DateTime();
                 $today->setTime(23, 59, 59, 999999);
-                if ($today < $eda && 0 < $rQty = $qty - $aQty) {
+                if (($today < $eda) && ($minQty <= $rQty = $vQty - $aQty)) {
                     $rMsg = $this->translate('pre_order', [
-                        '%eda%' => $formatter->date($eda),
-                        '%qty%' => $formatter->number($qty),
+                        '%eda%' => $this->getFormatter()->date($eda),
+                        '%qty%' => $this->formatQuantity($rQty),
                     ], $short);
-                    $maxQty = $qty;
+                    $maxQty = $vQty;
                 }
             }
 
@@ -93,8 +94,8 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             if ($root && $subject->isEndOfLife()) {
                 $oMsg = $this->translate('end_of_life', [], $short);
             } elseif (
-                $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME &&
-                0 < $days = $subject->getReplenishmentTime()
+                $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME
+                && 0 < $days = $subject->getReplenishmentTime()
             ) {
                 $maxQty = INF;
                 $oMsg = $this->translate('replenishment', [
@@ -106,7 +107,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
 
             if (0 < $maxQty && $maxQty !== INF) {
                 $maxMsg = $this->translate('max_quantity', [
-                    '%max%' => $formatter->number($maxQty),
+                    '%max%' => $this->getFormatter()->number($maxQty),
                 ], $short);
             } elseif (0 == $maxQty) {
                 $maxMsg = $oMsg;
@@ -124,9 +125,7 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
         float $quantity = null,
         bool $root = true,
         bool $short = false
-    ) {
-        $formatter = $this->formatterFactory->create();
-
+    ): string {
         if (is_null($quantity)) {
             $quantity = $root ? $subject->getMinimumOrderQuantity() : 0;
         }
@@ -139,26 +138,23 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             return $this->translate('available', [], $short);
         }
 
-        if ($quantity < $qty = $subject->getAvailableStock()) {
-            if (0 < $this->inStockLimit && $this->inStockLimit < $qty) {
-                return $this->translate('in_stock', [
-                    '%qty%' => $this->inStockLimit . '+',
-                ], $short);
-            }
-
+        if ($quantity <= $qty = $subject->getAvailableStock()) {
             return $this->translate('in_stock', [
-                '%qty%' => $formatter->number($qty),
+                '%qty%' => $this->formatQuantity($qty)
             ], $short);
         }
 
         // TODO Only if stock mode === JUST_IN_TIME (?)
-        if (($quantity < $qty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
+        if (
+            ($quantity <= $qty = $subject->getVirtualStock())
+            && (null !== $eda = $subject->getEstimatedDateOfArrival())
+        ) {
             $today = new \DateTime();
             $today->setTime(23, 59, 59, 999999);
             if ($today < $eda) {
                 return $this->translate('pre_order', [
-                    '%eda%' => $formatter->date($eda),
-                    '%qty%' => $formatter->number($qty),
+                    '%eda%' => $this->getFormatter()->date($eda),
+                    '%qty%' => $this->formatQuantity($qty),
                 ], $short);
             }
         }
@@ -168,8 +164,8 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
         }
 
         if (
-            $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME &&
-            0 < $days = $subject->getReplenishmentTime()
+            $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME
+            && 0 < $days = $subject->getReplenishmentTime()
         ) {
             return $this->translate('replenishment', [
                 '%days%' => $days,
@@ -178,4 +174,31 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
 
         return $this->translate('out_of_stock', [], $short);
     }
+
+    /**
+     * Formats the given quantity.
+     *
+     * @param float $qty
+     *
+     * @return string
+     */
+    protected function formatQuantity(float $qty): string
+    {
+        if (0 < $this->inStockLimit && $this->inStockLimit < $qty) {
+            return $this->inStockLimit . '+';
+        }
+
+        return $this->getFormatter()->number($qty);
+    }
+
+    /**
+     * Translate the availability message.
+     *
+     * @param string $id
+     * @param array  $parameters
+     * @param bool   $short
+     *
+     * @return string
+     */
+    abstract protected function translate(string $id, array $parameters = [], $short = false): string;
 }

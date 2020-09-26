@@ -21,13 +21,17 @@ interface AvailabilityHelperInterface
      *
      * @return Availability
      */
-    public function getAvailability(StockSubjectInterface $subject, bool $root = true, bool $short = false);
+    public function getAvailability(
+        StockSubjectInterface $subject,
+        bool $root = true,
+        bool $short = false
+    ): Availability;
 
     /**
      * Returns the subject's availability message.
      *
      * @param StockSubjectInterface $subject
-     * @param float                 $quantity
+     * @param float|null            $quantity
      * @param bool                  $root
      * @param bool                  $short
      *
@@ -38,16 +42,5 @@ interface AvailabilityHelperInterface
         float $quantity = null,
         bool $root = true,
         bool $short = false
-    );
-
-    /**
-     * Translate the availability message.
-     *
-     * @param string $id
-     * @param array  $parameters
-     * @param bool   $short
-     *
-     * @return string
-     */
-    public function translate($id, array $parameters = [], $short = false);
+    ): string;
 }

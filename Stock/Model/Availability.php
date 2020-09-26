@@ -58,15 +58,15 @@ class Availability
     /**
      * Constructor.
      *
-     * @param string $overflowMessage
-     * @param float  $minimumQuantity
-     * @param string $minimumMessage
-     * @param float  $maximumQuantity
-     * @param string $maximumMessage
-     * @param float  $availableQuantity
-     * @param string $availableMessage
-     * @param float  $resupplyQuantity
-     * @param string $resupplyMessage
+     * @param string      $overflowMessage
+     * @param float       $minimumQuantity
+     * @param string|null $minimumMessage
+     * @param float       $maximumQuantity
+     * @param string|null $maximumMessage
+     * @param float       $availableQuantity
+     * @param string|null $availableMessage
+     * @param float       $resupplyQuantity
+     * @param string|null $resupplyMessage
      */
     public function __construct(
         string $overflowMessage,
@@ -74,20 +74,20 @@ class Availability
         string $minimumMessage = null,
         float $maximumQuantity = 0,
         string $maximumMessage = null,
-        float $availableQuantity,
+        float $availableQuantity = 0,
         string $availableMessage = null,
         float $resupplyQuantity = 0,
         string $resupplyMessage = null
     ) {
-        $this->overflowMessage = $overflowMessage;
-        $this->minimumQuantity = $minimumQuantity;
-        $this->minimumMessage = $minimumMessage;
-        $this->maximumQuantity = $maximumQuantity;
-        $this->maximumMessage = $maximumMessage;
+        $this->overflowMessage   = $overflowMessage;
+        $this->minimumQuantity   = $minimumQuantity;
+        $this->minimumMessage    = $minimumMessage;
+        $this->maximumQuantity   = $maximumQuantity;
+        $this->maximumMessage    = $maximumMessage;
         $this->availableQuantity = $availableQuantity;
-        $this->availableMessage = $availableMessage;
-        $this->resupplyQuantity = $resupplyQuantity;
-        $this->resupplyMessage = $resupplyMessage;
+        $this->availableMessage  = $availableMessage;
+        $this->resupplyQuantity  = $resupplyQuantity;
+        $this->resupplyMessage   = $resupplyMessage;
     }
 
     /**
@@ -97,7 +97,7 @@ class Availability
      *
      * @return array
      */
-    public function getMessagesForQuantity(float $quantity)
+    public function getMessagesForQuantity(float $quantity): array
     {
         $messages = [];
 
@@ -136,7 +136,7 @@ class Availability
      *
      * @return bool
      */
-    public function isAvailableForQuantity(float $quantity)
+    public function isAvailableForQuantity(float $quantity): bool
     {
         if ($quantity < $this->minimumQuantity) {
             return false;
@@ -152,7 +152,7 @@ class Availability
      *
      * @return string
      */
-    public function getOverflowMessage()
+    public function getOverflowMessage(): string
     {
         return $this->overflowMessage;
     }
@@ -162,7 +162,7 @@ class Availability
      *
      * @return float
      */
-    public function getMinimumQuantity()
+    public function getMinimumQuantity(): float
     {
         return $this->minimumQuantity;
     }
@@ -172,7 +172,7 @@ class Availability
      *
      * @return string
      */
-    public function getMinimumMessage()
+    public function getMinimumMessage(): ?string
     {
         return $this->minimumMessage;
     }
@@ -182,7 +182,7 @@ class Availability
      *
      * @return float
      */
-    public function getMaximumQuantity()
+    public function getMaximumQuantity(): float
     {
         return $this->maximumQuantity;
     }
@@ -192,7 +192,7 @@ class Availability
      *
      * @return string
      */
-    public function getMaximumMessage()
+    public function getMaximumMessage(): ?string
     {
         return $this->maximumMessage;
     }
@@ -202,7 +202,7 @@ class Availability
      *
      * @return float
      */
-    public function getAvailableQuantity()
+    public function getAvailableQuantity(): float
     {
         return $this->availableQuantity;
     }
@@ -212,7 +212,7 @@ class Availability
      *
      * @return string
      */
-    public function getAvailableMessage()
+    public function getAvailableMessage(): ?string
     {
         return $this->availableMessage;
     }
@@ -222,7 +222,7 @@ class Availability
      *
      * @return float
      */
-    public function getResupplyQuantity()
+    public function getResupplyQuantity(): float
     {
         return $this->resupplyQuantity;
     }
@@ -232,7 +232,7 @@ class Availability
      *
      * @return string
      */
-    public function getResupplyMessage()
+    public function getResupplyMessage(): ?string
     {
         return $this->resupplyMessage;
     }
@@ -242,7 +242,7 @@ class Availability
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'o_msg'   => $this->overflowMessage,
