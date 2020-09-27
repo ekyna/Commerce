@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Doctrine\ORM\Query;
-use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
 use Ekyna\Component\Commerce\Newsletter\Repository\MemberRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepository;

@@ -69,8 +69,10 @@ class Handler extends AbstractHandler
          *   "ts":1564469292
          * } */
 
+        sleep(1);
+
         $member = $this->memberRepository->findOneByEmail($data['email']);
-        if (!$member) {
+        if (null === $member) {
             $member = $this->memberRepository->createNew();
             $member
                 ->setIdentifier(static::getName(), $data['id'])
@@ -80,11 +82,11 @@ class Handler extends AbstractHandler
 
         foreach ($data['list_id'] as $identifier) {
             $audience = $this->audienceRepository->findOneByGatewayAndIdentifier(Constants::NAME, $identifier);
-            if (!$audience) {
+            if (null === $audience) {
                 continue;
             }
 
-            if (!$subscription = $member->getSubscription($audience)) {
+            if (null === $subscription = $member->getSubscription($audience)) {
                 $subscription = $this->subscriptionRepository->createNew();
                 $subscription
                     ->setMember($member)
@@ -123,11 +125,18 @@ class Handler extends AbstractHandler
          *   ]
          * } */
 
+        sleep(1);
+
         $contents = $data['content'];
 
         foreach ($contents as $content) {
             $persist = false;
             $member = $this->memberRepository->findOneByEmail($content['email']);
+
+            if (null === $member) {
+                // TODO Create ?
+                continue;
+            }
 
             // Attributes
             if (isset($content['attributes'])) {
@@ -221,6 +230,8 @@ class Handler extends AbstractHandler
          *   "ts":1564469598
          * } */
 
+        sleep(1);
+
         foreach ($data['email'] as $email) {
             $member = $this->memberRepository->findOneByEmail($email);
 
@@ -263,6 +274,8 @@ class Handler extends AbstractHandler
          *   "ts_event":1564479555,
          *   "ts":1564466956
          * } */
+
+        sleep(1);
 
         $member = $this->memberRepository->findOneByEmail($data['email']);
 
