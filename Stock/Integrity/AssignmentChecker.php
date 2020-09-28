@@ -32,12 +32,12 @@ class AssignmentChecker extends AbstractChecker
 
         // Calculate sold sum
         if ($result['is_sample']) {
-            // Sample orders does not have invoices
-            $result['sold_sum'] = $result['item_sum'];
-
             if ($result['is_released']) {
                 // Released orders : use shipped sum if lower
-                $result['sold_sum'] = min($result['sold_sum'], $result['shipped_sum']);
+                $result['sold_sum'] = min($result['item_sum'], $result['shipped_sum']);
+            } else {
+                // Sample orders does not have invoices
+                $result['sold_sum'] = $result['item_sum'];
             }
         } elseif ($result['is_released']) {
             throw new \RuntimeException("Released non sample order #{$result['order_id']}");
@@ -77,8 +77,7 @@ class AssignmentChecker extends AbstractChecker
      */
     public function build(OutputInterface $output): void
     {
-        $assignments = [];
-        $units = [];
+        $assignments = $units = $newAssignments = $newUnits = [];
 
         $selectAssignments = $this->connection->prepare(<<<SQL
 SELECT a.id as a_id,
@@ -96,6 +95,19 @@ WHERE a.order_item_id=:item_id
 SQL
         );
 
+        /*$selectUnits = $this->connection->prepare(<<<SQL
+SELECT u.id as u_id,
+        u.sold_quantity as u_sold, 
+        u.shipped_quantity as u_shipped,
+        u.ordered_quantity as u_ordered, 
+        u.adjusted_quantity as u_adjusted,
+        u.received_quantity as u_received
+FROM commerce_stock_unit u
+WHERE u.product_id=:subject_id
+AND u.state!='closed'
+SQL
+);*/
+
         foreach ($this->results as $item) {
             $soldDelta = $item['sold_sum'] - $item['sold_qty'];
             $shippedDelta = $item['shipped_sum'] - $item['shipped_qty'];
@@ -108,7 +120,6 @@ SQL
             $subjectId = $item['subject_id'];
 
             $selectAssignments->execute(['item_id' => $itemId]);
-
             while (false !== $data = $selectAssignments->fetch(\PDO::FETCH_ASSOC)) {
                 // Cache assignment change set
                 $aId = $data['a_id'];
@@ -190,6 +201,62 @@ SQL
                     break;
                 }
             } // End each assignments
+
+            /*if (0 === bccomp(0, $soldDelta, 5) && 0 === bccomp(0, $shippedDelta, 5)) {
+                continue; // Next result (item)
+            }
+
+            $selectUnits->execute(['subject_id' => $subjectId]);
+            while (false !== $data = $selectUnits->fetch(\PDO::FETCH_ASSOC)) {
+                // Cache unit change set
+                $uId = $data['u_id'];
+                if (!isset($units[$uId])) {
+                    $units[$uId] = [
+                        'order'   => $orderId,
+                        'item'    => $itemId,
+                        'subject' => $subjectId,
+                        'sold'    => [$data['u_sold'], $data['u_sold']],
+                        'shipped' => [$data['u_shipped'], $data['u_shipped']],
+                    ];
+                }
+                $unit = &$units[$uId];
+
+                // Shipped change
+                if (0 < $shippedDelta) {
+                    // Credit case
+                    $shippedQty = max(0, min(
+                        $shippedDelta,
+                        // Lower than received + adjusted
+                        $data['u_received'] + $data['u_adjusted'] - $unit['shipped'][1]
+                    ));
+                }
+
+                // Sold change
+                if (0 < $soldDelta) {
+                    // Credit case
+                    $soldQty = max(0, $soldDelta); //min(
+                    //    $soldDelta
+                    //    // Lower than unit ordered + adjusted
+                    //    //,$data['u_ordered'] + $data['u_adjusted'] - $unit['sold'][1]
+                    //));
+                }
+
+
+                if (0 !== bccomp(0, $shippedQty, 5)) {
+                    $assignment['shipped'][1] += $shippedQty;
+                    //$unit['shipped'][1] += $shippedQty;
+                    $shippedDelta -= $shippedQty;
+                }
+                if (0 !== bccomp(0, $soldQty, 5)) {
+                    $assignment['sold'][1] += $soldQty;
+                    //$unit['sold'][1] += $soldQty;
+                    $soldDelta -= $soldQty;
+                }
+
+                if (0 === bccomp(0, $soldDelta, 5) && 0 === bccomp(0, $shippedDelta, 5)) {
+                    break;
+                }
+            }*/
 
             if (0 !== bccomp(0, $soldDelta, 5)) {
                 // TODO Credit new stock unit
@@ -287,13 +354,15 @@ SELECT
         JOIN commerce_order_invoice AS invoice ON invoice.id=line.invoice_id
         WHERE line.order_item_id=i1.id
           AND invoice.credit=0
+          AND invoice.ignore_stock=0
     ), 0) AS invoice_sum,
     IFNULL((
         SELECT SUM(line.quantity)
         FROM commerce_order_invoice_line AS line
-        JOIN commerce_order_invoice AS invoice ON invoice.id=line.invoice_id
+        JOIN commerce_order_invoice AS credit ON credit.id=line.invoice_id
         WHERE line.order_item_id=i1.id
-          AND invoice.credit=1
+          AND credit.credit=1
+          AND credit.ignore_stock=0
     ), 0) AS credit_sum,
     IFNULL((
         SELECT SUM(si.quantity)
