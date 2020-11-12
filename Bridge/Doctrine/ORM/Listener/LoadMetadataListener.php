@@ -14,6 +14,7 @@ use Ekyna\Component\Commerce\Pricing as Pricing;
 use Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Mapping\DiscriminatorMapper;
@@ -55,6 +56,11 @@ class LoadMetadataListener implements EventSubscriber
      * @var array
      */
     private $taxableClassCache = [];
+
+    /**
+     * @var array
+     */
+    private $subjectIdentityClassCache = [];
 
     /**
      * @var array
@@ -115,8 +121,12 @@ class LoadMetadataListener implements EventSubscriber
 
         if (is_subclass_of($class, SubjectInterface::class)) {
             $this->configureSubjectMapping($eventArgs);
-        } elseif (is_subclass_of($class, SubjectRelativeInterface::class)) {
-            $this->configureSubjectRelativeMapping($eventArgs);
+        } elseif (is_subclass_of($class, SubjectReferenceInterface::class)) {
+            $this->configureSubjectIdentityMapping($eventArgs);
+
+            if (is_subclass_of($class, SubjectRelativeInterface::class)) {
+                $this->configureSubjectRelativeMapping($eventArgs);
+            }
         }
 
         if (is_subclass_of($class, Stock\StockSubjectInterface::class)) {
@@ -261,6 +271,35 @@ class LoadMetadataListener implements EventSubscriber
     }
 
     /**
+     * Configures the subject identity mapping.
+     *
+     * @param LoadClassMetadataEventArgs $eventArgs
+     */
+    private function configureSubjectIdentityMapping(LoadClassMetadataEventArgs $eventArgs)
+    {
+        $metadata = $eventArgs->getClassMetadata();
+        $class = $metadata->getName();
+
+        // Check class
+        if (!is_subclass_of($class, SubjectReferenceInterface::class)) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($class, $this->subjectIdentityClassCache)) {
+            return;
+        }
+
+        // Map embedded
+        $this
+            ->getSubjectIdentityMapper($eventArgs->getEntityManager())
+            ->processClassMetadata($metadata, 'subjectIdentity', 'subject_');
+
+        // Cache class
+        $this->subjectIdentityClassCache[] = $class;
+    }
+
+    /**
      * Configures the subject relative mapping.
      *
      * @param LoadClassMetadataEventArgs $eventArgs
@@ -282,11 +321,6 @@ class LoadMetadataListener implements EventSubscriber
 
         // Add mappings
         $this->addMappings($metadata, $this->getSubjectRelativeMappings());
-
-        // Map embedded
-        $this
-            ->getSubjectIdentityMapper($eventArgs->getEntityManager())
-            ->processClassMetadata($metadata, 'subjectIdentity', 'subject_');
 
         // Cache class
         $this->subjectRelativeClassCache[] = $class;

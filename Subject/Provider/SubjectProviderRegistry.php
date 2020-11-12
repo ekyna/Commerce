@@ -3,8 +3,8 @@
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface as Reference;
 
 /**
  * Interface SubjectProviderInterface
@@ -30,7 +30,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * {@inheritdoc}
      */
-    public function addProvider(SubjectProviderInterface $provider)
+    public function addProvider(SubjectProviderInterface $provider): void
     {
         if (array_key_exists($provider->getName(), $this->providers)) {
             throw new \RuntimeException(sprintf('Subject provider "%s" is already registered.', $provider->getName()));
@@ -42,14 +42,14 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProvider($nameOrRelativeOrSubject)
+    public function getProvider($nameOrReferenceOrSubject): ?SubjectProviderInterface
     {
-        if ($nameOrRelativeOrSubject instanceof SubjectRelativeInterface) {
-            return $this->getProviderByRelative($nameOrRelativeOrSubject);
-        } elseif ($nameOrRelativeOrSubject instanceof SubjectInterface) {
-            return $this->getProviderBySubject($nameOrRelativeOrSubject);
-        } elseif (is_string($nameOrRelativeOrSubject)) {
-            return $this->getProviderByName($nameOrRelativeOrSubject);
+        if ($nameOrReferenceOrSubject instanceof Reference) {
+            return $this->getProviderByReference($nameOrReferenceOrSubject);
+        } elseif ($nameOrReferenceOrSubject instanceof Subject) {
+            return $this->getProviderBySubject($nameOrReferenceOrSubject);
+        } elseif (is_string($nameOrReferenceOrSubject)) {
+            return $this->getProviderByName($nameOrReferenceOrSubject);
         }
 
         throw new InvalidArgumentException("Failed to resolve provider.");
@@ -58,14 +58,14 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProviderByRelative(SubjectRelativeInterface $relative)
+    public function getProviderByReference(Reference $reference): ?SubjectProviderInterface
     {
-        if (!empty($name = $relative->getSubjectIdentity()->getProvider())) {
+        if (!empty($name = $reference->getSubjectIdentity()->getProvider())) {
             return $this->getProviderByName($name);
         }
 
         foreach ($this->providers as $provider) {
-            if ($provider->supportsRelative($relative)) {
+            if ($provider->supportsReference($reference)) {
                 return $provider;
             }
         }
@@ -76,7 +76,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProviderBySubject(SubjectInterface $subject)
+    public function getProviderBySubject(Subject $subject): ?SubjectProviderInterface
     {
         foreach ($this->providers as $provider) {
             if ($provider->supportsSubject($subject)) {
@@ -90,7 +90,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProviderByName($name)
+    public function getProviderByName(string $name): ?SubjectProviderInterface
     {
         if (array_key_exists($name, $this->providers)) {
             return $this->providers[$name];
@@ -102,7 +102,7 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getProviders()
+    public function getProviders(): array
     {
         return $this->providers;
     }

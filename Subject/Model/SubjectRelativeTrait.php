@@ -3,7 +3,6 @@
 namespace Ekyna\Component\Commerce\Subject\Model;
 
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
-use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 
 /**
  * Trait SubjectRelativeTrait
@@ -14,7 +13,8 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
  */
 trait SubjectRelativeTrait
 {
-    use TaxableTrait;
+    use SubjectReferenceTrait,
+        TaxableTrait;
 
     /**
      * @var int
@@ -41,11 +41,6 @@ trait SubjectRelativeTrait
      */
     protected $weight;
 
-    /**
-     * @var SubjectIdentity
-     */
-    protected $subjectIdentity;
-
 
     /**
      * Initializes the subject relative.
@@ -54,7 +49,8 @@ trait SubjectRelativeTrait
     {
         $this->netPrice = 0.;
         $this->weight = 0.;
-        $this->subjectIdentity = new SubjectIdentity();
+
+        $this->initializeSubjectIdentity();
     }
 
     /**
@@ -157,60 +153,6 @@ trait SubjectRelativeTrait
     public function setWeight(float $weight): SubjectRelativeInterface
     {
         $this->weight = (float)$weight;
-
-        return $this;
-    }
-
-    /**
-     * Returns whether or not the subject identity is set.
-     *
-     * @see SubjectIdentity::hasIdentity()
-     *
-     * @return bool
-     */
-    public function hasSubjectIdentity(): bool
-    {
-        return $this->subjectIdentity->hasIdentity();
-    }
-
-    /**
-     * Returns the subject identity.
-     *
-     * @return SubjectIdentity
-     *
-     * @internal
-     */
-    public function getSubjectIdentity(): SubjectIdentity
-    {
-        return $this->subjectIdentity;
-    }
-
-    /**
-     * Sets the subject identity.
-     *
-     * @param SubjectIdentity $identity
-     *
-     * @return $this|SubjectRelativeInterface
-     *
-     * @internal
-     */
-    public function setSubjectIdentity(SubjectIdentity $identity): SubjectRelativeInterface
-    {
-        $this->subjectIdentity = $identity;
-
-        return $this;
-    }
-
-    /**
-     * Clears the subject identity.
-     *
-     * @return $this|SubjectRelativeInterface
-     *
-     * @internal
-     */
-    public function clearSubjectIdentity(): SubjectRelativeInterface
-    {
-        $this->subjectIdentity->clear();
 
         return $this;
     }

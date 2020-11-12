@@ -4,8 +4,10 @@ namespace Ekyna\Component\Commerce\Subject;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\SubjectException;
+use Ekyna\Component\Commerce\Features;
 use Ekyna\Component\Commerce\Subject\Event\SubjectUrlEvent;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderRegistryInterface;
@@ -28,38 +30,48 @@ class SubjectHelper implements SubjectHelperInterface
      */
     protected $eventDispatcher;
 
+    /**
+     * @var Features
+     */
+    protected $features;
+
 
     /**
      * Constructor.
      *
      * @param SubjectProviderRegistryInterface $registry
      * @param EventDispatcherInterface         $eventDispatcher
+     * @param Features                         $features
      */
-    public function __construct(SubjectProviderRegistryInterface $registry, EventDispatcherInterface $eventDispatcher)
-    {
+    public function __construct(
+        SubjectProviderRegistryInterface $registry,
+        EventDispatcherInterface $eventDispatcher,
+        Features $features
+    ) {
         $this->registry = $registry;
         $this->eventDispatcher = $eventDispatcher;
+        $this->features = $features;
     }
 
     /**
      * @inheritdoc
      */
-    public function hasSubject(SubjectRelativeInterface $relative): bool
+    public function hasSubject(SubjectReferenceInterface $reference): bool
     {
-        return null !== $this->resolve($relative, false);
+        return null !== $this->resolve($reference, false);
     }
 
     /**
      * @inheritdoc
      */
-    public function resolve(SubjectRelativeInterface $relative, $throw = true): ?SubjectInterface
+    public function resolve(SubjectReferenceInterface $reference, bool $throw = true): ?SubjectInterface
     {
-        if (!$relative->getSubjectIdentity()->hasIdentity()) {
+        if (!$reference->getSubjectIdentity()->hasIdentity()) {
             return null;
         }
 
         try {
-            return $this->getProvider($relative)->resolve($relative);
+            return $this->getProvider($reference)->resolve($reference);
         } catch (SubjectException $e) {
             if ($throw) {
                 throw $e;
@@ -72,15 +84,15 @@ class SubjectHelper implements SubjectHelperInterface
     /**
      * @inheritdoc
      */
-    public function assign(SubjectRelativeInterface $relative, $subject): SubjectProviderInterface
+    public function assign(SubjectReferenceInterface $reference, $subject): SubjectProviderInterface
     {
-        return $this->getProvider($subject)->assign($relative, $subject);
+        return $this->getProvider($subject)->assign($reference, $subject);
     }
 
     /**
      * @inheritdoc
      */
-    public function find($provider, $identifier): ?SubjectInterface
+    public function find(string $provider, string $identifier): ?SubjectInterface
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getProvider($provider)->getRepository()->find($identifier);
@@ -135,6 +147,14 @@ class SubjectHelper implements SubjectHelperInterface
     public function generateAddToCartUrl($subject, bool $path = true): ?string
     {
         return $this->getUrl(SubjectUrlEvent::ADD_TO_CART, $subject, $path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function generateResupplyAlertUrl($subject, bool $path = true): ?string
+    {
+        return $this->getUrl(SubjectUrlEvent::RESUPPLY_ALERT, $subject, $path);
     }
 
     /**

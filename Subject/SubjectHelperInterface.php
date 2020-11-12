@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Subject;
 use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface as SubjectProvider;
 use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
@@ -15,35 +16,35 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 interface SubjectHelperInterface
 {
     /**
-     * Returns whether or the subject relative has subject.
+     * Returns whether or the subject reference has subject.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param SubjectReferenceInterface $reference
      *
      * @return bool
      */
-    public function hasSubject(SubjectRelativeInterface $relative): bool;
+    public function hasSubject(SubjectReferenceInterface $reference): bool;
 
     /**
-     * Resolves the subject from the relative.
+     * Resolves the subject from the reference.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param SubjectReferenceInterface $reference
      * @param bool                     $throw
      *
      * @return SubjectInterface
      *
      * @throws SubjectException
      */
-    public function resolve(SubjectRelativeInterface $relative, $throw = true): ?SubjectInterface;
+    public function resolve(SubjectReferenceInterface $reference, bool $throw = true): ?SubjectInterface;
 
     /**
-     * Assigns the subject to the relative.
+     * Assigns the subject to the reference.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param SubjectReferenceInterface $reference
      * @param SubjectInterface         $subject
      *
      * @return SubjectProvider
      */
-    public function assign(SubjectRelativeInterface $relative, SubjectInterface $subject): SubjectProvider;
+    public function assign(SubjectReferenceInterface $reference, SubjectInterface $subject): SubjectProvider;
 
     /**
      * Finds the subject by its provider and identifier.
@@ -53,7 +54,7 @@ interface SubjectHelperInterface
      *
      * @return Model\SubjectInterface|null
      */
-    public function find($provider, $identifier): ?SubjectInterface;
+    public function find(string $provider, string $identifier): ?SubjectInterface;
 
     /**
      * Syncs the relative with it's subject data.
@@ -67,7 +68,7 @@ interface SubjectHelperInterface
     /**
      * Returns the subject 'add to cart' url.
      *
-     * @param SubjectRelativeInterface|SubjectInterface $subject
+     * @param SubjectReferenceInterface|SubjectInterface $subject
      * @param bool                                      $path
      *
      * @return null|string
@@ -77,7 +78,7 @@ interface SubjectHelperInterface
     /**
      * Returns the subject public url.
      *
-     * @param SubjectRelativeInterface|SubjectInterface $subject
+     * @param SubjectReferenceInterface|SubjectInterface $subject
      * @param bool                                      $path
      *
      * @return null|string
@@ -87,7 +88,7 @@ interface SubjectHelperInterface
     /**
      * Returns the subject image url.
      *
-     * @param SubjectRelativeInterface|SubjectInterface $subject
+     * @param SubjectReferenceInterface|SubjectInterface $subject
      * @param bool                                      $path
      *
      * @return null|string
@@ -97,7 +98,7 @@ interface SubjectHelperInterface
     /**
      * Returns the subject private url.
      *
-     * @param SubjectRelativeInterface|SubjectInterface $subject
+     * @param SubjectReferenceInterface|SubjectInterface $subject
      * @param bool                                      $path
      *
      * @return null|string

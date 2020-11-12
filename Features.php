@@ -18,24 +18,25 @@ class Features
     public const SUPPORT          = 'support';
     public const CUSTOMER_GRAPHIC = 'customer_graphic';
     public const CUSTOMER_CONTACT = 'customer_contact';
+    public const RESUPPLY_ALERT   = 'resupply_alert';
 
     private const DEFAULTS = [
-        self::BIRTHDAY   => [
+        self::BIRTHDAY         => [
             'enabled' => false,
         ],
-        self::NEWSLETTER => [
-            'enabled'   => false,
-            'mailchimp' => [
+        self::NEWSLETTER       => [
+            'enabled'    => false,
+            'mailchimp'  => [
                 'api_key' => null,
             ],
             'sendinblue' => [
                 'api_key' => null,
             ],
         ],
-        self::COUPON     => [
+        self::COUPON           => [
             'enabled' => false,
         ],
-        self::LOYALTY    => [
+        self::LOYALTY          => [
             'enabled'     => false,
             'credit_rate' => 1,
             'credit'      => [
@@ -61,7 +62,7 @@ class Features
                 ],*/
             ],
         ],
-        self::SUPPORT    => [
+        self::SUPPORT          => [
             'enabled' => false,
         ],
         self::CUSTOMER_GRAPHIC => [
@@ -70,6 +71,9 @@ class Features
         self::CUSTOMER_CONTACT => [
             'enabled' => false,
             'account' => false,
+        ],
+        self::RESUPPLY_ALERT   => [
+            'enabled' => false,
         ],
     ];
 

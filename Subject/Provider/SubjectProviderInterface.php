@@ -5,7 +5,7 @@ namespace Ekyna\Component\Commerce\Subject\Provider;
 use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity as Identity;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface as Relative;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface as Reference;
 use Ekyna\Component\Commerce\Subject\Repository\SubjectRepositoryInterface;
 
 /**
@@ -22,29 +22,29 @@ interface SubjectProviderInterface
 
 
     /**
-     * Sets the subject int the relative.
+     * Assigns the subject to the reference.
      *
-     * This method must set the relative subject fields (provider and identifier) for next resolutions.
+     * This method must set the reference subject fields (provider and identifier) for next resolutions.
      *
-     * @param Relative $relative
+     * @param Reference $reference
      * @param Subject  $subject
      *
      * @return SubjectProviderInterface
      */
-    public function assign(Relative $relative, Subject $subject): SubjectProviderInterface;
+    public function assign(Reference $reference, Subject $subject): SubjectProviderInterface;
 
     /**
-     * Returns the subject from the relative.
+     * Returns the subject from the reference.
      *
-     * This method should set the subject into the relative for future resolutions.
+     * This method should set the subject into the reference for future resolutions.
      *
-     * @param Relative $relative
+     * @param Reference $reference
      *
      * @return Subject
      *
      * @throws SubjectException
      */
-    public function resolve(Relative $relative): Subject;
+    public function resolve(Reference $reference): Subject;
 
     /**
      * Transforms the subject into the identity.
@@ -73,13 +73,13 @@ interface SubjectProviderInterface
     public function reverseTransform(Identity $identity): Subject;
 
     /**
-     * Returns whether the resolver supports the relative or not.
+     * Returns whether the resolver supports the reference or not.
      *
-     * @param Relative $relative
+     * @param Reference $reference
      *
      * @return bool
      */
-    public function supportsRelative(Relative $relative): bool;
+    public function supportsReference(Reference $reference): bool;
 
     /**
      * Returns whether the provider supports the subject or not.

@@ -12,10 +12,11 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class SubjectUrlEvent extends Event
 {
-    const ADD_TO_CART = 'ekyna_commerce.subject_url.add_to_cart';
-    const PUBLIC      = 'ekyna_commerce.subject_url.public';
-    const IMAGE       = 'ekyna_commerce.subject_url.image';
-    const PRIVATE     = 'ekyna_commerce.subject_url.private';
+    const ADD_TO_CART    = 'ekyna_commerce.subject_url.add_to_cart';
+    const RESUPPLY_ALERT = 'ekyna_commerce.subject_url.resupply_alert';
+    const PUBLIC         = 'ekyna_commerce.subject_url.public';
+    const IMAGE          = 'ekyna_commerce.subject_url.image';
+    const PRIVATE        = 'ekyna_commerce.subject_url.private';
 
     /**
      * @var SubjectInterface
@@ -37,9 +38,9 @@ class SubjectUrlEvent extends Event
      * Constructor.
      *
      * @param SubjectInterface $subject
-     * @param boolean          $path
+     * @param bool             $path
      */
-    public function __construct(SubjectInterface $subject, $path = true)
+    public function __construct(SubjectInterface $subject, bool $path = true)
     {
         $this->subject = $subject;
         $this->path    = $path;
@@ -50,7 +51,7 @@ class SubjectUrlEvent extends Event
      *
      * @return SubjectInterface
      */
-    public function getSubject()
+    public function getSubject(): SubjectInterface
     {
         return $this->subject;
     }
@@ -60,7 +61,7 @@ class SubjectUrlEvent extends Event
      *
      * @return bool
      */
-    public function isPath()
+    public function isPath(): bool
     {
         return $this->path;
     }
@@ -70,7 +71,7 @@ class SubjectUrlEvent extends Event
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): ?string
     {
         return $this->url;
     }
@@ -82,7 +83,7 @@ class SubjectUrlEvent extends Event
      *
      * @return SubjectUrlEvent
      */
-    public function setUrl($url)
+    public function setUrl(string $url): SubjectUrlEvent
     {
         $this->url = $url;
 

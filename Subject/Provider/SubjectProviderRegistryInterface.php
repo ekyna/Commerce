@@ -2,8 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
-use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface as Reference;
 
 /**
  * Interface SubjectProviderRegistryInterface
@@ -17,34 +17,34 @@ interface SubjectProviderRegistryInterface
      *
      * @param SubjectProviderInterface $provider
      */
-    public function addProvider(SubjectProviderInterface $provider);
+    public function addProvider(SubjectProviderInterface $provider): void;
 
     /**
-     * Returns the provider by name or relative or subject.
+     * Returns the provider by name or reference or subject.
      *
-     * @param string|SubjectRelativeInterface|object $nameOrRelativeOrSubject
+     * @param string|Reference|object $nameOrReferenceOrSubject
      *
      * @return SubjectProviderInterface|null
      */
-    public function getProvider($nameOrRelativeOrSubject);
+    public function getProvider($nameOrReferenceOrSubject): ?SubjectProviderInterface;
 
     /**
      * Returns the provider supporting the item.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param Reference $reference
      *
      * @return SubjectProviderInterface|null
      */
-    public function getProviderByRelative(SubjectRelativeInterface $relative);
+    public function getProviderByReference(Reference $reference): ?SubjectProviderInterface;
 
     /**
      * Returns the provider supporting the subject.
      *
-     * @param SubjectInterface $subject
+     * @param Subject $subject
      *
      * @return SubjectProviderInterface|null
      */
-    public function getProviderBySubject(SubjectInterface $subject);
+    public function getProviderBySubject(Subject $subject): ?SubjectProviderInterface;
 
     /**
      * Returns the provider by name.
@@ -53,12 +53,12 @@ interface SubjectProviderRegistryInterface
      *
      * @return SubjectProviderInterface|null
      */
-    public function getProviderByName($name);
+    public function getProviderByName(string $name): ?SubjectProviderInterface;
 
     /**
      * Returns the providers.
      *
      * @return array|SubjectProviderInterface[]
      */
-    public function getProviders();
+    public function getProviders(): array;
 }
