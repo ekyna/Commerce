@@ -25,10 +25,13 @@ class StockAdjustmentNormalizer extends AbstractResourceNormalizer
         $data = [];
 
         if ($this->contextHasGroup('StockView', $context)) {
+            $formatter = $this->getFormatter();
+
             $data = array_replace($data, [
-                'quantity' => $this->getFormatter()->number($adjustment->getQuantity()),
-                'reason'   => $adjustment->getReason(),
-                'note'     => $adjustment->getNote(),
+                'quantity'   => $formatter->number($adjustment->getQuantity()),
+                'reason'     => $adjustment->getReason(),
+                'note'       => $adjustment->getNote(),
+                'created_at' => $formatter->date($adjustment->getCreatedAt()),
             ]);
         }
 
