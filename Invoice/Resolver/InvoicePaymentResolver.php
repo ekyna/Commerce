@@ -127,6 +127,13 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
         /** @var IM\InvoiceSubjectInterface $sale */
         $this->buildInvoiceList($sale);
 
+        // Combining too many invoices use too much resources
+        if (16 < count($this->invoices)) {
+            $this->buildPaymentsResults(array_keys($this->invoices), array_keys($this->payments));
+
+            return;
+        }
+
         // Creates cache entries for each invoices
         foreach ($this->invoices as $invoice) {
             $this->cache[spl_object_id($invoice['invoice'])] = [];
