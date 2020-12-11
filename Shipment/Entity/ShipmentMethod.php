@@ -166,7 +166,7 @@ class ShipmentMethod extends AbstractMethod implements Shipment\ShipmentMethodIn
     /**
      * @inheritdoc
      */
-    protected function getTranslationClass()
+    protected function getTranslationClass(): string
     {
         return ShipmentMethodTranslation::class;
     }

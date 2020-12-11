@@ -208,7 +208,7 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritdoc
      */
-    protected function getTranslationClass()
+    protected function getTranslationClass(): string
     {
         return PaymentMethodTranslation::class;
     }

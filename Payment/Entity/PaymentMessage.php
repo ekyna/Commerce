@@ -14,7 +14,7 @@ class PaymentMessage extends AbstractMessage
     /**
      * @inheritdoc
      */
-    protected function getTranslationClass()
+    protected function getTranslationClass(): string
     {
         return PaymentMessageTranslation::class;
     }

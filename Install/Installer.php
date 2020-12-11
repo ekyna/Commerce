@@ -397,7 +397,7 @@ class Installer
                 ->addDocumentType(DocumentTypes::TYPE_PROFORMA);
 
             foreach ($data['mentions'] as $locale => $content) {
-                $mention->translate($locale)->setContent($content);
+                $mention->translate($locale, true)->setContent($content);
             }
 
             $rule->addMention($mention);
