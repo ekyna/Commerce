@@ -28,19 +28,54 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     protected $supplierProductRepository;
 
+    /**
+     * @var array
+     */
+    protected $defaults;
+
 
     /**
      * Constructor.
      *
      * @param StockUnitResolverInterface         $stockUnitResolver
      * @param SupplierProductRepositoryInterface $supplierProductRepository
+     * @param array                              $defaults
      */
     public function __construct(
         StockUnitResolverInterface $stockUnitResolver,
-        SupplierProductRepositoryInterface $supplierProductRepository
+        SupplierProductRepositoryInterface $supplierProductRepository,
+        array $defaults
     ) {
         $this->stockUnitResolver = $stockUnitResolver;
         $this->supplierProductRepository = $supplierProductRepository;
+        $this->defaults = $defaults;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function reset(StockSubjectInterface $subject): void
+    {
+        $map = [
+            'stock_mode'             => 'setStockMode',
+            'stock_floor'            => 'setStockFloor',
+            'replenishment_time'     => 'setReplenishmentTime',
+            'minimum_order_quantity' => 'setMinimumOrderQuantity',
+            'quote_only'             => 'setQuoteOnly',
+            'end_of_life'            => 'setEndOfLife',
+        ];
+
+        foreach ($map as $key => $method) {
+            if (isset($this->defaults[$key])) {
+                $subject->{$method}($this->defaults[$key]);
+            }
+        }
+
+        $subject
+            ->setInStock(0)
+            ->setAvailableStock(0)
+            ->setVirtualStock(0)
+            ->setEstimatedDateOfArrival(null);
     }
 
     /**
@@ -70,7 +105,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         // The stock unit resolver uses the stock unit cache.
         $stockUnits = $this->stockUnitResolver->findNotClosed($subject);
         foreach ($stockUnits as $stockUnit) {
-            $sold += $s =$stockUnit->getSoldQuantity();
+            $sold += $s = $stockUnit->getSoldQuantity();
             $shipped += $stockUnit->getShippedQuantity();
             $adjusted += $a = $stockUnit->getAdjustedQuantity();
 
@@ -247,6 +282,56 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function updateStockState(StockSubjectInterface $subject)
+    {
+        $mode = $subject->getStockMode();
+
+        // If subject stock mode is "disabled" -> "In stock" state.
+        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+            return $this->setSubjectState($subject, StockSubjectStates::STATE_IN_STOCK);
+        }
+
+        $state = StockSubjectStates::STATE_OUT_OF_STOCK;
+        $min = $subject->getMinimumOrderQuantity();
+
+        // If subject has available stock -> "In stock" state
+        if ($min <= $subject->getAvailableStock()) {
+            $state = StockSubjectStates::STATE_IN_STOCK;
+        } // Else if subject has virtual stock and estimated date of arrival -> "Pre order" state
+        elseif ($min <= $subject->getVirtualStock() && null !== $subject->getEstimatedDateOfArrival()) {
+            $state = StockSubjectStates::STATE_PRE_ORDER;
+        } // Else if stock mode is "Auto" or "Just in time"
+        elseif (!$subject->isStockCompound() && $mode !== StockSubjectModes::MODE_MANUAL) {
+            // Supplier product availability
+            $available = $this->supplierProductRepository->getAvailableQuantitySumBySubject($subject);
+            $ordered = $this->supplierProductRepository->getOrderedQuantitySumBySubject($subject);
+            $eda = $this->nullDateIfLowerThanToday($subject->getEstimatedDateOfArrival());
+
+            // If suppliers has available stock or is about to get it
+            if ($min <= $available || ($min <= $ordered && null !== $eda)) {
+                $state = StockSubjectStates::STATE_PRE_ORDER;
+            }
+        }
+
+        // If "Just in time" mode
+        if ($mode === StockSubjectModes::MODE_JUST_IN_TIME) {
+            // If "out of stock" state
+            if ($state === StockSubjectStates::STATE_OUT_OF_STOCK) {
+                // Fallback to "Pre order" state
+                $state = StockSubjectStates::STATE_PRE_ORDER;
+            } // Else if "pre order" state
+            elseif ($state === StockSubjectStates::STATE_PRE_ORDER) {
+                // Fallback to "In stock" state
+                $state = StockSubjectStates::STATE_IN_STOCK;
+            }
+        }
+
+        return $this->setSubjectState($subject, $state);
+    }
+
+    /**
      * Returns the best component.
      *
      * @param array $components
@@ -315,58 +400,6 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function updateStockState(StockSubjectInterface $subject)
-    {
-        $mode = $subject->getStockMode();
-
-        // If subject stock mode is "disabled" -> "In stock" state.
-        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
-            return $this->setSubjectState($subject, StockSubjectStates::STATE_IN_STOCK);
-        }
-
-        $state = StockSubjectStates::STATE_OUT_OF_STOCK;
-        $min = $subject->getMinimumOrderQuantity();
-
-        // If subject has available stock -> "In stock" state
-        if ($min <= $subject->getAvailableStock()) {
-            $state = StockSubjectStates::STATE_IN_STOCK;
-        }
-        // Else if subject has virtual stock and estimated date of arrival -> "Pre order" state
-        elseif ($min <= $subject->getVirtualStock() && null !== $subject->getEstimatedDateOfArrival()) {
-            $state = StockSubjectStates::STATE_PRE_ORDER;
-        }
-        // Else if stock mode is "Auto" or "Just in time"
-        elseif (!$subject->isStockCompound() && $mode !== StockSubjectModes::MODE_MANUAL) {
-            // Supplier product availability
-            $available = $this->supplierProductRepository->getAvailableQuantitySumBySubject($subject);
-            $ordered = $this->supplierProductRepository->getOrderedQuantitySumBySubject($subject);
-            $eda = $this->nullDateIfLowerThanToday($subject->getEstimatedDateOfArrival());
-
-            // If suppliers has available stock or is about to get it
-            if ($min <= $available || ($min <= $ordered && null !== $eda)) {
-                $state = StockSubjectStates::STATE_PRE_ORDER;
-            }
-        }
-
-        // If "Just in time" mode
-        if ($mode === StockSubjectModes::MODE_JUST_IN_TIME) {
-            // If "out of stock" state
-            if ($state === StockSubjectStates::STATE_OUT_OF_STOCK) {
-                // Fallback to "Pre order" state
-                $state = StockSubjectStates::STATE_PRE_ORDER;
-            } // Else if "pre order" state
-            elseif ($state === StockSubjectStates::STATE_PRE_ORDER) {
-                // Fallback to "In stock" state
-                $state = StockSubjectStates::STATE_IN_STOCK;
-            }
-        }
-
-        return $this->setSubjectState($subject, $state);
     }
 
     /**

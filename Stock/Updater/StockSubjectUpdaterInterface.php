@@ -12,6 +12,13 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 interface StockSubjectUpdaterInterface
 {
     /**
+     * Resets the subject's stock data and state.
+     *
+     * @param StockSubjectInterface $subject
+     */
+    public function reset(StockSubjectInterface  $subject): void;
+
+    /**
      * Updates the subject's stock data and state.
      *
      * @param StockSubjectInterface $subject
