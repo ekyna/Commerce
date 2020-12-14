@@ -71,10 +71,11 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
      */
     public function calculatePaymentTax(SupplierOrderInterface $order): float
     {
-        $total = 0;
-
         $currency = $order->getCurrency()->getCode();
 
+        $bases = [];
+
+        // Items
         foreach ($order->getItems() as $item) {
             $base = $item->getNetPrice() * $item->getQuantity();
 
@@ -86,13 +87,27 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             $taxes = $this->taxResolver->resolveTaxes($item, $order);
 
             foreach ($taxes as $tax) {
-                $total += Money::round($base * $tax->getRate() / 100, $currency);
+                if (!isset($bases[$rate = $tax->getRate()])) {
+                    $bases[$rate] = 0;
+                }
+
+                $bases[$rate] += $base;
             }
         }
 
         // Shipping
         if (null !== $tax = $order->getSupplier()->getTax()) {
-            $total += Money::round($order->getShippingCost() * $tax->getRate() / 100, $currency);
+            if (!isset($bases[$rate = $tax->getRate()])) {
+                $bases[$rate] = 0;
+            }
+
+            $bases[$rate] += $order->getShippingCost();
+        }
+
+        // Calculation
+        $total = 0;
+        foreach ($bases as $rate => $base) {
+            $total += Money::round($base * $rate / 100, $currency);
         }
 
         return $total;

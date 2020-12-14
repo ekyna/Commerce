@@ -2,14 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
-use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\Repository\WarehouseRepositoryInterface;
-use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
+use Ekyna\Component\Commerce\Supplier\Updater\SupplierOrderUpdaterInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -20,24 +17,9 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
 class SupplierOrderListener extends AbstractListener
 {
     /**
-     * @var GeneratorInterface
+     * @var SupplierOrderUpdaterInterface
      */
-    protected $numberGenerator;
-
-    /**
-     * @var SupplierOrderCalculatorInterface
-     */
-    protected $calculator;
-
-    /**
-     * @var StateResolverInterface
-     */
-    protected $stateResolver;
-
-    /**
-     * @var CurrencyConverterInterface
-     */
-    protected $currencyConverter;
+    protected $supplierOrderUpdater;
 
     /**
      * @var WarehouseRepositoryInterface
@@ -48,23 +30,14 @@ class SupplierOrderListener extends AbstractListener
     /**
      * Constructor.
      *
-     * @param GeneratorInterface               $numberGenerator
-     * @param SupplierOrderCalculatorInterface $calculator
-     * @param StateResolverInterface           $stateResolver
-     * @param CurrencyConverterInterface       $currencyConverter
-     * @param WarehouseRepositoryInterface     $warehouseRepository
+     * @param SupplierOrderUpdaterInterface $supplierOrderUpdater
+     * @param WarehouseRepositoryInterface  $warehouseRepository
      */
     public function __construct(
-        GeneratorInterface $numberGenerator,
-        SupplierOrderCalculatorInterface $calculator,
-        StateResolverInterface $stateResolver,
-        CurrencyConverterInterface $currencyConverter,
+        SupplierOrderUpdaterInterface $supplierOrderUpdater,
         WarehouseRepositoryInterface $warehouseRepository
     ) {
-        $this->numberGenerator = $numberGenerator;
-        $this->calculator = $calculator;
-        $this->stateResolver = $stateResolver;
-        $this->currencyConverter = $currencyConverter;
+        $this->supplierOrderUpdater = $supplierOrderUpdater;
         $this->warehouseRepository = $warehouseRepository;
     }
 
@@ -100,13 +73,13 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        $changed = $this->updateNumber($order);
+        $changed = $this->supplierOrderUpdater->updateNumber($order);
 
-        $changed |= $this->updateState($order);
+        $changed |= $this->supplierOrderUpdater->updateState($order);
 
-        $changed |= $this->updateTotals($order);
+        $changed |= $this->supplierOrderUpdater->updateTotals($order);
 
-        $changed |= $this->updateExchangeRate($order);
+        $changed |= $this->supplierOrderUpdater->updateExchangeRate($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order);
@@ -122,13 +95,13 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        $changed = $this->updateNumber($order);
+        $changed = $this->supplierOrderUpdater->updateNumber($order);
 
-        $changed |= $this->updateState($order);
+        $changed |= $this->supplierOrderUpdater->updateState($order);
 
-        $changed |= $this->updateTotals($order);
+        $changed |= $this->supplierOrderUpdater->updateTotals($order);
 
-        $changed |= $this->updateExchangeRate($order);
+        $changed |= $this->supplierOrderUpdater->updateExchangeRate($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order, false);
@@ -167,9 +140,9 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        $changed = $this->updateState($order);
+        $changed = $this->supplierOrderUpdater->updateState($order);
 
-        $changed |= $this->updateTotals($order);
+        $changed |= $this->supplierOrderUpdater->updateTotals($order);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order, false);
@@ -190,134 +163,8 @@ class SupplierOrderListener extends AbstractListener
         $this->assertDeletable($order);
     }
 
-    /**
-     * Updates the number.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return bool Whether or not the supplier order number has been changed.
-     */
-    protected function updateNumber(SupplierOrderInterface $order)
-    {
-        if (!empty($order->getNumber())) {
-            return false;
-        }
 
-        $order->setNumber($this->numberGenerator->generate($order));
 
-        return true;
-    }
-
-    /**
-     * Updates the state.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return bool Whether or not the supplier order has been changed.
-     */
-    protected function updateState(SupplierOrderInterface $order)
-    {
-        $changed = $this->stateResolver->resolve($order);
-
-        // If state is canceled, clear dates
-        if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
-            $order
-                ->setEstimatedDateOfArrival(null)
-                ->setPaymentDate(null)
-                ->setForwarderDate(null)
-                ->setCompletedAt(null);
-        } // If order state is 'completed' and 'competed at' date is not set
-        elseif (
-            ($order->getState() === SupplierOrderStates::STATE_COMPLETED)
-            && is_null($order->getCompletedAt())
-        ) {
-            // Set the 'completed at' date
-            $order->setCompletedAt(new \DateTime());
-            $changed = true;
-        }
-
-        return $changed;
-    }
-
-    /**
-     * Updates the payment and forwarder totals.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return bool Whether or not the supplier order has been changed.
-     */
-    protected function updateTotals(SupplierOrderInterface $order)
-    {
-        $changed = false;
-
-        $tax = $this->calculator->calculatePaymentTax($order);
-        if ($tax != $order->getTaxTotal()) {
-            $order->setTaxTotal($tax);
-            $changed = true;
-        }
-
-        $payment = $this->calculator->calculatePaymentTotal($order);
-        if ($payment != $order->getPaymentTotal()) {
-            $order->setPaymentTotal($payment);
-            $changed = true;
-        }
-
-        if (null !== $order->getCarrier()) {
-            $forwarder = $this->calculator->calculateForwarderTotal($order);
-            if ($forwarder != $order->getForwarderTotal()) {
-                $order->setForwarderTotal($forwarder);
-                $changed = true;
-            }
-        } else {
-            if (0 != $order->getForwarderFee()) {
-                $order->setForwarderFee(0);
-                $changed = true;
-            }
-            if (0 != $order->getCustomsTax()) {
-                $order->setCustomsTax(0);
-                $changed = true;
-            }
-            if (0 != $order->getCustomsVat()) {
-                $order->setCustomsVat(0);
-                $changed = true;
-            }
-            if (0 != $order->getForwarderTotal()) {
-                $order->setForwarderTotal(0);
-                $changed = true;
-            }
-            if (null !== $order->getForwarderDate()) {
-                $order->setForwarderDate(null);
-                $changed = true;
-            }
-            if (null !== $order->getForwarderDueDate()) {
-                $order->setForwarderDueDate(null);
-                $changed = true;
-            }
-        }
-
-        return $changed;
-    }
-
-    /**
-     * Updates the order exchange rate.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return bool Whether the payment has been changed or not.
-     */
-    protected function updateExchangeRate(SupplierOrderInterface $order)
-    {
-        // TODO Remove when supplier order payments will be implemented.
-        if (null !== $order->getExchangeRate()) {
-            return false;
-        }
-
-        if (!SupplierOrderStates::isStockableState($order->getState())) {
-            return false;
-        }
-
-        return $this->currencyConverter->setSubjectExchangeRate($order);
-    }
 
     /**
      * Updates the stock units.
