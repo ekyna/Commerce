@@ -45,7 +45,7 @@ class SupplierProductListener
 
         $subject = $this->subjectHelper->resolve($product);
 
-        if (empty($product->getDesignation())) {
+        if (empty($product->getDesignation()) && !empty($subject->getDesignation())) {
             $product->setDesignation($subject->getDesignation());
         }
         if (!$product->getTaxGroup()) {
