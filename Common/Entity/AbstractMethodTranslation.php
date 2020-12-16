@@ -13,11 +13,6 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
 abstract class AbstractMethodTranslation extends AbstractTranslation implements MethodTranslationInterface
 {
     /**
-     * @var integer
-     */
-    protected $id;
-
-    /**
      * @var string
      */
     protected $title;
@@ -27,14 +22,6 @@ abstract class AbstractMethodTranslation extends AbstractTranslation implements 
      */
     protected $description;
 
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritdoc

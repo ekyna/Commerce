@@ -47,7 +47,7 @@ class CustomerAddress extends AbstractAddress implements CustomerAddressInterfac
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

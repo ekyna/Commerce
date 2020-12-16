@@ -40,7 +40,7 @@ class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
@@ -40,7 +41,7 @@ interface InvoiceInterface extends
     /**
      * Sets the shipment.
      *
-     * @param ShipmentInterface $shipment
+     * @param ShipmentInterface|null $shipment
      *
      * @return $this|InvoiceInterface
      */
@@ -88,18 +89,18 @@ interface InvoiceInterface extends
     /**
      * Returns the due date.
      *
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getDueDate(): ?\DateTime;
+    public function getDueDate(): ?DateTime;
 
     /**
      * Sets the due date.
      *
-     * @param \DateTime $dueDate
+     * @param DateTime|null $dueDate
      *
      * @return $this|InvoiceInterface
      */
-    public function setDueDate(\DateTime $dueDate = null): InvoiceInterface;
+    public function setDueDate(DateTime $dueDate = null): InvoiceInterface;
 
     /**
      * Returns whether to ignore stock (credit only, won't impact sold quantities if true).

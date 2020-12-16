@@ -58,15 +58,15 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->name;
+        return $this->name ?: 'New payment term';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

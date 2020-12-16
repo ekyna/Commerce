@@ -68,15 +68,15 @@ class Member implements MemberInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->email;
+        return $this->email ?: 'New member';
     }
 
     /**
      * @inheritDoc
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

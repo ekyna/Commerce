@@ -81,9 +81,9 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getDesignation();
+        return $this->designation ?: $this->reference ?: 'New sale item';
     }
 
     /**

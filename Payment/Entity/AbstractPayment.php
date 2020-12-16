@@ -13,11 +13,11 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 abstract class AbstractPayment implements Payment\PaymentInterface
 {
-    use Common\KeySubjectTrait,
-        Common\NumberSubjectTrait,
-        Common\ExchangeSubjectTrait,
-        Common\StateSubjectTrait,
-        TimestampableTrait;
+    use Common\ExchangeSubjectTrait;
+    use Common\KeySubjectTrait;
+    use Common\NumberSubjectTrait;
+    use Common\StateSubjectTrait;
+    use TimestampableTrait;
 
     /**
      * @var int
@@ -81,19 +81,17 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getNumber();
+        return $this->number ?: 'New payment';
     }
 
     /**
-     * @inheritDoc
+     * Clones the payment.
      */
     public function __clone()
     {
-        if ($this->id) {
-            $this->clear();
-        }
+        $this->clear();
     }
 
     /**
@@ -115,7 +113,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

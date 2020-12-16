@@ -201,15 +201,15 @@ abstract class AbstractSale implements Common\SaleInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return empty($this->number) ? 'New sale' : $this->number;
+        return $this->number ?: 'New sale';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

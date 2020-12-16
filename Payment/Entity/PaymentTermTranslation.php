@@ -13,11 +13,6 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
 class PaymentTermTranslation extends AbstractTranslation implements PaymentTermTranslationInterface
 {
     /**
-     * @var integer
-     */
-    protected $id;
-
-    /**
      * @var string
      */
     protected $title;
@@ -27,14 +22,6 @@ class PaymentTermTranslation extends AbstractTranslation implements PaymentTermT
      */
     protected $description;
 
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritdoc

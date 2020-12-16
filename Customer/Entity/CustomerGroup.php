@@ -75,9 +75,9 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getName();
+        return $this->name ?: 'New customer group';
     }
 
     /**
@@ -85,7 +85,7 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
      *
      * @return int
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

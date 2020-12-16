@@ -13,23 +13,10 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
 abstract class AbstractMentionTranslation extends AbstractTranslation implements MentionTranslationInterface
 {
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var string
      */
     protected $content;
 
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritDoc

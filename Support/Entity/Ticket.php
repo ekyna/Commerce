@@ -73,17 +73,19 @@ class Ticket implements TicketInterface
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->number;
+        return $this->number ?: 'New ticket';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -38,11 +38,17 @@ class ExchangeRate implements ResourceInterface
 
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return sprintf("%s/%s %s", $this->base, $this->quote, $this->date->format('Y-m-d H:i'));
+        if ($this->base && $this->quote && $this->date) {
+            return sprintf("%s/%s %s", $this->base, $this->quote, $this->date->format('Y-m-d H:i'));
+        }
+
+        return 'New exchange rate';
     }
 
     /**
@@ -50,7 +56,7 @@ class ExchangeRate implements ResourceInterface
      *
      * @return int
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

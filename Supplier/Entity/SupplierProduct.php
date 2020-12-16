@@ -55,9 +55,9 @@ class SupplierProduct implements SupplierProductInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getDesignation();
+        return $this->designation ?: 'New supplier product';
     }
 
     /**

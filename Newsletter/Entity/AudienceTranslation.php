@@ -13,11 +13,6 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
 class AudienceTranslation extends AbstractTranslation implements AudienceTranslationInterface
 {
     /**
-     * @var int
-     */
-    private $id;
-
-    /**
      * @var string
      */
     private $title;
@@ -27,14 +22,6 @@ class AudienceTranslation extends AbstractTranslation implements AudienceTransla
      */
     private $description;
 
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritDoc

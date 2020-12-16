@@ -65,15 +65,15 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getDesignation();
+        return $this->designation ?: 'New adjustment';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

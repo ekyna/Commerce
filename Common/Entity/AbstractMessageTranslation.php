@@ -13,23 +13,10 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
 abstract class AbstractMessageTranslation extends AbstractTranslation implements MessageTranslationInterface
 {
     /**
-     * @var integer
-     */
-    protected $id;
-
-    /**
      * @var string
      */
     protected $content;
 
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritdoc

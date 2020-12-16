@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Entity;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model as Document;
@@ -16,8 +17,8 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 abstract class AbstractInvoice extends Document\Document implements Invoice\InvoiceInterface
 {
-    use NumberSubjectTrait,
-        TimestampableTrait;
+    use NumberSubjectTrait;
+    use TimestampableTrait;
 
     /**
      * @var int
@@ -44,7 +45,7 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     protected $realPaidTotal;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     protected $dueDate;
 
@@ -66,31 +67,31 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
         $this->paidTotal     = 0;
         $this->realPaidTotal = 0;
         $this->ignoreStock   = false;
-        $this->createdAt     = new \DateTime();
+        $this->createdAt     = new DateTime();
     }
 
     /**
-     * @inheritDoc
+     * Clones the invoice.
      */
     public function __clone()
     {
-        if ($this->id) {
-            $this->id = null;
-        }
+        $this->id = null;
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
     public function __toString(): string
     {
-        return $this->getNumber();
+        return $this->number ?: 'New invoice';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -164,7 +165,7 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     /**
      * @inheritdoc
      */
-    public function getDueDate(): ?\DateTime
+    public function getDueDate(): ?DateTime
     {
         return $this->dueDate;
     }
@@ -172,7 +173,7 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     /**
      * @inheritdoc
      */
-    public function setDueDate(\DateTime $dueDate = null): Invoice\InvoiceInterface
+    public function setDueDate(DateTime $dueDate = null): Invoice\InvoiceInterface
     {
         $this->dueDate = $dueDate;
 

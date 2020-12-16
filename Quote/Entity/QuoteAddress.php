@@ -31,7 +31,7 @@ class QuoteAddress extends AbstractSaleAddress implements Model\QuoteAddressInte
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

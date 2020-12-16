@@ -86,17 +86,19 @@ class Coupon implements Model\CouponInterface
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->code;
+        return $this->code ?: 'New coupon';
     }
 
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

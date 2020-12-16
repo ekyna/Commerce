@@ -211,8 +211,12 @@ class Customer implements Model\CustomerInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
+        if (empty($this->firstName) && empty($this->lastName)) {
+            return 'New customer';
+        }
+
         if ($this->company) {
             $sign = '';
             if ($this->hasParent()) {
@@ -224,7 +228,7 @@ class Customer implements Model\CustomerInterface
             return trim(sprintf('%s [%s] %s %s', $sign, $this->company, $this->firstName, $this->lastName));
         }
 
-        return sprintf('%s %s', $this->firstName, $this->lastName);
+        return trim(sprintf('%s %s', $this->firstName, $this->lastName));
     }
 
     /**
@@ -232,7 +236,7 @@ class Customer implements Model\CustomerInterface
      *
      * @return int
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

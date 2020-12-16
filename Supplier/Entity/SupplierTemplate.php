@@ -28,17 +28,19 @@ class SupplierTemplate extends AbstractTranslatable implements SupplierTemplateI
 
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->title;
+        return $this->title ?: 'New supplier template';
     }
 
     /**
      * @inheritDoc
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

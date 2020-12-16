@@ -53,9 +53,13 @@ class ShipmentPrice implements ShipmentPriceInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return '#' . $this->getId();
+        if ($this->zone && $this->method) {
+            return sprintf('%s / %s (%s kg)', $this->zone, $this->method, round($this->weight, 2));
+        }
+
+        return 'New shipment price';
     }
 
     /**
@@ -63,7 +67,7 @@ class ShipmentPrice implements ShipmentPriceInterface
      *
      * @return int
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

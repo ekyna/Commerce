@@ -101,17 +101,19 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getNumber();
+        return $this->number ?: 'New shipment rule';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -76,9 +76,13 @@ class Audience extends AbstractTranslatable implements AudienceInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return sprintf('[%s] %s', $this->gateway, $this->name);
+        if ($this->gateway && $this->name) {
+            return sprintf('[%s] %s', $this->gateway, $this->name);
+        }
+
+        return 'New audience';
     }
 
     /**

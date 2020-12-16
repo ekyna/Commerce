@@ -43,9 +43,9 @@ class Product implements Stock\StockSubjectInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getDesignation();
+        return $this->designation ?: 'New designation';
     }
 
     /**
@@ -53,7 +53,7 @@ class Product implements Stock\StockSubjectInterface
      *
      * @return int
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

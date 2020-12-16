@@ -50,7 +50,7 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

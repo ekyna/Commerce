@@ -31,7 +31,7 @@ class CartAddress extends AbstractSaleAddress implements Model\CartAddressInterf
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

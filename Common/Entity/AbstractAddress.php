@@ -100,9 +100,13 @@ abstract class AbstractAddress implements Model\AddressInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return sprintf('%s %s %s', $this->street, $this->postalCode, $this->city);
+        if (empty($this->street) && empty($this->postalCode) && empty($this->city)) {
+            return 'New address';
+        }
+
+        return trim(sprintf('%s %s %s', $this->street, $this->postalCode, $this->city));
     }
 
     /**

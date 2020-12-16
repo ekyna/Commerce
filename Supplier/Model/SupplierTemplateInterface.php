@@ -21,7 +21,7 @@ interface SupplierTemplateInterface extends TranslatableInterface
      *
      * @return int
      */
-    public function getId(): int;
+    public function getId(): ?int;
 
     /**
      * Returns the title.

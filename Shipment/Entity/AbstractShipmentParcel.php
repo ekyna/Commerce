@@ -35,7 +35,7 @@ abstract class AbstractShipmentParcel implements Model\ShipmentParcelInterface
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

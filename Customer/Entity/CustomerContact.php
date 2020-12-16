@@ -64,9 +64,9 @@ class CustomerContact implements CustomerContactInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->email;
+        return $this->email ?: 'New customer contact';
     }
 
     /**

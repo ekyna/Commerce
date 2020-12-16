@@ -54,7 +54,7 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -167,17 +167,19 @@ class SupplierOrder implements Model\SupplierOrderInterface
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getNumber();
+        return $this->number ?: 'New supplier order';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -40,15 +40,15 @@ abstract class AbstractAttachment implements AttachmentInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getFilename();
+        return $this->getFilename() ?: 'New attachment';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

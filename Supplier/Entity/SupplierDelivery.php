@@ -40,17 +40,23 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
     }
 
     /**
-     * @inheritDoc
+     * Returns the string representation.
+     *
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getOrder()->getNumber() . '#' . $this->getId(); // TODO created At
+        if ($this->id && $this->order) {
+            return sprintf('%s#%s', $this->order, $this->id); // TODO created At
+        }
+
+        return 'New delivery';
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

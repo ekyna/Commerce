@@ -13,23 +13,10 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
 class CustomerGroupTranslation extends AbstractTranslation implements CustomerGroupTranslationInterface
 {
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var string
      */
     protected $title;
 
-
-    /**
-     * @inheritDoc
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritDoc

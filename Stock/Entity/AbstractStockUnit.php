@@ -149,21 +149,21 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         if (!empty($this->getGeocodes())) {
-            return implode('-', $this->getGeocodes());
-        } elseif (null !== $this->getId()) {
-            return '#' . $this->getId();
+            return implode(' - ', $this->getGeocodes());
+        } elseif (null !== $this->id) {
+            return 'SU#' . $this->id;
         }
 
-        return 'Unknown';
+        return 'New stock unit';
     }
 
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

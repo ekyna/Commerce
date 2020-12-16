@@ -53,7 +53,7 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

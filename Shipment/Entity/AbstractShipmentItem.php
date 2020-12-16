@@ -54,7 +54,7 @@ abstract class AbstractShipmentItem implements Model\ShipmentItemInterface
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

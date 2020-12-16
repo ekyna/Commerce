@@ -55,7 +55,7 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -51,9 +51,9 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->designation;
+        return $this->designation ?: 'New supplier order item';
     }
 
     /**

@@ -13,11 +13,6 @@ use Ekyna\Component\Resource\Model\AbstractTranslation;
 class SupplierTemplateTranslation extends AbstractTranslation implements SupplierTemplateTranslationInterface
 {
     /**
-     * @var int
-     */
-    private $id;
-
-    /**
      * @var string
      */
     private $subject;
@@ -27,14 +22,6 @@ class SupplierTemplateTranslation extends AbstractTranslation implements Supplie
      */
     private $message;
 
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritDoc

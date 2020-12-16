@@ -31,7 +31,7 @@ class OrderAddress extends AbstractSaleAddress implements Model\OrderAddressInte
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
