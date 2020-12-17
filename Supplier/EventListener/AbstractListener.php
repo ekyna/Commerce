@@ -73,10 +73,10 @@ abstract class AbstractListener
     protected function assertDeletable(ResourceInterface $resource)
     {
         if ($resource instanceof Model\SupplierOrderItemInterface) {
-            if (null === $stockUnit = $resource->getStockUnit()) {
+            if (null === $unit = $resource->getStockUnit()) {
                 return;
             }
-            if ($stockUnit->getAdjustedQuantity() < $stockUnit->getShippedQuantity()) {
+            if ($unit->getReceivedQuantity() + $unit->getAdjustedQuantity() < $unit->getShippedQuantity()) {
                 throw new Exception\IllegalOperationException(
                     "Supplier order item can't be removed as it is linked to a shipped stock unit."
                 ); // TODO message as translation id
