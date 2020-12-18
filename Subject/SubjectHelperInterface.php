@@ -64,44 +64,4 @@ interface SubjectHelperInterface
      * @return bool Whether the relative has been changed.
      */
     public function sync(SubjectRelativeInterface $relative): bool;
-
-    /**
-     * Returns the subject 'add to cart' url.
-     *
-     * @param SubjectReferenceInterface|SubjectInterface $subject
-     * @param bool                                      $path
-     *
-     * @return null|string
-     */
-    public function generateAddToCartUrl($subject, bool $path = true): ?string;
-
-    /**
-     * Returns the subject public url.
-     *
-     * @param SubjectReferenceInterface|SubjectInterface $subject
-     * @param bool                                      $path
-     *
-     * @return null|string
-     */
-    public function generatePublicUrl($subject, bool $path = true): ?string;
-
-    /**
-     * Returns the subject image url.
-     *
-     * @param SubjectReferenceInterface|SubjectInterface $subject
-     * @param bool                                      $path
-     *
-     * @return null|string
-     */
-    public function generateImageUrl($subject, bool $path = true): ?string;
-
-    /**
-     * Returns the subject private url.
-     *
-     * @param SubjectReferenceInterface|SubjectInterface $subject
-     * @param bool                                      $path
-     *
-     * @return null|string
-     */
-    public function generatePrivateUrl($subject, bool $path = true): ?string;
 }

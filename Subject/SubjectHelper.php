@@ -2,10 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Subject;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Features;
-use Ekyna\Component\Commerce\Subject\Event\SubjectUrlEvent;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
@@ -142,46 +140,6 @@ class SubjectHelper implements SubjectHelperInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function generateAddToCartUrl($subject, bool $path = true): ?string
-    {
-        return $this->getUrl(SubjectUrlEvent::ADD_TO_CART, $subject, $path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function generateResupplyAlertUrl($subject, bool $path = true): ?string
-    {
-        return $this->getUrl(SubjectUrlEvent::RESUPPLY_ALERT, $subject, $path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function generatePublicUrl($subject, bool $path = true): ?string
-    {
-        return $this->getUrl(SubjectUrlEvent::PUBLIC, $subject, $path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function generateImageUrl($subject, bool $path = true): ?string
-    {
-        return $this->getUrl(SubjectUrlEvent::IMAGE, $subject, $path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function generatePrivateUrl($subject, bool $path = true): ?string
-    {
-        return $this->getUrl(SubjectUrlEvent::PRIVATE, $subject, $path);
-    }
-
-    /**
      * Returns the provider by name or supporting the given relative or subject.
      *
      * @param string|SubjectRelativeInterface|object $nameOrRelativeOrSubject
@@ -197,35 +155,5 @@ class SubjectHelper implements SubjectHelperInterface
         }
 
         return $provider;
-    }
-
-    /**
-     * Returns the url for the given type and subject.
-     *
-     * @param string                                    $name
-     * @param SubjectRelativeInterface|SubjectInterface $subject
-     * @param bool                                      $path
-     *
-     * @return string|null
-     */
-    protected function getUrl(string $name, $subject, bool $path): ?string
-    {
-        if ($subject instanceof SubjectRelativeInterface) {
-            if (null === $subject = $this->resolve($subject, false)) {
-                return null;
-            }
-        }
-
-        if (!$subject instanceof SubjectInterface) {
-            throw new InvalidArgumentException("Expected instance of " . SubjectInterface::class);
-        }
-
-        // TODO Cache
-
-        $event = new SubjectUrlEvent($subject, $path);
-
-        $this->eventDispatcher->dispatch($name, $event);
-
-        return $event->getUrl();
     }
 }
