@@ -39,7 +39,9 @@ class AmountCalculatorFactory
     }
 
     /**
-     * @param string          $currency The currency
+     * Creates the amount calculator.
+     *
+     * @param string|null     $currency The currency
      * @param bool            $revenue  Whether to use revenue mode
      * @param StatFilter|null $filter   The item filter
      *

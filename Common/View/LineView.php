@@ -196,7 +196,7 @@ class LineView extends AbstractView
     /**
      * Sets the designation.
      *
-     * @param string $designation
+     * @param string|null $designation
      *
      * @return LineView
      */
@@ -220,7 +220,7 @@ class LineView extends AbstractView
     /**
      * Sets the description.
      *
-     * @param string $description
+     * @param string|null $description
      *
      * @return LineView
      */
@@ -244,7 +244,7 @@ class LineView extends AbstractView
     /**
      * Sets the reference.
      *
-     * @param string $reference
+     * @param string|null $reference
      *
      * @return LineView
      */
@@ -268,7 +268,7 @@ class LineView extends AbstractView
     /**
      * Sets the availability.
      *
-     * @param string $availability
+     * @param string|null $availability
      *
      * @return LineView
      */
@@ -292,7 +292,7 @@ class LineView extends AbstractView
     /**
      * Sets the unit.
      *
-     * @param string $unit
+     * @param string|null $unit
      *
      * @return LineView
      */
@@ -316,7 +316,7 @@ class LineView extends AbstractView
     /**
      * Sets the quantity.
      *
-     * @param string $quantity
+     * @param string|null $quantity
      *
      * @return LineView
      */
@@ -340,7 +340,7 @@ class LineView extends AbstractView
     /**
      * Sets the gross price.
      *
-     * @param string $gross
+     * @param string|null $gross
      *
      * @return LineView
      */
@@ -364,7 +364,7 @@ class LineView extends AbstractView
     /**
      * Sets the discount rates.
      *
-     * @param string $rates
+     * @param string|null $rates
      *
      * @return LineView
      */
@@ -388,7 +388,7 @@ class LineView extends AbstractView
     /**
      * Sets the discount amount.
      *
-     * @param string $amount
+     * @param string|null $amount
      *
      * @return LineView
      */
@@ -412,7 +412,7 @@ class LineView extends AbstractView
     /**
      * Sets the base.
      *
-     * @param string $base
+     * @param string|null $base
      *
      * @return LineView
      */
@@ -436,7 +436,7 @@ class LineView extends AbstractView
     /**
      * Sets the tax rates.
      *
-     * @param string $rates
+     * @param string|null $rates
      *
      * @return LineView
      */
@@ -460,7 +460,7 @@ class LineView extends AbstractView
     /**
      * Sets the taxAmount.
      *
-     * @param string $amount
+     * @param string|null $amount
      *
      * @return LineView
      */
@@ -484,7 +484,7 @@ class LineView extends AbstractView
     /**
      * Sets the total.
      *
-     * @param string $total
+     * @param string|null $total
      *
      * @return LineView
      */
@@ -508,7 +508,7 @@ class LineView extends AbstractView
     /**
      * Sets the margin in percentage.
      *
-     * @param string $margin
+     * @param string|null $margin
      *
      * @return LineView
      */
@@ -570,7 +570,7 @@ class LineView extends AbstractView
     /**
      * Returns whether or not the line is private.
      *
-     * @return boolean
+     * @return bool
      */
     public function isPrivate(): bool
     {

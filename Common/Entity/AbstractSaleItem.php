@@ -95,6 +95,25 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     }
 
     /**
+     * Returns the first public ancestor (if the item itself if it is public).
+     *
+     * @return $this|Model\SaleItemInterface
+     */
+    public function getPublicParent(): Model\SaleItemInterface
+    {
+        if (!$this->isPrivate()) {
+            return $this;
+        }
+
+        $parent = $this;
+        do {
+            $parent = $parent->getParent();
+        } while($parent->isPrivate());
+
+        return $parent;
+    }
+
+    /**
      * @inheritdoc
      */
     public function setParent(Model\SaleItemInterface $parent = null)

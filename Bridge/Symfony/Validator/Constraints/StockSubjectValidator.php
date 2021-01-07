@@ -59,7 +59,7 @@ class StockSubjectValidator extends ConstraintValidator
             ],
             'minimumOrderQuantity'   => [
                 new Assert\NotNull(),
-                new Assert\GreaterThanOrEqual(['value' => 0]),
+                new Assert\GreaterThan(['value' => 0]),
             ],
             'inStock'                => [
                 new Assert\NotNull(),

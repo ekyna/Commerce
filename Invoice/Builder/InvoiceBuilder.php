@@ -6,6 +6,7 @@ use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
 use Ekyna\Component\Commerce\Document\Model as Document;
+use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
@@ -43,7 +44,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      * @param InvoiceSubjectCalculatorInterface  $invoiceCalculator
      * @param ShipmentSubjectCalculatorInterface $shipmentCalculator
      * @param LocaleProviderInterface            $localeProvider
-     * @param PhoneNumberUtil                    $phoneNumberUtil
+     * @param PhoneNumberUtil|null               $phoneNumberUtil
      */
     public function __construct(
         SaleFactoryInterface $factory,
@@ -54,8 +55,8 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     ) {
         parent::__construct($localeProvider, $phoneNumberUtil);
 
-        $this->saleFactory = $factory;
-        $this->invoiceCalculator = $invoiceCalculator;
+        $this->saleFactory        = $factory;
+        $this->invoiceCalculator  = $invoiceCalculator;
         $this->shipmentCalculator = $shipmentCalculator;
     }
 
@@ -64,7 +65,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      *
      * @return SaleFactoryInterface
      */
-    public function getSaleFactory()
+    public function getSaleFactory(): SaleFactoryInterface
     {
         return $this->saleFactory;
     }
@@ -74,25 +75,29 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      *
      * @return InvoiceSubjectCalculatorInterface
      */
-    public function getInvoiceCalculator()
+    public function getInvoiceCalculator(): InvoiceSubjectCalculatorInterface
     {
         return $this->invoiceCalculator;
     }
 
     /**
      * @inheritdoc
+     *
+     * @return Invoice\InvoiceLineInterface|null
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $invoice)
-    {
-        if (!$invoice instanceof Invoice\InvoiceInterface) {
+    public function buildGoodLine(
+        Common\SaleItemInterface $item,
+        Document\DocumentInterface $document
+    ): ?Document\DocumentLineInterface {
+        if (!$document instanceof Invoice\InvoiceInterface) {
             throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceInterface::class);
         }
 
-        // Compound with only private children
+        // Compound item
         if ($item->isCompound()) {
             $available = $expected = null;
             foreach ($item->getChildren() as $childItem) {
-                if (null !== $childLine = $this->buildGoodLine($childItem, $invoice)) {
+                if (null !== $childLine = $this->buildGoodLine($childItem, $document)) {
                     $saleItemQty = $childItem->getQuantity();
 
                     $a = $childLine->getAvailable() / $saleItemQty;
@@ -108,7 +113,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             }
 
             if (0 < $available) {
-                return $this->findOrCreateGoodLine($invoice, $item, $available, $expected);
+                return $this->findOrCreateGoodLine($document, $item, $available, $expected);
             }
 
             return null;
@@ -116,30 +121,31 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 
         $line = null;
 
-        // Skip compound with only public children
-        if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            if ($invoice->isCredit()) {
-                // Credit case
-                $available = $this->invoiceCalculator->calculateCreditableQuantity($item, $invoice);
-            } else {
-                // Invoice case
-                $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $invoice);
+        if ($document->isCredit()) {
+            // Credit case
+            $available = $this->invoiceCalculator->calculateCreditableQuantity($item, $document);
+        } else {
+            // Invoice case
+            $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $document);
+        }
+
+        if (0 < $available) {
+            $expected = null;
+            if (!$document->isCredit()) {
+                $expected = max(0, min(
+                    $available,
+                    $this->shipmentCalculator->calculateShippedQuantity($item)
+                    - $this->invoiceCalculator->calculateInvoicedQuantity($item)
+                ));
             }
 
-            if (0 < $available) {
-                $expected = null;
-                if (!$invoice->isCredit()) {
-                    $expected = min($available, $this->shipmentCalculator->calculateShippedQuantity($item));
-                }
-
-                $line = $this->findOrCreateGoodLine($invoice, $item, $available, $expected);
-            }
+            $line = $this->findOrCreateGoodLine($document, $item, $available, $expected);
         }
 
         // Build children
         if ($item->hasChildren()) {
             foreach ($item->getChildren() as $childLine) {
-                $this->buildGoodLine($childLine, $invoice);
+                $this->buildGoodLine($childLine, $document);
             }
         }
 
@@ -149,30 +155,32 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * @inheritDoc
      */
-    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, Document\DocumentInterface $invoice)
-    {
-        if (!$invoice instanceof Invoice\InvoiceInterface) {
+    public function buildDiscountLine(
+        Common\SaleAdjustmentInterface $adjustment,
+        Document\DocumentInterface $document
+    ): ?Document\DocumentLineInterface {
+        if (!$document instanceof Invoice\InvoiceInterface) {
             throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceInterface::class);
         }
 
-        $line = null;
+        $line     = null;
         $expected = null;
-        if ($invoice->isCredit()) {
+        if ($document->isCredit()) {
             // Credit case
-            $available = $this->invoiceCalculator->calculateCreditableQuantity($adjustment, $invoice);
+            $available = $this->invoiceCalculator->calculateCreditableQuantity($adjustment, $document);
         } else {
             // Invoice case
-            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($adjustment, $invoice);
+            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($adjustment, $document);
         }
 
         if (0 < $available) {
             /** @var Invoice\InvoiceLineInterface $line */
-            $line = parent::buildDiscountLine($adjustment, $invoice);
+            $line = parent::buildDiscountLine($adjustment, $document);
             $line
                 ->setAvailable($available)
                 ->setExpected($expected);
 
-            if (is_null($invoice->getId())) {
+            if (is_null($document->getId())) {
                 $line->setQuantity(max(1, $expected));
             }
         }
@@ -183,31 +191,31 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     /**
      * @inheritDoc
      */
-    public function buildShipmentLine(Document\DocumentInterface $invoice)
+    public function buildShipmentLine(Document\DocumentInterface $document): ?Document\DocumentLineInterface
     {
-        if (!$invoice instanceof Invoice\InvoiceInterface) {
+        if (!$document instanceof Invoice\InvoiceInterface) {
             throw new InvalidArgumentException("Expected instance of " . Invoice\InvoiceInterface::class);
         }
 
-        $line = null;
+        $line     = null;
         $expected = null;
-        $sale = $invoice->getSale();
-        if ($invoice->isCredit()) {
+        $sale     = $document->getSale();
+        if ($document->isCredit()) {
             // Credit case
-            $available = $this->invoiceCalculator->calculateCreditableQuantity($sale, $invoice);
+            $available = $this->invoiceCalculator->calculateCreditableQuantity($sale, $document);
         } else {
             // Invoice case
-            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($sale, $invoice);
+            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($sale, $document);
         }
 
         if (0 < $available) {
             /** @var Invoice\InvoiceLineInterface $line */
-            $line = parent::buildShipmentLine($invoice);
+            $line = parent::buildShipmentLine($document);
             $line
                 ->setAvailable($available)
                 ->setExpected($expected);
 
-            if (is_null($invoice->getId())) {
+            if (is_null($document->getId())) {
                 $line->setQuantity(min(1, $expected));
             }
         }
@@ -221,31 +229,22 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      * @param Invoice\InvoiceInterface $invoice
      * @param Common\SaleItemInterface $item
      * @param float                    $available
-     * @param float                    $expected
+     * @param float|null               $expected
      *
      * @return Invoice\InvoiceLineInterface
      */
     public function findOrCreateGoodLine(
         Invoice\InvoiceInterface $invoice,
         Common\SaleItemInterface $item,
-        $available,
-        $expected = null
-    ) {
+        float $available,
+        float $expected = null
+    ): ?Invoice\InvoiceLineInterface {
         if (0 >= $available) {
             return null;
         }
 
-        $line = null;
-
-        // Existing line lookup
-        foreach ($invoice->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $invoiceLine) {
-            if ($invoiceLine->getSaleItem() === $item) {
-                $line = $invoiceLine;
-            }
-        }
-
-        // Not found, create it
-        if (null === $line) {
+        // Create line if not found
+        if (null === $line = DocumentUtil::findGoodLine($invoice, $item)) {
             $line = $this->createLine($invoice);
             $line
                 ->setInvoice($invoice)
@@ -270,10 +269,12 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 
     /**
      * @inheritdoc
+     *
+     * @return Invoice\InvoiceLineInterface
      */
-    protected function createLine(Document\DocumentInterface $invoice)
+    protected function createLine(Document\DocumentInterface $document): Document\DocumentLineInterface
     {
-        /** @var Invoice\InvoiceInterface $invoice */
-        return $this->saleFactory->createLineForInvoice($invoice);
+        /** @var Invoice\InvoiceInterface $document */
+        return $this->saleFactory->createLineForInvoice($document);
     }
 }

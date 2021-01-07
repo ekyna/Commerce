@@ -44,7 +44,7 @@ class AvailabilityViewType extends AbstractViewType
     /**
      * @inheritdoc
      */
-    public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options)
+    public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options): void
     {
         // Not for compound items with only public children
         if ($item->isCompound() && !$item->hasPrivateChildren()) {
@@ -81,7 +81,7 @@ class AvailabilityViewType extends AbstractViewType
     /**
      * @inheritDoc
      */
-    public function supportsSale(Model\SaleInterface $sale)
+    public function supportsSale(Model\SaleInterface $sale): bool
     {
         if ($sale instanceof CartInterface || $sale instanceof QuoteInterface) {
             return true;
@@ -93,7 +93,7 @@ class AvailabilityViewType extends AbstractViewType
     /**
      * @inheritDoc
      */
-    public function getName()
+    public function getName(): string
     {
         return 'ekyna_commerce_availability';
     }

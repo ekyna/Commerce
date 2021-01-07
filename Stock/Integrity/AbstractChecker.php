@@ -79,9 +79,13 @@ abstract class AbstractChecker implements CheckerInterface
 
         $table = new Table($output);
         $table->setHeaders(array_values($map));
-
+        $keys = array_keys($map);
         foreach ($this->results as $result) {
-            $table->addRow(array_intersect_key($result, $map));
+            $data = [];
+            foreach ($keys as $key) {
+                $data[] = $result[$key];
+            }
+            $table->addRow($data);
         }
 
         $table->render();

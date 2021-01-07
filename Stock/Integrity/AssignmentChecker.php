@@ -43,7 +43,7 @@ class AssignmentChecker extends AbstractChecker
             throw new \RuntimeException("Released non sample order #{$result['order_id']}");
         } else {
             // Regular case
-            $result['sold_sum'] = $result['item_sum'] - $result['credit_sum'];
+            $result['sold_sum'] = max($result['item_sum'], $result['invoice_sum'] - $result['adjusted_sum']) - $result['credit_sum'];
         }
 
         // Shipped sum must be greater than or equal to zero
@@ -97,9 +97,9 @@ SQL
 
         /*$selectUnits = $this->connection->prepare(<<<SQL
 SELECT u.id as u_id,
-        u.sold_quantity as u_sold, 
+        u.sold_quantity as u_sold,
         u.shipped_quantity as u_shipped,
-        u.ordered_quantity as u_ordered, 
+        u.ordered_quantity as u_ordered,
         u.adjusted_quantity as u_adjusted,
         u.received_quantity as u_received
 FROM commerce_stock_unit u
@@ -349,13 +349,28 @@ SELECT
         IFNULL(i6.quantity, 1)
     ) AS item_sum,
     IFNULL((
-        SELECT SUM(line.quantity)
-        FROM commerce_order_invoice_line AS line
-        JOIN commerce_order_invoice AS credit ON credit.id=line.invoice_id
-        WHERE line.order_item_id=i1.id
+        SELECT SUM(ii.quantity)
+        FROM commerce_order_invoice_line AS ii
+        JOIN commerce_order_invoice AS invoice ON invoice.id=ii.invoice_id
+        WHERE ii.order_item_id=i1.id
+          AND invoice.credit=0
+    ), 0) AS invoice_sum,
+    IFNULL((
+        SELECT SUM(ci.quantity)
+        FROM commerce_order_invoice_line AS ci
+        JOIN commerce_order_invoice AS credit ON credit.id=ci.invoice_id
+        WHERE ci.order_item_id=i1.id
           AND credit.credit=1
           AND credit.ignore_stock=0
     ), 0) AS credit_sum,
+    IFNULL((
+        SELECT SUM(ri.quantity)
+        FROM commerce_order_invoice_line AS ri
+        JOIN commerce_order_invoice AS credit ON credit.id=ri.invoice_id
+        WHERE ri.order_item_id=i1.id
+          AND credit.credit=1
+          AND credit.ignore_stock=1
+    ), 0) AS adjusted_sum,
     IFNULL((
         SELECT SUM(si.quantity)
         FROM commerce_order_shipment_item AS si

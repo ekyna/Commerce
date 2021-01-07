@@ -79,6 +79,8 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
 
         if (!$hard) {
             if ($this->isRemovalPrevented($assignment)) {
+                $this->persistenceHelper->persistAndRecompute($assignment, false);
+
                 return;
             }
 

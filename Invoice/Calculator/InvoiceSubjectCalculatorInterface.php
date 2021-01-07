@@ -2,10 +2,11 @@
 
 namespace Ekyna\Component\Commerce\Invoice\Calculator;
 
-use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface as Adjustment;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as Item;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface as Invoice;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface as Subject;
 
 /**
  * Interface InvoiceSubjectCalculatorInterface
@@ -17,7 +18,7 @@ interface InvoiceSubjectCalculatorInterface
     /**
      * Returns whether the sale item or adjustment is invoiced.
      *
-     * @param SaleItemInterface|SaleAdjustmentInterface $itemOrAdjustment
+     * @param Item|Adjustment $itemOrAdjustment
      *
      * @return bool
      */
@@ -26,62 +27,52 @@ interface InvoiceSubjectCalculatorInterface
     /**
      * Calculates the given subject's invoiceable quantity.
      *
-     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
-     * @param Invoice\InvoiceInterface                                $ignore
+     * @param Sale|Item|Adjustment $subject
+     * @param Invoice|null         $ignore
      *
      * @return float
      */
-    public function calculateInvoiceableQuantity($subject, Invoice\InvoiceInterface $ignore = null): float;
+    public function calculateInvoiceableQuantity($subject, Invoice $ignore = null): float;
 
     /**
      * Calculates the given subject's creditable quantity.
      *
-     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
-     * @param Invoice\InvoiceInterface                                $ignore
+     * @param Sale|Item|Adjustment $subject
+     * @param Invoice|null         $ignore
      *
      * @return float
      */
-    public function calculateCreditableQuantity($subject, Invoice\InvoiceInterface $ignore = null): float;
+    public function calculateCreditableQuantity($subject, Invoice $ignore = null): float;
 
     /**
      * Calculates the given subject's invoiced quantity.
      *
-     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
-     * @param Invoice\InvoiceInterface                                $ignore
+     * @param Sale|Item|Adjustment $subject
+     * @param Invoice|null         $ignore
      *
      * @return float
      */
-    public function calculateInvoicedQuantity($subject, Invoice\InvoiceInterface $ignore = null): float;
+    public function calculateInvoicedQuantity($subject, Invoice $ignore = null): float;
 
     /**
      * Calculates the given subject's credited quantity.
      *
-     * @param SaleInterface|SaleItemInterface|SaleAdjustmentInterface $subject
-     * @param Invoice\InvoiceInterface                                $ignore
+     * @param Sale|Item|Adjustment $subject
+     * @param Invoice|null         $ignore
+     * @param bool                 $adjustment TRUE: only adjustments, FALSE: exclude adjustments and NULL: all credits
      *
      * @return float
      */
-    public function calculateCreditedQuantity($subject, Invoice\InvoiceInterface $ignore = null): float;
+    public function calculateCreditedQuantity($subject, Invoice $ignore = null, bool $adjustment = null): float;
 
     /**
-     * Calculates the total of all subject's invoices.
+     * Calculates the given subject's sold quantity.
      *
-     * @param Invoice\InvoiceSubjectInterface $subject
-     * @param string                          $currency
-     *
-     * @return float
-     */
-    public function calculateInvoiceTotal(Invoice\InvoiceSubjectInterface $subject, string $currency = null): float;
-
-    /**
-     * Calculates the total of all subject's credits.
-     *
-     * @param Invoice\InvoiceSubjectInterface $subject
-     * @param string                          $currency
+     * @param Sale|Item|Adjustment $subject
      *
      * @return float
      */
-    public function calculateCreditTotal(Invoice\InvoiceSubjectInterface $subject, string $currency = null): float;
+    public function calculateSoldQuantity($subject): float;
 
     /**
      * Builds the invoice quantity map.
@@ -94,9 +85,29 @@ interface InvoiceSubjectCalculatorInterface
      *     ]
      * ]
      *
-     * @param Invoice\InvoiceSubjectInterface $subject
+     * @param Subject $subject
      *
      * @return array
      */
-    public function buildInvoiceQuantityMap(Invoice\InvoiceSubjectInterface $subject): array;
+    public function buildInvoiceQuantityMap(Subject $subject): array;
+
+    /**
+     * Calculates the total of all subject's invoices.
+     *
+     * @param Subject     $subject
+     * @param string|null $currency
+     *
+     * @return float
+     */
+    public function calculateInvoiceTotal(Subject $subject, string $currency = null): float;
+
+    /**
+     * Calculates the total of all subject's credits.
+     *
+     * @param Subject     $subject
+     * @param string|null $currency
+     *
+     * @return float
+     */
+    public function calculateCreditTotal(Subject $subject, string $currency = null): float;
 }

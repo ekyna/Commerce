@@ -250,7 +250,7 @@ class SaleView extends AbstractView
     /**
      * Sets the margin view.
      *
-     * @param MarginView $margin
+     * @param MarginView|null $margin
      *
      * @return SaleView
      */
@@ -338,7 +338,7 @@ class SaleView extends AbstractView
      *
      * @return LineView|null
      */
-    public function getShipment()
+    public function getShipment(): ?LineView
     {
         return $this->shipment;
     }

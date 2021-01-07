@@ -198,18 +198,16 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                     return -$this->assignmentUpdater->updateLocked($assignment, $quantity, true);
                 };
             }
+        } elseif ($return) {
+            // Debit shipped quantity
+            $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
+                return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+            };
         } else {
-            if ($return) {
-                // Debit shipped quantity
-                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
-                    return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
-                };
-            } else {
-                // Debit shipped quantity
-                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
-                    return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
-                };
-            }
+            // Debit shipped quantity
+            $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
+                return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+            };
         }
 
         // Call on assignments
@@ -250,8 +248,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         $return     = $shipment->isReturn();
-        $quantity   = 0;
         $quantityCs = $this->persistenceHelper->getChangeSet($item, 'quantity');
+
+        $quantity   = 0;
+        $callable = null;
 
         // If shipment state changed
         if (!empty($stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state'))) {
@@ -261,7 +261,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             if (ShipmentStates::hasChangedFromPreparation($stateCs, true)) {
                 if ($return) {
                     // Nothing to do
-                    return;
+                    return; // TODO Really ?
                 } else {
                     // Debit locked quantity
                     $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
@@ -316,18 +316,16 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                     return -$this->assignmentUpdater->updateLocked($assignment, $quantity, true);
                 };
             }
+        } elseif ($return) {
+            // Debit shipped quantity
+            $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
+                return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+            };
         } else {
-            if ($return) {
-                // Debit shipped quantity
-                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
-                    return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
-                };
-            } else {
-                // Credit shipped quantity
-                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
-                    return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
-                };
-            }
+            // Credit shipped quantity
+            $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
+                return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+            };
         }
 
         // Call on assignments
@@ -390,18 +388,16 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                     return $this->assignmentUpdater->updateLocked($assignment, -$quantity, true);
                 };
             }
+        } elseif ($return) {
+            // Credit shipped quantity
+            $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
+                return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
+            };
         } else {
-            if ($return) {
-                // Credit shipped quantity
-                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
-                    return -$this->assignmentUpdater->updateShipped($assignment, $quantity, true);
-                };
-            } else {
-                // Debit shipped quantity
-                $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
-                    return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
-                };
-            }
+            // Debit shipped quantity
+            $callable = function (StockAssignmentInterface $assignment, float $quantity): float {
+                return $this->assignmentUpdater->updateShipped($assignment, -$quantity, true);
+            };
         }
 
         // Call on assignments
@@ -474,34 +470,58 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             return;
         }
 
-        // Abort if stock ignored
-        if ($invoice->isIgnoreStock()) {
-            return;
-        }
-
         // Abort if not supported
         if (null === $assignments = $this->getAssignments($line)) {
             return;
         }
 
-        // Resolve quantity change
-        if (!$this->persistenceHelper->isChanged($line, 'quantity')) {
-            return;
-        }
-        [$old, $new] = $this->persistenceHelper->getChangeSet($line, 'quantity');
-        if (0 == $quantity = $new - $old) {
-            return;
-        }
-
-        // TODO sort assignments ? (reverse for debit)
+        // TODO sort assignments ?
         // TODO Use packaging format
 
-        // Update assignments
+        $ignoreStockCS = $this->persistenceHelper->getChangeSet($invoice, 'ignoreStock');
+        $quantityCs = $this->persistenceHelper->getChangeSet($line, 'quantity');
+        $quantity = $callable = null;
+
+        // If 'ignore stock' has changed
+        if ($ignoreStockCS[0] != $ignoreStockCS[1]) {
+            if ($ignoreStockCS[0]) {
+                // Ignore stock disabled -> Debit sold quantity (use previous quantity)
+                $quantity = !empty($quantityCs) ? $quantityCs[0] : $line->getQuantity();
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return $this->assignmentUpdater->updateSold($assignment, -$quantity, true);
+                };
+            } elseif ($ignoreStockCS[1]) {
+                // Ignore stock enabled -> Credit sold quantity
+                $quantity = $line->getQuantity();
+                $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                    return -$this->assignmentUpdater->updateSold($assignment, +$quantity, true);
+                };
+            }
+        } elseif (!$invoice->isIgnoreStock()) {
+            // Ignore stock disabled -> Debit sold quantity (use previous quantity)
+            $quantity = !empty($quantityCs) ? $quantityCs[1] - $quantityCs[0] : $line->getQuantity();
+            $callable = function(StockAssignmentInterface $assignment, float $quantity): float {
+                return $this->assignmentUpdater->updateSold($assignment, -$quantity, true);
+            };
+        }
+
+        if (!($quantity && $callable)) {
+            return;
+        }
+
+        // Call on assignments
         foreach ($assignments as $assignment) {
-            $quantity += $this->assignmentUpdater->updateSold($assignment, -$quantity, true);
+            $quantity += $callable($assignment, $quantity);
+
+            if (0 < $quantity) {
+                // Create assignments for remaining quantity
+                $this->createAssignmentsForQuantity($line->getSaleItem(), $quantity);
+
+                return;
+            }
 
             if (0 == $quantity) {
-                return;
+                break;
             }
         }
 
@@ -542,7 +562,12 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         // TODO sort assignments ? (reverse for debit)
         // TODO Use packaging format
 
-        $quantity = $line->getQuantity();
+        // Get previous quantity if it has changed
+        if ($this->persistenceHelper->isChanged($line, 'quantity')) {
+            $quantity = $this->persistenceHelper->getChangeSet($line, 'quantity')[0];
+        } else {
+            $quantity = $line->getQuantity();
+        }
 
         // Update assignments
         foreach ($assignments as $assignment) {
@@ -557,7 +582,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         }
 
         // Remaining quantity
-        if (0 > $quantity) {
+        if (0 != $quantity) {
             throw new StockLogicException(sprintf(
                 'Failed to detach invoice line "%s".',
                 $line->getDesignation()

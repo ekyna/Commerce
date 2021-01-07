@@ -14,11 +14,11 @@ interface StatCalculatorInterface
      *
      * If skip mode is true :
      *   - If filter excludes subjects : ignore orders containing items assigned to these subjects.
-     *   - If filter do NOT excludes subjects : ignore orders containing items NOT assigned to these subjects.
+     *   - If filter does NOT exclude subjects : ignore orders containing items NOT assigned to these subjects.
      *
      * If skip mode is false :
      *   - If filter excludes subjects : calculate all orders by ignoring items assigned to these subjects.
-     *   - If filter do NOT excludes subjects : calculate all orders by ignoring items NOT assigned to these subjects.
+     *   - If filter does NOT exclude subjects : calculate all orders by ignoring items NOT assigned to these subjects.
      *
      * @param bool $skip
      */

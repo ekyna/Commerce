@@ -44,11 +44,18 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     public function __construct(
         StockUnitResolverInterface $stockUnitResolver,
         SupplierProductRepositoryInterface $supplierProductRepository,
-        array $defaults
+        array $defaults = []
     ) {
         $this->stockUnitResolver = $stockUnitResolver;
         $this->supplierProductRepository = $supplierProductRepository;
-        $this->defaults = $defaults;
+        $this->defaults = array_replace([
+            'stock_mode'             => StockSubjectModes::MODE_AUTO,
+            'stock_floor'            => 0,
+            'replenishment_time'     => 2,
+            'minimum_order_quantity' => 1,
+            'quote_only'             => false,
+            'end_of_life'            => false,
+        ], $defaults);
     }
 
     /**
@@ -75,7 +82,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             ->setInStock(0)
             ->setAvailableStock(0)
             ->setVirtualStock(0)
-            ->setEstimatedDateOfArrival(null);
+            ->setEstimatedDateOfArrival();
     }
 
     /**
@@ -180,7 +187,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      *
      * @return bool
      */
-    protected function updateCompound(StockSubjectInterface $subject)
+    protected function updateCompound(StockSubjectInterface $subject): bool
     {
         $unit = $subject->getUnit();
         $justInTime = $disabled = $resupply = true;
@@ -282,9 +289,13 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * @inheritdoc
+     * Updates the subject's stock state.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return bool
      */
-    protected function updateStockState(StockSubjectInterface $subject)
+    protected function updateStockState(StockSubjectInterface $subject): bool
     {
         $mode = $subject->getStockMode();
 
@@ -416,7 +427,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         $today = new \DateTime();
-        $today->setTime(0, 0, 0, 0);
+        $today->setTime(0, 0);
 
         if ($eda < $today) {
             return null;

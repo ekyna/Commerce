@@ -135,14 +135,14 @@ class ViewBuilder
      *
      * @return SaleView
      */
-    public function buildSaleView(Model\SaleInterface $sale, array $options = [])
+    public function buildSaleView(Model\SaleInterface $sale, array $options = []): SaleView
     {
         $this->initialize($sale, $options);
 
         $c = $this->view->getCurrency();
 
         $this->amountCalculator = $this->amountCalculatorFactory->create($c);
-        $this->marginCalculator = $this->marginCalculatorFactory->create($c);
+        $this->marginCalculator = $this->marginCalculatorFactory->create($c, true);
 
         // Gross total view
         $grossResult = $this->amountCalculator->calculateSale($sale, true);
@@ -220,7 +220,7 @@ class ViewBuilder
      * @param Model\SaleInterface $sale
      * @param array               $options
      */
-    private function initialize(Model\SaleInterface $sale, array $options = [])
+    private function initialize(Model\SaleInterface $sale, array $options = []): void
     {
         $this->lineNumber = 1;
         $this->view = new SaleView();
@@ -252,7 +252,7 @@ class ViewBuilder
      *
      * @param Model\SaleInterface $sale
      */
-    private function buildSaleTaxesViews(Model\SaleInterface $sale)
+    private function buildSaleTaxesViews(Model\SaleInterface $sale): void
     {
         if (!$this->options['taxes_view']) {
             return;
@@ -273,7 +273,7 @@ class ViewBuilder
      *
      * @param Model\SaleInterface $sale
      */
-    private function buildSaleItemsLinesViews(Model\SaleInterface $sale)
+    private function buildSaleItemsLinesViews(Model\SaleInterface $sale): void
     {
         if (!$sale->hasItems()) {
             return;
@@ -290,7 +290,7 @@ class ViewBuilder
      *
      * @param Model\SaleInterface $sale
      */
-    private function buildSaleDiscountsLinesViews(Model\SaleInterface $sale)
+    private function buildSaleDiscountsLinesViews(Model\SaleInterface $sale): void
     {
         if (!$sale->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
             return;
@@ -309,7 +309,7 @@ class ViewBuilder
      *
      * @return LineView|null
      */
-    private function buildSaleItemLineView(Model\SaleItemInterface $item, $level = 0)
+    private function buildSaleItemLineView(Model\SaleItemInterface $item, $level = 0): ?LineView
     {
         if (!$this->options['private'] && $item->isPrivate()) {
             return null;
@@ -419,7 +419,7 @@ class ViewBuilder
      *
      * @return LineView
      */
-    private function buildDiscountLine(Model\SaleAdjustmentInterface $adjustment, $level = 0)
+    private function buildDiscountLine(Model\SaleAdjustmentInterface $adjustment, $level = 0): LineView
     {
         if (Model\AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
             throw new InvalidArgumentException("Unexpected adjustment type.");
@@ -462,7 +462,7 @@ class ViewBuilder
      *
      * @param Model\SaleInterface $sale
      */
-    private function buildShipmentLine(Model\SaleInterface $sale)
+    private function buildShipmentLine(Model\SaleInterface $sale): void
     {
         if (null === $sale->getShipmentMethod() && !$this->options['private']) {
             return;
@@ -585,7 +585,7 @@ class ViewBuilder
      *
      * @return OptionsResolver
      */
-    private function getOptionsResolver()
+    private function getOptionsResolver(): OptionsResolver
     {
         if (null !== $this->optionsResolver) {
             return $this->optionsResolver;

@@ -5,7 +5,6 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
 use DateTime;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Resource\Model as Resource;
 

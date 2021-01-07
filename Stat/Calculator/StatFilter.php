@@ -11,6 +11,8 @@ use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
  */
 class StatFilter
 {
+    // TODO private $customerGroups
+
     /**
      * @var string[]
      */

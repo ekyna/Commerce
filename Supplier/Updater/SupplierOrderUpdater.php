@@ -81,10 +81,10 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
         // If state is canceled, clear dates
         if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
             $order
-                ->setEstimatedDateOfArrival(null)
-                ->setPaymentDate(null)
-                ->setForwarderDate(null)
-                ->setCompletedAt(null);
+                ->setEstimatedDateOfArrival()
+                ->setPaymentDate()
+                ->setForwarderDate()
+                ->setCompletedAt();
         } // If order state is 'completed' and 'competed at' date is not set
         elseif (
             ($order->getState() === SupplierOrderStates::STATE_COMPLETED)
@@ -141,11 +141,11 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
                 $changed = true;
             }
             if (null !== $order->getForwarderDate()) {
-                $order->setForwarderDate(null);
+                $order->setForwarderDate();
                 $changed = true;
             }
             if (null !== $order->getForwarderDueDate()) {
-                $order->setForwarderDueDate(null);
+                $order->setForwarderDueDate();
                 $changed = true;
             }
         }
@@ -163,9 +163,15 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
             return false;
         }
 
-        if (!SupplierOrderStates::isStockableState($order->getState())) {
+        if (SupplierOrderStates::isDeletableState($order->getState())) {
             return false;
         }
+
+        if (null === $date = $order->getPaymentDate()) {
+            return false;
+        }
+
+        $order->setExchangeDate($date);
 
         return $this->currencyConverter->setSubjectExchangeRate($order);
     }

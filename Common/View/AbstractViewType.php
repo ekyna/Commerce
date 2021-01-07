@@ -21,7 +21,7 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
-    public function setFormatter(Formatter $formatter)
+    public function setFormatter(Formatter $formatter): void
     {
         $this->formatter = $formatter;
     }
@@ -29,7 +29,7 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
-    public function configureOptions(Model\SaleInterface $sale, SaleView $view, array &$options)
+    public function configureOptions(Model\SaleInterface $sale, SaleView $view, array &$options): void
     {
 
     }
@@ -37,7 +37,7 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
-    public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options)
+    public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options): void
     {
 
     }
@@ -45,7 +45,7 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
-    public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options)
+    public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options): void
     {
 
     }
@@ -53,7 +53,7 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
-    public function buildAdjustmentView(Model\AdjustmentInterface $adjustment, LineView $view, array $options)
+    public function buildAdjustmentView(Model\AdjustmentInterface $adjustment, LineView $view, array $options): void
     {
 
     }
@@ -61,7 +61,7 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
-    public function buildShipmentView(Model\SaleInterface $sale, LineView $view, array $options)
+    public function buildShipmentView(Model\SaleInterface $sale, LineView $view, array $options): void
     {
 
     }
@@ -69,7 +69,7 @@ abstract class AbstractViewType implements ViewTypeInterface
     /**
      * @inheritDoc
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return 0;
     }

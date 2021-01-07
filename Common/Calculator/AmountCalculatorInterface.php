@@ -48,7 +48,7 @@ interface AmountCalculatorInterface
      *         If a private has discount adjustment or
      *         if a private item does not share the same tax group as its parent
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item, float $quantity = null): Model\Amount;
+    public function calculateSaleItem(Model\SaleItemInterface $item, float $quantity = null, bool $asPublic = false): Model\Amount;
 
     /**
      * Calculates the sale discount result.

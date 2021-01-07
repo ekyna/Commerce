@@ -18,7 +18,7 @@ interface DocumentBuilderInterface
      *
      * @param DocumentInterface $document
      */
-    public function build(DocumentInterface $document);
+    public function build(DocumentInterface $document): void;
 
     /**
      * Updates the document's data (currency, customer and addresses).
@@ -27,7 +27,7 @@ interface DocumentBuilderInterface
      *
      * @return bool
      */
-    public function update(DocumentInterface $document);
+    public function update(DocumentInterface $document): bool;
 
     /**
      * Builds the document good line from the given sale item.
@@ -37,7 +37,7 @@ interface DocumentBuilderInterface
      *
      * @return DocumentLineInterface|null
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, DocumentInterface $document);
+    public function buildGoodLine(Common\SaleItemInterface $item, DocumentInterface $document): ?DocumentLineInterface;
 
     /**
      * Builds the discount line from the given adjustment.
@@ -47,7 +47,7 @@ interface DocumentBuilderInterface
      *
      * @return DocumentLineInterface|null
      */
-    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, DocumentInterface $document);
+    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, DocumentInterface $document): ?DocumentLineInterface;
 
     /**
      * Builds the document's shipment line.
@@ -56,5 +56,5 @@ interface DocumentBuilderInterface
      *
      * @return DocumentLineInterface|null
      */
-    public function buildShipmentLine(DocumentInterface $document);
+    public function buildShipmentLine(DocumentInterface $document): ?DocumentLineInterface;
 }

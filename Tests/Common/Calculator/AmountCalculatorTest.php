@@ -213,6 +213,17 @@ class AmountCalculatorTest extends AbstractAmountTest
                 return 0;
             });
 
+        $this
+            ->invoiceCalculator
+            ->method('calculateSoldQuantity')
+            ->willReturnCallback(function ($subject) use ($creditMap) {
+                if ($subject instanceof SaleItemInterface) {
+                    return $subject->getTotalQuantity() - $creditMap[$subject->getId()];
+                }
+
+                return 1;
+            });
+
         $calculator = $this->createCalculator(Fixture::CURRENCY_EUR, true);
 
         $result = $calculator->calculateSaleItem(Fixture::orderItem('order1_item1'));

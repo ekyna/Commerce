@@ -100,6 +100,8 @@ class MarginCalculator implements MarginCalculatorInterface
      * @param string          $currency
      * @param bool            $profit
      * @param StatFilter|null $filter
+     *
+     * @internal Use Calculator factory
      */
     public function __construct(string $currency, bool $profit, StatFilter $filter = null)
     {
@@ -266,9 +268,8 @@ class MarginCalculator implements MarginCalculatorInterface
                 }
             } else {
                 $sale = $item->getSale();
-                if ($sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
-                    $sold = $this->invoiceCalculator->calculateInvoicedQuantity($item)
-                        - $this->invoiceCalculator->calculateCreditedQuantity($item);
+                if ($sale instanceof InvoiceSubjectInterface) {
+                    $sold = $this->invoiceCalculator->calculateSoldQuantity($item);
                 } else {
                     $sold = $item->getTotalQuantity();
                 }
@@ -320,9 +321,8 @@ class MarginCalculator implements MarginCalculatorInterface
             return $margin;
         }
 
-        if ($sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
-            $sold = $this->invoiceCalculator->calculateInvoicedQuantity($sale)
-                - $this->invoiceCalculator->calculateCreditedQuantity($sale);
+        if ($sale instanceof InvoiceSubjectInterface) {
+            $sold = $this->invoiceCalculator->calculateSoldQuantity($sale);
         } else {
             $sold = 1;
         }

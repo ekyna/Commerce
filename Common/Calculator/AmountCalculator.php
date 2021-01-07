@@ -68,6 +68,15 @@ class AmountCalculator implements AmountCalculatorInterface
         $this->currency = $currency;
         $this->revenue = $revenue;
         $this->filter = $filter;
+
+        $this->clear();
+    }
+
+    /**
+     * Clears the cache.
+     */
+    public function clear(): void
+    {
         $this->cache = [];
     }
 
@@ -180,7 +189,7 @@ class AmountCalculator implements AmountCalculatorInterface
      *
      * @TODO use packaging format on quantities
      */
-    public function calculateSaleItem(Model\SaleItemInterface $item, float $quantity = null): Model\Amount
+    public function calculateSaleItem(Model\SaleItemInterface $item, float $quantity = null, bool $asPublic = false): Model\Amount
     {
         if (null !== $quantity) {
             if ($this->revenue) {
@@ -240,7 +249,7 @@ class AmountCalculator implements AmountCalculatorInterface
         if ($item->getSale()->isSample()) {
             // Sample sale case : zero amounts
             $result = new Model\Amount($this->currency);
-        } elseif ($item->isPrivate()) {
+        } elseif ($item->isPrivate() && !$asPublic) {
             // Private case : we just need unit amount
             $gross = $unit * $quantity;
             $result = new Model\Amount($this->currency, $unit, $gross, 0, $gross);
@@ -256,8 +265,14 @@ class AmountCalculator implements AmountCalculatorInterface
             $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
 
             // Items without subject inherit discounts from their non-compound parent
-            if (empty($discountAdjustments) && !$item->hasSubjectIdentity() && $parent && !$parent->isCompound()) {
-                $discountAdjustments = $parent->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+            if (empty($discountAdjustments)) {
+                if (!$item->hasSubjectIdentity() && $parent && !$parent->isCompound()) {
+                    $discountAdjustments = $parent->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+                } elseif ($item->isPrivate() && $asPublic) {
+                    $discountAdjustments = $item
+                        ->getPublicParent()
+                        ->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+                }
             }
 
             // Discount amount and result adjustments
@@ -275,7 +290,14 @@ class AmountCalculator implements AmountCalculatorInterface
                 : Money::round($gross - $discount, $this->currency);
 
             // Tax amount and result adjustments
-            $taxAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
+            if ($item->isPrivate() && $asPublic) {
+                $taxAdjustments = $item
+                    ->getPublicParent()
+                    ->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
+            } else {
+                $taxAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
+            }
+
             foreach ($taxAdjustments as $data) {
                 $adjustment = $this->createPercentAdjustment($data, $base);
 
@@ -333,11 +355,8 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Revenue mode
-        if ($this->revenue && $sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
-            $sold = $this->invoiceCalculator->calculateInvoicedQuantity($adjustment)
-                - $this->invoiceCalculator->calculateCreditedQuantity($adjustment);
-
-            if (0 >= $sold) {
+        if ($this->revenue && $sale instanceof InvoiceSubjectInterface) {
+            if (0 >= $this->invoiceCalculator->calculateSoldQuantity($adjustment)) {
                 return $result;
             }
         }
@@ -429,11 +448,8 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Revenue mode
-        if ($this->revenue && $sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
-            $sold = $this->invoiceCalculator->calculateInvoicedQuantity($sale)
-                - $this->invoiceCalculator->calculateCreditedQuantity($sale);
-
-            if (0 >= $sold) {
+        if ($this->revenue && $sale instanceof InvoiceSubjectInterface) {
+            if (0 >= $this->invoiceCalculator->calculateSoldQuantity($sale)) {
                 return $result;
             }
         }
@@ -502,9 +518,8 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         $sale = $item->getSale();
-        if ($sale instanceof InvoiceSubjectInterface && $sale->isFullyInvoiced()) {
-            return $this->invoiceCalculator->calculateInvoicedQuantity($item)
-                - $this->invoiceCalculator->calculateCreditedQuantity($item);
+        if ($sale instanceof InvoiceSubjectInterface) {
+            return $this->invoiceCalculator->calculateSoldQuantity($item);
         }
 
         return $item->getTotalQuantity();

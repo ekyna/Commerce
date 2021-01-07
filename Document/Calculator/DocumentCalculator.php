@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model;
+use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
 use Ekyna\Component\Commerce\Exception\LogicException;
 
 /**
@@ -180,11 +181,14 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException("Document can't be recalculated.");
         }
 
-        $result = $this->calculator->calculateSaleItem($item, $line->getQuantity());
+        $hasPublicParent = DocumentUtil::hasPublicParent($line->getDocument(), $item);
+
+        $result = $this->calculator->calculateSaleItem($item, $line->getQuantity(), $item->isPrivate() && !$hasPublicParent);
 
         $this->syncLine($line, $result);
 
-        if ($item->isPrivate()) {
+        // Abort if document contains one of the public parents
+        if ($item->isPrivate() && $hasPublicParent) {
             return null;
         }
 

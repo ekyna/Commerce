@@ -163,9 +163,6 @@ class SupplierOrderListener extends AbstractListener
         $this->assertDeletable($order);
     }
 
-
-
-
     /**
      * Updates the stock units.
      *

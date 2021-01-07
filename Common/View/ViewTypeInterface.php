@@ -17,7 +17,7 @@ interface ViewTypeInterface
      *
      * @param Formatter $formatter
      */
-    public function setFormatter(Formatter $formatter);
+    public function setFormatter(Formatter $formatter): void;
 
     /**
      * Configures the builder options.
@@ -26,7 +26,7 @@ interface ViewTypeInterface
      * @param SaleView            $view
      * @param array               $options
      */
-    public function configureOptions(Model\SaleInterface $sale, SaleView $view, array &$options);
+    public function configureOptions(Model\SaleInterface $sale, SaleView $view, array &$options): void;
 
     /**
      * Builds the sale view.
@@ -35,7 +35,7 @@ interface ViewTypeInterface
      * @param SaleView            $view
      * @param array               $options
      */
-    public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options);
+    public function buildSaleView(Model\SaleInterface $sale, SaleView $view, array $options): void;
 
     /**
      * Builds the sale item view.
@@ -44,7 +44,7 @@ interface ViewTypeInterface
      * @param LineView                $view
      * @param array                   $options
      */
-    public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options);
+    public function buildItemView(Model\SaleItemInterface $item, LineView $view, array $options): void;
 
     /**
      * Builds the adjustment view.
@@ -53,7 +53,7 @@ interface ViewTypeInterface
      * @param LineView                  $view
      * @param array                     $options
      */
-    public function buildAdjustmentView(Model\AdjustmentInterface $adjustment, LineView $view, array $options);
+    public function buildAdjustmentView(Model\AdjustmentInterface $adjustment, LineView $view, array $options): void;
 
     /**
      * Builds the shipment view.
@@ -62,7 +62,7 @@ interface ViewTypeInterface
      * @param LineView            $view
      * @param array               $options
      */
-    public function buildShipmentView(Model\SaleInterface $sale, LineView $view, array $options);
+    public function buildShipmentView(Model\SaleInterface $sale, LineView $view, array $options): void;
 
     /**
      * Returns whether the vars builder supports the given sale.
@@ -71,19 +71,19 @@ interface ViewTypeInterface
      *
      * @return bool
      */
-    public function supportsSale(Model\SaleInterface $sale);
+    public function supportsSale(Model\SaleInterface $sale): bool;
 
     /**
      * Returns the name.
      *
      * @return string
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * Returns the priority.
      *
      * @return int
      */
-    public function getPriority();
+    public function getPriority(): int;
 }

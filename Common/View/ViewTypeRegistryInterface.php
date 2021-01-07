@@ -16,7 +16,7 @@ interface ViewTypeRegistryInterface
      *
      * @param ViewTypeInterface $type
      */
-    public function addType(ViewTypeInterface $type);
+    public function addType(ViewTypeInterface $type): void;
 
     /**
      * Returns the view types supporting the given sale.
@@ -25,5 +25,5 @@ interface ViewTypeRegistryInterface
      *
      * @return array|ViewTypeInterface[]
      */
-    public function getTypesForSale(SaleInterface $sale);
+    public function getTypesForSale(SaleInterface $sale): array;
 }

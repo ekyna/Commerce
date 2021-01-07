@@ -9,7 +9,6 @@ namespace Ekyna\Component\Commerce\Tests;
  */
 class Data
 {
-
     public static function subject1(): array
     {
         return [
@@ -203,6 +202,19 @@ class Data
             'shipment_amount' => 15.26,
             'grand_total'     => 900.52,
             'invoice_total'   => 900.52, // So that $order->isFullyInvoiced() return true
+            /*'invoices' => [
+                [
+                    'lines' => [
+                        ['item' => ['_reference' => 'order1_item1'], 'quantity' => 3],
+                        ['item' => ['_reference' => 'order1_item2_1'], 'quantity' => 20],
+                        ['item' => ['_reference' => 'order1_item2_2'], 'quantity' => 8],
+                        ['item' => ['_reference' => 'order1_item2_2_1'], 'quantity' => 16],
+                        ['item' => ['_reference' => 'order1_item2_2_2'], 'quantity' => 24],
+                        ['item' => ['_reference' => 'order1_item3'], 'quantity' => 6],
+                        ['item' => ['_reference' => 'order1_item3_1'], 'quantity' => 12],
+                    ]
+                ]
+            ]*/
         ];
     }
 
@@ -455,11 +467,11 @@ class Data
                         'sold'           => 16.,
                         'subject'        => 'subject1',
                     ],
-                    // Total weight:  51.2 | Weighting: ‭0,0132669983416252‬‬ (‭0,8490878938640133‬‬)
-                    // Total price: 789.76 | Weighting: 0,010394029750173‬‬ (‭0,665217904011051‬‬)
-                    // Discount: ‭   ‭99,78268560165765‬
-                    // Base: ‭       ‭689,9773143983424‬
-                    // Tax:         ‭138.00
+                    // Total weight:  51.2 | Weighting: 0,0132669983416252 (0,8490878938640133)
+                    // Total price: 789.76 | Weighting: 0,010394029750173 (0,665217904011051)
+                    // Discount:    99,78268560165765
+                    // Base:        689,9773143983424
+                    // Tax:         138.00
                 ],
                 [
                     '_reference' => 'supplier_order1_item2',
@@ -474,11 +486,11 @@ class Data
                         'sold'           => 7.,
                         'subject'        => 'subject2',
                     ],
-                    // Total weight:  9.10 | Weighting: ‭0,021558872305141‬‬ (‭0,1509121061359867‬‬)
-                    // Total price: 397.46 | Weighting: ‭0,047826013712707‬‬ (‭0,334782095988949‬)
-                    // Discount:     ‭50,21731439834235‬
-                    // Base:  ‭      ‭347,2426856016577‬‬  (‬)
-                    // Tax:          ‭34,72
+                    // Total weight:  9.10 | Weighting: 0,021558872305141 (0,1509121061359867)
+                    // Total price: 397.46 | Weighting: 0,047826013712707 (0,334782095988949)
+                    // Discount:     50,21731439834235
+                    // Base:        347,2426856016577  ()
+                    // Tax:          34,72
                 ],
                 // Total price:  1187.22
                 // Total weight:   60.3
@@ -511,8 +523,8 @@ class Data
                         'sold'           => 4.,
                         'subject'        => 'subject3',
                     ],
-                    // Total weight:   16.50  |  Weighting: ‭0,0063131313131313‬‬ (‭0,2083333333333333‬)
-                    // Total price : 1507.11  |  Weighting: ‭0,0160597237460264‬‬ (‭0,5299708836188708‬)
+                    // Total weight:   16.50  |  Weighting: 0,0063131313131313 (0,2083333333333333)
+                    // Total price : 1507.11  |  Weighting: 0,0160597237460264 (0,5299708836188708)
                 ],
                 [
                     '_reference' => 'supplier_order2_item2',
@@ -527,8 +539,8 @@ class Data
                         'sold'           => 0.,
                         'subject'        => 'subject4',
                     ],
-                    // Total weight:   62.70  |  Weighting: ‭0,0138888888888889‬‬ (‭0,7916666666666667‬‬)
-                    // Total price:  1336.65  |  Weighting: ‭0,0082461248487917‬‬ (‭0,4700291163811292‬)
+                    // Total weight:   62.70  |  Weighting: 0,0138888888888889 (0,7916666666666667)
+                    // Total price:  1336.65  |  Weighting: 0,0082461248487917 (0,4700291163811292)
                 ],
                 // Total price:   2843.76
                 // Total weight:    79.2
@@ -563,8 +575,8 @@ class Data
                         'sold'           => 7.,
                         'subject'        => 'subject5',
                     ],
-                    // Total weight:   47.20  |  Weighting: ‭0,0074487895716946‬‬‬ (‭0,4394785847299814‬‬‬)
-                    // Total price:  3833.23  |  Weighting: ‭0,0091841552471396‬‬‬‬ (‭0,5418651595812353‬‬‬)
+                    // Total weight:   47.20  |  Weighting: 0,0074487895716946 (0,4394785847299814)
+                    // Total price:  3833.23  |  Weighting: 0,0091841552471396 (0,5418651595812353)
                 ],
                 [
                     '_reference' => 'supplier_order3_item2',
@@ -579,8 +591,8 @@ class Data
                         'sold'           => 2.,
                         'subject'        => 'subject6',
                     ],
-                    // Total weight:   60.20  |  Weighting: ‭0,0130353817504655‬‬‬ (‭0,5605214152700186‬‬‬)
-                    // Total price:  3240.91  |  Weighting: ‭0,0106542986143899‬‬‬‬ (‭0,4581348404187647‬‬‬)
+                    // Total weight:   60.20  |  Weighting: 0,0130353817504655 (0,5605214152700186)
+                    // Total price:  3240.91  |  Weighting: 0,0106542986143899 (0,4581348404187647)
                 ],
                 // Total price:   7074.14
                 // Total weight:   107.4
@@ -611,8 +623,8 @@ class Data
                         'sold'           => 3.,
                         'subject'        => 'subject5',
                     ],
-                    // Total weight:  13.60  |  Weighting: ‭0,017353579175705‬‬‬‬ (‭0,2950108459869848‬‬‬‬)
-                    // Total price:  940.44  |  Weighting: ‭0,0253448726113191‬‬‬‬‬ (‭0,430862834392424‬‬‬‬)
+                    // Total weight:  13.60  |  Weighting: 0,017353579175705 (0,2950108459869848)
+                    // Total price:  940.44  |  Weighting: 0,0253448726113191 (0,430862834392424)
                     // Tax:          188.09
                 ],
                 [
@@ -628,8 +640,8 @@ class Data
                         'sold'           => 2.,
                         'subject'        => 'subject6',
                     ],
-                    // Total weight:   32.50  |  Weighting: ‭0,0281995661605206‬‬‬‬ (‭0,7049891540130152‬‬‬‬)
-                    // Total price:  1242.25  |  Weighting: ‭0,022765486624303‬‬‬‬‬ (‭0,569137165607576‬‬‬‬)
+                    // Total weight:   32.50  |  Weighting: 0,0281995661605206 (0,7049891540130152)
+                    // Total price:  1242.25  |  Weighting: 0,022765486624303 (0,569137165607576)
                     // Tax:           124.22
                 ],
                 // Total price:   2182.69

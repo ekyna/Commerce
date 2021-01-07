@@ -39,6 +39,13 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
     public function setParent(SaleItemInterface $parent = null);
 
     /**
+     * Returns the first public ancestor (if the item itself if it is public).
+     *
+     * @return $this|SaleItemInterface
+     */
+    public function getPublicParent(): SaleItemInterface;
+
+    /**
      * Returns the parent item.
      *
      * @return SaleItemInterface|null

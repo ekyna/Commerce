@@ -21,24 +21,29 @@ interface InvoiceBuilderInterface extends DocumentBuilderInterface
      *
      * @return SaleFactoryInterface
      */
-    public function getSaleFactory();
+    public function getSaleFactory(): SaleFactoryInterface;
 
     /**
      * Returns the invoice calculator.
      *
      * @return InvoiceSubjectCalculatorInterface
      */
-    public function getInvoiceCalculator();
+    public function getInvoiceCalculator(): InvoiceSubjectCalculatorInterface;
 
     /**
      * Finds or create the invoice line.
      *
-     * @param InvoiceInterface  $invoice
+     * @param InvoiceInterface $invoice
      * @param SaleItemInterface $item
-     * @param float             $available
-     * @param float             $expected
+     * @param float $available
+     * @param float|null $expected
      *
-     * @return InvoiceLineInterface
+     * @return InvoiceLineInterface|null
      */
-    public function findOrCreateGoodLine(InvoiceInterface $invoice, SaleItemInterface $item, $available, $expected = null);
+    public function findOrCreateGoodLine(
+        InvoiceInterface $invoice,
+        SaleItemInterface $item,
+        float $available,
+        float $expected = null
+    ): ?InvoiceLineInterface;
 }

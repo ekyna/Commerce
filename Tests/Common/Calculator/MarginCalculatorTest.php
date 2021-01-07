@@ -451,6 +451,22 @@ class MarginCalculatorTest extends TestCase
             ->willReturnCallback(function () {
                 return 0;
             });
+
+        $this
+            ->invoiceCalculator
+            ->method('calculateSoldQuantity')
+            ->willReturnCallback(function ($subject) {
+                if ($subject instanceof SaleItemInterface) {
+                    return $subject->getTotalQuantity();
+                }
+                if ($subject instanceof SaleAdjustmentInterface) {
+                    return 1;
+                }
+                if ($subject instanceof SaleInterface) {
+                    return 1;
+                }
+                throw new LogicException("Unexpect argument");
+            });
     }
 
     // TODO test filter

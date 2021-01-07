@@ -66,16 +66,11 @@ class StockUnitNormalizer extends AbstractResourceNormalizer
             }
 
             $default  = $this->currencyConverter->getDefaultCurrency();
-            $currency = ($c = $unit->getCurrency()) ? $c->getCode() : $default;
-
-            $price = $formatter->currency($unit->getNetPrice(), $default);
-            if ($currency !== $default) {
-                $converted = $this
-                    ->currencyConverter
-                    ->convertWithSubject($unit->getNetPrice(), $unit, $currency);
-
-                $price = sprintf('%s&nbsp;(%s)', $price, trim($formatter->currency($converted, $currency)));
-            }
+            $price = sprintf(
+                '%s&nbsp;<em>(%s)</em>',
+                $formatter->currency($unit->getNetPrice() + $unit->getShippingPrice(), $default),
+                $formatter->currency($unit->getNetPrice(), $default)
+            );
 
             $data = array_replace($data, [
                 'geocodes'    => implode(',', $unit->getGeocodes()),

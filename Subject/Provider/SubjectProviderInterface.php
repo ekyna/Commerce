@@ -15,10 +15,10 @@ use Ekyna\Component\Commerce\Subject\Repository\SubjectRepositoryInterface;
  */
 interface SubjectProviderInterface
 {
-    const CONTEXT_ITEM     = 'item';     // Sale item subject
-    const CONTEXT_SALE     = 'sale';     // Sale item search
-    const CONTEXT_ACCOUNT  = 'account';  // Sale item search from customer account
-    const CONTEXT_SUPPLIER = 'supplier'; // Supplier item subject
+    public const CONTEXT_ITEM     = 'item';         // Sale item subject
+    public const CONTEXT_SALE     = 'sale';         // Sale item search
+    public const CONTEXT_ACCOUNT  = 'account';   // Sale item search from customer account
+    public const CONTEXT_SUPPLIER = 'supplier'; // Supplier item subject
 
 
     /**
@@ -27,7 +27,7 @@ interface SubjectProviderInterface
      * This method must set the reference subject fields (provider and identifier) for next resolutions.
      *
      * @param Reference $reference
-     * @param Subject  $subject
+     * @param Subject   $subject
      *
      * @return SubjectProviderInterface
      */

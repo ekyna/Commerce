@@ -2,9 +2,14 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
-use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as SaleItem;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
-use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Shipment\Model\RemainingEntry;
+use Ekyna\Component\Commerce\Shipment\Model\RemainingList;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface as Shipment;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface as Subject;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
@@ -49,7 +54,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function isShipped(Common\SaleItemInterface $saleItem): bool
+    public function isShipped(SaleItem $saleItem): bool
     {
         // If compound with only public children
         if ($saleItem->isCompound() && !$saleItem->hasPrivateChildren()) {
@@ -64,7 +69,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         }
 
         $sale = $saleItem->getSale();
-        if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
+        if (!$sale instanceof Subject) {
             return false;
         }
 
@@ -82,10 +87,18 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateAvailableQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float {
+    public function calculateAvailableQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    {
+        if ($saleItem->isCompound()) {
+            $quantity = INF;
+            foreach ($saleItem->getChildren() as $child) {
+                $cQty = $this->calculateAvailableQuantity($child, $ignore) / $child->getQuantity();
+                $quantity = min($quantity, $cQty);
+            }
+
+            return $quantity;
+        }
+
         if (!$this->hasStockableSubject($saleItem)) {
             return INF;
         }
@@ -98,8 +111,10 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         }
 
         if (
-            null !== $ignore && null !== $ignore->getId() && !$ignore->isReturn() &&
-            Shipment\ShipmentStates::isStockableState($ignore, true)
+            null !== $ignore
+            && null !== $ignore->getId()
+            && !$ignore->isReturn()
+            && ShipmentStates::isStockableState($ignore, true)
         ) {
             foreach ($ignore->getItems() as $item) {
                 if ($item->getSaleItem() === $saleItem) {
@@ -118,17 +133,16 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
      *
      * @todo Add bool $strict parameter : really shipped and not created/prepared
      */
-    public function calculateShippableQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float {
+    public function calculateShippableQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    {
         // TODO Return zero if not shippable (?)
 
         // Quantity = Sold - Shipped (ignoring current) + Returned
 
         // TODO Packaging format
-        $quantity = max($saleItem->getTotalQuantity(), $this->invoiceCalculator->calculateInvoicedQuantity($saleItem));
-        $quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem);
+        //$quantity = max($saleItem->getTotalQuantity(), $this->invoiceCalculator->calculateInvoicedQuantity($saleItem));
+        $quantity = $this->invoiceCalculator->calculateSoldQuantity($saleItem);
+        $quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem, null, false);
         $quantity -= $this->calculateShippedQuantity($saleItem, $ignore);
         $quantity += $this->calculateReturnedQuantity($saleItem);
 
@@ -138,10 +152,8 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateReturnableQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float {
+    public function calculateReturnableQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    {
         // Quantity = Shipped - Returned (ignoring current)
 
         // TODO Packaging format
@@ -154,81 +166,27 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function calculateShippedQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float {
-        $sale = $saleItem->getSale();
-
-        if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
-            return 0;
-        }
-
-        // TODO Packaging format
-        $quantity = 0;
-
-        foreach ($sale->getShipments() as $shipment) {
-            if (null !== $ignore && $shipment === $ignore) {
-                continue;
-            }
-
-            if ($shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment, false)) {
-                continue;
-            }
-
-            foreach ($shipment->getItems() as $line) {
-                if ($line->getSaleItem() === $saleItem) {
-                    $quantity += $line->getQuantity();
-                }
-            }
-        }
-
-        return $quantity;
+    public function calculateShippedQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    {
+        return $this->calculateQuantity($saleItem, false, $ignore);
     }
 
     /**
      * @inheritdoc
      */
-    public function calculateReturnedQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float {
-        $sale = $saleItem->getSale();
-
-        if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
-            return 0;
-        }
-
-        // TODO Packaging format
-        $quantity = 0;
-
-        foreach ($sale->getShipments() as $shipment) {
-            if (null !== $ignore && $shipment === $ignore) {
-                continue;
-            }
-
-            if (!$shipment->isReturn() || !Shipment\ShipmentStates::isStockableState($shipment, false)) {
-                continue;
-            }
-
-            foreach ($shipment->getItems() as $shipmentItem) {
-                if ($shipmentItem->getSaleItem() === $saleItem) {
-                    $quantity += $shipmentItem->getQuantity();
-                }
-            }
-        }
-
-        return $quantity;
+    public function calculateReturnedQuantity(SaleItem $saleItem, Shipment $ignore = null): float
+    {
+        return $this->calculateQuantity($saleItem, true, $ignore);
     }
 
     /**
      * @inheritdoc
      */
-    public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject): array
+    public function buildShipmentQuantityMap(Subject $subject): array
     {
         $quantities = [];
 
-        if ($subject instanceof Common\SaleInterface) {
+        if ($subject instanceof Sale) {
             foreach ($subject->getItems() as $item) {
                 $this->buildSaleItemQuantities($item, $quantities);
             }
@@ -240,7 +198,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * @inheritdoc
      */
-    public function buildRemainingList(Shipment\ShipmentInterface $shipment): Shipment\RemainingList
+    public function buildRemainingList(Shipment $shipment): RemainingList
     {
         $sale = $shipment->getSale();
 
@@ -249,12 +207,12 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 
         $shipments = $sale
             ->getShipments()
-            ->filter(function (Shipment\ShipmentInterface $s) use ($id, $date) {
+            ->filter(function (Shipment $s) use ($id, $date) {
                 if ($s->getId() == $id) {
                     return false;
                 }
 
-                if (!Shipment\ShipmentStates::isStockableState($s, false)) {
+                if (!ShipmentStates::isStockableState($s, false)) {
                     return false;
                 }
 
@@ -267,7 +225,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
             ->toArray();
 
         $shipments[] = $shipment;
-        $list = new Shipment\RemainingList();
+        $list = new RemainingList();
 
         foreach ($sale->getItems() as $item) {
             $this->buildSaleItemRemaining($item, $list, $shipments);
@@ -327,18 +285,71 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     }
 
     /**
+     * Calculates the shipped or returned quantity.
+     *
+     * @param SaleItem      $saleItem
+     * @param bool          $return
+     * @param Shipment|null $ignore
+     *
+     * @return float
+     */
+    private function calculateQuantity(SaleItem $saleItem, bool $return = false, Shipment $ignore = null): float
+    {
+        $sale = $saleItem->getSale();
+
+        if (!$sale instanceof Subject) {
+            return 0;
+        }
+
+        if ($saleItem->isCompound()) {
+            $quantity = INF;
+            foreach ($saleItem->getChildren() as $child) {
+                $cQty = $this->calculateQuantity($child, $return, $ignore) / $child->getQuantity();
+                $quantity = min($quantity, $cQty);
+            }
+
+            return $quantity;
+        }
+
+        // TODO Packaging format
+        $quantity = 0;
+
+        foreach ($sale->getShipments(!$return) as $shipment) {
+            if ($ignore === $shipment) {
+                continue;
+            }
+
+            if (!ShipmentStates::isStockableState($shipment, false)) {
+                continue;
+            }
+
+            foreach ($shipment->getItems() as $shipmentItem) {
+                if ($shipmentItem->getSaleItem() === $saleItem) {
+                    $quantity += $shipmentItem->getQuantity();
+                }
+            }
+        }
+
+        return $quantity;
+    }
+
+    /**
      * Builds the sale item quantities recursively.
      *
-     * @param Common\SaleItemInterface $item
-     * @param array                    $quantities
+     * @param SaleItem $item
+     * @param array    $quantities
      */
-    private function buildSaleItemQuantities(Common\SaleItemInterface $item, array &$quantities): void
+    private function buildSaleItemQuantities(SaleItem $item, array &$quantities): void
     {
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
-                'total'    => max($item->getTotalQuantity(), $this->invoiceCalculator->calculateInvoicedQuantity($item)),
-                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
+                'total'    => max(
+                    $item->getTotalQuantity(),
+                    $this->invoiceCalculator->calculateInvoicedQuantity($item)
+                    - $this->invoiceCalculator->calculateCreditedQuantity($item, null, true)
+                ),
+                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item, null, false),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
             ];
@@ -354,15 +365,12 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * Calculate the sale item remaining quantity.
      *
-     * @param Common\SaleItemInterface     $saleItem
-     * @param Shipment\RemainingList       $list
-     * @param Shipment\ShipmentInterface[] $shipments
+     * @param SaleItem      $saleItem
+     * @param RemainingList $list
+     * @param Shipment[]    $shipments
      */
-    private function buildSaleItemRemaining(
-        Common\SaleItemInterface $saleItem,
-        Shipment\RemainingList $list,
-        array $shipments
-    ): void {
+    private function buildSaleItemRemaining(SaleItem $saleItem, RemainingList $list, array $shipments): void
+    {
         // Not for compound item with only public children
         if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
             $quantity = max(
@@ -381,7 +389,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
             }
 
             if (0 < $quantity) {
-                $entry = new Shipment\RemainingEntry();
+                $entry = new RemainingEntry();
                 $entry
                     ->setSaleItem($saleItem)
                     ->setQuantity($quantity);
@@ -398,11 +406,11 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * Returns whether or not the sale item has a stockable subject.
      *
-     * @param Common\SaleItemInterface $saleItem
+     * @param SaleItem $saleItem
      *
      * @return bool
      */
-    private function hasStockableSubject(Common\SaleItemInterface $saleItem): bool
+    private function hasStockableSubject(SaleItem $saleItem): bool
     {
         if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
             return false;
@@ -416,9 +424,9 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
             return false;
         }
 
-        if ($subject->isStockCompound()) {
+        /*if ($subject->isStockCompound()) {
             return false;
-        }
+        }*/
 
         if ($subject->getStockMode() === Stock\StockSubjectModes::MODE_DISABLED) {
             return false;

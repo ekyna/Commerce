@@ -29,10 +29,10 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
     /**
      * @inheritdoc
      */
-    public function addType(ViewTypeInterface $type)
+    public function addType(ViewTypeInterface $type): void
     {
         if (array_key_exists($name = $type->getName(), $this->types)) {
-            throw new InvalidArgumentException("The view type '{$name}' is already registerd.");
+            throw new InvalidArgumentException("The view type '{$name}' is already registered.");
         }
 
         $this->types[$name] = $type;
@@ -41,7 +41,7 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
     /**
      * @inheritdoc
      */
-    public function getTypesForSale(Model\SaleInterface $sale)
+    public function getTypesForSale(Model\SaleInterface $sale): array
     {
         $types = [];
 

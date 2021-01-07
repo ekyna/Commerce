@@ -5,7 +5,9 @@ namespace Ekyna\Component\Commerce\Subject\Guesser;
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderItemRepositoryInterface;
@@ -69,7 +71,12 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
         }
 
         // By assignable stock units (avg)
-        if (null !== $cost = $this->getStockUnitsAveragePrice($subject, $quote, $shipping)) {
+        if (null !== $cost = $this->getAssignableStockUnitsCost($subject, $quote, $shipping)) {
+            return $cost;
+        }
+
+        // By latest closed stock unit
+        if (null !== $cost = $this->getLatestClosedStockUnitCost($subject, $quote, $shipping)) {
             return $cost;
         }
 
@@ -91,16 +98,15 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
      *
      * @return float|null
      */
-    private function getStockUnitsAveragePrice(SubjectInterface $subject, string $quote, bool $shipping): ?float
+    private function getAssignableStockUnitsCost(SubjectInterface $subject, string $quote, bool $shipping): ?float
     {
         if (!$subject instanceof StockSubjectInterface) {
             return null;
         }
 
-        $class = $subject::getStockUnitClass();
-
-        /** @var StockUnitRepositoryInterface $repository */
-        $repository = $this->entityManager->getRepository($class);
+        if (!$repository = $this->getStockUnitRepository($subject)) {
+            return null;
+        }
 
         $units = $repository->findAssignableBySubject($subject);
 
@@ -108,38 +114,105 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             return null;
         }
 
-        $cost = $count = 0;
+        $total = $count = 0;
+
+        foreach ($units as $unit) {
+            if (null === $cost = $this->calculateStockUnitCost($unit, $quote, $shipping)) {
+                continue;
+            }
+
+            $total += $cost;
+
+            $count++;
+        }
+
+        return $this->average($total, $count, $quote);
+    }
+
+    /**
+     * Returns the latest closed stock unit cost price.
+     *
+     * @param SubjectInterface $subject
+     * @param string           $quote
+     * @param bool             $shipping
+     *
+     * @return float|null
+     *
+     * @TODO Limit to past 6 months (configurable)
+     */
+    private function getLatestClosedStockUnitCost(SubjectInterface $subject, string $quote, bool $shipping): ?float
+    {
+        if (!$subject instanceof StockSubjectInterface) {
+            return null;
+        }
+
+        if (!$repository = $this->getStockUnitRepository($subject)) {
+            return null;
+        }
+
+        $units = $repository->findLatestClosedBySubject($subject, 1);
+
+        if (empty($units)) {
+            return null;
+        }
+
+        $unit = current($units);
+
+        return $this->calculateStockUnitCost($unit, $quote, $shipping);
+    }
+
+    /**
+     * Calculates the stock unit cost price.
+     *
+     * @param StockUnitInterface $unit
+     * @param string             $quote
+     * @param bool               $shipping
+     *
+     * @return float|null
+     */
+    private function calculateStockUnitCost(StockUnitInterface $unit, string $quote, bool $shipping = false): ?float
+    {
+        $price = $unit->getNetPrice();
+
+        if ($shipping) {
+            $price += $unit->getShippingPrice();
+        }
+
+        if (1 !== bccomp($price, 0, 5)) {
+            return null;
+        }
 
         $base = $this->currencyConverter->getDefaultCurrency();
 
-        foreach ($units as $unit) {
-            $price = $unit->getNetPrice();
-            if ($shipping) {
-                $price += $unit->getShippingPrice();
-            }
+        if (null !== $order = $unit->getSupplierOrder()) {
+            // Convert with order's exchange rate
+            $rate = $this->currencyConverter->getSubjectExchangeRate($order, $base, $quote);
 
-            if (1 !== bccomp($price, 0, 5)) {
-                continue;
-            }
-
-            $count++;
-
-            if (null !== $order = $unit->getSupplierOrder()) {
-                // Convert with order's exchange rate
-                $rate = $this->currencyConverter->getSubjectExchangeRate($order, $base, $quote);
-
-                $cost += $this->currencyConverter->convertWithRate($price, $rate, $quote, false);
-
-                continue;
-            }
-
-            $cost += $this->currencyConverter->convert($price, $base, $quote);
+            return $this->currencyConverter->convertWithRate($price, $rate, $quote, false);
         }
 
-        return $this->average($cost, $count, $quote);
+        return $this->currencyConverter->convert($price, $base, $quote);
     }
 
-        // TODO By NOT assignable stock units (+ period like last 6 months)
+    /**
+     * Returns the given subject's stock unit repository.
+     *
+     * @param StockSubjectInterface $subject
+     *
+     * @return StockUnitRepositoryInterface|null
+     */
+    private function getStockUnitRepository(StockSubjectInterface $subject): ?StockUnitRepositoryInterface
+    {
+        $class = $subject::getStockUnitClass();
+
+        $repository = $this->entityManager->getRepository($class);
+
+        if (!$repository instanceof StockUnitRepositoryInterface) {
+            throw new UnexpectedTypeException($repository, StockUnitRepositoryInterface::class);
+        }
+
+        return $repository;
+    }
 
     /**
      * Returns the latest supplier order item cost price.

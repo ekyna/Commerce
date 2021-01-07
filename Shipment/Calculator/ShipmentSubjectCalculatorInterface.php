@@ -2,8 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Calculator;
 
-use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as SaleItem;
+use Ekyna\Component\Commerce\Shipment\Model\RemainingList;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface as Shipment;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface as Subject;
 
 /**
  * Interface ShipmentSubjectCalculatorInterface
@@ -15,76 +17,61 @@ interface ShipmentSubjectCalculatorInterface
     /**
      * Returns whether or not the given sale item is shipped (present in any shipment or return).
      *
-     * @param Common\SaleItemInterface $saleItem
+     * @param SaleItem $saleItem
      *
      * @return bool
      */
-    public function isShipped(Common\SaleItemInterface $saleItem): bool;
+    public function isShipped(SaleItem $saleItem): bool;
 
     /**
      * Calculate the shipment item available quantity.
      *
-     * @param Common\SaleItemInterface   $saleItem
-     * @param Shipment\ShipmentInterface $ignore
+     * @param SaleItem      $saleItem
+     * @param Shipment|null $ignore
      *
      * @return float
      */
-    public function calculateAvailableQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float;
+    public function calculateAvailableQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
 
     /**
      * Calculates the shipment item shippable quantity.
      *
-     * @param Common\SaleItemInterface   $saleItem
-     * @param Shipment\ShipmentInterface $ignore
+     * @param SaleItem      $saleItem
+     * @param Shipment|null $ignore
      *
      * @return float
      */
-    public function calculateShippableQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float;
+    public function calculateShippableQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
 
     /**
      * Calculates the shipment item returnable quantity.
      *
-     * @param Common\SaleItemInterface   $saleItem
-     * @param Shipment\ShipmentInterface $ignore
+     * @param SaleItem      $saleItem
+     * @param Shipment|null $ignore
      *
      * @return float
      */
-    public function calculateReturnableQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float;
+    public function calculateReturnableQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
 
     /**
      * Calculates the shipped quantity for the given sale item.
      *
-     * @param Common\SaleItemInterface   $saleItem
-     * @param Shipment\ShipmentInterface $ignore
+     * @param SaleItem      $saleItem
+     * @param Shipment|null $ignore
      *
      * @return float
      */
-    public function calculateShippedQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float;
+    public function calculateShippedQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
 
     /**
      * Calculates the returned quantity for the given sale item.
      *
-     * @param Common\SaleItemInterface   $saleItem
-     * @param Shipment\ShipmentInterface $ignore
+     * @param SaleItem      $saleItem
+     * @param Shipment|null $ignore
      *
      * @return float
      */
-    public function calculateReturnedQuantity(
-        Common\SaleItemInterface $saleItem,
-        Shipment\ShipmentInterface $ignore = null
-    ): float;
+    public function calculateReturnedQuantity(SaleItem $saleItem, Shipment $ignore = null): float;
 
     /**
      * Builds the shipment quantity map.
@@ -97,18 +84,18 @@ interface ShipmentSubjectCalculatorInterface
      *     ]
      * ]
      *
-     * @param Shipment\ShipmentSubjectInterface $subject
+     * @param Subject $subject
      *
      * @return array
      */
-    public function buildShipmentQuantityMap(Shipment\ShipmentSubjectInterface $subject): array;
+    public function buildShipmentQuantityMap(Subject $subject): array;
 
     /**
      * Builds the remaining sale items list.
      *
-     * @param Shipment\ShipmentInterface $shipment
+     * @param Shipment $shipment
      *
-     * @return Shipment\RemainingList
+     * @return RemainingList
      */
-    public function buildRemainingList(Shipment\ShipmentInterface $shipment): Shipment\RemainingList;
+    public function buildRemainingList(Shipment $shipment): RemainingList;
 }

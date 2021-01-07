@@ -12,13 +12,13 @@ use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
  */
 final class SupplierOrderStates
 {
-    const STATE_NEW       = 'new';
-    const STATE_ORDERED   = 'ordered';
-    const STATE_VALIDATED = 'validated';
-    const STATE_PARTIAL   = 'partial';
-    const STATE_RECEIVED  = 'received';
-    const STATE_COMPLETED = 'completed';
-    const STATE_CANCELED  = 'canceled';
+    public const STATE_NEW       = 'new';
+    public const STATE_ORDERED   = 'ordered';
+    public const STATE_VALIDATED = 'validated';
+    public const STATE_PARTIAL   = 'partial';
+    public const STATE_RECEIVED  = 'received';
+    public const STATE_COMPLETED = 'completed';
+    public const STATE_CANCELED  = 'canceled';
 
 
     /**
@@ -26,16 +26,16 @@ final class SupplierOrderStates
      *
      * @return array
      */
-    static public function getStates(): array
+    public static function getStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_ORDERED,
-            static::STATE_VALIDATED,
-            static::STATE_PARTIAL,
-            static::STATE_RECEIVED,
-            static::STATE_COMPLETED,
-            static::STATE_CANCELED,
+            self::STATE_NEW,
+            self::STATE_ORDERED,
+            self::STATE_VALIDATED,
+            self::STATE_PARTIAL,
+            self::STATE_RECEIVED,
+            self::STATE_COMPLETED,
+            self::STATE_CANCELED,
         ];
     }
 
@@ -46,7 +46,7 @@ final class SupplierOrderStates
      *
      * @return string
      */
-    static private function stateFromOrder($state): string
+    private static function stateFromOrder($state): string
     {
         if (is_string($state)) {
             return $state;
@@ -66,9 +66,9 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function isValidState($state): bool
+    public static function isValidState($state): bool
     {
-        return in_array(static::stateFromOrder($state), static::getStates(), true);
+        return in_array(self::stateFromOrder($state), self::getStates(), true);
     }
 
     /**
@@ -76,11 +76,11 @@ final class SupplierOrderStates
      *
      * @return array
      */
-    static public function getDeletableStates(): array
+    public static function getDeletableStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_CANCELED,
+            self::STATE_NEW,
+            self::STATE_CANCELED,
         ];
     }
 
@@ -91,11 +91,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function isDeletableState($state): bool
+    public static function isDeletableState($state): bool
     {
-        $state = static::stateFromOrder($state);
+        $state = self::stateFromOrder($state);
 
-        return is_null($state) || in_array($state, static::getDeletableStates(), true);
+        return is_null($state) || in_array($state, self::getDeletableStates(), true);
     }
 
     /**
@@ -103,12 +103,12 @@ final class SupplierOrderStates
      *
      * @return array
      */
-    static public function getCancelableStates(): array
+    public static function getCancelableStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_ORDERED,
-            static::STATE_VALIDATED,
+            self::STATE_NEW,
+            self::STATE_ORDERED,
+            self::STATE_VALIDATED,
         ];
     }
 
@@ -119,11 +119,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function isCancelableState($state): bool
+    public static function isCancelableState($state): bool
     {
-        $state = static::stateFromOrder($state);
+        $state = self::stateFromOrder($state);
 
-        return is_null($state) || in_array($state, static::getCancelableStates(), true);
+        return is_null($state) || in_array($state, self::getCancelableStates(), true);
     }
 
     /**
@@ -134,11 +134,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function hasChangedToDeletable(array $cs): bool
+    public static function hasChangedToDeletable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && !static::isDeletableState($cs[0])
-            && static::isDeletableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && !self::isDeletableState($cs[0])
+            && self::isDeletableState($cs[1]);
     }
 
     /**
@@ -149,11 +149,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function hasChangedFromDeletable(array $cs): bool
+    public static function hasChangedFromDeletable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && static::isDeletableState($cs[0])
-            && !static::isDeletableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && self::isDeletableState($cs[0])
+            && !self::isDeletableState($cs[1]);
     }
 
     /**
@@ -161,13 +161,13 @@ final class SupplierOrderStates
      *
      * @return array
      */
-    static public function getStockableStates(): array
+    public static function getStockableStates(): array
     {
         return [
-            static::STATE_VALIDATED,
-            static::STATE_PARTIAL,
-            static::STATE_RECEIVED,
-            static::STATE_COMPLETED,
+            self::STATE_VALIDATED,
+            self::STATE_PARTIAL,
+            self::STATE_RECEIVED,
+            self::STATE_COMPLETED,
         ];
     }
 
@@ -178,11 +178,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function isStockableState($state): bool
+    public static function isStockableState($state): bool
     {
-        $state = static::stateFromOrder($state);
+        $state = self::stateFromOrder($state);
 
-        return !is_null($state) && in_array($state, static::getStockableStates(), true);
+        return !is_null($state) && in_array($state, self::getStockableStates(), true);
     }
 
     /**
@@ -193,11 +193,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function hasChangedToStockable(array $cs): bool
+    public static function hasChangedToStockable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && !static::isStockableState($cs[0])
-            && static::isStockableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && !self::isStockableState($cs[0])
+            && self::isStockableState($cs[1]);
     }
 
     /**
@@ -208,11 +208,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    static public function hasChangedFromStockable(array $cs): bool
+    public static function hasChangedFromStockable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && static::isStockableState($cs[0])
-            && !static::isStockableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && self::isStockableState($cs[0])
+            && !self::isStockableState($cs[1]);
     }
 
     /**
@@ -224,13 +224,13 @@ final class SupplierOrderStates
      *
      * @throws InvalidArgumentException
      */
-    static private function assertValidChangeSet(array $cs): bool
+    private static function assertValidChangeSet(array $cs): bool
     {
         if (
             array_key_exists(0, $cs) &&
             array_key_exists(1, $cs) &&
-            (is_null($cs[0]) || static::isValidState($cs[0])) &&
-            (is_null($cs[1]) || static::isValidState($cs[1]))
+            (is_null($cs[0]) || self::isValidState($cs[0])) &&
+            (is_null($cs[1]) || self::isValidState($cs[1]))
         ) {
             return true;
         }

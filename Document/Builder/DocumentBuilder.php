@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Document\Builder;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model as Document;
+use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
@@ -35,7 +36,7 @@ class DocumentBuilder implements DocumentBuilderInterface
      * Constructor.
      *
      * @param LocaleProviderInterface $localeProvider
-     * @param PhoneNumberUtil         $phoneNumberUtil
+     * @param PhoneNumberUtil|null    $phoneNumberUtil
      */
     public function __construct(LocaleProviderInterface $localeProvider, PhoneNumberUtil $phoneNumberUtil = null)
     {
@@ -46,7 +47,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * @inheritDoc
      */
-    public function build(Document\DocumentInterface $document)
+    public function build(Document\DocumentInterface $document): void
     {
         if (null === $sale = $document->getSale()) {
             throw new LogicException("Document's sale must be set at this point.");
@@ -67,7 +68,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function update(Document\DocumentInterface $document)
+    public function update(Document\DocumentInterface $document): bool
     {
         if (null === $sale = $document->getSale()) {
             throw new LogicException("Invoice's sale must be set at this point.");
@@ -135,26 +136,44 @@ class DocumentBuilder implements DocumentBuilderInterface
     }
 
     /**
+     * Finds the document good line for the given sale item.
+     *
+     * @param Document\DocumentInterface $document
+     * @param Common\SaleItemInterface   $item
+     *
+     * @return Document\DocumentLineInterface|null
+     */
+    protected function findGoodLine(
+        Document\DocumentInterface $document,
+        Common\SaleItemInterface $item
+    ): ?Document\DocumentLineInterface {
+        foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $line) {
+            if ($line->getSaleItem() === $item) {
+                return $line;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @inheritdoc
      */
-    public function buildGoodLine(Common\SaleItemInterface $item, Document\DocumentInterface $document)
-    {
-        $line = null;
-
-        if ($item->isPrivate()) {
+    public function buildGoodLine(
+        Common\SaleItemInterface $item,
+        Document\DocumentInterface $document
+    ): ?Document\DocumentLineInterface {
+        // Abort if document contains one of the public parents
+        if ($item->isPrivate() && DocumentUtil::hasPublicParent($document, $item)) {
             return null;
         }
 
+        $line = null;
+
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            // Existing line lookup
-            foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $documentLine) {
-                if ($documentLine->getSaleItem() === $item) {
-                    $line = $documentLine;
-                }
-            }
-            // Not found, create it
-            if (null === $line) {
+            // Create line if not found
+            if (null === $line = DocumentUtil::findGoodLine($document, $item)) {
                 $line = $this->createLine($document);
                 $line
                     ->setDocument($document)
@@ -179,8 +198,10 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildDiscountLine(Common\SaleAdjustmentInterface $adjustment, Document\DocumentInterface $document)
-    {
+    public function buildDiscountLine(
+        Common\SaleAdjustmentInterface $adjustment,
+        Document\DocumentInterface $document
+    ): ?Document\DocumentLineInterface {
         if ($adjustment->getType() !== Common\AdjustmentTypes::TYPE_DISCOUNT) {
             throw new InvalidArgumentException("Unexpected adjustment type.");
         }
@@ -208,7 +229,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * @inheritdoc
      */
-    public function buildShipmentLine(Document\DocumentInterface $document)
+    public function buildShipmentLine(Document\DocumentInterface $document): ?Document\DocumentLineInterface
     {
         $sale = $document->getSale();
 
@@ -239,7 +260,7 @@ class DocumentBuilder implements DocumentBuilderInterface
      *
      * @return array
      */
-    protected function buildCustomerData(Common\SaleInterface $sale)
+    protected function buildCustomerData(Common\SaleInterface $sale): array
     {
         if (null !== $customer = $sale->getCustomer()) {
             return [
@@ -304,11 +325,11 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * Formats the given phone number.
      *
-     * @param PhoneNumber $number
+     * @param PhoneNumber|null $number
      *
-     * @return string
+     * @return string|null
      */
-    protected function formatPhoneNumber(PhoneNumber $number = null)
+    protected function formatPhoneNumber(PhoneNumber $number = null): ?string
     {
         if ($number) {
             return $this->phoneNumberUtil->format($number, PhoneNumberFormat::INTERNATIONAL);
@@ -322,7 +343,7 @@ class DocumentBuilder implements DocumentBuilderInterface
      *
      * @param Document\DocumentInterface $document
      */
-    protected function buildGoodsLines(Document\DocumentInterface $document)
+    protected function buildGoodsLines(Document\DocumentInterface $document): void
     {
         foreach ($document->getSale()->getItems() as $item) {
             $this->buildGoodLine($item, $document);
@@ -334,7 +355,7 @@ class DocumentBuilder implements DocumentBuilderInterface
      *
      * @param Document\DocumentInterface $document
      */
-    protected function buildDiscountsLines(Document\DocumentInterface $document)
+    protected function buildDiscountsLines(Document\DocumentInterface $document): void
     {
         $sale = $document->getSale();
 
@@ -360,7 +381,7 @@ class DocumentBuilder implements DocumentBuilderInterface
     protected function createLine(
         /** @noinspection PhpUnusedParameterInspection */
         Document\DocumentInterface $document
-    ) {
+    ): Document\DocumentLineInterface {
         return new Document\DocumentLine();
     }
 }

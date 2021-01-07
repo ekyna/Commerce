@@ -96,25 +96,13 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
                 'availability_class' => null,
             ];
             if ($sale instanceof ShipmentSubjectInterface) {
-                if ($item->isCompound()) {
-                    foreach ($children as $child) {
-                        $quantity = $child['quantity'];
-                        foreach (['shipped', 'returned', 'available', 'in_stock'] as $key) {
-                            $qty = $child[$key] / $quantity;
-                            if (null === $shipmentData[$key] || $shipmentData[$key] > $qty) {
-                                $shipmentData[$key] = $qty;
-                            }
-                        }
-                    }
-                } else {
-                    $shipmentData = [
-                        'shipped'            => $this->shipmentCalculator->calculateShippedQuantity($item),
-                        'returned'           => $this->shipmentCalculator->calculateReturnedQuantity($item),
-                        'available'          => $this->shipmentCalculator->calculateAvailableQuantity($item),
-                        'in_stock'           => $this->getInStock($item),
-                        'availability_class' => null,
-                    ];
-                }
+                $shipmentData = [
+                    'shipped'            => $this->shipmentCalculator->calculateShippedQuantity($item),
+                    'returned'           => $this->shipmentCalculator->calculateReturnedQuantity($item),
+                    'available'          => $this->shipmentCalculator->calculateAvailableQuantity($item),
+                    'in_stock'           => $this->getInStock($item),
+                    'availability_class' => null,
+                ];
 
                 $shippable = $this->shipmentCalculator->calculateShippableQuantity($item);
                 if (0 === bccomp(0, $shippable, 3)) {
@@ -165,10 +153,6 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
         }
 
         if (!$subject instanceof StockSubjectInterface) {
-            return INF;
-        }
-
-        if ($subject->isStockCompound()) {
             return INF;
         }
 

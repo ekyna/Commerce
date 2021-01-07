@@ -2115,7 +2115,7 @@ class Fixture
         ], $data);
 
         if (null !== $data['invoice']) {
-            $data['invoice'] = self::invoice($data['invoice']);
+            //$data['invoice'] = self::invoice($data['invoice']);
             $line->setInvoice(self::invoice($data['invoice']));
         }
 
