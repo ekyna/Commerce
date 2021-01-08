@@ -19,10 +19,10 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class SupplierOrder implements Model\SupplierOrderInterface
 {
-    use Common\NumberSubjectTrait,
-        Common\ExchangeSubjectTrait,
-        Common\StateSubjectTrait,
-        TimestampableTrait;
+    use Common\ExchangeSubjectTrait;
+    use Common\NumberSubjectTrait;
+    use Common\StateSubjectTrait;
+    use TimestampableTrait;
 
     /**
      * @var int

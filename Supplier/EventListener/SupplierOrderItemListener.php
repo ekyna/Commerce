@@ -68,7 +68,7 @@ class SupplierOrderItemListener extends AbstractListener
             $this->persistenceHelper->persistAndRecompute($item, false);
         }
 
-        if ($changed || $this->persistenceHelper->isChanged($item, ['quantity', 'netPrice'])) {
+        if ($changed || $this->persistenceHelper->isChanged($item, ['quantity', 'netPrice', 'weight'])) {
             $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
         }
 

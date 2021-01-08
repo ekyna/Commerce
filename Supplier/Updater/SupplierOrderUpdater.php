@@ -85,7 +85,8 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
                 ->setPaymentDate()
                 ->setForwarderDate()
                 ->setCompletedAt();
-        } // If order state is 'completed' and 'competed at' date is not set
+        }
+        // If order state is 'completed' and 'competed at' date is not set
         elseif (
             ($order->getState() === SupplierOrderStates::STATE_COMPLETED)
             && is_null($order->getCompletedAt())

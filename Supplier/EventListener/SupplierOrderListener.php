@@ -188,7 +188,7 @@ class SupplierOrderListener extends AbstractListener
         }
 
         foreach ($order->getItems() as $item) {
-            if ($this->persistenceHelper->isChanged($order, ['quantity', 'netPrice'])) {
+            if ($this->persistenceHelper->isChanged($order, ['quantity', 'netPrice', 'weight'])) {
                 // Done by the supplier order item listener.
                 continue;
             }

@@ -123,7 +123,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         $currency = $order->getCurrency()->getCode();
 
         foreach ($order->getItems() as $item) {
-            $total += Money::round($item->getNetPrice(), $currency) * $item->getQuantity();
+            $total += Money::round($item->getNetPrice() * $item->getQuantity(), $currency);
         }
 
         return $total;

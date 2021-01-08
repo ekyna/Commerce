@@ -18,9 +18,9 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class Supplier implements SupplierInterface
 {
-    use IdentityTrait,
-        TimestampableTrait,
-        LocalizedTrait;
+    use IdentityTrait;
+    use LocalizedTrait;
+    use TimestampableTrait;
 
     /**
      * @var int

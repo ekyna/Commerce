@@ -15,8 +15,8 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class SupplierProduct implements SupplierProductInterface
 {
-    use SubjectRelativeTrait,
-        TimestampableTrait;
+    use SubjectRelativeTrait;
+    use TimestampableTrait;
 
     /**
      * @var Supplier
