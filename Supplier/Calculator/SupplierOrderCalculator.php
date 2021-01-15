@@ -180,13 +180,9 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             return round($this->convertPrice($item->getNetPrice(), $order, false), 5);
         }
 
-        $total = $this->convertPrice($this->calculateItemsTotal($order) - $order->getDiscountTotal(), $order);
+        $discount = $order->getDiscountTotal() * $this->getWeighting($item, false);
 
-        if (0 === Money::compare($total, 0, $currency)) {
-            return 0.;
-        }
-
-        return round($total * $this->getWeighting($item, false), 5);
+        return round($this->convertPrice($item->getNetPrice() - $discount, $order, false), 5);
     }
 
     /**
@@ -207,7 +203,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             return 0.;
         }
 
-        return round($total * $this->getWeighting($item, true), 5);
+        return round($total * $this->getWeighting($item), 5);
     }
 
     /**
@@ -217,7 +213,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
      *
      * @return float
      */
-    private function calculatePaymentBase(SupplierOrderInterface $order)
+    private function calculatePaymentBase(SupplierOrderInterface $order): float
     {
         $base = $this->calculateItemsTotal($order) + $order->getShippingCost() - $order->getDiscountTotal();
 
@@ -284,11 +280,11 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         $cache = $this->cache[$orderKey];
         $itemKey = spl_object_hash($item);
 
-        if ($byWeight && !$cache['missing_weight']) {
+        if ($byWeight && !$cache['no_weight']) {
             return $cache['items'][$itemKey]['weight'];
         }
 
-        if (!$cache['missing_price']) {
+        if (!$cache['no_price']) {
             return $cache['items'][$itemKey]['price'];
         }
 
@@ -318,23 +314,26 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         ];
 
         // Gather amounts and totals
-        $missingWeight = $missingPrice = false;
+        $noWeight = $noPrice = true;
         foreach ($order->getItems() as $item) {
             $amount[spl_object_hash($item)] = [
                 'weight'   => $weight = $item->getWeight(),
                 'price'    => $price = $item->getNetPrice(),
-                'quantity' => $quantity = $item->getQuantity(),
+                'quantity' => 1,
             ];
+
+            $quantity = $item->getQuantity();
 
             $total['weight'] += $weight * $quantity;
             $total['price'] += $price * $quantity;
             $total['quantity'] += $quantity;
 
-            if (1 !== bccomp($weight, 0, 5)) { // TODO Use packaging format
-                $missingWeight = true;
+            if (1 === bccomp($weight, 0, 5)) { // TODO Use packaging format
+                $noWeight = false;
             }
-            if (1 !== Money::compare($price, 0, $currency)) {
-                $missingPrice = true;
+
+            if (1 === Money::compare($price, 0, $currency)) {
+                $noPrice = false;
             }
         }
 
@@ -352,9 +351,9 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         }
 
         $this->cache[$orderKey] = [
-            'items'          => $items,
-            'missing_weight' => $missingWeight,
-            'missing_price'  => $missingPrice,
+            'items'     => $items,
+            'no_weight' => $noWeight,
+            'no_price'  => $noPrice,
         ];
     }
 }

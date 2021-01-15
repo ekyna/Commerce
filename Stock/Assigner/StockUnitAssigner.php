@@ -597,6 +597,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     {
         // TODO Check if sale is in stockable state
 
+        if ($item->isCompound()) {
+            return false;
+        }
+
         if (!$item instanceof StockAssignmentsInterface) {
             return false;
         }

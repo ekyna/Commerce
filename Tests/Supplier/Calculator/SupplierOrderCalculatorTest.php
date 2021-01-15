@@ -194,6 +194,148 @@ class SupplierOrderCalculatorTest extends TestCase
                 ],
             ],
         ];
+
+        yield 'Missing weight' => [
+            'order'  => [
+                'supplier'      => [],
+                'currency'      => Fixture::CURRENCY_EUR,
+                'shipping_cost' => 320.,
+                'items'         => [
+                    [
+                        '_reference' => 'missing_weight_item1',
+                        'weight'     => 0.8,
+                        'price'      => 62.57,
+                        'quantity'   => 25.,
+                        // Total weight:  20.00  |  Weighting: 0,04 (1,0)
+                        // Total price: 1564.25  |  Weighting: 0,0348833967965479 (0,8720849199136975)
+                    ],
+                    [
+                        '_reference' => 'missing_weight_item2',
+                        'weight'     => 0,
+                        'price'      => 19.12,
+                        'quantity'   => 12.,
+                        // Total weight:    0.00  |  Weighting: 0,0 (0,0)
+                        // Total price:   229.44  |  Weighting: 0,0106595900071919 (0,1279150800863025)
+                    ],
+                    // Total price:   1793.69
+                    // Total weight:    20.00
+                    // Total quantity:  37
+                ],
+            ],
+            'taxes'  => [],
+            'result' => [
+                'total'     => 2113.69,
+                'tax'       => 0.00,
+                'items'     => 1793.69,
+                'forwarder' => 0.,
+                'weight'    => 20.00,
+                'units'     => [
+                    'missing_weight_item1' => [
+                        'price'    => 62.57,
+                        'shipping' => 12.80,
+                    ],
+                    'missing_weight_item2' => [
+                        'price'    => 19.12,
+                        'shipping' => 0.0,
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'Missing price' => [
+            'order'  => [
+                'supplier'      => [],
+                'currency'      => Fixture::CURRENCY_EUR,
+                'shipping_cost' => 320.,
+                'items'         => [
+                    [
+                        '_reference' => 'missing_price_item1',
+                        'weight'     => 0.8,
+                        'price'      => 62.57,
+                        'quantity'   => 25.,    //  Weighting: 0,027027027027027 (0,6756756756756757)
+                        // Total weight:  20.00  |  Weighting: 0,04 (1,0)
+                        // Total price: 1564.25  |  Weighting: 0.04 (1,0)
+                    ],
+                    [
+                        '_reference' => 'missing_price_item2',
+                        'weight'     => 0,
+                        'price'      => 0,
+                        'quantity'   => 12.,   //  Weighting: 0,027027027027027 (0,6756756756756757)
+                        // Total weight:    0.00  |  Weighting: 0,0 (0,0)
+                        // Total price:     0.00  |  Weighting: 0,0 (0,0)
+                    ],
+                    // Total price:   1564.25
+                    // Total weight:    20.00
+                    // Total quantity:  37
+                ],
+            ],
+            'taxes'  => [],
+            'result' => [
+                'total'     => 1884.25,
+                'tax'       => 0.00,
+                'items'     => 1564.25,
+                'forwarder' => 0.,
+                'weight'    => 20.00,
+                'units'     => [
+                    'missing_price_item1' => [
+                        'price'    => 62.57,
+                        'shipping' => 12.8,
+                    ],
+                    'missing_price_item2' => [
+                        'price'    => 0.00,
+                        'shipping' => 0.00,
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'Missing price, with discount' => [
+            'order'  => [
+                'supplier'       => [],
+                'currency'       => Fixture::CURRENCY_EUR,
+                'shipping_cost'  => 320.,
+                'discount_total' => 150.,
+                'items'          => [
+                    [
+                        '_reference' => 'missing_price_item1',
+                        'weight'     => 0.8,
+                        'price'      => 62.57,
+                        'quantity'   => 25.,    //  Weighting: 0,027027027027027 (0,6756756756756757)
+                        // Total weight:  20.00  |  Weighting: 0,04 (1,0)
+                        // Total price: 1564.25  |  Weighting: 0.04 (1,0)
+                    ],
+                    [
+                        '_reference' => 'missing_price_item2',
+                        'weight'     => 0,
+                        'price'      => 0,
+                        'quantity'   => 12.,   //  Weighting: 0,027027027027027 (0,6756756756756757)
+                        // Total weight:    0.00  |  Weighting: 0,0 (0,0)
+                        // Total price:     0.00  |  Weighting: 0,0 (0,0)
+                    ],
+                    // Total price:   1564.25
+                    // Total weight:    20.00
+                    // Total quantity:  37
+                ],
+            ],
+            'taxes'  => [],
+            'result' => [
+                'total'     => 1734.25,
+                'tax'       => 0.00,
+                'items'     => 1564.25,
+                'forwarder' => 0.,
+                'weight'    => 20.00,
+                'units'     => [
+                    'missing_price_item1' => [
+                        'price'    => 56.57,
+                        'shipping' => 12.8,
+                    ],
+                    'missing_price_item2' => [
+                        'price'    => 0.00,
+                        'shipping' => 0.00,
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**
