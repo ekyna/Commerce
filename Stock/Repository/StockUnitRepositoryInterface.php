@@ -22,6 +22,16 @@ interface StockUnitRepositoryInterface extends StockUnitFinderInterface, Resourc
     public function findInStock(): array;
 
     /**
+     * Returns the latest not closed stock units.
+     *
+     * @param StockSubjectInterface $subject
+     * @param int                   $limit
+     *
+     * @return StockUnitInterface[]
+     */
+    public function findLatestNotClosedBySubject(StockSubjectInterface $subject, int $limit = 3): array;
+
+    /**
      * Returns the latest closed stock units.
      *
      * @param StockSubjectInterface $subject

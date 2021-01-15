@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Subject\Guesser;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
@@ -40,6 +41,11 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
      */
     protected $currencyConverter;
 
+    /**
+     * @var CountryRepositoryInterface
+     */
+    protected $countryRepository;
+
 
     /**
      * Constructor.
@@ -48,17 +54,20 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
      * @param SupplierOrderItemRepositoryInterface $supplierOrderItemRepository
      * @param SupplierProductRepositoryInterface   $supplierProductRepository
      * @param CurrencyConverterInterface           $currencyConverter
+     * @param CountryRepositoryInterface           $countryRepository
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         SupplierOrderItemRepositoryInterface $supplierOrderItemRepository,
         SupplierProductRepositoryInterface $supplierProductRepository,
-        CurrencyConverterInterface $currencyConverter
+        CurrencyConverterInterface $currencyConverter,
+        CountryRepositoryInterface $countryRepository
     ) {
         $this->entityManager = $entityManager;
         $this->supplierOrderItemRepository = $supplierOrderItemRepository;
         $this->supplierProductRepository = $supplierProductRepository;
         $this->currencyConverter = $currencyConverter;
+        $this->countryRepository = $countryRepository;
     }
 
     /**
@@ -71,7 +80,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
         }
 
         // By assignable stock units (avg)
-        if (null !== $cost = $this->getAssignableStockUnitsCost($subject, $quote, $shipping)) {
+        if (null !== $cost = $this->getLatestOpenedStockUnitsCost($subject, $quote, $shipping)) {
             return $cost;
         }
 
@@ -90,7 +99,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
     }
 
     /**
-     * Returns the subject assignable stock units average cost price.
+     * Returns the latest opened stock unit cost price.
      *
      * @param SubjectInterface $subject  The subject
      * @param string           $quote    The quote currency
@@ -98,7 +107,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
      *
      * @return float|null
      */
-    private function getAssignableStockUnitsCost(SubjectInterface $subject, string $quote, bool $shipping): ?float
+    private function getLatestOpenedStockUnitsCost(SubjectInterface $subject, string $quote, bool $shipping): ?float
     {
         if (!$subject instanceof StockSubjectInterface) {
             return null;
@@ -108,25 +117,25 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             return null;
         }
 
-        $units = $repository->findAssignableBySubject($subject);
+        $units = $repository->findLatestNotClosedBySubject($subject);
 
         if (empty($units)) {
             return null;
         }
 
-        $total = $count = 0;
-
         foreach ($units as $unit) {
+            if ($this->shouldSkipUnit($unit)) {
+                continue;
+            }
+
             if (null === $cost = $this->calculateStockUnitCost($unit, $quote, $shipping)) {
                 continue;
             }
 
-            $total += $cost;
-
-            $count++;
+            return $cost;
         }
 
-        return $this->average($total, $count, $quote);
+        return null;
     }
 
     /**
@@ -150,15 +159,43 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             return null;
         }
 
-        $units = $repository->findLatestClosedBySubject($subject, 1);
+        $units = $repository->findLatestClosedBySubject($subject, 3);
 
-        if (empty($units)) {
-            return null;
+        foreach ($units as $unit) {
+            if ($this->shouldSkipUnit($unit)) {
+                continue;
+            }
+
+            return $this->calculateStockUnitCost($unit, $quote, $shipping);
         }
 
-        $unit = current($units);
+        return null;
+    }
 
-        return $this->calculateStockUnitCost($unit, $quote, $shipping);
+    /**
+     * Returns whether the stock unit should be skipped.
+     *
+     * @param StockUnitInterface $unit
+     *
+     * @return bool
+     */
+    private function shouldSkipUnit(StockUnitInterface $unit): bool
+    {
+        if (null === $order = $unit->getSupplierOrder()) {
+            return true;
+        }
+
+        if (0 < $order->getShippingCost()) {
+            return false;
+        }
+
+        // Skip orders from foreign countries not having shipping cost.
+        $country = $order->getSupplier()->getAddress()->getCountry()->getCode();
+        if ($country != $this->countryRepository->getDefaultCode()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
