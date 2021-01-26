@@ -142,7 +142,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         // TODO Packaging format
         //$quantity = max($saleItem->getTotalQuantity(), $this->invoiceCalculator->calculateInvoicedQuantity($saleItem));
         $quantity = $this->invoiceCalculator->calculateSoldQuantity($saleItem);
-        $quantity -= $this->invoiceCalculator->calculateCreditedQuantity($saleItem, null, false);
         $quantity -= $this->calculateShippedQuantity($saleItem, $ignore);
         $quantity += $this->calculateReturnedQuantity($saleItem);
 
