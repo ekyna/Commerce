@@ -20,7 +20,7 @@ class OrderInvoiceListener extends AbstractInvoiceListener
     /**
      * @inheritDoc
      */
-    protected function preventForbiddenChange(InvoiceInterface $invoice)
+    protected function preventForbiddenChange(InvoiceInterface $invoice): void
     {
         parent::preventForbiddenChange($invoice);
 
@@ -46,7 +46,7 @@ class OrderInvoiceListener extends AbstractInvoiceListener
     /**
      * @inheritdoc
      */
-    protected function scheduleSaleContentChangeEvent(SaleInterface $sale)
+    protected function scheduleSaleContentChangeEvent(SaleInterface $sale): void
     {
         $this->persistenceHelper->scheduleEvent(OrderEvents::CONTENT_CHANGE, $sale);
     }
@@ -54,7 +54,7 @@ class OrderInvoiceListener extends AbstractInvoiceListener
     /**
      * @inheritdoc
      */
-    protected function getInvoiceFromEvent(ResourceEventInterface $event)
+    protected function getInvoiceFromEvent(ResourceEventInterface $event): InvoiceInterface
     {
         $resource = $event->getResource();
 
@@ -68,7 +68,7 @@ class OrderInvoiceListener extends AbstractInvoiceListener
     /**
      * @inheritdoc
      */
-    protected function getSalePropertyPath()
+    protected function getSalePropertyPath(): string
     {
         return 'order';
     }

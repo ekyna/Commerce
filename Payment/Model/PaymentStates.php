@@ -11,22 +11,22 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class PaymentStates
 {
-    const STATE_NEW        = 'new';
-    const STATE_PENDING    = 'pending';
-    const STATE_CAPTURED   = 'captured';
-    const STATE_FAILED     = 'failed';
-    const STATE_CANCELED   = 'canceled';
-    const STATE_REFUNDED   = 'refunded';
-    const STATE_AUTHORIZED = 'authorized';
-    const STATE_PAYEDOUT   = 'payedout';
-    const STATE_SUSPENDED  = 'suspended';
-    const STATE_EXPIRED    = 'expired';
-    const STATE_UNKNOWN    = 'unknown';
+    public const STATE_NEW        = 'new';
+    public const STATE_PENDING    = 'pending';
+    public const STATE_CAPTURED   = 'captured';
+    public const STATE_FAILED     = 'failed';
+    public const STATE_CANCELED   = 'canceled';
+    public const STATE_REFUNDED   = 'refunded';
+    public const STATE_AUTHORIZED = 'authorized';
+    public const STATE_PAYEDOUT   = 'payedout';
+    public const STATE_SUSPENDED  = 'suspended';
+    public const STATE_EXPIRED    = 'expired';
+    public const STATE_UNKNOWN    = 'unknown';
 
     // For sale
-    const STATE_OUTSTANDING = 'outstanding';
-    const STATE_DEPOSIT     = 'deposit';
-    const STATE_COMPLETED   = 'completed';
+    public const STATE_OUTSTANDING = 'outstanding';
+    public const STATE_DEPOSIT     = 'deposit';
+    public const STATE_COMPLETED   = 'completed';
 
 
     /**
@@ -34,7 +34,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getStates(): array
+    public static function getStates(): array
     {
         return [
             self::STATE_NEW,
@@ -62,7 +62,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function isValidState(string $state, bool $throwException = true): bool
+    public static function isValidState(string $state, bool $throwException = true): bool
     {
         if (in_array($state, self::getStates(), true)) {
             return true;
@@ -80,7 +80,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getNotifiableStates(): array
+    public static function getNotifiableStates(): array
     {
         return [
             self::STATE_PENDING,
@@ -99,7 +99,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function isNotifiableState($state): bool
+    public static function isNotifiableState($state): bool
     {
         $state = self::stateFromPayment($state);
 
@@ -111,7 +111,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getDeletableStates(): array
+    public static function getDeletableStates(): array
     {
         return [
             self::STATE_NEW,
@@ -127,7 +127,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function isDeletableState($state): bool
+    public static function isDeletableState($state): bool
     {
         $state = self::stateFromPayment($state);
 
@@ -141,7 +141,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getPaidStates(bool $andRefunded = false): array
+    public static function getPaidStates(bool $andRefunded = false): array
     {
         if ($andRefunded) {
             return [
@@ -167,7 +167,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function isPaidState($state, bool $orRefunded = false): bool
+    public static function isPaidState($state, bool $orRefunded = false): bool
     {
         return in_array(self::stateFromPayment($state), self::getPaidStates($orRefunded), true);
     }
@@ -177,7 +177,7 @@ final class PaymentStates
      *
      * @return array
      */
-    static public function getCanceledStates(): array
+    public static function getCanceledStates(): array
     {
         return [
             self::STATE_CANCELED,
@@ -193,7 +193,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function isCanceledState($state): bool
+    public static function isCanceledState($state): bool
     {
         return in_array(self::stateFromPayment($state), self::getCanceledStates(), true);
     }
@@ -205,7 +205,7 @@ final class PaymentStates
      *
      * @return string
      */
-    static private function stateFromPayment($stateOrPayment): string
+    private static function stateFromPayment($stateOrPayment): string
     {
         if ($stateOrPayment instanceof PaymentInterface) {
             $stateOrPayment = $stateOrPayment->getState();
@@ -226,7 +226,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function hasChangedToPaid(array $cs): bool
+    public static function hasChangedToPaid(array $cs): bool
     {
         return self::assertValidChangeSet($cs)
             && !self::isPaidState($cs[0])
@@ -241,7 +241,7 @@ final class PaymentStates
      *
      * @return bool
      */
-    static public function hasChangedFromPaid(array $cs): bool
+    public static function hasChangedFromPaid(array $cs): bool
     {
         return self::assertValidChangeSet($cs)
             && self::isPaidState($cs[0])
@@ -257,7 +257,7 @@ final class PaymentStates
      *
      * @throws InvalidArgumentException
      */
-    static private function assertValidChangeSet(array $cs): bool
+    private static function assertValidChangeSet(array $cs): bool
     {
         if (
             array_key_exists(0, $cs)

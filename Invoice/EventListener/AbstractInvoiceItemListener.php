@@ -17,6 +17,8 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractInvoiceItemListener
 {
+    use \Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
+
     /**
      * @var PersistenceHelperInterface
      */
@@ -88,6 +90,8 @@ abstract class AbstractInvoiceItemListener
     {
         $item = $this->getInvoiceItemFromEvent($event);
 
+        $this->preventForbiddenChange($item);
+
         if (!$this->persistenceHelper->isChanged($item, ['unit', 'quantity', 'taxGroup'])) {
             return;
         }
@@ -111,6 +115,12 @@ abstract class AbstractInvoiceItemListener
         // Get invoice from change set if null
         if (null === $invoice = $item->getInvoice()) {
             $invoice = $this->persistenceHelper->getChangeSet($item, 'invoice')[0];
+        }
+
+        if ($this->lockingHelper->isLocked($invoice)) {
+            throw new Exception\IllegalOperationException(
+                "This invoice is locked."
+            );
         }
 
         $this->scheduleInvoiceContentChangeEvent($invoice);
@@ -175,6 +185,23 @@ abstract class AbstractInvoiceItemListener
             ->setTax($tax)
             ->setTaxRates($taxRates)
             ->setTotal($total);
+    }
+
+    /**
+     * Prevents some of the invoice item's fields to change.
+     *
+     * @param Model\InvoiceItemInterface $item
+     *
+     * @throws Exception\IllegalOperationException
+     */
+    protected function preventForbiddenChange(Model\InvoiceItemInterface $item)
+    {
+        $cs = $this->persistenceHelper->getChangeSet($item);
+        if (!empty($cs) && $this->lockingHelper->isLocked($item->getInvoice())) {
+            throw new Exception\IllegalOperationException(
+                "This invoice is locked."
+            );
+        }
     }
 
     /**

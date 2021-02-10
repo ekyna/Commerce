@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
+use Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
@@ -15,6 +16,8 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractInvoiceLineListener
 {
+    use LockingHelperAwareTrait;
+
     /**
      * @var PersistenceHelperInterface
      */
@@ -88,12 +91,18 @@ abstract class AbstractInvoiceLineListener
     {
         $line = $this->getInvoiceLineFromEvent($event);
 
-        $this->stockUnitAssigner->detachInvoiceLine($line);
-
         // Get invoice from change set if null
         if (null === $invoice = $line->getInvoice()) {
             $invoice = $this->persistenceHelper->getChangeSet($line, 'invoice')[0];
         }
+
+        if ($this->lockingHelper->isLocked($invoice)) {
+            throw new Exception\IllegalOperationException(
+                "This invoice is locked."
+            );
+        }
+
+        $this->stockUnitAssigner->detachInvoiceLine($line);
 
         $this->scheduleInvoiceContentChangeEvent($invoice);
     }
@@ -105,10 +114,19 @@ abstract class AbstractInvoiceLineListener
      */
     protected function preventForbiddenChange(Model\InvoiceLineInterface $line)
     {
+        $cs = $this->persistenceHelper->getChangeSet($line);
+        if (!empty($cs) && $this->lockingHelper->isLocked($line->getInvoice())) {
+            throw new Exception\IllegalOperationException(
+                "This invoice is locked."
+            );
+        }
+
         if ($this->persistenceHelper->isChanged($line, 'type')) {
-            list($old, $new) = $this->persistenceHelper->getChangeSet($line, 'type');
+            [$old, $new] = $this->persistenceHelper->getChangeSet($line, 'type');
             if ($old !== $new) {
-                throw new Exception\RuntimeException("Changing the invoice line's type is not supported.");
+                throw new Exception\IllegalOperationException(
+                    "Changing the invoice line's type is not supported."
+                );
             }
         }
     }

@@ -16,7 +16,7 @@ class OrderPaymentEventSubscriber extends OrderPaymentListener implements EventS
     /**
      * @inheritdoc
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             OrderPaymentEvents::INSERT     => ['onInsert', 0],

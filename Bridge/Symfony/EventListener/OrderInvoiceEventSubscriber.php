@@ -16,7 +16,7 @@ class OrderInvoiceEventSubscriber extends OrderInvoiceListener implements EventS
     /**
      * @inheritdoc
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             OrderInvoiceEvents::INSERT         => ['onInsert', 0],

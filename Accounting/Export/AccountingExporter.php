@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -72,6 +73,11 @@ class AccountingExporter implements AccountingExporterInterface
      * @var TaxResolverInterface
      */
     protected $taxResolver;
+
+    /**
+     * @var AccountingFilterInterface[]
+     */
+    protected $filters;
 
     /**
      * @var array
@@ -137,12 +143,25 @@ class AccountingExporter implements AccountingExporterInterface
         $this->invoicePaymentResolver = $invoicePaymentResolver;
         $this->taxResolver = $taxResolver;
 
+        $this->filters = [];
         $this->currency = $this->currencyConverter->getDefaultCurrency();
 
         $this->config = array_replace([
             'default_customer' => '10000000',
             'total_as_payment' => false,
         ], $config);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addFilter(AccountingFilterInterface $filter): void
+    {
+        if (in_array($filter, $this->filters, true)) {
+            throw new LogicException("Filter is already registered.");
+        }
+
+        $this->filters[] = $filter;
     }
 
     /**
@@ -214,6 +233,10 @@ class AccountingExporter implements AccountingExporterInterface
         $invoices = $this->invoiceRepository->findByMonth($month);
 
         while (false !== $this->invoice = current($invoices)) {
+            if (!$this->filterInvoice($this->invoice)) {
+                continue;
+            }
+
             if ($this->invoice->getCurrency() !== $this->currency) {
                 $this->invoice = clone $this->invoice;
                 $this->invoice->setCurrency($this->currency);
@@ -252,6 +275,10 @@ class AccountingExporter implements AccountingExporterInterface
         $payments = $this->paymentRepository->findByMonth($month, PaymentStates::getPaidStates(true));
 
         foreach ($payments as $payment) {
+            if (!$this->filterPayment($payment)) {
+                continue;
+            }
+
             $method = $payment->getMethod();
             if ($method->isOutstanding()) {
                 continue;
@@ -259,16 +286,13 @@ class AccountingExporter implements AccountingExporterInterface
 
             $this->writer->configure($payment);
 
-            $account = $this->getPaymentAccountNumber($method, $payment->getNumber());
+            $sale = $payment->getSale();
 
-            if ($customer = $payment->getSale()->getCustomer()) {
-                $number = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
-            } else {
-                $number = '10000000';
-            }
+            $account = $this->getPaymentAccountNumber($method, $payment->getNumber());
+            $number = $this->getCustomerAccountNumber($sale->getCustomer());
 
             $amount = (string)$this->round($payment->getRealAmount());
-            $date = $payment->getSale()->getCreatedAt();
+            $date = $sale->getCreatedAt();
 
             if ($payment->isRefund()) {
                 // Payment debit
@@ -349,12 +373,7 @@ class AccountingExporter implements AccountingExporterInterface
             return;
         }
 
-        if ($customer = $sale->getCustomer()) {
-            $account = '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
-        } else {
-            $account = $this->config['default_customer'];
-        }
-
+        $account = $this->getCustomerAccountNumber($sale->getCustomer());
         $amount = $this->round($this->invoice->getGrandTotal());
 
         if ($this->invoice->isCredit()) {
@@ -666,6 +685,22 @@ class AccountingExporter implements AccountingExporterInterface
     }
 
     /**
+     * Returns the customer account number.
+     *
+     * @param CustomerInterface|null $customer
+     *
+     * @return string
+     */
+    protected function getCustomerAccountNumber(CustomerInterface $customer = null): string
+    {
+        if ($customer) {
+            return '1' . str_pad($customer->getId(), '7', '0', STR_PAD_LEFT);
+        }
+
+        return $this->config['default_customer'];
+    }
+
+    /**
      * Return the goods account number for the given tax rule and tax rate.
      *
      * @param TaxRuleInterface $rule
@@ -895,5 +930,41 @@ class AccountingExporter implements AccountingExporterInterface
             $rate,
             $origin
         ));
+    }
+
+    /**
+     * Filters the invoice.
+     *
+     * @param InvoiceInterface $invoice
+     *
+     * @return bool Whether the invoice should be exported.
+     */
+    private function filterInvoice(InvoiceInterface $invoice): bool
+    {
+        foreach ($this->filters as $filter) {
+            if (!$filter->filterInvoice($invoice)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Filters the payment.
+     *
+     * @param PaymentInterface $payment
+     *
+     * @return bool Whether the payment should be exported.
+     */
+    private function filterPayment(PaymentInterface $payment): bool
+    {
+        foreach ($this->filters as $filter) {
+            if (!$filter->filterPayment($payment)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

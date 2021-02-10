@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Payment\Model;
 
-use DateTime;
 use Ekyna\Component\Commerce\Bridge\Payum\Request as Commerce;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Payum\Core\Request as Payum;
@@ -14,13 +13,13 @@ use Payum\Core\Request as Payum;
  */
 final class PaymentTransitions
 {
-    const TRANSITION_CANCEL    = 'cancel';
-    const TRANSITION_HANG      = 'hang';
-    const TRANSITION_AUTHORIZE = 'authorize';
-    const TRANSITION_ACCEPT    = 'accept';
-    const TRANSITION_PAYOUT    = 'payout';
-    const TRANSITION_REJECT    = 'reject';
-    const TRANSITION_REFUND    = 'refund';
+    public const TRANSITION_CANCEL    = 'cancel';
+    public const TRANSITION_HANG      = 'hang';
+    public const TRANSITION_AUTHORIZE = 'authorize';
+    public const TRANSITION_ACCEPT    = 'accept';
+    public const TRANSITION_PAYOUT    = 'payout';
+    public const TRANSITION_REJECT    = 'reject';
+    public const TRANSITION_REFUND    = 'refund';
 
 
     /**
@@ -30,7 +29,7 @@ final class PaymentTransitions
      *
      * @return string
      */
-    static public function getRequestClass(string $transition): string
+    public static function getRequestClass(string $transition): string
     {
         switch ($transition) {
             case self::TRANSITION_CANCEL:
@@ -57,67 +56,71 @@ final class PaymentTransitions
      *
      * @param PaymentInterface $payment
      * @param bool             $admin
+     * @param bool             $locked
      *
-     * @return array
+     * @return string[]
      *
      * @see \Ekyna\Bundle\CommerceBundle\Service\Payment\PaymentHelper::getTransitions
      */
-    static function getAvailableTransitions(PaymentInterface $payment, bool $admin = false): array
-    {
-        $transitions = [];
-
+    public static function getAvailableTransitions(
+        PaymentInterface $payment,
+        bool $admin = false,
+        bool $locked = false
+    ): array {
         $method = $payment->getMethod();
-        $state  = $payment->getState();
+        $state = $payment->getState();
 
+        // Customer
         if (!$admin) {
             if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
-                $transitions[] = static::TRANSITION_CANCEL;
+                return [self::TRANSITION_CANCEL];
             }
 
-            return $transitions;
+            return [];
         }
 
+        // Administrator
+        $transitions = [];
+
         if ($method->isManual()) {
-            $transitions = [
-                PaymentStates::STATE_CANCELED   => static::TRANSITION_CANCEL,
-                PaymentStates::STATE_PENDING    => static::TRANSITION_HANG,
-                PaymentStates::STATE_AUTHORIZED => static::TRANSITION_AUTHORIZE,
-                PaymentStates::STATE_PAYEDOUT   => static::TRANSITION_PAYOUT,
-                PaymentStates::STATE_CAPTURED   => static::TRANSITION_ACCEPT,
-                PaymentStates::STATE_FAILED     => static::TRANSITION_REJECT,
-            ];
+            if ($locked) {
+                $transitions = [
+                    PaymentStates::STATE_AUTHORIZED => self::TRANSITION_AUTHORIZE,
+                    PaymentStates::STATE_PAYEDOUT   => self::TRANSITION_PAYOUT,
+                    PaymentStates::STATE_CAPTURED   => self::TRANSITION_ACCEPT,
+                ];
+            } else {
+                $transitions = [
+                    PaymentStates::STATE_CANCELED   => self::TRANSITION_CANCEL,
+                    PaymentStates::STATE_PENDING    => self::TRANSITION_HANG,
+                    PaymentStates::STATE_AUTHORIZED => self::TRANSITION_AUTHORIZE,
+                    PaymentStates::STATE_PAYEDOUT   => self::TRANSITION_PAYOUT,
+                    PaymentStates::STATE_CAPTURED   => self::TRANSITION_ACCEPT,
+                    PaymentStates::STATE_FAILED     => self::TRANSITION_REJECT,
+                ];
+            }
             unset($transitions[$state]);
 
             return $transitions;
         }
 
-        if ($method->isCredit()) {
-            if ($state !== PaymentStates::STATE_CANCELED) {
-                $transitions[] = static::TRANSITION_CANCEL;
+        if ($method->isCredit() || $method->isOutstanding()) {
+            if (!$locked && ($state !== PaymentStates::STATE_CANCELED)) {
+                $transitions[] = self::TRANSITION_CANCEL;
             }
             if ($state !== PaymentStates::STATE_CAPTURED) {
-                $transitions[] = static::TRANSITION_ACCEPT;
+                $transitions[] = self::TRANSITION_ACCEPT;
             }
 
             return $transitions;
         }
 
-        if ($method->isOutstanding()) {
-            if ($state !== PaymentStates::STATE_CANCELED) {
-                $transitions[] = static::TRANSITION_CANCEL;
-            }
-            if ($state !== PaymentStates::STATE_CAPTURED) {
-                $transitions[] = static::TRANSITION_ACCEPT;
-            }
-
-            return $transitions;
+        if (!$locked && !$payment->isRefund() && ($state === PaymentStates::STATE_CAPTURED)) {
+            $transitions[] = self::TRANSITION_REFUND;
         }
 
-        if (!$payment->isRefund() && ($state === PaymentStates::STATE_CAPTURED)) {
-            $transitions[] = static::TRANSITION_REFUND;
-        }
         if (in_array($state, [PaymentStates::STATE_NEW, PaymentStates::STATE_PENDING], true)) {
-            $transitions[] = static::TRANSITION_CANCEL;
+            $transitions[] = self::TRANSITION_CANCEL;
         }
 
         return $transitions;

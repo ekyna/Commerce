@@ -2,6 +2,8 @@
 
 namespace Ekyna\Component\Commerce\Accounting\Export;
 
+use Ekyna\Component\Commerce\Exception\LogicException;
+
 /**
  * Interface AccountingExporterInterface
  * @package Ekyna\Component\Commerce\Accounting\Export
@@ -9,6 +11,15 @@ namespace Ekyna\Component\Commerce\Accounting\Export;
  */
 interface AccountingExporterInterface
 {
+    /**
+     * Adds the given filter.
+     *
+     * @param AccountingFilterInterface $filter
+     *
+     * @throws LogicException
+     */
+    public function addFilter(AccountingFilterInterface $filter): void;
+
     /**
      * Exports invoices and payments for the given date.
      *

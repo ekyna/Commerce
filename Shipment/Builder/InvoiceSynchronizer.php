@@ -18,6 +18,8 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 {
+    use Common\LockingHelperAwareTrait;
+
     /**
      * @var InvoiceBuilderInterface
      */
@@ -71,7 +73,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         $invoice = $shipment->getInvoice();
 
         // Abort if invoice has an id.
-        if ($invoice && $invoice->getId() && !$force) {
+        if ($invoice && $invoice->getId() && !($force && !$this->lockingHelper->isLocked($invoice))) {
             return;
         }
 
