@@ -4,7 +4,6 @@ namespace Ekyna\Component\Commerce\Common\Locking;
 
 use DateTime;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 use Throwable;
 
@@ -161,9 +160,6 @@ class LockChecker
             return $resolver->resolve($resource);
         }
 
-        throw new RuntimeException(sprintf(
-            "None of the registered lock resolvers supports resource of class'%s'.",
-            get_class($resource)
-        ));
+        return null;
     }
 }
