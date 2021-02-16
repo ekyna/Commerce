@@ -19,7 +19,15 @@ class OrderPaymentLockResolver implements LockResolverInterface
      */
     public function support(ResourceInterface $resource): bool
     {
-        return $resource instanceof OrderPaymentInterface;
+        if (!$resource instanceof OrderPaymentInterface) {
+            return false;
+        }
+
+        if ($resource->getMethod()->isOutstanding()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
