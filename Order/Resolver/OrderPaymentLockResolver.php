@@ -7,6 +7,7 @@ use Ekyna\Component\Commerce\Common\Locking\LockResolverInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
  * Class OrderPaymentLockResolver
@@ -15,6 +16,21 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 class OrderPaymentLockResolver implements LockResolverInterface
 {
+    /**
+     * @var PersistenceHelperInterface
+     */
+    private $persistenceHelper;
+
+    /**
+     * Constructor.
+     *
+     * @param PersistenceHelperInterface $persistenceHelper
+     */
+    public function __construct(PersistenceHelperInterface $persistenceHelper)
+    {
+        $this->persistenceHelper = $persistenceHelper;
+    }
+
     /**
      * @inheritDoc
      */
@@ -30,7 +46,19 @@ class OrderPaymentLockResolver implements LockResolverInterface
             return false;
         }
 
-        if ($method->isFactor() && (PaymentStates::STATE_AUTHORIZED === $resource->getState())) {
+        if (!$method->isFactor()) {
+            return true;
+        }
+
+        $stateCs = $this->persistenceHelper->getChangeSet($resource, 'state');
+
+        $state = !empty($stateCs) ? $stateCs[0] : $resource->getState();
+
+        if (PaymentStates::STATE_AUTHORIZED === $state) {
+            return false;
+        }
+
+        if (!PaymentStates::isPaidState($state)) {
             return false;
         }
 
