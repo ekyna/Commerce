@@ -20,6 +20,9 @@ class PaymentMethod extends BaseMethod
     /** @var bool */
     private $outstanding;
 
+    /** @var bool */
+    private $factor;
+
     /**
      * Returns the credit.
      *
@@ -88,6 +91,30 @@ class PaymentMethod extends BaseMethod
     public function setOutstanding(bool $outstanding): PaymentMethod
     {
         $this->outstanding = $outstanding;
+
+        return $this;
+    }
+
+    /**
+     * Returns the factor.
+     *
+     * @return bool
+     */
+    public function isFactor(): bool
+    {
+        return $this->factor;
+    }
+
+    /**
+     * Sets the factor.
+     *
+     * @param bool $factor
+     *
+     * @return PaymentMethod
+     */
+    public function setFactor(bool $factor): PaymentMethod
+    {
+        $this->factor = $factor;
 
         return $this;
     }

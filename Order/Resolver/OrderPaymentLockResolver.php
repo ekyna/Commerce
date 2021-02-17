@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Order\Resolver;
 use DateTime;
 use Ekyna\Component\Commerce\Common\Locking\LockResolverInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
@@ -23,7 +24,13 @@ class OrderPaymentLockResolver implements LockResolverInterface
             return false;
         }
 
-        if ($resource->getMethod()->isOutstanding()) {
+        $method = $resource->getMethod();
+
+        if ($method->isOutstanding()) {
+            return false;
+        }
+
+        if ($method->isFactor() && (PaymentStates::STATE_AUTHORIZED === $resource->getState())) {
             return false;
         }
 

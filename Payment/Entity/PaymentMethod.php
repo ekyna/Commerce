@@ -164,6 +164,14 @@ class PaymentMethod extends AbstractMethod implements PaymentMethodInterface
     /**
      * @inheritDoc
      */
+    public function isFactor(): bool
+    {
+        return false; // TODO Method should be abstract
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function hasMention(PaymentMethodMention $mention): bool
     {
         return $this->mentions->contains($mention);

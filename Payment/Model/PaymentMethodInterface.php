@@ -93,25 +93,32 @@ interface PaymentMethodInterface extends MethodInterface, MentionSubjectInterfac
     public function setPrivate(bool $private): PaymentMethodInterface;
 
     /**
-     * Returns whether or not the method requires manual management of payments state.
+     * Returns whether the method requires manual management of payments state.
      *
      * @return bool
      */
     public function isManual(): bool;
 
     /**
-     * Returns whether or not the method results in an customer credit balance payment.
+     * Returns whether the method results in an customer credit balance payment.
      *
      * @return bool
      */
     public function isCredit(): bool;
 
     /**
-     * Returns whether or not the method results in an customer outstanding balance payment.
+     * Returns whether the method results in an customer outstanding balance payment.
      *
      * @return bool
      */
     public function isOutstanding(): bool;
+
+    /**
+     * Returns whether the method manage factor payments.
+     *
+     * @return bool
+     */
+    public function isFactor(): bool;
 
     /**
      * Returns whether this method has the given mention.
