@@ -10,6 +10,12 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model as IM;
 use Ekyna\Component\Commerce\Payment\Model as PM;
 
+use function array_filter;
+use function array_keys;
+use function array_map;
+use function array_sum;
+use function spl_object_id;
+
 /**
  * Class InvoicePaymentResolver
  * @package Ekyna\Component\Commerce\Invoice\Resolver
@@ -51,7 +57,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     public function __construct(CurrencyConverterInterface $currencyConverter)
     {
         $this->currencyConverter = $currencyConverter;
-        $this->currency          = $currencyConverter->getDefaultCurrency();
+        $this->currency = $currencyConverter->getDefaultCurrency();
 
         $this->clear();
     }
@@ -81,7 +87,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             return $this->cache[$id];
         }
 
-        return array_filter($this->cache[$id], function(IM\InvoicePayment $p) {
+        return array_filter($this->cache[$id], function (IM\InvoicePayment $p) {
             return null !== $p->getPayment();
         });
     }
@@ -140,9 +146,9 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
         }
 
         // First pass: payment <-> invoices combination exact match lookup
-        foreach ($this->payments as $p => &$payment) {
+        foreach ($this->payments as $p => $payment) {
             $invoices = array_filter($this->invoices, function ($i) use ($payment) {
-                return $payment['refund'] === $i['credit'];
+                return ($payment['refund'] === $i['credit']) && 0 < $i['total'];
             });
 
             $sum = array_sum(array_map(function ($i) {
@@ -179,7 +185,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             }
 
             $payments = array_filter($this->payments, function ($p) use ($invoice) {
-                return $invoice['credit'] === $p['refund'];
+                return ($invoice['credit'] === $p['refund']) && 0 < $p['amount'];
             });
 
             $sum = array_sum(array_map(function ($i) {
@@ -218,13 +224,13 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             foreach (array_keys($this->payments) as $p) {
                 $this->buildPaymentsResults([$i], [$p]);
 
-                if (!isset($this->invoices[$i])) {
+                if (0 >= $invoice['total']) {
                     break;
                 }
             }
         }
 
-        // Third pass: cancel invoices with credits (and vice versa)
+        // Third pass: cancel invoices with credits (and vice versa) combination exact match lookup
         foreach ($this->invoices as $i => &$invoice) {
             // Skip paid invoices
             if (0 >= $invoice['total']) {
@@ -234,7 +240,8 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             // Filter others invoices, credits for invoice (and vice versa)
             $others = array_filter($this->invoices, function ($i) use ($invoice) {
                 return $invoice['invoice'] !== $i['invoice']
-                    && $invoice['credit'] !== $i['credit'];
+                    && $invoice['credit'] !== $i['credit']
+                    && 0 < $i['total'];
             });
 
             $sum = array_sum(array_map(function ($i) {
@@ -270,14 +277,78 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 continue;
             }
 
-            // Filter others invoices, credits for invoice (and vice versa)
+            // Filter others invoices, credits for invoices (and vice versa)
             $others = array_filter($this->invoices, function ($i) use ($invoice) {
                 return $invoice['invoice'] !== $i['invoice']
-                    && $invoice['credit'] !== $i['credit'];
+                    && $invoice['credit'] !== $i['credit']
+                    && 0 < $i['total'];
             });
 
-            foreach (array_keys($others) as $p) {
-                $this->buildInvoiceResults([$i], [$p]);
+            foreach (array_keys($others) as $o) {
+                $this->buildInvoiceResults([$i], [$o]);
+
+                if (0 >= $invoice['total']) {
+                    break;
+                }
+            }
+        }
+
+        if (empty($this->payments)) {
+            return;
+        }
+
+        // Purge remaining payments/refunds
+        foreach ($this->payments as $k1 => &$p1) {
+            foreach ($this->payments as $k2 => &$p2) {
+                // Skip same payments
+                if ($k1 === $k2) {
+                    continue;
+                }
+
+                // Use payment with refund (and vice versa)
+                if (!($p1['refund'] xor $p2['refund'])) {
+                    continue;
+                }
+
+                $c = Money::compare($p1['real_amount'], $p2['real_amount'], $this->currency);
+
+                if (0 === $c) {
+                    unset($this->payments[$k2]);
+                    unset($this->payments[$k1]);
+                    continue 2;
+                }
+
+                if (1 === $c) {
+                    $p1['amount'] -= $p2['amount'];
+                    $p1['real_amount'] -= $p2['real_amount'];
+                    unset($this->payments[$k2]);
+                    continue;
+                }
+
+                $p2['amount'] -= $p1['amount'];
+                $p2['real_amount'] -= $p1['real_amount'];
+                unset($this->payments[$k1]);
+                continue 2;
+            }
+        }
+
+        if (empty($this->payments)) {
+            return;
+        }
+
+        // Fifth pass: fills invoices with refunds
+        foreach ($this->invoices as $i => &$invoice) {
+            if ($invoice['credit']) {
+                continue;
+            }
+
+            // Filter payments : refunds for invoices and payments for credits
+            $refunds = array_filter($this->payments, function ($p) use ($invoice) {
+                return $p['refund'];
+            });
+
+            foreach (array_keys($refunds) as $r) {
+                $this->buildRefundResults([$i], [$r]);
 
                 if (!isset($this->invoices[$i])) {
                     break;
@@ -298,7 +369,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             $oid = spl_object_id($this->invoices[$i]['invoice']);
 
             foreach ($ps as $p) {
-                if (!isset($this->invoices[$i])) {
+                if (0 >= $this->invoices[$i]['total']) {
                     break;
                 }
 
@@ -314,30 +385,27 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 // TODO What if invoice and payment currencies differs ?
                 $c = Money::compare($this->invoices[$i]['total'], $this->payments[$p]['amount'], $this->currency);
 
-                if (0 === $c) { // Equal
-                    $amount = $this->payments[$p]['amount'];
-                    $real = $this->payments[$p]['real_amount'];
-                } elseif (1 === $c) { // invoice > payment
-                    $amount = $this->payments[$p]['amount'];
-                    $real = $this->payments[$p]['real_amount'];
-                } else { // payment > invoice
+                if (0 > $c) { // payment > invoice
                     $amount = $this->invoices[$i]['total'];
                     $real = $this->invoices[$i]['real_total'];
+                } else { // invoice >= payment
+                    $amount = $this->payments[$p]['amount'];
+                    $real = $this->payments[$p]['real_amount'];
                 }
 
                 $result->setAmount($amount);
                 $result->setRealAmount($real);
 
-                $this->invoices[$i]['total']       -= $amount;
-                $this->invoices[$i]['real_total']  -= $real;
-                $this->payments[$p]['amount']      -= $amount;
+                $this->invoices[$i]['total'] -= $amount;
+                $this->invoices[$i]['real_total'] -= $real;
+                $this->payments[$p]['amount'] -= $amount;
                 $this->payments[$p]['real_amount'] -= $real;
 
                 $this->cache[$oid][] = $result;
 
-                if (0 === Money::compare(0, $this->invoices[$i]['total'], $this->currency)) {
+                /*if (0 === Money::compare(0, $this->invoices[$i]['total'], $this->currency)) {
                     unset($this->invoices[$i]);
-                }
+                }*/
                 if (0 === Money::compare(0, $this->payments[$p]['amount'], $this->currency)) {
                     unset($this->payments[$p]);
                 }
@@ -345,13 +413,20 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
         }
     }
 
+    /**
+     * @param array $is The invoices keys
+     * @param array $os The other invoices keys
+     */
     private function buildInvoiceResults(array $is, array $os): void
     {
         foreach ($is as $i) {
             $iOid = spl_object_id($this->invoices[$i]['invoice']);
 
             foreach ($os as $o) {
-                if (!isset($this->invoices[$i])) {
+                if (0 >= $this->invoices[$o]['total']) {
+                    continue;
+                }
+                if (0 >= $this->invoices[$i]['total']) {
                     break;
                 }
 
@@ -364,15 +439,12 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
 
                 $c = Money::compare($this->invoices[$i]['total'], $this->invoices[$o]['total'], $this->currency);
 
-                if (0 === $c) { // Equal
-                    $total = $this->invoices[$o]['total'];
-                    $real = $this->invoices[$o]['real_total'];
-                } elseif (1 === $c) { // invoice > other
-                    $total = $this->invoices[$o]['total'];
-                    $real = $this->invoices[$o]['real_total'];
-                } else { // other > invoice
+                if (0 > $c) { // other > invoice
                     $total = $this->invoices[$i]['total'];
                     $real = $this->invoices[$i]['real_total'];
+                } else { // invoice >= other
+                    $total = $this->invoices[$o]['total'];
+                    $real = $this->invoices[$o]['real_total'];
                 }
 
                 $iResult = new IM\InvoicePayment();
@@ -385,20 +457,70 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 $oResult->setAmount($total);
                 $oResult->setRealAmount($real);
 
-                $this->invoices[$o]['total']      -= $total;
+                $this->invoices[$o]['total'] -= $total;
                 $this->invoices[$o]['real_total'] -= $real;
-                $this->invoices[$i]['total']      -= $total;
+                $this->invoices[$i]['total'] -= $total;
                 $this->invoices[$i]['real_total'] -= $real;
 
-                if (0 === Money::compare(0, $this->invoices[$i]['total'], $this->currency)) {
+                /*if (0 === Money::compare(0, $this->invoices[$i]['total'], $this->currency)) {
                     unset($this->invoices[$i]);
                 }
                 if (0 === Money::compare(0, $this->invoices[$o]['total'], $this->currency)) {
                     unset($this->invoices[$o]);
-                }
+                }*/
 
                 $this->cache[$iOid][] = $iResult;
                 $this->cache[$oOid][] = $oResult;
+            }
+        }
+    }
+
+    /**
+     * @param array $is The invoices keys
+     * @param array $ps The payments keys
+     */
+    private function buildRefundResults(array $is, array $ps)
+    {
+        foreach ($is as $i) {
+            $oid = spl_object_id($this->invoices[$i]['invoice']);
+
+            foreach ($ps as $p) {
+                if (!$this->payments[$p]['refund']) {
+                    continue;
+                }
+
+                $result = new IM\InvoicePayment();
+                $result->setPayment($this->payments[$p]['payment']);
+
+                /** @var IM\InvoiceInterface $invoice */
+                $invoice = $this->invoices[$i]['invoice'];
+                $remaining = $invoice->getGrandTotal() - $this->invoices[$i]['total'];
+
+                // TODO sale currency
+                // TODO What if invoice and payment currencies differs ?
+                $c = Money::compare($remaining, $this->payments[$p]['amount'], $this->currency);
+
+                if (0 > $c) { // payment > remaining
+                    $amount = $remaining;
+                    $real = $invoice->getRealGrandTotal() - $this->invoices[$i]['real_total'];
+                } else { // remaining >= payment
+                    $amount = $this->payments[$p]['amount'];
+                    $real = $this->payments[$p]['real_amount'];
+                }
+
+                $result->setAmount(-$amount);
+                $result->setRealAmount(-$real);
+
+                $this->invoices[$i]['total'] += $amount;
+                $this->invoices[$i]['real_total'] += $real;
+                $this->payments[$p]['amount'] -= $amount;
+                $this->payments[$p]['real_amount'] -= $real;
+
+                $this->cache[$oid][] = $result;
+
+                if (0 === Money::compare(0, $this->payments[$p]['amount'], $this->currency)) {
+                    unset($this->payments[$p]);
+                }
             }
         }
     }
@@ -467,10 +589,10 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 throw new RuntimeException("Unexpected payment currency.");
             }
 
-            $rate   = $this->currencyConverter->getSubjectExchangeRate($subject, $pc, $sc);
+            $rate = $this->currencyConverter->getSubjectExchangeRate($subject, $pc, $sc);
             $amount = $this->currencyConverter->convertWithRate($payment->getAmount(), $rate, $sc);
 
-            $rate       = $this->currencyConverter->getSubjectExchangeRate($subject, $pc, $this->currency);
+            $rate = $this->currencyConverter->getSubjectExchangeRate($subject, $pc, $this->currency);
             $realAmount = $this->currencyConverter->convertWithRate($payment->getAmount(), $rate, $this->currency);
 
             $this->payments[] = [

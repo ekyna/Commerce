@@ -8,12 +8,12 @@ use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
+use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -393,14 +393,14 @@ class AccountingExporter implements AccountingExporterInterface
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
-        /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[] $discounts */
-        $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+        $discounts = $this->getSaleDiscounts();
 
         // Gather amounts by tax rates
         $amounts = [];
         foreach ($this->invoice->getLinesByType(DocumentLineTypes::TYPE_GOOD) as $line) {
-            // Skip private lines
-            if ($line->getSaleItem()->isPrivate()) {
+            $item = $line->getSaleItem();
+            // Skip private lines if document has one of its public parent.
+            if ($item->isPrivate() && DocumentUtil::hasPublicParent($line->getDocument(), $item)) {
                 continue;
             }
 
@@ -457,14 +457,14 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Writes the invoice's goods items.
+     *
+     * Sale's adjustments do not apply to invoices items (custom lines).
      */
     protected function writeInvoiceItemsLines(): void
     {
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
-        /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[] $discounts */
-        $discounts = $sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)->toArray();
 
         // Gather amounts by tax rates
         $amounts = [];
@@ -490,19 +490,6 @@ class AccountingExporter implements AccountingExporterInterface
         // Writes each tax rates's amount
         foreach ($amounts as $rate => $amount) {
             $amount = $this->round($amount);
-
-            // Apply sale's discounts
-            if (!empty($discounts)) {
-                $base = $amount;
-                foreach ($discounts as $adjustment) {
-                    if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
-                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
-                    } else {
-                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
-                        $amount -= $this->round($base * $adjustment->getAmount() / $gross->getBase());
-                    }
-                }
-            }
 
             if (0 === $this->compare($amount, 0)) {
                 continue; // next tax rate
@@ -682,6 +669,21 @@ class AccountingExporter implements AccountingExporterInterface
     protected function compare(float $a, float $b): int
     {
         return Money::compare($a, $b, $this->currency);
+    }
+
+    /**
+     * Returns the sale discounts included in the current invoice.
+     *
+     * @return \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[]
+     */
+    protected function getSaleDiscounts(): array
+    {
+        $adjustments = [];
+        foreach ($this->invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $line) {
+            $adjustments[] = $line->getSaleAdjustment();
+        }
+
+        return $adjustments;
     }
 
     /**

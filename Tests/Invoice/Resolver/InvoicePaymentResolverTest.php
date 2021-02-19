@@ -164,6 +164,34 @@ class InvoicePaymentResolverTest extends TestCase
             0 => [[200, 200, 0], [300, 300, 0, true]], // #14
         ]);
 
+
+        $this->buildData([
+            'invoices' => [
+                ['total' => 100, 'date' => '-3 days'],
+            ],
+            'payments' => [
+                ['amount' => 100, 'date' => '-2 days'],
+                ['amount' => 100, 'date' => '-2 days', 'refund' => true],
+            ],
+        ]);
+        yield from $this->buildResult([
+            0 => [[100, 100, 0], [-100, -100, 1]], // #16
+        ]);
+
+
+        $this->buildData([
+            'invoices' => [
+                ['total' => 100, 'date' => '-3 days'],
+            ],
+            'payments' => [
+                ['amount' => 150, 'date' => '-2 days'],
+                ['amount' => 50, 'date' => '-2 days', 'refund' => true],
+            ],
+        ]);
+        yield from $this->buildResult([
+            0 => [[100, 100, 0]], // #16
+        ]);
+
         // --- USD ---
 
         $this->buildData([
