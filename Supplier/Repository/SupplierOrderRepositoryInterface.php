@@ -15,7 +15,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\ResourceRepositoryInterface;
 interface SupplierOrderRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
-     * Finds the supplier orders with state 'new' by supplier.
+     * Finds the supplier orders with state 'new' or 'ordered' by supplier.
      *
      * @param Model\SupplierInterface $supplier
      *

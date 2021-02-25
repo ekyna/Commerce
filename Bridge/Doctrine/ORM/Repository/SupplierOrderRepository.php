@@ -111,9 +111,10 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
 
         return $this->findNewBySupplierQuery = $qb
             ->andWhere($qb->expr()->eq($as . '.supplier', ':supplier'))
-            ->andWhere($qb->expr()->eq($as . '.state', ':state'))
+            ->andWhere($qb->expr()->in($as . '.state', ':states'))
+            ->addOrderBy($as . '.createdAt', 'DESC')
             ->getQuery()
-            ->setParameter('state', Model\SupplierOrderStates::STATE_NEW);
+            ->setParameter('states', [Model\SupplierOrderStates::STATE_NEW, Model\SupplierOrderStates::STATE_ORDERED]);
     }
 
     /**
