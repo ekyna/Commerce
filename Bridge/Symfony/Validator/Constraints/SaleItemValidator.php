@@ -133,7 +133,7 @@ class SaleItemValidator extends ConstraintValidator
         }
 
         $min = $this->invoiceCalculator->calculateInvoicedQuantity($item)
-             - $this->invoiceCalculator->calculateCreditedQuantity($item, null, false);
+             - $this->invoiceCalculator->calculateCreditedQuantity($item);
 
         // TODO Use packaging format
         if (1 === bccomp($min, 0, 3) && 1 === bccomp($min, $item->getTotalQuantity(), 3)) {
