@@ -343,12 +343,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         // Skip compound with only public children
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
-                'total'    => max(
-                    $item->getTotalQuantity(),
-                    $this->invoiceCalculator->calculateInvoicedQuantity($item)
-                    - $this->invoiceCalculator->calculateCreditedQuantity($item, null, true)
-                ),
-                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item, null, false),
+                'sold'     => $this->invoiceCalculator->calculateSoldQuantity($item),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
             ];

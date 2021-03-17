@@ -261,10 +261,10 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
 
         $max = max(
             $base,
-            $this->calculateInvoicedQuantity($subject) - $this->calculateCreditedQuantity($subject, null, false)
+            $this->calculateInvoicedQuantity($subject) - $this->calculateCreditedQuantity($subject, null, true)
         );
 
-        return $max - $this->calculateCreditedQuantity($subject, null, true);
+        return $max - $this->calculateCreditedQuantity($subject, null, false);
     }
 
     /**
@@ -365,6 +365,10 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                     continue;
                 }
 
+                if ($credit && !is_null($adjustment) && ($adjustment xor $invoice->isIgnoreStock())) {
+                    continue;
+                }
+
                 foreach ($invoice->getLinesByType(DocumentLineTypes::TYPE_DISCOUNT) as $line) {
                     if ($line->getSaleAdjustment() === $subject) {
                         $quantity += $line->getQuantity();
@@ -384,6 +388,10 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
             $quantity = 0;
             foreach ($subject->getInvoices(!$credit) as $invoice) {
                 if ($invoice === $ignore) {
+                    continue;
+                }
+
+                if ($credit && !is_null($adjustment) && ($adjustment xor $invoice->isIgnoreStock())) {
                     continue;
                 }
 
@@ -436,7 +444,8 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
                 'total'    => $item->getTotalQuantity(),
-                'invoiced' => $this->calculateInvoicedQuantity($item) - $this->calculateCreditedQuantity($item, null, true),
+                'invoiced' => $this->calculateInvoicedQuantity($item),
+                'adjusted' => $this->calculateCreditedQuantity($item, null, true),
                 'credited' => $this->calculateCreditedQuantity($item, null, false),
                 'shipped'  => $this->shipmentCalculator->calculateShippedQuantity($item),
                 'returned' => $this->shipmentCalculator->calculateReturnedQuantity($item),

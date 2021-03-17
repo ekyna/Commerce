@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Model as CommonM;
 use Ekyna\Component\Commerce\Customer\Entity as CustomerE;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Order\Entity as OrderE;
 use Ekyna\Component\Commerce\Order\Model as OrderM;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
@@ -18,6 +19,7 @@ use Ekyna\Component\Commerce\Pricing\Entity as PricingE;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Shipment\Entity as ShipmentE;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentAddress;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Entity as StockE;
 use Ekyna\Component\Commerce\Stock\Model as StockM;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
@@ -1354,6 +1356,9 @@ class Fixture
         $data = array_replace([
             'currency'             => self::CURRENCY_EUR,
             'state'                => OrderM\OrderStates::STATE_NEW,
+            'payment_state'        => PaymentStates::STATE_NEW,
+            'shipment_state'       => ShipmentStates::STATE_NEW,
+            'invoice_state'        => InvoiceStates::STATE_NEW,
             'customer'             => null,
             'customer_group'       => null,
             'vat_valid'            => false,
@@ -1387,6 +1392,9 @@ class Fixture
         $order
             ->setCurrency(self::currency($data['currency']))
             ->setState($data['state'])
+            ->setPaymentState($data['payment_state'])
+            ->setShipmentState($data['shipment_state'])
+            ->setInvoiceState($data['invoice_state'])
             ->setVatValid($data['vat_valid'])
             ->setVatNumber($data['vat_number'])
             ->setWeightTotal($data['weight_total'])
@@ -1668,7 +1676,7 @@ class Fixture
             'type'   => CommonM\AdjustmentTypes::TYPE_TAXATION,
             'mode'   => CommonM\AdjustmentModes::MODE_PERCENT,
             'order'  => null,
-            'amount' => null,
+            'amount' => 0.0,
             'source' => null,
         ], $data);
 
@@ -2039,11 +2047,12 @@ class Fixture
      * Creates a new invoice.
      *
      * Defaults : [
-     *     'order'       => null,
-     *     'credit'      => false,
-     *     'currency'    => self::CURRENCY_EUR
-     *     'grand_total' => 0.,
-     *     'lines'       => [],
+     *     'order'        => null,
+     *     'credit'       => false,
+     *     'ignore_stock' => false,
+     *     'currency'     => self::CURRENCY_EUR
+     *     'grand_total'  => 0.,
+     *     'lines'        => [],
      * ]
      *
      * @param OrderE\OrderInvoice|array|int|string $data
@@ -2060,12 +2069,17 @@ class Fixture
         }
 
         $data = array_replace([
-            'order'       => null,
-            'credit'      => false,
-            'currency'    => self::CURRENCY_EUR,
-            'grand_total' => 0.,
-            'lines'       => [],
+            'order'        => null,
+            'credit'       => false,
+            'ignore_stock' => false,
+            'currency'     => self::CURRENCY_EUR,
+            'grand_total'  => 0.,
+            'lines'        => [],
         ], $data);
+
+        if ($data['ignore_stock'] && !$data['credit']) {
+            throw new LogicException("Non credit invoice can't ignore stock.");
+        }
 
         if (null !== $data['order']) {
             $invoice->setOrder(self::order($data['order']));
@@ -2073,6 +2087,7 @@ class Fixture
 
         $invoice
             ->setCredit($data['credit'])
+            ->setIgnoreStock($data['ignore_stock'])
             ->setCurrency($data['currency'])
             ->setGrandTotal($data['grand_total']);
 

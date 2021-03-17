@@ -74,7 +74,7 @@ class SaleItemNormalizer extends AbstractResourceNormalizer
             if ($sale instanceof InvoiceSubjectInterface && !$sale->isSample()) {
                 $invoiceData = [
                     'invoiced' => $this->invoiceCalculator->calculateInvoicedQuantity($item),
-                    'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item),
+                    'credited' => $this->invoiceCalculator->calculateCreditedQuantity($item, null, false),
                 ];
 
                 $invoiceable = $this->invoiceCalculator->calculateInvoiceableQuantity($item);

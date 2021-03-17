@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
@@ -12,6 +11,8 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
+
+use function bccomp;
 
 /**
  * Class ShipmentStateResolver
@@ -82,22 +83,14 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
             return ShipmentStates::STATE_NEW;
         }
 
-        $sample = $subject instanceof SaleInterface ? $subject->isSample() : false;
-
         $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
 
         foreach ($quantities as $q) {
             // TODO Use packaging format
             // If shipped greater than zero
             if (0 < $q['shipped']) {
-                $sold = $q['total'];
-                $shipped = $q['shipped'];
-                if (!$sample) {
-                    $sold -= $q['credited'];
-                    $shipped -= $q['returned'];
-                }
-                // If shipped is greater then sold, item is fully shipped
-                if (0 <= bccomp($shipped, $sold, 3)) {
+                // If shipped is greater than sold, item is fully shipped
+                if (0 <= bccomp($q['shipped'] - $q['returned'], $q['sold'], 3)) {
                     $shippedCount++;
 
                     // If shipped equals returned, item is fully returned
@@ -109,11 +102,14 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
                 }
 
                 // Item is partially shipped
-                $partialCount++;
+                if (1 === bccomp($q['sold'], 0, 3)) {
+                    $partialCount++;
+                }
+
                 continue;
             }
 
-            if (0 === bccomp($q['total'] - $q['credited'], 0, 3)) {
+            if (0 === bccomp($q['sold'], 0, 3)) {
                 // Item is canceled
                 $canceledCount++;
             }

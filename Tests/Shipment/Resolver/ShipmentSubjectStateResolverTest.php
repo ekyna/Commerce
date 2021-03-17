@@ -91,7 +91,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_CANCELED,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 10, 'shipped' => 0, 'returned' => 0],
+                ['sold' => 0, 'shipped' => 0, 'returned' => 0],
             ],
         ];
 
@@ -99,7 +99,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_RETURNED,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 10, 'shipped' => 10, 'returned' => 10],
+                ['sold' => 0, 'shipped' => 10, 'returned' => 10],
             ],
         ];
 
@@ -107,7 +107,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_RETURNED,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 10, 'shipped' => 8, 'returned' => 8],
+                ['sold' => 0, 'shipped' => 8, 'returned' => 8],
             ],
         ];
 
@@ -115,7 +115,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_COMPLETED,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 0, 'shipped' => 10, 'returned' => 0,],
+                ['sold' => 10, 'shipped' => 10, 'returned' => 0,],
             ],
         ];
 
@@ -123,7 +123,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_COMPLETED,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 2, 'shipped' => 8, 'returned' => 0,],
+                ['sold' => 8, 'shipped' => 8, 'returned' => 0,],
             ],
         ];
 
@@ -131,7 +131,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_COMPLETED,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 10, 'shipped' => 10, 'returned' => 0,],
+                ['sold' => 0, 'shipped' => 10, 'returned' => 0,],
             ],
         ];
 
@@ -139,7 +139,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_PARTIAL,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 0, 'shipped' => 8, 'returned' => 0,],
+                ['sold' => 10, 'shipped' => 8, 'returned' => 0,],
             ],
         ];
 
@@ -147,7 +147,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_PARTIAL,
             $this->createOrder(),
             [
-                ['total' => 10, 'credited' => 0, 'shipped' => 10, 'returned' => 2,],
+                ['sold' => 10, 'shipped' => 10, 'returned' => 2,],
             ],
         ];
 
@@ -155,7 +155,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_CANCELED,
             $this->createOrder(null, InvoiceStates::STATE_CREDITED),
             [
-                ['total' => 10, 'credited' => 10, 'shipped' => 0, 'returned' => 0,],
+                ['sold' => 0, 'shipped' => 0, 'returned' => 0,],
             ],
         ];
 
@@ -163,7 +163,15 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_CANCELED,
             $this->createOrder(PaymentStates::STATE_CANCELED, null),
             [
-                ['total' => 10, 'credited' => 0, 'shipped' => 0, 'returned' => 0,],
+                ['sold' => 0, 'shipped' => 0, 'returned' => 0,],
+            ],
+        ];
+
+        yield 'Test' => [
+            ShipmentStates::STATE_CANCELED,
+            $this->createOrder(PaymentStates::STATE_CANCELED, null),
+            [
+                ['sold' => 0, 'shipped' => 0, 'returned' => 0,],
             ],
         ];
     }

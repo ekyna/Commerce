@@ -174,7 +174,7 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         }
 
         // FAILED total is greater than or equals the grand total
-        if ($fullFill($this->paymentCalculator->calculateFailedTotal($subject, $currency))) {
+        if ($total && $fullFill($this->paymentCalculator->calculateFailedTotal($subject, $currency))) {
             return PaymentStates::STATE_FAILED;
         }
 

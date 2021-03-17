@@ -51,6 +51,17 @@ class InvoiceSubjectStateResolverTest extends TestCase
      */
     public function test_resolveState(string $expected, InvoiceSubjectInterface $subject, array $map): void
     {
+        $map = array_map(function($item) {
+            return array_replace([
+                'total'    => 0,
+                'invoiced' => 0,
+                'adjusted' => 0,
+                'credited' => 0,
+                'shipped'  => 0,
+                'returned' => 0,
+            ], $item);
+        }, $map);
+
         $this
             ->calculator
             ->expects(self::once())

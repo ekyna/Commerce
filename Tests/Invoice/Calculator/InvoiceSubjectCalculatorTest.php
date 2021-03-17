@@ -29,7 +29,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
     protected function setUp(): void
     {
         $this->shipmentCalculator = $this->createMock(ShipmentSubjectCalculatorInterface::class);
-        $this->invoiceCalculator  = new InvoiceSubjectCalculator($this->getCurrencyConverter());
+        $this->invoiceCalculator = new InvoiceSubjectCalculator($this->getCurrencyConverter());
         $this->invoiceCalculator->setShipmentCalculator($this->shipmentCalculator);
     }
 
@@ -166,12 +166,12 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [10, $orderItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 10,
         ]);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $orderItem,
@@ -179,12 +179,12 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [5, $orderItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 10,
         ]);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $orderItem,
@@ -192,7 +192,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [0, $orderItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 2,
@@ -200,7 +200,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         $childItem = Fixture::orderItem([
             'quantity' => 5,
         ])->setParent($orderItem);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $childItem,
@@ -208,7 +208,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [5, $childItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 5,
@@ -216,7 +216,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         $childItem = Fixture::orderItem([
             'quantity' => 10,
         ])->setParent($orderItem);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $childItem,
@@ -231,13 +231,13 @@ class InvoiceSubjectCalculatorTest extends TestCase
         yield [10, $childItem];
 
         // Adjustments
-        $order           = Fixture::order();
+        $order = Fixture::order();
         $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
         yield [1, $orderAdjustment];
 
-        $order           = Fixture::order();
+        $order = Fixture::order();
         $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
-        $invoice         = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $orderAdjustment,
@@ -248,7 +248,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         // Shipment
         yield [1, Fixture::order()];
 
-        $order   = Fixture::order();
+        $order = Fixture::order();
         $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
@@ -282,12 +282,12 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [0, $orderItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 10,
         ]);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $orderItem,
@@ -295,12 +295,12 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [5, $orderItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 10,
         ]);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $orderItem,
@@ -308,7 +308,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [10, $orderItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 2,
@@ -316,7 +316,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         $childItem = Fixture::orderItem([
             'quantity' => 5,
         ])->setParent($orderItem);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $childItem,
@@ -324,7 +324,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         ]);
         yield [5, $childItem];
 
-        $order     = Fixture::order();
+        $order = Fixture::order();
         $orderItem = Fixture::orderItem([
             'order'    => $order,
             'quantity' => 5,
@@ -332,7 +332,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         $childItem = Fixture::orderItem([
             'quantity' => 10,
         ])->setParent($orderItem);
-        $invoice   = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $childItem,
@@ -347,13 +347,13 @@ class InvoiceSubjectCalculatorTest extends TestCase
         yield [40, $childItem];
 
         // Adjustments
-        $order           = Fixture::order();
+        $order = Fixture::order();
         $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
         yield [0, $orderAdjustment];
 
-        $order           = Fixture::order();
+        $order = Fixture::order();
         $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
-        $invoice         = Fixture::invoice(['order' => $order]);
+        $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
             'target'   => $orderAdjustment,
@@ -365,7 +365,7 @@ class InvoiceSubjectCalculatorTest extends TestCase
         $order = Fixture::order();
         yield [0, $order];
 
-        $order   = Fixture::order();
+        $order = Fixture::order();
         $invoice = Fixture::invoice(['order' => $order]);
         Fixture::invoiceLine([
             'invoice'  => $invoice,
@@ -376,144 +376,317 @@ class InvoiceSubjectCalculatorTest extends TestCase
     }
 
     /**
-     * @param float $expected
-     * @param mixed $element
+     * @param array $order
+     * @param array $result
      *
      * @dataProvider provide_calculateCreditedQuantity
-     *
-     * @TODO         Rework like test_isInvoiced
      */
-    public function test_calculateCreditedQuantity(float $expected, object $element): void
+    public function test_calculateCreditedQuantity(array $order, array $result): void
     {
-        $actual = $this->invoiceCalculator->calculateCreditedQuantity($element);
+        Fixture::order($order);
 
-        $this->assertEquals($expected, $actual);
+        foreach ($result as $reference => $set) {
+            $subject = Fixture::get($reference);
+            foreach ($set as [$adjustment, $expected]) {
+                $message = '';
+                if (is_bool($adjustment)) {
+                    $message = $adjustment ? 'Only adjustments' : 'Excluding adjustments';
+                }
+
+                /** @noinspection PhpParamsInspection */
+                $calculated = $this->invoiceCalculator->calculateCreditedQuantity($subject, null, $adjustment);
+
+                $this->assertEquals($expected, $calculated, $message);
+            }
+        }
     }
 
     public function provide_calculateCreditedQuantity(): \Generator
     {
-        // Items
-        $orderItem = Fixture::orderItem([
-            'order'    => [],
-            'quantity' => 10,
-        ]);
-        yield [0, $orderItem];
+        yield 'Item not invoiced' => [
+            [
+                'items' => [
+                    ['_reference' => '#item', 'quantity' => 10],
+                ],
+            ],
+            [
+                '#item' => [
+                    [null, 0],
+                    [true, 0],
+                    [false, 0],
+                ],
+            ],
+        ];
 
-        $order     = Fixture::order();
-        $orderItem = Fixture::orderItem([
-            'order'    => $order,
-            'quantity' => 10,
-        ]);
-        $invoice   = Fixture::invoice(['order' => $order]);
-        Fixture::invoiceLine([
-            'invoice'  => $invoice,
-            'target'   => $orderItem,
-            'quantity' => 5,
-        ]);
-        yield [0, $orderItem];
+        yield 'Item invoiced' => [
+            [
+                'items'    => [
+                    ['_reference' => '#item', 'quantity' => 10],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#item', 'quantity' => 5]]],
+                ],
+            ],
+            [
+                '#item' => [
+                    [null, 0],
+                    [true, 0],
+                    [false, 0],
+                ],
+            ],
+        ];
 
-        $order     = Fixture::order();
-        $orderItem = Fixture::orderItem([
-            'order'    => $order,
-            'quantity' => 10,
-        ]);
-        $invoice   = Fixture::invoice(['order' => $order]);
-        Fixture::invoiceLine([
-            'invoice'  => $invoice,
-            'target'   => $orderItem,
-            'quantity' => 10,
-        ]);
-        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
-        Fixture::invoiceLine([
-            'invoice'  => $credit,
-            'target'   => $orderItem,
-            'quantity' => 5,
-        ]);
-        yield [5, $orderItem];
+        yield 'Item credited' => [
+            [
+                'items'    => [
+                    ['_reference' => '#item', 'quantity' => 10],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#item', 'quantity' => 10]]],
+                    ['lines' => [['item' => '#item', 'quantity' => 5]], 'credit' => true],
+                ],
+            ],
+            [
+                '#item' => [
+                    [null, 5],
+                    [true, 0],
+                    [false, 5],
+                ],
+            ],
+        ];
 
-        $order     = Fixture::order();
-        $orderItem = Fixture::orderItem([
-            'order'    => $order,
-            'quantity' => 2,
-        ]);
-        $childItem = Fixture::orderItem([
-            'quantity' => 5,
-        ])->setParent($orderItem);
-        $invoice   = Fixture::invoice(['order' => $order]);
-        Fixture::invoiceLine([
-            'invoice'  => $invoice,
-            'target'   => $childItem,
-            'quantity' => 5,
-        ]);
-        yield [0, $childItem];
+        yield 'Item credited (ignoring stock)' => [
+            [
+                'items'    => [
+                    ['_reference' => '#item', 'quantity' => 10],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#item', 'quantity' => 10]]],
+                    ['lines' => [['item' => '#item', 'quantity' => 5]], 'credit' => true, 'ignore_stock' => true],
+                ],
+            ],
+            [
+                '#item' => [
+                    [null, 5],
+                    [true, 5],
+                    [false, 0],
+                ],
+            ],
+        ];
 
-        $order     = Fixture::order();
-        $orderItem = Fixture::orderItem([
-            'order'    => $order,
-            'quantity' => 5,
-        ]);
-        $childItem = Fixture::orderItem([
-            'quantity' => 10,
-        ])->setParent($orderItem);
-        $invoice   = Fixture::invoice(['order' => $order]);
-        Fixture::invoiceLine([
-            'invoice'  => $invoice,
-            'target'   => $childItem,
-            'quantity' => 30,
-        ]);
-        $invoice = Fixture::invoice(['order' => $order]);
-        Fixture::invoiceLine([
-            'invoice'  => $invoice,
-            'target'   => $childItem,
-            'quantity' => 10,
-        ]);
-        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
-        Fixture::invoiceLine([
-            'invoice'  => $credit,
-            'target'   => $childItem,
-            'quantity' => 10,
-        ]);
-        yield [10, $childItem];
+        yield 'Child invoiced' => [
+            [
+                'items'    => [
+                    [
+                        '_reference' => '#item',
+                        'quantity'   => 2,
+                        'children'   => [
+                            ['_reference' => '#child', 'quantity' => 5],
+                        ],
+                    ],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#child', 'quantity' => 5]]],
+                ],
+            ],
+            [
+                '#item' => [
+                    [null, 0],
+                    [true, 0],
+                    [false, 0],
+                ],
+            ],
+        ];
 
-        // Adjustments
-        $order           = Fixture::order();
-        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
-        yield [0, $orderAdjustment];
+        yield 'Child credited' => [
+            [
+                'items'    => [
+                    [
+                        '_reference' => '#item',
+                        'quantity'   => 2,
+                        'children'   => [
+                            ['_reference' => '#child', 'quantity' => 5],
+                        ],
+                    ],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#child', 'quantity' => 5]]],
+                    ['lines' => [['item' => '#child', 'quantity' => 5]]],
+                    ['lines' => [['item' => '#child', 'quantity' => 5]], 'credit' => true],
+                ],
+            ],
+            [
+                '#child' => [
+                    [null, 5],
+                    [true, 0],
+                    [false, 5],
+                ],
+            ],
+        ];
 
-        $order           = Fixture::order();
-        $orderAdjustment = Fixture::orderDiscountAdjustment(10)->setOrder($order);
-        $invoice         = Fixture::invoice(['order' => $order]);
-        Fixture::invoiceLine([
-            'invoice'  => $invoice,
-            'target'   => $orderAdjustment,
-            'quantity' => 1,
-        ]);
-        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
-        Fixture::invoiceLine([
-            'invoice'  => $credit,
-            'target'   => $orderAdjustment,
-            'quantity' => 1,
-        ]);
-        yield [1, $orderAdjustment];
+        yield 'Child credited (ignoring stock)' => [
+            [
+                'items'    => [
+                    [
+                        '_reference' => '#item',
+                        'quantity'   => 2,
+                        'children'   => [
+                            ['_reference' => '#child', 'quantity' => 5],
+                        ],
+                    ],
+                ],
+                'invoices' => [
+                    ['lines' => [['item' => '#child', 'quantity' => 5]]],
+                    ['lines' => [['item' => '#child', 'quantity' => 5]]],
+                    ['lines' => [['item' => '#child', 'quantity' => 5]], 'credit' => true, 'ignore_stock' => true],
+                ],
+            ],
+            [
+                '#child' => [
+                    [null, 5],
+                    [true, 5],
+                    [false, 0],
+                ],
+            ],
+        ];
 
-        // Shipment
-        $order = Fixture::order();
-        yield [0, $order];
+        yield 'Adjustment not invoiced' => [
+            [
+                'discounts' => [
+                    ['_reference' => '#discount',],
+                ],
+            ],
+            [
+                '#discount' => [
+                    [null, 0],
+                    [true, 0],
+                    [false, 0],
+                ],
+            ],
+        ];
 
-        $order   = Fixture::order();
-        $invoice = Fixture::invoice(['order' => $order]);
-        Fixture::invoiceLine([
-            'invoice'  => $invoice,
-            'target'   => $order,
-            'quantity' => 1,
-        ]);
-        $credit = Fixture::invoice(['order' => $order, 'credit' => true]);
-        Fixture::invoiceLine([
-            'invoice'  => $credit,
-            'target'   => $order,
-            'quantity' => 1,
-        ]);
-        yield [1, $order];
+        yield 'Adjustment invoiced' => [
+            [
+                'discounts' => [
+                    ['_reference' => '#discount',],
+                ],
+                'invoices'  => [
+                    ['lines' => [['adjustment' => '#discount', 'quantity' => 1]]],
+                ],
+            ],
+            [
+                '#discount' => [
+                    [null, 0],
+                    [true, 0],
+                    [false, 0],
+                ],
+            ],
+        ];
+
+        yield 'Adjustment credited' => [
+            [
+                'discounts' => [
+                    ['_reference' => '#discount',],
+                ],
+                'invoices'  => [
+                    ['lines' => [['adjustment' => '#discount', 'quantity' => 1]]],
+                    ['lines' => [['adjustment' => '#discount', 'quantity' => 1]], 'credit' => true],
+                ],
+            ],
+            [
+                '#discount' => [
+                    [null, 1],
+                    [true, 0],
+                    [false, 1],
+                ],
+            ],
+        ];
+
+        yield 'Adjustment credited (ignoring stock)' => [
+            [
+                'discounts' => [
+                    ['_reference' => '#discount',],
+                ],
+                'invoices'  => [
+                    ['lines' => [['adjustment' => '#discount', 'quantity' => 1]]],
+                    [
+                        'lines'        => [['adjustment' => '#discount', 'quantity' => 1]],
+                        'credit'       => true,
+                        'ignore_stock' => true,
+                    ],
+                ],
+            ],
+            [
+                '#discount' => [
+                    [null, 1],
+                    [true, 1],
+                    [false, 0],
+                ],
+            ],
+        ];
+
+        yield 'Shipment not invoiced' => [
+            [
+                '_reference' => '#order',
+            ],
+            [
+                '#order' => [
+                    [null, 0],
+                    [true, 0],
+                    [false, 0],
+                ],
+            ],
+        ];
+
+        yield 'Shipment invoiced' => [
+            [
+                '_reference' => '#order',
+                'invoices'   => [
+                    ['lines' => [['order' => '#order', 'quantity' => 1]]],
+                ],
+            ],
+            [
+                '#order' => [
+                    [null, 0],
+                    [true, 0],
+                    [false, 0],
+                ],
+            ],
+        ];
+
+        yield 'Shipment credited' => [
+            [
+                '_reference' => '#order',
+                'invoices'   => [
+                    ['lines' => [['order' => '#order', 'quantity' => 1]]],
+                    ['lines' => [['order' => '#order', 'quantity' => 1]], 'credit' => true],
+                ],
+            ],
+            [
+                '#order' => [
+                    [null, 1],
+                    [true, 0],
+                    [false, 1],
+                ],
+            ],
+        ];
+
+        yield 'Shipment credited (ignoring stock)' => [
+            [
+                '_reference' => '#order',
+                'invoices'   => [
+                    ['lines' => [['order' => '#order', 'quantity' => 1]]],
+                    ['lines' => [['order' => '#order', 'quantity' => 1]], 'credit' => true, 'ignore_stock' => true],
+                ],
+            ],
+            [
+                '#order' => [
+                    [null, 1],
+                    [true, 1],
+                    [false, 0],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -710,7 +883,6 @@ class InvoiceSubjectCalculatorTest extends TestCase
                     ->with($item)
                     ->willReturn($data['returned']);
             }
-
         }
     }
 

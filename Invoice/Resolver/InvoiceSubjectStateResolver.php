@@ -71,22 +71,23 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
             // TODO Use packaging format
             // If invoiced greater than zero
             if (0 < $q['invoiced']) {
+                $invoiced = $q['invoiced'] - $q['adjusted'];
                 // If invoiced is greater or equals total
-                if (0 <= bccomp($q['invoiced'], $q['total'], 3)) {
+                if (0 <= bccomp($invoiced, $q['total'], 3)) {
                     // If invoiced equals credited, item is fully credited
-                    if (0 === bccomp($q['invoiced'], $q['credited'], 3)) {
+                    if (0 === bccomp($invoiced, $q['credited'], 3)) {
                         $creditedCount++;
                         continue;
                     }
 
                     // If total equals invoiced - credit, item is fully invoiced
-                    if (0 === bccomp($q['total'], $q['invoiced'] - $q['credited'], 3)) {
+                    if (0 === bccomp($q['total'], $invoiced - $q['credited'], 3)) {
                         $invoicedCount++;
                         continue;
                     }
 
                     // If shipped and credited, and shipped - returns equals invoiced - credit, item is fully invoiced
-                    if (0 < $q['credited'] && 0 === bccomp($q['shipped'] - $q['returned'], $q['invoiced'] - $q['credited'], 3)) {
+                    if (0 < $q['credited'] && 0 === bccomp($q['shipped'] - $q['returned'], $invoiced - $q['credited'], 3)) {
                         $invoicedCount++;
                         continue;
                     }
