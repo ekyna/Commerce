@@ -200,7 +200,7 @@ class StockUnitResolver implements StockUnitResolverInterface
                 // - Sold lower than ordered
                 return $unit->getState() !== StockUnitStates::STATE_CLOSED
                     && (
-                        is_null($unit->getSupplierOrderItem())
+                        (is_null($unit->getSupplierOrderItem()) && (0 == $unit->getAdjustedQuantity()))
                         || ($unit->getSoldQuantity() < $unit->getOrderedQuantity() + $unit->getAdjustedQuantity())
                     );
             }
@@ -227,8 +227,10 @@ class StockUnitResolver implements StockUnitResolverInterface
             public function filter(StockUnitInterface $unit): bool
             {
                 // - Not linked to a supplier order
+                // - Not adjusted
                 // - Not closed
-                return (null === $unit->getSupplierOrderItem())
+                return is_null($unit->getSupplierOrderItem())
+                    && 0 == $unit->getAdjustedQuantity()
                     && ($unit->getState() !== StockUnitStates::STATE_CLOSED);
             }
         };
