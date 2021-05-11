@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
@@ -83,9 +84,16 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
             return ShipmentStates::STATE_NEW;
         }
 
+        $sample = $subject instanceof SaleInterface && $subject->isSample();
+
         $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
 
         foreach ($quantities as $q) {
+            if ($sample) {
+                // Sample order does not affect sold quantity (no credit equivalent for return)
+                $q['sold'] -= $q['returned'];
+            }
+
             // TODO Use packaging format
             // If shipped greater than zero
             if (0 < $q['shipped']) {
