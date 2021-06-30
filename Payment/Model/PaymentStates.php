@@ -173,6 +173,42 @@ final class PaymentStates
     }
 
     /**
+     * Returns the completed states.
+     *
+     * @param bool $andRefunded Whether to include refunded state.
+     *
+     * @return array
+     */
+    public static function getCompletedStates(bool $andRefunded = false): array
+    {
+        if ($andRefunded) {
+            return [
+                self::STATE_CAPTURED,
+                self::STATE_PAYEDOUT,
+                self::STATE_REFUNDED,
+            ];
+        }
+
+        return [
+            self::STATE_CAPTURED,
+            self::STATE_PAYEDOUT,
+        ];
+    }
+
+    /**
+     * Returns whether or not the given state is a completed state.
+     *
+     * @param PaymentInterface|string $state
+     * @param bool                    $orRefunded
+     *
+     * @return bool
+     */
+    public static function isCompletedState($state, bool $orRefunded = false): bool
+    {
+        return in_array(self::stateFromPayment($state), self::getCompletedStates($orRefunded), true);
+    }
+
+    /**
      * Returns the canceled states.
      *
      * @return array

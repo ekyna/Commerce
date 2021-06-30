@@ -111,8 +111,9 @@ class SubjectHelper implements SubjectHelperInterface
 
         $changed = false;
 
-        if ($subject->getDesignation() !== $relative->getDesignation()) {
-            $relative->setDesignation($subject->getDesignation());
+        $designation = (string) $subject;
+        if ($designation !== $relative->getDesignation()) {
+            $relative->setDesignation($designation);
             $changed = true;
         }
 

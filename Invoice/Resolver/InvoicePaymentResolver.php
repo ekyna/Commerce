@@ -564,7 +564,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 return false;
             }
 
-            if (!PM\PaymentStates::isPaidState($p, true)) {
+            if (!PM\PaymentStates::isCompletedState($p, true)) {
                 return false;
             }
 

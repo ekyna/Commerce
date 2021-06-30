@@ -272,7 +272,7 @@ class AccountingExporter implements AccountingExporterInterface
         $this->writer = new AccountingWriter();
         $this->writer->open($path);
 
-        $payments = $this->paymentRepository->findByMonth($month, PaymentStates::getPaidStates(true));
+        $payments = $this->paymentRepository->findByMonth($month, PaymentStates::getCompletedStates(true));
 
         foreach ($payments as $payment) {
             if (!$this->filterPayment($payment)) {

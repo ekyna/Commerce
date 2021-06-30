@@ -58,7 +58,7 @@ class OrderPaymentLockResolver implements LockResolverInterface
             return false;
         }
 
-        if (!PaymentStates::isPaidState($state)) {
+        if (!PaymentStates::isCompletedState($state)) {
             return false;
         }
 
