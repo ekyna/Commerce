@@ -457,14 +457,13 @@ class AccountingExporter implements AccountingExporterInterface
 
     /**
      * Writes the invoice's goods items.
-     *
-     * Sale's adjustments do not apply to invoices items (custom lines).
      */
     protected function writeInvoiceItemsLines(): void
     {
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
         $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
+        $discounts = $this->getSaleDiscounts();
 
         // Gather amounts by tax rates
         $amounts = [];
@@ -490,6 +489,19 @@ class AccountingExporter implements AccountingExporterInterface
         // Writes each tax rates's amount
         foreach ($amounts as $rate => $amount) {
             $amount = $this->round($amount);
+
+            // Apply sale's discounts
+            if (!empty($discounts)) {
+                $base = $amount;
+                foreach ($discounts as $adjustment) {
+                    if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
+                        $amount -= $this->round($amount * $adjustment->getAmount() / 100);
+                    } else {
+                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
+                        $amount -= $this->round($base * $adjustment->getAmount() / $gross->getBase());
+                    }
+                }
+            }
 
             if (0 === $this->compare($amount, 0)) {
                 continue; // next tax rate
