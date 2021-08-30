@@ -206,10 +206,16 @@ class AddressImporter
 
         $address->setCustomer($config->getCustomer());
 
-        foreach ($config->getColumns() as $property => $column) {
+        $columns = $config->getColumns();
+
+        foreach ($columns as $property => $column) {
             $column -= 1;
             if (!array_key_exists($column, $data)) {
                 throw new InvalidArgumentException("No data at column $column of line $line.");
+            }
+
+            if (in_array($property, ['mobile', 'phone'], true)) {
+                continue;
             }
 
             $datum = trim($data[$column]);
@@ -229,13 +235,15 @@ class AddressImporter
 
         $country = $address->getCountry()->getCode();
 
-        if (!is_null($phone = $address->getPhone())) {
-            $phone = empty($phone) ? null : $this->phoneNumberUtil->parse($phone, $country);
-            $address->setPhone($phone);
+        if (isset($columns['phone']) && !empty($number = trim($data[$columns['phone'] - 1]))) {
+            $address->setPhone($this->phoneNumberUtil->parse($number, $country));
         }
-        if (!is_null($mobile = $address->getMobile())) {
-            $mobile = empty($mobile) ? null : $this->phoneNumberUtil->parse($mobile, $country);
-            $address->setMobile($mobile);
+        if (isset($columns['mobile']) && !empty($number = trim($data[$columns['mobile'] - 1]))) {
+            $address->setMobile($this->phoneNumberUtil->parse($number, $country));
+        }
+
+        if (empty($address->getFirstName()) || empty($address->getLastName())) {
+            $address->clearIdentity();
         }
 
         $violations = $this->validator->validate($address);
