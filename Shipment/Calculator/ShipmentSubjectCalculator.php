@@ -344,6 +344,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $quantities[$item->getId()] = [
                 'sold'     => $this->invoiceCalculator->calculateSoldQuantity($item),
+                'invoiced' => $this->invoiceCalculator->isInvoiced($item),
                 'shipped'  => $this->calculateShippedQuantity($item),
                 'returned' => $this->calculateReturnedQuantity($item),
             ];

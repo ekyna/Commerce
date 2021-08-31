@@ -2,7 +2,6 @@
 
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
@@ -84,13 +83,11 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
             return ShipmentStates::STATE_NEW;
         }
 
-        $sample = $subject instanceof SaleInterface && $subject->isSample();
-
         $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
 
         foreach ($quantities as $q) {
-            if ($sample) {
-                // Sample order does not affect sold quantity (no credit equivalent for return)
+            if (!$q['invoiced']) {
+                // Non-invoiced orders does not affect sold quantity (no credit equivalent for return)
                 $q['sold'] -= $q['returned'];
             }
 
@@ -98,7 +95,7 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
             // If shipped greater than zero
             if (0 < $q['shipped']) {
                 // If shipped is greater than sold, item is fully shipped
-                if (0 <= bccomp($q['shipped'] - $q['returned'], $q['sold'], 3)) {
+                if (0 === bccomp($q['shipped'] - $q['returned'], $q['sold'], 3)) {
                     $shippedCount++;
 
                     // If shipped equals returned, item is fully returned

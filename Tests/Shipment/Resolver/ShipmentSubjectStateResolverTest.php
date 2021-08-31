@@ -85,13 +85,25 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ]),
         ];
 
-        yield 'New case' => [ShipmentStates::STATE_NEW, $this->createOrder(), []];
+        yield 'New case 1' => [
+            ShipmentStates::STATE_NEW,
+            $this->createOrder(),
+            []
+        ];
+
+        yield 'New case 2' => [
+            ShipmentStates::STATE_NEW,
+            $this->createOrder(),
+            [
+                ['sold' => 10, 'shipped' => 0, 'returned' => 0, 'invoiced' => false],
+            ],
+        ];
 
         yield 'Canceled case 1' => [
             ShipmentStates::STATE_CANCELED,
             $this->createOrder(),
             [
-                ['sold' => 0, 'shipped' => 0, 'returned' => 0],
+                ['sold' => 0, 'shipped' => 0, 'returned' => 0, 'invoiced' => true],
             ],
         ];
 
@@ -99,7 +111,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_RETURNED,
             $this->createOrder(),
             [
-                ['sold' => 0, 'shipped' => 10, 'returned' => 10],
+                ['sold' => 0, 'shipped' => 10, 'returned' => 10, 'invoiced' => true],
             ],
         ];
 
@@ -107,7 +119,15 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_RETURNED,
             $this->createOrder(),
             [
-                ['sold' => 0, 'shipped' => 8, 'returned' => 8],
+                ['sold' => 0, 'shipped' => 8, 'returned' => 8, 'invoiced' => true],
+            ],
+        ];
+
+        yield 'Returned case 3' => [
+            ShipmentStates::STATE_RETURNED,
+            $this->createOrder(),
+            [
+                ['sold' => 8, 'shipped' => 8, 'returned' => 8, 'invoiced' => false],
             ],
         ];
 
@@ -115,7 +135,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_COMPLETED,
             $this->createOrder(),
             [
-                ['sold' => 10, 'shipped' => 10, 'returned' => 0,],
+                ['sold' => 10, 'shipped' => 10, 'returned' => 0, 'invoiced' => true],
             ],
         ];
 
@@ -123,7 +143,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_COMPLETED,
             $this->createOrder(),
             [
-                ['sold' => 8, 'shipped' => 8, 'returned' => 0,],
+                ['sold' => 8, 'shipped' => 8, 'returned' => 0, 'invoiced' => false],
             ],
         ];
 
@@ -131,7 +151,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_COMPLETED,
             $this->createOrder(),
             [
-                ['sold' => 0, 'shipped' => 10, 'returned' => 0,],
+                ['sold' => 10, 'shipped' => 10, 'returned' => 2, 'invoiced' => false],
             ],
         ];
 
@@ -139,7 +159,7 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_PARTIAL,
             $this->createOrder(),
             [
-                ['sold' => 10, 'shipped' => 8, 'returned' => 0,],
+                ['sold' => 10, 'shipped' => 8, 'returned' => 0, 'invoiced' => true],
             ],
         ];
 
@@ -147,31 +167,47 @@ class ShipmentSubjectStateResolverTest extends TestCase
             ShipmentStates::STATE_PARTIAL,
             $this->createOrder(),
             [
-                ['sold' => 10, 'shipped' => 10, 'returned' => 2,],
+                ['sold' => 8, 'shipped' => 4, 'returned' => 0, 'invoiced' => false],
             ],
         ];
 
-        yield 'Canceled case 2' => [
-            ShipmentStates::STATE_CANCELED,
-            $this->createOrder(null, InvoiceStates::STATE_CREDITED),
+        yield 'Partial case 3' => [
+            ShipmentStates::STATE_PARTIAL,
+            $this->createOrder(),
             [
-                ['sold' => 0, 'shipped' => 0, 'returned' => 0,],
+                ['sold' => 10, 'shipped' => 10, 'returned' => 2, 'invoiced' => true],
+            ],
+        ];
+
+        yield 'Partial case 4' => [
+            ShipmentStates::STATE_PARTIAL,
+            $this->createOrder(),
+            [
+                ['sold' => 10, 'shipped' => 9, 'returned' => 2, 'invoiced' => false],
+            ],
+        ];
+
+        yield 'Partial case 5' => [
+            ShipmentStates::STATE_PARTIAL,
+            $this->createOrder(),
+            [
+                ['sold' => 10, 'shipped' => 16, 'returned' => 4, 'invoiced' => true],
             ],
         ];
 
         yield 'Canceled case 3' => [
             ShipmentStates::STATE_CANCELED,
-            $this->createOrder(PaymentStates::STATE_CANCELED, null),
+            $this->createOrder(null, InvoiceStates::STATE_CREDITED),
             [
-                ['sold' => 0, 'shipped' => 0, 'returned' => 0,],
+                ['sold' => 0, 'shipped' => 0, 'returned' => 0, 'invoiced' => true],
             ],
         ];
 
-        yield 'Test' => [
+        yield 'Canceled case 4' => [
             ShipmentStates::STATE_CANCELED,
             $this->createOrder(PaymentStates::STATE_CANCELED, null),
             [
-                ['sold' => 0, 'shipped' => 0, 'returned' => 0,],
+                ['sold' => 10, 'shipped' => 0, 'returned' => 0, 'invoiced' => false],
             ],
         ];
     }

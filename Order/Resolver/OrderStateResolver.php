@@ -81,7 +81,19 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
             }
 
             // ACCEPTED If order has paid or pending total or shipment(s) or invoice(s).
-            if (0 < $subject->getPaidTotal() || 0 < $subject->getPendingTotal() || $subject->hasShipments() || $subject->hasInvoices()) {
+            if (0 < $subject->getPaidTotal() || 0 < $subject->getPendingTotal() || $subject->hasInvoices()) {
+                return OrderStates::STATE_ACCEPTED;
+            }
+
+            // ACCEPTED If shipped
+            $acceptedShipmentStates = [
+                ShipmentStates::STATE_PREPARATION,
+                ShipmentStates::STATE_PARTIAL,
+                ShipmentStates::STATE_COMPLETED,
+                ShipmentStates::STATE_PENDING,
+                ShipmentStates::STATE_READY,
+            ];
+            if ($subject->hasShipments() && in_array($shipmentState, $acceptedShipmentStates, true)) {
                 return OrderStates::STATE_ACCEPTED;
             }
 
