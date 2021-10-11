@@ -637,21 +637,28 @@ class Order extends AbstractSale implements Model\OrderInterface
      */
     public function canBeReleased(): bool
     {
-        if (!$this->isSample()) {
-            return false;
-        }
-
-        if ($this->isReleased()) {
-            return false;
-        }
-
-        // A sample order needs at least and received return to be release ready.
-        foreach ($this->getShipments() as $shipment) {
-            if ($shipment->isReturn() && Shipment\ShipmentStates::isStockableState($shipment, false)) {
-                return true;
+        if ($this->isSample()) {
+            // A sample order needs at least one received return to be release ready.
+            foreach ($this->getShipments() as $shipment) {
+                if ($shipment->isReturn() && Shipment\ShipmentStates::isStockableState($shipment, false)) {
+                    return true;
+                }
             }
+
+            return false;
         }
 
-        return false;
+        if ($this->hasInvoices()) {
+            return false;
+        }
+
+        if (!$this->hasShipments() || !in_array($this->shipmentState, [
+            Shipment\ShipmentStates::STATE_RETURNED,
+            Shipment\ShipmentStates::STATE_CANCELED,
+        ], true)) {
+            return false;
+        }
+
+        return $this->state === Model\OrderStates::STATE_CANCELED;
     }
 }
