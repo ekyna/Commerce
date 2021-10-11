@@ -39,6 +39,10 @@ class LockChecker
      */
     private $resolvers;
 
+    /**
+     * @var bool
+     */
+    private $enabled = true;
 
     /**
      * Creates the date base on the input parts.
@@ -124,6 +128,10 @@ class LockChecker
      */
     public function isLocked(ResourceInterface $resource): bool
     {
+        if (!$this->enabled) {
+            return false;
+        }
+
         if (null === $date = $this->resolveDate($resource)) {
             return false;
         }
@@ -141,6 +149,11 @@ class LockChecker
         }
 
         return false;
+    }
+
+    public function setEnabled(bool $enabled): void
+    {
+        $this->enabled = $enabled;
     }
 
     /**
