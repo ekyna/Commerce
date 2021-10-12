@@ -170,8 +170,19 @@ class SupplierOrderListener extends AbstractListener
      */
     protected function updateStockUnits(SupplierOrderInterface $order): void
     {
-        if (!SupplierOrderStates::isStockableState($order->getState())) {
+        if (!$this->isStockUnitDataUpdateNeeded($order)) {
             return;
+        }
+
+        foreach ($order->getItems() as $item) {
+            $this->stockUnitLinker->updateData($item);
+        }
+    }
+
+    private function isStockUnitDataUpdateNeeded(SupplierOrderInterface $order): bool
+    {
+        if (!SupplierOrderStates::isStockableState($order->getState())) {
+            return false;
         }
 
         $properties = [
@@ -181,20 +192,20 @@ class SupplierOrderListener extends AbstractListener
             'customsTax',
             'exchangeRate',
             'estimatedDateOfArrival',
+            // TODO 'totalWeight'
         ];
 
-        if (!$this->persistenceHelper->isChanged($order, $properties)) {
-            return;
+        if ($this->persistenceHelper->isChanged($order, $properties)) {
+            return true;
         }
 
         foreach ($order->getItems() as $item) {
-            if ($this->persistenceHelper->isChanged($order, ['quantity', 'netPrice', 'weight'])) {
-                // Done by the supplier order item listener.
-                continue;
+            if ($this->persistenceHelper->isChanged($item, ['quantity', 'netPrice', 'weight'])) {
+                return true;
             }
-
-            $this->stockUnitLinker->updateData($item);
         }
+
+        return false;
     }
 
     /**

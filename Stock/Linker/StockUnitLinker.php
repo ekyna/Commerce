@@ -112,8 +112,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
             }
         }
 
-        $this->updateData($item);
-
         return $changed;
     }
 
