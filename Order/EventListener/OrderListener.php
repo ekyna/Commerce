@@ -196,21 +196,24 @@ class OrderListener extends AbstractSaleListener
      */
     protected function handleReleasedChange(OrderInterface $order): bool
     {
+        if ($this->persistenceHelper->isChanged($order, 'sample')) {
+            if ($order->isReleased() && !$order->isSample()) {
+                throw new IllegalOperationException("Can't turn 'sample' into false if order is released.");
+            }
+        }
+
         if (!$this->persistenceHelper->isChanged($order, 'released')) {
             return false;
         }
 
-        if ($order->isReleased() && !$order->canBeReleased()) {
+        // Orders that are not samples can't be released.
+        if (!$order->isSample() && $order->isReleased()) {
             $order->setReleased(false);
 
             return true;
         }
 
-        if ($order->isSample() && !OrderStates::isStockableState($order->getState())) {
-            return false;
-        }
-
-        if (!$order->isSample() && ($order->getState() !== OrderStates::STATE_CANCELED)) {
+        if (!OrderStates::isStockableState($order->getState())) {
             return false;
         }
 

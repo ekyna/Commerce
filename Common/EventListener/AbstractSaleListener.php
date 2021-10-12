@@ -446,7 +446,7 @@ abstract class AbstractSaleListener
         $this->handleContentChange($sale);
 
         // Reflect content change on update timestamp
-        $sale->setUpdatedAt(new\DateTime());
+        $sale->setUpdatedAt(new \DateTime());
 
         $this->checkCouponValidity($sale);
 

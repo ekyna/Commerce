@@ -107,8 +107,8 @@ abstract class AbstractInvoiceListener
     {
         $invoice = $this->getInvoiceFromEvent($event);
 
-        if ($invoice->getSale()->isSample() || $invoice->getSale()->isReleased()) {
-            throw new Exception\LogicException("Can't create invoice for sample or released sale");
+        if ($invoice->getSale()->isSample()) {
+            throw new Exception\LogicException("Can't create invoice for sample sale");
         }
 
         // Generate number and key
