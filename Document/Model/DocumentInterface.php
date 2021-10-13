@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Document\Model;
 
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Resource\Model\LocalizedInterface;
 
 /**
@@ -401,6 +402,10 @@ interface DocumentInterface extends LocalizedInterface
      * @return $this|DocumentInterface
      */
     public function setRealGrandTotal(float $amount): DocumentInterface;
+
+    public function getTaxRule(): ?TaxRuleInterface;
+
+    public function setTaxRule(?TaxRuleInterface $taxRule): DocumentInterface;
 
     /**
      * Returns whether the document has at least one line discount.

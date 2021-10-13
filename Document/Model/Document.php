@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 
 /**
  * Class Document
@@ -108,6 +109,11 @@ class Document implements DocumentInterface
      * @var float
      */
     protected $realGrandTotal;
+
+    /**
+     * @var TaxRuleInterface
+     */
+    protected $taxRule;
 
     /**
      * @var SaleInterface
@@ -601,6 +607,18 @@ class Document implements DocumentInterface
     public function setRealGrandTotal(float $amount): DocumentInterface
     {
         $this->realGrandTotal = $amount;
+
+        return $this;
+    }
+
+    public function getTaxRule(): ?TaxRuleInterface
+    {
+        return $this->taxRule;
+    }
+
+    public function setTaxRule(?TaxRuleInterface $taxRule): DocumentInterface
+    {
+        $this->taxRule = $taxRule;
 
         return $this;
     }

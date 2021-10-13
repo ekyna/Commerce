@@ -392,7 +392,7 @@ class AccountingExporter implements AccountingExporterInterface
     {
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
-        $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
+        $taxRule = $this->invoice->getTaxRule() ?: $this->taxResolver->resolveSaleTaxRule($sale);
         $discounts = $this->getSaleDiscounts();
 
         // Gather amounts by tax rates
@@ -462,7 +462,7 @@ class AccountingExporter implements AccountingExporterInterface
     {
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
-        $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
+        $taxRule = $this->invoice->getTaxRule() ?: $this->taxResolver->resolveSaleTaxRule($sale);
         $discounts = $this->getSaleDiscounts();
 
         // Gather amounts by tax rates
@@ -534,7 +534,7 @@ class AccountingExporter implements AccountingExporterInterface
 
         $sale = $this->invoice->getSale();
         $date = $sale->getCreatedAt();
-        $taxRule = $this->taxResolver->resolveSaleTaxRule($sale);
+        $taxRule = $this->invoice->getTaxRule() ?: $this->taxResolver->resolveSaleTaxRule($sale);
 
         $account = $this->getShipmentAccountNumber($taxRule, $this->invoice->getNumber());
 

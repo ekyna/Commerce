@@ -43,6 +43,11 @@
             </options>
         </field>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface"
+                     field="taxRule">
+            <join-column name="tax_rule_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </many-to-one>
+
         <field name="comment" column="comment" type="text" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
         <field name="ignoreStock" column="ignore_stock" type="boolean">
