@@ -66,7 +66,7 @@ class PrioritizeHelper
 
             $this->unitCache->add($unit);
 
-            $candidate = UnitCandidate::build($unit, $sale);
+            $candidate = UnitCandidate::build($unit, $sale, $quantity);
 
             // Skip if no reservable and no releasable quantity
             if ((0 >= $candidate->reservable) && (0 >= $candidate->releasable)) {

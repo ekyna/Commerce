@@ -6,6 +6,8 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Combination;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
+use function array_sum;
+
 /**
  * Class UnitCandidate
  * @package Ekyna\Component\Commerce\Stock\Prioritizer
@@ -18,32 +20,46 @@ class UnitCandidate
      *
      * @param StockUnitInterface $unit
      * @param SaleInterface      $sale
+     * @param float              $quantity
      *
      * @return UnitCandidate
      */
-    public static function build(StockUnitInterface $unit, SaleInterface $sale): self
+    public static function build(StockUnitInterface $unit, SaleInterface $sale, $quantity): self
     {
-        $releasable = 0;
         $map = [];
+        $greaterFound = false;
         foreach ($unit->getStockAssignments() as $a) {
-            if ($sale === $s = $a->getSaleItem()->getSale()) {
+            if ($sale === $a->getSaleItem()->getSale()) {
                 continue;
             }
 
-            if (0 < $d = $a->getReleasableQuantity()) {
-                $releasable += $d;
-                $map[$a->getId()] = $d;
+            // Skip non-releasable assignment
+            if (0 >= $d = $a->getReleasableQuantity()) {
+                continue;
             }
+
+            if ($d > $quantity) {
+                if ($greaterFound) {
+                    // Skip if we already have assignment with enough quantity
+                    continue;
+                }
+
+                $greaterFound = true;
+            }
+
+            $map[$a->getId()] = $d;
         }
 
         arsort($map, \SORT_NUMERIC);
 
-        $candidate = new static;
+        // Remove greater than target quantity
+
+        $candidate = new static();
 
         $candidate->unit = $unit;
         $candidate->shippable = $unit->getShippableQuantity();
         $candidate->reservable = $unit->getReservableQuantity();
-        $candidate->releasable = $releasable;
+        $candidate->releasable = array_sum($map);
         $candidate->map = $map;
 
         return $candidate;
