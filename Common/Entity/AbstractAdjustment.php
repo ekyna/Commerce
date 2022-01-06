@@ -6,6 +6,8 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Resource\Copier\CopierInterface;
+use Ekyna\Component\Resource\Copier\CopyInterface;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
@@ -13,7 +15,7 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAdjustment implements Model\AdjustmentInterface
+abstract class AbstractAdjustment implements Model\AdjustmentInterface, CopyInterface
 {
     use SortableTrait;
 
@@ -34,6 +36,10 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface
     {
         $this->id = null;
         $this->amount = clone $this->amount;
+    }
+
+    public function onCopy(CopierInterface $copier): void
+    {
         $this->source = null;
     }
 

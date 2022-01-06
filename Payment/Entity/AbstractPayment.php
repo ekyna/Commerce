@@ -52,6 +52,8 @@ abstract class AbstractPayment implements Payment\PaymentInterface
 
     public function __clone()
     {
+        $this->id = null;
+
         $this->clear();
     }
 
@@ -60,7 +62,6 @@ abstract class AbstractPayment implements Payment\PaymentInterface
      */
     protected function clear()
     {
-        $this->id = null;
         $this->state = Payment\PaymentStates::STATE_NEW;
         $this->details = [];
         $this->key = null;

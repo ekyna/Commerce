@@ -16,7 +16,9 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectTrait;
  */
 trait StockSubjectTrait
 {
-    use SubjectTrait;
+    use SubjectTrait {
+        __clone as subjectClone;
+    }
 
     protected string             $stockMode;
     protected string             $stockState;
@@ -63,6 +65,19 @@ trait StockSubjectTrait
         $this->packageWidth = 0;
         $this->packageHeight = 0;
         $this->packageDepth = 0;
+    }
+
+    public function __clone()
+    {
+        $this->subjectClone();
+
+        $this->stockFloor = clone $this->stockFloor;
+        $this->inStock = clone $this->inStock;
+        $this->availableStock = clone $this->availableStock;
+        $this->virtualStock = clone $this->virtualStock;
+        $this->minimumOrderQuantity = clone $this->minimumOrderQuantity;
+        $this->weight = clone $this->weight;
+        $this->packageWeight = clone $this->packageWeight;
     }
 
     public function getStockMode(): string

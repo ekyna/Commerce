@@ -20,6 +20,11 @@ trait SubjectTrait
     protected ?string $reference = null;
     protected Decimal $netPrice;
 
+    public function __clone()
+    {
+        $this->netPrice = clone $this->netPrice;
+    }
+
     protected function initializeSubject(): void
     {
         $this->netPrice = new Decimal(0);
