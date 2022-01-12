@@ -169,6 +169,8 @@ class AccountingExporter implements AccountingExporterInterface
             }
 
             if ($this->invoice->getCurrency() !== $this->currency) {
+                // Pre-generate the uid used by InvoicePaymentResolver
+                $this->invoice->getRuntimeUid();
                 $this->invoice = clone $this->invoice;
                 $this->invoice->setCurrency($this->currency);
 

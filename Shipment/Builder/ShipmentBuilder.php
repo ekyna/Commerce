@@ -42,10 +42,6 @@ class ShipmentBuilder implements ShipmentBuilderInterface
             throw new LogicException('Sale must be set.');
         }
 
-        if (!$shipment->isReturn()) {
-            $shipment->setAutoInvoice(true);
-        }
-
         $this->initializeMethod($shipment);
         $this->initializeRelayPoint($shipment);
 
