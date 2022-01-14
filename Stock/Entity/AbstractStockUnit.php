@@ -384,9 +384,9 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     {
         return null === $this->supplierOrderItem
             && $this->stockAssignments->isEmpty()
-            && 0 == $this->orderedQuantity
-            && 0 == $this->adjustedQuantity
-            && 0 == $this->soldQuantity;
+            && $this->orderedQuantity->isZero()
+            && $this->adjustedQuantity->isZero()
+            && $this->soldQuantity->isZero();
     }
 
     public function isClosed(): bool
@@ -397,7 +397,7 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
     public function getReservableQuantity(): Decimal
     {
         if (0 == $this->orderedQuantity + $this->adjustedQuantity) {
-            return INF;
+            return new Decimal(INF);
         }
 
         return max($this->orderedQuantity + $this->adjustedQuantity - $this->soldQuantity, new Decimal(0));
@@ -410,8 +410,10 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
 
     public function getShippableQuantity(): Decimal
     {
-        return max($this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity
-            - $this->lockedQuantity, new Decimal(0));
+        return max(
+            $this->receivedQuantity + $this->adjustedQuantity - $this->shippedQuantity - $this->lockedQuantity,
+            new Decimal(0)
+        );
     }
 
     public function getSupplierOrder(): ?SupplierOrderInterface

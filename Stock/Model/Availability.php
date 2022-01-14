@@ -6,6 +6,8 @@ namespace Ekyna\Component\Commerce\Stock\Model;
 
 use Decimal\Decimal;
 
+use const INF;
+
 /**
  * Class Availability
  * @package Ekyna\Component\Commerce\Stock\Model
@@ -142,9 +144,9 @@ final class Availability
             'o_msg'   => $this->overflowMessage,
             'min_qty' => $this->minimumQuantity,
             'min_msg' => $this->minimumMessage,
-            'max_qty' => INF === $this->maximumQuantity ? 'INF' : $this->maximumQuantity,
+            'max_qty' => $this->maximumQuantity->equals(INF) ? 'INF' : $this->maximumQuantity,
             'max_msg' => $this->maximumMessage,
-            'a_qty'   => INF === $this->availableQuantity ? 'INF' : $this->availableQuantity,
+            'a_qty'   => $this->availableQuantity->equals(INF) ? 'INF' : $this->availableQuantity,
             'a_msg'   => $this->availableMessage,
             'r_qty'   => $this->resupplyQuantity,
             'r_msg'   => $this->resupplyMessage,
