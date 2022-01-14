@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Entity;
 
 use DateTimeInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Shipment\Model;
+
+use function is_null;
+use function is_resource;
 
 /**
  * Class AbstractShipmentLabel
@@ -14,10 +18,11 @@ use Ekyna\Component\Commerce\Shipment\Model;
  */
 abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
 {
-    protected ?int                           $id        = null;
-    protected ?Model\ShipmentInterface       $shipment  = null;
-    protected ?Model\ShipmentParcelInterface $parcel    = null;
-    protected ?string                        $content   = null;
+    protected ?int                           $id       = null;
+    protected ?Model\ShipmentInterface       $shipment = null;
+    protected ?Model\ShipmentParcelInterface $parcel   = null;
+    /** @var resource|null */
+    protected $content   = null;
     protected ?string                        $type      = null;
     protected ?string                        $format    = null;
     protected ?string                        $size      = null;
@@ -75,13 +80,17 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
         return $this;
     }
 
-    public function getContent(): ?string
+    public function getContent()
     {
         return $this->content;
     }
 
-    public function setContent(?string $content): Model\ShipmentLabelInterface
+    public function setContent($content): Model\ShipmentLabelInterface
     {
+        if (!is_null($content) && !is_resource($content)) {
+            throw new UnexpectedTypeException($content, ['resource', 'null']);
+        }
+
         $this->content = $content;
 
         return $this;
