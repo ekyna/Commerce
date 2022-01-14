@@ -39,12 +39,12 @@ interface ShipmentLabelInterface
     public function setParcel(?ShipmentParcelInterface $parcel);
 
     /**
-     * @return resource|null
+     * @return resource|string|null
      */
     public function getContent();
 
     /**
-     * @param resource|null $content
+     * @param resource|string|null $content
      */
     public function setContent($content): ShipmentLabelInterface;
 

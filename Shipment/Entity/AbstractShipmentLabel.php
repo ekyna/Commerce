@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Shipment\Model;
 
 use function is_null;
 use function is_resource;
+use function is_string;
 
 /**
  * Class AbstractShipmentLabel
@@ -80,15 +81,21 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getContent()
     {
         return $this->content;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function setContent($content): Model\ShipmentLabelInterface
     {
-        if (!is_null($content) && !is_resource($content)) {
-            throw new UnexpectedTypeException($content, ['resource', 'null']);
+        if (!is_null($content) && !is_resource($content) && !is_string($content)) {
+            throw new UnexpectedTypeException($content, ['resource', 'string', 'null']);
         }
 
         $this->content = $content;
