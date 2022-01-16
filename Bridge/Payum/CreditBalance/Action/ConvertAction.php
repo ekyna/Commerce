@@ -42,14 +42,14 @@ class ConvertAction implements ActionInterface
             throw new RuntimeException("Sale's customer must be defined at this point.");
         }
 
-        $details->defaults(array(
+        $details->defaults([
             Constants::FIELD_STATUS  => null,
             Constants::FIELD_REFUND  => $payment->isRefund(),
-            Constants::FIELD_AMOUNT  => $payment->getRealAmount(),     // Using default currency
-            Constants::FIELD_BALANCE => $customer->getCreditBalance(), // Using default currency
-        ));
+            Constants::FIELD_AMOUNT  => $payment->getRealAmount()->toFixed(5),     // Using default currency
+            Constants::FIELD_BALANCE => $customer->getCreditBalance()->toFixed(5), // Using default currency
+        ]);
 
-        $request->setResult((array) $details);
+        $request->setResult((array)$details);
     }
 
     /**

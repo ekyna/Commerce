@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
+use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -24,11 +25,12 @@ abstract class AbstractInvoiceListener
 {
     use LockingHelperAwareTrait;
 
-    protected PersistenceHelperInterface $persistenceHelper;
-    protected GeneratorInterface $invoiceNumberGenerator;
-    protected GeneratorInterface $creditNumberGenerator;
-    protected DocumentBuilderInterface $invoiceBuilder;
-    protected DocumentCalculatorInterface $invoiceCalculator;
+    protected PersistenceHelperInterface      $persistenceHelper;
+    protected GeneratorInterface              $invoiceNumberGenerator;
+    protected GeneratorInterface              $creditNumberGenerator;
+    protected DocumentBuilderInterface        $invoiceBuilder;
+    protected DocumentCalculatorInterface     $invoiceCalculator;
+    protected InvoicePaymentResolverInterface $invoicePaymentResolver;
 
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
@@ -53,6 +55,11 @@ abstract class AbstractInvoiceListener
     public function setInvoiceCalculator(DocumentCalculatorInterface $calculator): void
     {
         $this->invoiceCalculator = $calculator;
+    }
+
+    public function setInvoicePaymentResolver(InvoicePaymentResolverInterface $invoicePaymentResolver): void
+    {
+        $this->invoicePaymentResolver = $invoicePaymentResolver;
     }
 
     public function onInsert(ResourceEventInterface $event): void
@@ -151,6 +158,8 @@ abstract class AbstractInvoiceListener
         $changed = $this->invoiceCalculator->calculate($invoice);
 
         if ($changed) {
+            $this->invoicePaymentResolver->clearSale($invoice->getSale());
+
             foreach ($invoice->getLines() as $line) {
                 $this->persistenceHelper->persistAndRecompute($line, false);
             }

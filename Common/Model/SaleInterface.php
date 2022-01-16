@@ -37,7 +37,8 @@ interface SaleInterface extends
     PaymentSubjectInterface,
     PaymentTermSubjectInterface,
     ShippableInterface,
-    VatNumberSubjectInterface
+    VatNumberSubjectInterface,
+    Resource\RuntimeUidInterface
 {
     public function getCustomer(): ?CustomerInterface;
 

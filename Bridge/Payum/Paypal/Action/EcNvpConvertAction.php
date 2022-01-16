@@ -89,7 +89,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
         $this->getCalculator()->calculateSale($sale);
 
         $this->line = 0;
-        $lineTotals = 0;
+        $lineTotals = new Decimal(0);
 
         // Items
         foreach ($sale->getItems() as $item) {

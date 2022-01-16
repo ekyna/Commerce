@@ -3,6 +3,7 @@
 namespace Ekyna\Component\Commerce\Bridge\Payum\Offline\Action;
 
 use Ekyna\Component\Commerce\Bridge\Payum\Offline\Constants;
+use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
@@ -34,9 +35,11 @@ class ConvertAction implements ActionInterface
             return;
         }
 
+        $currency = $payment->getCurrency()->getCode();
+
         $details[Constants::FIELD_STATUS] = false;
-        $details['amount'] = $payment->getAmount();
-        $details['currency'] = $payment->getCurrency()->getCode();
+        $details['amount'] = Money::fixed($payment->getAmount(), $currency);
+        $details['currency'] = $currency;
 
         $request->setResult((array)$details);
     }

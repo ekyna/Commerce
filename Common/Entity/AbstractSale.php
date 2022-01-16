@@ -38,6 +38,7 @@ abstract class AbstractSale implements Common\SaleInterface
     use Payment\PaymentTermSubjectTrait;
     use RM\LocalizedTrait;
     use RM\TimestampableTrait;
+    use RM\RuntimeUidTrait;
     use Shipment\ShippableTrait;
     use VatNumberSubjectTrait;
 

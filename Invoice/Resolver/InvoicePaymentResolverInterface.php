@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Invoice\Resolver;
 
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Model;
 
 /**
@@ -14,6 +15,16 @@ use Ekyna\Component\Commerce\Invoice\Model;
  */
 interface InvoicePaymentResolverInterface
 {
+    /**
+     * Clears cached results.
+     */
+    public function clear(): void;
+
+    /**
+     * Clears the sale's invoices cached results.
+     */
+    public function clearSale(SaleInterface $sale): void;
+
     /**
      * Resolves the invoice's payments.
      *

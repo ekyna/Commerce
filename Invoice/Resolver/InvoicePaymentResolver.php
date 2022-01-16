@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpVariableNamingConventionInspection */
 
 declare(strict_types=1);
 
@@ -29,7 +29,11 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
 {
     protected CurrencyConverterInterface $currencyConverter;
     protected string                     $currency;
-    protected array                      $cache;
+    /** @var array<string, array<IM\InvoicePayment>> */
+    protected array $cache;
+    /** @var array<int, array<string>> */
+    protected array $map;
+
     /** @var array<int, PaymentData> */
     private array $payments;
     /** @var array<int, InvoiceData> */
@@ -46,6 +50,18 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
     public function clear(): void
     {
         $this->cache = [];
+        $this->map = [];
+    }
+
+    public function clearSale(SaleInterface $sale): void
+    {
+        if (!isset($this->map[$sRid = $sale->getRuntimeUid()])) {
+            return;
+        }
+
+        foreach ($this->map[$sRid] as $iRid) {
+            unset($this->cache[$iRid]);
+        }
     }
 
     public function resolve(IM\InvoiceInterface $invoice, bool $invoices = true): array
@@ -94,13 +110,18 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
      */
     private function build(SaleInterface $sale): void
     {
-        $this->buildPaymentList($sale);
-        /** @var IM\InvoiceSubjectInterface $sale */
+        /** @var SaleInterface|IM\InvoiceSubjectInterface $sale */
         $this->buildInvoiceList($sale);
+        $this->buildPaymentList($sale);
 
         // Creates cache entries for each invoices
+        if (!isset($this->map[$sRid = $sale->getRuntimeUid()])) {
+            $this->map[$sRid] = [];
+        }
         foreach ($this->invoices as $invoice) {
-            $this->cache[$invoice->invoice->getRuntimeUid()] = [];
+            $iRid = $invoice->invoice->getRuntimeUid();
+            $this->map[$sRid][] = $iRid;
+            $this->cache[$iRid] = [];
         }
 
         // Combining too many invoices use too much resources
@@ -566,5 +587,12 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 $this->payments[] = new PaymentData($payment, true, $amount, $realAmount);
             }
         }
+
+        // TODO Reduce payment list regarding to invoices - credits total. Example case:
+        // invoiced: 100
+        // credited: 90
+        // paid: 400 (4x payments)
+        // refunded : 300 (3x refunds)
+        // -> 90 credit is resolved as paid while it is not
     }
 }

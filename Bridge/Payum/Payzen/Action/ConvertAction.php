@@ -12,6 +12,8 @@ use Payum\Core\GatewayAwareTrait;
 use Payum\Core\Request\Convert;
 use Payum\Core\Request\GetCurrency;
 
+use function pow;
+
 /**
  * Class ConvertAction
  * @package Ekyna\Component\Commerce\Bridge\Payum\Payzen\Action
@@ -37,13 +39,13 @@ class ConvertAction implements ActionInterface, GatewayAwareInterface
 
         if (false == $model['vads_amount']) {
             $this->gateway->execute($currency = new GetCurrency($payment->getCurrency()->getCode()));
-            if (2 < $currency->exp) {
+            if ((0 > $currency->exp) || (3 < $currency->exp)) {
                 throw new RuntimeException('Unexpected currency exp.');
             }
 
             $model['vads_currency'] = (string)$currency->numeric;
             // Amount in cents
-            $model['vads_amount'] = (string)abs($payment->getAmount() * pow(10, $currency->exp));
+            $model['vads_amount'] = $payment->getAmount()->abs()->mul(pow(10, $currency->exp))->toFixed();
         }
 
         $sale = $payment->getSale();

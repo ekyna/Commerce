@@ -12,6 +12,8 @@ use Payum\Core\GatewayAwareTrait;
 use Payum\Core\Request\Convert;
 use Payum\Core\Request\GetCurrency;
 
+use function pow;
+
 /**
  * Class ConvertAction
  * @package Ekyna\Component\Commerce\Bridge\Payum\Sips\Action
@@ -38,12 +40,12 @@ class ConvertAction implements ActionInterface, GatewayAwareInterface
         //$model['DESCRIPTION'] = $payment->getDescription();
         if (false == $model['amount']) {
             $this->gateway->execute($currency = new GetCurrency($payment->getCurrency()->getCode()));
-            if (2 < $currency->exp) {
+            if ((0 > $currency->exp) || (3 < $currency->exp)) {
                 throw new RuntimeException('Unexpected currency exp.');
             }
             $model['currency_code'] = $currency->numeric;
             // Amount in cents
-            $model['amount'] = abs($payment->getAmount() * pow(10, $currency->exp));
+            $model['amount'] = $payment->getAmount()->abs()->mul(pow(10, $currency->exp))->toFixed();
         }
 
         $sale = $payment->getSale();
