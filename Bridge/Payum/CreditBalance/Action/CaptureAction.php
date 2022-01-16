@@ -35,11 +35,7 @@ class CaptureAction implements ActionInterface
         }
 
         if ($model[Constants::FIELD_REFUND]) {
-            if ($model[Constants::FIELD_AMOUNT] >= $model[Constants::FIELD_BALANCE]) {
-                $model[Constants::FIELD_STATUS] = Constants::STATUS_CAPTURED;
-            } else {
-                $model[Constants::FIELD_STATUS] = Constants::STATUS_FAILED;
-            }
+            $model[Constants::FIELD_STATUS] = Constants::STATUS_CAPTURED;
 
             return;
         }
