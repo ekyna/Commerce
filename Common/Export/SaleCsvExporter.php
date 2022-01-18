@@ -142,7 +142,7 @@ class SaleCsvExporter implements SaleExporterInterface
         ];
 
         if ($view->vars['show_availability']) {
-            $row[] = strip_tags($line->getAvailability());
+            $row[] = strip_tags($line->getAvailability() ?? '');
         }
 
         $row[] = $line->getUnit();

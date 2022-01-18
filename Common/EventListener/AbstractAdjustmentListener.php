@@ -202,11 +202,11 @@ abstract class AbstractAdjustmentListener
         $path = $this->getSalePropertyPath();
         $cs = $this->persistenceHelper->getChangeSet($item);
 
-        if (isset($cs[$path])) {
+        if (isset($cs[$path], $cs[$path][0])) {
             return $cs[$path][0];
         } elseif (null !== $parent = $item->getParent()) {
             return $this->getSaleFromItem($parent);
-        } elseif (isset($cs['parent'])) {
+        } elseif (isset($cs['parent'], $cs['parent'][0])) {
             return $this->getSaleFromItem($cs['parent'][0]);
         }
 
