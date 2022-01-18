@@ -37,7 +37,7 @@ interface NotificationInterface extends ResourceInterface
      * @param mixed $data
      * @TODO PHP8 union types hint
      */
-    public function setData($data, ?string $key): NotificationInterface;
+    public function setData($data, string $key = null): NotificationInterface;
 
     public function getSentAt(): ?DateTimeInterface;
 

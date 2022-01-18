@@ -67,7 +67,7 @@ abstract class AbstractNotification implements NotificationInterface
     /**
      * @inheritDoc
      */
-    public function setData($data, ?string $key): NotificationInterface
+    public function setData($data, string $key = null): NotificationInterface
     {
         if (!is_null($key)) {
             if (!is_scalar($data)) {

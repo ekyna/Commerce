@@ -397,8 +397,6 @@ class SaleCopier implements SaleCopierInterface
      */
     private function copy($source, $target, array $properties)
     {
-        $properties = (array)$properties;
-
         foreach ($properties as $property) {
             $this->accessor->setValue($target, $property, $this->accessor->getValue($source, $property));
         }
