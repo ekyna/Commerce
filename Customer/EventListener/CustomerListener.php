@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Customer\EventListener;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Customer\Event\CustomerEvents;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -202,8 +203,8 @@ class CustomerListener
             $changed = true;
         }
         // Clear outstanding
-        if (0 !== $customer->getOutstandingLimit()) {
-            $customer->setOutstandingLimit(0);
+        if (!$customer->getOutstandingLimit()->isZero()) {
+            $customer->setOutstandingLimit(new Decimal(0));
             $changed = true;
         }
         // TODO (?) Clear balance
