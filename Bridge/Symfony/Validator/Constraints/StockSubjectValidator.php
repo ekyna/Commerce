@@ -76,9 +76,6 @@ class StockSubjectValidator extends ConstraintValidator
                 new Assert\NotNull(),
                 new Assert\GreaterThanOrEqual(['value' => 0]),
             ],
-            'estimatedDateOfArrival' => [
-                new Assert\DateTime(),
-            ],
         ];
 
         if (null === $this->propertyAccessor) {
