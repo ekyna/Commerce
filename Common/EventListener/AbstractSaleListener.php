@@ -7,8 +7,8 @@ namespace Ekyna\Component\Commerce\Common\EventListener;
 use DateTime;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
@@ -34,7 +34,7 @@ abstract class AbstractSaleListener
     protected GeneratorInterface         $numberGenerator;
     protected GeneratorInterface         $keyGenerator;
     protected PricingUpdaterInterface    $pricingUpdater;
-    protected SaleFactoryInterface       $saleFactory;
+    protected FactoryHelperInterface     $factoryHelper;
     protected SaleUpdaterInterface       $saleUpdater;
     protected DueDateResolverInterface   $dueDateResolver;
     protected StateResolverInterface     $stateResolver;
@@ -68,9 +68,9 @@ abstract class AbstractSaleListener
         $this->dueDateResolver = $resolver;
     }
 
-    public function setSaleFactory(SaleFactoryInterface $factory): void
+    public function setFactoryHelper(FactoryHelperInterface $factoryHelper): void
     {
-        $this->saleFactory = $factory;
+        $this->factoryHelper = $factoryHelper;
     }
 
     public function setSaleUpdater(SaleUpdaterInterface $updater): void
@@ -106,6 +106,8 @@ abstract class AbstractSaleListener
     public function onInsert(ResourceEventInterface $event): void
     {
         $sale = $this->getSaleFromEvent($event);
+
+        $sale->setContext(null);
 
         if ($this->handleInsert($sale)) {
             $this->persistenceHelper->persistAndRecompute($sale, false);
@@ -167,6 +169,8 @@ abstract class AbstractSaleListener
         $sale = $this->getSaleFromEvent($event);
 
         $this->preventForbiddenChange($sale);
+
+        $sale->setContext(null);
 
         if ($this->handleUpdate($sale)) {
             $this->persistenceHelper->persistAndRecompute($sale, false);
@@ -259,6 +263,8 @@ abstract class AbstractSaleListener
             return;
         }
 
+        $sale->setContext(null);
+
         if ($this->handleAddressChange($sale)) {
             $this->persistenceHelper->persistAndRecompute($sale, false);
 
@@ -305,6 +311,8 @@ abstract class AbstractSaleListener
 
             return;
         }
+
+        $sale->setContext(null);
 
         $this->handleContentChange($sale);
 
@@ -355,6 +363,8 @@ abstract class AbstractSaleListener
 
             return;
         }
+
+        $sale->setContext(null);
 
         $this->handleStateChange($sale);
     }
@@ -477,7 +487,8 @@ abstract class AbstractSaleListener
         if ($oldSameAddress) {
             $oldAddress = isset($saleCs['invoiceAddress']) ? $saleCs['invoiceAddress'][0] : $sale->getInvoiceAddress();
         } else {
-            $oldAddress = isset($saleCs['deliveryAddress']) ? $saleCs['deliveryAddress'][0] : $sale->getDeliveryAddress();
+            $oldAddress = isset($saleCs['deliveryAddress']) ? $saleCs['deliveryAddress'][0]
+                : $sale->getDeliveryAddress();
         }
         if (null !== $oldAddress) {
             $oldAddressCs = $this->persistenceHelper->getChangeSet($oldAddress);

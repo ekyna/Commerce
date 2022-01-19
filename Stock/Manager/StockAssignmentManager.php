@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Manager;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
@@ -31,26 +31,18 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
     private $assignmentCache;
 
     /**
-     * @var SaleFactoryInterface
+     * @var FactoryHelperInterface
      */
-    private $saleFactory;
+    private $factoryHelper;
 
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface    $persistenceHelper
-     * @param StockAssignmentCacheInterface $assignmentCache
-     * @param SaleFactoryInterface          $saleFactory
-     */
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
+        PersistenceHelperInterface    $persistenceHelper,
         StockAssignmentCacheInterface $assignmentCache,
-        SaleFactoryInterface $saleFactory
+        FactoryHelperInterface        $factoryHelper
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->assignmentCache = $assignmentCache;
-        $this->saleFactory = $saleFactory;
+        $this->factoryHelper = $factoryHelper;
     }
 
     /**
@@ -134,7 +126,7 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
         }
 
         if (!$assignment) {
-            $assignment = $this->saleFactory->createStockAssignmentForItem($item);
+            $assignment = $this->factoryHelper->createStockAssignmentForItem($item);
         }
 
         $assignment->setSaleItem($item);

@@ -11,8 +11,8 @@ use Ekyna\Component\Commerce\Common\Country\CountryProviderInterface;
 use Ekyna\Component\Commerce\Common\Currency\ArrayExchangeRateProvider;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverter;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactory;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelper;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
@@ -60,7 +60,7 @@ abstract class TestCase extends BaseTestCase
     private $currencyConverter;
 
     /**
-     * @var SaleFactoryInterface
+     * @var FactoryHelperInterface
      */
     private $saleFactory;
 
@@ -313,15 +313,15 @@ abstract class TestCase extends BaseTestCase
     /**
      * Returns a sale factory.
      *
-     * @return SaleFactoryInterface
+     * @return FactoryHelperInterface
      */
-    protected function getSaleFactory(): SaleFactoryInterface
+    protected function getSaleFactory(): FactoryHelperInterface
     {
         if (null !== $this->saleFactory) {
             return $this->saleFactory;
         }
 
-        return $this->saleFactory = new SaleFactory();
+        return $this->saleFactory = new FactoryHelper();
     }
 
     /**

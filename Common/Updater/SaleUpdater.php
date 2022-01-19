@@ -10,7 +10,7 @@ use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
@@ -28,17 +28,17 @@ use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
  */
 class SaleUpdater implements SaleUpdaterInterface
 {
-    protected AddressBuilderInterface $addressBuilder;
-    protected AdjustmentBuilderInterface $adjustmentBuilder;
-    protected AmountCalculatorFactory $calculatorFactory;
-    protected CurrencyConverterInterface $currencyConverter;
-    protected WeightCalculatorInterface $weightCalculator;
-    protected ShipmentPriceResolverInterface $shipmentPriceResolver;
-    protected PaymentCalculatorInterface $paymentCalculator;
+    protected AddressBuilderInterface           $addressBuilder;
+    protected AdjustmentBuilderInterface        $adjustmentBuilder;
+    protected AmountCalculatorFactory           $calculatorFactory;
+    protected CurrencyConverterInterface        $currencyConverter;
+    protected WeightCalculatorInterface         $weightCalculator;
+    protected ShipmentPriceResolverInterface    $shipmentPriceResolver;
+    protected PaymentCalculatorInterface        $paymentCalculator;
     protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
-    protected ReleaserInterface $outstandingReleaser;
-    protected SaleFactoryInterface $saleFactory;
-    protected string $defaultCurrency;
+    protected ReleaserInterface                 $outstandingReleaser;
+    protected FactoryHelperInterface            $factoryHelper;
+    protected string                            $defaultCurrency;
 
     public function __construct(
         AddressBuilderInterface           $addressBuilder,
@@ -50,7 +50,7 @@ class SaleUpdater implements SaleUpdaterInterface
         PaymentCalculatorInterface        $paymentCalculator,
         InvoiceSubjectCalculatorInterface $invoiceCalculator,
         ReleaserInterface                 $outstandingReleaser,
-        SaleFactoryInterface              $saleFactory
+        FactoryHelperInterface            $factoryHelper
     ) {
         $this->addressBuilder = $addressBuilder;
         $this->adjustmentBuilder = $adjustmentBuilder;
@@ -61,7 +61,7 @@ class SaleUpdater implements SaleUpdaterInterface
         $this->paymentCalculator = $paymentCalculator;
         $this->invoiceCalculator = $invoiceCalculator;
         $this->outstandingReleaser = $outstandingReleaser;
-        $this->saleFactory = $saleFactory;
+        $this->factoryHelper = $factoryHelper;
     }
 
     public function recalculate(SaleInterface $sale): bool
@@ -115,7 +115,7 @@ class SaleUpdater implements SaleUpdaterInterface
     public function updateInvoiceAddressFromAddress(
         SaleInterface    $sale,
         AddressInterface $source,
-        bool                 $persistence = false
+        bool             $persistence = false
     ): bool {
         return $this->addressBuilder->buildSaleInvoiceAddressFromAddress($sale, $source, $persistence);
     }
@@ -123,7 +123,7 @@ class SaleUpdater implements SaleUpdaterInterface
     public function updateDeliveryAddressFromAddress(
         SaleInterface    $sale,
         AddressInterface $source,
-        bool                 $persistence = false
+        bool             $persistence = false
     ): bool {
         return $this->addressBuilder->buildSaleDeliveryAddressFromAddress($sale, $source, $persistence);
     }

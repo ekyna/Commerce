@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Preparer;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -40,28 +40,20 @@ class SalePreparer implements SalePreparerInterface
     private $shipmentBuilder;
 
     /**
-     * @var SaleFactoryInterface
+     * @var FactoryHelperInterface
      */
-    private $saleFactory;
+    private $factoryHelper;
 
-    /**
-     * Constructor.
-     *
-     * @param ResourceEventDispatcherInterface $eventDispatcher
-     * @param StockPrioritizerInterface        $stockPrioritizer
-     * @param ShipmentBuilderInterface         $shipmentBuilder
-     * @param SaleFactoryInterface             $saleFactory
-     */
     public function __construct(
         ResourceEventDispatcherInterface $eventDispatcher,
-        StockPrioritizerInterface $stockPrioritizer,
-        ShipmentBuilderInterface $shipmentBuilder,
-        SaleFactoryInterface $saleFactory
+        StockPrioritizerInterface        $stockPrioritizer,
+        ShipmentBuilderInterface         $shipmentBuilder,
+        FactoryHelperInterface           $factoryHelper
     ) {
         $this->eventDispatcher = $eventDispatcher;
         $this->stockPrioritizer = $stockPrioritizer;
         $this->shipmentBuilder = $shipmentBuilder;
-        $this->saleFactory = $saleFactory;
+        $this->factoryHelper = $factoryHelper;
     }
 
     /**
@@ -87,7 +79,7 @@ class SalePreparer implements SalePreparerInterface
             $this->stockPrioritizer->prioritizeSale($sale);
         }
 
-        $shipment = $this->saleFactory->createShipmentForSale($sale);
+        $shipment = $this->factoryHelper->createShipmentForSale($sale);
 
         $sale->addShipment($shipment);
 

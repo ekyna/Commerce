@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Builder;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\AddressUtil;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -16,25 +16,26 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class AddressBuilder implements AddressBuilderInterface
 {
-    private SaleFactoryInterface       $saleFactory;
+    private FactoryHelperInterface     $factoryHelper;
     private PersistenceHelperInterface $persistenceHelper;
 
-
-    public function __construct(SaleFactoryInterface $saleFactory, PersistenceHelperInterface $persistenceHelper)
-    {
-        $this->saleFactory = $saleFactory;
+    public function __construct(
+        FactoryHelperInterface     $factoryHelper,
+        PersistenceHelperInterface $persistenceHelper
+    ) {
+        $this->factoryHelper = $factoryHelper;
         $this->persistenceHelper = $persistenceHelper;
     }
 
     public function buildSaleInvoiceAddressFromAddress(
-        Model\SaleInterface $sale,
+        Model\SaleInterface    $sale,
         Model\AddressInterface $source,
-        bool $persistence = false
+        bool                   $persistence = false
     ): bool {
         // If the sale does not have an invoice address
         if (null === $current = $sale->getInvoiceAddress()) {
             // Create a new sale address
-            $created = $this->saleFactory->createAddressForSale($sale, $source);
+            $created = $this->factoryHelper->createAddressForSale($sale, $source);
             $sale->setInvoiceAddress($created);
 
             if ($persistence) {
@@ -60,9 +61,9 @@ class AddressBuilder implements AddressBuilderInterface
     }
 
     public function buildSaleDeliveryAddressFromAddress(
-        Model\SaleInterface $sale,
+        Model\SaleInterface    $sale,
         Model\AddressInterface $source,
-        bool $persistence = false
+        bool                   $persistence = false
     ): bool {
         // If the source address equals the invoice address, use the "same address" property.
         if ((null !== $invoice = $sale->getInvoiceAddress()) && AddressUtil::equals($source, $invoice)) {
@@ -84,7 +85,7 @@ class AddressBuilder implements AddressBuilderInterface
         // If the sale does not have a delivery address
         if (null === $current = $sale->getDeliveryAddress()) {
             // Create a new sale address
-            $created = $this->saleFactory->createAddressForSale($sale, $source);
+            $created = $this->factoryHelper->createAddressForSale($sale, $source);
             $sale->setDeliveryAddress($created);
 
             if ($persistence) {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ekyna\Component\Commerce\Common\Factory;
+namespace Ekyna\Component\Commerce\Common\Helper;
 
 use Ekyna\Component\Commerce\Cart\Model as Cart;
 use Ekyna\Component\Commerce\Common\Model;
@@ -18,11 +18,11 @@ use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Resource\Factory\FactoryFactoryInterface;
 
 /**
- * Class SaleFactory
+ * Class FactoryHelper
  * @package Ekyna\Component\Commerce\Common
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SaleFactory implements SaleFactoryInterface
+class FactoryHelper implements FactoryHelperInterface
 {
     public const ADDRESS               = 'address';
     public const ADJUSTMENT            = 'adjustment';

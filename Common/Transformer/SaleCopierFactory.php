@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -14,16 +14,16 @@ use Ekyna\Component\Commerce\Common\Model;
  */
 class SaleCopierFactory implements SaleCopierFactoryInterface
 {
-    protected SaleFactoryInterface $saleFactory;
+    protected FactoryHelperInterface $factoryHelper;
 
 
-    public function __construct(SaleFactoryInterface $saleFactory)
+    public function __construct(FactoryHelperInterface $factoryHelper)
     {
-        $this->saleFactory = $saleFactory;
+        $this->factoryHelper = $factoryHelper;
     }
 
     public function create(Model\SaleInterface $source, Model\SaleInterface $target): SaleCopierInterface
     {
-        return new SaleCopier($this->saleFactory, $source, $target);
+        return new SaleCopier($this->factoryHelper, $source, $target);
     }
 }

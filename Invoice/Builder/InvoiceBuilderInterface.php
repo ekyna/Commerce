@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Invoice\Builder;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilderInterface;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
@@ -20,9 +20,9 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceLineInterface;
 interface InvoiceBuilderInterface extends DocumentBuilderInterface
 {
     /**
-     * Returns the sale factory.
+     * Returns the factory helper.
      */
-    public function getSaleFactory(): SaleFactoryInterface;
+    public function getFactoryHelper(): FactoryHelperInterface;
 
     /**
      * Returns the invoice calculator.

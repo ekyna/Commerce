@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
@@ -39,7 +39,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     protected StockUnitResolverInterface      $unitResolver;
     protected StockAssignmentManagerInterface $assignmentManager;
     protected StockAssignmentUpdaterInterface $assignmentUpdater;
-    protected SaleFactoryInterface            $saleFactory;
+    protected FactoryHelperInterface          $factoryHelper;
 
     public function __construct(
         PersistenceHelperInterface      $persistenceHelper,
@@ -47,14 +47,14 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         StockUnitResolverInterface      $unitResolver,
         StockAssignmentManagerInterface $assignmentManager,
         StockAssignmentUpdaterInterface $assignmentUpdater,
-        SaleFactoryInterface            $saleFactory
+        FactoryHelperInterface          $factoryHelper
     ) {
         $this->persistenceHelper = $persistenceHelper;
         $this->subjectHelper = $subjectHelper;
         $this->unitResolver = $unitResolver;
         $this->assignmentManager = $assignmentManager;
         $this->assignmentUpdater = $assignmentUpdater;
-        $this->saleFactory = $saleFactory;
+        $this->factoryHelper = $factoryHelper;
     }
 
     public function assignSaleItem(SaleItemInterface $item): void

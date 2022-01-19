@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Invoice\Builder;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
 use Ekyna\Component\Commerce\Document\Model as Document;
@@ -24,27 +24,27 @@ use libphonenumber\PhoneNumberUtil;
  */
 class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 {
-    private SaleFactoryInterface $saleFactory;
-    private InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    private FactoryHelperInterface             $factoryHelper;
+    private InvoiceSubjectCalculatorInterface  $invoiceCalculator;
     private ShipmentSubjectCalculatorInterface $shipmentCalculator;
 
     public function __construct(
-        SaleFactoryInterface $factory,
-        InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        FactoryHelperInterface             $factoryHelper,
+        InvoiceSubjectCalculatorInterface  $invoiceCalculator,
         ShipmentSubjectCalculatorInterface $shipmentCalculator,
-        LocaleProviderInterface $localeProvider,
-        PhoneNumberUtil $phoneNumberUtil = null
+        LocaleProviderInterface            $localeProvider,
+        PhoneNumberUtil                    $phoneNumberUtil = null
     ) {
         parent::__construct($localeProvider, $phoneNumberUtil);
 
-        $this->saleFactory        = $factory;
-        $this->invoiceCalculator  = $invoiceCalculator;
+        $this->factoryHelper = $factoryHelper;
+        $this->invoiceCalculator = $invoiceCalculator;
         $this->shipmentCalculator = $shipmentCalculator;
     }
 
-    public function getSaleFactory(): SaleFactoryInterface
+    public function getFactoryHelper(): FactoryHelperInterface
     {
-        return $this->saleFactory;
+        return $this->factoryHelper;
     }
 
     public function getInvoiceCalculator(): InvoiceSubjectCalculatorInterface
@@ -56,7 +56,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
      * @return Invoice\InvoiceLineInterface|null
      */
     public function buildGoodLine(
-        Common\SaleItemInterface $item,
+        Common\SaleItemInterface   $item,
         Document\DocumentInterface $document
     ): ?Document\DocumentLineInterface {
         if (!$document instanceof Invoice\InvoiceInterface) {
@@ -70,12 +70,12 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
                 if (null !== $childLine = $this->buildGoodLine($childItem, $document)) {
                     $saleItemQty = $childItem->getQuantity();
 
-                    $a = ($childLine->getAvailable() ?: New Decimal(0))->div($saleItemQty);
+                    $a = ($childLine->getAvailable() ?: new Decimal(0))->div($saleItemQty);
                     if (null === $available || $available > $a) {
                         $available = $a;
                     }
 
-                    $e = ($childLine->getExpected() ?: New Decimal(0))->div($saleItemQty);
+                    $e = ($childLine->getExpected() ?: new Decimal(0))->div($saleItemQty);
                     if (null === $expected || $expected > $e) {
                         $expected = $e;
                     }
@@ -124,13 +124,13 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 
     public function buildDiscountLine(
         Common\SaleAdjustmentInterface $adjustment,
-        Document\DocumentInterface $document
+        Document\DocumentInterface     $document
     ): ?Document\DocumentLineInterface {
         if (!$document instanceof Invoice\InvoiceInterface) {
             throw new UnexpectedTypeException($document, Invoice\InvoiceInterface::class);
         }
 
-        $line     = null;
+        $line = null;
         $expected = new Decimal(0);
         if ($document->isCredit()) {
             // Credit case
@@ -161,9 +161,9 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             throw new UnexpectedTypeException($document, Invoice\InvoiceInterface::class);
         }
 
-        $line     = null;
+        $line = null;
         $expected = new Decimal(0);
-        $sale     = $document->getSale();
+        $sale = $document->getSale();
         if ($document->isCredit()) {
             // Credit case
             $available = $this->invoiceCalculator->calculateCreditableQuantity($sale, $document);
@@ -190,8 +190,8 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     public function findOrCreateGoodLine(
         Invoice\InvoiceInterface $invoice,
         Common\SaleItemInterface $item,
-        Decimal $available,
-        Decimal $expected = null
+        Decimal                  $available,
+        Decimal                  $expected = null
     ): ?Invoice\InvoiceLineInterface {
         if (0 >= $available) {
             return null;
@@ -229,6 +229,6 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     protected function createLine(Document\DocumentInterface $document): Document\DocumentLineInterface
     {
         /** @var Invoice\InvoiceInterface $document */
-        return $this->saleFactory->createLineForInvoice($document);
+        return $this->factoryHelper->createLineForInvoice($document);
     }
 }

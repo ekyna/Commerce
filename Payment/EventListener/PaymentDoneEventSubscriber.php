@@ -76,9 +76,9 @@ class PaymentDoneEventSubscriber
 
         // Find order's transformed payment
         $newPayment = null;
-        foreach ($order->getPayments() as $p) {
-            if ($p->getNumber() === $payment->getNumber()) {
-                $newPayment = $p;
+        foreach ($order->getPayments() as $orderPayment) {
+            if ($orderPayment->getNumber() === $payment->getNumber()) {
+                $newPayment = $orderPayment;
                 break;
             }
         }
@@ -138,9 +138,9 @@ class PaymentDoneEventSubscriber
 
         // Update tokens identity
         $storage = $this->payum->getTokenStorage();
-        foreach ($tokens as $t) {
-            $t->setDetails($identity);
-            $storage->update($t);
+        foreach ($tokens as $token) {
+            $token->setDetails($identity);
+            $storage->update($token);
         }
     }
 
@@ -157,7 +157,6 @@ class PaymentDoneEventSubscriber
      */
     private function newOrder(): OrderInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->orderFactory->create();
+        return $this->orderFactory->create(false);
     }
 }

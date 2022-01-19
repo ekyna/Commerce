@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Builder;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
@@ -21,17 +21,16 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
  */
 class ShipmentBuilder implements ShipmentBuilderInterface
 {
-    private SaleFactoryInterface $factory;
-    private GatewayRegistryInterface $registry;
+    private FactoryHelperInterface             $factoryHelper;
+    private GatewayRegistryInterface           $registry;
     private ShipmentSubjectCalculatorInterface $calculator;
 
     public function __construct(
-        SaleFactoryInterface $factory,
-        GatewayRegistryInterface $registry,
+        FactoryHelperInterface             $factoryHelper,
+        GatewayRegistryInterface           $registry,
         ShipmentSubjectCalculatorInterface $calculator
-
     ) {
-        $this->factory = $factory;
+        $this->factoryHelper = $factoryHelper;
         $this->registry = $registry;
         $this->calculator = $calculator;
     }
@@ -174,8 +173,8 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     private function findOrCreateItem(
         ShipmentInterface $shipment,
         SaleItemInterface $saleItem,
-        Decimal $expected,
-        Decimal $available = null
+        Decimal           $expected,
+        Decimal           $available = null
     ): ?ShipmentItemInterface {
         if (0 >= $expected) {
             return null;
@@ -193,7 +192,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
 
         // Not found, create it
         if (null === $item) {
-            $item = $this->factory->createItemForShipment($shipment);
+            $item = $this->factoryHelper->createItemForShipment($shipment);
             $item->setShipment($shipment);
             $item->setSaleItem($saleItem);
         }

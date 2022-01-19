@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Builder;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
@@ -18,19 +18,18 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class AdjustmentBuilder implements AdjustmentBuilderInterface
 {
-    protected SaleFactoryInterface       $saleFactory;
+    protected FactoryHelperInterface     $factoryHelper;
     protected TaxResolverInterface       $taxResolver;
     protected DiscountResolverInterface  $discountResolver;
     protected PersistenceHelperInterface $persistenceHelper;
 
-
     public function __construct(
-        SaleFactoryInterface $saleFactory,
-        TaxResolverInterface $taxResolver,
-        DiscountResolverInterface $discountResolver,
+        FactoryHelperInterface     $factoryHelper,
+        TaxResolverInterface       $taxResolver,
+        DiscountResolverInterface  $discountResolver,
         PersistenceHelperInterface $persistenceHelper
     ) {
-        $this->saleFactory = $saleFactory;
+        $this->factoryHelper = $factoryHelper;
         $this->taxResolver = $taxResolver;
         $this->discountResolver = $discountResolver;
         $this->persistenceHelper = $persistenceHelper;
@@ -73,7 +72,11 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     {
         $sale = $item->getSale();
 
-        $data = $sale->isAutoDiscount() && !$sale->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
+        if (!$sale->isAutoDiscount()) {
+            return false;
+        }
+
+        $data = !$sale->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
@@ -133,7 +136,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     }
 
     /**
-     * Builds the adjustable's adjustments based on the given data and type.
+     * Builds the adjustments regarding the given data and type.
      *
      * @param string                          $type
      * @param Model\AdjustableInterface       $adjustable
@@ -143,10 +146,10 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
      * @return bool Whether at least one adjustment has been changed (created, updated or deleted)
      */
     protected function buildAdjustments(
-        string $type,
+        string                    $type,
         Model\AdjustableInterface $adjustable,
-        array $data,
-        bool $persistence = false
+        array                     $data,
+        bool                      $persistence = false
     ): bool {
         Model\AdjustmentTypes::isValidType($type);
 
@@ -154,15 +157,15 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
 
         // Generate adjustments
         $newAdjustments = [];
-        foreach ($data as $d) {
-            $adjustment = $this->saleFactory->createAdjustmentFor($adjustable);
+        foreach ($data as $datum) {
+            $adjustment = $this->factoryHelper->createAdjustmentFor($adjustable);
             $adjustment
                 ->setType($type)
-                ->setMode($d->getMode())
-                ->setDesignation($d->getDesignation())
-                ->setAmount($d->getAmount())
-                ->setImmutable($d->isImmutable())
-                ->setSource($d->getSource());
+                ->setMode($datum->getMode())
+                ->setDesignation($datum->getDesignation())
+                ->setAmount($datum->getAmount())
+                ->setImmutable($datum->isImmutable())
+                ->setSource($datum->getSource());
 
             $newAdjustments[] = $adjustment;
         }

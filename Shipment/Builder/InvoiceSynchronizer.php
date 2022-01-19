@@ -91,7 +91,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         }
 
         if (null === $invoice) {
-            $invoice = $this->invoiceBuilder->getSaleFactory()->createInvoiceForSale($sale);
+            $invoice = $this->invoiceBuilder->getFactoryHelper()->createInvoiceForSale($sale);
             $invoice
                 ->setSale($sale)
                 ->setShipment($shipment)

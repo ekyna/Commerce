@@ -8,12 +8,14 @@ use Ekyna\Bundle\ResourceBundle\Service\Uploader\UploadToggler;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvent;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvents;
+use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Factory\FactoryFactoryInterface;
 use Ekyna\Component\Resource\Manager\ManagerFactoryInterface;
 use Ekyna\Component\Resource\Manager\ResourceManagerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -26,22 +28,25 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 class SaleTransformer implements SaleTransformerInterface
 {
-    private SaleCopierFactoryInterface       $saleCopierFactory;
-    private ManagerFactoryInterface          $managerFactory;
-    private UploadToggler                    $uploadToggler;
-    private EventDispatcherInterface         $eventDispatcher;
+    private SaleCopierFactoryInterface $saleCopierFactory;
+    private FactoryFactoryInterface    $factoryFactory;
+    private ManagerFactoryInterface    $managerFactory;
+    private UploadToggler              $uploadToggler;
+    private EventDispatcherInterface   $eventDispatcher;
 
     protected ?SaleInterface $source = null;
     protected ?SaleInterface $target = null;
 
 
     public function __construct(
-        SaleCopierFactoryInterface       $saleCopierFactory,
-        ManagerFactoryInterface          $managerFactory,
-        UploadToggler                    $uploadToggler,
-        EventDispatcherInterface         $eventDispatcher
+        SaleCopierFactoryInterface $saleCopierFactory,
+        FactoryFactoryInterface    $factoryFactory,
+        ManagerFactoryInterface    $managerFactory,
+        UploadToggler              $uploadToggler,
+        EventDispatcherInterface   $eventDispatcher
     ) {
         $this->saleCopierFactory = $saleCopierFactory;
+        $this->factoryFactory = $factoryFactory;
         $this->managerFactory = $managerFactory;
         $this->uploadToggler = $uploadToggler;
         $this->eventDispatcher = $eventDispatcher;
@@ -51,12 +56,6 @@ class SaleTransformer implements SaleTransformerInterface
     {
         $this->source = $source;
         $this->target = $target;
-
-//        // TODO Use resource event dispatcher instead of manager...
-//        $event = $this->getManager($this->target)->initialize($this->target);
-//        if ($event->isPropagationStopped()) {
-//            return $event;
-//        }
 
         $event = new SaleTransformEvent($this->source, $this->target);
 
@@ -71,6 +70,8 @@ class SaleTransformer implements SaleTransformerInterface
             ->copySale();
 
         $this->eventDispatcher->dispatch($event, SaleTransformEvents::POST_COPY);
+
+        $this->getFactory($this->target)->initialize($this->target);
 
         return $event;
     }
@@ -119,20 +120,38 @@ class SaleTransformer implements SaleTransformerInterface
     }
 
     /**
+     * Returns the factory for the given sale.
+     */
+    protected function getFactory(SaleInterface $sale): SaleFactoryInterface
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->factoryFactory->getFactory(
+            $this->resolveInterface($sale)
+        );
+    }
+
+    /**
      * Returns the manager for the given sale.
      */
     protected function getManager(SaleInterface $sale): ResourceManagerInterface
     {
-        $classes = [CartInterface::class, QuoteInterface::class, OrderInterface::class];
+        return $this->managerFactory->getManager(
+            $this->resolveInterface($sale)
+        );
+    }
 
-        foreach ($classes as $class) {
-            if (!$sale instanceof $class) {
+    private function resolveInterface(SaleInterface $sale): string
+    {
+        $interfaces = [CartInterface::class, QuoteInterface::class, OrderInterface::class];
+
+        foreach ($interfaces as $interface) {
+            if (!$sale instanceof $interface) {
                 continue;
             }
 
-            return $this->managerFactory->getManager($class);
+            return $interface;
         }
 
-        throw new UnexpectedTypeException($sale, $classes);
+        throw new UnexpectedTypeException($sale, $interfaces);
     }
 }

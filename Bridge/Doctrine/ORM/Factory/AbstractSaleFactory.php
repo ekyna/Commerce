@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Factory;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -21,26 +22,26 @@ use function is_null;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Factory
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractSaleFactory extends ResourceFactory
+abstract class AbstractSaleFactory extends ResourceFactory implements SaleFactoryInterface
 {
-    private SaleFactoryInterface      $saleFactory;
+    private FactoryHelperInterface    $factoryHelper;
     private SaleUpdaterInterface      $saleUpdater;
     private LocaleProviderInterface   $localeProvider;
     private CurrencyProviderInterface $currencyProvider;
 
     public function __construct(
-        SaleFactoryInterface $saleFactory,
-        SaleUpdaterInterface $saleUpdater,
-        LocaleProviderInterface $localeProvider,
+        FactoryHelperInterface    $factoryHelper,
+        SaleUpdaterInterface      $saleUpdater,
+        LocaleProviderInterface   $localeProvider,
         CurrencyProviderInterface $currencyProvider
     ) {
-        $this->saleFactory = $saleFactory;
+        $this->factoryHelper = $factoryHelper;
         $this->saleUpdater = $saleUpdater;
         $this->localeProvider = $localeProvider;
         $this->currencyProvider = $currencyProvider;
     }
 
-    public function create(): ResourceInterface
+    public function create(bool $initialize = true): ResourceInterface
     {
         $sale = parent::create();
 
@@ -48,7 +49,7 @@ abstract class AbstractSaleFactory extends ResourceFactory
             throw new UnexpectedTypeException($sale, SaleInterface::class);
         }
 
-        $this->initialize($sale);
+        $initialize && $this->initialize($sale);
 
         return $sale;
     }
@@ -69,8 +70,10 @@ abstract class AbstractSaleFactory extends ResourceFactory
         return $sale;
     }
 
-    protected function initialize(SaleInterface $sale): void
+    public function initialize(SaleInterface $sale): void
     {
+        $sale->setContext(null);
+
         if ($customer = $sale->getCustomer()) {
             $this->initFromCustomer($sale, $customer);
         }
@@ -99,7 +102,7 @@ abstract class AbstractSaleFactory extends ResourceFactory
         $invoiceDefault = $customer->getDefaultInvoiceAddress(true);
         if (is_null($sale->getInvoiceAddress()) && $invoiceDefault) {
             $sale->setInvoiceAddress(
-                $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
+                $this->factoryHelper->createAddressForSale($sale, $invoiceDefault)
             );
         }
 
@@ -110,10 +113,8 @@ abstract class AbstractSaleFactory extends ResourceFactory
             $sale
                 ->setSameAddress(false)
                 ->setDeliveryAddress(
-                    $this->saleFactory->createAddressForSale($sale, $invoiceDefault)
+                    $this->factoryHelper->createAddressForSale($sale, $invoiceDefault)
                 );
         }
-
-        $this->saleUpdater->updateShipmentMethodAndAmount($sale);
     }
 }

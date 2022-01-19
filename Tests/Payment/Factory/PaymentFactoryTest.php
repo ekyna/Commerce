@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Tests\Payment\Factory;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Order\Entity\Order;
 use Ekyna\Component\Commerce\Order\Entity\OrderPayment;
@@ -25,9 +25,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 class PaymentFactoryTest extends TestCase
 {
     /**
-     * @var SaleFactoryInterface|MockObject
+     * @var FactoryHelperInterface|MockObject
      */
-    private $saleFactory;
+    private $factoryHelper;
 
     /**
      * @var PaymentUpdaterInterface
@@ -47,14 +47,14 @@ class PaymentFactoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->saleFactory = $this->createMock(SaleFactoryInterface::class);
+        $this->factoryHelper = $this->createMock(FactoryHelperInterface::class);
 
         $this->paymentUpdater = new PaymentUpdater($this->getCurrencyConverter());
 
         $this->paymentCalculator = $this->createMock(PaymentCalculatorInterface::class);
 
         $this->paymentFactory = new PaymentFactory(
-            $this->saleFactory,
+            $this->factoryHelper,
             $this->paymentUpdater,
             $this->paymentCalculator,
             $this->getCurrencyConverter(),
@@ -67,7 +67,7 @@ class PaymentFactoryTest extends TestCase
         parent::tearDown();
 
         $this->paymentFactory = null;
-        $this->saleFactory = null;
+        $this->factoryHelper = null;
         $this->paymentUpdater = null;
         $this->paymentCalculator = null;
     }
@@ -104,7 +104,7 @@ class PaymentFactoryTest extends TestCase
         $payment = new OrderPayment();
 
         $this
-            ->saleFactory
+            ->factoryHelper
             ->method('createPaymentForSale')
             ->with($subject)
             ->willReturn($payment);

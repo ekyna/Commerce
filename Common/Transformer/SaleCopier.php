@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
@@ -21,9 +21,9 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 class SaleCopier implements SaleCopierInterface
 {
     /**
-     * @var SaleFactoryInterface
+     * @var FactoryHelperInterface
      */
-    protected $saleFactory;
+    protected $factoryHelper;
 
     /**
      * @var Model\SaleInterface
@@ -40,22 +40,14 @@ class SaleCopier implements SaleCopierInterface
      */
     protected $accessor;
 
-
-    /**
-     * Constructor.
-     *
-     * @param SaleFactoryInterface $saleFactory
-     * @param Model\SaleInterface  $source
-     * @param Model\SaleInterface  $target
-     */
     public function __construct(
-        SaleFactoryInterface $saleFactory,
-        Model\SaleInterface $source,
-        Model\SaleInterface $target
+        FactoryHelperInterface $factoryHelper,
+        Model\SaleInterface    $source,
+        Model\SaleInterface    $target
     ) {
-        $this->saleFactory = $saleFactory;
-        $this->source      = $source;
-        $this->target      = $target;
+        $this->factoryHelper = $factoryHelper;
+        $this->source = $source;
+        $this->target = $target;
 
         $this->accessor = PropertyAccess::createPropertyAccessor();
     }
@@ -139,13 +131,13 @@ class SaleCopier implements SaleCopierInterface
     {
         // Invoice address
         if ($sourceInvoiceAddress = $this->source->getInvoiceAddress()) {
-            $targetInvoiceAddress = $this->saleFactory->createAddressForSale($this->target, $sourceInvoiceAddress);
+            $targetInvoiceAddress = $this->factoryHelper->createAddressForSale($this->target, $sourceInvoiceAddress);
             $this->target->setInvoiceAddress($targetInvoiceAddress);
         }
 
         // Delivery address
         if ($sourceDeliveryAddress = $this->source->getDeliveryAddress()) {
-            $targetDeliveryAddress = $this->saleFactory->createAddressForSale($this->target, $sourceDeliveryAddress);
+            $targetDeliveryAddress = $this->factoryHelper->createAddressForSale($this->target, $sourceDeliveryAddress);
             $this->target->setDeliveryAddress($targetDeliveryAddress);
         }
 
@@ -158,7 +150,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyAdjustments()
     {
         foreach ($this->source->getAdjustments() as $sourceAdjustment) {
-            $targetAdjustment = $this->saleFactory->createAdjustmentForSale($this->target);
+            $targetAdjustment = $this->factoryHelper->createAdjustmentForSale($this->target);
             $this->target->addAdjustment($targetAdjustment);
             $this->copyAdjustment($sourceAdjustment, $targetAdjustment);
         }
@@ -172,7 +164,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyAttachments()
     {
         foreach ($this->source->getAttachments() as $sourceAttachment) {
-            $targetAttachment = $this->saleFactory->createAttachmentForSale($this->target);
+            $targetAttachment = $this->factoryHelper->createAttachmentForSale($this->target);
             $this->target->addAttachment($targetAttachment);
             $this->copyAttachment($sourceAttachment, $targetAttachment);
         }
@@ -186,7 +178,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyNotifications()
     {
         foreach ($this->source->getNotifications() as $sourceNotification) {
-            $targetNotification = $this->saleFactory->createNotificationForSale($this->target);
+            $targetNotification = $this->factoryHelper->createNotificationForSale($this->target);
             $this->target->addNotification($targetNotification);
             $this->copyNotification($sourceNotification, $targetNotification);
         }
@@ -200,7 +192,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyItems()
     {
         foreach ($this->source->getItems() as $sourceItem) {
-            $targetItem = $this->saleFactory->createItemForSale($this->target);
+            $targetItem = $this->factoryHelper->createItemForSale($this->target);
             $this->target->addItem($targetItem);
             $this->copyItem($sourceItem, $targetItem);
         }
@@ -214,7 +206,7 @@ class SaleCopier implements SaleCopierInterface
     public function copyPayments()
     {
         foreach ($this->source->getPayments() as $sourcePayment) {
-            $targetPayment = $this->saleFactory->createPaymentForSale($this->target);
+            $targetPayment = $this->factoryHelper->createPaymentForSale($this->target);
             $this->target->addPayment($targetPayment);
             $this->copyPayment($sourcePayment, $targetPayment);
         }
@@ -348,14 +340,14 @@ class SaleCopier implements SaleCopierInterface
 
         // Adjustments
         foreach ($source->getAdjustments() as $sourceAdjustment) {
-            $targetAdjustment = $this->saleFactory->createAdjustmentForItem($target);
+            $targetAdjustment = $this->factoryHelper->createAdjustmentForItem($target);
             $target->addAdjustment($targetAdjustment);
             $this->copyAdjustment($sourceAdjustment, $targetAdjustment);
         }
 
         // Children
         foreach ($source->getChildren() as $sourceChild) {
-            $targetChild = $this->saleFactory->createItemForSale($target->getSale());
+            $targetChild = $this->factoryHelper->createItemForSale($target->getSale());
             $target->addChild($targetChild);
             $this->copyItem($sourceChild, $targetChild);
         }

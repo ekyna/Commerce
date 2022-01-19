@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Payment\Factory;
 
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
+use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
@@ -22,20 +22,20 @@ use Ekyna\Component\Commerce\Payment\Updater\PaymentUpdaterInterface;
  */
 class PaymentFactory implements PaymentFactoryInterface
 {
-    protected SaleFactoryInterface $saleFactory;
+    protected FactoryHelperInterface      $factoryHelper;
     protected CurrencyRepositoryInterface $currencyRepository;
-    protected PaymentUpdaterInterface $paymentUpdater;
-    protected PaymentCalculatorInterface $paymentCalculator;
-    protected CurrencyConverterInterface $currencyConverter;
+    protected PaymentUpdaterInterface     $paymentUpdater;
+    protected PaymentCalculatorInterface  $paymentCalculator;
+    protected CurrencyConverterInterface  $currencyConverter;
 
     public function __construct(
-        SaleFactoryInterface $factory,
-        PaymentUpdaterInterface $updater,
-        PaymentCalculatorInterface $calculator,
-        CurrencyConverterInterface $converter,
+        FactoryHelperInterface      $factoryHelper,
+        PaymentUpdaterInterface     $updater,
+        PaymentCalculatorInterface  $calculator,
+        CurrencyConverterInterface  $converter,
         CurrencyRepositoryInterface $repository
     ) {
-        $this->saleFactory = $factory;
+        $this->factoryHelper = $factoryHelper;
         $this->paymentUpdater = $updater;
         $this->paymentCalculator = $calculator;
         $this->currencyConverter = $converter;
@@ -46,7 +46,9 @@ class PaymentFactory implements PaymentFactoryInterface
     {
         $payment = $this->create($subject, $method)->setRefund(false);
 
-        $amount = $this->paymentCalculator->calculateExpectedPaymentAmount($subject, $payment->getCurrency()->getCode());
+        $amount = $this
+            ->paymentCalculator
+            ->calculateExpectedPaymentAmount($subject, $payment->getCurrency()->getCode());
 
         $payment->setAmount($amount);
 
@@ -74,7 +76,7 @@ class PaymentFactory implements PaymentFactoryInterface
             throw new UnexpectedTypeException($subject, SaleInterface::class);
         }
 
-        $payment = $this->saleFactory->createPaymentForSale($subject);
+        $payment = $this->factoryHelper->createPaymentForSale($subject);
 
         if ($method->isDefaultCurrency()) {
             $currency = $this->currencyRepository->findDefault();

@@ -404,7 +404,7 @@ abstract class AbstractSale implements Common\SaleInterface
         return $this->context;
     }
 
-    public function setContext(ContextInterface $context): Common\SaleInterface
+    public function setContext(?ContextInterface $context): Common\SaleInterface
     {
         $this->context = $context;
 

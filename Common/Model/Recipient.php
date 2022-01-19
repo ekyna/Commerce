@@ -39,15 +39,15 @@ class Recipient
         ];
     }
 
-    private ?string        $email;
-    private ?string        $name;
+    private string        $email;
+    private string        $name;
     private ?string        $type;
     private ?UserInterface $user;
 
 
     public function __construct(
-        string $email = null,
-        string $name = null,
+        string $email,
+        string $name = '',
         string $type = null,
         UserInterface $user = null
     ) {
@@ -57,26 +57,26 @@ class Recipient
         $this->user = $user;
     }
 
-    public function setEmail(?string $email): Recipient
+    public function setEmail(string $email): Recipient
     {
         $this->email = $email;
 
         return $this;
     }
 
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }
 
-    public function setName(?string $name): Recipient
+    public function setName(string $name): Recipient
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }

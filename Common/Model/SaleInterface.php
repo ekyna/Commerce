@@ -186,7 +186,7 @@ interface SaleInterface extends
 
     public function getDeliveryCountry(): ?CountryInterface;
 
-    public function setContext(ContextInterface $context): SaleInterface;
+    public function setContext(?ContextInterface $context): SaleInterface;
 
     public function getContext(): ?ContextInterface;
 
