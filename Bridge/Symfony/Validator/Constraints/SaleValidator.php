@@ -98,7 +98,10 @@ class SaleValidator extends ConstraintValidator
                 ->atPath('deliveryAddress')
                 ->addViolation();
 
-        } elseif ($sale->isSameAddress() && null !== $sale->getDeliveryAddress()) {
+            return;
+        }
+
+        if ($sale->isSameAddress() && null !== $sale->getDeliveryAddress()) {
             $this->context
                 ->buildViolation($constraint->delivery_address_should_be_null)
                 ->atPath('deliveryAddress')

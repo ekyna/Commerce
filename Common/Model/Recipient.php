@@ -39,16 +39,15 @@ class Recipient
         ];
     }
 
-    private string        $email;
-    private string        $name;
+    private string         $email;
+    private string         $name;
     private ?string        $type;
     private ?UserInterface $user;
 
-
     public function __construct(
-        string $email,
-        string $name = '',
-        string $type = null,
+        string        $email = '',
+        string        $name = '',
+        string        $type = null,
         UserInterface $user = null
     ) {
         $this->email = $email;

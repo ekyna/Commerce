@@ -106,10 +106,16 @@ abstract class AbstractSaleFactory extends ResourceFactory implements SaleFactor
             );
         }
 
+        if (!is_null($sale->getDeliveryAddress())) {
+            $sale->setSameAddress(false);
+
+            return;
+        }
+
         $sale->setSameAddress(true);
 
         $deliveryDefault = $customer->getDefaultDeliveryAddress(true);
-        if (is_null($sale->getDeliveryAddress()) && $deliveryDefault && ($deliveryDefault !== $invoiceDefault)) {
+        if ($deliveryDefault && ($deliveryDefault !== $invoiceDefault)) {
             $sale
                 ->setSameAddress(false)
                 ->setDeliveryAddress(
