@@ -21,7 +21,7 @@ interface AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed.
      */
-    public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool;
+    public function buildSaleDiscountAdjustments(Model\SaleInterface $sale, bool $persistence = false): bool;
 
     /**
      * Builds the discount adjustments for the given sale items recursively.
@@ -31,7 +31,7 @@ interface AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed.
      */
-    public function buildDiscountAdjustmentsForSaleItems($parent, bool $persistence = false): bool;
+    public function buildSaleItemsDiscountAdjustments($parent, bool $persistence = false): bool;
 
     /**
      * Builds the discount adjustments for the given sale item.
@@ -41,7 +41,7 @@ interface AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed.
      */
-    public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool;
+    public function buildSaleItemDiscountAdjustments(Model\SaleItemInterface $item, bool $persistence = false): bool;
 
     /**
      * Builds the taxation adjustments for the given sale.
@@ -51,7 +51,7 @@ interface AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed.
      */
-    public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool;
+    public function buildSaleTaxationAdjustments(Model\SaleInterface $sale, bool $persistence = false): bool;
 
     /**
      * Builds the taxation adjustments for the given sale items recursively.
@@ -61,7 +61,7 @@ interface AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed.
      */
-    public function buildTaxationAdjustmentsForSaleItems($parent, bool $persistence = false): bool;
+    public function buildSaleItemsTaxationAdjustments($parent, bool $persistence = false): bool;
 
     /**
      * Builds the taxation adjustments for the given sale item.
@@ -71,5 +71,15 @@ interface AdjustmentBuilderInterface
      *
      * @return bool Whether at least one adjustment has been changed.
      */
-    public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool;
+    public function buildSaleItemTaxationAdjustments(Model\SaleItemInterface $item, bool $persistence = false): bool;
+
+    /**
+     * Makes all sale's discount adjustments mutable.
+     */
+    public function makeSaleDiscountsMutable(Model\SaleInterface $sale): void;
+
+    /**
+     * Clears all sale's mutable discount adjustments.
+     */
+    public function clearSaleMutableDiscounts(Model\SaleInterface $sale): void;
 }

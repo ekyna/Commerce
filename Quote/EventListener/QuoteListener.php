@@ -62,20 +62,26 @@ class QuoteListener extends AbstractSaleListener
         return $changed;
     }
 
+    /**
+     * @TODO Use common sale state constants. Move into parent::updateState() method.
+     */
     protected function updateState(SaleInterface $sale): bool
     {
-        if (parent::updateState($sale)) {
-            /** @var QuoteInterface $sale */
-            if (($sale->getState() === QuoteStates::STATE_ACCEPTED) && (null === $sale->getAcceptedAt())) {
-                $sale->setAcceptedAt(new DateTime());
-            } elseif (($sale->getState() !== QuoteStates::STATE_ACCEPTED) && (null !== $sale->getAcceptedAt())) {
-                $sale->setAcceptedAt(null);
-            }
+        if (!parent::updateState($sale)) {
+            return false;
+        }
+
+        if ($sale->getState() !== QuoteStates::STATE_ACCEPTED) {
+            $sale->setAcceptedAt(null);
 
             return true;
         }
 
-        return false;
+        if (null === $sale->getAcceptedAt()) {
+            $sale->setAcceptedAt(new DateTime());
+        }
+
+        return true;
     }
 
     protected function getSaleFromEvent(ResourceEventInterface $event): SaleInterface

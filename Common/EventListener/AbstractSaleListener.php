@@ -121,10 +121,8 @@ abstract class AbstractSaleListener
      */
     protected function handleInsert(SaleInterface $sale): bool
     {
-        $changed = false;
-
         // Generate number and key
-        $changed = $this->updateNumber($sale) || $changed;
+        $changed = $this->updateNumber($sale);
         $changed = $this->updateKey($sale) || $changed;
 
         // Update customer information
@@ -200,10 +198,8 @@ abstract class AbstractSaleListener
      */
     protected function handleUpdate(SaleInterface $sale): bool
     {
-        $changed = false;
-
         // Generate number and key
-        $changed = $this->updateNumber($sale) || $changed;
+        $changed = $this->updateNumber($sale);
         $changed = $this->updateKey($sale) || $changed;
 
         // Handle customer information
@@ -239,18 +235,13 @@ abstract class AbstractSaleListener
         }
 
         // Update discounts
-        if ($this->isDiscountUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
+        if ($this->persistenceHelper->isChangedFromTo($sale, 'autoDiscount', true, false)) {
+            $this->saleUpdater->makeDiscountsMutable($sale);
+        } elseif ($this->persistenceHelper->isChangedFromTo($sale, 'autoDiscount', false, true)) {
+            $this->saleUpdater->clearMutableDiscounts($sale);
         }
 
-        // Update taxation
-        if ($this->isTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
-        } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
-        }
-
-        return $changed;
+        return $this->updateAdjustments($sale) || $changed;
     }
 
     public function onAddressChange(ResourceEventInterface $event): void
@@ -281,22 +272,10 @@ abstract class AbstractSaleListener
 
         // Update shipment method and amount
         if ($this->didDeliveryCountryChanged($sale)) {
-            $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
+            $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale);
         }
 
-        // Update discounts
-        if ($this->isDiscountUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
-        }
-
-        // Update taxation
-        if ($this->isTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
-        } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
-        }
-
-        return $changed;
+        return $this->updateAdjustments($sale) || $changed;
     }
 
     /**
@@ -349,9 +328,7 @@ abstract class AbstractSaleListener
         $changed = $this->updateState($sale) || $changed;
 
         // Update due dates
-        $changed = $this->updateDueDates($sale) || $changed;
-
-        return $changed;
+        return $this->updateDueDates($sale) || $changed;
     }
 
     public function onStateChange(ResourceEventInterface $event): void
@@ -413,7 +390,7 @@ abstract class AbstractSaleListener
      */
     protected function isDiscountUpdateNeeded(SaleInterface $sale): bool
     {
-        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount', 'couponData'])) {
+        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount', 'couponData', 'customerGroup', 'customer'])) {
             return true;
         }
 
@@ -461,8 +438,6 @@ abstract class AbstractSaleListener
      */
     protected function isTaxationUpdateNeeded(SaleInterface $sale): bool
     {
-        // TODO (Order) Abort if "completed" and not "has changed for completed"
-
         // TODO Get tax resolution mode. (by invoice/delivery/origin).
 
         if ($this->persistenceHelper->isChanged($sale, ['taxExempt', 'customer', 'vatValid'])) {
@@ -710,6 +685,28 @@ abstract class AbstractSaleListener
         }
 
         return false;
+    }
+
+    /**
+     * Updates taxation and discount adjustments if needed.
+     */
+    protected function updateAdjustments(SaleInterface $sale): bool
+    {
+        $changed = false;
+
+        // Update discounts
+        if ($this->isDiscountUpdateNeeded($sale)) {
+            $changed = $this->saleUpdater->updateDiscounts($sale, true);
+        }
+
+        // Update taxation
+        if ($this->isTaxationUpdateNeeded($sale)) {
+            $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
+        } elseif ($this->isShipmentTaxationUpdateNeeded($sale)) {
+            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
+        }
+
+        return $changed;
     }
 
     /**

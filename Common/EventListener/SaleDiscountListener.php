@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
 use Ekyna\Component\Commerce\Common\Event;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentData;
-use Ekyna\Component\Commerce\Common\Repository\CouponRepositoryInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -14,28 +15,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class SaleDiscountListener implements EventSubscriberInterface
 {
-    /**
-     * @var CouponRepositoryInterface
-     */
-    private $couponRepository;
-
-
-    /**
-     * Constructor.
-     *
-     * @param CouponRepositoryInterface $couponRepository
-     */
-    public function __construct(CouponRepositoryInterface $couponRepository)
-    {
-        $this->couponRepository = $couponRepository;
-    }
-
-    /**
-     * Sale discount event handler.
-     *
-     * @param Event\SaleEvent $event
-     */
-    public function onSaleDiscount(Event\SaleEvent $event)
+    public function onSaleDiscount(Event\SaleEvent $event): void
     {
         if (null === $data = $event->getSale()->getCouponData()) {
             return;
@@ -46,10 +26,7 @@ class SaleDiscountListener implements EventSubscriberInterface
         ));
     }
 
-    /**
-     * @inheritDoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             Event\SaleEvents::DISCOUNT => ['onSaleDiscount', 0],

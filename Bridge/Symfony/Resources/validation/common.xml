@@ -70,14 +70,7 @@
             </option>
         </constraint>
         <property name="designation">
-            <!--<constraint name="NotBlank">
-                <option name="groups">
-                    <value>Default</value>
-                    <value>Calculation</value>
-                </option>
-            </constraint>-->
             <constraint name="Length">
-                <!--<option name="min">2</option>-->
                 <option name="max">255</option>
                 <option name="groups">
                     <value>Default</value>

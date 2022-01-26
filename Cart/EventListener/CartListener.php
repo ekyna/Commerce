@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Cart\EventListener;
 
+use DateTime;
 use Ekyna\Component\Commerce\Cart\Event\CartEvents;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Cart\Model\CartStates;
@@ -55,27 +56,33 @@ class CartListener extends AbstractSaleListener
      */
     protected function updateExpiresAt(CartInterface $cart): bool
     {
-        $date = new \DateTime();
+        $date = new DateTime();
         $date->modify($this->expirationDelay);
         $cart->setExpiresAt($date);
 
         return true;
     }
 
+    /**
+     * @TODO Use common sale state constants. Move into parent::updateState() method.
+     */
     protected function updateState(SaleInterface $sale): bool
     {
-        if (parent::updateState($sale)) {
-            /** @var CartInterface $sale */
-            if (($sale->getState() === CartStates::STATE_ACCEPTED) && (null === $sale->getAcceptedAt())) {
-                $sale->setAcceptedAt(new \DateTime());
-            } elseif (($sale->getState() !== CartStates::STATE_ACCEPTED) && (null !== $sale->getAcceptedAt())) {
-                $sale->setAcceptedAt(null);
-            }
+        if (!parent::updateState($sale)) {
+            return false;
+        }
+
+        if ($sale->getState() !== CartStates::STATE_ACCEPTED) {
+            $sale->setAcceptedAt(null);
 
             return true;
         }
 
-        return false;
+        if (null === $sale->getAcceptedAt()) {
+            $sale->setAcceptedAt(new DateTime());
+        }
+
+        return true;
     }
 
     /**

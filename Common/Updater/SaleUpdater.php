@@ -66,12 +66,8 @@ class SaleUpdater implements SaleUpdaterInterface
 
     public function recalculate(SaleInterface $sale): bool
     {
-        $changed = false;
-
         // 1. discounts
-        if ($sale->getPaidTotal()->isZero()) { // Do not update if paid amount
-            $changed = $this->updateDiscounts($sale);
-        }
+        $changed = $this->updateDiscounts($sale);
 
         // 2. weight
         $changed = $this->updateWeightTotal($sale) || $changed;
@@ -130,25 +126,39 @@ class SaleUpdater implements SaleUpdaterInterface
 
     public function updateDiscounts(SaleInterface $sale, bool $persistence = false): bool
     {
-        /* TODO (?) if ($sale->getPaidTotal()->isZero()) {
-            return false;
-        }*/
+        $changed = $this->adjustmentBuilder->buildSaleItemsDiscountAdjustments($sale, $persistence);
 
-        $changed = $this->adjustmentBuilder->buildDiscountAdjustmentsForSaleItems($sale, $persistence);
+        return $this->adjustmentBuilder->buildSaleDiscountAdjustments($sale, $persistence) || $changed;
+    }
 
-        return $this->adjustmentBuilder->buildDiscountAdjustmentsForSale($sale, $persistence) || $changed;
+    public function makeDiscountsMutable(SaleInterface $sale): void
+    {
+        if ($sale->isAutoDiscount()) {
+            return;
+        }
+
+        $this->adjustmentBuilder->makeSaleDiscountsMutable($sale);
+    }
+
+    public function clearMutableDiscounts(SaleInterface $sale): void
+    {
+        if (!$sale->isAutoDiscount()) {
+            return;
+        }
+
+        $this->adjustmentBuilder->clearSaleMutableDiscounts($sale);
     }
 
     public function updateTaxation(SaleInterface $sale, bool $persistence = false): bool
     {
-        $changed = $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItems($sale, $persistence);
+        $changed = $this->adjustmentBuilder->buildSaleItemsTaxationAdjustments($sale, $persistence);
 
-        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, $persistence) || $changed;
+        return $this->adjustmentBuilder->buildSaleTaxationAdjustments($sale, $persistence) || $changed;
     }
 
     public function updateShipmentTaxation(SaleInterface $sale, bool $persistence = false): bool
     {
-        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSale($sale, $persistence);
+        return $this->adjustmentBuilder->buildSaleTaxationAdjustments($sale, $persistence);
     }
 
     public function updateShipmentMethodAndAmount(SaleInterface $sale): bool

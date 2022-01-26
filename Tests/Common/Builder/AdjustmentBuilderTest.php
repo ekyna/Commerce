@@ -48,7 +48,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildDiscountAdjustmentsForSaleItem()
+     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildItemDiscount_withSingleItem()
     {
@@ -62,7 +62,7 @@ class AdjustmentBuilderTest extends TestCase
             ->with($item)
             ->willReturn([new AdjustmentData(AdjustmentModes::MODE_PERCENT, 'Discount 7%', 7, 'test')]);
 
-        $this->builder->buildDiscountAdjustmentsForSaleItem($item);
+        $this->builder->buildSaleItemDiscountAdjustments($item);
 
         $adjustments = $item->getAdjustments();
         $this->assertCount(1, $adjustments);
@@ -71,7 +71,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildDiscountAdjustmentsForSaleItem()
+     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildItemDiscount_withParentItemAndPublicChildren()
     {
@@ -81,7 +81,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildDiscountAdjustmentsForSaleItem()
+     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildItemDiscount_withParentItemAndPrivateChildren()
     {
@@ -91,7 +91,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildDiscountAdjustmentsForSaleItem()
+     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildSaleItemDiscount_withComposedItemAndPublicChildren()
     {
@@ -101,7 +101,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildDiscountAdjustmentsForSaleItem()
+     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildSaleItemDiscount_withComposedItemAndPriveChildren()
     {

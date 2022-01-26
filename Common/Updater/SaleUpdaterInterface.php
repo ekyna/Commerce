@@ -65,6 +65,16 @@ interface SaleUpdaterInterface
     public function updateDiscounts(Model\SaleInterface $sale, bool $persistence = false): bool;
 
     /**
+     * Makes the sale discounts mutable.
+     */
+    public function makeDiscountsMutable(SaleInterface $sale): void;
+
+    /**
+     * Clears the sale mutable discounts.
+     */
+    public function clearMutableDiscounts(SaleInterface $sale): void;
+
+    /**
      * Updates the whole sale taxation adjustments.
      *
      * @return bool Whether the sale has been changed or not.

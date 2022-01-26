@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Builder;
 
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
@@ -35,17 +36,23 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    public function buildDiscountAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool
+    public function buildSaleDiscountAdjustments(Model\SaleInterface $sale, bool $persistence = false): bool
     {
-        $data = $sale->isAutoDiscount() && !$sale->isSample() ? $this->discountResolver->resolveSale($sale) : [];
+        if (!$this->canUpdateDiscounts($sale)) {
+            return false;
+        }
 
-        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence);
+        $changed = $this->buildSaleItemsDiscountAdjustments($sale, $persistence);
+
+        $data = !$sale->isSample() ? $this->discountResolver->resolveSale($sale) : [];
+
+        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence) || $changed;
     }
 
     /**
-     * @inheritDoc
+     * @param Model\SaleInterface|Model\SaleItemInterface $parent
      */
-    public function buildDiscountAdjustmentsForSaleItems($parent, bool $persistence = false): bool
+    public function buildSaleItemsDiscountAdjustments($parent, bool $persistence = false): bool
     {
         if ($parent instanceof Model\SaleInterface) {
             $children = $parent->getItems();
@@ -58,31 +65,35 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $changed = false;
 
         foreach ($children as $child) {
-            $changed = $this->buildDiscountAdjustmentsForSaleItem($child, $persistence) || $changed;
+            $changed = $this->buildSaleItemDiscountAdjustments($child, $persistence) || $changed;
 
             if ($child->hasChildren()) {
-                $changed = $this->buildDiscountAdjustmentsForSaleItems($child, $persistence) || $changed;
+                $changed = $this->buildSaleItemsDiscountAdjustments($child, $persistence) || $changed;
             }
         }
 
         return $changed;
     }
 
-    public function buildDiscountAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool
+    public function buildSaleItemDiscountAdjustments(Model\SaleItemInterface $item, bool $persistence = false): bool
     {
-        $sale = $item->getSale();
-
-        if (!$sale->isAutoDiscount()) {
+        if (!$this->canUpdateDiscounts($item)) {
             return false;
         }
 
-        $data = !$sale->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
+        $data = !$item->getSale()->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
 
-    public function buildTaxationAdjustmentsForSale(Model\SaleInterface $sale, bool $persistence = false): bool
+    public function buildSaleTaxationAdjustments(Model\SaleInterface $sale, bool $persistence = false): bool
     {
+        if (!$this->canUpdateTaxation($sale)) {
+            return false;
+        }
+
+        $changed = $this->buildSaleItemsTaxationAdjustments($sale, $persistence);
+
         $data = [];
 
         // For now, we assume that sale's taxation adjustments are only related to shipment.
@@ -91,14 +102,18 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
             $data = $this->taxResolver->resolveTaxes($taxable, $sale);
         }
 
-        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $sale, $data, $persistence);
+        return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $sale, $data, $persistence) || $changed;
     }
 
     /**
-     * @inheritDoc
+     * @param Model\SaleInterface|Model\SaleItemInterface $parent
      */
-    public function buildTaxationAdjustmentsForSaleItems($parent, bool $persistence = false): bool
+    public function buildSaleItemsTaxationAdjustments($parent, bool $persistence = false): bool
     {
+        if (!$this->canUpdateTaxation($parent)) {
+            return false;
+        }
+
         if ($parent instanceof Model\SaleInterface) {
             $children = $parent->getItems();
         } elseif ($parent instanceof Model\SaleItemInterface) {
@@ -110,10 +125,10 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         $change = false;
 
         foreach ($children as $child) {
-            $change = $this->buildTaxationAdjustmentsForSaleItem($child, $persistence) || $change;
+            $change = $this->buildSaleItemTaxationAdjustments($child, $persistence) || $change;
 
             if ($child->hasChildren()) {
-                $change = $this->buildTaxationAdjustmentsForSaleItems($child, $persistence) || $change;
+                $change = $this->buildSaleItemsTaxationAdjustments($child, $persistence) || $change;
             }
         }
 
@@ -123,8 +138,12 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     /**
      * @inheritDoc
      */
-    public function buildTaxationAdjustmentsForSaleItem(Model\SaleItemInterface $item, bool $persistence = false): bool
+    public function buildSaleItemTaxationAdjustments(Model\SaleItemInterface $item, bool $persistence = false): bool
     {
+        if (!$this->canUpdateTaxation($item)) {
+            return false;
+        }
+
         $data = [];
 
         $sale = $item->getSale();
@@ -133,6 +152,42 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         }
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_TAXATION, $item, $data, $persistence);
+    }
+
+    /**
+     * Returns whether discount(s) can be updated.
+     *
+     * @param Model\SaleInterface|Model\SaleItemInterface $resource
+     */
+    protected function canUpdateDiscounts($resource): bool
+    {
+        if ($resource instanceof Model\SaleItemInterface) {
+            $resource = $resource->getSale();
+        }
+
+        if ($resource instanceof Model\SaleInterface) {
+            return $resource->isAutoDiscount() && !$resource->hasPaidPayments();
+        }
+
+        throw new UnexpectedTypeException($resource, [Model\SaleInterface::class, Model\SaleItemInterface::class]);
+    }
+
+    /**
+     * Returns whether taxation can be updated.
+     *
+     * @param Model\SaleInterface|Model\SaleItemInterface $resource
+     */
+    protected function canUpdateTaxation($resource): bool
+    {
+        if ($resource instanceof Model\SaleItemInterface) {
+            $resource = $resource->getSale();
+        }
+
+        if ($resource instanceof Model\SaleInterface) {
+            return !$resource->hasPaidPayments();
+        }
+
+        throw new UnexpectedTypeException($resource, [Model\SaleInterface::class, Model\SaleItemInterface::class]);
     }
 
     /**
@@ -162,10 +217,13 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
             $adjustment
                 ->setType($type)
                 ->setMode($datum->getMode())
-                ->setDesignation($datum->getDesignation())
                 ->setAmount($datum->getAmount())
                 ->setImmutable($datum->isImmutable())
                 ->setSource($datum->getSource());
+
+            if ($adjustment instanceof Model\SaleAdjustmentInterface) {
+                $adjustment->setDesignation($datum->getDesignation());
+            }
 
             $newAdjustments[] = $adjustment;
         }
@@ -211,5 +269,79 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         }
 
         return $change;
+    }
+
+    public function makeSaleDiscountsMutable(Model\SaleInterface $sale): void
+    {
+        $this->makeAdjustmentsMutable($sale->getAdjustments());
+
+        foreach ($sale->getItems() as $item) {
+            $this->makeSaleItemDiscountsMutable($item);
+        }
+    }
+
+    protected function makeSaleItemDiscountsMutable(Model\SaleItemInterface $item): void
+    {
+        $this->makeAdjustmentsMutable($item->getAdjustments());
+
+        foreach ($item->getChildren() as $child) {
+            $this->makeSaleItemDiscountsMutable($child);
+        }
+    }
+
+    protected function makeAdjustmentsMutable(Collection $adjustments): void
+    {
+        /** @var Model\AdjustmentInterface $adjustment */
+        foreach ($adjustments->toArray() as $adjustment) {
+            if (Model\AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
+                continue;
+            }
+
+            if (!$adjustment->isImmutable()) {
+                continue;
+            }
+
+            $adjustment
+                ->setImmutable(false)
+                ->setSource(null);
+
+            $this->persistenceHelper->persistAndRecompute($adjustment, false);
+        }
+    }
+
+    public function clearSaleMutableDiscounts(Model\SaleInterface $sale): void
+    {
+        $this->clearMutableAdjustments($sale->getAdjustments());
+
+        foreach ($sale->getItems() as $item) {
+            $this->clearSaleItemMutableDiscounts($item);
+        }
+    }
+
+    protected function clearSaleItemMutableDiscounts(Model\SaleItemInterface $item): void
+    {
+        $this->clearMutableAdjustments($item->getAdjustments());
+
+        foreach ($item->getChildren() as $child) {
+            $this->clearSaleItemMutableDiscounts($child);
+        }
+    }
+
+    protected function clearMutableAdjustments(Collection $adjustments): void
+    {
+        /** @var Model\AdjustmentInterface $adjustment */
+        foreach ($adjustments->toArray() as $adjustment) {
+            if (Model\AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
+                continue;
+            }
+
+            if ($adjustment->isImmutable()) {
+                continue;
+            }
+
+            $adjustment->getAdjustable()->removeAdjustment($adjustment);
+
+            $this->persistenceHelper->remove($adjustment, false);
+        }
     }
 }

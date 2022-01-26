@@ -23,6 +23,9 @@ use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
+use function in_array;
+use function is_null;
+
 /**
  * Class OrderEventSubscriber
  * @package Ekyna\Component\Commerce\Order\EventListener
@@ -406,26 +409,26 @@ class OrderListener extends AbstractSaleListener
      */
     protected function updateState(SaleInterface $sale): bool
     {
-        if (parent::updateState($sale)) {
-            if (in_array($state = $sale->getState(), OrderStates::getStockableStates(), true)) {
-                if (($state === OrderStates::STATE_COMPLETED) && is_null($sale->getCompletedAt())) {
-                    $sale->setCompletedAt(new DateTime());
-                } elseif (($state !== OrderStates::STATE_COMPLETED) && !is_null($sale->getCompletedAt())) {
-                    $sale->setCompletedAt(null);
-                }
-
-                if (null === $sale->getAcceptedAt()) {
-                    $sale->setAcceptedAt(new DateTime());
-                }
-            } else {
-                $sale->setAcceptedAt(null);
-                $sale->setCompletedAt(null);
-            }
-
-            return true;
+        if (!parent::updateState($sale)) {
+            return false;
         }
 
-        return false;
+        if (in_array($state = $sale->getState(), OrderStates::getStockableStates(), true)) {
+            if ($state !== OrderStates::STATE_COMPLETED) {
+                $sale->setCompletedAt(null);
+            } elseif (null === $sale->getCompletedAt()) {
+                $sale->setCompletedAt(new DateTime());
+            }
+
+            if (null === $sale->getAcceptedAt()) {
+                $sale->setAcceptedAt(new DateTime());
+            }
+        } else {
+            $sale->setAcceptedAt(null);
+            $sale->setCompletedAt(null);
+        }
+
+        return true;
     }
 
 

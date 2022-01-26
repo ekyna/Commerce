@@ -12,11 +12,15 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 final class QuoteStates
 {
     const STATE_NEW      = 'new';
-    const STATE_PENDING  = 'pending';
     const STATE_REFUSED  = 'refused';
     const STATE_ACCEPTED = 'accepted';
-    const STATE_REFUNDED = 'refunded';
     const STATE_CANCELED = 'canceled';
+
+    # TODO Not used in state resolution
+    const STATE_PENDING = 'pending';
+    # TODO Should never happen. As soon as at least one payment is
+    #      accepted, quote should be turned into order
+    const STATE_REFUNDED = 'refunded';
 
 
     /**
@@ -116,10 +120,10 @@ final class QuoteStates
     static private function assertValidChangeSet(array $cs)
     {
         if (
-            array_key_exists(0, $cs) &&
-            array_key_exists(1, $cs) &&
-            (is_null($cs[0]) || static::isValidState($cs[0])) &&
-            (is_null($cs[1]) || static::isValidState($cs[1]))
+            array_key_exists(0, $cs)
+            && array_key_exists(1, $cs)
+            && (is_null($cs[0]) || static::isValidState($cs[0]))
+            && (is_null($cs[1]) || static::isValidState($cs[1]))
         ) {
             return true;
         }

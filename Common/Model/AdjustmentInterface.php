@@ -14,6 +14,7 @@ use Ekyna\Component\Resource\Model as ResourceModel;
  */
 interface AdjustmentInterface extends ResourceModel\ResourceInterface, ResourceModel\SortableInterface
 {
+    // TODO Move designation to SaleAdjustmentInterface (not needed elsewhere)
     public function getDesignation(): ?string;
 
     public function setDesignation(?string $designation): AdjustmentInterface;

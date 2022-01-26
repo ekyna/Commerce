@@ -203,7 +203,7 @@ abstract class AbstractSaleItemListener
      */
     protected function updateDiscount(Model\SaleItemInterface $item)
     {
-        return $this->adjustmentBuilder->buildDiscountAdjustmentsForSaleItem($item, true);
+        return $this->adjustmentBuilder->buildSaleItemDiscountAdjustments($item, true);
     }
 
     /**
@@ -215,7 +215,7 @@ abstract class AbstractSaleItemListener
      */
     protected function updateTaxation(Model\SaleItemInterface $item)
     {
-        return $this->adjustmentBuilder->buildTaxationAdjustmentsForSaleItem($item, true);
+        return $this->adjustmentBuilder->buildSaleItemTaxationAdjustments($item, true);
     }
 
     /**

@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Repository\CouponRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Exception\CouponException;
+use Ekyna\Component\Commerce\Exception\LogicException;
 
 /**
  * Class CouponHelper
@@ -41,6 +42,14 @@ class CouponHelper
      */
     public function set(SaleInterface $sale, string $code, bool $check = true): void
     {
+        if ($sale->hasPaidPayments()) {
+            throw new LogicException('Sale is paid');
+        }
+
+        if (!$sale->isAutoDiscount()) {
+            throw new LogicException('Sale auto discount is disabled');
+        }
+
         // Find coupon by its code
         if (!$coupon = $this->couponRepository->findOneByCode($code)) {
             throw $this->createException('not_found');

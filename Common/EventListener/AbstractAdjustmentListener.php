@@ -12,8 +12,6 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  * Class AbstractAdjustmentListener
  * @package Ekyna\Component\Commerce\Common\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
- *
- * @TODO Rename to AbstractSaleAdjustmentListener
  */
 abstract class AbstractAdjustmentListener
 {

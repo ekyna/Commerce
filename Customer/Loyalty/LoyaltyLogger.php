@@ -71,6 +71,8 @@ class LoyaltyLogger
             ->setAmount($points)
             ->setOrigin($origin);
 
+        // TODO $this->persistenceHelper->persistAndRecompute($log);
+
         $manager = $this->persistenceHelper->getManager();
         $manager->persist($log);
 
