@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Accounting\Export;
 
-use DateInterval;
-use DatePeriod;
 use DateTime;
 use DateTimeInterface;
 use Decimal\Decimal;
@@ -14,7 +12,6 @@ use Ekyna\Component\Commerce\Accounting\Model\AccountingTypes;
 use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -22,7 +19,6 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
@@ -34,7 +30,6 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
-use Exception;
 use ZipArchive;
 
 /**
@@ -105,25 +100,7 @@ class AccountingExporter implements AccountingExporterInterface
     {
         ini_set('max_execution_time', '0');
 
-        $months = [];
-        if (is_null($month)) {
-            try {
-                $start = new DateTime("$year-01-01");
-            } catch (Exception $e) {
-                throw new InvalidArgumentException('Failed to create date.');
-            }
-            $months = iterator_to_array(new DatePeriod(
-                $start,
-                new DateInterval('P1M'),
-                (clone $start)->modify('last day of december')
-            ));
-        } else {
-            try {
-                $months[] = new DateTime("$year-$month-01");
-            } catch (Exception $e) {
-                throw new InvalidArgumentException('Failed to create date.');
-            }
-        }
+        $months = ExportUtil::buildMonthList($year, $month);
 
         $path = tempnam(sys_get_temp_dir(), 'accounting');
 
@@ -163,7 +140,9 @@ class AccountingExporter implements AccountingExporterInterface
 
         $invoices = $this->invoiceRepository->findByMonth($month);
 
-        while (false !== $this->invoice = current($invoices)) {
+        foreach ($invoices as $invoice) {
+            $this->invoice = $invoice;
+
             if (!$this->filterInvoice($this->invoice)) {
                 continue;
             }
@@ -486,13 +465,13 @@ class AccountingExporter implements AccountingExporterInterface
         $date = $sale->getCreatedAt();
 
         foreach ($this->invoice->getTaxesDetails() as $detail) {
-            $amount = $this->round(new Decimal($detail['amount']));
+            $amount = $this->round(new Decimal((string)$detail['amount']));
 
             if ($amount->isZero()) {
                 continue; // next tax details
             }
 
-            $account = $this->getTaxAccountNumber(new Decimal($detail['rate']), $this->invoice->getNumber());
+            $account = $this->getTaxAccountNumber(new Decimal((string)$detail['rate']), $this->invoice->getNumber());
 
             if ($this->invoice->isCredit()) {
                 $this->writer->credit($account, (string)$amount, $date);

@@ -102,11 +102,6 @@ class OrderItemListener extends AbstractSaleItemListener
 
         $item = $this->getSaleItemFromEvent($event);
 
-        if (null === $sale = $this->getSaleFromItem($item)) {
-            throw new RuntimeException('Failed to retrieve the sale.');
-        }
-
-        /** @var OrderItemInterface $item */
         if ($item->hasStockAssignments()) {
             $this->stockAssigner->detachSaleItem($item);
         }

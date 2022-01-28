@@ -4,26 +4,20 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Accounting\Export;
 
-use DateInterval;
-use DatePeriod;
 use DateTime;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCostCalculator;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
 use Ekyna\Component\Commerce\Stock\Repository\StockAdjustmentRepositoryInterface;
-use Exception;
 use ZipArchive;
 
 use function fclose;
 use function fopen;
 use function fputcsv;
 use function ini_set;
-use function is_null;
-use function iterator_to_array;
 use function sprintf;
 use function sys_get_temp_dir;
 use function tempnam;
@@ -63,27 +57,9 @@ class CostExporter
     {
         ini_set('max_execution_time', '0');
 
-        $months = [];
-        if (is_null($month)) {
-            try {
-                $start = new DateTime("$year-01-01");
-            } catch (Exception $e) {
-                throw new InvalidArgumentException('Failed to create date.');
-            }
-            $months = iterator_to_array(new DatePeriod(
-                $start,
-                new DateInterval('P1M'),
-                (clone $start)->modify('last day of december')
-            ));
-        } else {
-            try {
-                $months[] = new DateTime("$year-$month-01");
-            } catch (Exception $e) {
-                throw new InvalidArgumentException('Failed to create date.');
-            }
-        }
+        $months = ExportUtil::buildMonthList($year, $month);
 
-        $path = tempnam(sys_get_temp_dir(), 'accounting');
+        $path = tempnam(sys_get_temp_dir(), 'costs');
 
         $zip = new ZipArchive();
 
