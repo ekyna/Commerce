@@ -63,7 +63,7 @@ abstract class AbstractAddress implements Model\AddressInterface
         return $this->street;
     }
 
-    public function setStreet(string $street): Model\AddressInterface
+    public function setStreet(?string $street): Model\AddressInterface
     {
         $this->street = $street;
 
@@ -111,7 +111,7 @@ abstract class AbstractAddress implements Model\AddressInterface
         return $this->postalCode;
     }
 
-    public function setPostalCode(string $postalCode): Model\AddressInterface
+    public function setPostalCode(?string $postalCode): Model\AddressInterface
     {
         $this->postalCode = $postalCode;
 
@@ -123,7 +123,7 @@ abstract class AbstractAddress implements Model\AddressInterface
         return $this->city;
     }
 
-    public function setCity(string $city): Model\AddressInterface
+    public function setCity(?string $city): Model\AddressInterface
     {
         $this->city = $city;
 
@@ -135,7 +135,7 @@ abstract class AbstractAddress implements Model\AddressInterface
         return $this->country;
     }
 
-    public function setCountry(Model\CountryInterface $country): Model\AddressInterface
+    public function setCountry(?Model\CountryInterface $country): Model\AddressInterface
     {
         $this->country = $country;
 

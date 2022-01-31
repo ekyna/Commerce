@@ -19,7 +19,7 @@ interface AddressInterface extends IdentityInterface
 
     public function getStreet(): ?string;
 
-    public function setStreet(string $street): AddressInterface;
+    public function setStreet(?string $street): AddressInterface;
 
     public function getComplement(): ?string;
 
@@ -35,15 +35,15 @@ interface AddressInterface extends IdentityInterface
 
     public function getPostalCode(): ?string;
 
-    public function setPostalCode(string $postalCode): AddressInterface;
+    public function setPostalCode(?string $postalCode): AddressInterface;
 
     public function getCity(): ?string;
 
-    public function setCity(string $city): AddressInterface;
+    public function setCity(?string $city): AddressInterface;
 
     public function getCountry(): ?CountryInterface;
 
-    public function setCountry(CountryInterface $country): AddressInterface;
+    public function setCountry(?CountryInterface $country): AddressInterface;
 
     public function getState(): ?StateInterface;
 
