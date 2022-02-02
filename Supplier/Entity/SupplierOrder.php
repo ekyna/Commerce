@@ -13,6 +13,7 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 use Ekyna\Component\Commerce\Supplier\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderAttachmentInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -20,14 +21,13 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierOrder implements Model\SupplierOrderInterface
+class SupplierOrder extends AbstractResource implements Model\SupplierOrderInterface
 {
     use Common\ExchangeSubjectTrait;
     use Common\NumberSubjectTrait;
     use Common\StateSubjectTrait;
     use TimestampableTrait;
 
-    protected ?int                            $id        = null;
     protected ?Model\SupplierInterface        $supplier  = null;
     protected ?Model\SupplierCarrierInterface $carrier   = null;
     protected ?WarehouseInterface             $warehouse = null;
@@ -84,11 +84,6 @@ class SupplierOrder implements Model\SupplierOrderInterface
     public function __toString(): string
     {
         return $this->number ?: 'New supplier order';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getSupplier(): ?Model\SupplierInterface

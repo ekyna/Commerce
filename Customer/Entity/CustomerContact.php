@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Model\IdentityTrait;
 use Ekyna\Component\Commerce\Customer\Model\CustomerContactInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Model\NotificationsTrait;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 use libphonenumber\PhoneNumber;
 
@@ -16,13 +17,12 @@ use libphonenumber\PhoneNumber;
  * @package Ekyna\Component\Commerce\Customer\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerContact implements CustomerContactInterface
+class CustomerContact extends AbstractResource implements CustomerContactInterface
 {
     use IdentityTrait;
     use NotificationsTrait;
     use TimestampableTrait;
 
-    private ?int               $id          = null;
     private ?CustomerInterface $customer    = null;
     private ?string            $email       = null;
     private ?string            $title       = null;
@@ -32,11 +32,6 @@ class CustomerContact implements CustomerContactInterface
     public function __toString(): string
     {
         return $this->email ?: 'New customer contact';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCustomer(): ?CustomerInterface

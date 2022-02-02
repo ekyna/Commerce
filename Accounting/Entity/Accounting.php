@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\IsEnabledTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
@@ -16,15 +17,10 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  * @package Ekyna\Component\Commerce\Accounting\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Accounting implements AccountingInterface
+class Accounting extends AbstractResource implements AccountingInterface
 {
     use SortableTrait;
     use IsEnabledTrait;
-
-    /**
-     * @var int
-     */
-    private $id;
 
     /**
      * @var string
@@ -78,14 +74,6 @@ class Accounting implements AccountingInterface
     public function __toString(): string
     {
         return $this->name ?: 'New accounting';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

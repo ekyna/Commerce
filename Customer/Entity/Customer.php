@@ -16,6 +16,7 @@ use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Resource\Model as RM;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use libphonenumber\PhoneNumber;
 
 /**
@@ -23,7 +24,7 @@ use libphonenumber\PhoneNumber;
  * @package Ekyna\Component\Commerce\Customer\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Customer implements Model\CustomerInterface
+class Customer extends AbstractResource implements Model\CustomerInterface
 {
     use Common\CurrencySubjectTrait;
     use Common\IdentityTrait;
@@ -35,7 +36,6 @@ class Customer implements Model\CustomerInterface
     use RM\TimestampableTrait;
     use VatNumberSubjectTrait;
 
-    protected ?int                     $id            = null;
     protected ?string                  $company       = null;
     protected ?string                  $companyNumber = null;
     protected ?string                  $email         = null;
@@ -119,11 +119,6 @@ class Customer implements Model\CustomerInterface
         }
 
         return trim(sprintf('%s %s', $this->firstName, $this->lastName));
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCompany(): ?string

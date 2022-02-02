@@ -6,19 +6,15 @@ use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\MemberInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\SubscriptionStatus;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class Subscription
  * @package Ekyna\Component\Commerce\Newsletter\Entity
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class Subscription implements SubscriptionInterface
+class Subscription extends AbstractResource implements SubscriptionInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
     /**
      * @var AudienceInterface
      */
@@ -52,14 +48,6 @@ class Subscription implements SubscriptionInterface
     {
         $this->attributes = [];
         $this->status     = SubscriptionStatus::UNSUBSCRIBED;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

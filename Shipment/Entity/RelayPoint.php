@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Shipment\Entity;
 use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
 use Ekyna\Component\Commerce\Shipment\Model\OpeningHour;
 use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -14,12 +15,8 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 class RelayPoint extends AbstractAddress implements RelayPointInterface
 {
+    use ResourceTrait;
     use TimestampableTrait;
-
-    /**
-     * @var int
-     */
-    protected $id;
 
     /**
      * @var string
@@ -49,15 +46,6 @@ class RelayPoint extends AbstractAddress implements RelayPointInterface
      * @var int
      */
     protected $distance;
-
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritDoc

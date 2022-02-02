@@ -10,17 +10,17 @@ use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\MentionSubjectTrait;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class TaxRule
  * @package Ekyna\Component\Commerce\Pricing\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class TaxRule implements TaxRuleInterface
+class TaxRule extends AbstractResource implements TaxRuleInterface
 {
     use MentionSubjectTrait;
 
-    protected ?int    $id       = null;
     protected ?string $code     = null;
     protected ?string $name     = null;
     protected bool    $customer = false;
@@ -49,11 +49,6 @@ class TaxRule implements TaxRuleInterface
     public function __toString(): string
     {
         return $this->name ?: 'New tax rule';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCode(): ?string

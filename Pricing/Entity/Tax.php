@@ -12,22 +12,22 @@ use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\StateInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class Total
  * @package Ekyna\Component\Commerce\Pricing\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Tax implements TaxInterface
+class Tax extends AbstractResource implements TaxInterface
 {
-    protected ?int              $id      = null;
     protected ?string           $code    = null;
     protected ?string           $name    = null;
     protected Decimal           $rate;
     protected ?CountryInterface $country = null;
     protected ?StateInterface   $state   = null;
 
-    /** @var Collection|array<TaxRuleInterface> */
+    /** @var Collection<TaxRuleInterface> */
     protected Collection $taxRules;
 
     public function __construct()
@@ -42,11 +42,6 @@ class Tax implements TaxInterface
     public function __toString(): string
     {
         return $this->name ?: 'New tax';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCode(): ?string

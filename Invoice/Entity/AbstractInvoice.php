@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 use Ekyna\Component\Resource\Model\RuntimeUidTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -21,11 +22,11 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  */
 abstract class AbstractInvoice extends Document\Document implements Invoice\InvoiceInterface
 {
+    use ResourceTrait;
     use NumberSubjectTrait;
     use TimestampableTrait;
     use RuntimeUidTrait;
 
-    protected ?int $id = null;
     protected bool $credit;
     /** The paid total (document currency).*/
     protected Decimal $paidTotal;
@@ -55,11 +56,6 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     public function __toString(): string
     {
         return $this->number ?: 'New invoice';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function isCredit(): bool

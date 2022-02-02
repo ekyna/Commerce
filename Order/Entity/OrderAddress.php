@@ -15,15 +15,8 @@ use Ekyna\Component\Commerce\Order\Model;
  */
 class OrderAddress extends AbstractSaleAddress implements Model\OrderAddressInterface
 {
-    protected ?int                  $id            = null;
     protected ?Model\OrderInterface $invoiceOrder  = null;
     protected ?Model\OrderInterface $deliveryOrder = null;
-
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getInvoiceOrder(): ?Model\OrderInterface
     {

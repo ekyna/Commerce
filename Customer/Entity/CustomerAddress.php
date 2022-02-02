@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Customer\Entity;
 use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 
 /**
  * Class CustomerAddress
@@ -15,14 +16,15 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  */
 class CustomerAddress extends AbstractAddress implements CustomerAddressInterface
 {
-    protected ?int               $id              = null;
+    use ResourceTrait;
+
     protected ?CustomerInterface $customer        = null;
     protected bool               $invoiceDefault  = false;
     protected bool               $deliveryDefault = false;
 
-    public function getId(): ?int
+    public function __clone()
     {
-        return $this->id;
+        $this->id = null;
     }
 
     public function getCustomer(): ?CustomerInterface

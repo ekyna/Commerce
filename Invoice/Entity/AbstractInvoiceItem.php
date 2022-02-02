@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Invoice\Entity;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
@@ -16,15 +17,10 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  */
 abstract class AbstractInvoiceItem extends Document\DocumentItem implements Invoice\InvoiceItemInterface
 {
+    use ResourceTrait;
     use SortableTrait;
 
-    protected ?int                      $id = null;
     protected ?Invoice\InvoiceInterface $invoice;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getDocument(): ?Document\DocumentInterface
     {

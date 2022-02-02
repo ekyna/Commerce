@@ -8,15 +8,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\StateInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class Country
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Country implements CountryInterface
+class Country extends AbstractResource implements CountryInterface
 {
-    protected ?int   $id      = null;
     protected string $name;
     protected string $code;
     protected bool   $enabled = true;
@@ -36,11 +36,6 @@ class Country implements CountryInterface
     public function __toString(): string
     {
         return $this->name ?: 'New country';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): ?string

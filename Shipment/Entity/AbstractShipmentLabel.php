@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Shipment\Entity;
 use DateTimeInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Shipment\Model;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 use function is_null;
 use function is_resource;
@@ -17,23 +18,16 @@ use function is_string;
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
+abstract class AbstractShipmentLabel extends AbstractResource implements Model\ShipmentLabelInterface
 {
-    protected ?int                           $id       = null;
     protected ?Model\ShipmentInterface       $shipment = null;
     protected ?Model\ShipmentParcelInterface $parcel   = null;
     /** @var resource|null */
-    protected $content   = null;
-    protected ?string                        $type      = null;
-    protected ?string                        $format    = null;
-    protected ?string                        $size      = null;
-    protected ?DateTimeInterface             $updatedAt = null;
-
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    protected                    $content   = null;
+    protected ?string            $type      = null;
+    protected ?string            $format    = null;
+    protected ?string            $size      = null;
+    protected ?DateTimeInterface $updatedAt = null;
 
     public function getShipment(): ?Model\ShipmentInterface
     {

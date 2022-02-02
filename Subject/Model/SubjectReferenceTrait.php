@@ -17,7 +17,6 @@ trait SubjectReferenceTrait
 {
     protected SubjectIdentity $subjectIdentity;
 
-
     protected function initializeSubjectIdentity(): void
     {
         $this->subjectIdentity = new SubjectIdentity();

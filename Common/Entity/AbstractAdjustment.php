@@ -8,6 +8,7 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Resource\Copier\CopierInterface;
 use Ekyna\Component\Resource\Copier\CopyInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
 /**
@@ -15,11 +16,10 @@ use Ekyna\Component\Resource\Model\SortableTrait;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAdjustment implements Model\AdjustmentInterface, CopyInterface
+abstract class AbstractAdjustment extends AbstractResource implements Model\AdjustmentInterface, CopyInterface
 {
     use SortableTrait;
 
-    protected ?int    $id          = null;
     protected ?string $designation = null;
     protected string  $type        = Model\AdjustmentTypes::TYPE_DISCOUNT;
     protected string  $mode        = Model\AdjustmentModes::MODE_PERCENT;
@@ -34,7 +34,8 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface, CopyInte
 
     public function __clone()
     {
-        $this->id = null;
+        parent::__clone();
+
         $this->amount = clone $this->amount;
     }
 
@@ -49,11 +50,6 @@ abstract class AbstractAdjustment implements Model\AdjustmentInterface, CopyInte
     public function __toString(): string
     {
         return $this->designation ?: 'New adjustment';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getDesignation(): ?string

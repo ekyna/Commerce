@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Supplier\Model;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -11,14 +12,9 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierDelivery implements Model\SupplierDeliveryInterface
+class SupplierDelivery extends AbstractResource implements Model\SupplierDeliveryInterface
 {
     use TimestampableTrait;
-
-    /**
-     * @var int
-     */
-    protected $id;
 
     /**
      * @var Model\SupplierOrderInterface
@@ -51,14 +47,6 @@ class SupplierDelivery implements Model\SupplierDeliveryInterface
         }
 
         return 'New delivery';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

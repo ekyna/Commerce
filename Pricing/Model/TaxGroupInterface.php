@@ -14,28 +14,12 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
  */
 interface TaxGroupInterface extends ResourceInterface
 {
-    /**
-     * Returns the code.
-     */
     public function getCode(): ?string;
 
-    /**
-     * Sets the code.
-     *
-     * @return $this|TaxGroupInterface
-     */
     public function setCode(string $code): TaxGroupInterface;
 
-    /**
-     * Returns the name.
-     */
     public function getName(): ?string;
 
-    /**
-     * Sets the name.
-     *
-     * @return $this|TaxGroupInterface
-     */
     public function setName(string $name): TaxGroupInterface;
 
     /**
@@ -45,8 +29,6 @@ interface TaxGroupInterface extends ResourceInterface
 
     /**
      * Sets whether this is the default tax group.
-     *
-     * @return $this|TaxGroupInterface
      */
     public function setDefault(bool $default): TaxGroupInterface;
 
@@ -56,9 +38,7 @@ interface TaxGroupInterface extends ResourceInterface
     public function hasTaxes(): bool;
 
     /**
-     * Returns the taxes.
-     *
-     * @return Collection|TaxInterface[]
+     * @return Collection<TaxInterface>
      */
     public function getTaxes(): Collection;
 
@@ -67,26 +47,12 @@ interface TaxGroupInterface extends ResourceInterface
      */
     public function hasTax(TaxInterface $tax): bool;
 
-    /**
-     * Adds the tax.
-     *
-     * @return $this|TaxGroupInterface
-     */
     public function addTax(TaxInterface $tax): TaxGroupInterface;
 
-    /**
-     * Removes the tax.
-     *
-     * @return $this|TaxGroupInterface
-     */
     public function removeTax(TaxInterface $tax): TaxGroupInterface;
 
     /**
-     * Sets the taxes.
-     *
-     * @param TaxInterface[] $taxes
-     *
-     * @return $this|TaxGroupInterface
+     * @param array<TaxInterface> $taxes
      */
     public function setTaxes(array $taxes): TaxGroupInterface;
 }

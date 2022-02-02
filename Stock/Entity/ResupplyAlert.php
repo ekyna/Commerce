@@ -5,21 +5,16 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 use DateTime;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceTrait;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class ResupplyAlert
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class ResupplyAlert implements SubjectReferenceInterface, ResourceInterface
+class ResupplyAlert extends AbstractResource implements SubjectReferenceInterface
 {
     use SubjectReferenceTrait;
-
-    /**
-     * @var int
-     */
-    private $id;
 
     /**
      * @var string
@@ -39,16 +34,6 @@ class ResupplyAlert implements SubjectReferenceInterface, ResourceInterface
     {
         $this->createdAt = new DateTime();
         $this->initializeSubjectIdentity();
-    }
-
-    /**
-     * Returns the id.
-     *
-     * @return int
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

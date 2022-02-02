@@ -16,11 +16,6 @@ use Ekyna\Component\Resource\Model\AbstractTranslatable;
 class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterface
 {
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var string
      */
     protected $name;
@@ -78,14 +73,6 @@ class CustomerGroup extends AbstractTranslatable implements CustomerGroupInterfa
     public function __toString(): string
     {
         return $this->name ?: 'New customer group';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

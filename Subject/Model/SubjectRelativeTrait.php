@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Subject\Model;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 
 /**
  * Trait SubjectRelativeTrait
@@ -17,16 +18,15 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxableTrait;
  */
 trait SubjectRelativeTrait
 {
+    use ResourceTrait;
     use SubjectReferenceTrait;
     use TaxableTrait;
 
-    protected ?int    $id          = null;
     protected ?string $designation = null;
     protected ?string $reference   = null;
     protected Decimal $netPrice;
     protected Decimal $weight;
     protected string  $unit        = Units::PIECE;
-
 
     protected function initializeSubjectRelative(): void
     {
@@ -34,11 +34,6 @@ trait SubjectRelativeTrait
 
         $this->netPrice = new Decimal(0);
         $this->weight = new Decimal(0);
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getDesignation(): ?string

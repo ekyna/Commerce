@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Customer\Entity;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\UploadableInterface;
 use Ekyna\Component\Resource\Model\UploadableTrait;
 
@@ -14,17 +14,11 @@ use Ekyna\Component\Resource\Model\UploadableTrait;
  * @package Ekyna\Component\Commerce\Customer\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class CustomerLogo implements UploadableInterface, ResourceInterface
+class CustomerLogo extends AbstractResource implements UploadableInterface
 {
     use UploadableTrait;
 
-    private ?int $id = null;
     private ?CustomerInterface $customer = null;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getCustomer(): ?CustomerInterface
     {

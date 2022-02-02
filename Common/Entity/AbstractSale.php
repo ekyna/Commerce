@@ -17,6 +17,7 @@ use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectTrait;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Resource\Model as RM;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class AbstractSale
@@ -26,7 +27,7 @@ use Ekyna\Component\Resource\Model as RM;
  * Any mapped property (from traits too) must be reported into the SaleCopier.
  * @see     \Ekyna\Component\Commerce\Common\Transformer\SaleCopier
  */
-abstract class AbstractSale implements Common\SaleInterface
+abstract class AbstractSale extends AbstractResource implements Common\SaleInterface
 {
     use Common\AdjustableTrait;
     use Common\IdentityTrait;
@@ -43,7 +44,6 @@ abstract class AbstractSale implements Common\SaleInterface
     use VatNumberSubjectTrait;
 
 
-    protected ?int                         $id              = null;
     protected ?CustomerInterface           $customer        = null;
     protected ?CustomerGroupInterface      $customerGroup   = null;
     protected ?string                      $company         = null;
@@ -94,11 +94,6 @@ abstract class AbstractSale implements Common\SaleInterface
     public function __toString(): string
     {
         return $this->number ?: 'New sale';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCustomer(): ?CustomerInterface

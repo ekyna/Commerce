@@ -8,26 +8,22 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Pricing\Model\TaxGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class TaxGroup
  * @package Ekyna\Component\Commerce\Pricing\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class TaxGroup implements TaxGroupInterface
+class TaxGroup extends AbstractResource implements TaxGroupInterface
 {
-    protected ?int    $id      = null;
     protected ?string $code    = null;
     protected ?string $name    = null;
     protected bool    $default = false;
 
-    /** @var Collection|TaxInterface[] */
+    /** @var Collection<TaxInterface> */
     protected Collection $taxes;
 
-
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->taxes = new ArrayCollection();
@@ -39,11 +35,6 @@ class TaxGroup implements TaxGroupInterface
     public function __toString(): string
     {
         return $this->name ?: 'New tax group';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCode(): ?string

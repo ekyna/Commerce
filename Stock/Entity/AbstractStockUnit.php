@@ -17,17 +17,17 @@ use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class AbstractStockUnit
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractStockUnit implements Model\StockUnitInterface
+abstract class AbstractStockUnit extends AbstractResource implements Model\StockUnitInterface
 {
     use StateSubjectTrait;
 
-    protected ?int                        $id                = null;
     protected ?Model\WarehouseInterface   $warehouse         = null;
     protected ?SupplierOrderItemInterface $supplierOrderItem = null;
     protected array                       $geocodes          = [];
@@ -89,11 +89,6 @@ abstract class AbstractStockUnit implements Model\StockUnitInterface
         }
 
         return 'New stock unit';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getWarehouse(): ?Model\WarehouseInterface

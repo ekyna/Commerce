@@ -5,6 +5,7 @@ namespace Ekyna\Component\Commerce\Supplier\Entity;
 use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierAddressInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 
 /**
  * Class SupplierAddress
@@ -13,24 +14,12 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
  */
 class SupplierAddress extends AbstractAddress implements SupplierAddressInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    use ResourceTrait;
 
     /**
      * @var SupplierInterface
      */
     protected $supplier;
-
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * @inheritDoc

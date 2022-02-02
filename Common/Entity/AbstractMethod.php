@@ -21,7 +21,6 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
 {
     use RM\SortableTrait;
 
-    protected ?int $id = null;
     protected ?string $name = null;
     /** @var Collection|Model\MessageInterface[] */
     protected Collection $messages;
@@ -42,11 +41,6 @@ abstract class AbstractMethod extends RM\AbstractTranslatable implements Model\M
     public function __toString(): string
     {
         return $this->name ?: 'New method';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): ?string

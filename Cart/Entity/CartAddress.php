@@ -15,15 +15,8 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
  */
 class CartAddress extends AbstractSaleAddress implements Model\CartAddressInterface
 {
-    protected ?int                 $id           = null;
     protected ?Model\CartInterface $invoiceCart  = null;
     protected ?Model\CartInterface $deliveryCart = null;
-
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getInvoiceCart(): ?Model\CartInterface
     {

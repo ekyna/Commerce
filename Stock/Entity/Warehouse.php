@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 use Ekyna\Component\Resource\Model\IsDefaultTrait;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 
 /**
  * Class Warehouse
@@ -16,12 +17,8 @@ use Ekyna\Component\Resource\Model\IsDefaultTrait;
  */
 class Warehouse extends AbstractAddress implements WarehouseInterface
 {
+    use ResourceTrait;
     use IsDefaultTrait;
-
-    /**
-     * @var int
-     */
-    protected $id;
 
     /**
      * @var string
@@ -63,14 +60,6 @@ class Warehouse extends AbstractAddress implements WarehouseInterface
     public function __toString(): string
     {
         return $this->name ?: 'New warehouse';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

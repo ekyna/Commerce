@@ -8,20 +8,19 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class ShipmentPrice
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentPrice implements ShipmentPriceInterface
+class ShipmentPrice extends AbstractResource implements ShipmentPriceInterface
 {
-    protected ?int                     $id     = null;
     protected ?ShipmentZoneInterface   $zone   = null;
     protected ?ShipmentMethodInterface $method = null;
     protected Decimal                  $weight;
     protected Decimal                  $netPrice;
-
 
     public function __construct()
     {
@@ -36,11 +35,6 @@ class ShipmentPrice implements ShipmentPriceInterface
         }
 
         return 'New shipment price';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getZone(): ?ShipmentZoneInterface

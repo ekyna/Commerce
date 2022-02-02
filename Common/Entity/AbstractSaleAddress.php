@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 
 /**
  * Class AbstractSaleAddress
@@ -13,8 +14,14 @@ use Ekyna\Component\Commerce\Common\Model\SaleAddressInterface;
  */
 abstract class AbstractSaleAddress extends AbstractAddress implements SaleAddressInterface
 {
+    use ResourceTrait;
+
     protected ?string $information = null;
 
+    public function __clone()
+    {
+        $this->id = null;
+    }
 
     public function getInformation(): ?string
     {

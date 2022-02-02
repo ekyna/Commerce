@@ -6,15 +6,15 @@ namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Supplier\Model;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class SupplierDeliveryItem
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
+class SupplierDeliveryItem extends AbstractResource implements Model\SupplierDeliveryItemInterface
 {
-    protected ?int                              $id        = null;
     protected ?Model\SupplierDeliveryInterface  $delivery  = null;
     protected ?Model\SupplierOrderItemInterface $orderItem = null;
     protected Decimal                           $quantity;
@@ -23,11 +23,6 @@ class SupplierDeliveryItem implements Model\SupplierDeliveryItemInterface
     public function __construct()
     {
         $this->quantity = new Decimal(0);
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getDelivery(): ?Model\SupplierDeliveryInterface

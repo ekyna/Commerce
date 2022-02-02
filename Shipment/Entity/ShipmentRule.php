@@ -13,15 +13,15 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentRuleInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class ShipmentRule
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentRule implements ShipmentRuleInterface
+class ShipmentRule extends AbstractResource implements ShipmentRuleInterface
 {
-    protected ?int               $id      = null;
     protected ?string            $name    = null;
     protected Decimal            $baseTotal;
     protected string             $vatMode;
@@ -49,11 +49,6 @@ class ShipmentRule implements ShipmentRuleInterface
     public function __toString(): string
     {
         return $this->name ?: 'New shipment rule';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): ?string

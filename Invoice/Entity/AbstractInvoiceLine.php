@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model;
+use Ekyna\Component\Resource\Model\ResourceTrait;
 
 /**
  * Class AbstractInvoiceLine
@@ -18,7 +19,8 @@ use Ekyna\Component\Commerce\Invoice\Model;
  */
 abstract class AbstractInvoiceLine extends Document\DocumentLine implements Model\InvoiceLineInterface
 {
-    protected ?int                    $id      = null;
+    use ResourceTrait;
+
     protected ?Model\InvoiceInterface $invoice = null;
     protected Collection              $children;
 
@@ -31,11 +33,6 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
         parent::__construct();
 
         $this->clearChildren();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

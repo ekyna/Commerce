@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 
@@ -16,19 +18,7 @@ use Ekyna\Component\Resource\Model\TranslatableInterface;
  */
 interface SupplierTemplateInterface extends TranslatableInterface
 {
-    /**
-     * Returns the title.
-     *
-     * @return string
-     */
     public function getTitle(): ?string;
 
-    /**
-     * Sets the title.
-     *
-     * @param string $title
-     *
-     * @return SupplierTemplate
-     */
-    public function setTitle(string $title): SupplierTemplate;
+    public function setTitle(?string $title): SupplierTemplate;
 }

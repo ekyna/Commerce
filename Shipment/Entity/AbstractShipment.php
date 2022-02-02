@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -17,14 +18,13 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractShipment implements Shipment\ShipmentInterface
+abstract class AbstractShipment extends AbstractResource implements Shipment\ShipmentInterface
 {
     use Common\NumberSubjectTrait;
     use Common\StateSubjectTrait;
     use Shipment\ShipmentDataTrait;
     use TimestampableTrait;
 
-    protected ?int                              $id              = null;
     protected ?Shipment\ShipmentMethodInterface $method          = null;
     protected bool                              $autoInvoice;
     protected bool                              $return;
@@ -40,7 +40,6 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     /** @var Collection<Shipment\ShipmentParcelInterface> */
     protected Collection $parcels;
 
-
     public function __construct()
     {
         $this->state = Shipment\ShipmentStates::STATE_NEW;
@@ -55,11 +54,6 @@ abstract class AbstractShipment implements Shipment\ShipmentInterface
     public function __toString(): string
     {
         return $this->number ?: 'New shipment rule';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getMethod(): ?Shipment\ShipmentMethodInterface

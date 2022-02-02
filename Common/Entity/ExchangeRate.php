@@ -6,16 +6,15 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use DateTimeInterface;
 use Decimal\Decimal;
-use Ekyna\Component\Resource\Model\ResourceInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class ExchangeRate
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ExchangeRate implements ResourceInterface
+class ExchangeRate extends AbstractResource
 {
-    private ?int               $id    = null;
     private ?string            $base  = null;
     private ?string            $quote = null;
     private ?DateTimeInterface $date;
@@ -31,11 +30,6 @@ class ExchangeRate implements ResourceInterface
         }
 
         return 'New exchange rate';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getBase(): ?string

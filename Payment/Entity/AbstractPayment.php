@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 use Traversable;
 
@@ -18,7 +19,7 @@ use Traversable;
  * @package Ekyna\Component\Commerce\Payment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractPayment implements Payment\PaymentInterface
+abstract class AbstractPayment extends AbstractResource implements Payment\PaymentInterface
 {
     use Common\ExchangeSubjectTrait;
     use Common\KeySubjectTrait;
@@ -26,7 +27,6 @@ abstract class AbstractPayment implements Payment\PaymentInterface
     use Common\StateSubjectTrait;
     use TimestampableTrait;
 
-    protected ?int                            $id          = null;
     protected bool                            $refund;
     protected ?Payment\PaymentMethodInterface $method      = null;
     protected Decimal                         $amount;              // payment currency
@@ -52,7 +52,7 @@ abstract class AbstractPayment implements Payment\PaymentInterface
 
     public function __clone()
     {
-        $this->id = null;
+        parent::__clone();
 
         $this->clear();
     }
@@ -70,11 +70,6 @@ abstract class AbstractPayment implements Payment\PaymentInterface
         $this->completedAt = null;
         $this->createdAt = new DateTime();
         $this->updatedAt = null;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function isRefund(): bool

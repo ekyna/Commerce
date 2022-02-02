@@ -7,15 +7,15 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class AbstractStockAssignment
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
+abstract class AbstractStockAssignment extends AbstractResource implements Stock\StockAssignmentInterface
 {
-    protected ?int                      $id        = null;
     protected ?Stock\StockUnitInterface $stockUnit = null;
     protected Decimal                   $soldQuantity;
     protected Decimal                   $shippedQuantity;
@@ -26,11 +26,6 @@ abstract class AbstractStockAssignment implements Stock\StockAssignmentInterface
         $this->soldQuantity = new Decimal(0);
         $this->shippedQuantity = new Decimal(0);
         $this->lockedQuantity = new Decimal(0);
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getStockUnit(): ?Stock\StockUnitInterface

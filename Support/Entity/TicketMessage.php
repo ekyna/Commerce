@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Support\Model\TicketAttachmentInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -17,11 +18,10 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Support\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class TicketMessage implements TicketMessageInterface
+class TicketMessage extends AbstractResource implements TicketMessageInterface
 {
     use TimestampableTrait;
 
-    protected ?int               $id         = null;
     protected ?TicketInterface   $ticket     = null;
     protected ?string            $author     = null;
     protected ?string            $content    = null;
@@ -31,17 +31,11 @@ class TicketMessage implements TicketMessageInterface
     /** @var Collection<TicketAttachment> */
     protected Collection $attachments;
 
-
     public function __construct()
     {
         $this->internal = false;
         $this->notify = true;
         $this->attachments = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getTicket(): ?TicketInterface

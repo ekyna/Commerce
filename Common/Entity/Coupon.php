@@ -8,15 +8,15 @@ use DateTimeInterface;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class Coupon
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Coupon implements Model\CouponInterface
+class Coupon extends AbstractResource implements Model\CouponInterface
 {
-    private ?int               $id          = null;
     private ?CustomerInterface $customer    = null;
     private ?string            $code        = null;
     private ?DateTimeInterface $startAt     = null;
@@ -38,11 +38,6 @@ class Coupon implements Model\CouponInterface
     public function __toString(): string
     {
         return $this->code ?: 'New coupon';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCustomer(): ?CustomerInterface

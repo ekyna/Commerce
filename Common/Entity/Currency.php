@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class Currency
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Currency implements CurrencyInterface
+class Currency extends AbstractResource implements CurrencyInterface
 {
-    protected ?int    $id      = null;
     protected ?string $name    = null;
     protected ?string $code    = null;
     protected bool    $enabled = true;
@@ -26,11 +26,6 @@ class Currency implements CurrencyInterface
     public function __toString(): string
     {
         return $this->name ?: 'New currency';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): ?string

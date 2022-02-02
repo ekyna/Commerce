@@ -25,12 +25,11 @@ class Audience extends AbstractTranslatable implements AudienceInterface
     use KeySubjectTrait;
     use TimestampableTrait;
 
-    protected ?int $id = null;
-    protected ?string $gateway = null;
+    protected ?string $gateway    = null;
     protected ?string $identifier = null;
-    protected ?string $name = null;
-    protected bool $public = false;
-    protected bool $default = false;
+    protected ?string $name       = null;
+    protected bool    $public     = false;
+    protected bool    $default    = false;
 
     public function __construct()
     {
@@ -46,11 +45,6 @@ class Audience extends AbstractTranslatable implements AudienceInterface
         }
 
         return 'New audience';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getGateway(): ?string

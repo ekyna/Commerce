@@ -15,15 +15,8 @@ use Ekyna\Component\Commerce\Quote\Model;
  */
 class QuoteAddress extends AbstractSaleAddress implements Model\QuoteAddressInterface
 {
-    protected ?int                  $id            = null;
     protected ?Model\QuoteInterface $invoiceQuote  = null;
     protected ?Model\QuoteInterface $deliveryQuote = null;
-
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getInvoiceQuote(): ?Model\QuoteInterface
     {

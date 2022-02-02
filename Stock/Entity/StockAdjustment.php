@@ -8,15 +8,15 @@ use DateTime;
 use DateTimeInterface;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class StockAdjustment
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockAdjustment implements Model\StockAdjustmentInterface
+class StockAdjustment extends AbstractResource implements Model\StockAdjustmentInterface
 {
-    protected ?int                      $id        = null;
     protected ?Model\StockUnitInterface $stockUnit = null;
     protected Decimal                   $quantity;
     protected ?string                   $reason    = null;
@@ -27,11 +27,6 @@ class StockAdjustment implements Model\StockAdjustmentInterface
     {
         $this->quantity = new Decimal(0);
         $this->createdAt = new DateTime();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getStockUnit(): ?Model\StockUnitInterface

@@ -21,15 +21,8 @@ abstract class AbstractMention extends AbstractTranslatable implements MentionIn
 {
     use SortableTrait;
 
-    protected ?int $id = null;
     /** @var string[] */
     protected array $documentTypes = [];
-
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getDocumentTypes(): array
     {

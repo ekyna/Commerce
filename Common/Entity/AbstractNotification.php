@@ -7,25 +7,19 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 use DateTimeInterface;
 use Ekyna\Component\Commerce\Common\Model\NotificationInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class NotificationLog
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractNotification implements NotificationInterface
+abstract class AbstractNotification extends AbstractResource implements NotificationInterface
 {
-    protected ?int               $id      = null;
     protected ?string            $type    = null;
     protected array              $data    = [];
     protected ?DateTimeInterface $sentAt  = null;
     protected ?string            $details = null;
-
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getType(): ?string
     {

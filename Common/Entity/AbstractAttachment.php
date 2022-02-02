@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\AttachmentInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\UploadableTrait;
 
 /**
@@ -12,11 +13,10 @@ use Ekyna\Component\Resource\Model\UploadableTrait;
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractAttachment implements AttachmentInterface
+abstract class AbstractAttachment extends AbstractResource implements AttachmentInterface
 {
     use UploadableTrait;
 
-    protected ?int    $id       = null;
     protected ?string $title    = null;
     protected ?string $type     = null;
     protected bool    $internal = false;
@@ -28,11 +28,6 @@ abstract class AbstractAttachment implements AttachmentInterface
     public function __toString(): string
     {
         return $this->getFilename() ?: 'New attachment';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getTitle(): ?string

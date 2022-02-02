@@ -6,15 +6,15 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Model\StateInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class State
  * @package Ekyna\Component\Commerce\Common\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class State implements StateInterface
+class State extends AbstractResource implements StateInterface
 {
-    protected ?int              $id      = null;
     protected ?CountryInterface $country = null;
     protected ?string           $name    = null;
     protected ?string           $code    = null;
@@ -26,11 +26,6 @@ class State implements StateInterface
     public function __toString(): string
     {
         return $this->name ?: 'New state';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getCountry(): ?CountryInterface

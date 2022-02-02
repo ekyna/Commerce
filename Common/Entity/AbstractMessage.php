@@ -16,15 +16,8 @@ use Ekyna\Component\Resource\Model\AbstractTranslatable;
  */
 abstract class AbstractMessage extends AbstractTranslatable implements Model\MessageInterface
 {
-    protected ?int $id = null;
-    protected ?string $state = null;
+    protected ?string                $state  = null;
     protected ?Model\MethodInterface $method = null;
-
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getState(): ?string
     {
@@ -55,7 +48,7 @@ abstract class AbstractMessage extends AbstractTranslatable implements Model\Mes
         return $this->translate()->getContent();
     }
 
-    public function setContent(?string $content) : Model\MessageInterface
+    public function setContent(?string $content): Model\MessageInterface
     {
         $this->translate()->setContent($content);
 

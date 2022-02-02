@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierAddressInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierCarrierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\LocalizedTrait;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
@@ -16,16 +17,11 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Supplier implements SupplierInterface
+class Supplier extends AbstractResource implements SupplierInterface
 {
     use IdentityTrait;
     use LocalizedTrait;
     use TimestampableTrait;
-
-    /**
-     * @var int
-     */
-    protected $id;
 
     /**
      * @var string
@@ -76,14 +72,6 @@ class Supplier implements SupplierInterface
     public function __toString(): string
     {
         return $this->name ?: 'New supplier';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

@@ -14,6 +14,7 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketStates;
+use Ekyna\Component\Resource\Model\AbstractResource;
 use Ekyna\Component\Resource\Model\TimestampableTrait;
 
 /**
@@ -21,13 +22,12 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
  * @package Ekyna\Component\Commerce\Support\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Ticket implements TicketInterface
+class Ticket extends AbstractResource implements TicketInterface
 {
     use NumberSubjectTrait;
     use StateSubjectTrait;
     use TimestampableTrait;
 
-    protected ?int               $id       = null;
     protected ?string            $subject  = null;
     protected bool               $internal = false;
     protected ?CustomerInterface $customer = null;
@@ -51,11 +51,6 @@ class Ticket implements TicketInterface
     public function __toString(): string
     {
         return $this->number ?: 'New ticket';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getSubject(): ?string

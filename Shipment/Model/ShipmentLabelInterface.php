@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use DateTimeInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
  * Interface ShipmentLabelInterface
  * @package Ekyna\Component\Commerce\Shipment\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface ShipmentLabelInterface
+interface ShipmentLabelInterface extends ResourceInterface
 {
     public const TYPE_SHIPMENT = 'shipment';
     public const TYPE_RETURN   = 'return';
@@ -28,15 +29,13 @@ interface ShipmentLabelInterface
     public const SIZE_A5 = 'a5';
     public const SIZE_A4 = 'a4';
 
-    public function getId(): ?int;
-
     public function getShipment(): ?ShipmentInterface;
 
     public function setShipment(?ShipmentInterface $shipment): ShipmentLabelInterface;
 
     public function getParcel(): ?ShipmentParcelInterface;
 
-    public function setParcel(?ShipmentParcelInterface $parcel);
+    public function setParcel(?ShipmentParcelInterface $parcel): ShipmentLabelInterface;
 
     /**
      * @return resource|string|null

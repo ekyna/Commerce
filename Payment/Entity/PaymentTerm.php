@@ -14,12 +14,6 @@ use Ekyna\Component\Resource\Model\AbstractTranslatable;
  */
 class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterface
 {
-
-    /**
-     * @var int
-     */
-    protected $id;
-
     /**
      * @var string
      */
@@ -61,14 +55,6 @@ class PaymentTerm extends AbstractTranslatable implements Pay\PaymentTermInterfa
     public function __toString(): string
     {
         return $this->name ?: 'New payment term';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

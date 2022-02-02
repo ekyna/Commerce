@@ -6,19 +6,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentPriceInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class ShipmentZone
  * @package Ekyna\Component\Commerce\Shipment\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class ShipmentZone implements ShipmentZoneInterface
+class ShipmentZone extends AbstractResource implements ShipmentZoneInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
     /**
      * @var string
      */
@@ -52,14 +48,6 @@ class ShipmentZone implements ShipmentZoneInterface
     public function __toString(): string
     {
         return $this->name ?: 'New shipment zone';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**

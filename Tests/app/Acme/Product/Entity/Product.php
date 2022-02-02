@@ -4,20 +4,16 @@ namespace Acme\Product\Entity;
 
 use Acme\Product\Provider\ProductProvider;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class Product
  * @package Acme\Product\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Product implements Stock\StockSubjectInterface
+class Product extends AbstractResource implements Stock\StockSubjectInterface
 {
     use Stock\StockSubjectTrait;
-
-    /**
-     * @var int
-     */
-    private $id;
 
     /**
      * @var bool
@@ -46,11 +42,6 @@ class Product implements Stock\StockSubjectInterface
     public function __toString(): string
     {
         return $this->designation ?: 'New designation';
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getIdentifier(): int

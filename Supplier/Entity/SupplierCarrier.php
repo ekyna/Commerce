@@ -4,19 +4,15 @@ namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierCarrierInterface;
+use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
  * Class SupplierCarrier
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierCarrier implements SupplierCarrierInterface
+class SupplierCarrier extends AbstractResource implements SupplierCarrierInterface
 {
-    /**
-     * @var int
-     */
-    protected $id;
-
     /**
      * @var string
      */
@@ -36,14 +32,6 @@ class SupplierCarrier implements SupplierCarrierInterface
     public function __toString(): string
     {
         return $this->name ?: 'New carrier';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**
