@@ -13,7 +13,7 @@ use Ekyna\Component\Commerce\Common\Entity\AbstractAddress;
  */
 class ShipmentAddress extends AbstractAddress
 {
-    protected ?string $information;
+    protected ?string $information = null;
 
     public function getInformation(): ?string
     {
