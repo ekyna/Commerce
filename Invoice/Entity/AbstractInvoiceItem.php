@@ -20,7 +20,7 @@ abstract class AbstractInvoiceItem extends Document\DocumentItem implements Invo
     use ResourceTrait;
     use SortableTrait;
 
-    protected ?Invoice\InvoiceInterface $invoice;
+    protected ?Invoice\InvoiceInterface $invoice = null;
 
     public function getDocument(): ?Document\DocumentInterface
     {
