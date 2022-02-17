@@ -30,6 +30,7 @@ trait StockSubjectTrait
     protected int                $replenishmentTime;
     protected ?string            $geocode                = null;
     protected Decimal            $minimumOrderQuantity;
+    protected ?DateTimeInterface $releasedAt             = null;
     protected bool               $quoteOnly;
     protected bool               $endOfLife;
     protected Decimal            $weight;
@@ -54,6 +55,7 @@ trait StockSubjectTrait
         $this->virtualStock = new Decimal(0);
         $this->replenishmentTime = 2;
         $this->minimumOrderQuantity = new Decimal(1);
+        $this->releasedAt = null;
         $this->quoteOnly = false;
         $this->endOfLife = false;
         $this->unit = Units::PIECE;
@@ -196,6 +198,18 @@ trait StockSubjectTrait
     public function setMinimumOrderQuantity(Decimal $quantity): StockSubjectInterface
     {
         $this->minimumOrderQuantity = $quantity;
+
+        return $this;
+    }
+
+    public function getReleasedAt(): ?DateTimeInterface
+    {
+        return $this->releasedAt;
+    }
+
+    public function setReleasedAt(?DateTimeInterface $date): StockSubjectInterface
+    {
+        $this->releasedAt = $date;
 
         return $this;
     }

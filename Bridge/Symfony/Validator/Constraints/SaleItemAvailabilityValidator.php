@@ -55,7 +55,7 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
 
         $sale = $item->getSale();
         if ($sale instanceof OrderInterface) {
-            // This constraint does not applies to orders
+            // This constraint does not apply to orders
             return;
         }
 

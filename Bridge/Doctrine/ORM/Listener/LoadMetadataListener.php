@@ -626,6 +626,12 @@ class LoadMetadataListener
                 'default'    => 1,
             ],
             [
+                'fieldName'  => 'releasedAt',
+                'columnName' => 'released_at',
+                'type'       => Types::DATETIME_MUTABLE,
+                'nullable'   => true,
+            ],
+            [
                 'fieldName'  => 'quoteOnly',
                 'columnName' => 'quote_only',
                 'type'       => Types::BOOLEAN,

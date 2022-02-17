@@ -45,6 +45,9 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
         $maxQty = new Decimal(INF);
         $minMsg = $maxMsg = $aMsg = $rMsg = '';
 
+        $today = new DateTime();
+        $today->setTime(23, 59, 59, 999999);
+
         if ($root && $subject->isQuoteOnly()) {
             $maxQty = new Decimal(0);
             $oMsg = $maxMsg = $this->translate('quote_only', [], $short);
@@ -70,21 +73,28 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             }
 
             // Resupply quantity/message
-            if ((0 < $vQty = $subject->getVirtualStock()) && (null !== $eda = $subject->getEstimatedDateOfArrival())) {
-                $today = new DateTime();
-                $today->setTime(23, 59, 59, 999999);
-                if (($today < $eda) && ($minQty <= $rQty = $vQty - $aQty)) {
-                    $rMsg = $this->translate('pre_order', [
-                        '%eda%' => $this->getFormatter()->date($eda),
-                        '%qty%' => $this->formatQuantity($rQty),
-                    ], $short);
-                    $maxQty = $vQty;
-                }
+            if (
+                ($eda = $subject->getEstimatedDateOfArrival())
+                && ($today < $eda)
+                && (0 < $vQty = $subject->getVirtualStock())
+                && ($minQty <= $rQty = $vQty - $aQty)
+            ) {
+                $rMsg = $this->translate('pre_order', [
+                    '%eda%' => $this->getFormatter()->date($eda),
+                    '%qty%' => $this->formatQuantity($rQty),
+                ], $short);
+                $maxQty = $vQty;
             }
 
             // Overflow message
             if ($root && $subject->isEndOfLife()) {
                 $oMsg = $this->translate('end_of_life', [], $short);
+            } elseif (
+                ($releasedAt = $subject->getReleasedAt()) && ($today < $releasedAt)
+            ) {
+                $oMsg = $this->translate('released_at', [
+                    '%date%' => $this->getFormatter()->date($releasedAt),
+                ], $short);
             } elseif (
                 $subject->getStockMode() === StockSubjectModes::MODE_JUST_IN_TIME
                 && 0 < $days = $subject->getReplenishmentTime()
@@ -133,23 +143,31 @@ abstract class AbstractAvailabilityHelper implements AvailabilityHelperInterface
             ], $short);
         }
 
-        // TODO Only if stock mode === JUST_IN_TIME (?)
+        $today = new DateTime();
+        $today->setTime(23, 59, 59, 999999);
+
         if (
             ($quantity <= $qty = $subject->getVirtualStock())
-            && (null !== $eda = $subject->getEstimatedDateOfArrival())
+            && ($eda = $subject->getEstimatedDateOfArrival())
+            && ($today < $eda)
         ) {
-            $today = new DateTime();
-            $today->setTime(23, 59, 59, 999999);
-            if ($today < $eda) {
-                return $this->translate('pre_order', [
-                    '%eda%' => $this->getFormatter()->date($eda),
-                    '%qty%' => $this->formatQuantity($qty),
-                ], $short);
-            }
+            return $this->translate('pre_order', [
+                '%eda%' => $this->getFormatter()->date($eda),
+                '%qty%' => $this->formatQuantity($qty),
+            ], $short);
         }
 
         if ($root && $subject->isEndOfLife()) {
             return $this->translate('end_of_life', [], $short);
+        }
+
+        if (
+            ($releasedAt = $subject->getReleasedAt())
+            && ($today < $releasedAt)
+        ) {
+            return $this->translate('released_at', [
+                '%date%' => $this->getFormatter()->date($releasedAt),
+            ], $short);
         }
 
         if (

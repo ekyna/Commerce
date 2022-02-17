@@ -10,6 +10,8 @@ use DateTimeInterface;
  * Class DateUtil
  * @package Ekyna\Component\Commerce\Common\Util
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO Move to Resource component
  */
 final class DateUtil
 {

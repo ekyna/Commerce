@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Stock\Model;
 
 use DateTimeInterface;
 use Decimal\Decimal;
+use Ekyna\Bundle\ProductBundle\Model\ProductInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 
 /**
@@ -84,6 +85,10 @@ interface StockSubjectInterface extends SubjectInterface
      * @return $this|StockSubjectInterface
      */
     public function setMinimumOrderQuantity(Decimal $quantity): StockSubjectInterface;
+
+    public function getReleasedAt(): ?DateTimeInterface;
+
+    public function setReleasedAt(?DateTimeInterface $date): StockSubjectInterface;
 
     /**
      * Returns whether this subject is available only through quotes.
