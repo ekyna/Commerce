@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Decimal\Decimal;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
@@ -30,4 +31,6 @@ interface SupplierOrderItemInterface extends SubjectRelativeInterface
     public function getQuantity(): Decimal;
 
     public function setQuantity(Decimal $quantity): SupplierOrderItemInterface;
+
+    public function getDeliveryItems(): Collection;
 }

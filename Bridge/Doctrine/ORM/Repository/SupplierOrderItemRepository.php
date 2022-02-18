@@ -16,9 +16,6 @@ use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
  */
 class SupplierOrderItemRepository extends ResourceRepository implements SupplierOrderItemRepositoryInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function findLatestOrderedBySubject(SubjectInterface $subject): ?SupplierOrderItemInterface
     {
         $qb = $this->createQueryBuilder('i');
@@ -37,5 +34,19 @@ class SupplierOrderItemRepository extends ResourceRepository implements Supplier
                 'identifier' => $subject->getId(),
             ])
             ->getOneOrNullResult();
+    }
+
+    public function findPaidAndNotDelivered(): array
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        return $qb
+            ->join('i.order', 'o')
+            ->join('i.product', 'p')
+            ->leftJoin('i.deliveryItems', 'di')
+            ->andWhere($qb->expr()->isNotNull('o.paymentDate'))
+            ->andWhere($qb->expr()->isNull('di'))
+            ->getQuery()
+            ->getResult();
     }
 }

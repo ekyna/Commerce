@@ -26,6 +26,9 @@
             <join-column name="product_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
+        <one-to-many field="deliveryItems"
+                     target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface"
+                     mapped-by="orderItem" fetch="EXTRA_LAZY"/>
     </entity>
 
 </doctrine-mapping>

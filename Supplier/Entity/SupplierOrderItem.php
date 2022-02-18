@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use Decimal\Decimal;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Commerce\Supplier\Model;
@@ -22,12 +24,14 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     protected ?Model\SupplierProductInterface $product   = null;
     protected ?StockUnitInterface             $stockUnit = null;
     protected Decimal                         $quantity;
+    protected Collection                      $deliveryItems;
 
     public function __construct()
     {
         $this->initializeSubjectRelative();
 
         $this->quantity = new Decimal(1);
+        $this->deliveryItems = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -103,5 +107,10 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         $this->quantity = $quantity;
 
         return $this;
+    }
+
+    public function getDeliveryItems(): Collection
+    {
+        return $this->deliveryItems;
     }
 }

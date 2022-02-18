@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Util;
 
+use DateTime;
 use DateTimeInterface;
 
 /**
@@ -38,6 +39,11 @@ final class DateUtil
         }
 
         return false;
+    }
+
+    public static function today(): string
+    {
+        return (new DateTime())->format(self::DATE_FORMAT);
     }
 
     /**

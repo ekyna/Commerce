@@ -6,21 +6,31 @@ namespace Ekyna\Component\Commerce\Common\Export;
 
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Resource\Exception\UnexpectedTypeException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
+
+use function is_null;
 
 /**
  * Class AbstractExporter
  * @package Ekyna\Component\Commerce\Common\Export
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO Move into Resource component
  */
 abstract class AbstractExporter
 {
-    protected PropertyAccessor $accessor;
+    private PropertyAccessor $accessor;
 
     public function __construct()
     {
         $this->accessor = PropertyAccess::createPropertyAccessor();
+    }
+
+    protected function getAccessor(): PropertyAccessor
+    {
+        return $this->accessor;
     }
 
     /**
@@ -97,12 +107,16 @@ abstract class AbstractExporter
         $row = [];
 
         foreach ($map as $name => $value) {
+            if (is_null($value)) {
+                $value = $name;
+            }
+
             if (is_string($value)) {
                 $value = $this->accessor->getValue($object, $value);
             } elseif (is_callable($value)) {
                 $value = $value($object);
             } else {
-                throw new UnexpectedValueException('Expected string or callable.');
+                throw new UnexpectedTypeException($value, ['string', 'callable']);
             }
 
             $row[] = $this->transform($name, (string)$value);
@@ -113,6 +127,8 @@ abstract class AbstractExporter
 
     /**
      * Transforms the value.
+     *
+     * @deprecated Transform values using closures in map
      */
     protected function transform(string $name, string $value): ?string
     {

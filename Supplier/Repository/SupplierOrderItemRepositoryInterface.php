@@ -23,4 +23,11 @@ interface SupplierOrderItemRepositoryInterface extends ResourceRepositoryInterfa
      * @return SupplierOrderItemInterface|null
      */
     public function findLatestOrderedBySubject(SubjectInterface $subject): ?SupplierOrderItemInterface;
+
+    /**
+     * Finds items from paid but not delivered orders.
+     *
+     * @return array<SupplierOrderItemInterface>
+     */
+    public function findPaidAndNotDelivered(): array;
 }
