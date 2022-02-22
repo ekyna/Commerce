@@ -166,7 +166,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         }
 
         if ($resource instanceof Model\SaleInterface) {
-            return $resource->isAutoDiscount() && !$resource->hasPaidPayments();
+            return $resource->isAutoDiscount(); /* TODO (Define when it should be locked) // && !$resource->hasPaidPayments()*/
         }
 
         throw new UnexpectedTypeException($resource, [Model\SaleInterface::class, Model\SaleItemInterface::class]);
@@ -184,7 +184,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
         }
 
         if ($resource instanceof Model\SaleInterface) {
-            return !$resource->hasPaidPayments();
+            return true; /* TODO (Define when it should be locked) // && !$resource->hasPaidPayments()*/
         }
 
         throw new UnexpectedTypeException($resource, [Model\SaleInterface::class, Model\SaleItemInterface::class]);
