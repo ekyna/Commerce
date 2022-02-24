@@ -868,6 +868,10 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         $u1HasEda = null !== $u1->getEstimatedDateOfArrival();
         $u2HasEda = null !== $u2->getEstimatedDateOfArrival();
 
+        if (!$u1HasEda && !$u2HasEda) {
+            return 0;
+        }
+
         if (!$u1HasEda && $u2HasEda) {
             return 1;
         }
