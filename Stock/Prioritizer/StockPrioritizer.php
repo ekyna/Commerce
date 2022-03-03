@@ -210,7 +210,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             $diff = $quantity - $targetUnit->getReservableQuantity();
 
             // If not enough reservable quantity, release as much as needed/possible
-            if (0 < $diff && $combination = $candidate->getCombination($diff)) {
+            if (0 < $diff && (null !== $combination = $candidate->getCombination($diff))) {
                 // Use combination to release quantity
                 foreach ($combination->map as $id => $qty) {
                     if (null === $a = $candidate->getAssignmentById($id)) {

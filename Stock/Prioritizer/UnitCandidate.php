@@ -75,7 +75,7 @@ class UnitCandidate
     /**
      * Returns the best assignment combination for the given quantity.
      */
-    public function getCombination(Decimal $quantity): AssignmentCombination
+    public function getCombination(Decimal $quantity): ?AssignmentCombination
     {
         if ($this->combination && $quantity->equals($this->combinationQty)) { // TODO precision ?
             return $this->combination;
