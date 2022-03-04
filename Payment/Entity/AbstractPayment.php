@@ -122,6 +122,8 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
 
     /**
      * @inheritDoc
+     *
+     * @return array
      */
     public function getDetails()
     {
@@ -182,6 +184,8 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
 
     /**
      * @inheritDoc
+     *
+     * @return mixed
      */
     public function offsetGet($offset)
     {

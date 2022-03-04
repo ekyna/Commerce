@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 /**
@@ -9,13 +11,12 @@ namespace Ekyna\Component\Commerce\Supplier\Model;
  */
 final class SupplierOrderAttachmentTypes
 {
-    const TYPE_FORM      = 'form';
-    const TYPE_PROFORMA  = 'proforma';
-    const TYPE_PAYMENT   = 'payment';
-    const TYPE_FORWARDER = 'forwarder';
-    const TYPE_IMPORT    = 'import';
-    const TYPE_DELIVERY  = 'delivery';
-
+    public const TYPE_FORM      = 'form';
+    public const TYPE_PROFORMA  = 'proforma';
+    public const TYPE_PAYMENT   = 'payment';
+    public const TYPE_FORWARDER = 'forwarder';
+    public const TYPE_IMPORT    = 'import';
+    public const TYPE_DELIVERY  = 'delivery';
 
     /**
      * Disabled constructor.

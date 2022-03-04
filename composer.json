@@ -43,6 +43,9 @@
         "drewm/mailchimp-api": "For mailchimp newsletter gateway",
         "sendinblue/api-v3-sdk": "For sendinblue newsletter gateway"
     },
+    "conflict": {
+        "barbieswimcrew/zip-code-validator": "<2.0"
+    },
     "autoload": {
         "psr-4": {
             "Ekyna\\Component\\Commerce\\": "",

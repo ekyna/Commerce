@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Model;
 
 use Ekyna\Component\Commerce\Bridge\Payum\Request as Commerce;
@@ -48,7 +50,7 @@ final class PaymentTransitions
                 return Payum\Refund::class;
         }
 
-        throw new InvalidArgumentException("Unexpected payment transition");
+        throw new InvalidArgumentException('Unexpected payment transition');
     }
 
     /**
@@ -58,7 +60,7 @@ final class PaymentTransitions
      * @param bool             $admin
      * @param bool             $locked
      *
-     * @return string[]
+     * @return array<string>
      *
      * @see \Ekyna\Bundle\CommerceBundle\Service\Payment\PaymentHelper::getTransitions
      */

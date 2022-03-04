@@ -65,7 +65,7 @@ class AddressValidator extends ConstraintValidator
                     'max' => 35,
                 ]),
             ],
-            'extra' => [
+            'extra'      => [
                 new Assert\Length([
                     'min' => 2,
                     'max' => 35,
@@ -88,17 +88,17 @@ class AddressValidator extends ConstraintValidator
             'country'    => [
                 new Assert\NotNull(),
             ],
-            'digicode1' => [
+            'digicode1'  => [
                 new Assert\Length([
                     'max' => 8,
                 ]),
             ],
-            'digicode2' => [
+            'digicode2'  => [
                 new Assert\Length([
                     'max' => 8,
                 ]),
             ],
-            'intercom' => [
+            'intercom'   => [
                 new Assert\Length([
                     'max' => 10,
                 ]),
@@ -122,10 +122,9 @@ class AddressValidator extends ConstraintValidator
             $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
             if (class_exists($zipCodeClass)) {
                 $config['postalCode'][] = new $zipCodeClass([
-                    'message'     => $constraint->invalid_zip_code,
-                    'iso'         => $country->getCode(),
-                    'ignoreEmpty' => true,
-                    'strict'      => false,
+                    'message' => $constraint->invalid_zip_code,
+                    'iso'     => $country->getCode(),
+                    'strict'  => false,
                 ]);
             }
         }
