@@ -13,9 +13,13 @@ use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Resolver\AvailabilityResolverFactory;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumberUtil;
+
+use function is_null;
+use function max;
+use function min;
 
 /**
  * Class InvoiceBuilder
@@ -24,22 +28,22 @@ use libphonenumber\PhoneNumberUtil;
  */
 class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 {
-    private FactoryHelperInterface             $factoryHelper;
-    private InvoiceSubjectCalculatorInterface  $invoiceCalculator;
-    private ShipmentSubjectCalculatorInterface $shipmentCalculator;
+    private FactoryHelperInterface            $factoryHelper;
+    private AvailabilityResolverFactory       $availabilityResolverFactory;
+    private InvoiceSubjectCalculatorInterface $invoiceCalculator;
 
     public function __construct(
-        FactoryHelperInterface             $factoryHelper,
-        InvoiceSubjectCalculatorInterface  $invoiceCalculator,
-        ShipmentSubjectCalculatorInterface $shipmentCalculator,
-        LocaleProviderInterface            $localeProvider,
-        PhoneNumberUtil                    $phoneNumberUtil = null
+        FactoryHelperInterface            $factoryHelper,
+        AvailabilityResolverFactory       $availabilityResolverFactory,
+        InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        LocaleProviderInterface           $localeProvider,
+        PhoneNumberUtil                   $phoneNumberUtil = null
     ) {
         parent::__construct($localeProvider, $phoneNumberUtil);
 
         $this->factoryHelper = $factoryHelper;
+        $this->availabilityResolverFactory = $availabilityResolverFactory;
         $this->invoiceCalculator = $invoiceCalculator;
-        $this->shipmentCalculator = $shipmentCalculator;
     }
 
     public function getFactoryHelper(): FactoryHelperInterface
@@ -63,60 +67,31 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             throw new UnexpectedTypeException($document, Invoice\InvoiceInterface::class);
         }
 
-        // Compound item
-        if ($item->isCompound()) {
-            $available = $expected = null;
-            foreach ($item->getChildren() as $childItem) {
-                if (null !== $childLine = $this->buildGoodLine($childItem, $document)) {
-                    $saleItemQty = $childItem->getQuantity();
+        $availability = $this
+            ->availabilityResolverFactory
+            ->createWithInvoice($document)
+            ->resolveSaleItem($item);
 
-                    $a = ($childLine->getAvailable() ?: new Decimal(0))->div($saleItemQty);
-                    if (null === $available || $available > $a) {
-                        $available = $a;
-                    }
-
-                    $e = ($childLine->getExpected() ?: new Decimal(0))->div($saleItemQty);
-                    if (null === $expected || $expected > $e) {
-                        $expected = $e;
-                    }
-                }
-            }
-
-            if (0 < $available) {
-                return $this->findOrCreateGoodLine($document, $item, $available, $expected);
-            }
-
+        if ($availability->getMaximum()->isZero()) {
             return null;
         }
 
-        $line = null;
+        $line = $this
+            ->findOrCreateGoodLine($document, $item)
+            ->setAvailability($availability);
 
-        if ($document->isCredit()) {
-            // Credit case
-            $available = $this->invoiceCalculator->calculateCreditableQuantity($item, $document);
-        } else {
-            // Invoice case
-            $available = $this->invoiceCalculator->calculateInvoiceableQuantity($item, $document);
-        }
-
-        if (0 < $available) {
-            $expected = new Decimal(0);
-            if (!$document->isCredit()) {
-                $expected = max(new Decimal(0), min(
-                    $available,
-                    $this->shipmentCalculator->calculateShippedQuantity($item)
-                    - $this->invoiceCalculator->calculateInvoicedQuantity($item)
-                ));
-            }
-
-            $line = $this->findOrCreateGoodLine($document, $item, $available, $expected);
+        // Set default quantity for new non-credit invoice lines
+        if (!$document->isCredit() && (null === $document->getId())) {
+            $line->setQuantity(min(
+                $item->getQuantity(),
+                $availability->getExpected(),
+                $availability->getMaximum()
+            ));
         }
 
         // Build children
-        if ($item->hasChildren()) {
-            foreach ($item->getChildren() as $childLine) {
-                $this->buildGoodLine($childLine, $document);
-            }
+        foreach ($item->getChildren() as $childSaleItem) {
+            $this->buildGoodLine($childSaleItem, $document);
         }
 
         return $line;
@@ -130,26 +105,21 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             throw new UnexpectedTypeException($document, Invoice\InvoiceInterface::class);
         }
 
-        $line = null;
-        $expected = new Decimal(0);
-        if ($document->isCredit()) {
-            // Credit case
-            $available = $this->invoiceCalculator->calculateCreditableQuantity($adjustment, $document);
-        } else {
-            // Invoice case
-            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($adjustment, $document);
+        $availability = $this
+            ->availabilityResolverFactory
+            ->createWithInvoice($document)
+            ->resolveSaleDiscount($adjustment);
+
+        if ($availability->getMaximum()->isZero()) {
+            return null;
         }
 
-        if (0 < $available) {
-            /** @var Invoice\InvoiceLineInterface $line */
-            $line = parent::buildDiscountLine($adjustment, $document);
-            $line
-                ->setAvailable($available)
-                ->setExpected($expected);
+        /** @var Invoice\InvoiceLineInterface $line */
+        $line = parent::buildDiscountLine($adjustment, $document);
+        $line->setAvailability($availability);
 
-            if (is_null($document->getId())) {
-                $line->setQuantity(max(new Decimal(1), $expected));
-            }
+        if (is_null($document->getId())) {
+            $line->setQuantity(max(new Decimal(1), $availability->getExpected()));
         }
 
         return $line;
@@ -161,27 +131,23 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             throw new UnexpectedTypeException($document, Invoice\InvoiceInterface::class);
         }
 
-        $line = null;
-        $expected = new Decimal(0);
         $sale = $document->getSale();
-        if ($document->isCredit()) {
-            // Credit case
-            $available = $this->invoiceCalculator->calculateCreditableQuantity($sale, $document);
-        } else {
-            // Invoice case
-            $expected = $available = $this->invoiceCalculator->calculateInvoiceableQuantity($sale, $document);
+
+        $availability = $this
+            ->availabilityResolverFactory
+            ->createWithInvoice($document)
+            ->resolveSaleShipment($sale);
+
+        if ($availability->getMaximum()->isZero()) {
+            return null;
         }
 
-        if (0 < $available) {
-            /** @var Invoice\InvoiceLineInterface $line */
-            $line = parent::buildShipmentLine($document);
-            $line
-                ->setAvailable($available)
-                ->setExpected($expected);
+        /** @var Invoice\InvoiceLineInterface $line */
+        $line = parent::buildShipmentLine($document);
+        $line->setAvailability($availability);
 
-            if (is_null($document->getId())) {
-                $line->setQuantity(min(new Decimal(1), $expected));
-            }
+        if (is_null($document->getId())) {
+            $line->setQuantity(min(new Decimal(1), $availability->getExpected()));
         }
 
         return $line;
@@ -189,38 +155,23 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 
     public function findOrCreateGoodLine(
         Invoice\InvoiceInterface $invoice,
-        Common\SaleItemInterface $item,
-        Decimal                  $available,
-        Decimal                  $expected = null
+        Common\SaleItemInterface $item
     ): ?Invoice\InvoiceLineInterface {
-        if (0 >= $available) {
-            return null;
+        $line = DocumentUtil::findGoodLine($invoice, $item);
+
+        if ($line instanceof Invoice\InvoiceLineInterface) {
+            return $line;
         }
 
-        $expected = $expected ?: new Decimal(0);
+        $line = $this->createLine($invoice);
 
-        // Create line if not found
-        if (null === $line = DocumentUtil::findGoodLine($invoice, $item)) {
-            $line = $this->createLine($invoice);
-            $line
-                ->setInvoice($invoice)
-                ->setType(Document\DocumentLineTypes::TYPE_GOOD)
-                ->setSaleItem($item)
-                ->setDesignation($item->getDesignation())
-                ->setDescription($item->getDescription())
-                ->setReference($item->getReference());
-        }
-
-        // Set available and expected quantity
-        $line->setAvailable($available);
-        $line->setExpected($expected);
-
-        if (!$invoice->isCredit() && is_null($invoice->getId())) {
-            // Set default quantity for new non-return shipment items
-            $line->setQuantity(min($expected, $available));
-        }
-
-        return $line;
+        return $line
+            ->setInvoice($invoice)
+            ->setType(Document\DocumentLineTypes::TYPE_GOOD)
+            ->setSaleItem($item)
+            ->setDesignation($item->getDesignation())
+            ->setDescription($item->getDescription())
+            ->setReference($item->getReference());
     }
 
     /**

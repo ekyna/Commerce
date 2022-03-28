@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
-use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -29,11 +28,9 @@ interface InvoiceLineInterface extends DocumentLineInterface, ResourceInterface
 
     public function clearChildren(): InvoiceLineInterface;
 
-    public function getExpected(): ?Decimal;
+    public function getAvailability(): ?InvoiceAvailability;
 
-    public function setExpected(?Decimal $expected): InvoiceLineInterface;
+    public function setAvailability(?InvoiceAvailability $availability): InvoiceLineInterface;
 
-    public function getAvailable(): ?Decimal;
-
-    public function setAvailable(?Decimal $available): InvoiceLineInterface;
+    public function isQuantityLocked(): bool;
 }

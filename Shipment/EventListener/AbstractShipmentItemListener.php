@@ -77,7 +77,7 @@ abstract class AbstractShipmentItemListener
 
         $this->preventSaleItemChange($item);
 
-        // Check whether or not the stock impact has been made by the shipment listener
+        // Check whether stock impact has been made by the shipment listener
         if (!empty($stateCs = $this->persistenceHelper->getChangeSet($shipment, 'state'))) {
             // If shipment just did a stockable state transition
             if (

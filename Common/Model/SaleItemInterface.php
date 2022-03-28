@@ -74,8 +74,14 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
 
     public function setPrivate(bool $private): SaleItemInterface;
 
+    /**
+     * Returns whether this sale item has at least one private child.
+     */
     public function hasPrivateChildren(): bool;
 
+    /**
+     * Returns whether this sale item has at least one public child.
+     */
     public function hasPublicChildren(): bool;
 
     public function hasData(?string $key): bool;

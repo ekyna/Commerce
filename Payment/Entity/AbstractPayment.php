@@ -169,7 +169,7 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->details);
     }
@@ -199,7 +199,7 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
     /**
      * @inheritDoc
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if (is_null($offset)) {
             $this->details[] = $value;
@@ -211,7 +211,7 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
     /**
      * @inheritDoc
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->details[$offset]);
     }

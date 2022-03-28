@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleAdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Entity\AbstractInvoiceLine;
@@ -69,7 +69,7 @@ class OrderInvoiceLine extends AbstractInvoiceLine implements Model\OrderInvoice
         return $this->getOrderItem();
     }
 
-    public function setSaleAdjustment(?AdjustmentInterface $adjustment): InvoiceLineInterface
+    public function setSaleAdjustment(?SaleAdjustmentInterface $adjustment): InvoiceLineInterface
     {
         if ($adjustment && !$adjustment instanceof Model\OrderAdjustmentInterface) {
             throw new UnexpectedTypeException($adjustment, Model\OrderAdjustmentInterface::class);
@@ -78,7 +78,7 @@ class OrderInvoiceLine extends AbstractInvoiceLine implements Model\OrderInvoice
         return $this->setOrderAdjustment($adjustment);
     }
 
-    public function getSaleAdjustment(): ?AdjustmentInterface
+    public function getSaleAdjustment(): ?SaleAdjustmentInterface
     {
         return $this->getOrderAdjustment();
     }

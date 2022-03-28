@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Invoice\Builder;
 
-use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilderInterface;
@@ -34,8 +33,6 @@ interface InvoiceBuilderInterface extends DocumentBuilderInterface
      */
     public function findOrCreateGoodLine(
         InvoiceInterface $invoice,
-        SaleItemInterface $item,
-        Decimal $available,
-        Decimal $expected = null
+        SaleItemInterface $item
     ): ?InvoiceLineInterface;
 }

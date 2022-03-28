@@ -217,13 +217,10 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
             $adjustment
                 ->setType($type)
                 ->setMode($datum->getMode())
+                ->setDesignation($datum->getDesignation())
                 ->setAmount($datum->getAmount())
                 ->setImmutable($datum->isImmutable())
                 ->setSource($datum->getSource());
-
-            if ($adjustment instanceof Model\SaleAdjustmentInterface) {
-                $adjustment->setDesignation($datum->getDesignation());
-            }
 
             $newAdjustments[] = $adjustment;
         }

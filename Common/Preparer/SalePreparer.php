@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Preparer;
 
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Shipment\Builder\ShipmentBuilderInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizerInterface;
@@ -24,25 +27,10 @@ use function is_null;
  */
 class SalePreparer implements SalePreparerInterface
 {
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    /**
-     * @var StockPrioritizerInterface
-     */
-    private $stockPrioritizer;
-
-    /**
-     * @var ShipmentBuilderInterface
-     */
-    private $shipmentBuilder;
-
-    /**
-     * @var FactoryHelperInterface
-     */
-    private $factoryHelper;
+    private ResourceEventDispatcherInterface $eventDispatcher;
+    private StockPrioritizerInterface $stockPrioritizer;
+    private ShipmentBuilderInterface $shipmentBuilder;
+    private FactoryHelperInterface $factoryHelper;
 
     public function __construct(
         ResourceEventDispatcherInterface $eventDispatcher,
@@ -56,10 +44,7 @@ class SalePreparer implements SalePreparerInterface
         $this->factoryHelper = $factoryHelper;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function prepare(SaleInterface $sale)
+    public function prepare(SaleInterface $sale): ?ShipmentInterface
     {
         if (!$sale instanceof ShipmentSubjectInterface) {
             return null;
@@ -100,22 +85,17 @@ class SalePreparer implements SalePreparerInterface
 
     /**
      * Purges the shipment by removing items which are not available.
-     *
-     * @param ShipmentInterface $shipment
      */
-    protected function purge(ShipmentInterface $shipment)
+    protected function purge(ShipmentInterface $shipment):void
     {
         foreach ($shipment->getItems() as $item) {
-            if (is_null($available = $item->getAvailable()) || $available->isZero()) {
+            if (is_null($available = $item->getAvailability()) || $available->getAssigned()->isZero()) {
                 $shipment->removeItem($item);
             }
         }
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function abort(SaleInterface $sale)
+    public function abort(SaleInterface $sale): ?ShipmentInterface
     {
         if (!$sale instanceof ShipmentSubjectInterface) {
             return null;
@@ -132,21 +112,16 @@ class SalePreparer implements SalePreparerInterface
 
     /**
      * Dispatches the sale prepare event.
-     *
-     * @param SaleInterface $sale
-     *
-     * @return bool
      */
-    protected function dispatchPrepareEvent(SaleInterface $sale)
+    protected function dispatchPrepareEvent(SaleInterface $sale): bool
     {
         if (!$sale instanceof OrderInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderInterface::class);
+            throw new UnexpectedTypeException($sale, OrderInterface::class);
         }
 
         $event = $this->eventDispatcher->createResourceEvent($sale);
 
         try {
-            /** @noinspection PhpParamsInspection */
             $this->eventDispatcher->dispatch($event, OrderEvents::PREPARE);
         } catch (IllegalOperationException $e) {
             return false;

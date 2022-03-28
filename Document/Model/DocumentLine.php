@@ -15,22 +15,22 @@ use Ekyna\Component\Commerce\Common\Util\Money;
  */
 class DocumentLine implements DocumentLineInterface
 {
-    protected ?Document                   $document       = null;
-    protected ?string                     $type           = null;
-    protected ?string                     $designation    = null;
-    protected ?string                     $description    = null;
-    protected ?string                     $reference      = null;
-    protected Decimal                     $unit;
-    protected Decimal                     $quantity;
-    protected Decimal                     $gross;
-    protected Decimal                     $discount;
-    protected array                       $discountRates;
-    protected Decimal                     $base;
-    protected Decimal                     $tax;
-    protected array                       $taxRates;
-    protected Decimal                     $total;
-    protected ?Common\SaleItemInterface   $saleItem       = null;
-    protected ?Common\AdjustmentInterface $saleAdjustment = null;
+    protected ?Document                       $document       = null;
+    protected ?string                         $type           = null;
+    protected ?string                         $designation    = null;
+    protected ?string                         $description    = null;
+    protected ?string                         $reference      = null;
+    protected Decimal                         $unit;
+    protected Decimal                         $quantity;
+    protected Decimal                         $gross;
+    protected Decimal                         $discount;
+    protected array                           $discountRates;
+    protected Decimal                         $base;
+    protected Decimal                         $tax;
+    protected array                           $taxRates;
+    protected Decimal                         $total;
+    protected ?Common\SaleItemInterface       $saleItem       = null;
+    protected ?Common\SaleAdjustmentInterface $saleAdjustment = null;
 
     public function __construct()
     {
@@ -241,12 +241,12 @@ class DocumentLine implements DocumentLineInterface
         return $this;
     }
 
-    public function getSaleAdjustment(): ?Common\AdjustmentInterface
+    public function getSaleAdjustment(): ?Common\SaleAdjustmentInterface
     {
         return $this->saleAdjustment;
     }
 
-    public function setSaleAdjustment(?Common\AdjustmentInterface $adjustment): DocumentLineInterface
+    public function setSaleAdjustment(?Common\SaleAdjustmentInterface $adjustment): DocumentLineInterface
     {
         $this->saleAdjustment = $adjustment;
 

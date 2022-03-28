@@ -31,6 +31,7 @@ class ShipmentItemNormalizer extends ResourceNormalizer
                 'reference'   => $saleItem->getReference(),
                 'quantity'    => $object->getQuantity(),
                 'total'       => $saleItem->getTotalQuantity(),
+                'level'       => $saleItem->getLevel(),
             ]);
         }
 

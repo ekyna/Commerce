@@ -183,7 +183,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
             }
 
             // Shipment can be credited once
-            return max(new Decimal(1), $this->calculateInvoicedQuantity($subject));
+            return max(new Decimal(0), min(new Decimal(1), $this->calculateInvoicedQuantity($subject)));
         }
 
         throw new UnexpectedTypeException($subject, [

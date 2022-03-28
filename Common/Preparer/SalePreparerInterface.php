@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Preparer;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 
 /**
  * Interface SalePreparerInterface
@@ -14,18 +17,14 @@ interface SalePreparerInterface
     /**
      * Prepares the sale by prioritizing the sale and building shipment at preparation state.
      *
-     * @param SaleInterface $sale
-     *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface The prepared shipment.
+     * @return ShipmentInterface|null The prepared shipment.
      */
-    public function prepare(SaleInterface $sale);
+    public function prepare(SaleInterface $sale): ?ShipmentInterface;
 
     /**
      * Aborts the sale preparation by canceling the preparation shipment.
      *
-     * @param SaleInterface $sale
-     *
-     * @return \Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface The canceled shipment.
+     * @return ShipmentInterface|null The canceled shipment.
      */
-    public function abort(SaleInterface $sale);
+    public function abort(SaleInterface $sale): ?ShipmentInterface;
 }

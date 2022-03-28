@@ -24,9 +24,9 @@ interface DocumentLineInterface
 
     public function setSaleItem(?Common\SaleItemInterface $item): DocumentLineInterface;
 
-    public function getSaleAdjustment(): ?Common\AdjustmentInterface;
+    public function getSaleAdjustment(): ?Common\SaleAdjustmentInterface;
 
-    public function setSaleAdjustment(?Common\AdjustmentInterface $adjustment): DocumentLineInterface;
+    public function setSaleAdjustment(?Common\SaleAdjustmentInterface $adjustment): DocumentLineInterface;
 
     public function getType(): ?string;
 

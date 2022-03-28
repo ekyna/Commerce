@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Shipment\Builder;
 
-use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\GatewayInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\GatewayRegistryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
+use Ekyna\Component\Commerce\Shipment\Resolver\AvailabilityResolver;
+use Ekyna\Component\Commerce\Shipment\Resolver\AvailabilityResolverFactory;
+
+use function min;
 
 /**
  * Class ShipmentBuilder
@@ -21,18 +23,20 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
  */
 class ShipmentBuilder implements ShipmentBuilderInterface
 {
-    private FactoryHelperInterface             $factoryHelper;
-    private GatewayRegistryInterface           $registry;
-    private ShipmentSubjectCalculatorInterface $calculator;
+    private AvailabilityResolverFactory $availabilityResolverFactory;
+    private FactoryHelperInterface      $factoryHelper;
+    private GatewayRegistryInterface    $registry;
+
+    private AvailabilityResolver $quantityResolver;
 
     public function __construct(
-        FactoryHelperInterface             $factoryHelper,
-        GatewayRegistryInterface           $registry,
-        ShipmentSubjectCalculatorInterface $calculator
+        AvailabilityResolverFactory $availabilityResolverFactory,
+        FactoryHelperInterface      $factoryHelper,
+        GatewayRegistryInterface    $registry
     ) {
+        $this->availabilityResolverFactory = $availabilityResolverFactory;
         $this->factoryHelper = $factoryHelper;
         $this->registry = $registry;
-        $this->calculator = $calculator;
     }
 
     public function build(ShipmentInterface $shipment): void
@@ -43,6 +47,8 @@ class ShipmentBuilder implements ShipmentBuilderInterface
 
         $this->initializeMethod($shipment);
         $this->initializeRelayPoint($shipment);
+
+        $this->quantityResolver = $this->availabilityResolverFactory->createWithShipment($shipment);
 
         foreach ($sale->getItems() as $saleItem) {
             $this->buildItem($saleItem, $shipment);
@@ -117,106 +123,50 @@ class ShipmentBuilder implements ShipmentBuilderInterface
     /**
      * Builds the shipment item by pre-populating quantity.
      */
-    protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment): ?ShipmentItemInterface
+    protected function buildItem(SaleItemInterface $saleItem, ShipmentInterface $shipment): void
     {
-        // Compound item
-        if ($saleItem->isCompound()) {
-            // Resolve available and expected quantities by building children
-            $available = $expected = null;
-            foreach ($saleItem->getChildren() as $childSaleItem) {
-                if (null !== $child = $this->buildItem($childSaleItem, $shipment)) {
-                    $saleItemQty = $childSaleItem->getQuantity();
+        $availability = $this->quantityResolver->resolveSaleItem($saleItem);
 
-                    $e = ($child->getExpected() ?: new Decimal(0))->div($saleItemQty);
-                    if (null === $expected || $expected > $e) {
-                        $expected = $e;
-                    }
-
-                    $a = ($child->getAvailable() ?: new Decimal(0))->div($saleItemQty);
-                    if (null === $available || $available > $a) {
-                        $available = $a;
-                    }
-                }
-            }
-
-            // If any children is expected
-            if (0 < $expected) {
-                return $this->findOrCreateItem($shipment, $saleItem, $expected, $available);
-            }
-
-            return null;
+        if ($availability->getExpected()->isZero()) {
+            return;
         }
 
-        $item = null;
+        $item = $this
+            ->findOrCreateItem($shipment, $saleItem)
+            ->setAvailability($availability);
 
-        $expected = $shipment->isReturn()
-            ? $this->calculator->calculateReturnableQuantity($saleItem, $shipment)
-            : $this->calculator->calculateShippableQuantity($saleItem, $shipment);
-
-        if (0 < $expected) {
-            $item = $this->findOrCreateItem($shipment, $saleItem, $expected);
+        // Set default quantity for new non-return shipment items
+        if (!$shipment->isReturn() && (null === $shipment->getId())) {
+            $item->setQuantity(min(
+                $saleItem->getQuantity(),
+                $availability->getExpected(),
+                $availability->getAssigned()
+            ));
         }
 
         // Build children
-        if ($saleItem->hasChildren()) {
-            foreach ($saleItem->getChildren() as $childSaleItem) {
-                $this->buildItem($childSaleItem, $shipment);
-            }
+        foreach ($saleItem->getChildren() as $childSaleItem) {
+            $this->buildItem($childSaleItem, $shipment);
         }
-
-        return $item;
     }
 
     /**
      * Finds or create the shipment item.
      */
-    private function findOrCreateItem(
-        ShipmentInterface $shipment,
-        SaleItemInterface $saleItem,
-        Decimal           $expected,
-        Decimal           $available = null
-    ): ?ShipmentItemInterface {
-        if (0 >= $expected) {
-            return null;
-        }
-
-        $item = null;
-
+    private function findOrCreateItem(ShipmentInterface $shipment, SaleItemInterface $saleItem): ShipmentItemInterface
+    {
         // Existing item lookup
-        foreach ($shipment->getItems() as $i) {
-            if ($i->getSaleItem() === $saleItem) {
-                $item = $i;
-                break;
+        foreach ($shipment->getItems() as $item) {
+            if ($item->getSaleItem() === $saleItem) {
+                return $item;
             }
         }
 
         // Not found, create it
-        if (null === $item) {
-            $item = $this->factoryHelper->createItemForShipment($shipment);
-            $item->setShipment($shipment);
-            $item->setSaleItem($saleItem);
-        }
-
-        // Set expected quantity
-        $item->setExpected($expected);
-
-        if ($shipment->isReturn()) {
-            // Set expected quantity as available
-            $item->setAvailable($expected);
-        } else {
-            if (null === $available) {
-                $available = $this->calculator->calculateAvailableQuantity($saleItem, $shipment);
-            }
-
-            // Set available quantity
-            $item->setAvailable($available);
-
-            // Set default quantity for new non-return shipment items
-            if (null === $shipment->getId()) {
-                $item->setQuantity(min($expected, $available));
-            }
-        }
-
-        return $item;
+        return $this
+            ->factoryHelper
+            ->createItemForShipment($shipment)
+            ->setShipment($shipment)
+            ->setSaleItem($saleItem);
     }
 }

@@ -40,11 +40,9 @@ interface ShipmentItemInterface extends ResourceInterface
 
     public function clearChildren(): ShipmentItemInterface;
 
-    public function getExpected(): ?Decimal;
+    public function getAvailability(): ?ShipmentAvailability;
 
-    public function setExpected(?Decimal $expected): ShipmentItemInterface;
+    public function setAvailability(?ShipmentAvailability $availability): ShipmentItemInterface;
 
-    public function getAvailable(): ?Decimal;
-
-    public function setAvailable(?Decimal $available): ShipmentItemInterface;
+    public function isQuantityLocked(): bool;
 }

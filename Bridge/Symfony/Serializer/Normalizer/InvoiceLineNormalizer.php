@@ -31,6 +31,7 @@ class InvoiceLineNormalizer extends ResourceNormalizer
                 'reference'   => $object->getReference(),
                 'quantity'    => $object->getQuantity(),
                 'total'       => $saleItem ? $saleItem->getTotalQuantity() : null,
+                'level'       => $saleItem ? $saleItem->getLevel() : 0,
             ]);
         }
 

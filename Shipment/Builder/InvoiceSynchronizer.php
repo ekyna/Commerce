@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Builder;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Builder\InvoiceBuilderInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -20,42 +24,23 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 {
     use Common\LockingHelperAwareTrait;
 
-    /**
-     * @var InvoiceBuilderInterface
-     */
-    protected $invoiceBuilder;
+    protected InvoiceBuilderInterface           $invoiceBuilder;
+    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    protected DocumentCalculatorInterface       $documentCalculator;
+    protected PersistenceHelperInterface        $persistenceHelper;
 
-    /**
-     * @var DocumentCalculatorInterface
-     */
-    protected $documentCalculator;
-
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
-
-
-    /**
-     * Constructor.
-     *
-     * @param InvoiceBuilderInterface     $invoiceBuilder
-     * @param DocumentCalculatorInterface $documentCalculator
-     * @param PersistenceHelperInterface  $persistenceHelper
-     */
     public function __construct(
-        InvoiceBuilderInterface $invoiceBuilder,
-        DocumentCalculatorInterface $documentCalculator,
-        PersistenceHelperInterface $persistenceHelper
+        InvoiceBuilderInterface           $invoiceBuilder,
+        InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        DocumentCalculatorInterface       $documentCalculator,
+        PersistenceHelperInterface        $persistenceHelper
     ) {
         $this->invoiceBuilder = $invoiceBuilder;
+        $this->invoiceCalculator = $invoiceCalculator;
         $this->documentCalculator = $documentCalculator;
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function synchronize(Shipment\ShipmentInterface $shipment, bool $force = false): void
     {
         // Abort if auto invoicing is disabled
@@ -79,9 +64,9 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         // Abort if sale is sample, shipment is removed or shipment not in stockable state
         if (
-            $sale->isSample() ||
-            $this->persistenceHelper->isScheduledForRemove($shipment) ||
-            !Shipment\ShipmentStates::isStockableState($shipment, false)
+            $sale->isSample()
+            || $this->persistenceHelper->isScheduledForRemove($shipment)
+            || !Shipment\ShipmentStates::isStockableState($shipment, false)
         ) {
             if ($invoice) {
                 $this->removeInvoice($invoice);
@@ -92,10 +77,9 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         if (null === $invoice) {
             $invoice = $this->invoiceBuilder->getFactoryHelper()->createInvoiceForSale($sale);
-            $invoice
-                ->setSale($sale)
-                ->setShipment($shipment)
-                ->setCredit($shipment->isReturn());
+            $invoice->setSale($sale);
+            $invoice->setShipment($shipment);
+            $invoice->setCredit($shipment->isReturn());
         }
 
         $this->checkShipmentInvoice($invoice);
@@ -166,30 +150,30 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 
         // Check sale integrity
         if ($shipment->getSale() !== $sale = $invoice->getSale()) {
-            throw new LogicException("Shipment/Invoice sale miss match.");
+            throw new LogicException('Shipment/Invoice sale miss match.');
         }
 
-        // Sale must be a invoice subject
+        // Sale must be an invoice subject
         if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
-            throw new LogicException("Expected instance of " . Invoice\InvoiceSubjectInterface::class);
+            throw new UnexpectedTypeException($sale, Invoice\InvoiceSubjectInterface::class);
         }
 
         // Check shipment/invoice types integrity.
         if ($shipment->isReturn() && !$invoice->isCredit()) {
-            throw new LogicException("Invoice should not be associated with Return.");
+            throw new LogicException('Invoice should not be associated with Return.');
         } elseif (!$shipment->isReturn() && $invoice->isCredit()) {
-            throw new LogicException("Credit should not be associated with Shipment.");
+            throw new LogicException('Credit should not be associated with Shipment.');
         }
     }
 
     /**
-     * Removes the invoice unexpected lines regarding to his associated shipment.
+     * Removes the invoice unexpected lines regarding his associated shipment.
      *
      * @param Invoice\InvoiceInterface $invoice
      *
      * @return bool Whether the invoice has been changed
      */
-    private function purgeShipmentInvoice(Invoice\InvoiceInterface $invoice)
+    private function purgeShipmentInvoice(Invoice\InvoiceInterface $invoice): bool
     {
         $changed = false;
 
@@ -245,13 +229,13 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
     }
 
     /**
-     * Creates invoice expected lines regarding to his associated shipment.
+     * Creates invoice expected lines regarding his associated shipment.
      *
      * @param Invoice\InvoiceInterface $invoice
      *
      * @return bool Whether the invoice has been changed
      */
-    private function feedShipmentInvoice(Invoice\InvoiceInterface $invoice)
+    private function feedShipmentInvoice(Invoice\InvoiceInterface $invoice): bool
     {
         $changed = false;
 
@@ -269,7 +253,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
                 : $calculator->calculateInvoiceableQuantity($saleItem, $invoice);
 
             if (0 < $quantity = min($max, $shipmentItem->getQuantity())) {
-                $line = $this->invoiceBuilder->findOrCreateGoodLine($invoice, $saleItem, $max);
+                $line = $this->invoiceBuilder->findOrCreateGoodLine($invoice, $saleItem);
                 if ($line->getQuantity() !== $quantity) {
                     $line->setQuantity($quantity);
                     $changed = true;
@@ -313,7 +297,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
      *
      * @return bool
      */
-    private function isShipmentAmountInvoiced(Invoice\InvoiceInterface $invoice)
+    private function isShipmentAmountInvoiced(Invoice\InvoiceInterface $invoice): bool
     {
         /** @var Invoice\InvoiceSubjectInterface $sale */
         $sale = $invoice->getSale();

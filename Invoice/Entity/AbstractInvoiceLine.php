@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Invoice\Entity;
 
-use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Document\Model as Document;
@@ -25,8 +24,7 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
     protected Collection              $children;
 
     /* Non-mapped fields */
-    protected ?Decimal $expected  = null;
-    protected ?Decimal $available = null;
+    protected ?Model\InvoiceAvailability $availability = null;
 
     public function __construct()
     {
@@ -98,27 +96,30 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
         return $this;
     }
 
-    public function getExpected(): ?Decimal
+    public function getAvailability(): ?Model\InvoiceAvailability
     {
-        return $this->expected;
+        return $this->availability;
     }
 
-    public function setExpected(?Decimal $expected): Model\InvoiceLineInterface
+    public function setAvailability(?Model\InvoiceAvailability $availability): Model\InvoiceLineInterface
     {
-        $this->expected = $expected;
+        $this->availability = $availability;
 
         return $this;
     }
 
-    public function getAvailable(): ?Decimal
+    public function isQuantityLocked(): bool
     {
-        return $this->available;
-    }
+        if (null === $item = $this->getSaleItem()) {
+            return false;
+        }
 
-    public function setAvailable(?Decimal $available): Model\InvoiceLineInterface
-    {
-        $this->available = $available;
+        /* TODO if (null === $parent = $item->getParent()) {
+            return false;
+        }
 
-        return $this;
+        return $parent->isPrivate() || ($parent->isCompound() && $parent->hasPrivateChildren());*/
+
+        return $item->isPrivate();
     }
 }

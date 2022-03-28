@@ -23,8 +23,7 @@ abstract class AbstractShipmentItem extends AbstractResource implements Model\Sh
     protected Collection $children;
 
     /* Non-mapped fields */
-    protected ?Decimal $expected  = null;
-    protected ?Decimal $available = null;
+    protected ?Model\ShipmentAvailability $availability = null;
 
     public function __construct()
     {
@@ -91,27 +90,30 @@ abstract class AbstractShipmentItem extends AbstractResource implements Model\Sh
         return $this;
     }
 
-    public function getExpected(): ?Decimal
+    public function getAvailability(): ?Model\ShipmentAvailability
     {
-        return $this->expected;
+        return $this->availability;
     }
 
-    public function setExpected(?Decimal $expected): Model\ShipmentItemInterface
+    public function setAvailability(?Model\ShipmentAvailability $availability): Model\ShipmentItemInterface
     {
-        $this->expected = $expected;
+        $this->availability = $availability;
 
         return $this;
     }
 
-    public function getAvailable(): ?Decimal
+    public function isQuantityLocked(): bool
     {
-        return $this->available;
-    }
+        if (null === $item = $this->getSaleItem()) {
+            return false;
+        }
 
-    public function setAvailable(?Decimal $available): Model\ShipmentItemInterface
-    {
-        $this->available = $available;
+        /* TODO if (null === $parent = $item->getParent()) {
+            return false;
+        }
 
-        return $this;
+        return $parent->isPrivate() || ($parent->isCompound() && $parent->hasPrivateChildren());*/
+
+        return $item->isPrivate();
     }
 }

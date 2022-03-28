@@ -118,12 +118,11 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
      */
     public function calculateShippableQuantity(SaleItem $saleItem, Shipment $ignore = null): Decimal
     {
-        // TODO Return zero if not shippable (?)
+        // TODO Return zero if not shippable (physical) ?
 
         // Quantity = Sold - Shipped (ignoring current) + Returned
 
         // TODO Packaging format
-        //$quantity = max($saleItem->getTotalQuantity(), $this->invoiceCalculator->calculateInvoicedQuantity($saleItem));
         $quantity = $this->invoiceCalculator->calculateSoldQuantity($saleItem);
         $quantity -= $this->calculateShippedQuantity($saleItem, $ignore);
         $quantity += $this->calculateReturnedQuantity($saleItem);
