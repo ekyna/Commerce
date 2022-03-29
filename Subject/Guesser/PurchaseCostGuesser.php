@@ -93,10 +93,8 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             }
 
             if ($cost = $this->calculateStockUnitCost($unit, $quote, $shipping)) {
-                continue;
+                return $cost;
             }
-
-            return $cost;
         }
 
         return null;
@@ -117,7 +115,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             return null;
         }
 
-        $units = $repository->findLatestClosedBySubject($subject, 3);
+        $units = $repository->findLatestClosedBySubject($subject);
 
         foreach ($units as $unit) {
             if ($this->shouldSkipUnit($unit)) {
@@ -167,16 +165,11 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             return null;
         }
 
-        $base = $this->currencyConverter->getDefaultCurrency();
-
-        if ($order = $unit->getSupplierOrder()) {
-            // Convert with order's exchange rate
-            $rate = $this->currencyConverter->getSubjectExchangeRate($order, $base, $quote);
-
-            return $this->currencyConverter->convertWithRate($price, $rate, $quote, false);
+        if ($quote === $this->currencyConverter->getDefaultCurrency()) {
+            return $price;
         }
 
-        return $this->currencyConverter->convert($price, $base, $quote);
+        return $this->currencyConverter->convertWithSubject($price, $unit->getSupplierOrder(), $quote, false);
     }
 
     /**
