@@ -465,7 +465,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         $quantity = $callable = null;
 
         // If 'ignore stock' has changed
-        if ($ignoreStockCS[0] != $ignoreStockCS[1]) {
+        if (!empty($ignoreStockCS) && ($ignoreStockCS[0] !== $ignoreStockCS[1])) {
             if ($ignoreStockCS[0]) {
                 // Ignore stock disabled -> Debit sold quantity (use previous quantity)
                 $quantity = $quantityCs[0] ?? $line->getQuantity();
