@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
@@ -17,14 +21,11 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class AddressValidator extends ConstraintValidator
 {
-    /**
-     * @var \Symfony\Component\PropertyAccess\PropertyAccessor
-     */
-    private $propertyAccessor;
-
+    private ?PropertyAccessor $propertyAccessor = null;
 
     /**
      * @inheritDoc
+     * @noinspection PhpParameterNameChangedDuringInheritanceInspection
      */
     public function validate($address, Constraint $constraint)
     {
@@ -149,13 +150,20 @@ class AddressValidator extends ConstraintValidator
                 ->getValidator()
                 ->validate($this->propertyAccessor->getValue($address, $field), $constraints);
 
-            /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
+            if (0 === $violationList->count()) {
+                continue;
+            }
+
+            /** @var ConstraintViolationInterface $violation */
             foreach ($violationList as $violation) {
                 $this->context
                     ->buildViolation($violation->getMessage())
+                    ->setInvalidValue($violation->getInvalidValue())
                     ->atPath($field)
                     ->addViolation();
             }
+
+            break;
         }
 
         IdentityValidator::validateIdentity($this->context, $address, [

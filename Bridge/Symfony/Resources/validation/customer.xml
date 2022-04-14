@@ -9,6 +9,7 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Identity">
             <option name="groups">
                 <value>Default</value>
+                <value>Customer</value>
                 <value>Registration</value>
                 <value>Profile</value>
             </option>
@@ -17,6 +18,7 @@
             <constraint name="NotNull">
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -26,6 +28,7 @@
             <constraint name="NotBlank">
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -37,6 +40,7 @@
                 <option name="max">35</option>
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -46,6 +50,7 @@
             <constraint name="NotBlank">
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -53,6 +58,7 @@
             <constraint name="Email">
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -66,6 +72,7 @@
                 </option>
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -76,6 +83,7 @@
                 <option name="type">mobile</option>
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -85,6 +93,7 @@
             <constraint name="NotNull">
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -94,6 +103,7 @@
             <constraint name="Antalaron\Component\VatNumberValidator\VatNumber">
                 <option name="groups">
                     <value>Default</value>
+                    <value>Customer</value>
                     <value>Registration</value>
                     <value>Profile</value>
                 </option>
@@ -152,6 +162,7 @@
             <option name="fields">email</option>
             <option name="groups">
                 <value>Default</value>
+                <value>Customer</value>
                 <value>Registration</value>
                 <value>Profile</value>
             </option>
@@ -159,6 +170,7 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Customer">
             <option name="groups">
                 <value>Default</value>
+                <value>Customer</value>
                 <value>Registration</value>
                 <value>Profile</value>
             </option>

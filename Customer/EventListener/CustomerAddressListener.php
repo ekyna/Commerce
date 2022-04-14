@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\EventListener;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -15,22 +17,9 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class CustomerAddressListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected bool                       $enabled = true;
 
-    /**
-     * @var bool
-     */
-    protected $enabled = true;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface         $persistenceHelper
-     */
     public function __construct(PersistenceHelperInterface $persistenceHelper)
     {
         $this->persistenceHelper = $persistenceHelper;
@@ -38,8 +27,6 @@ class CustomerAddressListener
 
     /**
      * Sets whether this listener is enabled.
-     *
-     * @param bool $enabled
      */
     public function setEnabled(bool $enabled): void
     {
@@ -49,11 +36,9 @@ class CustomerAddressListener
     /**
      * Pre delete event handler.
      *
-     * @param ResourceEventInterface $event
-     *
      * @throws IllegalOperationException
      */
-    public function onPreDelete(ResourceEventInterface $event)
+    public function onPreDelete(ResourceEventInterface $event): void
     {
         if (!$this->enabled) {
             return;
@@ -78,10 +63,8 @@ class CustomerAddressListener
 
     /**
      * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         if (!$this->enabled) {
             return;
@@ -95,10 +78,8 @@ class CustomerAddressListener
 
     /**
      * Update event handler.
-     *
-     * @param ResourceEventInterface $event
      */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         if (!$this->enabled) {
             return;
@@ -112,10 +93,8 @@ class CustomerAddressListener
 
     /**
      * Fixes the default invoice address.
-     *
-     * @param CustomerAddressInterface $address
      */
-    protected function fixInvoiceDefault(CustomerAddressInterface $address)
+    protected function fixInvoiceDefault(CustomerAddressInterface $address): void
     {
         if (!$this->persistenceHelper->isChanged($address, ['invoiceDefault'])) {
             return;
@@ -142,10 +121,8 @@ class CustomerAddressListener
 
     /**
      * Fix the default delivery address.
-     *
-     * @param CustomerAddressInterface $address
      */
-    protected function fixDeliveryDefault(CustomerAddressInterface $address)
+    protected function fixDeliveryDefault(CustomerAddressInterface $address): void
     {
         if (!$this->persistenceHelper->isChanged($address, ['deliveryDefault'])) {
             return;
@@ -172,18 +149,13 @@ class CustomerAddressListener
 
     /**
      * Returns the address from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return CustomerAddressInterface
-     * @throws InvalidArgumentException
      */
-    protected function getAddressFromEvent(ResourceEventInterface $event)
+    protected function getAddressFromEvent(ResourceEventInterface $event): CustomerAddressInterface
     {
         $resource = $event->getResource();
 
         if (!$resource instanceof CustomerAddressInterface) {
-            throw new InvalidArgumentException('Expected instance of ' . CustomerAddressInterface::class);
+            throw new UnexpectedTypeException($resource, CustomerAddressInterface::class);
         }
 
         return $resource;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Customer\Event\CustomerAddressEvents;
@@ -13,10 +15,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class CustomerAddressEventSubscriber extends CustomerAddressListener implements EventSubscriberInterface
 {
-    /**
-     * @inheritDoc
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             CustomerAddressEvents::INSERT     => ['onInsert', 0],
