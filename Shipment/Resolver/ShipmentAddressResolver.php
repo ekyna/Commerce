@@ -6,9 +6,9 @@ namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
+use Ekyna\Component\Commerce\Common\Transformer\ArrayToAddressTransformer;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Commerce\Shipment\Transformer\ShipmentAddressTransformer;
 
 /**
  * Class ShipmentAddressResolver
@@ -17,9 +17,9 @@ use Ekyna\Component\Commerce\Shipment\Transformer\ShipmentAddressTransformer;
  */
 abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterface
 {
-    protected ShipmentAddressTransformer $transformer;
+    protected ArrayToAddressTransformer $transformer;
 
-    public function __construct(ShipmentAddressTransformer $transformer)
+    public function __construct(ArrayToAddressTransformer $transformer)
     {
         $this->transformer = $transformer;
     }
@@ -31,12 +31,12 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
 
     public function resolveSenderAddress(ShipmentInterface $shipment, bool $ignoreRelay = false): AddressInterface
     {
-        if (!$ignoreRelay && $shipment->isReturn() && null !== $address = $shipment->getRelayPoint()) {
+        if (!$ignoreRelay && $shipment->isReturn() && ($address = $shipment->getRelayPoint())) {
             return $address;
         }
 
         if (!empty($address = $shipment->getSenderAddress())) {
-            return $this->transformer->transform($address);
+            return $this->transformer->transformArray($address);
         }
 
         if ($shipment->isReturn()) {
@@ -53,7 +53,7 @@ abstract class ShipmentAddressResolver implements ShipmentAddressResolverInterfa
         }
 
         if (!empty($address = $shipment->getReceiverAddress())) {
-            return $this->transformer->transform($address);
+            return $this->transformer->transformArray($address);
         }
 
         if ($shipment->isReturn()) {

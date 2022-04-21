@@ -21,7 +21,6 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Pricing\Entity as PricingE;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
 use Ekyna\Component\Commerce\Shipment\Entity as ShipmentE;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentAddress;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Entity as StockE;
 use Ekyna\Component\Commerce\Stock\Model as StockM;
@@ -31,6 +30,8 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 use Ekyna\Component\Commerce\Supplier\Entity as SupplierE;
 use InvalidArgumentException;
+use libphonenumber\PhoneNumber;
+use libphonenumber\PhoneNumberUtil;
 use LogicException;
 use ReflectionClass;
 use RuntimeException;
@@ -111,10 +112,10 @@ class Fixture
     private const DATA_DIR = __DIR__ . '/../Install/data';
 
     private static ?StockUnitStateResolverInterface $stockUnitStateResolver = null;
-    private static bool                             $taxesLoaded    = false;
-    private static bool                             $shippingLoaded = false;
-    private static array                            $ids            = [];
-    private static array                            $references     = [];
+    private static bool                             $taxesLoaded            = false;
+    private static bool                             $shippingLoaded         = false;
+    private static array                            $ids                    = [];
+    private static array                            $references             = [];
 
 
     /**
@@ -1230,11 +1231,11 @@ class Fixture
 
         $payment
             ->setRefund($data['refund'])
-            ->setState($data['state'])
-            ->setCurrency(self::currency($data['currency']))
             ->setAmount($data['amount'])
             ->setRealAmount($data['amount'])
-            ->setExchangeRate($data['exchange_rate']);
+            ->setCurrency(self::currency($data['currency']))
+            ->setExchangeRate($data['exchange_rate'])
+            ->setState($data['state']);
 
         if (null !== $datum = $data['exchange_date']) {
             $payment->setExchangeDate(self::date($datum));
@@ -1767,21 +1768,29 @@ class Fixture
     }
 
     /**
-     * Creates a new shipment address.
+     * Creates a new address.
      *
      * @param array $data
      *
-     * @return ShipmentAddress
+     * @return CommonM\Address
      *
      * @see Fixture::fillAddress()
      */
-    public static function shipmentAddress(array $data = []): ShipmentAddress
+    public static function address(array $data = []): CommonM\Address
     {
-        $address = new ShipmentAddress();
+        $address = new CommonM\Address();
 
         self::fillAddress($address, $data);
 
         return $address;
+    }
+
+    /**
+     * Creates a phone number.
+     */
+    public static function phone(string $number): PhoneNumber
+    {
+        return PhoneNumberUtil::getInstance()->parse($number);
     }
 
     /**
@@ -2368,8 +2377,8 @@ class Fixture
             'city'        => 'The city',
             'country'     => self::COUNTRY_FR,
             //'state'       => null,
-            //'phone'       => null,
-            //'mobile'      => null,
+            'phone'       => null,
+            'mobile'      => null,
         ], $data);
 
         if ($datum = $data['company']) {
@@ -2399,12 +2408,12 @@ class Fixture
         /* TODO if ($datum = $data['state']) {
             $address->setState(Fixture::state($datum));
         }*/
-        /* TODO if ($datum = $data['phone']) {
+        if ($datum = $data['phone']) {
             $address->setPhone(Fixture::phone($datum));
         }
         if ($datum = $data['mobile']) {
             $address->setMobile(Fixture::phone($datum));
-        }*/
+        }
     }
 
     /**

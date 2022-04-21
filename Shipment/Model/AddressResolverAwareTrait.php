@@ -15,7 +15,6 @@ trait AddressResolverAwareTrait
 {
     protected ShipmentAddressResolverInterface $addressResolver;
 
-
     public function setAddressResolver(ShipmentAddressResolverInterface $resolver): void
     {
         $this->addressResolver = $resolver;

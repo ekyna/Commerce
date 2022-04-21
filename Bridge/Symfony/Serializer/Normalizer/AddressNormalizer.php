@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Commerce\Common\Transformer\ArrayToAddressTransformer;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
+use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
-use libphonenumber\PhoneNumber;
+use Ekyna\Component\Resource\Model\ResourceInterface;
+use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
+
+use function array_replace;
 
 /**
  * Class AddressNormalizer
@@ -17,16 +22,21 @@ use libphonenumber\PhoneNumberUtil;
  */
 class AddressNormalizer extends ResourceNormalizer
 {
-    private PhoneNumberUtil $phoneNumberUtil;
+    private const RESOURCE_GROUPS = [
+        'CartAddress',
+        'CustomerAddress',
+        'Default',
+        'OrderAddress',
+        'QuoteAddress',
+        'SupplierAddress',
+    ];
 
+    protected ArrayToAddressTransformer $transformer;
+    protected PhoneNumberUtil           $phoneNumberUtil;
 
-    /**
-     * Constructor.
-     *
-     * @param PhoneNumberUtil $phoneNumberUtil
-     */
-    public function __construct(PhoneNumberUtil $phoneNumberUtil)
+    public function __construct(ArrayToAddressTransformer $transformer, PhoneNumberUtil $phoneNumberUtil)
     {
+        $this->transformer = $transformer;
         $this->phoneNumberUtil = $phoneNumberUtil;
     }
 
@@ -37,64 +47,79 @@ class AddressNormalizer extends ResourceNormalizer
      */
     public function normalize($object, $format = null, array $context = [])
     {
-        $data = parent::normalize($object, $format, $context);
+        $data = [];
+        $exclude = [];
 
-        $groups = [
-            'Address',
-            'CartAddress',
-            'CustomerAddress',
-            'Default',
-            'OrderAddress',
-            'QuoteAddress',
-            'ShipmentAddress',
-            'SupplierAddress',
-        ];
+        if (!$this->contextHasGroup(self::RESOURCE_GROUPS, $context)) {
+            $exclude = [
+                'digicode1',
+                'digicode2',
+                'intercom',
+                'information',
+                'latitude',
+                'longitude',
+            ];
+        } elseif ($object instanceof ResourceInterface) {
+            $data = parent::normalize($object, $format, $context);
+        }
 
-        if ($this->contextHasGroup($groups, $context)) {
-            $data = array_replace($data, [
-                'company'        => $object->getCompany(),
-                'gender'         => $object->getGender(),
-                'first_name'     => $object->getFirstName(),
-                'last_name'      => $object->getLastName(),
-                'street'         => $object->getStreet(),
-                'complement'     => $object->getComplement(),
-                'supplement'     => $object->getSupplement(),
-                'postal_code'    => $object->getPostalCode(),
-                'city'           => $object->getCity(),
-                'country_name'   => $object->getCountry()->getName(),
-                'country'        => $object->getCountry()->getCode(),
-                //'state'        => $address->getCity(),
-                'phone'          => $this->normalizeObject($object->getPhone(), $format, $context),
-                'phone_country'  => $this->phoneNumberCountry($object->getPhone()),
-                'mobile'         => $this->normalizeObject($object->getMobile(), $format, $context),
-                'mobile_country' => $this->phoneNumberCountry($object->getMobile()),
-                'digicode1'      => $object->getDigicode1(),
-                'digicode2'      => $object->getDigicode2(),
-                'intercom'       => $object->getIntercom(),
-            ]);
+        if ($asChoice = $this->contextHasGroup('AddressChoice', $context)) {
+            $exclude += ['phone', 'mobile'];
+        }
 
-            if ($object instanceof CustomerAddressInterface) {
-                $data['invoice_default'] = $object->isInvoiceDefault() ? 1 : 0;
-                $data['delivery_default'] = $object->isDeliveryDefault() ? 1 : 0;
+        $data = array_replace($data, $this->transformer->transformAddress($object, $exclude));
+
+        if ($asChoice) {
+            if ($phone = $object->getPhone()) {
+                $data['phone'] = $this->phoneNumberUtil->format($phone, PhoneNumberFormat::NATIONAL);
+                $data['phone_country'] = $this->phoneNumberUtil->getRegionCodeForNumber($phone);
             }
+
+            if ($mobile = $object->getMobile()) {
+                $data['mobile'] = $this->phoneNumberUtil->format($mobile, PhoneNumberFormat::NATIONAL);
+                $data['mobile_country'] = $this->phoneNumberUtil->getRegionCodeForNumber($mobile);
+            }
+        }
+
+        if ($object instanceof CustomerAddressInterface) {
+            $data['invoice_default'] = $object->isInvoiceDefault() ? 1 : 0;
+            $data['delivery_default'] = $object->isDeliveryDefault() ? 1 : 0;
+        }
+
+        if ($object instanceof RelayPointInterface) {
+            $data['number'] = $object->getNumber();
         }
 
         return $data;
     }
 
     /**
-     * Returns the region code for the given phone number.
+     * @inheritDoc
      *
-     * @param PhoneNumber|null $phoneNumber
-     *
-     * @return string|null
+     * @return AddressInterface
      */
-    private function phoneNumberCountry(PhoneNumber $phoneNumber = null): ?string
+    public function denormalize($data, string $type, string $format = null, array $context = [])
     {
-        if ($phoneNumber) {
-            return $this->phoneNumberUtil->getRegionCodeForNumber($phoneNumber);
+        /* TODO (id) if (is_subclass_of($type, ResourceInterface::class, true)) {
+            return parent::denormalize($data, $type, $format, $context);
+        }*/
+
+        $object = $this->transformer->transformArray($data, $type, ['phone', 'mobile']);
+
+        if (isset($data['phone'])) {
+            $region = $data['phone_country'] ?? null;
+            $object->setPhone($this->phoneNumberUtil->parse($data['phone'], $region));
         }
 
-        return null;
+        if (isset($data['mobile'])) {
+            $region = $data['mobile_country'] ?? null;
+            $object->setMobile($this->phoneNumberUtil->parse($data['mobile'], $region));
+        }
+
+        if (isset($data['number']) && $object instanceof RelayPointInterface) {
+            $object->setNumber($data['number']);
+        }
+
+        return $object;
     }
 }

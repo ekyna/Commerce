@@ -26,7 +26,7 @@ interface StockAdjustmentInterface extends ResourceInterface
      */
     public function setQuantity(Decimal $quantity): StockAdjustmentInterface;
 
-    public function getReason(): ?string;
+    public function getReason(): string;
 
     /**
      * @return $this|StockAdjustmentInterface
@@ -38,7 +38,7 @@ interface StockAdjustmentInterface extends ResourceInterface
     /**
      * @return $this|StockAdjustmentInterface
      */
-    public function setNote(string $note): StockAdjustmentInterface;
+    public function setNote(?string $note): StockAdjustmentInterface;
 
     public function getCreatedAt(): DateTimeInterface;
 

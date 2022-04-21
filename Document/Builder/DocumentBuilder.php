@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Document\Builder;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Transformer\ArrayToAddressTransformer;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Shipment\Model\RelayPointInterface;
 use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
 use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
-use Symfony\Component\Intl\Countries;
-use Symfony\Component\Intl\Exception\ExceptionInterface as IntlException;
 
 /**
  * Class DocumentBuilder
@@ -24,12 +22,17 @@ use Symfony\Component\Intl\Exception\ExceptionInterface as IntlException;
  */
 class DocumentBuilder implements DocumentBuilderInterface
 {
-    protected LocaleProviderInterface $localeProvider;
-    private PhoneNumberUtil           $phoneNumberUtil;
+    protected LocaleProviderInterface   $localeProvider;
+    protected ArrayToAddressTransformer $addressTransformer;
+    private PhoneNumberUtil             $phoneNumberUtil;
 
-    public function __construct(LocaleProviderInterface $localeProvider, PhoneNumberUtil $phoneNumberUtil = null)
-    {
+    public function __construct(
+        LocaleProviderInterface   $localeProvider,
+        ArrayToAddressTransformer $addressTransformer,
+        PhoneNumberUtil           $phoneNumberUtil = null
+    ) {
         $this->localeProvider = $localeProvider;
+        $this->addressTransformer = $addressTransformer;
         $this->phoneNumberUtil = $phoneNumberUtil ?: PhoneNumberUtil::getInstance();
     }
 
@@ -85,25 +88,21 @@ class DocumentBuilder implements DocumentBuilderInterface
         }
 
         // Invoice address
-        $data = $this->buildAddressData($sale->getInvoiceAddress(), $document->getLocale());
+        $data = $this->buildInvoiceAddress($document);
         if ($document->getInvoiceAddress() !== $data) {
             $document->setInvoiceAddress($data);
             $changed = true;
         }
 
         // Delivery address
-        $data = $sale->getDeliveryAddress()
-            ? $this->buildAddressData($sale->getDeliveryAddress(), $document->getLocale())
-            : null;
+        $data = $this->buildDeliveryAddress($document);
         if ($document->getDeliveryAddress() !== $data) {
             $document->setDeliveryAddress($data);
             $changed = true;
         }
 
         // RelayPoint
-        if (null !== $data = $sale->getRelayPoint()) {
-            $data = $this->buildAddressData($data, $document->getLocale());
-        }
+        $data = $this->buildRelayPointAddress($document);
         if ($document->getRelayPoint() !== $data) {
             $document->setRelayPoint($data);
             $changed = true;
@@ -118,20 +117,27 @@ class DocumentBuilder implements DocumentBuilderInterface
         return $changed;
     }
 
-    /**
-     * Finds the document good line for the given sale item.
-     */
-    protected function findGoodLine(
-        Document\DocumentInterface $document,
-        Common\SaleItemInterface   $item
-    ): ?Document\DocumentLineInterface {
-        foreach ($document->getLinesByType(Document\DocumentLineTypes::TYPE_GOOD) as $line) {
-            if ($line->getSaleItem() === $item) {
-                return $line;
-            }
+    protected function buildInvoiceAddress(Document\DocumentInterface $document): array
+    {
+        return $this->buildAddressData($document->getSale()->getInvoiceAddress());
+    }
+
+    protected function buildDeliveryAddress(Document\DocumentInterface $document): ?array
+    {
+        if (null === $address = $document->getSale()->getDeliveryAddress()) {
+            return null;
         }
 
-        return null;
+        return $this->buildAddressData($address);
+    }
+
+    protected function buildRelayPointAddress(Document\DocumentInterface $document): ?array
+    {
+        if (null === $address = $document->getSale()->getRelayPoint()) {
+            return null;
+        }
+
+        return $this->buildAddressData($address);
     }
 
     public function buildGoodLine(
@@ -251,45 +257,22 @@ class DocumentBuilder implements DocumentBuilderInterface
     /**
      * Builds the document's address data.
      */
-    protected function buildAddressData(Common\AddressInterface $address, string $locale): array
+    protected function buildAddressData(Common\AddressInterface $address): array
     {
-        try {
-            $country = Countries::getName($address->getCountry()->getCode(), $locale);
-        } catch (IntlException $exception) {
-            $country = $address->getCountry()->getName();
-        }
-
-        $fullName = trim($address->getFirstName() . ' ' . $address->getLastName());
-
-        $data = [
-            'company'     => $address->getCompany(),
-            'full_name'   => $fullName,
-            'street'      => $address->getStreet(),
-            'complement'  => $address->getComplement(),
-            'supplement'  => $address->getSupplement(),
-            'postal_code' => $address->getPostalCode(),
-            'city'        => $address->getCity(),
-            'country'     => $country,
-            'state'       => '',
-            'phone'       => $this->formatPhoneNumber($address->getPhone()),
-            'mobile'      => $this->formatPhoneNumber($address->getMobile()),
-        ];
-
-        if ($address instanceof RelayPointInterface) {
-            $data['number'] = $address->getNumber();
-        }
-
-        if ($address instanceof Common\SaleAddressInterface) {
-            $data['information'] = $address->getInformation();
-        }
-
-        return $data;
+        return $this->addressTransformer->transformAddress($address, [
+            'digicode1',
+            'digicode2',
+            'intercom',
+            'information',
+            'latitude',
+            'longitude',
+        ]);
     }
 
     /**
      * Formats the given phone number.
      */
-    protected function formatPhoneNumber(PhoneNumber $number = null): ?string
+    protected function formatPhoneNumber(?PhoneNumber $number): ?string
     {
         if ($number) {
             return $this->phoneNumberUtil->format($number, PhoneNumberFormat::INTERNATIONAL);

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use Ekyna\Component\Commerce\Shipment\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
+use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
@@ -14,6 +16,17 @@ use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
  */
 class ShipmentNormalizer extends ResourceNormalizer
 {
+    private ShipmentAddressResolverInterface $addressResolver;
+    private WeightCalculatorInterface        $weightCalculator;
+
+    public function __construct(
+        ShipmentAddressResolverInterface $addressResolver,
+        WeightCalculatorInterface        $weightCalculator
+    ) {
+        $this->addressResolver = $addressResolver;
+        $this->weightCalculator = $weightCalculator;
+    }
+
     /**
      * @inheritDoc
      *
@@ -48,12 +61,26 @@ class ShipmentNormalizer extends ResourceNormalizer
                 $parcels[] = $this->normalizeObject($parcel, $format, $context);
             }
 
+            $senderAddress = $this->addressResolver->resolveSenderAddress($object);
+            $senderAddress = $this->normalizeObject($senderAddress, $format, $context);
+
+            $receiverAddress = $this->addressResolver->resolveReceiverAddress($object);
+            $receiverAddress = $this->normalizeObject($receiverAddress, $format, $context);
+
+            if (null === $weight = $object->getWeight()) {
+                $weight = $this->weightCalculator->calculateShipment($object);
+            }
+
             $data = array_replace($data, [
-                'items'           => $items,
-                'parcels'         => $parcels,
-                'description'     => $object->getDescription(),
-                'tracking_number' => $object->getTrackingNumber(),
-                'valorization'    => $object->getValorization(),
+                'number'           => $object->getNumber(),
+                'weight'           => $weight->toFixed(3),
+                'tracking_number'  => $object->getTrackingNumber(),
+                'valorization'     => $object->getValorization(),
+                'sender_address'   => $senderAddress,
+                'receiver_address' => $receiverAddress,
+                'items'            => $items,
+                'parcels'          => $parcels,
+                'description'      => $object->getDescription(),
             ]);
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Util;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
@@ -14,13 +16,8 @@ final class AddressUtil
 {
     /**
      * Returns whether this address equals the given address or not.
-     *
-     * @param AddressInterface $source
-     * @param AddressInterface $target
-     *
-     * @return boolean
      */
-    static public function equals(AddressInterface $source, AddressInterface $target)
+    public static function equals(AddressInterface $source, AddressInterface $target): bool
     {
         if (!($source->getCompany() === $target->getCompany()
             && $source->getGender() === $target->getGender()
@@ -67,17 +64,16 @@ final class AddressUtil
 
     /**
      * Copy the source address data into the target address.
-     *
-     * @param AddressInterface $source
-     * @param AddressInterface $target
      */
-    static public function copy(AddressInterface $source, AddressInterface $target)
+    public static function copy(AddressInterface $source, AddressInterface $target): void
     {
         $target
-            ->setCompany($source->getCompany())
             ->setGender($source->getGender())
             ->setFirstName($source->getFirstName())
-            ->setLastName($source->getLastName())
+            ->setLastName($source->getLastName());
+
+        $target
+            ->setCompany($source->getCompany())
             ->setStreet($source->getStreet())
             ->setComplement($source->getComplement())
             ->setSupplement($source->getSupplement())

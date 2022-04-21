@@ -25,6 +25,14 @@ interface InvoiceInterface extends
     Resource\RuntimeUidInterface,
     Common\NumberSubjectInterface
 {
+    public function getCustomInvoiceAddress(): ?array;
+
+    public function setCustomInvoiceAddress(?array $data): InvoiceInterface;
+
+    public function getCustomDeliveryAddress(): ?array;
+
+    public function setCustomDeliveryAddress(?array $customDeliveryAddress): InvoiceInterface;
+
     /**
      * Returns whether this invoice is a credit.
      */

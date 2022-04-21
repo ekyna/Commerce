@@ -62,7 +62,7 @@ trait IdentityTrait
     }
 
     /**
-     * Returns whether or not the identity is empty.
+     * Returns whether the identity is empty.
      */
     public function isIdentityEmpty(): bool
     {

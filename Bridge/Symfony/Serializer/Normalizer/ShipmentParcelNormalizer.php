@@ -21,13 +21,15 @@ class ShipmentParcelNormalizer extends ResourceNormalizer
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        $data = [];
+        $data = [
+            'id' => $object->getId(),
+        ];
 
         if ($this->contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
-                'weight'         => $object->getWeight()->toFixed(3),
-                'valorization'   => $object->getValorization(),
-                'trackingNumber' => $object->getTrackingNumber(),
+                'weight'          => $object->getWeight()->toFixed(3),
+                'valorization'    => $object->getValorization(),
+                'tracking_number' => $object->getTrackingNumber(),
             ]);
         }
 

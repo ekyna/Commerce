@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Address;
 use Ekyna\Component\Commerce\Exception\ShipmentGatewayException;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 use Symfony\Component\Form\FormInterface;
@@ -106,14 +107,14 @@ interface GatewayInterface extends
     /**
      * Returns the relay point list for the given address and weight.
      *
-     * @param Model\Address $address The request address
-     * @param Decimal       $weight  In kilograms
+     * @param Address $address The request address
+     * @param Decimal $weight  In kilograms
      *
      * @return Model\ListRelayPointResponse The "list relay points" response
      *
      * @throws ShipmentGatewayException
      */
-    public function listRelayPoints(Model\Address $address, Decimal $weight): Model\ListRelayPointResponse;
+    public function listRelayPoints(Address $address, Decimal $weight): Model\ListRelayPointResponse;
 
     /**
      * Returns the relay point list for the given address and weight.

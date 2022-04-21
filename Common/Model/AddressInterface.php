@@ -69,6 +69,10 @@ interface AddressInterface extends IdentityInterface
 
     public function setIntercom(?string $intercom): AddressInterface;
 
+    public function getInformation(): ?string;
+
+    public function setInformation(?string $information): AddressInterface;
+
     public function getLongitude(): ?string;
 
     public function setLongitude(?string $longitude): AddressInterface;

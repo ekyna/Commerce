@@ -17,6 +17,7 @@
         <field name="digicode1" column="digicode1" type="string" length="8" nullable="true"/>
         <field name="digicode2" column="digicode2" type="string" length="8" nullable="true"/>
         <field name="intercom" column="intercom" type="string" length="10" nullable="true"/>
+        <field name="information" column="information" type="text" nullable="true"/>
         <field name="phone" column="phone" type="phone_number" nullable="true"/>
         <field name="mobile" column="mobile" type="phone_number" nullable="true"/>
         <field name="longitude" column="longitude" type="decimal" precision="11" scale="8" nullable="true"/>

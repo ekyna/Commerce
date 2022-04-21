@@ -41,16 +41,23 @@ class InvoiceNormalizer extends ResourceNormalizer
             foreach ($object->getLines() as $line) {
                 $lines[] = $this->normalizeObject($line, $format, $context);
             }
+
             $items = [];
             foreach ($object->getItems() as $item) {
                 $items[] = $this->normalizeObject($item, $format, $context);
             }
 
+            $invoiceAddress = $object->getCustomInvoiceAddress() ?: $object->getInvoiceAddress();
+            $deliveryAddress = $object->getCustomDeliveryAddress() ?: $object->getDeliveryAddress();
+
             $data = array_replace($data, [
-                'lines'       => $lines,
-                'items'       => $items,
-                'description' => $object->getDescription(),
-                'comment'     => $object->getComment(),
+                'number'           => $object->getNumber(),
+                'lines'            => $lines,
+                'items'            => $items,
+                'description'      => $object->getDescription(),
+                'comment'          => $object->getComment(),
+                'invoice_address'  => $invoiceAddress,
+                'delivery_address' => $deliveryAddress,
             ]);
         }
 

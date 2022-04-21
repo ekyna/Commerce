@@ -16,22 +16,23 @@ abstract class AbstractAddress implements Model\AddressInterface
 {
     use Model\IdentityTrait;
 
-    protected ?string                 $company    = null;
-    protected ?string                 $street     = null;
-    protected ?string                 $complement = null;
-    protected ?string                 $supplement = null;
-    protected ?string                 $extra      = null;
-    protected ?string                 $postalCode = null;
-    protected ?string                 $city       = null;
-    protected ?Model\CountryInterface $country    = null;
-    protected ?Model\StateInterface   $state      = null;
-    protected ?PhoneNumber            $phone      = null;
-    protected ?PhoneNumber            $mobile     = null;
-    protected ?string                 $digicode1  = null;
-    protected ?string                 $digicode2  = null;
-    protected ?string                 $intercom   = null;
-    protected ?string                  $longitude  = null;
-    protected ?string                  $latitude   = null;
+    protected ?string                 $company     = null;
+    protected ?string                 $street      = null;
+    protected ?string                 $complement  = null;
+    protected ?string                 $supplement  = null;
+    protected ?string                 $extra       = null;
+    protected ?string                 $postalCode  = null;
+    protected ?string                 $city        = null;
+    protected ?Model\CountryInterface $country     = null;
+    protected ?Model\StateInterface   $state       = null;
+    protected ?PhoneNumber            $phone       = null;
+    protected ?PhoneNumber            $mobile      = null;
+    protected ?string                 $digicode1   = null;
+    protected ?string                 $digicode2   = null;
+    protected ?string                 $intercom    = null;
+    protected ?string                 $information = null;
+    protected ?string                 $longitude   = null;
+    protected ?string                 $latitude    = null;
 
 
     /**
@@ -186,6 +187,18 @@ abstract class AbstractAddress implements Model\AddressInterface
     public function setIntercom(?string $intercom): Model\AddressInterface
     {
         $this->intercom = $intercom;
+
+        return $this;
+    }
+
+    public function getInformation(): ?string
+    {
+        return $this->information;
+    }
+
+    public function setInformation(?string $information): Model\AddressInterface
+    {
+        $this->information = $information;
 
         return $this;
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Gateway;
 
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Address;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\ShipmentGatewayException;
 use Ekyna\Component\Commerce\Order\Entity\OrderShipmentLabel;
@@ -159,7 +160,7 @@ abstract class AbstractGateway implements GatewayInterface
         $this->throwUnsupportedAction('print');
     }
 
-    public function listRelayPoints(Model\Address $address, Decimal $weight): ListRelayPointResponse
+    public function listRelayPoints(Address $address, Decimal $weight): ListRelayPointResponse
     {
         $this->throwUnsupportedAction('list relay points');
     }

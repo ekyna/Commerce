@@ -16,22 +16,8 @@ abstract class AbstractSaleAddress extends AbstractAddress implements SaleAddres
 {
     use ResourceTrait;
 
-    protected ?string $information = null;
-
     public function __clone()
     {
         $this->id = null;
-    }
-
-    public function getInformation(): ?string
-    {
-        return $this->information;
-    }
-
-    public function setInformation(?string $information): SaleAddressInterface
-    {
-        $this->information = $information;
-
-        return $this;
     }
 }

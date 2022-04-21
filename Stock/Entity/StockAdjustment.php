@@ -19,12 +19,13 @@ class StockAdjustment extends AbstractResource implements Model\StockAdjustmentI
 {
     protected ?Model\StockUnitInterface $stockUnit = null;
     protected Decimal                   $quantity;
-    protected ?string                   $reason    = null;
+    protected string                    $reason;
     protected ?string                   $note      = null;
     protected DateTimeInterface         $createdAt;
 
     public function __construct()
     {
+        $this->reason = Model\StockAdjustmentReasons::REASON_DEBIT;
         $this->quantity = new Decimal(0);
         $this->createdAt = new DateTime();
     }
@@ -64,7 +65,7 @@ class StockAdjustment extends AbstractResource implements Model\StockAdjustmentI
         return $this;
     }
 
-    public function getReason(): ?string
+    public function getReason(): string
     {
         return $this->reason;
     }
@@ -81,7 +82,7 @@ class StockAdjustment extends AbstractResource implements Model\StockAdjustmentI
         return $this->note;
     }
 
-    public function setNote(string $note): Model\StockAdjustmentInterface
+    public function setNote(?string $note): Model\StockAdjustmentInterface
     {
         $this->note = $note;
 

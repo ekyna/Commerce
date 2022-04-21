@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Invoice\Builder;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Transformer\ArrayToAddressTransformer;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilder;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
@@ -37,9 +38,10 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
         AvailabilityResolverFactory       $availabilityResolverFactory,
         InvoiceSubjectCalculatorInterface $invoiceCalculator,
         LocaleProviderInterface           $localeProvider,
+        ArrayToAddressTransformer         $addressTransformer,
         PhoneNumberUtil                   $phoneNumberUtil = null
     ) {
-        parent::__construct($localeProvider, $phoneNumberUtil);
+        parent::__construct($localeProvider, $addressTransformer, $phoneNumberUtil);
 
         $this->factoryHelper = $factoryHelper;
         $this->availabilityResolverFactory = $availabilityResolverFactory;
@@ -181,5 +183,27 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
     {
         /** @var Invoice\InvoiceInterface $document */
         return $this->factoryHelper->createLineForInvoice($document);
+    }
+
+    protected function buildDeliveryAddress(Document\DocumentInterface $document): ?array
+    {
+        /** @var Invoice\InvoiceInterface $document */
+        $shipment = $document->getShipment();
+        if ($shipment && !empty($data = $shipment->getReceiverAddress())) {
+            return $data;
+        }
+
+        return parent::buildDeliveryAddress($document);
+    }
+
+    protected function buildRelayPointAddress(Document\DocumentInterface $document): ?array
+    {
+        /** @var Invoice\InvoiceInterface $document */
+        $shipment = $document->getShipment();
+        if ($shipment && !empty($relayPoint = $shipment->getRelayPoint())) {
+            return $this->buildAddressData($relayPoint);
+        }
+
+        return parent::buildRelayPointAddress($document);
     }
 }

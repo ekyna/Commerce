@@ -14,8 +14,4 @@ use Ekyna\Component\Resource\Model\ResourceInterface;
 interface SaleAddressInterface extends AddressInterface, ResourceInterface
 {
     public function getSale(): ?SaleInterface;
-
-    public function getInformation(): ?string;
-
-    public function setInformation(?string $information): SaleAddressInterface;
 }

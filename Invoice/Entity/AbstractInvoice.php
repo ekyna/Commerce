@@ -27,7 +27,9 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     use TimestampableTrait;
     use RuntimeUidTrait;
 
-    protected bool $credit;
+    protected ?array $customInvoiceAddress  = null;
+    protected ?array $customDeliveryAddress = null;
+    protected bool   $credit;
     /** The paid total (document currency).*/
     protected Decimal $paidTotal;
     /** The paid total (default currency). */
@@ -77,6 +79,30 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
         $this->credit = $type === Document\DocumentTypes::TYPE_CREDIT;
 
         return parent::setType($type);
+    }
+
+    public function getCustomInvoiceAddress(): ?array
+    {
+        return $this->customInvoiceAddress;
+    }
+
+    public function setCustomInvoiceAddress(?array $data): Invoice\InvoiceInterface
+    {
+        $this->customInvoiceAddress = $data;
+
+        return $this;
+    }
+
+    public function getCustomDeliveryAddress(): ?array
+    {
+        return $this->customDeliveryAddress;
+    }
+
+    public function setCustomDeliveryAddress(?array $customDeliveryAddress): Invoice\InvoiceInterface
+    {
+        $this->customDeliveryAddress = $customDeliveryAddress;
+
+        return $this;
     }
 
     public function getPaidTotal(): Decimal

@@ -226,7 +226,11 @@ class DocumentLine implements DocumentLineInterface
 
     public function getSale(): ?Common\SaleInterface
     {
-        return $this->getDocument()->getSale();
+        if (null === $document = $this->getDocument()) {
+            return null;
+        }
+
+        return $document->getSale();
     }
 
     public function getSaleItem(): ?Common\SaleItemInterface
