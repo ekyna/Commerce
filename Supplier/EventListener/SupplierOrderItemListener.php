@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -19,10 +22,8 @@ class SupplierOrderItemListener extends AbstractListener
 {
     /**
      * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
@@ -47,11 +48,9 @@ class SupplierOrderItemListener extends AbstractListener
     /**
      * Update event handler.
      *
-     * @param ResourceEventInterface $event
-     *
      * @throws IllegalOperationException
      */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
@@ -60,7 +59,7 @@ class SupplierOrderItemListener extends AbstractListener
             $productCs = $this->persistenceHelper->getChangeSet($item, 'product');
             if ($productCs[0] != $productCs[1]) {
                 // TODO message as translation id
-                throw new IllegalOperationException("Changing supplier order item product is not supported yet.");
+                throw new IllegalOperationException('Changing supplier order item product is not supported yet.');
             }
         }
 
@@ -95,9 +94,9 @@ class SupplierOrderItemListener extends AbstractListener
     /**
      * Delete event handler.
      *
-     * @param ResourceEventInterface $event
+     * @throws RuntimeException
      */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
@@ -114,7 +113,7 @@ class SupplierOrderItemListener extends AbstractListener
             }
         }
         if (null === $order) {
-            throw new RuntimeException("Failed to retrieve supplier order.");
+            throw new RuntimeException('Failed to retrieve supplier order.');
         }
 
         // Clear association
@@ -129,9 +128,9 @@ class SupplierOrderItemListener extends AbstractListener
     /**
      * Pre delete event handler.
      *
-     * @param ResourceEventInterface $event
+     * @throws IllegalOperationException
      */
-    public function onPreDelete(ResourceEventInterface $event)
+    public function onPreDelete(ResourceEventInterface $event): void
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
@@ -146,12 +145,12 @@ class SupplierOrderItemListener extends AbstractListener
      *
      * @param SupplierOrderItemInterface $item
      *
-     * @return bool Whether or not the item has been changed.
+     * @return bool Whether the item has been changed.
      *
      * @throws LogicException If breaking synchronization between supplier order item and supplier product.
      * @throws InvalidArgumentException If supplier product subject data is not set.
      */
-    protected function synchronizeWithProduct(SupplierOrderItemInterface $item)
+    protected function synchronizeWithProduct(SupplierOrderItemInterface $item): bool
     {
         $changed = false;
 
@@ -168,7 +167,6 @@ class SupplierOrderItemListener extends AbstractListener
                             'Breaking synchronization between supplier order item and supplier product is not supported.'
                         );
                     }
-                    $changed = false;
                 } else {
                     $itemSID->copy($productSID);
                     $changed = true;
@@ -185,18 +183,18 @@ class SupplierOrderItemListener extends AbstractListener
             if (empty($item->getReference())) {
                 $item->setReference($product->getReference());
             }
-            if (is_null($item->getNetPrice())) {
+            if ($item->getNetPrice()->isZero()) {
                 $item->setNetPrice(clone $product->getNetPrice());
             }
-            if (is_null($item->getWeight())) {
+            if ($item->getWeight()->isZero()) {
                 $item->setWeight(clone $product->getWeight());
             }
             if (is_null($item->getTaxGroup())) {
                 $item->setTaxGroup($product->getTaxGroup());
             }
-            /* TODO if (is_null($item->getUnit())) {
+            if (is_null($item->getUnit())) {
                 $item->setUnit($product->getUnit());
-            }*/
+            }
         } elseif ($item->hasSubjectIdentity()) {
             throw new LogicException(
                 'Breaking synchronization between supplier order item and supplier product is not supported.'
@@ -208,18 +206,13 @@ class SupplierOrderItemListener extends AbstractListener
 
     /**
      * Returns the supplier order item from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return SupplierOrderItemInterface
-     * @throws InvalidArgumentException
      */
-    protected function getSupplierOrderItemFromEvent(ResourceEventInterface $event)
+    protected function getSupplierOrderItemFromEvent(ResourceEventInterface $event): SupplierOrderItemInterface
     {
         $item = $event->getResource();
 
         if (!$item instanceof SupplierOrderItemInterface) {
-            throw new InvalidArgumentException("Expected instance of SupplierOrderItemInterface.");
+            throw new UnexpectedTypeException($item, SupplierOrderItemInterface::class);
         }
 
         return $item;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
@@ -17,48 +19,21 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected StockUnitLinkerInterface $stockUnitLinker;
+    protected StockUnitUpdaterInterface $stockUnitUpdater;
 
-    /**
-     * @var StockUnitLinkerInterface
-     */
-    protected $stockUnitLinker;
-
-    /**
-     * @var StockUnitUpdaterInterface
-     */
-    protected $stockUnitUpdater;
-
-
-    /**
-     * Sets the persistence helper.
-     *
-     * @param PersistenceHelperInterface $helper
-     */
-    public function setPersistenceHelper(PersistenceHelperInterface $helper)
+    public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
         $this->persistenceHelper = $helper;
     }
 
-    /**
-     * Sets the stock unit linker.
-     *
-     * @param StockUnitLinkerInterface $stockUnitLinker
-     */
-    public function setStockUnitLinker(StockUnitLinkerInterface $stockUnitLinker)
+    public function setStockUnitLinker(StockUnitLinkerInterface $stockUnitLinker): void
     {
         $this->stockUnitLinker = $stockUnitLinker;
     }
 
-    /**
-     * Sets the stock unit updater.
-     *
-     * @param StockUnitUpdaterInterface $updater
-     */
-    public function setStockUnitUpdater(StockUnitUpdaterInterface $updater)
+    public function setStockUnitUpdater(StockUnitUpdaterInterface $updater): void
     {
         $this->stockUnitUpdater = $updater;
     }
@@ -66,42 +41,60 @@ abstract class AbstractListener
     /**
      * Asserts that the resource can be safely deleted.
      *
-     * @param ResourceInterface $resource
-     *
-     * @throws Exception\CommerceExceptionInterface
+     * @throws Exception\IllegalOperationException
+     * @throws Exception\UnexpectedTypeException
      */
-    protected function assertDeletable(ResourceInterface $resource)
+    protected function assertDeletable(ResourceInterface $resource): void
     {
         if ($resource instanceof Model\SupplierOrderItemInterface) {
             if (null === $unit = $resource->getStockUnit()) {
                 return;
             }
+
             if ($unit->getReceivedQuantity() + $unit->getAdjustedQuantity() < $unit->getShippedQuantity()) {
                 throw new Exception\IllegalOperationException(
                     "Supplier order item can't be removed as it is linked to a shipped stock unit."
                 ); // TODO message as translation id
             }
-        } elseif ($resource instanceof Model\SupplierOrderInterface) {
-            foreach ($resource->getItems() as $item) {
-                $this->assertDeletable($item);
-            }
-        } elseif ($resource instanceof Model\SupplierDeliveryItemInterface) {
-            $this->assertDeletable($resource->getOrderItem());
-        } elseif ($resource instanceof Model\SupplierDeliveryInterface) {
-            foreach ($resource->getItems() as $item) {
-                $this->assertDeletable($item);
-            }
-        } else {
-            throw new Exception\InvalidArgumentException("Unexpected resource."); // TODO message as translation id
+
+            return;
         }
+
+        if ($resource instanceof Model\SupplierOrderInterface) {
+            foreach ($resource->getItems() as $item) {
+                $this->assertDeletable($item);
+            }
+
+            return;
+        }
+
+        if ($resource instanceof Model\SupplierDeliveryItemInterface) {
+            $this->assertDeletable($resource->getOrderItem());
+
+            return;
+        }
+
+        if ($resource instanceof Model\SupplierDeliveryInterface) {
+            foreach ($resource->getItems() as $item) {
+                $this->assertDeletable($item);
+            }
+
+            return;
+        }
+
+
+        throw new Exception\UnexpectedTypeException($resource, [
+            Model\SupplierOrderItemInterface::class,
+            Model\SupplierOrderInterface::class,
+            Model\SupplierDeliveryItemInterface::class,
+            Model\SupplierDeliveryInterface::class
+        ]);
     }
 
     /**
      * Schedules the supplier order content change event.
-     *
-     * @param Model\SupplierOrderInterface $order
      */
-    protected function scheduleSupplierOrderContentChangeEvent(Model\SupplierOrderInterface $order)
+    protected function scheduleSupplierOrderContentChangeEvent(Model\SupplierOrderInterface $order): void
     {
         $this->persistenceHelper->scheduleEvent($order, SupplierOrderEvents::CONTENT_CHANGE);
     }

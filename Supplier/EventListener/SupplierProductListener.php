@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
@@ -15,16 +17,8 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class SupplierProductListener
 {
-    /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
+    protected SubjectHelperInterface $subjectHelper;
 
-    /**
-     * Constructor.
-     *
-     * @param SubjectHelperInterface $subjectHelper
-     */
     public function __construct(SubjectHelperInterface $subjectHelper)
     {
         $this->subjectHelper = $subjectHelper;
@@ -32,8 +26,6 @@ class SupplierProductListener
 
     /**
      * Initialize event handler.
-     *
-     * @param ResourceEventInterface $event
      */
     public function onInitialize(ResourceEventInterface $event): void
     {
@@ -66,17 +58,13 @@ class SupplierProductListener
 
     /**
      * Returns the supplier product from the resource event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return SupplierProductInterface
      */
     protected function getSupplierProductFromEvent(ResourceEventInterface $event): SupplierProductInterface
     {
         $resource = $event->getResource();
 
         if (!$resource instanceof SupplierProductInterface) {
-            throw new InvalidArgumentException("Expected instance of " . SupplierProductInterface::class);
+            throw new UnexpectedTypeException($resource, SupplierProductInterface::class);
         }
 
         return $resource;

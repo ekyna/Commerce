@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
@@ -15,10 +17,8 @@ class SupplierDeliveryListener extends AbstractListener
 {
     /**
      * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
      */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         $delivery = $this->getSupplierDeliveryFromEvent($event);
 
@@ -29,7 +29,7 @@ class SupplierDeliveryListener extends AbstractListener
             }
         }
         if (null === $order) {
-            throw new Exception\RuntimeException("Failed to retrieve supplier order.");
+            throw new Exception\RuntimeException('Failed to retrieve supplier order.');
         }
 
         // Clear association
@@ -44,9 +44,9 @@ class SupplierDeliveryListener extends AbstractListener
     /**
      * Pre delete event handler.
      *
-     * @param ResourceEventInterface $event
+     * @throws Exception\IllegalOperationException
      */
-    public function onPreDelete(ResourceEventInterface $event)
+    public function onPreDelete(ResourceEventInterface $event): void
     {
         $delivery = $this->getSupplierDeliveryFromEvent($event);
 
@@ -59,18 +59,13 @@ class SupplierDeliveryListener extends AbstractListener
 
     /**
      * Returns the supplier delivery item from the event.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @return SupplierDeliveryInterface
-     * @throws Exception\InvalidArgumentException
      */
-    protected function getSupplierDeliveryFromEvent(ResourceEventInterface $event)
+    protected function getSupplierDeliveryFromEvent(ResourceEventInterface $event): SupplierDeliveryInterface
     {
         $delivery = $event->getResource();
 
         if (!$delivery instanceof SupplierDeliveryInterface) {
-            throw new Exception\InvalidArgumentException("Expected instance of SupplierDeliveryInterface.");
+            throw new Exception\UnexpectedTypeException($delivery, SupplierDeliveryInterface::class);
         }
 
         return $delivery;
