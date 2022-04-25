@@ -138,7 +138,7 @@ class ShipmentBuilder implements ShipmentBuilderInterface
         // Set default quantity for new non-return shipment items
         if (!$shipment->isReturn() && (null === $shipment->getId())) {
             $item->setQuantity(min(
-                $saleItem->getQuantity(),
+                $saleItem->getTotalQuantity(),
                 $availability->getExpected(),
                 $availability->getAssigned()
             ));

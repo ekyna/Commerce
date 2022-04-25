@@ -85,7 +85,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
         // Set default quantity for new non-credit invoice lines
         if (!$document->isCredit() && (null === $document->getId())) {
             $line->setQuantity(min(
-                $item->getQuantity(),
+                $item->getTotalQuantity(),
                 $availability->getExpected(),
                 $availability->getMaximum()
             ));
