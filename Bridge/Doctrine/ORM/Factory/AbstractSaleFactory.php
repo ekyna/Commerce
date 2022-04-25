@@ -99,8 +99,12 @@ abstract class AbstractSaleFactory extends ResourceFactory implements SaleFactor
             $sale->setCurrency($customer->getCurrency());
         }
 
-        $invoiceDefault = $customer->getDefaultInvoiceAddress(true);
-        if (is_null($sale->getInvoiceAddress()) && $invoiceDefault) {
+        if (!is_null($sale->getInvoiceAddress())) {
+            // Addresses are already defined
+            return;
+        }
+
+        if ($invoiceDefault = $customer->getDefaultInvoiceAddress(true)) {
             $sale->setInvoiceAddress(
                 $this->factoryHelper->createAddressForSale($sale, $invoiceDefault)
             );
