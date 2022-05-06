@@ -18,6 +18,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers as Trigger;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Resource\Doctrine\ORM\Hydrator\IdHydrator;
 
 /**
  * Class OrderRepository
@@ -174,20 +175,12 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
     {
         $qb = $this->createQueryBuilder('o');
 
-        $ids = $qb
+        return $qb
             ->select('o.id')
             ->orWhere($qb->expr()->isNull('o.revenueTotal'))
             ->orWhere($qb->expr()->isNull('o.marginTotal'))
             ->getQuery()
-            ->getScalarResult();
-
-        if (empty($ids)) {
-            return [];
-        }
-
-        return array_map(function ($id) {
-            return (int)$id;
-        }, array_column($ids, 'id'));
+            ->getResult(IdHydrator::NAME);
     }
 
     public function getRegularDue(): Decimal

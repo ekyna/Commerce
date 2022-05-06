@@ -8,6 +8,7 @@ use Doctrine\ORM\Event\OnClearEventArgs;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Resource\Doctrine\ORM\Hydrator\IdHydrator;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 
 use function array_column;
@@ -163,7 +164,9 @@ class CountryRepository extends ResourceRepository implements CountryRepositoryI
                 ->setParameter('codes', $this->cachedCodes);
         }
 
-        return array_column($qb->getQuery()->getScalarResult(), 'id');
+        return $qb
+            ->getQuery()
+            ->getResult(IdHydrator::NAME);
     }
 
     /**

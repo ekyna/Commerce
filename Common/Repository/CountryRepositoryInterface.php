@@ -77,7 +77,7 @@ interface CountryRepositoryInterface extends ResourceRepositoryInterface
      *
      * @param bool $cached Whether to return only cached countries identifiers
      *
-     * @return array
+     * @return array<int>
      */
     public function getIdentifiers(bool $cached = false): array;
 }

@@ -8,6 +8,7 @@ use Doctrine\ORM\Event\OnClearEventArgs;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Resource\Doctrine\ORM\Hydrator\IdHydrator;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\TranslatableRepository;
 
 /**
@@ -43,13 +44,11 @@ class CustomerGroupRepository extends TranslatableRepository implements Customer
     {
         $qb = $this->createQueryBuilder('g');
 
-        $result = $qb
+        return $qb
             ->select('g.id')
             ->orderBy('g.id')
             ->getQuery()
-            ->getScalarResult();
-
-        return array_map(function ($r) { return $r['id']; }, $result);
+            ->getResult(IdHydrator::NAME);
     }
 
     /**

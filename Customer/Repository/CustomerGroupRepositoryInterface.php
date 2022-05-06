@@ -16,15 +16,13 @@ interface CustomerGroupRepositoryInterface extends TranslatableRepositoryInterfa
 {
     /**
      * Returns the default customer group.
-     *
-     * @return CustomerGroupInterface
      */
     public function findDefault(): CustomerGroupInterface;
 
     /**
      * Returns the customer group identifiers.
      *
-     * @return array
+     * @return array<int>
      */
     public function getIdentifiers(): array;
 }
