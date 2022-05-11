@@ -15,6 +15,8 @@ use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
 
+use function array_filter;
+
 /**
  * Class DocumentBuilder
  * @package Ekyna\Component\Commerce\Common\Builder
@@ -234,24 +236,28 @@ class DocumentBuilder implements DocumentBuilderInterface
     protected function buildCustomerData(Common\SaleInterface $sale): array
     {
         if ($customer = $sale->getCustomer()) {
-            return [
-                'number'    => $customer->getNumber(),
-                'company'   => $customer->getCompany(),
-                'full_name' => trim($customer->getFirstName() . ' ' . $customer->getLastName()),
-                'email'     => $customer->getEmail(),
-                'phone'     => $this->formatPhoneNumber($customer->getPhone()),
-                'mobile'    => $this->formatPhoneNumber($customer->getMobile()),
+            $data = [
+                'number'     => $customer->getNumber(),
+                'company'    => $customer->getCompany(),
+                'first_name' => $customer->getFirstName(),
+                'last_name'  => $customer->getLastName(),
+                'email'      => $customer->getEmail(),
+                'phone'      => $this->formatPhoneNumber($customer->getPhone()),
+                'mobile'     => $this->formatPhoneNumber($customer->getMobile()),
             ];
         } else {
-            return [
-                'number'    => null,
-                'company'   => $sale->getCompany(),
-                'full_name' => trim($sale->getFirstName() . ' ' . $sale->getLastName()),
-                'email'     => $sale->getEmail(),
-                'phone'     => null,
-                'mobile'    => null,
+            $data = [
+                'number'     => null,
+                'company'    => $sale->getCompany(),
+                'first_name' => $sale->getFirstName(),
+                'last_name'  => $sale->getLastName(),
+                'email'      => $sale->getEmail(),
+                'phone'      => null,
+                'mobile'     => null,
             ];
         }
+
+        return array_filter($data, fn($v) => !empty($v));
     }
 
     /**

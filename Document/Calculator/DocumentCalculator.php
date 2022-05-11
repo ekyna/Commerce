@@ -183,7 +183,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
         $taxes = [];
         foreach ($item->getTaxRates() as $name => $rate) {
             $rate = new Decimal((string)$rate);
-            $amount = Money::round($base->mul($rate->add(1)->div(100)), $this->currency);
+            $amount = Money::round($base->mul($rate->div(100)->add(1)), $this->currency);
             $amount -= Money::round($base, $this->currency);
             $taxes[] = new Common\Adjustment($name, $amount, $rate);
         }
