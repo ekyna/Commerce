@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Util;
+
+use Generator;
 
 /**
  * Class Combination
@@ -11,13 +15,8 @@ final class Combination
 {
     /**
      * Returns the unique combinations for the given values.
-     *
-     * @param array $values
-     * @param int   $length
-     *
-     * @return \Generator
      */
-    public static function generate(array $values, int $length = null): \Generator
+    public static function generate(array $values, int $length = null): Generator
     {
         if (is_null($length)) {
             for ($l = 1; $l <= count($values); $l++) {
@@ -49,13 +48,8 @@ final class Combination
 
     /**
      * Returns unique associative combinations for the given values.
-     *
-     * @param array    $values
-     * @param int|null $length
-     *
-     * @return \Generator
      */
-    public static function generateAssoc(array $values, int $length = null): \Generator
+    public static function generateAssoc(array $values, int $length = null): Generator
     {
         if (is_null($length)) {
             for ($l = 1; $l <= count($values); $l++) {

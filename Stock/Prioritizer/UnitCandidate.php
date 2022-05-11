@@ -138,6 +138,11 @@ class UnitCandidate
             }
 
             $combinations[] = $combination;
+
+            if ($diff < 0) {
+                // Not enough -> increase combination length
+                break;
+            }
         }
 
         // Size 1 < size < max
@@ -151,6 +156,11 @@ class UnitCandidate
                 }
 
                 $combinations[] = $combination;
+
+                if ($diff < 0) {
+                    // Not enough -> increase combination length
+                    continue 2;
+                }
             }
         }
 
@@ -166,7 +176,7 @@ class UnitCandidate
             return null;
         }
 
-        // Sort combinations: prefer closest then greater
+        // Sort combinations: prefer closest, then greater
         usort($combinations, function (AssignmentCombination $a, AssignmentCombination $b) {
             if (0 < $a->diff && 0 < $b->diff) {
                 return $b->diff->abs()->sub($a->diff->abs());
