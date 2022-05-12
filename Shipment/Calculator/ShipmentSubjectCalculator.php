@@ -174,7 +174,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         $shipments = $sale
             ->getShipments()
             ->filter(function (Shipment $s) use ($id, $date) {
-                if ($s->getId() == $id) {
+                if ($s->getId() === $id) {
                     return false;
                 }
 
@@ -327,10 +327,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     {
         // Not for compound item with only public children
         if (!($saleItem->isCompound() && !$saleItem->hasPrivateChildren())) {
-            $quantity = max(
-                $saleItem->getTotalQuantity(),
-                $this->invoiceCalculator->calculateInvoicedQuantity($saleItem)
-            );
+            $quantity = $this->invoiceCalculator->calculateSoldQuantity($saleItem);
 
             foreach ($shipments as $shipment) {
                 foreach ($shipment->getItems() as $item) {
