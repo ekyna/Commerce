@@ -124,7 +124,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
             $this->cache[$iRid] = [];
         }
 
-        // Combining too many invoices use too much resources
+        // Combining too many invoices use too many resources
         if (12 < count($this->invoices)) {
             $this->buildPaymentsResults(array_keys($this->invoices), array_keys($this->payments));
 
@@ -284,8 +284,12 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
         }
 
         // Purge remaining payments/refunds
-        foreach ($this->payments as $k1 => $p1) {
-            foreach ($this->payments as $k2 => $p2) {
+        reset($this->payments);
+        while (false !== $p1 = current($this->payments)) {
+            $k1 = key($this->payments);
+
+            $payments = $this->payments;
+            foreach ($payments as $k2 => $p2) {
                 // Skip same payments
                 if ($k1 === $k2) {
                     continue;
@@ -301,7 +305,7 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 if (0 === $c) {
                     unset($this->payments[$k2]);
                     unset($this->payments[$k1]);
-                    continue 2;
+                    break;
                 }
 
                 if (1 === $c) {
@@ -314,8 +318,10 @@ class InvoicePaymentResolver implements InvoicePaymentResolverInterface
                 $p2->amount -= $p1->amount;
                 $p2->realAmount -= $p1->realAmount;
                 unset($this->payments[$k1]);
-                continue 2;
+                break;
             }
+
+            next($this->payments);
         }
 
         if (empty($this->payments)) {

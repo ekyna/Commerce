@@ -200,6 +200,26 @@ class InvoicePaymentResolverTest extends TestCase
             0 => [['100', '100', 0]], // #16
         ]);
 
+        $this->buildData([
+            'invoices' => [
+                ['total' => '870.70', 'date' => '-45 days'],
+                ['total' => '1377.68', 'date' => '-10 days'],
+            ],
+            'payments' => [
+                ['amount' => '870.70', 'date' => '-60 days', 'outstanding' => true, 'state' => PaymentStates::STATE_CANCELED],
+                ['amount' => '870.70', 'date' => '-55 days'],
+                ['amount' => '1377.68', 'date' => '-45 days', 'outstanding' => true, 'state' => PaymentStates::STATE_CANCELED],
+                ['amount' => '1377.68', 'date' => '-42 days'],
+                ['amount' => '870.70', 'date' => '-10 days', 'refund' => true],
+                ['amount' => '1377.68', 'date' => '-10 days', 'refund' => true],
+                ['amount' => '100', 'date' => '-2 days'],
+            ],
+        ]);
+        yield from $this->buildResult([
+            0 => [['870.70', '870.70', 1], ['-770.70', '-770.70', 4], ['-100.00', '-100.00', 6]], // #17
+            1 => [['1377.68', '1377.68', 3], ['-1277.68', '-1277.68', 5]], // #17
+        ]);
+
         // --- USD ---
 
         $this->buildData([
@@ -276,6 +296,7 @@ class InvoicePaymentResolverTest extends TestCase
         $sale->method('getCurrency')->willReturn($this->mockCurrency($data['currency']));
         $sale->method('getExchangeRate')->willReturn(new Decimal($data['exchange_rate']));
         $sale->method('getExchangeDate')->willReturn($data['exchange_date']);
+        $sale->method('getRuntimeUid')->willReturn(Uuid::v4()->toRfc4122());
 
         foreach ($data['invoices'] as $datum) {
             $datum = array_replace([
@@ -327,7 +348,7 @@ class InvoicePaymentResolverTest extends TestCase
     }
 
     /**
-     * @param array $map array<int, array<string, string, int bool>>
+     * @param array $map array<int, array<string, string, int, bool>>
      *
      * @return Generator
      */

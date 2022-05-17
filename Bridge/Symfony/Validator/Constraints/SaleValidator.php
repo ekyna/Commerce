@@ -27,25 +27,26 @@ class SaleValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($sale, Constraint $constraint)
+    public function validate($value, Constraint $constraint)
     {
-        if (null === $sale) {
+        if (null === $value) {
             return;
         }
 
-        if (!$sale instanceof SaleInterface) {
-            throw new UnexpectedTypeException($sale, SaleInterface::class);
+        if (!$value instanceof SaleInterface) {
+            throw new UnexpectedTypeException($value, SaleInterface::class);
         }
         if (!$constraint instanceof Sale) {
             throw new UnexpectedTypeException($constraint, Sale::class);
         }
 
-        $this->validateIdentity($sale, $constraint);
-        $this->validateDeliveryAddress($sale, $constraint);
-        $this->validateShipmentMethodRequirements($sale, $constraint);
-        $this->validatePaymentTermAndOutstandingLimit($sale, $constraint);
+        $this->validateIdentity($value, $constraint);
+        $this->validateDeliveryAddress($value, $constraint);
+        $this->validateShipmentMethodRequirements($value, $constraint);
+        $this->validatePaymentMethod($value, $constraint);
+        $this->validatePaymentTermAndOutstandingLimit($value, $constraint);
 
-        if (0 < $sale->getDepositTotal() && $sale->getDepositTotal() >= $sale->getGrandTotal()) {
+        if (0 < $value->getDepositTotal() && $value->getDepositTotal() >= $value->getGrandTotal()) {
             $this->context
                 ->buildViolation($constraint->deposit_greater_than_grand_total)
                 ->atPath('depositTotal')
@@ -56,7 +57,7 @@ class SaleValidator extends ConstraintValidator
     /**
      * Validates the shipment method requirements.
      */
-    protected function validateShipmentMethodRequirements(SaleInterface $sale, Constraint $constraint): void
+    protected function validateShipmentMethodRequirements(SaleInterface $sale, Sale $constraint): void
     {
         if (null === $method = $sale->getShipmentMethod()) {
             return;
@@ -89,9 +90,8 @@ class SaleValidator extends ConstraintValidator
     /**
      * Validates the delivery address.
      */
-    protected function validateDeliveryAddress(SaleInterface $sale, Constraint $constraint): void
+    protected function validateDeliveryAddress(SaleInterface $sale, Sale $constraint): void
     {
-        /** @var Sale $constraint */
         if (!$sale->isSameAddress() && null === $sale->getDeliveryAddress()) {
             $this->context
                 ->buildViolation($constraint->delivery_address_is_required)
@@ -112,9 +112,8 @@ class SaleValidator extends ConstraintValidator
     /**
      * Validates the sale identity.
      */
-    protected function validateIdentity(SaleInterface $sale, Constraint $constraint): void
+    protected function validateIdentity(SaleInterface $sale, Sale $constraint): void
     {
-        /** @var Sale $constraint */
         if (null === $sale->getCustomer()) {
             if (null === $sale->getCustomerGroup()) {
                 $this->context
@@ -134,9 +133,32 @@ class SaleValidator extends ConstraintValidator
     }
 
     /**
+     * Validates the sale payment method.
+     */
+    protected function validatePaymentMethod(SaleInterface $sale, Sale $constraint): void
+    {
+        if (null === $method = $sale->getPaymentMethod()) {
+            return;
+        }
+
+        if (!$method->isFactor()) {
+            return;
+        }
+
+        if (null !== $sale->getPaymentTerm()) {
+            return;
+        }
+
+        $this->context
+            ->buildViolation($constraint->term_required_for_factor_method)
+            ->atPath('paymentMethod')
+            ->addViolation();
+    }
+
+    /**
      * Validates the sale payment term and outstanding limit.
      */
-    protected function validatePaymentTermAndOutstandingLimit(SaleInterface $sale, Constraint $constraint): void
+    protected function validatePaymentTermAndOutstandingLimit(SaleInterface $sale, Sale $constraint): void
     {
         if (0 >= $sale->getOutstandingLimit()) {
             return;
@@ -162,7 +184,6 @@ class SaleValidator extends ConstraintValidator
         }
 
         if (null === $term) {
-            /** @var Sale $constraint */
             $this->context
                 ->buildViolation($constraint->outstanding_limit_require_term)
                 ->atPath('outstandingLimit')

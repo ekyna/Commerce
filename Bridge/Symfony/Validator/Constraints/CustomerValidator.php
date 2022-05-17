@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
@@ -86,7 +88,6 @@ class CustomerValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-
         // Outstanding / Payment term
         $hasOutstanding = 0 < $customer->getOutstandingLimit();
         $hasPaymentTerm = null !== $customer->getPaymentTerm();
@@ -96,7 +97,7 @@ class CustomerValidator extends ConstraintValidator
                 ->buildViolation($constraint->term_required_for_outstanding)
                 ->atPath('paymentTerm')
                 ->addViolation();
-        } else if ($hasPaymentTerm && !$hasOutstanding) {
+        } elseif ($hasPaymentTerm && !$hasOutstanding) {
             $this
                 ->context
                 ->buildViolation($constraint->outstanding_required_for_term)
@@ -111,6 +112,15 @@ class CustomerValidator extends ConstraintValidator
                     ->context
                     ->buildViolation($constraint->duplicate_payment_method)
                     ->atPath('paymentMethods')
+                    ->addViolation();
+            }
+
+            // Factor requires payment term
+            if ($default->isFactor() && !$hasPaymentTerm) {
+                $this
+                    ->context
+                    ->buildViolation($constraint->term_required_for_factor_method)
+                    ->atPath('defaultPaymentMethod')
                     ->addViolation();
             }
         } elseif (0 < $customer->getPaymentMethods()->count()) {
