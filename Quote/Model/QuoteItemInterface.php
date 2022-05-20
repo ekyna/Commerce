@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @method QuoteInterface getSale()
+ * @method QuoteInterface getRootSale()
  */
 interface QuoteItemInterface extends SaleItemInterface
 {

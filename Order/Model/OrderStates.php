@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -11,178 +13,148 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
  */
 final class OrderStates
 {
-    const STATE_NEW       = 'new';
-    const STATE_PENDING   = 'pending';
-    const STATE_REFUSED   = 'refused';
-    const STATE_ACCEPTED  = 'accepted';
-    const STATE_COMPLETED = 'completed';
-    const STATE_REFUNDED  = 'refunded';
-    const STATE_CANCELED  = 'canceled';
+    public const STATE_NEW       = 'new';
+    public const STATE_PENDING   = 'pending';
+    public const STATE_REFUSED   = 'refused';
+    public const STATE_ACCEPTED  = 'accepted';
+    public const STATE_COMPLETED = 'completed';
+    public const STATE_REFUNDED  = 'refunded';
+    public const STATE_CANCELED  = 'canceled';
 
 
     /**
      * Returns all the states.
-     *
-     * @return array
      */
-    static public function getStates()
+    public static function getStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_PENDING,
-            static::STATE_REFUSED,
-            static::STATE_ACCEPTED,
-            static::STATE_COMPLETED,
-            static::STATE_REFUNDED,
-            static::STATE_CANCELED,
+            self::STATE_NEW,
+            self::STATE_PENDING,
+            self::STATE_REFUSED,
+            self::STATE_ACCEPTED,
+            self::STATE_COMPLETED,
+            self::STATE_REFUNDED,
+            self::STATE_CANCELED,
         ];
     }
 
     /**
      * Returns whether the given state is valid or not.
-     *
-     * @param string $state
-     *
-     * @return bool
      */
-    static public function isValidState($state)
+    public static function isValidState(?string $state): bool
     {
-        return in_array($state, static::getStates(), true);
+        return in_array($state, self::getStates(), true);
     }
 
     /**
      * Returns the deletable states.
-     *
-     * @return array
      */
-    static public function getDeletableStates()
+    public static function getDeletableStates(): array
     {
         return [
-            static::STATE_NEW,
-            static::STATE_CANCELED,
-            static::STATE_REFUSED,
+            self::STATE_NEW,
+            self::STATE_CANCELED,
+            self::STATE_REFUSED,
         ];
     }
 
     /**
      * Returns whether the given state is a deletable state.
-     *
-     * @param string $state
-     *
-     * @return bool
      */
-    static public function isDeletableState($state)
+    public static function isDeletableState(?string $state): bool
     {
-        return is_null(null === $state) || in_array($state, static::getDeletableStates(), true);
+        return is_null($state) || in_array($state, self::getDeletableStates(), true);
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a non deletable state to a deletable state.
+     * Returns whether the state has changed
+     * from a non-deletable state to a deletable state.
      *
      * @param array $cs The persistence change set
-     *
-     * @return bool
      */
-    static public function hasChangedToDeletable(array $cs)
+    public static function hasChangedToDeletable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && !static::isDeletableState($cs[0])
-            && static::isDeletableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && !self::isDeletableState($cs[0])
+            && self::isDeletableState($cs[1]);
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a deletable state to a non deletable state.
+     * Returns whether the state has changed
+     * from a deletable state to a non-deletable state.
      *
      * @param array $cs The persistence change set
-     *
-     * @return bool
      */
-    static public function hasChangedFromDeletable(array $cs)
+    static public function hasChangedFromDeletable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && static::isDeletableState($cs[0])
-            && !static::isDeletableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && self::isDeletableState($cs[0])
+            && !self::isDeletableState($cs[1]);
     }
 
     /**
      * Returns the states which must result in a stock management.
-     *
-     * @return array
      */
-    static public function getStockableStates()
+    public static function getStockableStates(): array
     {
         return [
-            static::STATE_ACCEPTED,
-            static::STATE_REFUNDED,
-            static::STATE_COMPLETED,
+            self::STATE_ACCEPTED,
+            self::STATE_REFUNDED,
+            self::STATE_COMPLETED,
         ];
     }
 
     /**
      * Returns whether the given state is a stock state.
-     *
-     * @param string $state
-     *
-     * @return bool
      */
-    static public function isStockableState($state)
+    public static function isStockableState(?string $state): bool
     {
-        return !is_null($state) && in_array($state, static::getStockableStates(), true);
+        return !is_null($state) && in_array($state, self::getStockableStates(), true);
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a non stockable state to a stockable state.
+     * Returns whether the state has changed
+     * from a non-stockable state to a stockable state.
      *
      * @param array $cs The persistence change set
-     *
-     * @return bool
      */
-    static public function hasChangedToStockable(array $cs)
+    public static function hasChangedToStockable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && !static::isStockableState($cs[0])
-            && static::isStockableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && !self::isStockableState($cs[0])
+            && self::isStockableState($cs[1]);
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a stockable state to a non stockable state.
+     * Returns whether the state has changed
+     * from a stockable state to a non-stockable state.
      *
      * @param array $cs The persistence change set
-     *
-     * @return bool
      */
-    static public function hasChangedFromStockable(array $cs)
+    public static function hasChangedFromStockable(array $cs): bool
     {
-        return static::assertValidChangeSet($cs)
-            && static::isStockableState($cs[0])
-            && !static::isStockableState($cs[1]);
+        return self::assertValidChangeSet($cs)
+            && self::isStockableState($cs[0])
+            && !self::isStockableState($cs[1]);
     }
 
     /**
-     * Returns whether or not the change set is valid.
-     *
-     * @param array $cs
-     *
-     * @return bool
+     * Returns whether the change set is valid.
      *
      * @throws InvalidArgumentException
      */
-    static private function assertValidChangeSet(array $cs)
+    private static function assertValidChangeSet(array $cs): bool
     {
         if (
             array_key_exists(0, $cs) &&
             array_key_exists(1, $cs) &&
-            (is_null($cs[0]) || static::isValidState($cs[0])) &&
-            (is_null($cs[1]) || static::isValidState($cs[1]))
+            (is_null($cs[0]) || self::isValidState($cs[0])) &&
+            (is_null($cs[1]) || self::isValidState($cs[1]))
         ) {
             return true;
         }
 
-        throw new InvalidArgumentException("Unexpected order state change set.");
+        throw new InvalidArgumentException('Unexpected order state change set.');
     }
 
     /**

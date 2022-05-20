@@ -18,10 +18,10 @@ use Symfony\Contracts\Translation\TranslatableInterface;
  */
 interface SubjectProviderInterface
 {
-    public const CONTEXT_ITEM     = 'item';         // Sale item subject
-    public const CONTEXT_SALE     = 'sale';         // Sale item search
+    public const CONTEXT_ITEM     = 'item';      // Sale item subject
+    public const CONTEXT_SALE     = 'sale';      // Sale item search
     public const CONTEXT_ACCOUNT  = 'account';   // Sale item search from customer account
-    public const CONTEXT_SUPPLIER = 'supplier'; // Supplier item subject
+    public const CONTEXT_SUPPLIER = 'supplier';  // Supplier item subject
 
 
     /**
@@ -122,16 +122,14 @@ interface SubjectProviderInterface
     public function getSearchActionAndParameters(string $context): array;
 
     /**
-     * Returns the provider name.
-     *
-     * @return string
-     */
-    public function getName(): string;
-
-    /**
      * Returns the subject type label.
      *
      * @return string|TranslatableInterface
      */
-    public function getLabel();
+    public static function getLabel();
+
+    /**
+     * Returns the provider name.
+     */
+    public static function getName(): string;
 }

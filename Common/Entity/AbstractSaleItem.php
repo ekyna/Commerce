@@ -52,6 +52,11 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this->designation ?: $this->reference ?: 'New sale item';
     }
 
+    public function hasParent(): bool
+    {
+        return null !== $this->parent;
+    }
+
     public function getParent(): ?Model\SaleItemInterface
     {
         return $this->parent;
@@ -334,20 +339,35 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     {
         $item = $this;
 
-        while ($parent = $item->getParent()) {
+        while (null !== $parent = $item->getParent()) {
             $item = $parent;
         }
 
         return $item;
     }
 
+    public function getRootSale(): ?Model\SaleInterface
+    {
+        $item = $this;
+
+        do {
+            if ($sale = $item->getSale()) {
+                return $sale;
+            }
+
+            $item = $item->getParent();
+        } while (null !== $item);
+
+        return null;
+    }
+
     public function getParentsQuantity(): Decimal
     {
         $modifier = new Decimal(1);
 
-        $parent = $this;
-        while ($parent = $parent->getParent()) {
-            $modifier = $modifier->mul($parent->getQuantity());
+        $item = $this;
+        while (null !== $item = $item->getParent()) {
+            $modifier = $modifier->mul($item->getQuantity());
         }
 
         return $modifier;
@@ -364,7 +384,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
             return $this->position === $this->parent->getChildren()->last()->getPosition();
         }
 
-        return $this->position === $this->getSale()->getItems()->last()->getPosition();
+        return $this->position === $this->getRootSale()->getItems()->last()->getPosition();
     }
 
     /**

@@ -306,29 +306,29 @@ abstract class AbstractSaleListener
     /**
      * Handles the content change.
      */
-    protected function handleContentChange(SaleInterface $sale): bool
+    protected function handleContentChange(SaleInterface $sale): void
     {
         // Update totals
-        $changed = $this->saleUpdater->updateWeightTotal($sale);
+        $this->saleUpdater->updateWeightTotal($sale);
 
         // Shipment method and amount
-        $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
+        $this->saleUpdater->updateShipmentMethodAndAmount($sale);
 
         // Shipment taxation
         if ($this->isShipmentTaxationUpdateNeeded($sale)) {
-            $changed = $this->saleUpdater->updateShipmentTaxation($sale, true) || $changed;
+            $this->saleUpdater->updateShipmentTaxation($sale, true);
         }
 
         // Update totals
-        $changed = $this->saleUpdater->updateTotals($sale) || $changed;
+        $this->saleUpdater->updateTotals($sale);
 
         // TODO Check coupon validity
 
         // Update state
-        $changed = $this->updateState($sale) || $changed;
+        $this->updateState($sale);
 
         // Update due dates
-        return $this->updateDueDates($sale) || $changed;
+        $this->updateDueDates($sale);
     }
 
     public function onStateChange(ResourceEventInterface $event): void
@@ -661,6 +661,8 @@ abstract class AbstractSaleListener
     protected function updateState(SaleInterface $sale): bool
     {
         if ($this->stateResolver->resolve($sale)) {
+            $this->persistenceHelper->persistAndRecompute($sale, false);
+
             $this->scheduleStateChangeEvent($sale);
 
             return true;

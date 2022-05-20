@@ -39,7 +39,7 @@ class PrioritizeHelper
             return null;
         }
 
-        $sale = $assignment->getSaleItem()->getSale();
+        $sale = $assignment->getSaleItem()->getRootSale();
 
         $candidates = [];
 

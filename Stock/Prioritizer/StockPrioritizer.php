@@ -70,7 +70,7 @@ class StockPrioritizer implements StockPrioritizerInterface
 
     public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true): bool
     {
-        if ($checkSale && !$this->checkSale($item->getSale())) {
+        if ($checkSale && !$this->checkSale($item->getRootSale())) {
             return false;
         }
 
@@ -119,7 +119,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         Decimal                  $quantity = null,
         bool                     $checkSale = true
     ): bool {
-        if ($checkSale && !$this->checkSale($item->getSale())) {
+        if ($checkSale && !$this->checkSale($item->getRootSale())) {
             return false;
         }
 

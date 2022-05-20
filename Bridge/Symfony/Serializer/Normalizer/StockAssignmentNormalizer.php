@@ -39,7 +39,7 @@ class StockAssignmentNormalizer extends ResourceNormalizer
             ]);
 
             if ($this->contextHasGroup('StockView', $context)) {
-                $sale = $object->getSaleItem()->getSale();
+                $sale = $object->getSaleItem()->getRootSale();
                 $data['order_id'] = $sale->getId();
                 $data['preparation'] =
                     $sale instanceof ShipmentSubjectInterface

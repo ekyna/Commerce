@@ -54,7 +54,7 @@ class SaleItemNormalizer extends ResourceNormalizer
                 $children[] = $this->normalize($child, $format, $context);
             }
 
-            $sale = $object->getSale();
+            $sale = $object->getRootSale();
             $total = $object->getTotalQuantity();
             $unit = $object->getUnit();
 

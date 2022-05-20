@@ -193,7 +193,7 @@ abstract class AbstractAdjustmentListener
      */
     protected function getSaleFromItem(Model\SaleItemInterface $item)
     {
-        if (null !== $sale = $item->getSale()) {
+        if (null !== $sale = $item->getRootSale()) {
             return $sale;
         }
 

@@ -103,7 +103,7 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
             return false;
         }
 
-        if (!$sale = $item->getSale()) {
+        if (!$sale = $item->getRootSale()) {
             return false;
         }
 

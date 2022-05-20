@@ -53,7 +53,7 @@ class SaleItemAvailabilityValidator extends ConstraintValidator
             return;
         }
 
-        $sale = $item->getSale();
+        $sale = $item->getRootSale();
         if ($sale instanceof OrderInterface) {
             // This constraint does not apply to orders
             return;

@@ -59,7 +59,7 @@ class AvailabilityResolver
             return $this->itemCache[$item->getId()];
         }
 
-        $this->calculateSale($item->getSale());
+        $this->calculateSale($item->getRootSale());
 
         return $this->itemCache[$item->getId()];
     }

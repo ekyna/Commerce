@@ -162,7 +162,7 @@ class StatFilter
             return false;
         }
 
-        return in_array($subject->getIdentifier(), $this->subjects[$subject->getProvider()]);
+        return in_array($subject->getIdentifier(), $this->subjects[$subject->getProvider()], true);
     }
 
     /**

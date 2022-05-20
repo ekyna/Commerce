@@ -28,7 +28,7 @@ class UnitCandidate
         $map = [];
         $greaterFound = false;
         foreach ($unit->getStockAssignments() as $a) {
-            if ($sale === $a->getSaleItem()->getSale()) {
+            if ($sale === $a->getSaleItem()->getRootSale()) {
                 continue;
             }
 

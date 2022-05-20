@@ -19,23 +19,9 @@ class CartItem extends AbstractSaleItem implements Model\CartItemInterface
 {
     protected ?Model\CartInterface $cart = null;
 
-
     public function getSale(): ?Common\SaleInterface
     {
-        if ($cart = $this->getCart()) {
-            return $cart;
-        }
-
-        $parent = $this;
-        while ($parent) {
-            if ($cart = $parent->getCart()) {
-                return $cart;
-            }
-
-            $parent = $parent->getParent();
-        }
-
-        return null;
+        return $this->getCart();
     }
 
     /**
@@ -43,7 +29,9 @@ class CartItem extends AbstractSaleItem implements Model\CartItemInterface
      */
     public function setSale(?Common\SaleInterface $sale): Common\SaleItemInterface
     {
-        $sale && $this->assertSaleClass($sale);
+        if (null !== $sale) {
+            $this->assertSaleClass($sale);
+        }
 
         $this->setCart($sale);
 

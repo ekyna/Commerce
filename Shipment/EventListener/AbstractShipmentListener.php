@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
@@ -111,7 +112,7 @@ abstract class AbstractShipmentListener
         $changed = $this->generateNumber($shipment);
 
         // Completed state
-        $changed = $this->handleCompletedState($shipment) || $changed;
+        $changed = $this->handleStateChange($shipment) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($shipment);
@@ -141,7 +142,7 @@ abstract class AbstractShipmentListener
 
         $stateChanged = $this->persistenceHelper->isChanged($shipment, 'state');
         if ($stateChanged) {
-            $changed = $this->handleCompletedState($shipment) || $changed;
+            $changed = $this->handleStateChange($shipment) || $changed;
         }
 
         if ($changed) {
@@ -299,41 +300,48 @@ abstract class AbstractShipmentListener
     }
 
     /**
-     * Handle the 'completed' state.
+     * Handle state change.
      *
      * @param ShipmentInterface $shipment
      *
-     * @return bool Whether or not the shipment has been changed.
+     * @return bool Whether the shipment has been changed.
      */
-    protected function handleCompletedState(ShipmentInterface $shipment)
+    protected function handleStateChange(ShipmentInterface $shipment)
     {
         $changed = false;
 
-        $state       = $shipment->getState();
-        $shippedAt   = $shipment->getShippedAt();
+        $state = $shipment->getState();
+        $shippedAt = $shipment->getShippedAt();
         $completedAt = $shipment->getCompletedAt();
 
-        if (in_array($state, [ShipmentStates::STATE_SHIPPED, ShipmentStates::STATE_COMPLETED], true)) {
+        $shippedStates = [ShipmentStates::STATE_READY, ShipmentStates::STATE_SHIPPED, ShipmentStates::STATE_COMPLETED];
+
+        if (in_array($state, $shippedStates, true)) {
             if (null === $shippedAt) {
-                $shipment->setShippedAt(new \DateTime());
+                $shipment->setShippedAt(new DateTime());
                 $changed = true;
             }
-            if ($state === ShipmentStates::STATE_COMPLETED && null === $completedAt) {
-                $shipment->setCompletedAt(new \DateTime());
-                $changed = true;
+
+            if ($state === ShipmentStates::STATE_COMPLETED) {
+                if (null === $completedAt) {
+                    $shipment->setCompletedAt(new DateTime());
+                    $changed = true;
+                }
             } elseif (null !== $completedAt) {
                 $shipment->setCompletedAt(null);
                 $changed = true;
             }
-        } else {
-            if (null !== $shippedAt) {
-                $shipment->setShippedAt(null);
-                $changed = true;
-            }
-            if (null !== $completedAt) {
-                $shipment->setCompletedAt(null);
-                $changed = true;
-            }
+
+            return $changed;
+        }
+
+        if (null !== $shippedAt) {
+            $shipment->setShippedAt(null);
+            $changed = true;
+        }
+        if (null !== $completedAt) {
+            $shipment->setCompletedAt(null);
+            $changed = true;
         }
 
         return $changed;

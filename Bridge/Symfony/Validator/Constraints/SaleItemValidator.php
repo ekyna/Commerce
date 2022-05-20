@@ -105,7 +105,7 @@ class SaleItemValidator extends ConstraintValidator
      */
     protected function checkInvoiceIntegrity(SaleItemInterface $item, SaleItem $constraint): void
     {
-        $sale = $item->getSale();
+        $sale = $item->getRootSale();
         if (!$sale instanceof Invoice\InvoiceSubjectInterface) {
             return;
         }
@@ -138,7 +138,7 @@ class SaleItemValidator extends ConstraintValidator
      */
     protected function checkShipmentIntegrity(SaleItemInterface $item, SaleItem $constraint): void
     {
-        $sale = $item->getSale();
+        $sale = $item->getRootSale();
         if (!$sale instanceof Shipment\ShipmentSubjectInterface) {
             return;
         }

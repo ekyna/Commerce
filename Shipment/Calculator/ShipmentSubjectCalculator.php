@@ -53,7 +53,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
             return false;
         }
 
-        $sale = $saleItem->getSale();
+        $sale = $saleItem->getRootSale();
         if (!$sale instanceof Subject) {
             return false;
         }
@@ -255,7 +255,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
      */
     private function calculateQuantity(SaleItem $saleItem, bool $return = false, Shipment $ignore = null): Decimal
     {
-        $sale = $saleItem->getSale();
+        $sale = $saleItem->getRootSale();
 
         if (!$sale instanceof Subject) {
             return new Decimal(0);

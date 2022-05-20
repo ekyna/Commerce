@@ -570,7 +570,7 @@ class Customer extends AbstractResource implements Model\CustomerInterface
                 ->setMaxResults(1);
 
             $matches = $this->addresses->matching($criteria);
-            if ($matches->count() == 1) {
+            if (1 === $matches->count()) {
                 return $matches->first();
             }
         }

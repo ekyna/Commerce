@@ -13,6 +13,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @method OrderInterface getSale()
+ * @method OrderInterface getRootSale()
  */
 interface OrderItemInterface extends SaleItemInterface, StockAssignmentsInterface
 {

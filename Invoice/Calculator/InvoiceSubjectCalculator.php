@@ -54,7 +54,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                 return false;
             }
 
-            $sale = $itemOrAdjustment->getSale();
+            $sale = $itemOrAdjustment->getRootSale();
             if (!$sale instanceof Subject) {
                 return false;
             }
@@ -100,7 +100,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     {
         // Good line case
         if ($subject instanceof Item) {
-            $sale = $subject->getSale();
+            $sale = $subject->getRootSale();
             if (!$sale instanceof Subject) {
                 return new Decimal(0);
             }
@@ -153,7 +153,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     {
         // Good line case
         if ($subject instanceof Item) {
-            $sale = $subject->getSale();
+            $sale = $subject->getRootSale();
             if (!$sale instanceof Subject) {
                 return new Decimal(0);
             }
@@ -216,7 +216,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     {
         // Good line case
         if ($subject instanceof Item) {
-            $sale = $subject->getSale();
+            $sale = $subject->getRootSale();
             if (!$sale instanceof Subject) {
                 return $subject->getTotalQuantity();
             }
@@ -293,7 +293,7 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
     ): Decimal {
         // Good line case
         if ($subject instanceof Item) {
-            $sale = $subject->getSale();
+            $sale = $subject->getRootSale();
             if (!$sale instanceof Subject) {
                 return new Decimal(0);
             }

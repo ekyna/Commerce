@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @method CartInterface getSale()
+ * @method CartInterface getRootSale()
  */
 interface CartItemInterface extends SaleItemInterface
 {

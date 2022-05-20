@@ -168,7 +168,7 @@ class MarginCalculator implements MarginCalculatorInterface
                     $margin->setAverage(true);
                 }
             } else {
-                $sale = $item->getSale();
+                $sale = $item->getRootSale();
                 if ($sale instanceof InvoiceSubjectInterface) {
                     $sold = $this->invoiceCalculator->calculateSoldQuantity($item);
                 } else {

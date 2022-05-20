@@ -219,20 +219,18 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
      */
     protected function loadLines(SaleInterface $sale): AbstractSaleRepository
     {
-        if (null !== $sale) {
-            $qb = $this->createQueryBuilder('o');
-            $qb
-                ->select('PARTIAL o.{id}', 'item', 'adjustment', 'sub_item', 'sub_adjustment')
-                ->leftJoin('o.items', 'item')
-                ->leftJoin('item.adjustments', 'adjustment')
-                ->leftJoin('item.children', 'sub_item')
-                ->leftJoin('sub_item.adjustments', 'sub_adjustment')
-                ->andWhere($qb->expr()->eq('o.id', ':id'))
-                ->getQuery()
-                ->useQueryCache(true)
-                ->setParameter('id', $sale->getId())
-                ->getResult();
-        }
+        $qb = $this->createQueryBuilder('o');
+        $qb
+            ->select('PARTIAL o.{id}', 'item', 'adjustment', 'sub_item', 'sub_adjustment')
+            ->leftJoin('o.items', 'item')
+            ->leftJoin('item.adjustments', 'adjustment')
+            ->leftJoin('item.children', 'sub_item')
+            ->leftJoin('sub_item.adjustments', 'sub_adjustment')
+            ->andWhere($qb->expr()->eq('o.id', ':id'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameter('id', $sale->getId())
+            ->getResult();
 
         return $this;
     }
@@ -246,17 +244,15 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
      */
     protected function loadPayments(SaleInterface $sale): AbstractSaleRepository
     {
-        if (null !== $sale) {
-            $qb = $this->createQueryBuilder('o');
-            $qb
-                ->select('PARTIAL o.{id}', 'payment')
-                ->leftJoin('o.payments', 'payment')
-                ->andWhere($qb->expr()->eq('o.id', ':id'))
-                ->getQuery()
-                ->useQueryCache(true)
-                ->setParameter('id', $sale->getId())
-                ->getResult();
-        }
+        $qb = $this->createQueryBuilder('o');
+        $qb
+            ->select('PARTIAL o.{id}', 'payment')
+            ->leftJoin('o.payments', 'payment')
+            ->andWhere($qb->expr()->eq('o.id', ':id'))
+            ->getQuery()
+            ->useQueryCache(true)
+            ->setParameter('id', $sale->getId())
+            ->getResult();
 
         return $this;
     }

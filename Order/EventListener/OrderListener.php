@@ -16,15 +16,16 @@ use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
+use Ekyna\Component\Commerce\Order\Message\OrderStateChange;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
+use Ekyna\Component\Resource\Message\MessageQueueAwareTrait;
 
 use function in_array;
-use function is_null;
 
 /**
  * Class OrderEventSubscriber
@@ -33,6 +34,8 @@ use function is_null;
  */
 class OrderListener extends AbstractSaleListener
 {
+    use MessageQueueAwareTrait;
+
     protected StockUnitAssignerInterface      $stockAssigner;
     protected OrderRepositoryInterface        $orderRepository;
     protected CouponRepositoryInterface       $couponRepository;
@@ -274,21 +277,40 @@ class OrderListener extends AbstractSaleListener
     {
         parent::handleStateChange($sale);
 
-        if ($this->persistenceHelper->isChanged($sale, 'state')) {
-            $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
+        $changeSet = $this->persistenceHelper->getChangeSet($sale, [
+            'state',
+            'paymentState',
+            'shipmentState',
+            'invoiceState',
+        ]);
 
-            // If order state has changed from non stockable to stockable
-            if (OrderStates::hasChangedToStockable($stateCs)) {
-                foreach ($sale->getItems() as $item) {
-                    $this->assignSaleItemRecursively($item);
-                }
-            } // If order state has changed from stockable to non stockable
-            elseif (OrderStates::hasChangedFromStockable($stateCs)) {
-                foreach ($sale->getItems() as $item) {
-                    $this->detachSaleItemRecursively($item);
-                }
-                // We don't need to handle invoices as they are detached with sale items.
+        if (empty($changeSet)) {
+            return;
+        }
+
+        $this->messageQueue->addMessage(static function () use ($sale, $changeSet) {
+            return OrderStateChange::create($sale, $changeSet);
+        });
+
+        if (!isset($changeSet['state'])) {
+            return;
+        }
+
+        if (OrderStates::hasChangedToStockable($changeSet['state'])) {
+            // Order state has changed from non stockable to stockable
+            foreach ($sale->getItems() as $item) {
+                $this->assignSaleItemRecursively($item);
             }
+
+            return;
+        }
+
+        if (OrderStates::hasChangedFromStockable($changeSet['state'])) {
+            // Order state has changed from stockable to non stockable
+            foreach ($sale->getItems() as $item) {
+                $this->detachSaleItemRecursively($item);
+            }
+            // We don't need to handle invoices as they are detached with sale items.
         }
     }
 
@@ -297,15 +319,15 @@ class OrderListener extends AbstractSaleListener
      *
      * @param OrderInterface $sale
      */
-    protected function handleContentChange(SaleInterface $sale): bool
+    protected function handleContentChange(SaleInterface $sale): void
     {
         $this->updateInvoicePaidTotal($sale);
 
-        $changed = parent::handleContentChange($sale);
+        parent::handleContentChange($sale);
 
-        $changed = $this->orderUpdater->updateMarginTotals($sale) || $changed;
+        $this->orderUpdater->updateMarginTotals($sale);
 
-        return $this->orderUpdater->updateItemsCount($sale) || $changed;
+        $this->orderUpdater->updateItemsCount($sale);
     }
 
     /**

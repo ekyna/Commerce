@@ -347,7 +347,7 @@ class SaleCopier implements SaleCopierInterface
 
         // Children
         foreach ($source->getChildren() as $sourceChild) {
-            $targetChild = $this->factoryHelper->createItemForSale($target->getSale());
+            $targetChild = $this->factoryHelper->createItemForSale($target->getRootSale());
             $target->addChild($targetChild);
             $this->copyItem($sourceChild, $targetChild);
         }

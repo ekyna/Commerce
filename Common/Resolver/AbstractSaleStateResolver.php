@@ -57,7 +57,7 @@ abstract class AbstractSaleStateResolver extends AbstractStateResolver
                     $changed = true;
                 }
             } else {
-                $changed = $this->paymentStateResolver->resolve($subject) || $changed;
+                $changed = $this->paymentStateResolver->resolve($subject);
             }
         }
 

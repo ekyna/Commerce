@@ -157,8 +157,8 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
     private function sortAssignments(array $assignments, int $direction = SORT_DESC): array
     {
         usort($assignments, function (Assignment $a, Assignment $b) use ($direction) {
-            $aDate = $a->getSaleItem()->getSale()->getCreatedAt();
-            $bDate = $b->getSaleItem()->getSale()->getCreatedAt();
+            $aDate = $a->getSaleItem()->getRootSale()->getCreatedAt();
+            $bDate = $b->getSaleItem()->getRootSale()->getCreatedAt();
 
             if (DateUtil::equals($aDate, $bDate)) {
                 return 0;

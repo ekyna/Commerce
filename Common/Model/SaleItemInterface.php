@@ -20,6 +20,8 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
 
     public function getSale(): ?SaleInterface;
 
+    public function hasParent(): bool;
+
     public function setParent(?SaleItemInterface $parent): SaleItemInterface;
 
     /**
@@ -107,6 +109,8 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
     public function getLevel(): int;
 
     public function getRoot(): ?SaleItemInterface;
+
+    public function getRootSale(): ?SaleInterface;
 
     /**
      * Returns the parents total quantity.

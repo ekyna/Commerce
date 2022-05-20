@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Subject\Provider;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface as Subject;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface as Reference;
 
@@ -13,30 +16,19 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface as Referenc
  */
 class SubjectProviderRegistry implements SubjectProviderRegistryInterface
 {
-    /**
-     * @var array|SubjectProviderInterface[]
-     */
-    protected $providers;
-
-
-    /**
-     * Constructor.
-     */
-    public function __construct()
-    {
-        $this->providers = [];
-    }
+    /** @var array<SubjectProviderInterface> */
+    protected array $providers = [];
 
     /**
      * @inheritDoc
      */
     public function addProvider(SubjectProviderInterface $provider): void
     {
-        if (array_key_exists($provider->getName(), $this->providers)) {
-            throw new \RuntimeException(sprintf('Subject provider "%s" is already registered.', $provider->getName()));
+        if (array_key_exists($name = $provider::getName(), $this->providers)) {
+            throw new RuntimeException(sprintf('Subject provider "%s" is already registered.', $name));
         }
 
-        $this->providers[$provider->getName()] = $provider;
+        $this->providers[$name] = $provider;
     }
 
     /**
@@ -52,7 +44,11 @@ class SubjectProviderRegistry implements SubjectProviderRegistryInterface
             return $this->getProviderByName($nameOrReferenceOrSubject);
         }
 
-        throw new InvalidArgumentException("Failed to resolve provider.");
+        throw new UnexpectedTypeException($nameOrReferenceOrSubject, [
+            Reference::class,
+            Subject::class,
+            'string'
+        ]);
     }
 
     /**

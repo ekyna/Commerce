@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
@@ -15,43 +17,20 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractSaleItemListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
+    protected PersistenceHelperInterface $persistenceHelper;
+    protected AdjustmentBuilderInterface $adjustmentBuilder;
 
-    /**
-     * @var AdjustmentBuilderInterface
-     */
-    protected $adjustmentBuilder;
-
-
-    /**
-     * Sets the persistence helper.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     */
-    public function setPersistenceHelper(PersistenceHelperInterface $persistenceHelper)
+    public function setPersistenceHelper(PersistenceHelperInterface $persistenceHelper): void
     {
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    /**
-     * Sets the adjustment builder.
-     *
-     * @param AdjustmentBuilderInterface $adjustmentBuilder
-     */
-    public function setAdjustmentBuilder(AdjustmentBuilderInterface $adjustmentBuilder)
+    public function setAdjustmentBuilder(AdjustmentBuilderInterface $adjustmentBuilder): void
     {
         $this->adjustmentBuilder = $adjustmentBuilder;
     }
 
-    /**
-     * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $item = $this->getSaleItemFromEvent($event);
 
@@ -63,15 +42,10 @@ abstract class AbstractSaleItemListener
             $this->persistenceHelper->persistAndRecompute($item);
         }
 
-        $this->scheduleSaleContentChangeEvent($item->getSale());
+        $this->scheduleSaleContentChangeEvent($item->getRootSale());
     }
 
-    /**
-     * Update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $item = $this->getSaleItemFromEvent($event);
 
@@ -95,16 +69,11 @@ abstract class AbstractSaleItemListener
         if ($change) {
             $this->persistenceHelper->persistAndRecompute($item);
 
-            $this->scheduleSaleContentChangeEvent($item->getSale());
+            $this->scheduleSaleContentChangeEvent($item->getRootSale());
         }
     }
 
-    /**
-     * Delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         $item = $this->getSaleItemFromEvent($event);
 
@@ -123,31 +92,19 @@ abstract class AbstractSaleItemListener
         }
     }
 
-    /**
-     * Pre update event handler.
-     *
-     * @param ResourceEventInterface $event
-     */
-    public function onPreUpdate(ResourceEventInterface $event)
+    public function onPreUpdate(ResourceEventInterface $event): void
     {
         // TODO Disabled to allow admins to change weight and net price
         // $this->throwIllegalOperationIfItemIsImmutable($event);
     }
 
-    /**
-     * Pre delete event handler.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
-     */
-    public function onPreDelete(ResourceEventInterface $event)
+    public function onPreDelete(ResourceEventInterface $event): void
     {
         $this->throwIllegalOperationIfItemIsImmutable($event);
 
         $item = $this->getSaleItemFromEvent($event);
 
-        if (null === $sale = $item->getSale()) {
+        if (null === $sale = $item->getRootSale()) {
             return;
         }
 
@@ -159,10 +116,8 @@ abstract class AbstractSaleItemListener
 
     /**
      * Loads the item's children and adjustments recursively.
-     *
-     * @param Model\SaleItemInterface $item
      */
-    private function loadItem(Model\SaleItemInterface $item)
+    private function loadItem(Model\SaleItemInterface $item): void
     {
         $item->getAdjustments()->toArray();
 
@@ -175,12 +130,8 @@ abstract class AbstractSaleItemListener
 
     /**
      * Throws an illegal operation exception if the item is immutable.
-     *
-     * @param ResourceEventInterface $event
-     *
-     * @throws IllegalOperationException
      */
-    private function throwIllegalOperationIfItemIsImmutable(ResourceEventInterface $event)
+    private function throwIllegalOperationIfItemIsImmutable(ResourceEventInterface $event): void
     {
         if ($event->getHard()) {
             return;
@@ -197,11 +148,9 @@ abstract class AbstractSaleItemListener
     /**
      * Updates the item's discount adjustments.
      *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return bool Whether the adjustments has been changed or not.
+     * @return bool Whether the adjustments have been changed or not.
      */
-    protected function updateDiscount(Model\SaleItemInterface $item)
+    protected function updateDiscount(Model\SaleItemInterface $item): bool
     {
         return $this->adjustmentBuilder->buildSaleItemDiscountAdjustments($item, true);
     }
@@ -209,11 +158,9 @@ abstract class AbstractSaleItemListener
     /**
      * Updates the item's taxation adjustments.
      *
-     * @param Model\SaleItemInterface $item
-     *
-     * @return bool Whether the adjustments has been changed or not.
+     * @return bool Whether the adjustments have been changed or not.
      */
-    protected function updateTaxation(Model\SaleItemInterface $item)
+    protected function updateTaxation(Model\SaleItemInterface $item): bool
     {
         return $this->adjustmentBuilder->buildSaleItemTaxationAdjustments($item, true);
     }
@@ -225,9 +172,9 @@ abstract class AbstractSaleItemListener
      *
      * @return Model\SaleInterface
      */
-    protected function getSaleFromItem(Model\SaleItemInterface $item)
+    protected function getSaleFromItem(Model\SaleItemInterface $item): ?Model\SaleInterface
     {
-        if (null !== $sale = $item->getSale()) {
+        if (null !== $sale = $item->getRootSale()) {
             return $sale;
         }
 
@@ -250,14 +197,14 @@ abstract class AbstractSaleItemListener
      *
      * @return string
      */
-    abstract protected function getSalePropertyPath();
+    abstract protected function getSalePropertyPath(): string;
 
     /**
      * Schedules the sale content change event.
      *
      * @param Model\SaleInterface $sale
      */
-    abstract protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale);
+    abstract protected function scheduleSaleContentChangeEvent(Model\SaleInterface $sale): void;
 
     /**
      * Returns the sale item from the resource event.
@@ -266,5 +213,5 @@ abstract class AbstractSaleItemListener
      *
      * @return Model\SaleItemInterface
      */
-    abstract protected function getSaleItemFromEvent(ResourceEventInterface $event);
+    abstract protected function getSaleItemFromEvent(ResourceEventInterface $event): Model\SaleItemInterface;
 }

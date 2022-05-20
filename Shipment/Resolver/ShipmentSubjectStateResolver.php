@@ -14,8 +14,6 @@ use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterf
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 
-use function bccomp;
-
 /**
  * Class ShipmentStateResolver
  * @package Ekyna\Component\Commerce\Shipment\Resolver
@@ -61,6 +59,9 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
         foreach ($subject->getShipments(true) as $shipment) {
             if ($shipment->getState() === ShipmentStates::STATE_PREPARATION) {
                 return ShipmentStates::STATE_PREPARATION;
+            }
+            if ($shipment->getState() === ShipmentStates::STATE_READY) {
+                return ShipmentStates::STATE_READY;
             }
         }
 

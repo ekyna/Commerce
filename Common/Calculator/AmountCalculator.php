@@ -154,7 +154,7 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
-        $sale = $item->getSale();
+        $sale = $item->getRootSale();
         $ati = $sale->isAtiDisplayMode();
 
         $taxGroup = $item->getTaxGroup();
@@ -192,7 +192,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
         $quantity = $quantity ?? $this->calculateSaleItemQuantity($item);
 
-        if ($item->getSale()->isSample()) {
+        if ($item->getRootSale()->isSample()) {
             // Sample sale case : zero amounts
             $result = new Model\Amount($this->currency);
         } elseif ($item->isPrivate() && !$asPublic) {
@@ -452,7 +452,7 @@ class AmountCalculator implements AmountCalculatorInterface
             return $quantity;
         }
 
-        if ($item->getSale() instanceof InvoiceSubjectInterface) {
+        if ($item->getRootSale() instanceof InvoiceSubjectInterface) {
             return $this->invoiceCalculator->calculateSoldQuantity($item);
         }
 

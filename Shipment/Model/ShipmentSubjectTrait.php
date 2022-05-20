@@ -17,10 +17,8 @@ use Doctrine\Common\Collections\Criteria;
 trait ShipmentSubjectTrait
 {
     protected string $shipmentState;
-
     /** @var Collection|ShipmentInterface[] */
     protected Collection $shipments;
-
 
     protected function initializeShipmentSubject(): void
     {
@@ -69,7 +67,7 @@ trait ShipmentSubjectTrait
      */
     public function getShippedAt(bool $latest = false): ?DateTimeInterface
     {
-        if (0 == $this->shipments->count()) {
+        if (0 === $this->shipments->count()) {
             return null;
         }
 
@@ -85,7 +83,7 @@ trait ShipmentSubjectTrait
 
         /** @var ShipmentInterface $shipment */
         if (false !== $shipment = $shipments->first()) {
-            return $shipment->getCreatedAt();
+            return $shipment->getShippedAt();
         }
 
         return null;

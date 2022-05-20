@@ -35,20 +35,7 @@ class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
 
     public function getSale(): ?Common\SaleInterface
     {
-        if ($order = $this->getOrder()) {
-            return $order;
-        }
-
-        $parent = $this;
-        while ($parent) {
-            if ($order = $parent->getOrder()) {
-                return $order;
-            }
-
-            $parent = $parent->getParent();
-        }
-
-        return null;
+        return $this->getOrder();
     }
 
     /**
@@ -56,7 +43,9 @@ class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
      */
     public function setSale(?Common\SaleInterface $sale): Common\SaleItemInterface
     {
-        $sale && $this->assertSaleClass($sale);
+        if (null !== $sale) {
+            $this->assertSaleClass($sale);
+        }
 
         $this->setOrder($sale);
 

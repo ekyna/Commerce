@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnusedFieldDefaultValueInspection */
 
 declare(strict_types=1);
 
@@ -13,10 +13,15 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
  */
 final class SubjectIdentity
 {
-    private ?string $provider = null;
-    private ?int $identifier = null;
-    private ?SubjectInterface $subject = null;
+    private ?string           $provider   = null;
+    private ?int              $identifier = null;
+    private ?SubjectInterface $subject    = null;
 
+    public function __construct(string $provider = null, int $identifier = null)
+    {
+        $this->provider = $provider;
+        $this->identifier = $identifier;
+    }
 
     /**
      * Returns whether the subject identity is set.

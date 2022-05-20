@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
+use Ekyna\Component\Commerce\Common\Helper\QuantityChangeHelper;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
@@ -689,39 +690,18 @@ class StockUnitAssigner implements StockUnitAssignerInterface
      */
     protected function resolveSoldDeltaQuantity(SaleItemInterface $item): Decimal
     {
-        // Own item quantity changes
-        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
-            $cs = $this->persistenceHelper->getChangeSet($item, 'quantity');
-            $old = $cs[0] ?? new Decimal(0);
-            $new = $cs[1] ?? new Decimal(0);
-        } else {
-            $old = $item->getQuantity();
-            $new = $item->getQuantity();
-        }
+        $helper = new QuantityChangeHelper($this->persistenceHelper);
 
-        // Parent items quantity changes
-        $parent = $item;
-        while ($parent = $parent->getParent()) {
-            if ($this->persistenceHelper->isChanged($parent, 'quantity')) {
-                $cs = $this->persistenceHelper->getChangeSet($parent, 'quantity');
-                $parentOld = $cs[0] ?? new Decimal(0);
-                $parentNew = $cs[1] ?? new Decimal(0);
-            } else {
-                $parentOld = $parent->getQuantity();
-                $parentNew = $parent->getQuantity();
-            }
-            $old *= $parentOld;
-            $new *= $parentNew;
-        }
+        [$old, $new] = $helper->getTotalQuantityChangeSet($item);
 
         // Sale released change
-        $sale = $item->getSale();
+        $sale = $item->getRootSale();
         $shippedOld = new Decimal(0);
         $shippedNew = new Decimal(0);
         $f = $t = false;
         if ($this->persistenceHelper->isChanged($sale, 'released')) {
             [$f, $t] = $this->persistenceHelper->getChangeSet($sale, 'released');
-        } elseif ($item->getSale()->isReleased()) {
+        } elseif ($item->getRootSale()->isReleased()) {
             $f = $t = true;
         }
         if ($f || $t) {

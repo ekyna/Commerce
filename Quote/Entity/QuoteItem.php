@@ -18,23 +18,9 @@ class QuoteItem extends AbstractSaleItem implements Model\QuoteItemInterface
 {
     protected ?Model\QuoteInterface $quote = null;
 
-
     public function getSale(): ?Common\SaleInterface
     {
-        if ($quote = $this->getQuote()) {
-            return $quote;
-        }
-
-        $parent = $this;
-        while ($parent) {
-            if ($quote = $parent->getQuote()) {
-                return $quote;
-            }
-
-            $parent = $parent->getParent();
-        }
-
-        return $quote;
+        return $this->getQuote();
     }
 
     /**
@@ -42,7 +28,9 @@ class QuoteItem extends AbstractSaleItem implements Model\QuoteItemInterface
      */
     public function setSale(?Common\SaleInterface $sale): Common\SaleItemInterface
     {
-        $sale && $this->assertSaleClass($sale);
+        if (null !== $sale) {
+            $this->assertSaleClass($sale);
+        }
 
         $this->setQuote($sale);
 

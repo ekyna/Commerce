@@ -50,7 +50,7 @@ class StockAdjustmentValidator extends ConstraintValidator
         }
 
         foreach ($unit->getStockAssignments() as $assignment) {
-            $sale = $assignment->getSaleItem()->getSale();
+            $sale = $assignment->getSaleItem()->getRootSale();
             if (
                 $sale instanceof ShipmentSubjectInterface &&
                 $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION

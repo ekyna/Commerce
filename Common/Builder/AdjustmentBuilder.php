@@ -81,7 +81,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
             return false;
         }
 
-        $data = !$item->getSale()->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
+        $data = !$item->getRootSale()->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
 
         return $this->buildAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
     }
@@ -146,7 +146,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
 
         $data = [];
 
-        $sale = $item->getSale();
+        $sale = $item->getRootSale();
         if (!$item->isPrivate() && !(null === $sale || $sale->isTaxExempt() || $sale->isSample())) {
             $data = $this->taxResolver->resolveTaxes($item, $sale);
         }
@@ -162,7 +162,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     protected function canUpdateDiscounts($resource): bool
     {
         if ($resource instanceof Model\SaleItemInterface) {
-            $resource = $resource->getSale();
+            $resource = $resource->getRootSale();
         }
 
         if ($resource instanceof Model\SaleInterface) {
@@ -180,7 +180,7 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     protected function canUpdateTaxation($resource): bool
     {
         if ($resource instanceof Model\SaleItemInterface) {
-            $resource = $resource->getSale();
+            $resource = $resource->getRootSale();
         }
 
         if ($resource instanceof Model\SaleInterface) {
