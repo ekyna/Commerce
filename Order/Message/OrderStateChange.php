@@ -26,33 +26,12 @@ class OrderStateChange
 {
     public static function create(OrderInterface $order, array $changeSet): self
     {
-        $data = array_intersect_key($changeSet, self::DEFAULT);
+        $data = [];
 
-        if (!isset($data[self::GENERAL])) {
-            $data[self::GENERAL] = [
-                $order->getState(),
-                $order->getState(),
-            ];
-        }
-
-        if (!isset($data[self::PAYMENT])) {
-            $data[self::PAYMENT] = [
-                $order->getPaymentState(),
-                $order->getPaymentState(),
-            ];
-        }
-
-        if (!isset($data[self::SHIPMENT])) {
-            $data[self::SHIPMENT] = [
-                $order->getShipmentState(),
-                $order->getShipmentState(),
-            ];
-        }
-
-        if (!isset($data[self::INVOICE])) {
-            $data[self::INVOICE] = [
-                $order->getInvoiceState(),
-                $order->getInvoiceState(),
+        foreach (self::DEFAULTS as $key => $value) {
+            $data[$key] = [
+                $changeSet[$key][0] ?? $value,
+                $changeSet[$key][1] ?? $value,
             ];
         }
 
@@ -67,11 +46,11 @@ class OrderStateChange
     private const INVOICE  = 'invoiceState';
     private const SAMPLE   = 'sample';
 
-    private const DEFAULT  = [
-        self::GENERAL  => [OrderStates::STATE_NEW, OrderStates::STATE_NEW],
-        self::PAYMENT  => [PaymentStates::STATE_NEW, PaymentStates::STATE_NEW],
-        self::SHIPMENT => [ShipmentStates::STATE_NEW, ShipmentStates::STATE_NEW],
-        self::INVOICE  => [InvoiceStates::STATE_NEW, InvoiceStates::STATE_NEW],
+    private const DEFAULTS  = [
+        self::GENERAL => OrderStates::STATE_NEW,
+        self::PAYMENT => PaymentStates::STATE_NEW,
+        self::SHIPMENT => ShipmentStates::STATE_NEW,
+        self::INVOICE => InvoiceStates::STATE_NEW,
     ];
 
     private int   $orderId;
@@ -80,7 +59,7 @@ class OrderStateChange
     private function __construct(int $orderId, array $data)
     {
         $this->orderId = $orderId;
-        $this->data = array_replace_recursive(self::DEFAULT, $data);
+        $this->data = $data;
     }
 
     public function getOrderId(): int
