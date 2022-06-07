@@ -178,6 +178,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     {
         $justInTime = $disabled = $resupply = true;
         $inStock = $virtualStock = $availableStock = $eda = null;
+        $replenishmentTime = 0;
 
         foreach ($subject->getStockComposition() as $component) {
             // Array represents user choices -> Select best component.
@@ -228,6 +229,11 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
                 $resupply = false;
                 $eda = null;
             }
+
+            // ReplenishmentTime
+            if ($child->getReplenishmentTime() > $replenishmentTime) {
+                $replenishmentTime = $child->getReplenishmentTime();
+            }
         }
 
         if (null === $inStock) {
@@ -265,6 +271,10 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
                     $state = StockSubjectStates::STATE_IN_STOCK;
                 }
             }
+        }
+
+        if ($replenishmentTime !== $subject->getReplenishmentTime()) {
+            $subject->setReplenishmentTime($replenishmentTime);
         }
 
         $changed = $this->setSubjectData($subject, $inStock, $availableStock, $virtualStock, $eda);
@@ -466,7 +476,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     private function setSubjectMode(StockSubjectInterface $subject, string $mode): bool
     {
-        if ($subject->getStockMode() != $mode) {
+        if ($mode !== $subject->getStockMode()) {
             $subject->setStockMode($mode);
 
             return true;
@@ -482,7 +492,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     private function setSubjectState(StockSubjectInterface $subject, string $state): bool
     {
-        if ($subject->getStockState() != $state) {
+        if ($state !== $subject->getStockState()) {
             $subject->setStockState($state);
 
             return true;

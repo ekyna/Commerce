@@ -6,7 +6,6 @@ namespace Ekyna\Component\Commerce\Stock\Model;
 
 use DateTimeInterface;
 use Decimal\Decimal;
-use Ekyna\Bundle\ProductBundle\Model\ProductInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 
 /**
