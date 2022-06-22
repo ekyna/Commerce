@@ -12,6 +12,7 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="reference" column="reference" type="string" length="64" nullable="false"/>
         <field name="quantity" column="quantity" type="php_decimal" precision="10" scale="3" nullable="false"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockUnit"

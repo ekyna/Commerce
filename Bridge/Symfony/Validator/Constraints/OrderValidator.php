@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Validator\Exception\InvalidArgumentException;
 
 /**
  * Class OrderValidator
@@ -17,16 +19,16 @@ class OrderValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($order, Constraint $constraint)
+    public function validate($value, Constraint $constraint)
     {
-        if (!$order instanceof OrderInterface) {
-            throw new InvalidArgumentException("Expected instance of " . OrderInterface::class);
+        if (!$value instanceof OrderInterface) {
+            throw new UnexpectedTypeException($value, OrderInterface::class);
         }
         if (!$constraint instanceof Order) {
-            throw new InvalidArgumentException("Expected instance of " . Order::class);
+            throw new UnexpectedTypeException($constraint, Order::class);
         }
 
-        if ($order->isSample() && ($order->hasPayments() || $order->hasInvoices())) {
+        if ($value->isSample() && ($value->hasPayments() || $value->hasInvoices())) {
             $this
                 ->context
                 ->buildViolation($constraint->sample_with_payments_or_invoices)
@@ -34,26 +36,26 @@ class OrderValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        if (null !== $originCustomer = $order->getOriginCustomer()) {
-            if (!$originCustomer->hasParent()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->unexpected_origin_customer)
-                    ->atPath('originCustomer')
-                    ->addViolation();
+        if (null === $originCustomer = $value->getOriginCustomer()) {
+            return;
+        }
 
-                return;
-            }
+        if (!$originCustomer->hasParent()) {
+            $this
+                ->context
+                ->buildViolation($constraint->unexpected_origin_customer)
+                ->atPath('originCustomer')
+                ->addViolation();
 
-            if ($originCustomer->getParent() !== $order->getCustomer()) {
-                $this
-                    ->context
-                    ->buildViolation($constraint->customers_integrity)
-                    ->atPath('originCustomer')
-                    ->addViolation();
+            return;
+        }
 
-                return;
-            }
+        if ($originCustomer->getParent() !== $value->getCustomer()) {
+            $this
+                ->context
+                ->buildViolation($constraint->customers_integrity)
+                ->atPath('originCustomer')
+                ->addViolation();
         }
     }
 }

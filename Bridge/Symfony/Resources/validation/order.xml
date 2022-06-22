@@ -28,6 +28,10 @@
                 </option>
             </constraint>
         </property>
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">customer</option>
+            <option name="fields">voucherNumber</option>
+        </constraint>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Order"/>
     </class>
 

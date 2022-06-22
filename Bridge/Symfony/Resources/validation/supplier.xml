@@ -134,7 +134,7 @@
             <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="min">2</option>
-                <option name="max">32</option>
+                <option name="max">64</option>
             </constraint>
         </property>
         <property name="quantity">
@@ -213,7 +213,7 @@
             <constraint name="NotBlank" />
             <constraint name="Length">
                 <option name="min">2</option>
-                <option name="max">32</option>
+                <option name="max">64</option>
             </constraint>
         </property>
         <property name="netPrice">

@@ -21,6 +21,7 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="reference" column="reference" type="string" length="64" nullable="false"/>
         <field name="availableStock" column="available_stock" type="php_decimal" precision="10" scale="3" nullable="true"/>
         <field name="orderedStock" column="ordered_stock" type="php_decimal" precision="10" scale="3" nullable="true"/>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>

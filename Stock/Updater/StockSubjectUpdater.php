@@ -7,7 +7,6 @@ namespace Ekyna\Component\Commerce\Stock\Updater;
 use DateTime;
 use DateTimeInterface;
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Stock\Model\StockComponent;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
@@ -25,6 +24,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     protected StockUnitResolverInterface         $stockUnitResolver;
     protected SupplierProductRepositoryInterface $supplierProductRepository;
     protected array                              $defaults;
+
+    private ?StockCompositionSorter $sorter = null; // TODO Service ?
 
     public function __construct(
         StockUnitResolverInterface         $stockUnitResolver,
@@ -126,7 +127,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
                 continue;
             }
 
-            // Keep lowest EDA
+            // Keep the lowest EDA
             if (null === $eda || $eda > $date) {
                 $eda = $date;
             }
@@ -180,27 +181,20 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $inStock = $virtualStock = $availableStock = $eda = null;
         $replenishmentTime = 0;
 
-        foreach ($subject->getStockComposition() as $component) {
-            // Array represents user choices -> Select best component.
-            if (is_array($component)) {
-                if (null === $component = $this->pickBestComponent($component)) {
-                    continue;
-                }
-            }
+        $composition = $this->getSorter()->sort($subject);
 
+        foreach ($composition as $component) {
             $child = $component->getSubject();
             $quantity = $component->getQuantity();
 
             // Mode
-            if ($child->getStockMode() === StockSubjectModes::MODE_DISABLED) {
-                continue;
-            }
-
-            // State
-            $disabled = false;
             if ($child->getStockMode() !== StockSubjectModes::MODE_JUST_IN_TIME) {
                 $justInTime = false;
             }
+            if ($child->getStockMode() === StockSubjectModes::MODE_DISABLED) {
+                continue;
+            }
+            $disabled = false;
 
             // In stock
             $childInStock = $child->getInStock()->div($quantity);
@@ -221,13 +215,19 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             }
 
             // Estimated date of arrival
-            if (null !== $childEda = $child->getEstimatedDateOfArrival()) {
-                if ($resupply && (null === $eda || $childEda > $eda)) {
-                    $eda = $childEda;
+            if ($resupply) {
+                if (null !== $childEda = $child->getEstimatedDateOfArrival()) {
+                    if (
+                        null === $eda
+                        || (0 < $availableStock && $childEda < $eda)  // If available, gather the soonest eda
+                        || (0 >= $availableStock && $childEda > $eda) // If NOT available, gather the latest eda
+                    ) {
+                        $eda = $childEda;
+                    }
+                } elseif (0 >= $availableStock) {
+                    $resupply = false;
+                    $eda = null;
                 }
-            } elseif (0 >= $childAvailableStock) {
-                $resupply = false;
-                $eda = null;
             }
 
             // ReplenishmentTime
@@ -339,77 +339,6 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     }
 
     /**
-     * Returns the best component.
-     *
-     * @param array $components
-     *
-     * @return StockComponent|null
-     */
-    private function pickBestComponent(array $components): ?StockComponent
-    {
-        $best = null;
-
-        foreach ($components as $component) {
-            if (!$best || $this->isBetterComponent($component, $best)) {
-                $best = $component;
-            }
-        }
-
-        return $best;
-    }
-
-    /**
-     * Returns true if the A choice is better than the B choice.
-     *
-     * @param StockComponent $a
-     * @param StockComponent $b
-     *
-     * @return bool
-     */
-    private function isBetterComponent(StockComponent $a, StockComponent $b): bool
-    {
-        // TODO Packaging format
-
-        $subjectA = $a->getSubject();
-        $subjectB = $b->getSubject();
-
-        if (StockSubjectModes::isBetterMode($subjectA->getStockMode(), $subjectB->getStockMode())) {
-            return true;
-        }
-
-        if (StockSubjectStates::isBetterState($subjectA->getStockState(), $subjectB->getStockState())) {
-            return true;
-        }
-
-        // Available stock
-        if (0 < $aAvailable = $subjectA->getAvailableStock()->div($a->getQuantity())) {
-            $bAvailable = $subjectB->getAvailableStock()->div($b->getQuantity());
-            if ($bAvailable < $aAvailable) {
-                return true;
-            }
-        }
-
-        // Virtual stock
-        if (0 < $aVirtual = $subjectA->getVirtualStock()->div($a->getQuantity())) {
-            $aEda = $subjectA->getEstimatedDateOfArrival();
-            $bEda = $subjectB->getEstimatedDateOfArrival();
-
-            if (is_null($bEda) && is_null($aEda)) {
-                $bVirtual = $subjectB->getVirtualStock()->div($b->getQuantity());
-                if ($bVirtual < $aVirtual) {
-                    return true;
-                }
-            }
-
-            if ($aEda && (is_null($bEda) || ($bEda > $aEda))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the given date or null if it's lower than today.
      */
     private function nullDateIfLowerThanToday(?DateTimeInterface $eda): ?DateTimeInterface
@@ -499,5 +428,14 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         }
 
         return false;
+    }
+
+    private function getSorter(): StockCompositionSorter
+    {
+        if (null !== $this->sorter) {
+            return $this->sorter;
+        }
+
+        return new StockCompositionSorter();
     }
 }
